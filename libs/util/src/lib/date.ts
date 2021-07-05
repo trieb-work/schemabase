@@ -6,6 +6,6 @@ import dayjs from "dayjs"
  * @param date - The date string
  * @param format - The format of the date string. default='YYYY-MM-DD'
  */
- export function validateDate(date :string, format = "YYYY-MM-DD") {
-    return dayjs(date, format).format(format) === date;
+export function validateDate(date: string, format = "YYYY-MM-DD") {
+  return dayjs(date, format).format(format) === date
 }

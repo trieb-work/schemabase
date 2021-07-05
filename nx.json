@@ -1,7 +1,7 @@
 {
   "npmScope": "eci",
   "affected": {
-    "defaultBase": "master"
+    "defaultBase": "main"
   },
   "implicitDependencies": {
     "package.json": {
@@ -27,7 +27,40 @@
     ]
   },
   "projects": {
+    "adapters-braintree": {
+      "tags": []
+    },
+    "adapters-easypost": {
+      "tags": []
+    },
+    "adapters-lexoffice": {
+      "tags": []
+    },
+    "adapters-mailchimp": {
+      "tags": []
+    },
+    "adapters-zoho": {
+      "tags": []
+    },
+    "api": {
+      "tags": []
+    },
+    "data-access-prisma": {
+      "tags": []
+    },
+    "feature-print": {
+      "tags": []
+    },
     "util": {
+      "tags": []
+    },
+    "util-apm": {
+      "tags": []
+    },
+    "util-env": {
+      "tags": []
+    },
+    "util-errors": {
       "tags": []
     }
   }

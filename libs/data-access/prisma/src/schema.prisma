@@ -1,0 +1,192 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./local.db" 
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator typegraphql {
+  provider = "typegraphql-prisma"
+}
+
+model MailchimpConf {
+  id                Int        @id @default(autoincrement())
+  active            Boolean?   @default(false)
+  listId            String?
+  apiToken          String?
+  storeUrl          String?
+  storeId           String?
+  productUrlPattern String?
+  channel           String?
+  appConfig         AppConfig? @relation(fields: [appConfigId], references: [id])
+  appConfigId       Int?       @unique
+}
+
+model ProductDataFeed {
+  id                         Int       @id @default(autoincrement())
+  cuid                       String    @default(cuid())
+  active                     Boolean?  @default(false)
+  productDetailStorefrontURL String?
+  channel                    String?
+  appConfig                  AppConfig @relation(fields: [appConfigId], references: [id])
+  appConfigId                Int       @unique
+}
+
+model EasyPostConf {
+  id                      Int                      @id @default(autoincrement())
+  cuid                    String                   @default(cuid())
+  active                  Boolean?                 @default(false)
+  apiToken                String?
+  webhookID               String?
+  appConfig               AppConfig                @relation(fields: [appConfigId], references: [id])
+  appConfigId             Int                      @unique
+  trackAndTraceConfig     TrackAndTraceConf?       @relation(fields: [trackAndTraceConfigId], references: [id])
+  trackAndTraceConfigId   Int?                     @unique
+  AddressVerificationConf AddressVerificationConf?
+}
+
+model AddressVerificationConf {
+  id             Int          @id @default(autoincrement())
+  active         Boolean?     @default(false)
+  easypost       EasyPostConf @relation(fields: [easyPostConfId], references: [id])
+  easyPostConfId Int
+}
+
+model BraintreeConf {
+  id          Int       @id @default(autoincrement())
+  active      Boolean   @default(false)
+  merchantId  String?
+  publicKey   String?
+  privateKey  String?
+  appConfig   AppConfig @relation(fields: [appConfigId], references: [id])
+  appConfigId Int       @unique
+}
+
+model LexofficeConf {
+  id          Int       @id @default(autoincrement())
+  active      Boolean   @default(false)
+  apiToken    String?
+  appConfig   AppConfig @relation(fields: [appConfigId], references: [id])
+  appConfigId Int       @unique
+}
+
+model ZohoConf {
+  id                  Int       @id @default(autoincrement())
+  active              Boolean?  @default(false)
+  cuid                String    @default(cuid())
+  orgId               String?   @default("")
+  clientId            String?   @default("")
+  clientSecret        String?   @default("")
+  payPalAccountId     String?
+  creditCardAccountId String?
+  webhookToken        String    @default(cuid())
+  webhookID           String?
+  customFunctionID    String?
+  appConfig           AppConfig @relation(fields: [appConfigId], references: [id])
+  appConfigId         Int       @unique
+}
+
+model MailgunConf {
+  id                    Int                @id @default(autoincrement())
+  cuid                  String?            @default(cuid())
+  apiToken              String
+  fromDomain            String
+  fromTitle             String?
+  fromEmail             String?
+  apiHost               String             @default("api.eu.mailgun.net")
+  appConfig             AppConfig?         @relation(fields: [appConfigId], references: [id])
+  appConfigId           Int?               @unique
+  trackAndTraceConfig   TrackAndTraceConf? @relation(fields: [trackAndTraceConfigId], references: [id])
+  trackAndTraceConfigId Int?               @unique
+}
+
+model TrackAndTraceConf {
+  id                  Int                   @id @default(autoincrement())
+  active              Boolean?              @default(false)
+  cuid                String                @default(cuid())
+  mailgun             MailgunConf?
+  easypost            EasyPostConf?
+  appConfig           AppConfig             @relation(fields: [appConfigId], references: [id])
+  appConfigId         Int                   @unique
+  trackAndTraceEmails TrackAndTraceEmails[]
+}
+
+enum Language {
+  DE
+  EN
+}
+
+model TrackAndTraceEmails {
+  id                              Int               @id @default(autoincrement())
+  language                        Language          @unique @default(DE)
+  inTransitEmailEnabled           Boolean?
+  inTransitEmailSubject           String?
+  inTransitEmailTemplateName      String?
+  outForDeliveryEmailEnabled      Boolean?
+  outForDeliveryEmailTemplateName String?
+  outForDeliveryEmailSubject      String?
+  trackAndTraceConf               TrackAndTraceConf @relation(fields: [trackAndTraceConfId], references: [id])
+  trackAndTraceConfId             Int
+}
+
+model SaleorConf {
+  id           Int       @id @default(autoincrement())
+  domain       String?   @unique
+  appId        String?
+  authToken    String?
+  webhookToken String    @default(cuid())
+  webhookID    String?
+  appConfig    AppConfig @relation(fields: [appConfigId], references: [id])
+  appConfigId  Int       @unique
+}
+
+model AppConfig {
+  id              Int                @id @default(autoincrement())
+  active          Boolean?
+  baseUrl         String?
+  saleor          SaleorConf?
+  zoho            ZohoConf?
+  productdatafeed ProductDataFeed?
+  mailchimp       MailchimpConf?
+  easypost        EasyPostConf?
+  braintree       BraintreeConf?
+  lexoffice       LexofficeConf?
+  trackandtrace   TrackAndTraceConf?
+  mailgun         MailgunConf?
+}
+
+// Common / General Config Parameters
+model RedisConf {
+  id             Int          @id @default(autoincrement())
+  host           String
+  password       String
+  port           Int
+  commonConfig   CommonConfig @relation(fields: [commonConfigId], references: [id])
+  commonConfigId Int
+}
+
+model ElasticConf {
+  id             Int          @id @default(autoincrement())
+  apmServer      String?
+  apmSecretToken String?
+  loggingServer  String?
+  commonConfig   CommonConfig @relation(fields: [commonConfigId], references: [id])
+  commonConfigId Int
+}
+
+model GoogleOAuth {
+  id             Int          @id @default(autoincrement())
+  clientId       String
+  clientSecret   String
+  commonConfig   CommonConfig @relation(fields: [commonConfigId], references: [id])
+  commonConfigId Int
+}
+
+model CommonConfig {
+  id            Int          @id @default(autoincrement())
+  googleOAuth   GoogleOAuth?
+  redis         RedisConf?
+  elasticsearch ElasticConf?
+}

@@ -1,6 +1,215 @@
 {
   "version": 2,
   "projects": {
+    "adapters-braintree": {
+      "root": "libs/adapters/braintree",
+      "sourceRoot": "libs/adapters/braintree/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/adapters/braintree/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/adapters/braintree"],
+          "options": {
+            "jestConfig": "libs/adapters/braintree/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "adapters-easypost": {
+      "root": "libs/adapters/easypost",
+      "sourceRoot": "libs/adapters/easypost/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/adapters/easypost/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/adapters/easypost"],
+          "options": {
+            "jestConfig": "libs/adapters/easypost/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "adapters-lexoffice": {
+      "root": "libs/adapters/lexoffice",
+      "sourceRoot": "libs/adapters/lexoffice/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/adapters/lexoffice/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/adapters/lexoffice"],
+          "options": {
+            "jestConfig": "libs/adapters/lexoffice/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "adapters-mailchimp": {
+      "root": "libs/adapters/mailchimp",
+      "sourceRoot": "libs/adapters/mailchimp/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/adapters/mailchimp/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/adapters/mailchimp"],
+          "options": {
+            "jestConfig": "libs/adapters/mailchimp/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "adapters-zoho": {
+      "root": "libs/adapters/zoho",
+      "sourceRoot": "libs/adapters/zoho/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/adapters/zoho/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/adapters/zoho"],
+          "options": {
+            "jestConfig": "libs/adapters/zoho/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "api": {
+      "root": "apps/api",
+      "sourceRoot": "apps/api",
+      "projectType": "application",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/next:build",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "root": "apps/api",
+            "outputPath": "dist/apps/api"
+          },
+          "configurations": {
+            "production": {}
+          }
+        },
+        "serve": {
+          "executor": "@nrwl/next:server",
+          "options": {
+            "buildTarget": "api:build",
+            "dev": true
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "api:build:production",
+              "dev": false
+            }
+          }
+        },
+        "export": {
+          "executor": "@nrwl/next:export",
+          "options": {
+            "buildTarget": "api:build:production"
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/apps/api"],
+          "options": {
+            "jestConfig": "apps/api/jest.config.js",
+            "passWithNoTests": true
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["apps/api/**/*.{ts,tsx,js,jsx}"]
+          }
+        }
+      }
+    },
+    "data-access-prisma": {
+      "root": "libs/data-access/prisma",
+      "sourceRoot": "libs/data-access/prisma/src",
+      "projectType": "library",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/node:package",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/libs/data-access/prisma",
+            "tsConfig": "libs/data-access/prisma/tsconfig.lib.json",
+            "packageJson": "libs/data-access/prisma/package.json",
+            "main": "libs/data-access/prisma/src/index.ts",
+            "assets": ["libs/data-access/prisma/*.md"]
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/data-access/prisma/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/data-access/prisma"],
+          "options": {
+            "jestConfig": "libs/data-access/prisma/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "feature-print": {
+      "root": "libs/feature/print",
+      "sourceRoot": "libs/feature/print/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/feature/print/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/feature/print"],
+          "options": {
+            "jestConfig": "libs/feature/print/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
     "util": {
       "root": "libs/util",
       "sourceRoot": "libs/util/src",
@@ -21,9 +230,86 @@
           }
         }
       }
+    },
+    "util-apm": {
+      "root": "libs/util/apm",
+      "sourceRoot": "libs/util/apm/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/util/apm/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/util/apm"],
+          "options": {
+            "jestConfig": "libs/util/apm/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "util-env": {
+      "root": "libs/util/env",
+      "sourceRoot": "libs/util/env/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/util/env/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/util/env"],
+          "options": {
+            "jestConfig": "libs/util/env/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "util-errors": {
+      "root": "libs/util/errors",
+      "sourceRoot": "libs/util/errors/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/util/errors/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/util/errors"],
+          "options": {
+            "jestConfig": "libs/util/errors/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
     }
   },
   "cli": {
-    "defaultCollection": "@nrwl/workspace"
-  }
+    "defaultCollection": "@nrwl/node"
+  },
+  "generators": {
+    "@nrwl/react": {
+      "application": {
+        "babel": true
+      }
+    },
+    "@nrwl/next": {
+      "application": {
+        "style": "css",
+        "linter": "eslint"
+      }
+    }
+  },
+  "defaultProject": "api"
 }
