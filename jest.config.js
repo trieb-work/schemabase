@@ -12,5 +12,6 @@ module.exports = {
     "<rootDir>/libs/adapters/zoho",
     "<rootDir>/libs/adapters/lexoffice",
     "<rootDir>/libs/adapters/mailchimp",
+    "<rootDir>/libs/util/retry",
   ],
 }

@@ -1,22 +1,34 @@
 # So in etwa würd ichs machen
 
-/libs/util/apm
+- [ ] /apps
+- [ ] /apps/worker
+- [ ] /apps/dashboard
+- [ ] /apps/api
+- [ ] /apps/triggers
 
-/libs/data-access/apollo
-/libs/data-access/prisma
+- [ ] /libs/util
+- [x] /libs/util/apm
 
-/libs/adapters/braintree
-/libs/adapters/lexoffice
-/libs/adapters/mailchimp
-/libs/adapters/zoho
-/libs/adapters/easypost
+- [ ] /libs/data-access
+- [ ] /libs/data-access/apollo
+- [ ] /libs/data-access/prisma
 
-/libs/carrier-tracking/dpd
+- [ ] /libs/adapters
+- [x] /libs/adapters/braintree
+- [x] /libs/adapters/lexoffice
+- [x] /libs/adapters/mailchimp
+- [ ] /libs/adapters/zoho
+- [x] /libs/adapters/easypost
+- [x] /libs/adapters/printer
 
-/libs/features/internal-package-trackers
+- [ ] /libs/integrations
+- [ ] /libs/integrations/saleor2zoho
+- [ ] /libs/integrations/zoho2saleor
 
-/libs/integrations/saleor2zoho
+---------------------?
 
-/libs/features/print
+- [ ] /libs/feature/xxx
 
-/libs/util/apm
+- [ ] /libs/carrier-tracking/dpd
+
+- [ ] /libs/internal-package-trackers

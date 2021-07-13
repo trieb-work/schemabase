@@ -3,7 +3,7 @@ import assert from "assert"
 import FormData from "form-data"
 import { HTTPError } from "@eci/util/errors"
 import { LexofficeInvoiceObject, LexOfficeVoucher, VoucherStatus } from "./types"
-
+import { retry } from "@eci/util/retry"
 type VoucherType = "invoice" | "salesinvoice"
 
 export class LexofficeInstance {
@@ -133,26 +133,22 @@ export class LexofficeInstance {
       },
     }
 
-    for (let attempt = 1; attempt <= 5; attempt += 1) {
-      const backoff = Math.random() ** Math.min(attempt, 6)
+    const contacts = await retry(
+      async () => {
+        const res = await this.req({
+          url: "/contacts",
+          method: "post",
+          data,
+        })
+        if (!res.data?.id) {
+          throw new Error("Unable to create user in LexOffice")
+        }
+        return res
+      },
+      { maxAttempts: 5 },
+    )
+    return contacts.data?.id
 
-      const res = await this.req({
-        url: "/contacts",
-        method: "post",
-        data,
-      })
-      if (res.status !== 200) {
-        console.warn(
-          `Retry ${attempt} to create User in Lexoffice: retrying in ${backoff.toFixed(0)}s`,
-        )
-        await new Promise((resolve) => setTimeout(resolve, backoff * 1000))
-        continue
-      }
-
-      if (res.data?.id) {
-        return res.data.id
-      }
-    }
     throw new HTTPError(`Unable to create new User in Lexoffice after 5 attempts`)
   }
 }

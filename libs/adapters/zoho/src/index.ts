@@ -1,1 +1,1 @@
-export * from "./lib/adapters-zoho"
+export * from "./lib/zoho"

@@ -5,7 +5,21 @@ export type Options = {
   paper?: string
 }
 
-export type Printer = {
+export type PrintRequest = {
+  /**
+   * Base64 encoded content to print
+   */
+  base64String: string
+  fileName: string
+  printerId: number
+  copies?: number
+  idempotencyKey?: string
+  rotate: Rotate
+  fitToPage?: boolean
+  paper?: string
+}
+
+export type Device = {
   capabilities: {
     bins: ["Automatisch auswählen"]
     collate: true

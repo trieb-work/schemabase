@@ -85,6 +85,27 @@
         }
       }
     },
+    "adapters-printer": {
+      "root": "libs/adapters/printer",
+      "sourceRoot": "libs/adapters/printer/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/adapters/printer/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/adapters/printer"],
+          "options": {
+            "jestConfig": "libs/adapters/printer/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
     "adapters-zoho": {
       "root": "libs/adapters/zoho",
       "sourceRoot": "libs/adapters/zoho/src",
@@ -189,27 +210,6 @@
         }
       }
     },
-    "feature-print": {
-      "root": "libs/feature/print",
-      "sourceRoot": "libs/feature/print/src",
-      "projectType": "library",
-      "targets": {
-        "lint": {
-          "executor": "@nrwl/linter:eslint",
-          "options": {
-            "lintFilePatterns": ["libs/feature/print/**/*.ts"]
-          }
-        },
-        "test": {
-          "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/feature/print"],
-          "options": {
-            "jestConfig": "libs/feature/print/jest.config.js",
-            "passWithNoTests": true
-          }
-        }
-      }
-    },
     "util": {
       "root": "libs/util",
       "sourceRoot": "libs/util/src",
@@ -289,6 +289,27 @@
           "outputs": ["coverage/libs/util/errors"],
           "options": {
             "jestConfig": "libs/util/errors/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "util-retry": {
+      "root": "libs/util/retry",
+      "sourceRoot": "libs/util/retry/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/util/retry/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/util/retry"],
+          "options": {
+            "jestConfig": "libs/util/retry/jest.config.js",
             "passWithNoTests": true
           }
         }
