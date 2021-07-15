@@ -184,14 +184,13 @@
       "projectType": "library",
       "targets": {
         "build": {
-          "executor": "@nrwl/node:package",
-          "outputs": ["{options.outputPath}"],
+          "executor": "@nrwl/workspace:run-commands",
           "options": {
-            "outputPath": "dist/libs/data-access/prisma",
-            "tsConfig": "libs/data-access/prisma/tsconfig.lib.json",
-            "packageJson": "libs/data-access/prisma/package.json",
-            "main": "libs/data-access/prisma/src/index.ts",
-            "assets": ["libs/data-access/prisma/*.md"]
+            "commands": [
+              {
+                "command": "yarn prisma generate --schema=./libs/data-access/prisma/schema.prisma"
+              }
+            ]
           }
         },
         "lint": {

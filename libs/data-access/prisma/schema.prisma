@@ -1,6 +1,6 @@
 datasource db {
-  provider = "sqlite"
-  url      = "file:./local.db" 
+  provider = "postgresql"
+  url      = "postgresql://postgres:postgres@localhost:5432/postgres"
 }
 
 generator client {
@@ -11,7 +11,7 @@ generator typegraphql {
   provider = "typegraphql-prisma"
 }
 
-model MailchimpConf {
+model MailchimpConfig {
   id                Int        @id @default(autoincrement())
   active            Boolean?   @default(false)
   listId            String?
@@ -34,7 +34,7 @@ model ProductDataFeed {
   appConfigId                Int       @unique
 }
 
-model EasyPostConf {
+model EasyPostConfig {
   id                      Int                      @id @default(autoincrement())
   cuid                    String                   @default(cuid())
   active                  Boolean?                 @default(false)
@@ -42,19 +42,19 @@ model EasyPostConf {
   webhookID               String?
   appConfig               AppConfig                @relation(fields: [appConfigId], references: [id])
   appConfigId             Int                      @unique
-  trackAndTraceConfig     TrackAndTraceConf?       @relation(fields: [trackAndTraceConfigId], references: [id])
+  trackAndTraceConfig     TrackAndTraceConfig?       @relation(fields: [trackAndTraceConfigId], references: [id])
   trackAndTraceConfigId   Int?                     @unique
-  AddressVerificationConf AddressVerificationConf?
+  AddressVerificationConfig AddressVerificationConfig?
 }
 
-model AddressVerificationConf {
+model AddressVerificationConfig {
   id             Int          @id @default(autoincrement())
   active         Boolean?     @default(false)
-  easypost       EasyPostConf @relation(fields: [easyPostConfId], references: [id])
+  easypost       EasyPostConfig @relation(fields: [easyPostConfId], references: [id])
   easyPostConfId Int
 }
 
-model BraintreeConf {
+model BraintreeConfig {
   id          Int       @id @default(autoincrement())
   active      Boolean   @default(false)
   merchantId  String?
@@ -64,7 +64,7 @@ model BraintreeConf {
   appConfigId Int       @unique
 }
 
-model LexofficeConf {
+model LexofficeConfig {
   id          Int       @id @default(autoincrement())
   active      Boolean   @default(false)
   apiToken    String?
@@ -72,7 +72,7 @@ model LexofficeConf {
   appConfigId Int       @unique
 }
 
-model ZohoConf {
+model ZohoConfig {
   id                  Int       @id @default(autoincrement())
   active              Boolean?  @default(false)
   cuid                String    @default(cuid())
@@ -88,7 +88,7 @@ model ZohoConf {
   appConfigId         Int       @unique
 }
 
-model MailgunConf {
+model MailgunConfig {
   id                    Int                @id @default(autoincrement())
   cuid                  String?            @default(cuid())
   apiToken              String
@@ -98,16 +98,16 @@ model MailgunConf {
   apiHost               String             @default("api.eu.mailgun.net")
   appConfig             AppConfig?         @relation(fields: [appConfigId], references: [id])
   appConfigId           Int?               @unique
-  trackAndTraceConfig   TrackAndTraceConf? @relation(fields: [trackAndTraceConfigId], references: [id])
+  trackAndTraceConfig   TrackAndTraceConfig? @relation(fields: [trackAndTraceConfigId], references: [id])
   trackAndTraceConfigId Int?               @unique
 }
 
-model TrackAndTraceConf {
+model TrackAndTraceConfig {
   id                  Int                   @id @default(autoincrement())
   active              Boolean?              @default(false)
   cuid                String                @default(cuid())
-  mailgun             MailgunConf?
-  easypost            EasyPostConf?
+  mailgun             MailgunConfig?
+  easypost            EasyPostConfig?
   appConfig           AppConfig             @relation(fields: [appConfigId], references: [id])
   appConfigId         Int                   @unique
   trackAndTraceEmails TrackAndTraceEmails[]
@@ -127,11 +127,11 @@ model TrackAndTraceEmails {
   outForDeliveryEmailEnabled      Boolean?
   outForDeliveryEmailTemplateName String?
   outForDeliveryEmailSubject      String?
-  trackAndTraceConf               TrackAndTraceConf @relation(fields: [trackAndTraceConfId], references: [id])
+  trackAndTraceConfig               TrackAndTraceConfig @relation(fields: [trackAndTraceConfId], references: [id])
   trackAndTraceConfId             Int
 }
 
-model SaleorConf {
+model SaleorConfig {
   id           Int       @id @default(autoincrement())
   domain       String?   @unique
   appId        String?
@@ -146,19 +146,19 @@ model AppConfig {
   id              Int                @id @default(autoincrement())
   active          Boolean?
   baseUrl         String?
-  saleor          SaleorConf?
-  zoho            ZohoConf?
+  saleor          SaleorConfig?
+  zoho            ZohoConfig?
   productdatafeed ProductDataFeed?
-  mailchimp       MailchimpConf?
-  easypost        EasyPostConf?
-  braintree       BraintreeConf?
-  lexoffice       LexofficeConf?
-  trackandtrace   TrackAndTraceConf?
-  mailgun         MailgunConf?
+  mailchimp       MailchimpConfig?
+  easypost        EasyPostConfig?
+  braintree       BraintreeConfig?
+  lexoffice       LexofficeConfig?
+  trackandtrace   TrackAndTraceConfig?
+  mailgun         MailgunConfig?
 }
 
 // Common / General Config Parameters
-model RedisConf {
+model RedisConfig {
   id             Int          @id @default(autoincrement())
   host           String
   password       String
@@ -167,7 +167,7 @@ model RedisConf {
   commonConfigId Int
 }
 
-model ElasticConf {
+model ElasticConfig {
   id             Int          @id @default(autoincrement())
   apmServer      String?
   apmSecretToken String?
@@ -187,6 +187,6 @@ model GoogleOAuth {
 model CommonConfig {
   id            Int          @id @default(autoincrement())
   googleOAuth   GoogleOAuth?
-  redis         RedisConf?
-  elasticsearch ElasticConf?
+  redis         RedisConfig?
+  elasticsearch ElasticConfig?
 }

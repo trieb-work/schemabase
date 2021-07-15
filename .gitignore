@@ -40,3 +40,6 @@ Thumbs.db
 
 .env*
 /old
+
+
+**/node_modules/
