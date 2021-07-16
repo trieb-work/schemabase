@@ -1,9 +1,14 @@
+import { GenericError } from "@eci/util/errors"
 import { PrismaClient } from "@eci/data-access/prisma"
-import { ServiceConfig } from "./setup/env"
+import { GoogleOAuthConfig } from "./setup/googleOAuth"
+import { RedisConfig } from "./setup/redis"
+import { ElasticSearchConfig } from "./setup/elasticSearch"
 
 export type Context = {
   prisma?: PrismaClient
-  serviceConfig?: ServiceConfig
+  googleOAuth?: GoogleOAuthConfig
+  redis?: RedisConfig
+  elasticSearch?: ElasticSearchConfig
 }
 
 /**
@@ -38,4 +43,17 @@ export async function newContext<Keys extends keyof Context>(
   })
 
   return ctx
+}
+
+export class ContextMissingFieldError extends GenericError {
+  /**
+   * @param missingField - The name field that was not set up properly before.
+   */
+  constructor(missingField: keyof Context) {
+    super(
+      "ContextMissingFieldError",
+      `The context is missing a required field: ${missingField}. Is the context set up in the correct order?`,
+      {},
+    )
+  }
 }

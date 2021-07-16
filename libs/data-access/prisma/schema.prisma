@@ -169,9 +169,9 @@ model RedisConfig {
 
 model ElasticConfig {
   id             Int          @id @default(autoincrement())
-  apmServer      String?
-  apmSecretToken String?
-  loggingServer  String?
+  apmServer      String
+  apmSecretToken String
+  loggingServer  String
   commonConfig   CommonConfig @relation(fields: [commonConfigId], references: [id])
   commonConfigId Int
 }

@@ -38,6 +38,7 @@
       "@eci/adapters/mailchimp": ["libs/adapters/mailchimp/src/index.ts"],
       "@eci/adapters/printer": ["libs/adapters/printer/src/index.ts"],
       "@eci/adapters/zoho": ["libs/adapters/zoho/src/index.ts"],
+      "@eci/context": ["libs/context/src/index.ts"],
       "@eci/data-access/prisma": ["libs/data-access/prisma/src/index.ts"],
       "@eci/util": ["libs/util/src/index.ts"],
       "@eci/util/apm": ["libs/util/apm/src/index.ts"],
