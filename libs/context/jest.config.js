@@ -1,5 +1,5 @@
 module.exports = {
-  displayName: "context",
+  displayName: "context2",
   preset: "../../jest.preset.js",
   globals: {
     "ts-jest": {
