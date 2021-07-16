@@ -1,5 +1,5 @@
-import { ContextMissingFieldError, ExtendContextFn } from "../context"
-
+import { ExtendContextFn } from "../context"
+import { ContextMissingFieldError } from "@eci/util/errors"
 export type RedisConfig = {
   host: string
   password: string

@@ -1,6 +1,8 @@
-import { ContextMissingFieldError, ExtendContextFn } from "../context"
+import { ExtendContextFn } from "../context"
 import { createLogger } from "@eci/util/apm"
 import winston from "winston"
+import { ContextMissingFieldError } from "@eci/util/errors"
+
 export type Logger = winston.Logger
 
 /**
