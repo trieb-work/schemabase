@@ -4,7 +4,7 @@ import winston from "winston"
 export type Logger = winston.Logger
 
 /**
- * Fetch the client's configuration and expose it to the context
+ * Create a new logger instance
  */
 export const getLogger = (): ExtendContextFn<"logger"> => async (ctx) => {
   if (!ctx.elasticSearch) {
