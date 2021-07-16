@@ -3,12 +3,14 @@ import { PrismaClient } from "@eci/data-access/prisma"
 import { GoogleOAuthConfig } from "./setup/googleOAuth"
 import { RedisConfig } from "./setup/redis"
 import { ElasticSearchConfig } from "./setup/elasticSearch"
+import { Logger } from "./setup/logger"
 
 export type Context = {
   prisma?: PrismaClient
   googleOAuth?: GoogleOAuthConfig
   redis?: RedisConfig
   elasticSearch?: ElasticSearchConfig
+  logger?: Logger
 }
 
 /**

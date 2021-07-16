@@ -3,7 +3,7 @@ import { ContextMissingFieldError, ExtendContextFn } from "../context"
 export type ElasticSearchConfig = {
   apmServer: string
   apmSecretToken: string
-  loggingServer?: string
+  loggingServer: string
 }
 
 /**
