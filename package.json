@@ -4,9 +4,9 @@
   "scripts": {
     "check:all": "yarn fmt && yarn tsc && yarn test",
     "dev": "nx serve app --port=3000",
-    "build": "nx run-many --target=build --all --parallel --maxParallel=16",
+    "build": "nx run-many --target=build --all --with-deps",
     "test": "nx run-many --target=test --all",
-    "fmt": "yarn lint && pnpm prettier --write .",
+    "fmt": "yarn lint && yarn prettier --write .",
     "lint": "nx workspace-lint && nx lint",
     "e2e": "nx e2e",
     "affected:apps": "nx affected:apps",

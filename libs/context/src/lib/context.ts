@@ -1,9 +1,17 @@
 import { PrismaClient } from "@eci/data-access/prisma"
-import { ServiceConfig } from "./setup/config"
+import { GoogleOAuthConfig } from "./setup/googleOAuth"
+import { RedisConfig } from "./setup/redis"
+import { ElasticSearchConfig } from "./setup/elasticSearch"
+import { Logger } from "./setup/logger"
+import { BrainTree } from "./setup/braintree"
 
 export type Context = {
   prisma?: PrismaClient
-  serviceConfig?: ServiceConfig
+  googleOAuth?: GoogleOAuthConfig
+  redis?: RedisConfig
+  elasticSearch?: ElasticSearchConfig
+  logger?: Logger
+  braintree?: BrainTree
 }
 
 /**

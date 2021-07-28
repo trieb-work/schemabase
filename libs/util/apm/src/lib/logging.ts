@@ -3,8 +3,6 @@ import { IncomingHttpHeaders } from "http"
 
 import winston from "winston"
 import { ElasticsearchTransport, ElasticsearchTransportOptions } from "winston-elasticsearch"
-let globalEsTransport: ElasticsearchTransport
-let globalWinston: winston.Logger
 
 const env = process.env["APM_ENV"] || "dev"
 
@@ -12,12 +10,10 @@ const env = process.env["APM_ENV"] || "dev"
  * Flush logs and APM data to elasticsearch before ending the session
  */
 export const apmFlush = async () => {
-  const res1 = globalEsTransport ? globalEsTransport.flush() : true
-  const res2 = new Promise((resolve, reject) => {
-    if (process.env.NODE_ENV !== "production") return resolve(true)
+  await new Promise((resolve, reject) => {
+    if (process.env["NODE_ENV"] !== "production") return resolve(true)
     apm.flush((err: unknown) => (err ? reject(err) : resolve(err)))
   })
-  await Promise.all([res1, res2])
   return true
 }
 
@@ -39,31 +35,25 @@ const apmSetup = () => (apm?.isStarted() ? apm : apm.start())
 //     transactionSampleRate: 0,
 // }));
 
-const loggingAndApmSetup = (commonConfig: CommonConfigData) => {
+export const createLogger = (logServer: string): winston.Logger => {
   const returnApm = apmSetup()
   const esTransportOpts: ElasticsearchTransportOptions = {
     apm: returnApm,
     dataStream: true,
     clientOpts: {
-      node: commonConfig.elasticLoggingServer,
+      node: logServer,
       auth: {
         username: "logger",
         password: "logger",
       },
     },
   }
-  const esTransport = globalEsTransport || new ElasticsearchTransport(esTransportOpts)
-  globalEsTransport = esTransport
+  const esTransport = new ElasticsearchTransport(esTransportOpts)
 
-  const winstonLogger =
-    globalWinston ||
-    winston.createLogger({
-      level: "info",
-      transports: [esTransport, new winston.transports.Console()],
-    })
-  globalWinston = winstonLogger
-
-  return winstonLogger
+  return winston.createLogger({
+    level: "info",
+    transports: [esTransport, new winston.transports.Console()],
+  })
 }
 
 type MetaObject = {
@@ -109,7 +99,7 @@ interface IncomingData {
  * @param req The next.js Req Object
  */
 export const logAndMeasure = (req: IncomingData | MetaObject, commonConfig: CommonConfigData) => {
-  const winstonLogger = loggingAndApmSetup(commonConfig)
+  const winstonLogger = createLogger(commonConfig.elasticLoggingServer)
   const defaultMeta: MetaObject = {}
 
   if (isNextRequest(req)) {
