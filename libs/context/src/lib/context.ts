@@ -1,5 +1,5 @@
 import { PrismaClient } from "@eci/data-access/prisma"
-import { ServiceConfig } from "./setup/env"
+import { ServiceConfig } from "./setup/config"
 
 export type Context = {
   prisma?: PrismaClient

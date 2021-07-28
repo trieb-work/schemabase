@@ -13,5 +13,6 @@ module.exports = {
     "<rootDir>/libs/adapters/lexoffice",
     "<rootDir>/libs/adapters/mailchimp",
     "<rootDir>/libs/util/retry",
+    "<rootDir>/libs/context",
   ],
 }
