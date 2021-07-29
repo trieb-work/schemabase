@@ -1,18 +1,18 @@
 import braintree from "braintree"
 
-type BraintreeConfig = {
+type BrainTreeConfig = {
   merchantId: string
   publicKey: string
   privateKey: string
 }
 
-export default class Braintree {
+export class BrainTree {
   private merchantId: string
   private publicKey: string
   private privateKey: string
   private gateway: braintree.BraintreeGateway
 
-  constructor(config: BraintreeConfig) {
+  constructor(config: BrainTreeConfig) {
     this.merchantId = config.merchantId
     this.publicKey = config.publicKey
     this.privateKey = config.privateKey

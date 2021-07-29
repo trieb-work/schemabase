@@ -57,9 +57,9 @@ model AddressVerificationConfig {
 model BraintreeConfig {
   id          Int       @id @default(autoincrement())
   active      Boolean   @default(false)
-  merchantId  String?
-  publicKey   String?
-  privateKey  String?
+  merchantId  String
+  publicKey   String
+  privateKey  String
   appConfig   AppConfig @relation(fields: [appConfigId], references: [id])
   appConfigId Int       @unique
 }
@@ -74,11 +74,11 @@ model LexofficeConfig {
 
 model ZohoConfig {
   id                  Int       @id @default(autoincrement())
-  active              Boolean?  @default(false)
+  active              Boolean  @default(false)
   cuid                String    @default(cuid())
-  orgId               String?   @default("")
-  clientId            String?   @default("")
-  clientSecret        String?   @default("")
+  orgId               String   @default("")
+  clientId            String   @default("")
+  clientSecret        String   @default("")
   payPalAccountId     String?
   creditCardAccountId String?
   webhookToken        String    @default(cuid())

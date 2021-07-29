@@ -39,6 +39,9 @@
     "adapters-mailchimp": {
       "tags": []
     },
+    "adapters-package-trackers": {
+      "tags": []
+    },
     "adapters-printer": {
       "tags": []
     },

@@ -36,6 +36,7 @@
       "@eci/adapters/easypost": ["libs/adapters/easypost/src/index.ts"],
       "@eci/adapters/lexoffice": ["libs/adapters/lexoffice/src/index.ts"],
       "@eci/adapters/mailchimp": ["libs/adapters/mailchimp/src/index.ts"],
+      "@eci/adapters/package-trackers": ["libs/adapters/package-trackers/src/index.ts"],
       "@eci/adapters/printer": ["libs/adapters/printer/src/index.ts"],
       "@eci/adapters/zoho": ["libs/adapters/zoho/src/index.ts"],
       "@eci/context": ["libs/context/src/index.ts"],

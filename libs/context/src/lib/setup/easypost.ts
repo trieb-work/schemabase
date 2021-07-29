@@ -2,9 +2,13 @@ import { ExtendContextFn } from "../context"
 import { ContextMissingFieldError } from "@eci/util/errors"
 
 import { NextApiRequest } from "next"
+import { AppConfig } from "@eci/data-access/prisma"
 
-import { BrainTree } from "@eci/adapters/braintree"
-export { BrainTree } from "@eci/adapters/braintree"
+/**
+ * Null if config is invalid
+ */
+export type BrainTree = AppConfig | null
+
 /**
  * Call this function for every API route trigger to configure the ECI tenant
  * that this request is used for. Exposes all needed helper functions
@@ -30,14 +34,8 @@ export const setupBrainTree =
 
     const currentTentantConfig = await ctx.prisma.appConfig.findFirst({
       where: { zoho: { orgId: cuid } },
-      include: { braintree: true },
     })
 
-    const config = currentTentantConfig?.braintree
-    if (!config) {
-      throw new Error(`No braintree config found for cuid: ${cuid}`)
-    }
-
-    ctx.braintree = new BrainTree(config)
+    ctx.braintree = currentTentantConfig
     return ctx
   }

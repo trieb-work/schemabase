@@ -4,6 +4,8 @@ import { RedisConfig } from "./setup/redis"
 import { ElasticSearchConfig } from "./setup/elasticSearch"
 import { Logger } from "./setup/logger"
 import { BrainTree } from "./setup/braintree"
+import { Zoho } from "./setup/zoho"
+import { RequestDataFeed } from "./setup/requestDataFeed"
 
 export type Context = {
   prisma?: PrismaClient
@@ -12,6 +14,8 @@ export type Context = {
   elasticSearch?: ElasticSearchConfig
   logger?: Logger
   braintree?: BrainTree
+  zoho?: Zoho
+  requestDataFeed?: RequestDataFeed
 }
 
 /**
@@ -22,9 +26,8 @@ export type Context = {
  * @example
  * ```
  *  const extendContext: ExtendContextFn<"newField"> = async (ctx) => {
- *  const newField = "abc"
- *
- *  return Object.assign(ctx, { newField })
+ *    ctx.newField = "abc"
+ *    return ctx
  * }
  * ```
  *

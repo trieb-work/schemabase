@@ -14,5 +14,6 @@ module.exports = {
     "<rootDir>/libs/adapters/mailchimp",
     "<rootDir>/libs/util/retry",
     "<rootDir>/libs/context",
+    "<rootDir>/libs/adapters/package-trackers",
   ],
 }

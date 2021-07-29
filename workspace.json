@@ -85,6 +85,27 @@
         }
       }
     },
+    "adapters-package-trackers": {
+      "root": "libs/adapters/package-trackers",
+      "sourceRoot": "libs/adapters/package-trackers/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/adapters/package-trackers/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/adapters/package-trackers"],
+          "options": {
+            "jestConfig": "libs/adapters/package-trackers/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
     "adapters-printer": {
       "root": "libs/adapters/printer",
       "sourceRoot": "libs/adapters/printer/src",
