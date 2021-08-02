@@ -19,5 +19,5 @@ export const setupGoogleOAuthConfig = (): ExtendContextFn<"googleOAuth"> => asyn
     throw new Error("Unable to find google oauth config from database")
   }
 
-  return {...ctx, googleOAuth: { clientId: config.clientId, clientSecret: config.clientSecret }}
+  return { ...ctx, googleOAuth: { clientId: config.clientId, clientSecret: config.clientSecret } }
 }

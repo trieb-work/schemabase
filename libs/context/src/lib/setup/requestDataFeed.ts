@@ -1,34 +1,40 @@
 import { ExtendContextFn } from "../context"
 import { ContextMissingFieldError } from "@eci/util/errors"
 
-import { NextApiRequest } from "next"
+export type RequestDataFeed = {
+  valid: boolean
+  storefrontProductUrl: string
+  variant: "facebookcommerce" | "googlemerchant"
+}
 
-/**
- * Call this function for every API route trigger to configure the ECI tenant that this request is used for. Exposes all needed helper functions
-
- */
 export const setupRequestDataFeed =
-  (req: NextApiRequest): ExtendContextFn<"zoho"> =>
+  (req: { id: string; variant: string }): ExtendContextFn<"requestDataFeed"> =>
   async (ctx) => {
     if (!ctx.prisma) {
       throw new ContextMissingFieldError("prisma")
     }
-
-    // For dynamic pages like productdatafeed, have the CUID in the Query Object
-    const cuid = req?.query["cuid"] as unknown as string
-
-    const config = await ctx.prisma.zohoConfig.findFirst({
-      where: { cuid },
-    })
-    if (!config) {
-      throw new Error(`No zoho config found for cuid: ${cuid}`)
+    if (!ctx.logger) {
+      throw new ContextMissingFieldError("logger")
     }
 
-    ctx.zoho = await Zoho.new({
-      clientId: config.clientId,
-      clientSecret: config.clientSecret,
-      orgId: config.orgId,
-    })
+    const variant = req.variant === "facebookcommerce" ? "facebookcommerce" : "googlemerchant"
 
-    return ctx
+    const tenant = await ctx.prisma.tenant.findFirst({
+      where: { productdatafeed: { cuid: req.id } },
+      include: { productdatafeed: true, saleor: true },
+    })
+    if (!tenant) {
+      throw new Error(`No tenant found in database: ${{ id: req.id }}`)
+    }
+    const storefrontProductUrl = tenant.productdatafeed?.productDetailStorefrontURL ?? ""
+
+    if (storefrontProductUrl === "") {
+      ctx.logger.info(
+        "This app has no productDetailStorefrontURL set. Can not generate Productdatafeed",
+      )
+    }
+
+    const valid = !!tenant.productdatafeed?.active && storefrontProductUrl !== ""
+
+    return { ...ctx, requestDataFeed: { valid, storefrontProductUrl, variant } }
   }

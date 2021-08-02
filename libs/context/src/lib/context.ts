@@ -6,6 +6,8 @@ import { Logger } from "./setup/logger"
 import { BrainTree } from "./setup/braintree"
 import { Zoho } from "./setup/zoho"
 import { Sentry } from "./setup/sentry"
+import { Saleor } from "./setup/saleor"
+import { RequestDataFeed } from "./setup/requestDataFeed"
 
 export type Context = {
   prisma?: PrismaClient
@@ -16,10 +18,11 @@ export type Context = {
   braintree?: BrainTree
   zoho?: Zoho
   sentry?: Sentry
+  saleor?: Saleor
+  requestDataFeed?: RequestDataFeed
 }
 
-
-type RequiredKeys<Keys extends keyof Context> = Context & Required<Pick<Context,Keys>>
+type RequiredKeys<Keys extends keyof Context> = Context & Required<Pick<Context, Keys>>
 
 /**
  * A function that initializes an integration or otherwise inserts something into the context.
@@ -34,20 +37,18 @@ type RequiredKeys<Keys extends keyof Context> = Context & Required<Pick<Context,
  * ```
  *
  */
-export type ExtendContextFn<K extends keyof Context> = (
-  ctx: Context,
-) => Promise<RequiredKeys<K>>
+export type ExtendContextFn<K extends keyof Context> = (ctx: Context) => Promise<RequiredKeys<K>>
 
 /**
  * Convenience function to batch multiple setup functions together
  */
-export async function createContext<Keys extends keyof Context>( 
+export async function createContext<Keys extends keyof Context>(
   ...extendContext: ExtendContextFn<any>[]
 ): Promise<RequiredKeys<Keys>> {
   let ctx = {} as Context
 
   extendContext.forEach(async (extend) => {
-    ctx =   await extend(ctx)
+    ctx = await extend(ctx)
   })
 
   return ctx as RequiredKeys<Keys>

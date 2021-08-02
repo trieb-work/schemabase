@@ -15,5 +15,10 @@ module.exports = {
     "<rootDir>/libs/util/retry",
     "<rootDir>/libs/context",
     "<rootDir>/libs/adapters/package-trackers",
+    "<rootDir>/libs/graphql-client",
+    "<rootDir>/libs/adapters/saleor",
+    "<rootDir>/libs/types/graphql/global",
+    "<rootDir>/libs/types/graphql/eci",
+    "<rootDir>/libs/integrations/product-data-feed",
   ],
 }

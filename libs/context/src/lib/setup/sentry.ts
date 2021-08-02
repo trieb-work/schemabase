@@ -16,6 +16,7 @@ export type Sentry = {
  * This will only work in production
  */
 export const setupSentry = (): ExtendContextFn<"sentry"> => async (ctx) => {
+  // TODO: required apm
   if (!ctx.logger) {
     throw new ContextMissingFieldError("logger")
   }
@@ -46,7 +47,6 @@ export const setupSentry = (): ExtendContextFn<"sentry"> => async (ctx) => {
       withSentry: (handler: NextApiHandler) => handler,
     }
   }
-  ctx.sentry = sentry
 
-  return ctx
+  return { ...ctx, sentry }
 }

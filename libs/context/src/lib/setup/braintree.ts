@@ -15,9 +15,6 @@ export const setupBrainTree =
     if (!ctx.prisma) {
       throw new ContextMissingFieldError("prisma")
     }
-    if (!ctx.elasticSearch) {
-      throw new ContextMissingFieldError("elasticSearch")
-    }
     if (!ctx.redis) {
       throw new ContextMissingFieldError("redis")
     }

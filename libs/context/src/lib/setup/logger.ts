@@ -8,12 +8,12 @@ export type Logger = winston.Logger
 /**
  * Create a new logger instance
  */
-export const getLogger = (): ExtendContextFn<"logger"> => async (ctx) => {
+export const setupLogger = (): ExtendContextFn<"logger"> => async (ctx) => {
   if (!ctx.elasticSearch) {
     throw new ContextMissingFieldError("elasticSearch")
   }
 
   const logger = createLogger(ctx.elasticSearch.loggingServer)
 
-  return Object.assign(ctx, {logger})
+  return Object.assign(ctx, { logger })
 }

@@ -1,0 +1,7 @@
+{
+  "name": "@eci/types-graphql-global",
+  "version": "0.0.1",
+  "scripts": {
+    "build": "graphql-codegen --config codegen.yml"
+  }
+}

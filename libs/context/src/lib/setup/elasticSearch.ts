@@ -20,9 +20,11 @@ export const getElasticConfig = (): ExtendContextFn<"elasticSearch"> => async (c
     throw new Error("Unable to find elastic config from database")
   }
 
-  return {elasticSearch: {
-    apmServer: config.apmServer,
-    apmSecretToken: config.apmSecretToken,
-    loggingServer: config.loggingServer,
-  }}
+  return {
+    elasticSearch: {
+      apmServer: config.apmServer,
+      apmSecretToken: config.apmSecretToken,
+      loggingServer: config.loggingServer,
+    },
+  }
 }

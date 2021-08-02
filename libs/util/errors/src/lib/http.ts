@@ -5,3 +5,14 @@ export class HTTPError extends GenericError {
     super("EnvironmentNotFoundError", message, {})
   }
 }
+
+export class MissingHTTPHeaderError extends GenericError {
+  constructor(header: string) {
+    super("MissingHTTPHeaderError", `Request is missing required "${header}" header`, {})
+  }
+}
+export class MissingHTTPBodyError extends GenericError {
+  constructor(field: string) {
+    super("MissingHTTPBodyError", `Request body is missing required "${field}" field`, {})
+  }
+}

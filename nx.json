@@ -45,6 +45,9 @@
     "adapters-printer": {
       "tags": []
     },
+    "adapters-saleor": {
+      "tags": []
+    },
     "adapters-zoho": {
       "tags": []
     },
@@ -55,6 +58,18 @@
       "tags": []
     },
     "data-access-prisma": {
+      "tags": []
+    },
+    "graphql-client": {
+      "tags": []
+    },
+    "integrations-product-data-feed": {
+      "tags": []
+    },
+    "types-graphql-eci": {
+      "tags": []
+    },
+    "types-graphql-global": {
       "tags": []
     },
     "util": {
