@@ -18,3 +18,10 @@ export function requireEnv(key: string): string {
   }
   return value
 }
+
+/**
+ * Check if NODE_ENV is set to "Production"
+ */
+export function isProduction(): boolean {
+  return loadEnv("NODE_ENV") === "production"
+}

@@ -17,7 +17,7 @@
 - [x] /libs/adapters/braintree
 - [x] /libs/adapters/lexoffice
 - [x] /libs/adapters/mailchimp
-- [ ] /libs/adapters/zoho
+- [x] /libs/adapters/zoho
 - [x] /libs/adapters/easypost
 - [x] /libs/adapters/printer
 

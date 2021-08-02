@@ -6,6 +6,8 @@ import { Logger } from "./setup/logger"
 import { BrainTree } from "./setup/braintree"
 import { Zoho } from "./setup/zoho"
 import { RequestDataFeed } from "./setup/requestDataFeed"
+import { NextApiHandler } from "next"
+import { Sentry } from "./setup/sentry"
 
 export type Context = {
   prisma?: PrismaClient
@@ -16,6 +18,7 @@ export type Context = {
   braintree?: BrainTree
   zoho?: Zoho
   requestDataFeed?: RequestDataFeed
+  sentry?: Sentry
 }
 
 /**
