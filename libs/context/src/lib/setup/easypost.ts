@@ -13,7 +13,7 @@ export type BrainTree = AppConfig | null
  * Call this function for every API route trigger to configure the ECI tenant
  * that this request is used for. Exposes all needed helper functions
  */
-export const setupBrainTree =
+export const w =
   (req: NextApiRequest): ExtendContextFn<"logger"> =>
   async (ctx) => {
     if (!ctx.prisma) {

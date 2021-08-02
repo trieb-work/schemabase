@@ -5,8 +5,6 @@ import { ElasticSearchConfig } from "./setup/elasticSearch"
 import { Logger } from "./setup/logger"
 import { BrainTree } from "./setup/braintree"
 import { Zoho } from "./setup/zoho"
-import { RequestDataFeed } from "./setup/requestDataFeed"
-import { NextApiHandler } from "next"
 import { Sentry } from "./setup/sentry"
 
 export type Context = {
@@ -17,9 +15,11 @@ export type Context = {
   logger?: Logger
   braintree?: BrainTree
   zoho?: Zoho
-  requestDataFeed?: RequestDataFeed
   sentry?: Sentry
 }
+
+
+type RequiredKeys<Keys extends keyof Context> = Context & Required<Pick<Context,Keys>>
 
 /**
  * A function that initializes an integration or otherwise inserts something into the context.
@@ -29,27 +29,26 @@ export type Context = {
  * @example
  * ```
  *  const extendContext: ExtendContextFn<"newField"> = async (ctx) => {
- *    ctx.newField = "abc"
- *    return ctx
+ *    return { newField: "abc" }
  * }
  * ```
  *
  */
-export type ExtendContextFn<Key extends keyof Context> = (
+export type ExtendContextFn<K extends keyof Context> = (
   ctx: Context,
-) => Promise<Context & Pick<Context, Key>>
+) => Promise<RequiredKeys<K>>
 
 /**
  * Convenience function to batch multiple setup functions together
  */
-export async function newContext<Keys extends keyof Context>(
-  ...extendContext: ExtendContextFn<Keys>[]
-): Promise<Context & Pick<Context, Keys>> {
+export async function createContext<Keys extends keyof Context>( 
+  ...extendContext: ExtendContextFn<any>[]
+): Promise<RequiredKeys<Keys>> {
   let ctx = {} as Context
 
   extendContext.forEach(async (extend) => {
-    ctx = await extend(ctx)
+    ctx =   await extend(ctx)
   })
 
-  return ctx
+  return ctx as RequiredKeys<Keys>
 }

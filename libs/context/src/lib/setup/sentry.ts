@@ -39,11 +39,11 @@ export const setupSentry = (): ExtendContextFn<"sentry"> => async (ctx) => {
       },
     }
   } else {
-      /**
-       * Do nothing in non production environments
-       */
+    /**
+     * Do nothing in non production environments
+     */
     sentry = {
-      withSentry: (handler: NextApiHandler) => handler
+      withSentry: (handler: NextApiHandler) => handler,
     }
   }
   ctx.sentry = sentry

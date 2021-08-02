@@ -13,7 +13,7 @@ export const getLogger = (): ExtendContextFn<"logger"> => async (ctx) => {
     throw new ContextMissingFieldError("elasticSearch")
   }
 
-  ctx.logger = createLogger(ctx.elasticSearch.loggingServer)
+  const logger = createLogger(ctx.elasticSearch.loggingServer)
 
-  return ctx
+  return Object.assign(ctx, {logger})
 }
