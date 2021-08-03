@@ -18,7 +18,7 @@ export const setupPackageTracker =
     // For dynamic pages like productdtafeed, have the CUID in the Query Object
     const cuid = req?.query["cuid"] as unknown as string
 
-    const config = await ctx.prisma..findFirst({
+    const config = await ctx.prisma.findFirst({
       where: { cuid },
     })
     if (!config) {
