@@ -1,4 +1,5 @@
 import { gql } from "@apollo/client"
+import { channelsFragment, fragmentDomain, orderErrorFragment, fragmentOrderDetails } from "./fragments.gql"
 
 export const warehouseQuery = gql`
   query getWarehouses($first: Int) {
@@ -200,14 +201,6 @@ export const stockLevelMutation = gql`
   }
 `
 
-const fragmentDomain = gql`
-  fragment DomainFragment on Shop {
-    domain {
-      url
-      host
-    }
-  }
-`
 export const getShopDomain = gql`
   ${fragmentDomain}
   query getShopDomain {
@@ -235,102 +228,6 @@ export const addPrivateMetaMutation = gql`
   }
 `
 
-const fragmentAddress = gql`
-  fragment AddressFragment on Address {
-    city
-    cityArea
-    companyName
-    country {
-      __typename
-      code
-      country
-    }
-    countryArea
-    firstName
-    id
-    lastName
-    phone
-    postalCode
-    streetAddress1
-    streetAddress2
-  }
-`
-
-const fragmentOrderDetails = gql`
-  ${fragmentAddress}
-  fragment OrderDetailsFragment on Order {
-    id
-    billingAddress {
-      ...AddressFragment
-    }
-    canFinalize
-    created
-    customerNote
-    number
-    paymentStatus
-    shippingMethod {
-      id
-    }
-    shippingMethodName
-    shippingPrice {
-      gross {
-        amount
-        currency
-      }
-    }
-    status
-    subtotal {
-      gross {
-        amount
-        currency
-      }
-    }
-    total {
-      gross {
-        amount
-        currency
-      }
-      tax {
-        amount
-        currency
-      }
-    }
-    actions
-    totalAuthorized {
-      amount
-      currency
-    }
-    totalCaptured {
-      amount
-      currency
-    }
-    user {
-      id
-      email
-    }
-    userEmail
-    availableShippingMethods {
-      id
-      name
-      price {
-        amount
-        currency
-      }
-    }
-    discount {
-      amount
-      currency
-    }
-    isPaid
-  }
-`
-const orderErrorFragment = gql`
-  fragment OrderErrorFragment on OrderError {
-    code
-    field
-  }
-`
-
 export const orderCaptureMutation = gql`
   ${fragmentOrderDetails}
   ${orderErrorFragment}
@@ -343,15 +240,6 @@ export const orderCaptureMutation = gql`
         ...OrderDetailsFragment
       }
     }
-  }
-`
-
-const channelsFragment = gql`
-  fragment ChannelsFragment on Channel {
-    id
-    name
-    slug
-    isActive
   }
 `
 
