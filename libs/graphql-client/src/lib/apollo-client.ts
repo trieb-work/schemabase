@@ -4,7 +4,6 @@ import {
   ApolloLink,
   HttpLink,
   NormalizedCacheObject,
-  gql,
 } from "@apollo/client"
 import { RetryLink } from "@apollo/client/link/retry"
 import { onError } from "@apollo/client/link/error"
