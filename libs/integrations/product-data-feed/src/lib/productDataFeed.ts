@@ -1,14 +1,14 @@
 import ObjectsToCsv from 'objects-to-csv';
 import isEmpty from 'lodash/isEmpty';
 import { htmlToText } from 'html-to-text';
-import { ApolloClient, NormalizedCacheObject } from "@eci/graphql-client"
+import { GraphqlClient } from "@eci/graphql-client"
+import { ProductDataFeed, ProductDataFeedQuery, ProductDataFeedQueryVariables, Weight } from "@eci/types/graphql/global"
 
 import edjsHTML from 'editorjs-html';
-import { ProductDataFeed } from './productDataFeed.graphql';
 
 const edjsParser = edjsHTML();
 
-export const generateProductDataFeed = async (saleorGraphQLClient :ApolloClient<NormalizedCacheObject>, channel :string,
+export const generateProductDataFeed = async (saleorGraphQLClient :GraphqlClient, channel :string,
     storefrontProductUrl :string, feedVariant :'googlemerchant' | 'facebookcommerce') => {
     const RawData = await saleorGraphQLClient.query<ProductDataFeedQuery, ProductDataFeedQueryVariables>({
         query: ProductDataFeed,
@@ -22,7 +22,10 @@ export const generateProductDataFeed = async (saleorGraphQLClient :ApolloClient<
         if (!variantWeight?.value && !productWeight?.value) return undefined;
         return variantWeight?.value ? `${variantWeight.value} ${variantWeight.unit}` : `${productWeight.value} ${productWeight.unit}`;
     };
-    const FinalData = [];
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    const FinalData: object[] = [];
+
+    if (!RawData.data.products) return null;
 
     RawData.data.products.edges.map((product) => product.node).map((product) => {
         // we get the brand from a product attribute called brand
@@ -38,8 +41,10 @@ export const generateProductDataFeed = async (saleorGraphQLClient :ApolloClient<
 
         const { hasVariants } = product.productType;
 
+        if (!product.variants) return null;
         product.variants.map((variant) => {
-            const variantImageLink = variant.images.length > 0 ? variant.images[0].url : '';
+            if (!variant) return null;
+            const variantImageLink = variant?.images?.length > 0 ? variant.images[0].url : '';
             const singleProductImageLink = product.images.length > 0 ? product.images[1]?.url : '';
             const additionalImageLink = hasVariants ? variant.images?.[1]?.url : product.images?.[2]?.url;
             const ean = hasVariants ? variant.metadata?.find((x) => x.key === 'EAN')?.value : product.metadata?.find((x) => x.key === 'EAN')?.value;
