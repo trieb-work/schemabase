@@ -9,7 +9,6 @@ import {
 import { RetryLink } from "@apollo/client/link/retry"
 import { onError } from "@apollo/client/link/error"
 
-export { ApolloClient, NormalizedCacheObject, gql };
 
 const loggerLink = new ApolloLink((operation, forward) => {
   console.log(`GraphQL Request: ${operation.operationName}`)
