@@ -2,7 +2,7 @@
   "name": "@trieb-work/eci",
   "version": "0.0.0",
   "scripts": {
-    "vercel:build:api": "bash ./scripts/build-api.bash",
+    "vercel:build:webhooks": "bash ./scripts/build-webhooks.bash",
     "check:all": "yarn fmt && yarn tsc && yarn test",
     "dev": "nx serve app --port=3000",
     "build": "nx run-many --target=build --all --with-deps",
