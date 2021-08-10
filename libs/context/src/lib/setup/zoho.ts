@@ -17,13 +17,13 @@ export const setupZoho =
     }
 
     // For dynamic pages like productdtafeed, have the CUID in the Query Object
-    const cuid = req?.query["cuid"] as unknown as string
+    const publicId = req?.query["public-id"] as unknown as string
 
     const config = await ctx.prisma.zohoConfig.findFirst({
-      where: { cuid },
+      where: { publicId },
     })
     if (!config) {
-      throw new Error(`No zoho config found for cuid: ${cuid}`)
+      throw new Error(`No zoho config found for publicId: ${publicId}`)
     }
 
     const zoho = await Zoho.new({

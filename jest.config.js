@@ -20,5 +20,6 @@ module.exports = {
     "<rootDir>/libs/types/graphql/global",
     "<rootDir>/libs/types/graphql/eci",
     "<rootDir>/libs/integrations/product-data-feed",
+    "<rootDir>/libs/http",
   ],
 }

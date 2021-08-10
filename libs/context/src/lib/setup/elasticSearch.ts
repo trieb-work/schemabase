@@ -15,7 +15,8 @@ export const getElasticConfig = (): ExtendContextFn<"elasticSearch"> => async (c
     throw new ContextMissingFieldError("prisma")
   }
 
-  const config = await ctx.prisma.elasticConfig.findFirst({ where: { id: 1 } })
+  const globalConfigId = "TODO:"
+  const config = await ctx.prisma.elasticConfig.findFirst({ where: { id: globalConfigId } })
   if (!config) {
     throw new Error("Unable to find elastic config from database")
   }

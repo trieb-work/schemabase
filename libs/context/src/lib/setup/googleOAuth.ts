@@ -13,8 +13,9 @@ export const setupGoogleOAuthConfig = (): ExtendContextFn<"googleOAuth"> => asyn
   if (!ctx.prisma) {
     throw new ContextMissingFieldError("prisma")
   }
+  const globalConfigId = "abc"
 
-  const config = await ctx.prisma.googleOAuth.findFirst({ where: { id: 1 } })
+  const config = await ctx.prisma.googleOAuthConfig.findFirst({ where: { id: globalConfigId } })
   if (!config) {
     throw new Error("Unable to find google oauth config from database")
   }

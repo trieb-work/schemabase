@@ -1,6 +1,6 @@
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://postgres:postgres@localhost:5432/postgres"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -12,7 +12,7 @@ generator typegraphql {
 }
 
 model MailchimpConfig {
-  id                Int     @id @default(autoincrement())
+  id                String  @id @default(uuid())
   active            Boolean @default(false)
   listId            String
   apiToken          String
@@ -21,61 +21,64 @@ model MailchimpConfig {
   productUrlPattern String
   channel           String
   tenant            Tenant  @relation(fields: [tenantId], references: [id])
-  tenantId          Int     @unique
+  tenantId          String  @unique
 }
 
 model ProductDataFeed {
-  id                         Int      @id @default(autoincrement())
-  cuid                       String   @default(cuid())
+  id                         String   @id @default(uuid())
+  // The public id used for lookups from incoming webhooks.
+  publicId                   String   @default(cuid())
   active                     Boolean? @default(false)
   productDetailStorefrontURL String?
   channel                    String?
   tenant                     Tenant   @relation(fields: [tenantId], references: [id])
-  tenantId                   Int      @unique
+  tenantId                   String   @unique
 }
 
 model EasyPostConfig {
-  id                        Int                        @id @default(autoincrement())
-  cuid                      String                     @default(cuid())
+  id                        String                     @id @default(uuid())
+  // The public id used for lookups from incoming webhooks.
+  publicId                  String                     @default(cuid())
   active                    Boolean?                   @default(false)
   apiToken                  String?
   webhookID                 String?
   tenant                    Tenant                     @relation(fields: [tenantId], references: [id])
-  tenantId                  Int                        @unique
+  tenantId                  String                     @unique
   trackAndTraceConfig       TrackAndTraceConfig?       @relation(fields: [trackAndTraceConfigId], references: [id])
-  trackAndTraceConfigId     Int?                       @unique
+  trackAndTraceConfigId     String?                    @unique
   AddressVerificationConfig AddressVerificationConfig?
 }
 
 model AddressVerificationConfig {
-  id             Int            @id @default(autoincrement())
+  id             String         @id @default(uuid())
   active         Boolean?       @default(false)
   easypost       EasyPostConfig @relation(fields: [easyPostConfId], references: [id])
-  easyPostConfId Int
+  easyPostConfId String
 }
 
 model BraintreeConfig {
-  id         Int     @id @default(autoincrement())
+  id         String  @id @default(uuid())
   active     Boolean @default(false)
   merchantId String
   publicKey  String
   privateKey String
   tenant     Tenant  @relation(fields: [tenantId], references: [id])
-  tenantId   Int     @unique
+  tenantId   String  @unique
 }
 
 model LexofficeConfig {
-  id       Int     @id @default(autoincrement())
+  id       String  @id @default(uuid())
   active   Boolean @default(false)
   apiToken String
   tenant   Tenant  @relation(fields: [tenantId], references: [id])
-  tenantId Int     @unique
+  tenantId String  @unique
 }
 
 model ZohoConfig {
-  id                  Int     @id @default(autoincrement())
+  id                  String  @id @default(uuid())
   active              Boolean @default(false)
-  cuid                String  @default(cuid())
+  // The public id used for lookups from incoming webhooks.
+  publicId            String  @default(cuid())
   orgId               String  @default("")
   clientId            String  @default("")
   clientSecret        String  @default("")
@@ -85,31 +88,33 @@ model ZohoConfig {
   webhookID           String?
   customFunctionID    String?
   tenant              Tenant  @relation(fields: [tenantId], references: [id])
-  tenantId            Int     @unique
+  tenantId            String  @unique
 }
 
 model MailgunConfig {
-  id                    Int                  @id @default(autoincrement())
-  cuid                  String?              @default(cuid())
+  id                    String               @id @default(uuid())
+  // The public id used for lookups from incoming webhooks.
+  publicId              String?              @default(cuid())
   apiToken              String
   fromDomain            String
   fromTitle             String?
   fromEmail             String?
   apiHost               String               @default("api.eu.mailgun.net")
   tenant                Tenant               @relation(fields: [tenantId], references: [id])
-  tenantId              Int                  @unique
+  tenantId              String               @unique
   trackAndTraceConfig   TrackAndTraceConfig? @relation(fields: [trackAndTraceConfigId], references: [id])
-  trackAndTraceConfigId Int?                 @unique
+  trackAndTraceConfigId String?              @unique
 }
 
 model TrackAndTraceConfig {
-  id                  Int                   @id @default(autoincrement())
+  id                  String                @id @default(uuid())
   active              Boolean               @default(false)
-  cuid                String                @default(cuid())
+  // The public id used for lookups from incoming webhooks.
+  publicId            String                @default(cuid())
   mailgun             MailgunConfig?
   easypost            EasyPostConfig?
   tenant              Tenant                @relation(fields: [tenantId], references: [id])
-  tenantId            Int                   @unique
+  tenantId            String                @unique
   trackAndTraceEmails TrackAndTraceEmails[]
 }
 
@@ -119,7 +124,7 @@ enum Language {
 }
 
 model TrackAndTraceEmails {
-  id                              Int                 @id @default(autoincrement())
+  id                              String              @id @default(uuid())
   language                        Language            @unique @default(DE)
   inTransitEmailEnabled           Boolean
   inTransitEmailSubject           String?
@@ -128,22 +133,22 @@ model TrackAndTraceEmails {
   outForDeliveryEmailTemplateName String?
   outForDeliveryEmailSubject      String?
   trackAndTraceConfig             TrackAndTraceConfig @relation(fields: [trackAndTraceConfId], references: [id])
-  trackAndTraceConfId             Int
+  trackAndTraceConfId             String
 }
 
 model SaleorConfig {
-  id           Int    @id @default(autoincrement())
+  id           String @id @default(uuid())
   domain       String @unique
   appId        String
   authToken    String
   webhookToken String @default(cuid())
   webhookID    String
   tenant       Tenant @relation(fields: [tenantId], references: [id])
-  tenantId     Int    @unique
+  tenantId     String @unique
 }
 
 model Tenant {
-  id              Int                  @id @default(autoincrement())
+  id              String               @id @default(uuid())
   active          Boolean
   baseUrl         String
   saleor          SaleorConfig?
@@ -157,23 +162,25 @@ model Tenant {
   mailgun         MailgunConfig?
 }
 
-// Common / General Config Parameters
+// Internal Redis secrets used by our services.
 model RedisConfig {
-  id       Int    @id @default(autoincrement())
+  id       String @id @default(uuid())
   host     String
   password String
   port     Int
 }
 
+// Internal Elastic secrets used by our services.
 model ElasticConfig {
-  id             Int    @id @default(autoincrement())
+  id             String @id @default(uuid())
   apmServer      String
   apmSecretToken String
   loggingServer  String
 }
 
+// Internal GoogleOAuth secrets used by our services.
 model GoogleOAuthConfig {
-  id           Int    @id @default(autoincrement())
+  id           String @id @default(uuid())
   clientId     String
   clientSecret String
 }

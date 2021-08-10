@@ -11281,6 +11281,76 @@ export type _Service = {
   sdl?: Maybe<Scalars["String"]>
 }
 
+export type ChannelsFragmentFragment = { __typename?: "Channel" } & Pick<
+  Channel,
+  "id" | "name" | "slug" | "isActive"
+>
+
+export type DomainFragmentFragment = { __typename?: "Shop" } & {
+  domain: { __typename?: "Domain" } & Pick<Domain, "url" | "host">
+}
+
+export type AddressFragmentFragment = { __typename?: "Address" } & Pick<
+  Address,
+  | "city"
+  | "cityArea"
+  | "companyName"
+  | "countryArea"
+  | "firstName"
+  | "id"
+  | "lastName"
+  | "phone"
+  | "postalCode"
+  | "streetAddress1"
+  | "streetAddress2"
+> & { country: { __typename: "CountryDisplay" } & Pick<CountryDisplay, "code" | "country"> }
+
+export type OrderDetailsFragmentFragment = { __typename?: "Order" } & Pick<
+  Order,
+  | "id"
+  | "canFinalize"
+  | "created"
+  | "customerNote"
+  | "number"
+  | "paymentStatus"
+  | "shippingMethodName"
+  | "status"
+  | "actions"
+  | "userEmail"
+  | "isPaid"
+> & {
+    billingAddress?: Maybe<{ __typename?: "Address" } & AddressFragmentFragment>
+    shippingMethod?: Maybe<{ __typename?: "ShippingMethod" } & Pick<ShippingMethod, "id">>
+    shippingPrice: { __typename?: "TaxedMoney" } & {
+      gross: { __typename?: "Money" } & Pick<Money, "amount" | "currency">
+    }
+    subtotal: { __typename?: "TaxedMoney" } & {
+      gross: { __typename?: "Money" } & Pick<Money, "amount" | "currency">
+    }
+    total: { __typename?: "TaxedMoney" } & {
+      gross: { __typename?: "Money" } & Pick<Money, "amount" | "currency">
+      tax: { __typename?: "Money" } & Pick<Money, "amount" | "currency">
+    }
+    totalAuthorized: { __typename?: "Money" } & Pick<Money, "amount" | "currency">
+    totalCaptured: { __typename?: "Money" } & Pick<Money, "amount" | "currency">
+    user?: Maybe<{ __typename?: "User" } & Pick<User, "id" | "email">>
+    availableShippingMethods?: Maybe<
+      Array<
+        Maybe<
+          { __typename?: "ShippingMethod" } & Pick<ShippingMethod, "id" | "name"> & {
+              price?: Maybe<{ __typename?: "Money" } & Pick<Money, "amount" | "currency">>
+            }
+        >
+      >
+    >
+    discount?: Maybe<{ __typename?: "Money" } & Pick<Money, "amount" | "currency">>
+  }
+
+export type OrderErrorFragmentFragment = { __typename?: "OrderError" } & Pick<
+  OrderError,
+  "code" | "field"
+>
+
 export type GetWarehousesQueryVariables = Exact<{
   first?: Maybe<Scalars["Int"]>
 }>
@@ -11498,10 +11568,6 @@ export type UpdateStockLevelMutation = { __typename?: "Mutation" } & {
   >
 }
 
-export type DomainFragmentFragment = { __typename?: "Shop" } & {
-  domain: { __typename?: "Domain" } & Pick<Domain, "url" | "host">
-}
-
 export type GetShopDomainQueryVariables = Exact<{ [key: string]: never }>
 
 export type GetShopDomainQuery = { __typename?: "Query" } & {
@@ -11625,67 +11691,6 @@ export type AddPrivateMetaMutation = { __typename?: "Mutation" } & {
   >
 }
 
-export type AddressFragmentFragment = { __typename?: "Address" } & Pick<
-  Address,
-  | "city"
-  | "cityArea"
-  | "companyName"
-  | "countryArea"
-  | "firstName"
-  | "id"
-  | "lastName"
-  | "phone"
-  | "postalCode"
-  | "streetAddress1"
-  | "streetAddress2"
-> & { country: { __typename: "CountryDisplay" } & Pick<CountryDisplay, "code" | "country"> }
-
-export type OrderDetailsFragmentFragment = { __typename?: "Order" } & Pick<
-  Order,
-  | "id"
-  | "canFinalize"
-  | "created"
-  | "customerNote"
-  | "number"
-  | "paymentStatus"
-  | "shippingMethodName"
-  | "status"
-  | "actions"
-  | "userEmail"
-  | "isPaid"
-> & {
-    billingAddress?: Maybe<{ __typename?: "Address" } & AddressFragmentFragment>
-    shippingMethod?: Maybe<{ __typename?: "ShippingMethod" } & Pick<ShippingMethod, "id">>
-    shippingPrice: { __typename?: "TaxedMoney" } & {
-      gross: { __typename?: "Money" } & Pick<Money, "amount" | "currency">
-    }
-    subtotal: { __typename?: "TaxedMoney" } & {
-      gross: { __typename?: "Money" } & Pick<Money, "amount" | "currency">
-    }
-    total: { __typename?: "TaxedMoney" } & {
-      gross: { __typename?: "Money" } & Pick<Money, "amount" | "currency">
-      tax: { __typename?: "Money" } & Pick<Money, "amount" | "currency">
-    }
-    totalAuthorized: { __typename?: "Money" } & Pick<Money, "amount" | "currency">
-    totalCaptured: { __typename?: "Money" } & Pick<Money, "amount" | "currency">
-    user?: Maybe<{ __typename?: "User" } & Pick<User, "id" | "email">>
-    availableShippingMethods?: Maybe<
-      Array<
-        Maybe<
-          { __typename?: "ShippingMethod" } & Pick<ShippingMethod, "id" | "name"> & {
-              price?: Maybe<{ __typename?: "Money" } & Pick<Money, "amount" | "currency">>
-            }
-        >
-      >
-    >
-    discount?: Maybe<{ __typename?: "Money" } & Pick<Money, "amount" | "currency">>
-  }
-
-export type OrderErrorFragmentFragment = { __typename?: "OrderError" } & Pick<
-  OrderError,
-  "code" | "field"
->
-
 export type OrderCaptureMutationVariables = Exact<{
   id: Scalars["ID"]
   amount: Scalars["PositiveDecimal"]
@@ -11699,11 +11704,6 @@ export type OrderCaptureMutation = { __typename?: "Mutation" } & {
     }
   >
 }
-
-export type ChannelsFragmentFragment = { __typename?: "Channel" } & Pick<
-  Channel,
-  "id" | "name" | "slug" | "isActive"
->
 
 export type ChannelsQueryVariables = Exact<{ [key: string]: never }>
 

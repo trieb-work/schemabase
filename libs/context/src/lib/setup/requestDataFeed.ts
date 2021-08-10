@@ -8,7 +8,7 @@ export type RequestDataFeed = {
 }
 
 export const setupRequestDataFeed =
-  (req: { id: string; variant: string }): ExtendContextFn<"requestDataFeed"> =>
+  (req: { publicId: string; variant: string }): ExtendContextFn<"requestDataFeed"> =>
   async (ctx) => {
     if (!ctx.prisma) {
       throw new ContextMissingFieldError("prisma")
@@ -19,14 +19,13 @@ export const setupRequestDataFeed =
 
     const variant = req.variant === "facebookcommerce" ? "facebookcommerce" : "googlemerchant"
 
-    const tenant = await ctx.prisma.tenant.findFirst({
-      where: { productdatafeed: { cuid: req.id } },
-      include: { productdatafeed: true, saleor: true },
+    const productDataFeed = await ctx.prisma.productDataFeed.findFirst({
+      where: { publicId: req.publicId },
     })
-    if (!tenant) {
-      throw new Error(`No tenant found in database: ${{ id: req.id }}`)
+    if (!productDataFeed) {
+      throw new Error(`No productDataFeed found in database: ${{ publicId: req.publicId }}`)
     }
-    const storefrontProductUrl = tenant.productdatafeed?.productDetailStorefrontURL ?? ""
+    const storefrontProductUrl = productDataFeed?.productDetailStorefrontURL ?? ""
 
     if (storefrontProductUrl === "") {
       ctx.logger.info(
@@ -34,7 +33,7 @@ export const setupRequestDataFeed =
       )
     }
 
-    const valid = !!tenant.productdatafeed?.active && storefrontProductUrl !== ""
+    const valid = !!productDataFeed?.active && storefrontProductUrl !== ""
 
     return { ...ctx, requestDataFeed: { valid, storefrontProductUrl, variant } }
   }

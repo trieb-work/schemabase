@@ -6,17 +6,10 @@ import {
   setupLogger,
   setupSaleor,
 } from "@eci/context"
-import { MissingHTTPHeaderError } from "@eci/util/errors"
+import { getHeader } from "@eci/http"
 import { generateProductDataFeed } from "@eci/integrations/product-data-feed"
 import md5 from "md5"
 import { z } from "zod"
-function getHeader<T = string>(req: NextApiRequest, key: string): T {
-  const value = req.headers[key] as T | undefined
-  if (!value) {
-    throw new MissingHTTPHeaderError(key)
-  }
-  return value
-}
 
 const requestBodyValidation = z.object({
   app_token: z.string(),
@@ -24,8 +17,8 @@ const requestBodyValidation = z.object({
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   const body = requestBodyValidation.parse(req.body)
-  const id = req.query["id"] as string
-  if (!id) {
+  const publicId = req.query["id"] as string
+  if (!publicId) {
     throw new Error(`Invalid request: missing id`)
   }
   const variant = req.query["variant"] as string
@@ -36,7 +29,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   const ctx = await createContext<"prisma" | "requestDataFeed" | "logger" | "saleor">(
     setupPrisma(),
     setupLogger(),
-    setupRequestDataFeed({ id, variant }),
+    setupRequestDataFeed({ publicId, variant }),
     setupSaleor({
       domain: getHeader(req, "x-saleor-domain"),
       authToken: getHeader(req, "x-saleor-token").replace("Bearer ", ""),

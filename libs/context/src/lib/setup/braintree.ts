@@ -19,7 +19,7 @@ export const setupBrainTree =
     // For dynamic pages like productdtafeed, have the CUID in the Query Object
     const cuid = req?.query["cuid"] as unknown as string
 
-    const currentTentantConfig = await ctx.prisma.appConfig.findFirst({
+    const currentTentantConfig = await ctx.prisma.tenant.findFirst({
       where: { zoho: { orgId: cuid } },
       include: { braintree: true },
     })
