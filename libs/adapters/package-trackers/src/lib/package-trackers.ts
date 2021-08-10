@@ -2,6 +2,7 @@ import { WinstonLoggerType } from "@eci/util/apm"
 import { MailService, ClientResponse, MailDataRequired } from "@sendgrid/mail"
 import moment from "moment-business-days"
 import { Tracker } from "@eci/adapters/easypost"
+// @ts-expect-error There is no @types package
 import EasyPost from "@easypost/api"
 
 type Config = {
@@ -71,7 +72,7 @@ export class PackageTracker {
     }
 
     const currentHooks = await this.easyPost.Webhook.all()
-    const isAlreadyExisting = currentHooks.find((x) => x.url === url)
+    const isAlreadyExisting = currentHooks.find((x: { url: string }) => x.url === url)
     if (isAlreadyExisting) {
       this.logger.info(`We already have a valid Webhook with Id ${isAlreadyExisting.id}`)
       return isAlreadyExisting.id as string

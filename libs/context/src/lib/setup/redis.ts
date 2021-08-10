@@ -19,11 +19,10 @@ export const getRedisConfig = (): ExtendContextFn<"redis"> => async (ctx) => {
     throw new Error("Unable to find redis config from database")
   }
 
-  ctx.redis = {
+  const redis = {
     host: config.host,
     password: config.password,
-
     port: config.port,
   }
-  return ctx
+  return { ...ctx, redis }
 }

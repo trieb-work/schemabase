@@ -3,7 +3,7 @@ import { ContextMissingFieldError } from "@eci/util/errors"
 
 import { NextApiRequest } from "next"
 import { Zoho } from "@eci/adapters/zoho"
-export { Zoho } from "@eci/adapters/zoho"
+export type { Zoho } from "@eci/adapters/zoho"
 
 /**
  * Create a new zoho instance with client client config determined by the
@@ -26,11 +26,11 @@ export const setupZoho =
       throw new Error(`No zoho config found for cuid: ${cuid}`)
     }
 
-    ctx.zoho = await Zoho.new({
+    const zoho = await Zoho.new({
       clientId: config.clientId,
       clientSecret: config.clientSecret,
       orgId: config.orgId,
     })
 
-    return ctx
+    return { ...ctx, zoho }
   }

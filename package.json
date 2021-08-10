@@ -58,6 +58,7 @@
     "regenerator-runtime": "0.13.7",
     "simple-oauth2": "^4.2.0",
     "tslib": "^2.0.0",
+    "type-graphql": "^1.1.1",
     "winston": "^3.3.3",
     "winston-elasticsearch": "^0.15.7",
     "zod": "^3.7.1"

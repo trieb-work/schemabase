@@ -1,15 +1,12 @@
 import { GraphqlClient } from "@eci/graphql-client"
 import {
   GetShopDomainQuery,
-  ShopInfoQuery,
   VerifyAppTokenMutation,
   VerifyAppTokenMutationVariables,
   VerifyTokenMutation,
   VerifyTokenMutationVariables,
-} from "gqlTypes/globalTypes"
-import { getShopDomain, verifyAppTokenMutation, verifyTokenQuery } from "lib/gql/saleor.gql"
-import { NextApiRequest } from "next"
-import { AuthChecker } from "type-graphql"
+} from "@eci/types/graphql/global"
+import { getShopDomain, verifyAppTokenMutation, verifyTokenQuery } from "./saleor.gql"
 
 /**
  * Run the verifyTokenQuery against Saleor

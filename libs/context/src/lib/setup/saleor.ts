@@ -1,10 +1,5 @@
 import { ExtendContextFn } from "../context"
-import {
-  ContextMissingFieldError,
-  MissingHTTPBodyError,
-  MissingHTTPHeaderError,
-} from "@eci/util/errors"
-import { NextApiRequest } from "next"
+import { ContextMissingFieldError } from "@eci/util/errors"
 import { GraphqlClient, createGraphqlClient } from "@eci/graphql-client"
 
 export type Saleor = {

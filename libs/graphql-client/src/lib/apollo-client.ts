@@ -8,7 +8,6 @@ import {
 import { RetryLink } from "@apollo/client/link/retry"
 import { onError } from "@apollo/client/link/error"
 
-
 const loggerLink = new ApolloLink((operation, forward) => {
   console.log(`GraphQL Request: ${operation.operationName}`)
   operation.setContext({ start: new Date() })

@@ -15,5 +15,5 @@ export const setupLogger = (): ExtendContextFn<"logger"> => async (ctx) => {
 
   const logger = createLogger(ctx.elasticSearch.loggingServer)
 
-  return Object.assign(ctx, { logger })
+  return { ...ctx, logger }
 }

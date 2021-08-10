@@ -1,12 +1,12 @@
-import { gql } from "@apollo/client";
+import { gql } from "@apollo/client"
 
 export const channelsFragment = gql`
-fragment ChannelsFragment on Channel {
-  id
-  name
-  slug
-  isActive
-}
+  fragment ChannelsFragment on Channel {
+    id
+    name
+    slug
+    isActive
+  }
 `
 
 export const fragmentDomain = gql`

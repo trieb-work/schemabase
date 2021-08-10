@@ -1,1 +1,1 @@
-export * from "./lib/adapters-package-trackers"
+export * from "./lib/package-trackers"
