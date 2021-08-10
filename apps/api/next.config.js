@@ -7,6 +7,7 @@ module.exports = withNx({
     if (!isServer) {
       config.node = {
         fs: "empty",
+        child_process: "empty",
       }
 
       // config.resolve.fallback.fs = false
