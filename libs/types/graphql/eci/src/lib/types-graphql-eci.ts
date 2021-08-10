@@ -1,3 +1,3 @@
 export function typesGraphqlEci(): string {
-  return "types-graphql-eci"
+  return "types-graphql-eci";
 }

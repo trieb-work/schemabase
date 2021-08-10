@@ -1,1 +1,1 @@
-export * from "./lib/tracker"
+export * from "./lib/tracker";

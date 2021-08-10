@@ -1,9 +1,9 @@
 module.exports = {
-  displayName: "http",
+  displayName: "context",
   preset: "../../jest.preset.js",
   globals: {
     "ts-jest": {
-      tsconfig: "<rootDir>/tsconfig.spec.json",
+      tsconfig: "<rootDir>/tsconfig.test.json",
     },
   },
   testEnvironment: "node",
@@ -11,5 +11,5 @@ module.exports = {
     "^.+\\.[tj]sx?$": "ts-jest",
   },
   moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
-  coverageDirectory: "../../coverage/libs/http",
-}
+  coverageDirectory: "../../coverage/libs/test",
+};

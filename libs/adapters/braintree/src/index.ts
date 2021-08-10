@@ -1,1 +1,1 @@
-export * from "./lib/braintree"
+export * from "./lib/braintree";

@@ -1,27 +1,27 @@
-import { EnvironmentVariableNotFoundError } from "@eci/util/errors"
+import { EnvironmentVariableNotFoundError } from "@eci/util/errors";
 /**
  * Load an environment variable.
  * Returns the fallback if not found.
  */
 export function loadEnv(key: string, fallback?: string): string | undefined {
-  const value = process.env[key]
-  return value ?? fallback
+  const value = process.env[key];
+  return value ?? fallback;
 }
 
 /**
  * Load an environment variable or throw an error if not found.
  */
 export function requireEnv(key: string): string {
-  const value = process.env[key]
+  const value = process.env[key];
   if (!value) {
-    throw new EnvironmentVariableNotFoundError(key)
+    throw new EnvironmentVariableNotFoundError(key);
   }
-  return value
+  return value;
 }
 
 /**
  * Check if NODE_ENV is set to "Production"
  */
 export function isProduction(): boolean {
-  return loadEnv("NODE_ENV") === "production"
+  return loadEnv("NODE_ENV") === "production";
 }

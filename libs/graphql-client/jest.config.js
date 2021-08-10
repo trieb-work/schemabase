@@ -1,5 +1,5 @@
 module.exports = {
-  displayName: "apollo-client",
+  displayName: "types-graphql-eci",
   preset: "../../jest.preset.js",
   globals: {
     "ts-jest": {
@@ -11,5 +11,5 @@ module.exports = {
     "^.+\\.[tj]sx?$": "ts-jest",
   },
   moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
-  coverageDirectory: "../../coverage/libs/graphql-client",
-}
+  coverageDirectory: "../../coverage/libs/test",
+};

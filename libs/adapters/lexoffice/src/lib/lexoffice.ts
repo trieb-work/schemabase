@@ -1,13 +1,17 @@
-import axios, { AxiosInstance } from "axios"
-import assert from "assert"
-import FormData from "form-data"
-import { HTTPError } from "@eci/util/errors"
-import { LexofficeInvoiceObject, LexOfficeVoucher, VoucherStatus } from "./types"
-import { retry } from "@eci/util/retry"
-type VoucherType = "invoice" | "salesinvoice"
+import axios, { AxiosInstance } from "axios";
+import assert from "assert";
+import FormData from "form-data";
+import { HTTPError } from "@eci/util/errors";
+import {
+  LexofficeInvoiceObject,
+  LexOfficeVoucher,
+  VoucherStatus,
+} from "./types";
+import { retry } from "@eci/util/retry";
+type VoucherType = "invoice" | "salesinvoice";
 
 export class LexofficeInstance {
-  private req: AxiosInstance
+  private req: AxiosInstance;
 
   constructor(apiKey: string) {
     this.req = axios.create({
@@ -16,7 +20,7 @@ export class LexofficeInstance {
       headers: {
         Authorization: `Bearer: ${apiKey}`,
       },
-    })
+    });
   }
 
   /**
@@ -24,16 +28,19 @@ export class LexofficeInstance {
    * @param voucherType
    * @param voucherStatus
    */
-  public async voucherlist(voucherType: VoucherType, voucherStatus: VoucherStatus) {
+  public async voucherlist(
+    voucherType: VoucherType,
+    voucherStatus: VoucherStatus,
+  ) {
     const vouchers = await this.req({
       url: "/voucherlist",
       params: {
         voucherType,
         voucherStatus,
       },
-    })
-    assert.strictEqual(vouchers.status, 200)
-    return vouchers.data.content as []
+    });
+    assert.strictEqual(vouchers.status, 200);
+    return vouchers.data.content as [];
   }
 
   /**
@@ -46,9 +53,9 @@ export class LexofficeInstance {
       params: {
         voucherNumber,
       },
-    })
-    assert.strictEqual(voucher.status, 200)
-    return (voucher.data?.content[0] as LexOfficeVoucher) || null
+    });
+    assert.strictEqual(voucher.status, 200);
+    return (voucher.data?.content[0] as LexOfficeVoucher) || null;
   }
 
   /**
@@ -61,8 +68,8 @@ export class LexofficeInstance {
       url: "/vouchers",
       method: "post",
       data: voucherData,
-    })
-    return result.data.id as string
+    });
+    return result.data.id as string;
   }
 
   /**
@@ -70,17 +77,21 @@ export class LexofficeInstance {
    * @param filebuffer
    * @param filename
    */
-  public async addFiletoVoucher(filebuffer: Buffer, filename: string, voucherId: string) {
-    const form = new FormData()
-    form.append("file", filebuffer, filename)
+  public async addFiletoVoucher(
+    filebuffer: Buffer,
+    filename: string,
+    voucherId: string,
+  ) {
+    const form = new FormData();
+    form.append("file", filebuffer, filename);
     await this.req({
       url: `/vouchers/${voucherId}/files`,
       method: "post",
       headers: form.getHeaders(),
       data: form,
-    })
+    });
 
-    return true
+    return true;
   }
 
   /**
@@ -93,11 +104,11 @@ export class LexofficeInstance {
     street,
     countryCode,
   }: {
-    email: string
-    firstName: string
-    lastName: string
-    street: string
-    countryCode: string
+    email: string;
+    firstName: string;
+    lastName: string;
+    street: string;
+    countryCode: string;
   }): Promise<string> {
     const customerLookup = await this.req({
       url: "/contacts",
@@ -106,10 +117,10 @@ export class LexofficeInstance {
         email,
         customer: true,
       },
-    })
+    });
     if (customerLookup.data?.content?.length > 0) {
-      console.log("Found a contact. Returning ID")
-      return customerLookup.data.content[0].id
+      console.log("Found a contact. Returning ID");
+      return customerLookup.data.content[0].id;
     }
     const data = {
       version: 0,
@@ -131,7 +142,7 @@ export class LexofficeInstance {
       emailAddresses: {
         business: [`${email}`],
       },
-    }
+    };
 
     const contacts = await retry(
       async () => {
@@ -139,16 +150,18 @@ export class LexofficeInstance {
           url: "/contacts",
           method: "post",
           data,
-        })
+        });
         if (!res.data?.id) {
-          throw new Error("Unable to create user in LexOffice")
+          throw new Error("Unable to create user in LexOffice");
         }
-        return res
+        return res;
       },
       { maxAttempts: 5 },
-    )
-    return contacts.data?.id
+    );
+    return contacts.data?.id;
 
-    throw new HTTPError(`Unable to create new User in Lexoffice after 5 attempts`)
+    throw new HTTPError(
+      `Unable to create new User in Lexoffice after 5 attempts`,
+    );
   }
 }

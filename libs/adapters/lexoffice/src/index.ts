@@ -1,1 +1,2 @@
-export * from "./lib/lexoffice"
+export * from "./lib/types";
+export * from "./lib/lexoffice";

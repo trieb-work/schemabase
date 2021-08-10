@@ -1,4 +1,4 @@
-import { gql } from "@apollo/client"
+import { gql } from "@apollo/client";
 
 export const warehouseQuery = gql`
   query getWarehouses($first: Int) {
@@ -12,7 +12,7 @@ export const warehouseQuery = gql`
       }
     }
   }
-`
+`;
 
 export const verifyTokenQuery = gql`
   mutation VerifyToken($token: String!) {
@@ -23,14 +23,14 @@ export const verifyTokenQuery = gql`
       isValid
     }
   }
-`
+`;
 export const verifyAppTokenMutation = gql`
   mutation VerifyAppToken($token: String!) {
     appTokenVerify(token: $token) {
       valid
     }
   }
-`
+`;
 
 export const getOrderQuery = gql`
   query getOrder($id: ID!) {
@@ -96,7 +96,7 @@ export const getOrderQuery = gql`
       }
     }
   }
-`
+`;
 export const fulfillmentMutation = gql`
   mutation createFulfillment($orderId: ID!, $input: OrderFulfillInput!) {
     orderFulfill(order: $orderId, input: $input) {
@@ -111,10 +111,13 @@ export const fulfillmentMutation = gql`
       }
     }
   }
-`
+`;
 export const updateTrackingMutation = gql`
   mutation SetTrackingNumber($id: ID!, $trackingNumber: String!) {
-    orderFulfillmentUpdateTracking(id: $id, input: { trackingNumber: $trackingNumber }) {
+    orderFulfillmentUpdateTracking(
+      id: $id
+      input: { trackingNumber: $trackingNumber }
+    ) {
       fulfillment {
         id
         trackingNumber
@@ -126,7 +129,7 @@ export const updateTrackingMutation = gql`
       }
     }
   }
-`
+`;
 
 export const productVariant = gql`
   query getVariant($sku: String, $id: ID) {
@@ -146,7 +149,7 @@ export const productVariant = gql`
       }
     }
   }
-`
+`;
 export const getProduct = gql`
   query getProductQuery($id: ID!) {
     product(id: $id) {
@@ -179,10 +182,14 @@ export const getProduct = gql`
       }
     }
   }
-`
+`;
 
 export const stockLevelMutation = gql`
-  mutation updateStockLevel($variantId: ID!, $warehouseId: ID!, $quantity: Int!) {
+  mutation updateStockLevel(
+    $variantId: ID!
+    $warehouseId: ID!
+    $quantity: Int!
+  ) {
     productVariantStocksUpdate(
       variantId: $variantId
       stocks: { warehouse: $warehouseId, quantity: $quantity }
@@ -198,7 +205,7 @@ export const stockLevelMutation = gql`
       }
     }
   }
-`
+`;
 
 const fragmentDomain = gql`
   fragment DomainFragment on Shop {
@@ -207,7 +214,7 @@ const fragmentDomain = gql`
       host
     }
   }
-`
+`;
 export const getShopDomain = gql`
   ${fragmentDomain}
   query getShopDomain {
@@ -215,7 +222,7 @@ export const getShopDomain = gql`
       ...DomainFragment
     }
   }
-`
+`;
 
 export const addPrivateMetaMutation = gql`
   mutation addPrivateMeta($id: ID!, $input: [MetadataInput!]!) {
@@ -233,7 +240,7 @@ export const addPrivateMetaMutation = gql`
       }
     }
   }
-`
+`;
 
 const fragmentAddress = gql`
   fragment AddressFragment on Address {
@@ -254,7 +261,7 @@ const fragmentAddress = gql`
     streetAddress1
     streetAddress2
   }
-`
+`;
 
 const fragmentOrderDetails = gql`
   ${fragmentAddress}
@@ -323,13 +330,13 @@ const fragmentOrderDetails = gql`
     }
     isPaid
   }
-`
+`;
 const orderErrorFragment = gql`
   fragment OrderErrorFragment on OrderError {
     code
     field
   }
-`
+`;
 
 export const orderCaptureMutation = gql`
   ${fragmentOrderDetails}
@@ -344,7 +351,7 @@ export const orderCaptureMutation = gql`
       }
     }
   }
-`
+`;
 
 const channelsFragment = gql`
   fragment ChannelsFragment on Channel {
@@ -353,7 +360,7 @@ const channelsFragment = gql`
     slug
     isActive
   }
-`
+`;
 
 export const getChannelsQuery = gql`
   ${channelsFragment}
@@ -362,7 +369,7 @@ export const getChannelsQuery = gql`
       ...ChannelsFragment
     }
   }
-`
+`;
 
 export const ProductDataFeed = gql`
   query ProductDataFeed($first: Int!, $channel: String) {
@@ -446,7 +453,7 @@ export const ProductDataFeed = gql`
       }
     }
   }
-`
+`;
 
 export const paymentTransactionData = gql`
   query getPayment($id: ID!) {
@@ -457,4 +464,4 @@ export const paymentTransactionData = gql`
       }
     }
   }
-`
+`;

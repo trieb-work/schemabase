@@ -1,25 +1,5 @@
+const { getJestProjects } = require("@nrwl/jest");
+
 module.exports = {
-  projects: [
-    "<rootDir>/libs/util",
-    "<rootDir>/libs/util/apm",
-    "<rootDir>/apps/api",
-    "<rootDir>/libs/data-access/prisma",
-    "<rootDir>/libs/adapters/braintree",
-    "<rootDir>/libs/feature/print",
-    "<rootDir>/libs/util/env",
-    "<rootDir>/libs/util/errors",
-    "<rootDir>/libs/adapters/easypost",
-    "<rootDir>/libs/adapters/zoho",
-    "<rootDir>/libs/adapters/lexoffice",
-    "<rootDir>/libs/adapters/mailchimp",
-    "<rootDir>/libs/util/retry",
-    "<rootDir>/libs/context",
-    "<rootDir>/libs/adapters/package-trackers",
-    "<rootDir>/libs/graphql-client",
-    "<rootDir>/libs/adapters/saleor",
-    "<rootDir>/libs/types/graphql/global",
-    "<rootDir>/libs/types/graphql/eci",
-    "<rootDir>/libs/integrations/product-data-feed",
-    "<rootDir>/libs/http",
-  ],
-}
+  projects: getJestProjects(),
+};

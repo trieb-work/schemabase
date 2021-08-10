@@ -169,57 +169,6 @@
         }
       }
     },
-    "api": {
-      "root": "apps/api",
-      "sourceRoot": "apps/api",
-      "projectType": "application",
-      "targets": {
-        "build": {
-          "executor": "@nrwl/next:build",
-          "outputs": ["{options.outputPath}"],
-          "options": {
-            "root": "apps/api",
-            "outputPath": "dist/apps/api"
-          },
-          "configurations": {
-            "production": {}
-          }
-        },
-        "serve": {
-          "executor": "@nrwl/next:server",
-          "options": {
-            "buildTarget": "api:build",
-            "dev": true
-          },
-          "configurations": {
-            "production": {
-              "buildTarget": "api:build:production",
-              "dev": false
-            }
-          }
-        },
-        "export": {
-          "executor": "@nrwl/next:export",
-          "options": {
-            "buildTarget": "api:build:production"
-          }
-        },
-        "test": {
-          "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/apps/api"],
-          "options": {
-            "jestConfig": "apps/api/jest.config.js",
-            "passWithNoTests": true
-          }
-        },
-        "lint": {
-          "executor": "@nrwl/linter:eslint",
-          "options": {
-            "lintFilePatterns": ["apps/api/**/*.{ts,tsx,js,jsx}"]
-          }
-        }
-      }
-    },
     "context": {
       "root": "libs/context",
       "sourceRoot": "libs/context/src",
@@ -251,7 +200,8 @@
           "options": {
             "commands": [
               {
-                "command": "yarn prisma generate --schema=./libs/data-access/prisma/schema.prisma"
+                "command": "yarn prisma generate --schema=libs/data-access/prisma/schema.prisma",
+                "forwardAllArgs": false
               }
             ]
           }
@@ -341,13 +291,14 @@
       "projectType": "library",
       "targets": {
         "build": {
-          "executor": "@nrwl/workspace:run-commands",
+          "executor": "@nrwl/node:package",
+          "outputs": ["{options.outputPath}"],
           "options": {
-            "commands": [
-              {
-                "command": "yarn --cwd=libs/types/graphql/eci build"
-              }
-            ]
+            "outputPath": "dist/libs/types/graphql/eci",
+            "tsConfig": "libs/types/graphql/eci/tsconfig.lib.json",
+            "packageJson": "libs/types/graphql/eci/package.json",
+            "main": "libs/types/graphql/eci/src/index.ts",
+            "assets": ["libs/types/graphql/eci/*.md"]
           }
         },
         "lint": {
@@ -418,27 +369,6 @@
         }
       }
     },
-    "util-apm": {
-      "root": "libs/util/apm",
-      "sourceRoot": "libs/util/apm/src",
-      "projectType": "library",
-      "targets": {
-        "lint": {
-          "executor": "@nrwl/linter:eslint",
-          "options": {
-            "lintFilePatterns": ["libs/util/apm/**/*.ts"]
-          }
-        },
-        "test": {
-          "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/util/apm"],
-          "options": {
-            "jestConfig": "libs/util/apm/jest.config.js",
-            "passWithNoTests": true
-          }
-        }
-      }
-    },
     "util-env": {
       "root": "libs/util/env",
       "sourceRoot": "libs/util/env/src",
@@ -481,6 +411,27 @@
         }
       }
     },
+    "util-logger": {
+      "root": "libs/util/logger",
+      "sourceRoot": "libs/util/logger/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/util/logger/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/util/logger"],
+          "options": {
+            "jestConfig": "libs/util/logger/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
     "util-retry": {
       "root": "libs/util/retry",
       "sourceRoot": "libs/util/retry/src",
@@ -501,10 +452,61 @@
           }
         }
       }
+    },
+    "webhooks": {
+      "root": "apps/webhooks",
+      "sourceRoot": "apps/webhooks",
+      "projectType": "application",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/next:build",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "root": "apps/webhooks",
+            "outputPath": "dist/apps/webhooks"
+          },
+          "configurations": {
+            "production": {}
+          }
+        },
+        "serve": {
+          "executor": "@nrwl/next:server",
+          "options": {
+            "buildTarget": "webhooks:build",
+            "dev": true
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "webhooks:build:production",
+              "dev": false
+            }
+          }
+        },
+        "export": {
+          "executor": "@nrwl/next:export",
+          "options": {
+            "buildTarget": "webhooks:build:production"
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/apps/webhooks"],
+          "options": {
+            "jestConfig": "apps/webhooks/jest.config.js",
+            "passWithNoTests": true
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["apps/webhooks/**/*.{ts,tsx,js,jsx}"]
+          }
+        }
+      }
     }
   },
   "cli": {
-    "defaultCollection": "@nrwl/node"
+    "defaultCollection": "@nrwl/next"
   },
   "generators": {
     "@nrwl/react": {
@@ -519,5 +521,5 @@
       }
     }
   },
-  "defaultProject": "api"
+  "defaultProject": "webhooks"
 }

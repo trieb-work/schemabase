@@ -1,19 +1,12 @@
-import { ExtendContextFn } from "../context"
-import { createLogger } from "@eci/util/apm"
-import winston from "winston"
-import { ContextMissingFieldError } from "@eci/util/errors"
-
-export type Logger = winston.Logger
+import { ExtendContextFn } from "../context";
+import { createLogger } from "@eci/util/logger";
+export type { Logger } from "tslog";
 
 /**
  * Create a new logger instance
  */
 export const setupLogger = (): ExtendContextFn<"logger"> => async (ctx) => {
-  if (!ctx.elasticSearch) {
-    throw new ContextMissingFieldError("elasticSearch")
-  }
+  const logger = createLogger();
 
-  const logger = createLogger(ctx.elasticSearch.loggingServer)
-
-  return { ...ctx, logger }
-}
+  return { ...ctx, logger };
+};

@@ -1,9 +1,9 @@
-import MailchimpApi from "mailchimp-api-v3"
-import assert from "assert"
-import { encode } from "js-base64"
-import crypto from "crypto"
-import winston from "winston"
-import { MailchimpMemberStatus, MailchimpOrder } from "./types"
+import MailchimpApi from "mailchimp-api-v3";
+import assert from "assert";
+import { encode } from "js-base64";
+import crypto from "crypto";
+import winston from "winston";
+import { MailchimpMemberStatus, MailchimpOrder } from "./types";
 
 /**
  * Just recursively clean an object. Delete all empty values.
@@ -12,50 +12,52 @@ import { MailchimpMemberStatus, MailchimpOrder } from "./types"
 const removeEmpty = (obj: Record<any, any>): Record<any, any> => {
   Object.keys(obj).forEach((key) => {
     if (obj[key] && typeof obj[key] === "object") {
-      removeEmpty(obj[key])
+      removeEmpty(obj[key]);
     } else if (!obj[key] || obj[key] === null) {
-      delete obj[key]
+      delete obj[key];
     }
-  })
-  return obj
-}
+  });
+  return obj;
+};
 
 type MailchimpConfig = {
-  listId: string
-  apiKey: string
+  listId: string;
+  apiKey: string;
   /**
    * The Domain of the store. Gets base64 encoded to become the StoreID in Api
    */
-  storeDomain: string
-  logger?: winston.Logger
+  storeDomain: string;
+  logger?: winston.Logger;
   /**
    * When the store ID is set we don't generate it by ourselves using the storeDomain
    */
-  storeId?: string
-}
+  storeId?: string;
+};
 
 export class MailChimp {
-  private listId: string
+  private listId: string;
 
-  private apiKey: string
+  private apiKey: string;
 
-  private api: MailchimpApi
+  private api: MailchimpApi;
 
-  private storeId: string
+  private storeId: string;
 
-  private storeDomain: string
+  private storeDomain: string;
 
-  private logger: winston.Logger | Console
+  private logger: winston.Logger | Console;
 
   constructor(config: MailchimpConfig) {
-    this.listId = config.listId
-    this.apiKey = config.apiKey
+    this.listId = config.listId;
+    this.apiKey = config.apiKey;
     // the Store ID is the encoded store Domain, limited to 50 characters.
     // when the Storefront URL changes, we add a new Store
-    this.storeId = config.storeId ? config.storeId : encode(config.storeDomain).substr(0, 49)
-    this.storeDomain = config.storeDomain
-    this.api = new MailchimpApi(this.apiKey)
-    this.logger = config.logger || console
+    this.storeId = config.storeId
+      ? config.storeId
+      : encode(config.storeDomain).substr(0, 49);
+    this.storeDomain = config.storeDomain;
+    this.api = new MailchimpApi(this.apiKey);
+    this.logger = config.logger || console;
   }
 
   public async setupStore({
@@ -63,21 +65,25 @@ export class MailChimp {
     defaultCurrency = "EUR",
     companyAddress,
   }: {
-    name: string
-    defaultCurrency?: string
+    name: string;
+    defaultCurrency?: string;
     companyAddress?: {
-      streetAddress1?: string
-      streetAddress2?: string
-      city?: string
-      postalCode?: string
-      country?: { code: string }
-    }
+      streetAddress1?: string;
+      streetAddress2?: string;
+      city?: string;
+      postalCode?: string;
+      country?: { code: string };
+    };
   }) {
     if (!this.listId) {
-      throw new Error("No mailchimp listId found. Set it via env variable MAILCHIMP_listId")
+      throw new Error(
+        "No mailchimp listId found. Set it via env variable MAILCHIMP_listId",
+      );
     }
     if (!companyAddress) {
-      console.error(`No Store Company Adress given! Set it in Saleor. We got name: ${name}`)
+      console.error(
+        `No Store Company Adress given! Set it in Saleor. We got name: ${name}`,
+      );
     }
 
     const result = await this.api
@@ -86,13 +92,17 @@ export class MailChimp {
       })
       .catch((error) => {
         if (error.statusCode === 404) {
-          console.log("No store yet")
+          console.log("No store yet");
         } else {
-          throw new Error(`Error getting mailchimp store, ${error}`)
+          throw new Error(`Error getting mailchimp store, ${error}`);
         }
-      })
+      });
     if (!result) {
-      console.log("The Mailchimp store", this.storeDomain, "does not exist. We create it now.")
+      console.log(
+        "The Mailchimp store",
+        this.storeDomain,
+        "does not exist. We create it now.",
+      );
       const Create = await this.api.post({
         path: "/ecommerce/stores",
         body: {
@@ -110,8 +120,8 @@ export class MailChimp {
             country_code: companyAddress?.country?.code,
           },
         },
-      })
-      assert.strictEqual(Create.id, this.storeId)
+      });
+      assert.strictEqual(Create.id, this.storeId);
     }
     const mergeFields = [
       {
@@ -156,8 +166,8 @@ export class MailChimp {
         required: false,
         public: false,
       },
-    ]
-    console.log("Verifying merge fields in mailchimp ..")
+    ];
+    console.log("Verifying merge fields in mailchimp ..");
     await Promise.all(
       mergeFields.map((field) => {
         this.api
@@ -167,20 +177,24 @@ export class MailChimp {
           })
           .catch((error) => {
             if (error.statusCode !== 400) {
-              throw new Error(`Error creating merge fields in Mailchimp!${JSON.stringify(error)}`)
+              throw new Error(
+                `Error creating merge fields in Mailchimp!${JSON.stringify(
+                  error,
+                )}`,
+              );
             }
-          })
+          });
       }),
-    )
+    );
 
-    return this.storeId
+    return this.storeId;
   }
 
   /**
    * returns the MD5 hash of the lowercase Email address, to access that person
    */
   public getMailchimpIdFromEmail(email: string): string {
-    return crypto.createHash("md5").update(email.toLowerCase()).digest("hex")
+    return crypto.createHash("md5").update(email.toLowerCase()).digest("hex");
   }
   /**
    * Create an order in Mailchimp
@@ -193,18 +207,19 @@ export class MailChimp {
         path: `/ecommerce/stores/${this.storeId}/orders/${Order.id}`,
       })
       .catch((e) => {
-        if (e.statusCode !== 404) this.logger.error("Error getting order! Someting went wrong.")
-      })
+        if (e.statusCode !== 404)
+          this.logger.error("Error getting order! Someting went wrong.");
+      });
     if (checkExistence) {
-      return Order.id
+      return Order.id;
     }
-    this.logger.info(`Order ${Order.id} does not yet exist. Creating it now.`)
+    this.logger.info(`Order ${Order.id} does not yet exist. Creating it now.`);
     const Create = await this.api.post({
       path: `/ecommerce/stores/${this.storeId}/orders/`,
       body: Order,
-    })
+    });
 
-    return Create
+    return Create;
   }
 
   /**
@@ -218,12 +233,12 @@ export class MailChimp {
       })
       .catch((error) => {
         if (error.statusCode !== 404) {
-          throw new Error(`Error getting product in mailchimp, ${error}`)
+          throw new Error(`Error getting product in mailchimp, ${error}`);
         }
-        return null
-      })
+        return null;
+      });
 
-    return result
+    return result;
   }
 
   /**
@@ -237,39 +252,42 @@ export class MailChimp {
       })
       .catch((error) => {
         if (error.statusCode !== 404) {
-          throw new Error(`Error getting mailchimp order, ${error}`)
+          throw new Error(`Error getting mailchimp order, ${error}`);
         }
-        return null
-      })
+        return null;
+      });
   }
 
   public async createProduct(product: { id: string }): Promise<string> {
     const res = await this.api.post({
       path: `/ecommerce/stores/${this.storeId}/products`,
       body: product,
-    })
+    });
 
-    assert.strictEqual(res.statusCode, 200)
+    assert.strictEqual(res.statusCode, 200);
 
-    return product.id
+    return product.id;
   }
 
   public async updateProduct(ProductId: string, data: unknown): Promise<void> {
     const Update = await this.api.patch({
       path: `/ecommerce/stores/${this.storeId}/products/${ProductId}`,
       body: data,
-    })
-    assert.strictEqual(Update.statusCode, 200)
+    });
+    assert.strictEqual(Update.statusCode, 200);
   }
 
-  public async addMemberToList(email: string, status: MailchimpMemberStatus): Promise<void> {
+  public async addMemberToList(
+    email: string,
+    status: MailchimpMemberStatus,
+  ): Promise<void> {
     await this.api.post({
       path: `/lists/${this.listId}/members`,
       body: {
         email_address: email,
         status,
       },
-    })
+    });
   }
 
   /**
@@ -281,8 +299,8 @@ export class MailChimp {
     const Update = await this.api.patch({
       path: `/lists/${this.listId}/members/${md5sum}`,
       body: data,
-    })
-    assert.strictEqual(Update.statusCode, 200)
+    });
+    assert.strictEqual(Update.statusCode, 200);
   }
 
   /**
@@ -292,8 +310,8 @@ export class MailChimp {
     const Update = await this.api.patch({
       path: `/ecommerce/stores/${this.storeId}/orders/${orderId}`,
       body: data,
-    })
-    assert.strictEqual(Update.statusCode, 200)
+    });
+    assert.strictEqual(Update.statusCode, 200);
   }
 
   /**
@@ -319,16 +337,16 @@ export class MailChimp {
     count,
     url,
   }: {
-    id: string
-    code: string
-    start: string
-    end: string
-    type: "fixed" | "percentage"
-    amount: number
-    target: "per_item" | "total" | "shipping"
-    description: string
-    count: number
-    url: string
+    id: string;
+    code: string;
+    start: string;
+    end: string;
+    type: "fixed" | "percentage";
+    amount: number;
+    target: "per_item" | "total" | "shipping";
+    description: string;
+    count: number;
+    url: string;
   }): Promise<void> {
     const checkExistence = await this.api
       .get({
@@ -336,11 +354,11 @@ export class MailChimp {
       })
       .catch((error) => {
         if (error.statusCode === 404) {
-          console.log("Promo Rule has to be created")
+          console.log("Promo Rule has to be created");
         } else {
-          throw new Error("Error trying to get Promo Rule")
+          throw new Error("Error trying to get Promo Rule");
         }
-      })
+      });
     const body = {
       id,
       starts_at: start,
@@ -349,8 +367,8 @@ export class MailChimp {
       amount,
       target,
       description,
-    }
-    removeEmpty(body)
+    };
+    removeEmpty(body);
 
     // when promo rule already exist, we patch, otherwise we create it.
     if (checkExistence) {
@@ -360,8 +378,8 @@ export class MailChimp {
           body,
         })
         .catch((error) => {
-          console.error(error)
-        })
+          console.error(error);
+        });
     } else {
       await this.api
         .post({
@@ -369,8 +387,8 @@ export class MailChimp {
           body,
         })
         .catch((error) => {
-          console.error(error)
-        })
+          console.error(error);
+        });
     }
 
     // check if the code is already existing, else create it
@@ -380,33 +398,33 @@ export class MailChimp {
       })
       .catch((error) => {
         if (error.statusCode === 404) {
-          console.log("Promo Code has to be created")
+          console.log("Promo Code has to be created");
         } else {
-          throw new Error("Error trying to get Promo Code")
+          throw new Error("Error trying to get Promo Code");
         }
-      })
+      });
     type CodeBody = {
-      id?: string
-      code: string
-      usage_count: number
-      redemption_url: string
-    }
+      id?: string;
+      code: string;
+      usage_count: number;
+      redemption_url: string;
+    };
     const codebody: CodeBody = {
       code,
       usage_count: count,
       redemption_url: url,
-    }
+    };
     if (checkCodeExistence) {
       await this.api.patch({
         path: `/ecommerce/stores/${this.storeId}/promo-rules/${id}/promo-codes/${id}`,
         body: codebody,
-      })
+      });
     } else {
-      codebody.id = id
+      codebody.id = id;
       await this.api.post({
         path: `/ecommerce/stores/${this.storeId}/promo-rules/${id}/promo-codes`,
         body: codebody,
-      })
+      });
     }
   }
 
@@ -422,10 +440,10 @@ export class MailChimp {
       })
       .catch((e) => {
         if (e.statusCode === 404) {
-          console.log("This user could not be found in mailchimp")
+          console.log("This user could not be found in mailchimp");
         }
-      })
-    return user
+      });
+    return user;
   }
 
   /**
@@ -438,13 +456,17 @@ export class MailChimp {
       tracking_number,
       carrier,
       tracking_portal_url,
-    }: { tracking_number: string; carrier: string; tracking_portal_url?: string },
+    }: {
+      tracking_number: string;
+      carrier: string;
+      tracking_portal_url?: string;
+    },
   ): Promise<void> {
-    const chimpId = this.getMailchimpIdFromEmail(email)
+    const chimpId = this.getMailchimpIdFromEmail(email);
 
     this.logger.info(
       `Setting now Mailchimp merge fields for tracking number and carrier - Order Id ${orderId}`,
-    )
+    );
     // set the metadata / merge fields for the specific user
     await this.updateUser(chimpId, {
       merge_fields: {
@@ -452,13 +474,15 @@ export class MailChimp {
         MMERGE46: carrier,
         MMERGE47: tracking_portal_url,
       },
-    })
+    });
 
     const Update = {
       fulfillment_status: "shipped",
-    }
+    };
 
-    this.logger.info(`Updating the Mailchimp order with status fullfilled - Order Id ${orderId}`)
-    await this.updateOrder(orderId, Update)
+    this.logger.info(
+      `Updating the Mailchimp order with status fullfilled - Order Id ${orderId}`,
+    );
+    await this.updateOrder(orderId, Update);
   }
 }

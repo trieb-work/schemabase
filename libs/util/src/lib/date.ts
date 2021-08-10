@@ -1,4 +1,4 @@
-import dayjs from "dayjs"
+import dayjs from "dayjs";
 
 /**
  * Validates a date for plausibility. November for example has just 30 days - this function will give you false
@@ -7,5 +7,5 @@ import dayjs from "dayjs"
  * @param format - The format of the date string. default='YYYY-MM-DD'
  */
 export function validateDate(date: string, format = "YYYY-MM-DD") {
-  return dayjs(date, format).format(format) === date
+  return dayjs(date, format).format(format) === date;
 }

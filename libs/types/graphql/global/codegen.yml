@@ -1,6 +1,6 @@
 overwrite: true
 schema: "https://pundf-test-api.triebwork.com/graphql/"
-documents: "./src/operations/*"
+documents: "./src/lib/*"
 generates:
   src/generated/graphql.ts:
     plugins:

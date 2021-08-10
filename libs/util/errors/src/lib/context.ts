@@ -1,4 +1,4 @@
-import { GenericError } from "./error"
+import { GenericError } from "./base";
 
 export class ContextMissingFieldError extends GenericError {
   /**
@@ -9,6 +9,6 @@ export class ContextMissingFieldError extends GenericError {
       "ContextMissingFieldError",
       `The context is missing a required field: ${missingField}. Is the context set up in the correct order?`,
       {},
-    )
+    );
   }
 }

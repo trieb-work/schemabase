@@ -1,11 +1,11 @@
-import axios, { AxiosInstance, AxiosResponse } from "axios"
-import { strict as assert } from "assert"
-import dayjs from "dayjs"
-import isBetween from "dayjs/plugin/isBetween"
+import axios, { AxiosInstance, AxiosResponse } from "axios";
+import { strict as assert } from "assert";
+import dayjs from "dayjs";
+import isBetween from "dayjs/plugin/isBetween";
 
-import { ClientCredentials, AccessToken } from "simple-oauth2"
-import FormData from "form-data"
-import { retry } from "@eci/util/retry"
+import { ClientCredentials, AccessToken } from "simple-oauth2";
+import FormData from "form-data";
+import { retry } from "@eci/util/retry";
 import {
   ContactPerson,
   Contact,
@@ -35,48 +35,48 @@ import {
   CustomFunctionSearch,
   Tax,
   //   Warehouse,
-} from "./types"
+} from "./types";
 
-import { env } from "@eci/util/env"
+import { env } from "@eci/util/env";
 
-dayjs.extend(isBetween)
+dayjs.extend(isBetween);
 
 type ZohoConfig = {
-  clientId: string
-  clientSecret: string
-  tokenHost?: string
-  tokenPath?: string
-  orgId: string
-}
+  clientId: string;
+  clientSecret: string;
+  tokenHost?: string;
+  tokenPath?: string;
+  orgId: string;
+};
 
 export class Zoho {
-  private clientId: string
-  private clientSecret: string
-  private tokenHost: string
-  private tokenPath: string
-  private orgId: string
-  // @ts-expect-error: We explitely create this in the static constructor
-  private api: AxiosInstance
+  private clientId: string;
+  private clientSecret: string;
+  private tokenHost: string;
+  private tokenPath: string;
+  private orgId: string;
+  // @ts-expect-error
+  private api: AxiosInstance;
 
   private constructor(config: ZohoConfig) {
     if (!config.clientId) {
-      throw new Error(`Zoho Client ID is missing`)
+      throw new Error(`Zoho Client ID is missing`);
     }
-    this.clientId = config.clientId
-    this.clientSecret = config.clientSecret
-    this.orgId = config.orgId
-    this.tokenHost = config.tokenHost ?? "https://accounts.zoho.eu"
-    this.tokenPath = config.tokenPath ?? "/oauth/v2/token"
+    this.clientId = config.clientId;
+    this.clientSecret = config.clientSecret;
+    this.orgId = config.orgId;
+    this.tokenHost = config.tokenHost ?? "https://accounts.zoho.eu";
+    this.tokenPath = config.tokenPath ?? "/oauth/v2/token";
   }
 
   /**
    * Async constructor to authenticate the user when this class is instantiated
    */
   public static async new(config: ZohoConfig): Promise<Zoho> {
-    const zoho = new Zoho(config)
-    zoho.api = await zoho.createApi()
+    const zoho = new Zoho(config);
+    zoho.api = await zoho.createApi();
 
-    return zoho
+    return zoho;
   }
 
   /**
@@ -84,16 +84,16 @@ export class Zoho {
    */
   private async createApi(): Promise<AxiosInstance> {
     if (this.api) {
-      return this.api
+      return this.api;
     }
 
-    const cookies = env.get("ZOHO_COOKIES")
+    const cookies = env.get("ZOHO_COOKIES");
 
     const options = {
       baseURL: "https://inventory.zoho.eu/api/v1",
       timeout: 7000,
       params: { organization_id: this.orgId },
-    }
+    };
 
     if (cookies) {
       return axios.create({
@@ -105,17 +105,17 @@ export class Zoho {
           "User-Agent":
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.183 Safari/537.36",
         },
-      })
+      });
     }
 
-    const { token } = await this.authenticate()
+    const { token } = await this.authenticate();
     this.api = axios.create({
       ...options,
       headers: {
         Authorization: `${token["token_type"]} ${token["access_token"]}`,
       },
-    })
-    return this.api
+    });
+    return this.api;
   }
 
   /**
@@ -134,15 +134,15 @@ export class Zoho {
       options: {
         authorizationMethod: "body",
       },
-    })
+    });
 
     return await clientCredentials
       .getToken({
         scope: "ZohoInventory.FullAccess.all",
       })
       .catch((err: Error) => {
-        throw new Error(`Error authenticating client with Zoho: ${err}`)
-      })
+        throw new Error(`Error authenticating client with Zoho: ${err}`);
+      });
   }
   /**
    * Get a package by ID
@@ -153,9 +153,9 @@ export class Zoho {
       headers: {
         "X-ZB-SOURCE": "zbclient",
       },
-    })
-    assert.strictEqual(result.data.code, 0)
-    return result.data.package as Package
+    });
+    assert.strictEqual(result.data.code, 0);
+    return result.data.package as Package;
   }
 
   /**
@@ -168,7 +168,7 @@ export class Zoho {
     // FIXME: totalGrossAmount?: number,
     timeout = 20000,
   ): Promise<string> {
-    const data = `JSONString=${encodeURIComponent(JSON.stringify(rawData))}`
+    const data = `JSONString=${encodeURIComponent(JSON.stringify(rawData))}`;
 
     const result = await this.api({
       timeout,
@@ -178,10 +178,10 @@ export class Zoho {
         "Content-Type": "application/x-www-form-urlencoded",
       },
       data,
-    })
+    });
 
-    assert.strictEqual(result.data.code, 0)
-    return result.data.invoice.invoice_number as string
+    assert.strictEqual(result.data.code, 0);
+    return result.data.invoice.invoice_number as string;
   }
 
   /**
@@ -194,26 +194,28 @@ export class Zoho {
     address: AddressOptional,
     maxAttempts = 2,
   ): Promise<string> {
-    const adressConstructor = { ...address }
+    const adressConstructor = { ...address };
     // we don't want to change the address at existing transactions in Zoho.
-    adressConstructor.update_existing_transactions_address = "false"
+    adressConstructor.update_existing_transactions_address = "false";
     const addressId = await retry(
       async () => {
-        const data = `JSONString=${encodeURIComponent(JSON.stringify(adressConstructor))}`
+        const data = `JSONString=${encodeURIComponent(
+          JSON.stringify(adressConstructor),
+        )}`;
         const result = await this.api({
           url: `/contacts/${contactId}/address`,
           method: "post",
           data,
-        })
+        });
         if (result?.data?.code !== 0)
-          throw new Error(`Adding the address was not successfull! ${address}`)
-        return result.data.address_info.address_id as string
+          throw new Error(`Adding the address was not successfull! ${address}`);
+        return result.data.address_info.address_id as string;
       },
       {
         maxAttempts,
       },
-    )
-    return addressId
+    );
+    return addressId;
   }
 
   /**
@@ -223,47 +225,56 @@ export class Zoho {
    * @param to Configure the time range to parameter.
    * @param userNameFilter Filter the created bundles by a specific Username
    */
-  async getBundles(from: string, to: string, userNameFilter?: string): Promise<number> {
-    const responseData = await this.api.get("/bundles")
-    assert.strictEqual(responseData.data.code, 0)
-    const From = dayjs(from)
-    const To = dayjs(to)
-    const bundles: Bundle[] = responseData.data.bundles
+  async getBundles(
+    from: string,
+    to: string,
+    userNameFilter?: string,
+  ): Promise<number> {
+    const responseData = await this.api.get("/bundles");
+    assert.strictEqual(responseData.data.code, 0);
+    const From = dayjs(from);
+    const To = dayjs(to);
+    const bundles: Bundle[] = responseData.data.bundles;
     const bundlesWithDate = bundles.filter((bundle) => {
-      const parsedDate = dayjs(bundle.date)
-      let user = true
-      if (userNameFilter && bundle.created_by_name !== userNameFilter) user = false
-      return parsedDate.isBetween(From, To) && user
-    })
+      const parsedDate = dayjs(bundle.date);
+      let user = true;
+      if (userNameFilter && bundle.created_by_name !== userNameFilter)
+        user = false;
+      return parsedDate.isBetween(From, To) && user;
+    });
     const totalBundles = bundlesWithDate.reduce(
       (previous, current) => previous + current.quantity_to_bundle,
       0,
-    )
-    return totalBundles
+    );
+    return totalBundles;
   }
 
   async customField(): Promise<string> {
-    const result = await this.api.get("/contacts/editpage")
+    const result = await this.api.get("/contacts/editpage");
     const returnValue = result.data.custom_fields.filter(
       (x: { label: string }) => x.label === "saleor-id",
-    )
+    );
     if (!returnValue)
-      throw new Error("no Contact custom field for saleor-id found. Please create it first.")
-    return returnValue[0].customfield_id
+      throw new Error(
+        "no Contact custom field for saleor-id found. Please create it first.",
+      );
+    return returnValue[0].customfield_id;
   }
 
-  async contactPersonID(invoiceId: string): Promise<{ contact_person_id: string; email: string }> {
+  async contactPersonID(
+    invoiceId: string,
+  ): Promise<{ contact_person_id: string; email: string }> {
     const result = await this.api({
       url: "/invoices/editpage",
       params: {
         invoice_id: invoiceId,
       },
-    })
-    assert.strictEqual(result.data.code, 0)
+    });
+    assert.strictEqual(result.data.code, 0);
     return {
       contact_person_id: result.data.contact.primary_contact_id as string,
       email: result.data.contact.email_id as string,
-    }
+    };
   }
 
   /**
@@ -277,14 +288,14 @@ export class Zoho {
       params: {
         tracking_number_contains: trackingNumber,
       },
-    })
-    assert.strictEqual(result.data.code, 0)
-    const returnValue = result.data.packages
-    if (returnValue.length < 1) return null
+    });
+    assert.strictEqual(result.data.code, 0);
+    const returnValue = result.data.packages;
+    if (returnValue.length < 1) return null;
     // we just receive a certain package subset - pulling the full package data to return it.
-    const packageId = returnValue[0].package_id
-    const fullPackage = await this.getPackage(packageId)
-    return fullPackage
+    const packageId = returnValue[0].package_id;
+    const fullPackage = await this.getPackage(packageId);
+    return fullPackage;
   }
 
   /**
@@ -293,58 +304,62 @@ export class Zoho {
    * if an order is ready to be send out.
    */
   async salesOrderEditpage() {
-    const result = await this.api.get("/salesorders/editpage")
-    assert.strictEqual(result.data.code, 0)
+    const result = await this.api.get("/salesorders/editpage");
+    assert.strictEqual(result.data.code, 0);
     const taxes = result.data.taxes.filter(
       (x: { deleted: boolean }) => x.deleted === false,
-    ) as Tax[]
+    ) as Tax[];
     const customFieldReadyToFulfill = result.data.custom_fields.find(
       (x: { placeholder: string }) => x.placeholder === "cf_ready_to_fulfill",
-    )?.customfield_id as string
+    )?.customfield_id as string;
     if (!customFieldReadyToFulfill)
       throw new Error(
         'Custom Field "Ready to Fulfill" for Salesorders is not created yet!! Please fix ASAP',
-      )
-    return { taxes, customFieldReadyToFulfill }
+      );
+    return { taxes, customFieldReadyToFulfill };
   }
 
   /**
    * Gets a customer and resolves all addresses, that this customer has attached.
    * @param contactId
    */
-  async getContactWithFullAdresses(contactId: string): Promise<ContactWithFullAddresses> {
+  async getContactWithFullAdresses(
+    contactId: string,
+  ): Promise<ContactWithFullAddresses> {
     const result = await this.api({
       url: `/contacts/${contactId}`,
-    })
-    assert.strictEqual(result?.data?.code, 0)
-    const returnValue = result?.data?.contact
-    if (returnValue.language_code === "") returnValue.language_code = "de"
+    });
+    assert.strictEqual(result?.data?.code, 0);
+    const returnValue = result?.data?.contact;
+    if (returnValue.language_code === "") returnValue.language_code = "de";
 
     const addressResult = await this.api({
       url: `/contacts/${contactId}/address`,
-    })
-    assert.strictEqual(addressResult.data.code, 0)
+    });
+    assert.strictEqual(addressResult.data.code, 0);
     return {
       ...(returnValue as Contact),
       addresses: addressResult.data.addresses as Address[],
-    } as ContactWithFullAddresses
+    } as ContactWithFullAddresses;
   }
 
   /**
    * Get a contact / customer by its ID.
    * @param {string} contactId
    */
-  async getContactById(contactId: string): Promise<Contact | ContactWithFullAddresses> {
+  async getContactById(
+    contactId: string,
+  ): Promise<Contact | ContactWithFullAddresses> {
     const result = await this.api({
       url: `/contacts/${contactId}`,
-    })
-    assert.strictEqual(result?.data?.code, 0)
-    const returnValue = result?.data?.contact
-    if (returnValue.language_code === "") returnValue.language_code = "de"
+    });
+    assert.strictEqual(result?.data?.code, 0);
+    const returnValue = result?.data?.contact;
+    if (returnValue.language_code === "") returnValue.language_code = "de";
 
     return {
       ...(returnValue as Contact),
-    }
+    };
   }
 
   /**
@@ -358,25 +373,26 @@ export class Zoho {
     contactId: string,
     isInclusiveTax: boolean,
   ) {
-    const salesorderString = salesorderIds.join(",")
+    const salesorderString = salesorderIds.join(",");
     const result = await this.api({
       url: "/invoices/include/salesorderitems",
       params: {
         salesorder_ids: salesorderString,
         is_inclusive_tax: isInclusiveTax,
       },
-    })
-    assert.strictEqual(result.data.code, 0)
+    });
+    assert.strictEqual(result.data.code, 0);
     const invoiceSettingsResult = await this.api({
       url: "/invoices/editpage/fromcontacts",
       params: {
         contact_id: contactId,
       },
-    })
-    assert.strictEqual(invoiceSettingsResult.data.code, 0)
-    const invoiceSettings: InvoiceSettings = invoiceSettingsResult.data.invoice_settings
-    const contact: ContactSettings = invoiceSettingsResult.data.contact
-    const lineItems: LineItem[] = result.data.invoice_items
+    });
+    assert.strictEqual(invoiceSettingsResult.data.code, 0);
+    const invoiceSettings: InvoiceSettings =
+      invoiceSettingsResult.data.invoice_settings;
+    const contact: ContactSettings = invoiceSettingsResult.data.contact;
+    const lineItems: LineItem[] = result.data.invoice_items;
     const cleanedLineItems = lineItems.map(
       (
         /**
@@ -385,18 +401,18 @@ export class Zoho {
         item: Pick<Partial<LineItem>, "warehouse_name" | "warehouses"> &
           Omit<LineItem, "warehouse_name" | "warehouses">,
       ) => {
-        delete item.warehouse_name
-        delete item.warehouses
-        return item
+        delete item.warehouse_name;
+        delete item.warehouses;
+        return item;
       },
-    )
-    const referenceNumber: string = result.data.reference_number
+    );
+    const referenceNumber: string = result.data.reference_number;
     return {
       line_items: cleanedLineItems,
       reference_number: referenceNumber,
       invoice_settings: invoiceSettings,
       contact,
-    }
+    };
   }
 
   /**
@@ -409,10 +425,10 @@ export class Zoho {
     email,
     company_name,
   }: {
-    first_name: string
-    last_name: string
-    email: string
-    company_name: string
+    first_name: string;
+    last_name: string;
+    email: string;
+    company_name: string;
   }) {
     const result = await this.api({
       url: "/customers",
@@ -425,23 +441,28 @@ export class Zoho {
         sort_order: "A",
         status: "active",
       },
-    })
-    assert.strictEqual(result.data.code, 0)
-    const returnValue = result.data.contacts as { email: string; contact_id: string }[]
-    if (returnValue.length < 1) return null
+    });
+    assert.strictEqual(result.data.code, 0);
+    const returnValue = result.data.contacts as {
+      email: string;
+      contact_id: string;
+    }[];
+    if (returnValue.length < 1) return null;
     // zoho might give us "closely" matching email addresses, so we select the return value with the exact same email address.
-    const exactMatch = returnValue.find((x) => x.email === email)
-    return exactMatch?.contact_id
+    const exactMatch = returnValue.find((x) => x.email === email);
+    return exactMatch?.contact_id;
   }
 
   async createContactPerson(contactId: string, contactPerson: ContactPerson) {
     if (!contactId)
-      throw new Error(`contactId missing! Can't create the contact person ${contactPerson}`)
+      throw new Error(
+        `contactId missing! Can't create the contact person ${contactPerson}`,
+      );
     const createData = {
       ...contactPerson,
       contact_id: contactId,
-    }
-    const data = `JSONString=${encodeURIComponent(JSON.stringify(createData))}`
+    };
+    const data = `JSONString=${encodeURIComponent(JSON.stringify(createData))}`;
     const result = await this.api({
       method: "post",
       headers: {
@@ -449,9 +470,9 @@ export class Zoho {
       },
       url: "/contacts/contactpersons",
       data,
-    })
-    assert.strictEqual(result.data.code, 0)
-    return result.data.contact_person.contact_person_id
+    });
+    assert.strictEqual(result.data.code, 0);
+    return result.data.contact_person.contact_person_id;
   }
 
   /**
@@ -469,10 +490,10 @@ export class Zoho {
         shipment_date_end: to,
         response_option: 2,
       },
-    })
-    assert.strictEqual(result.data.code, 0)
-    const totalAmount: number = result.data?.page_context?.total
-    return totalAmount
+    });
+    assert.strictEqual(result.data.code, 0);
+    const totalAmount: number = result.data?.page_context?.total;
+    return totalAmount;
   }
 
   /**
@@ -482,9 +503,9 @@ export class Zoho {
   async getSalesorderById(salesorderId: string) {
     const result = await this.api({
       url: `/salesorders/${salesorderId}`,
-    })
-    assert.strictEqual(result.data.code, 0)
-    return result.data.salesorder as SalesOrderReturn
+    });
+    assert.strictEqual(result.data.code, 0);
+    return result.data.salesorder as SalesOrderReturn;
   }
 
   /**
@@ -497,21 +518,22 @@ export class Zoho {
       params: {
         salesorder_number: salesorderNumber,
       },
-    })
-    assert.strictEqual(result.data.code, 0)
-    const returnValue = result.data.salesorders
-    if (returnValue.length < 1) return null
+    });
+    assert.strictEqual(result.data.code, 0);
+    const returnValue = result.data.salesorders;
+    if (returnValue.length < 1) return null;
 
     // get the full salesorder with metadata. Search results just offer parts
     const FullResult = await this.api({
       url: `/salesorders/${returnValue[0].salesorder_id}`,
-    })
-    assert.strictEqual(FullResult.data.code, 0)
+    });
+    assert.strictEqual(FullResult.data.code, 0);
 
     // this easy to use value is NOT set by Zoho when accessing the Salesorder directly ..
-    FullResult.data.salesorder.total_invoiced_amount = returnValue[0].total_invoiced_amount
+    FullResult.data.salesorder.total_invoiced_amount =
+      returnValue[0].total_invoiced_amount;
 
-    return FullResult.data.salesorder as SalesOrderWithInvoicedAmount
+    return FullResult.data.salesorder as SalesOrderWithInvoicedAmount;
   }
 
   /**
@@ -523,9 +545,9 @@ export class Zoho {
     status,
     customview_id,
   }: {
-    date_before: string
-    status: invoiceStatus
-    customview_id?: string
+    date_before: string;
+    status: invoiceStatus;
+    customview_id?: string;
   }) {
     const result = await this.api({
       url: "/invoices",
@@ -534,10 +556,10 @@ export class Zoho {
         status,
         customview_id,
       },
-    })
-    assert.strictEqual(result.data.code, 0)
+    });
+    assert.strictEqual(result.data.code, 0);
 
-    return result.data.invoices as Invoice[]
+    return result.data.invoices as Invoice[];
   }
 
   /**
@@ -547,9 +569,9 @@ export class Zoho {
   async getInvoiceById(invoiceId: string) {
     const result = await this.api({
       url: `/invoices/${invoiceId}`,
-    })
-    assert.strictEqual(result.data.code, 0)
-    return result.data.invoice as Invoice
+    });
+    assert.strictEqual(result.data.code, 0);
+    return result.data.invoice as Invoice;
   }
 
   /**
@@ -560,9 +582,9 @@ export class Zoho {
     const result = await this.api({
       url: "/customerpayments",
       params: searchParams,
-    })
-    assert.strictEqual(result.data.code, 0)
-    return result.data.customerpayments as CustomerPayment[]
+    });
+    assert.strictEqual(result.data.code, 0);
+    return result.data.customerpayments as CustomerPayment[];
   }
 
   /**
@@ -571,8 +593,9 @@ export class Zoho {
    * @param rawData
    */
   async updateCustomerPayment(id: string, rawData: unknown, maxAttempts = 0) {
-    if (typeof id !== "string") throw new Error("You are missing the Payment ID! Please set it")
-    const data = `JSONString=${encodeURIComponent(JSON.stringify(rawData))}`
+    if (typeof id !== "string")
+      throw new Error("You are missing the Payment ID! Please set it");
+    const data = `JSONString=${encodeURIComponent(JSON.stringify(rawData))}`;
     await retry(
       async () => {
         const result = await this.api({
@@ -582,14 +605,14 @@ export class Zoho {
             "Content-Type": "application/x-www-form-urlencoded",
           },
           data,
-        })
-        assert.strictEqual(result.data.code, 0)
-        return true
+        });
+        assert.strictEqual(result.data.code, 0);
+        return true;
       },
       {
         maxAttempts,
       },
-    )
+    );
   }
 
   /**
@@ -602,16 +625,19 @@ export class Zoho {
       params: {
         salesorder_id: salesOrderId,
       },
-    })
-    assert.strictEqual(result.data.code, 0)
-    const returnValue = result.data.salesorder.invoices
-    if (returnValue.length < 1) throw new Error("This salesorder has no invoices attached.")
+    });
+    assert.strictEqual(result.data.code, 0);
+    const returnValue = result.data.salesorder.invoices;
+    if (returnValue.length < 1)
+      throw new Error("This salesorder has no invoices attached.");
     if (returnValue.length > 1)
-      throw new Error("This salesorder has more than one invoice attached. We can't add a payment")
+      throw new Error(
+        "This salesorder has more than one invoice attached. We can't add a payment",
+      );
     return {
       invoice_id: returnValue[0].invoice_id,
       metadata: returnValue[0],
-    }
+    };
   }
 
   /**
@@ -623,19 +649,19 @@ export class Zoho {
       params: {
         sku: productSKU,
       },
-    })
-    assert.strictEqual(result.data.code, 0)
-    const returnValue = result.data.items
+    });
+    assert.strictEqual(result.data.code, 0);
+    const returnValue = result.data.items;
     if (returnValue < 1)
       throw new Error(
         `No product for this SKU found! Create the product first in Zoho ${productSKU}`,
-      )
+      );
     return {
       zohoItemId: returnValue[0].item_id as string,
       zohoTaxRate: returnValue[0].tax_percentage as number,
       name: returnValue[0].name as string,
       zohoTaxRateId: returnValue[0].tax_id as string,
-    }
+    };
   }
 
   /**
@@ -643,7 +669,7 @@ export class Zoho {
    * @param data - Must be json serializable
    */
   async createContact(data: unknown) {
-    data = `JSONString=${encodeURIComponent(JSON.stringify(data))}`
+    data = `JSONString=${encodeURIComponent(JSON.stringify(data))}`;
     const result = await this.api({
       method: "post",
       headers: {
@@ -651,14 +677,17 @@ export class Zoho {
       },
       url: "/contacts",
       data,
-    })
-    assert.strictEqual(result.data.code, 0)
+    });
+    assert.strictEqual(result.data.code, 0);
     return {
       contact_id: result.data.contact.contact_id,
-      contact_person_id: result.data.contact.contact_persons[0].contact_person_id,
-      billing_address_id: result.data.contact.billing_address.address_id || null,
-      shipping_address_id: result.data.contact.shipping_address.address_id || null,
-    }
+      contact_person_id:
+        result.data.contact.contact_persons[0].contact_person_id,
+      billing_address_id:
+        result.data.contact.billing_address.address_id || null,
+      shipping_address_id:
+        result.data.contact.shipping_address.address_id || null,
+    };
   }
 
   /**
@@ -667,14 +696,16 @@ export class Zoho {
    * @param {string} param0.product_id The Zoho product ID like 116240000000037177
    */
   async getItemasync({ product_id }: { product_id: string }) {
-    if (!product_id) throw new Error("Missing mandatory field product ID!")
+    if (!product_id) throw new Error("Missing mandatory field product ID!");
     const result = await this.api({
       url: `/items/${product_id}`,
-    })
-    assert.strictEqual(result.data.code, 0)
+    });
+    assert.strictEqual(result.data.code, 0);
     if (!result.data.item)
-      throw new Error(`No Product data returned from Zoho! ${JSON.stringify(result.data)}`)
-    return result.data.item
+      throw new Error(
+        `No Product data returned from Zoho! ${JSON.stringify(result.data)}`,
+      );
+    return result.data.item;
   }
 
   /**
@@ -684,11 +715,13 @@ export class Zoho {
   async getItemGroup(product_id: string) {
     const result = await this.api({
       url: `/itemgroups/${product_id}`,
-    })
-    assert.strictEqual(result.data.code, 0)
+    });
+    assert.strictEqual(result.data.code, 0);
     if (!result.data.item_group)
-      throw new Error(`No Product data returned from Zoho! ${JSON.stringify(result.data)}`)
-    return result.data.item_group
+      throw new Error(
+        `No Product data returned from Zoho! ${JSON.stringify(result.data)}`,
+      );
+    return result.data.item_group;
   }
 
   /**
@@ -697,7 +730,7 @@ export class Zoho {
    * @param totalGrossAmount
    */
   async createSalesorder(rawData: SalesOrder, totalGrossAmount?: string) {
-    const data = `JSONString=${encodeURIComponent(JSON.stringify(rawData))}`
+    const data = `JSONString=${encodeURIComponent(JSON.stringify(rawData))}`;
 
     const result = await this.api({
       method: "post",
@@ -709,20 +742,23 @@ export class Zoho {
         ignore_auto_number_generation: true,
       },
       data,
-    })
+    });
     if (result.data.code !== 0) {
       console.error(
         "Creating the Salesorder failed in Zoho. Printing out response and the salesorder we wanted to create",
         result.data,
-      )
-      console.info(JSON.stringify(data, null, 2))
+      );
+      console.info(JSON.stringify(data, null, 2));
     }
-    assert.strictEqual(result.data.code, 0)
+    assert.strictEqual(result.data.code, 0);
     if (totalGrossAmount) {
-      assert.strictEqual(parseFloat(totalGrossAmount), result.data.salesorder.total)
+      assert.strictEqual(
+        parseFloat(totalGrossAmount),
+        result.data.salesorder.total,
+      );
     }
 
-    return result.data.salesorder as SalesOrderReturn
+    return result.data.salesorder as SalesOrderReturn;
   }
 
   /**
@@ -731,8 +767,9 @@ export class Zoho {
    * @param rawData - must be json serializable
    */
   async updateSalesorder(id: string, rawData: unknown, maxAttempts = 0) {
-    if (typeof id !== "string") throw new Error("You are missing the salesorderid! Please set it")
-    const data = `JSONString=${encodeURIComponent(JSON.stringify(rawData))}`
+    if (typeof id !== "string")
+      throw new Error("You are missing the salesorderid! Please set it");
+    const data = `JSONString=${encodeURIComponent(JSON.stringify(rawData))}`;
     await retry(
       async () => {
         const result = await this.api({
@@ -742,14 +779,14 @@ export class Zoho {
             "Content-Type": "application/x-www-form-urlencoded",
           },
           data,
-        })
-        assert.strictEqual(result.data.code, 0)
-        return true
+        });
+        assert.strictEqual(result.data.code, 0);
+        return true;
       },
       {
         maxAttempts,
       },
-    )
+    );
   }
 
   /**
@@ -758,7 +795,7 @@ export class Zoho {
    * @param maxAttempts the number of maxAttempts we should do when request fails
    */
   async salesordersConfirm(salesorders: string[], maxAttempts = 3) {
-    const data = `salesorder_ids=${encodeURIComponent(salesorders.join(","))}`
+    const data = `salesorder_ids=${encodeURIComponent(salesorders.join(","))}`;
     await retry(
       async () => {
         const result = await this.api({
@@ -768,14 +805,14 @@ export class Zoho {
             "Content-Type": "application/x-www-form-urlencoded",
           },
           data,
-        })
-        assert.strictEqual(result.data.code, 0)
-        return true
+        });
+        assert.strictEqual(result.data.code, 0);
+        return true;
       },
       {
         maxAttempts,
       },
-    )
+    );
   }
 
   async salesorderConfirm(salesorderId: string, maxAttempts = 3) {
@@ -787,14 +824,14 @@ export class Zoho {
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
           },
-        })
-        assert.strictEqual(result.data.code, 0)
+        });
+        assert.strictEqual(result.data.code, 0);
       },
       {
         maxAttempts,
       },
-    )
-    return true
+    );
+    return true;
   }
 
   /**
@@ -809,14 +846,16 @@ export class Zoho {
       params: {
         salesorder_id: salesOrderId,
       },
-    })
-    assert.strictEqual(result.data.code, 0)
-    const returnValue = result.data.invoice
-    return returnValue.invoice_id
+    });
+    assert.strictEqual(result.data.code, 0);
+    const returnValue = result.data.invoice;
+    return returnValue.invoice_id;
   }
 
   async createPayment(paymentData: unknown) {
-    const data = `JSONString=${encodeURIComponent(JSON.stringify(paymentData))}`
+    const data = `JSONString=${encodeURIComponent(
+      JSON.stringify(paymentData),
+    )}`;
     const result = await this.api({
       url: "/customerpayments",
       method: "post",
@@ -824,9 +863,9 @@ export class Zoho {
         "Content-Type": "application/x-www-form-urlencoded",
       },
       data,
-    })
-    assert.strictEqual(result.data.code, 0)
-    return true
+    });
+    assert.strictEqual(result.data.code, 0);
+    return true;
   }
 
   /**
@@ -835,7 +874,7 @@ export class Zoho {
    * @param updateData {}
    */
   async updateInvoice(invoiceID: string, updateData: InvoiceOptional) {
-    const data = `JSONString=${encodeURIComponent(JSON.stringify(updateData))}`
+    const data = `JSONString=${encodeURIComponent(JSON.stringify(updateData))}`;
     const result = await this.api({
       url: `/invoices/${invoiceID}`,
       method: "put",
@@ -843,9 +882,9 @@ export class Zoho {
         "Content-Type": "application/x-www-form-urlencoded",
       },
       data,
-    })
-    assert.strictEqual(result.data.code, 0)
-    return result.data.invoice as Invoice
+    });
+    assert.strictEqual(result.data.code, 0);
+    return result.data.invoice as Invoice;
   }
 
   /**
@@ -864,13 +903,16 @@ export class Zoho {
     // first get the Templates
     const templatesResult = await this.api({
       url: "/settings/emailtemplates",
-    })
+    });
     // generate the template with language code
-    const templateNameWithLang = `${templateName}_${languageCode.toLowerCase()}`
+    const templateNameWithLang = `${templateName}_${languageCode.toLowerCase()}`;
     const template = templatesResult.data?.emailtemplates.find(
       (x: { name: string }) => x.name === templateNameWithLang,
-    ) as ZohoEmailTemplate
-    if (!template) throw new Error(`No template with the name ${templateNameWithLang} found!`)
+    ) as ZohoEmailTemplate;
+    if (!template)
+      throw new Error(
+        `No template with the name ${templateNameWithLang} found!`,
+      );
 
     // get the email data like body, subject or the email address ID.
     const response = await this.api({
@@ -878,15 +920,15 @@ export class Zoho {
       params: {
         email_template_id: template.email_template_id,
       },
-    })
-    const emailDataResult = response.data
+    });
+    const emailDataResult = response.data;
 
     const emailData = {
       from_address: emailDataResult.data?.from_address as string,
       subject: emailDataResult.data.subject as string,
       body: emailDataResult.data.body as string,
-    }
-    return emailData
+    };
+    return emailData;
   }
 
   /**
@@ -895,9 +937,9 @@ export class Zoho {
   async getCustomFunctionsasync() {
     const result = await this.api({
       url: "/integrations/customfunctions",
-    })
-    assert.strictEqual(result.data.code, 0)
-    return result.data.customfunctions as CustomFunction[]
+    });
+    assert.strictEqual(result.data.code, 0);
+    return result.data.customfunctions as CustomFunction[];
   }
 
   /**
@@ -906,9 +948,9 @@ export class Zoho {
   async getWebhooksasync() {
     const result = await this.api({
       url: "/settings/webhooks",
-    })
-    assert.strictEqual(result.data.code, 0)
-    return result.data.webhooks as WebhookSearch[]
+    });
+    assert.strictEqual(result.data.code, 0);
+    return result.data.webhooks as WebhookSearch[];
   }
 
   /**
@@ -929,13 +971,16 @@ export class Zoho {
     // first get the Templates
     const templatesResult = await this.api({
       url: "/settings/emailtemplates",
-    })
+    });
     // generate the template with language code
-    const templateNameWithLang = `${templateName}_${languageCode.toLowerCase()}`
+    const templateNameWithLang = `${templateName}_${languageCode.toLowerCase()}`;
     const template = templatesResult.data?.emailtemplates.find(
       (x: { name: string }) => x.name === templateNameWithLang,
-    ) as ZohoEmailTemplate
-    if (!template) throw new Error(`No template with the name ${templateNameWithLang} found!`)
+    ) as ZohoEmailTemplate;
+    if (!template)
+      throw new Error(
+        `No template with the name ${templateNameWithLang} found!`,
+      );
 
     // get the email data like body, subject or the email address ID.
     const response = await this.api({
@@ -943,32 +988,35 @@ export class Zoho {
       params: {
         email_template_id: template.email_template_id,
       },
-    })
-    const emailDataResult = response.data
+    });
+    const emailDataResult = response.data;
 
     const emailData = {
       from_address: emailDataResult.data?.from_address,
       to_mail_ids: [`${userEmail}`],
       subject: emailDataResult.data.subject,
       body: emailDataResult.data.body,
-    }
+    };
 
-    const form = new FormData()
-    form.append("file_name", emailDataResult.data?.file_name)
-    form.append("JSONString", JSON.stringify(emailData))
-    form.append("attach_pdf", "true")
+    const form = new FormData();
+    form.append("file_name", emailDataResult.data?.file_name);
+    form.append("JSONString", JSON.stringify(emailData));
+    form.append("attach_pdf", "true");
     // send out the email with the data from the step before
     const emailSendResult = await this.api({
       url: `/${entity}/${id}/email`,
       headers: form.getHeaders(),
       method: "post",
       data: form,
-    })
-    assert.strictEqual(emailSendResult.data.code, 0)
-    return true
+    });
+    assert.strictEqual(emailSendResult.data.code, 0);
+    return true;
   }
   //FIXME: type
-  async sendInvoice(data: { email: string; invoices: { invoice_id: string }[] }) {
+  async sendInvoice(data: {
+    email: string;
+    invoices: { invoice_id: string }[];
+  }) {
     const result = await this.api({
       url: `/invoices/${data.invoices[0].invoice_id}/email`,
       method: "post",
@@ -981,8 +1029,8 @@ export class Zoho {
           to_mail_ids: [data.email],
         }),
       )}`,
-    })
-    assert.strictEqual(result.data.code, 0)
+    });
+    assert.strictEqual(result.data.code, 0);
   }
 
   /**
@@ -993,11 +1041,11 @@ export class Zoho {
     invoiceId,
     invoiceURL,
   }: {
-    invoiceId?: string
-    invoiceURL: string
+    invoiceId?: string;
+    invoiceURL: string;
   }) {
-    const expiry_time = dayjs().add(90, "day").format("YYYY-MM-DD")
-    let returnValue
+    const expiry_time = dayjs().add(90, "day").format("YYYY-MM-DD");
+    let returnValue;
     if (invoiceId) {
       const result = await this.api({
         params: {
@@ -1006,11 +1054,11 @@ export class Zoho {
           link_type: "public",
           expiry_time,
         },
-      })
-      assert.strictEqual(result.data.code, 0)
-      returnValue = replace(result.data.share_link)
+      });
+      assert.strictEqual(result.data.code, 0);
+      returnValue = replace(result.data.share_link);
     } else {
-      returnValue = replace(invoiceURL)
+      returnValue = replace(invoiceURL);
     }
 
     /**
@@ -1023,10 +1071,10 @@ export class Zoho {
           .replace(/\/inventory/, "/books")
           .replace(/\/secure/, "/api/v3/clientinvoices/secure")
           .trim() as string
-      }&accept=pdf`
+      }&accept=pdf`;
     }
 
-    return returnValue
+    return returnValue;
   }
 
   /**
@@ -1036,10 +1084,14 @@ export class Zoho {
    * @param id
    * @param additions add a string of additions to the download URL (like /image etc.)
    */
-  async getDocumentBase64StringOrBuffer(entity: Entity, id: string, additions?: string) {
-    const url = `/${entity}/${id}${additions || ""}`
+  async getDocumentBase64StringOrBuffer(
+    entity: Entity,
+    id: string,
+    additions?: string,
+  ) {
+    const url = `/${entity}/${id}${additions || ""}`;
 
-    let result: AxiosResponse | undefined = undefined
+    let result: AxiosResponse | undefined = undefined;
 
     const RetryFunction = async () => {
       return await this.api({
@@ -1048,30 +1100,33 @@ export class Zoho {
           accept: "pdf",
         },
         responseType: "arraybuffer",
-      })
-    }
+      });
+    };
 
     try {
-      result = await RetryFunction()
+      result = await RetryFunction();
     } catch (error) {
       if (error?.response?.status === (404 || 400)) {
-        await new Promise((resolve) => setTimeout(resolve, 1_000))
-        result = await RetryFunction()
-        console.error("Document still doesn't exist!")
-        return { base64Buffer: null, filename: null, rawBuffer: null }
+        await new Promise((resolve) => setTimeout(resolve, 1_000));
+        result = await RetryFunction();
+        console.error("Document still doesn't exist!");
+        return { base64Buffer: null, filename: null, rawBuffer: null };
       }
-      console.error("Error downloading document!", error)
-      throw new Error(error)
+      console.error("Error downloading document!", error);
+      throw new Error(error);
     }
 
-    const rawBuffer = Buffer.from(result.data, "binary")
-    const base64Buffer = Buffer.from(result.data, "binary").toString("base64")
-    const headerLine = result.headers["content-disposition"]
-    const startFileNameIndex = headerLine.indexOf('"') + 1
-    const endFileNameIndex = headerLine.lastIndexOf('"')
-    const filename = headerLine.substring(startFileNameIndex, endFileNameIndex) as string
+    const rawBuffer = Buffer.from(result.data, "binary");
+    const base64Buffer = Buffer.from(result.data, "binary").toString("base64");
+    const headerLine = result.headers["content-disposition"];
+    const startFileNameIndex = headerLine.indexOf('"') + 1;
+    const endFileNameIndex = headerLine.lastIndexOf('"');
+    const filename = headerLine.substring(
+      startFileNameIndex,
+      endFileNameIndex,
+    ) as string;
 
-    return { base64Buffer, filename, rawBuffer }
+    return { base64Buffer, filename, rawBuffer };
   }
 
   /**
@@ -1080,8 +1135,14 @@ export class Zoho {
    * @param id
    * @param comment the comment string
    */
-  async addComment(entity: Entity, id: string, comment: string): Promise<boolean> {
-    const data = `JSONString=${encodeURIComponent(JSON.stringify({ description: comment }))}`
+  async addComment(
+    entity: Entity,
+    id: string,
+    comment: string,
+  ): Promise<boolean> {
+    const data = `JSONString=${encodeURIComponent(
+      JSON.stringify({ description: comment }),
+    )}`;
 
     const result = await this.api({
       url: `/${entity}/${id}/comments`,
@@ -1090,9 +1151,9 @@ export class Zoho {
         "Content-Type": "application/x-www-form-urlencoded",
       },
       data,
-    })
-    assert.strictEqual(result.data.code, 0)
-    return true
+    });
+    assert.strictEqual(result.data.code, 0);
+    return true;
   }
 
   /**
@@ -1102,7 +1163,7 @@ export class Zoho {
    * @param comment the comment string
    */
   async addNote(shipmentid: string, note: string): Promise<boolean> {
-    const data = `shipment_notes=${encodeURIComponent(note)}`
+    const data = `shipment_notes=${encodeURIComponent(note)}`;
 
     const result = await this.api({
       url: `/shipmentorders/${shipmentid}/notes`,
@@ -1111,9 +1172,9 @@ export class Zoho {
         "Content-Type": "application/x-www-form-urlencoded",
       },
       data,
-    })
-    assert.strictEqual(result.data.code, 0)
-    return true
+    });
+    assert.strictEqual(result.data.code, 0);
+    return true;
   }
 
   /**
@@ -1136,14 +1197,16 @@ export class Zoho {
           value,
         },
       ],
-    }
-    const data = `JSONString=${encodeURIComponent(JSON.stringify(updateValue))}`
+    };
+    const data = `JSONString=${encodeURIComponent(
+      JSON.stringify(updateValue),
+    )}`;
     await this.api({
       method: "put",
       url: `/${entity}/${id}`,
       data,
-    })
-    return true
+    });
+    return true;
   }
 
   /**
@@ -1151,21 +1214,24 @@ export class Zoho {
    * @param salesorderId
    * @param documentId
    */
-  async getDocumentFromSalesorderBase64String(salesorderId: string, documentId: string) {
+  async getDocumentFromSalesorderBase64String(
+    salesorderId: string,
+    documentId: string,
+  ) {
     const result = await this.api({
       url: `/salesorders/${salesorderId}/documents/${documentId}`,
       params: {
         accept: "pdf",
       },
       responseType: "arraybuffer",
-    })
-    const base64Buffer = Buffer.from(result.data, "binary").toString("base64")
-    const headerLine = result.headers["content-disposition"]
-    const startFileNameIndex = headerLine.indexOf('"') + 1
-    const endFileNameIndex = headerLine.lastIndexOf('"')
-    const filename = headerLine.substring(startFileNameIndex, endFileNameIndex)
+    });
+    const base64Buffer = Buffer.from(result.data, "binary").toString("base64");
+    const headerLine = result.headers["content-disposition"];
+    const startFileNameIndex = headerLine.indexOf('"') + 1;
+    const endFileNameIndex = headerLine.lastIndexOf('"');
+    const filename = headerLine.substring(startFileNameIndex, endFileNameIndex);
 
-    return { base64Buffer, filename }
+    return { base64Buffer, filename };
   }
 
   /**
@@ -1173,14 +1239,16 @@ export class Zoho {
    * @param creationData
    */
   async createWebhook(creationData: WebhookUpdate) {
-    const data = `JSONString=${encodeURIComponent(JSON.stringify(creationData))}`
+    const data = `JSONString=${encodeURIComponent(
+      JSON.stringify(creationData),
+    )}`;
     const result = await this.api({
       method: "POST",
       url: "/settings/webhooks/",
       data,
-    })
-    assert.strictEqual(result.data.code, 0)
-    return result.data.webhook as Webhook
+    });
+    assert.strictEqual(result.data.code, 0);
+    return result.data.webhook as Webhook;
   }
 
   /**
@@ -1189,14 +1257,14 @@ export class Zoho {
    * @param updateDate
    */
   async updateWebhook(webhookId: string, updateDate: WebhookUpdate) {
-    const data = `JSONString=${encodeURIComponent(JSON.stringify(updateDate))}`
+    const data = `JSONString=${encodeURIComponent(JSON.stringify(updateDate))}`;
     const result = await this.api({
       method: "PUT",
       url: `/settings/webhooks/${webhookId}`,
       data,
-    })
-    assert.strictEqual(result.data.code, 0)
-    return result.data.webhook as Webhook
+    });
+    assert.strictEqual(result.data.code, 0);
+    return result.data.webhook as Webhook;
   }
 
   /**
@@ -1204,12 +1272,11 @@ export class Zoho {
    * @param creationData
    */
   async createCustomfunction(creationData: any) {
-    const data = `JSONString=${encodeURIComponent(JSON.stringify(creationData)).replace(
-      /\s/g,
-      "+",
-    )}&organization_id=${this.orgId}`
+    const data = `JSONString=${encodeURIComponent(
+      JSON.stringify(creationData),
+    ).replace(/\s/g, "+")}&organization_id=${this.orgId}`;
     // form.append('organization_id', this.zohoOrgId);
-    delete this.api.defaults.params.organization_id
+    delete this.api.defaults.params.organization_id;
     const result = await this.api({
       method: "POST",
       headers: {
@@ -1218,19 +1285,19 @@ export class Zoho {
       },
       url: "/integrations/customfunctions",
       data,
-    })
-    assert.strictEqual(result.data.code, 0)
-    return result.data.customfunction as CustomFunctionSearch
+    });
+    assert.strictEqual(result.data.code, 0);
+    return result.data.customfunction as CustomFunctionSearch;
   }
 
   async updateCustomFunction(customfunctionId: string, updateDate: any) {
-    const data = `JSONString=${encodeURIComponent(updateDate)}`
+    const data = `JSONString=${encodeURIComponent(updateDate)}`;
     const result = await this.api({
       method: "PUT",
       url: `/integrations/customfunctions/${customfunctionId}`,
       data,
-    })
-    assert.strictEqual(result.data.code, 0)
-    return result.data.webhook as CustomFunctionSearch
+    });
+    assert.strictEqual(result.data.code, 0);
+    return result.data.webhook as CustomFunctionSearch;
   }
 }

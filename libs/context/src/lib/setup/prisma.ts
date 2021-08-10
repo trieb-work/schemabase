@@ -1,11 +1,11 @@
-import { ExtendContextFn } from "../context"
-import { PrismaClient } from "@eci/data-access/prisma"
-import { env } from "@eci/util/env"
+import { ExtendContextFn } from "../context";
+import { PrismaClient } from "@eci/data-access/prisma";
+import { env } from "@eci/util/env";
 /**
  * Initialize a prisma client and make it public to the context
  */
 export const setupPrisma = (): ExtendContextFn<"prisma"> => async (ctx) => {
-  const url = env.require("DATABASE_URL_POOL")
+  const url = env.require("DATABASE_URL_POOL");
   return {
     ...ctx,
     prisma: new PrismaClient({
@@ -13,5 +13,5 @@ export const setupPrisma = (): ExtendContextFn<"prisma"> => async (ctx) => {
         db: { url },
       },
     }),
-  }
-}
+  };
+};

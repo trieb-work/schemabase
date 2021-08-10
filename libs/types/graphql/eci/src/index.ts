@@ -1,1 +1,1 @@
-export * from "./lib/types-graphql-eci"
+export * from "./lib/types-graphql-eci";
