@@ -6,21 +6,13 @@ import {
   ProductDataFeed,
   ProductDataFeedQuery,
   ProductDataFeedQueryVariables,
-  Weight,
 } from "@eci/types/graphql/global"
 // @ts-expect-error For some reason it does not load types
 import edjsHTML from "editorjs-html"
+import { generateUnitPrice } from "./generate-unit-price"
 
 const edjsParser = edjsHTML()
 
-const generateUnitPrice = (variantWeight: Weight, productWeight: Weight): string | undefined => {
-  if (!variantWeight?.value && !productWeight?.value) {
-    return undefined
-  }
-  return variantWeight?.value
-    ? `${variantWeight.value} ${variantWeight.unit}`
-    : `${productWeight.value} ${productWeight.unit}`
-}
 /**
  * Generate product data as .csv
  */
