@@ -1,14 +1,11 @@
 import { ExtendContextFn } from "../context"
 import { PrismaClient } from "@eci/data-access/prisma"
-
+import { env } from "@eci/util/env"
 /**
  * Initialize a prisma client and make it public to the context
  */
 export const setupPrisma = (): ExtendContextFn<"prisma"> => async (ctx) => {
-  const url = process.env["DATABASE_URL_POOL"]
-  if (!url) {
-    throw new Error(`DATABASE_URL_POOL environment variable is undefined`)
-  }
+  const url = env.require("DATABASE_URL_POOL")
   return {
     ...ctx,
     prisma: new PrismaClient({
