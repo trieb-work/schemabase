@@ -48,7 +48,6 @@
     "html-to-text": "^8.0.0",
     "js-base64": "^3.6.1",
     "lodash": "^4.17.21",
-    "mailchimp-api-v3": "^1.15.0",
     "md5": "^2.3.0",
     "moment-business-days": "^1.2.0",
     "next": "10.2.0",
