@@ -5,7 +5,7 @@
 
 
 # 1. Build the nextjs app as usual
-npx nx build webhooks --prod --outputPath=.
+npx nx build webhooks --prod
 
 # 2. Migrate the database
 npx prisma migrate deploy --schema=libs/data-access/prisma/schema.prisma
