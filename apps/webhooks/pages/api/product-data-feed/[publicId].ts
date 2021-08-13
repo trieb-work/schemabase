@@ -32,6 +32,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ): Promise<void> {
+  let status;
   try {
     const {
       headers: {
@@ -42,7 +43,10 @@ export default async function handler(
       },
       body: { app_token: appToken },
       query: { publicId, variant },
-    } = requestValidation.parse(req);
+    } = await requestValidation.parseAsync(req).catch((err) => {
+      status = 400;
+      throw err;
+    });
 
     const ctx = await createContext<
       "prisma" | "requestDataFeed" | "logger" | "saleor"
@@ -85,7 +89,7 @@ export default async function handler(
     res.setHeader("Cache-Control", "s-maxage=1, stale-while-revalidate");
     return res.send(productDataFeed);
   } catch (err) {
-    res.status(400);
+    res.status(status ?? 500);
     res.send(err);
   } finally {
     res.end();
