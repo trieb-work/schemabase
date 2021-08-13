@@ -5,7 +5,7 @@ export type { Tenant } from "@eci/data-access/prisma";
 /**
  * Fetch the tenant configuration and expose it to the context
  */
-export const getTenant =
+export const setupTenant =
   (query: Prisma.TenantFindFirstArgs): ExtendContextFn<"tenant"> =>
   async (ctx) => {
     if (!ctx.prisma) {
@@ -17,5 +17,5 @@ export const getTenant =
       throw new Error("Unable to find tenant in database");
     }
 
-    return { ...ctx, tenant };
+    return Object.assign(ctx, { tenant });
   };

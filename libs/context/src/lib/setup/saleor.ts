@@ -14,14 +14,8 @@ export const setupSaleor = (): ExtendContextFn<"saleor"> => async (ctx) => {
   if (!ctx.prisma) {
     throw new ContextMissingFieldError("prisma");
   }
-  if (!ctx.elasticSearch) {
-    throw new ContextMissingFieldError("elasticSearch");
-  }
   if (!ctx.tenant) {
     throw new ContextMissingFieldError("tenant");
-  }
-  if (!ctx.logger) {
-    throw new ContextMissingFieldError("logger");
   }
 
   const saleorConfig = await ctx.prisma.saleorConfig.findUnique({
@@ -35,8 +29,7 @@ export const setupSaleor = (): ExtendContextFn<"saleor"> => async (ctx) => {
     `https://${saleorConfig.domain}/graphql/`,
   );
 
-  return {
-    ...ctx,
+  return Object.assign(ctx, {
     saleor: { graphqlClient: unauthenticatedSaleorGraphqlClient },
-  };
+  });
 };

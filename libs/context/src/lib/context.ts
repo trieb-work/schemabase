@@ -3,7 +3,6 @@ import { GoogleOAuthConfig } from "./setup/googleOAuth";
 import { RedisConfig } from "./setup/redis";
 import { ElasticSearchConfig } from "./setup/elasticSearch";
 import { Logger } from "./setup/logger";
-import { BrainTree } from "./setup/braintree";
 import { Zoho } from "./setup/zoho";
 import { Sentry } from "./setup/sentry";
 import { Saleor } from "./setup/saleor";
@@ -16,7 +15,6 @@ export type Context = {
   redis?: RedisConfig;
   elasticSearch?: ElasticSearchConfig;
   logger?: Logger;
-  braintree?: BrainTree;
   zoho?: Zoho;
   sentry?: Sentry;
   saleor?: Saleor;
@@ -35,7 +33,7 @@ type RequiredKeys<Keys extends keyof Context> = Context &
  * @example
  * ```
  *  const extendContext: ExtendContextFn<"newField"> = async (ctx) => {
- *    return { newField: "abc" }
+ *    return Object.assign(ctx, { newField: "abc" })
  * }
  * ```
  *
@@ -52,9 +50,9 @@ export async function createContext<Keys extends keyof Context>(
 ): Promise<RequiredKeys<Keys>> {
   let ctx = {} as Context;
 
-  extendContext.forEach(async (extend) => {
+  for (const extend of extendContext) {
     ctx = await extend(ctx);
-  });
+  }
 
   return ctx as RequiredKeys<Keys>;
 }

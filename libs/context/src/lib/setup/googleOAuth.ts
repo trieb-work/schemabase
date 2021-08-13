@@ -22,12 +22,9 @@ export const setupGoogleOAuthConfig =
     if (!config) {
       throw new Error("Unable to find google oauth config from database");
     }
-
-    return {
-      ...ctx,
-      googleOAuth: {
-        clientId: config.clientId,
-        clientSecret: config.clientSecret,
-      },
+    const googleOAuth = {
+      clientId: config.clientId,
+      clientSecret: config.clientSecret,
     };
+    return Object.assign(ctx, { googleOAuth });
   };

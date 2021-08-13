@@ -27,5 +27,5 @@ export const getRedisConfig = (): ExtendContextFn<"redis"> => async (ctx) => {
     password: config.password,
     port: config.port,
   };
-  return { ...ctx, redis };
+  return Object.assign(ctx, { redis });
 };

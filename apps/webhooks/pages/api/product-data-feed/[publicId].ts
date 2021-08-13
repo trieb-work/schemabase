@@ -5,7 +5,7 @@ import {
   setupRequestDataFeed,
   setupLogger,
   setupSaleor,
-  getTenant,
+  setupTenant,
 } from "@eci/context";
 import { generateProductDataFeed } from "@eci/integrations/product-data-feed";
 import md5 from "md5";
@@ -42,9 +42,9 @@ export default async function handler(
     const ctx = await createContext<
       "prisma" | "requestDataFeed" | "tenant" | "logger" | "saleor"
     >(
-      setupPrisma(),
-      getTenant({ where: { productdatafeed: { publicId } } }),
       setupLogger(),
+      setupPrisma(),
+      setupTenant({ where: { productdatafeed: { some: { publicId } } } }),
       setupSaleor(),
       setupRequestDataFeed({ publicId, variant }),
     );

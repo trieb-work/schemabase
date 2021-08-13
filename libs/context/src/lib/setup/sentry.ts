@@ -54,5 +54,5 @@ export const setupSentry = (): ExtendContextFn<"sentry"> => async (ctx) => {
     };
   }
 
-  return { ...ctx, sentry };
+  return Object.assign(ctx, { sentry });
 };
