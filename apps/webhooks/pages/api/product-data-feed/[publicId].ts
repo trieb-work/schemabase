@@ -17,8 +17,9 @@ const requestValidation = z.object({
     publicId: z.string(),
     variant: z
       .string()
-      .refine((variant) =>
-        ["facebookcommerce", "googlemerchant"].includes(variant),
+      .refine(
+        (variant) => ["facebookcommerce", "googlemerchant"].includes(variant),
+        "only `facebookcommerce` and `googlemerchant` are currently supported",
       ),
   }),
 });
