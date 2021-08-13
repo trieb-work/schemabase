@@ -17,7 +17,9 @@ const requestValidation = z.object({
   }),
   headers: z.object({
     "x-saleor-domain": z.string(),
-    "x-saleor-token": z.string().refine((s) => s.startsWith("Bearer ")),
+    "x-saleor-token": z
+      .string()
+      .refine((s) => s.startsWith("Bearer "), "Must be a Bearer token"),
     "x-saleor-event": z.string(),
     "x-saleor-signature": z.string(),
   }),
