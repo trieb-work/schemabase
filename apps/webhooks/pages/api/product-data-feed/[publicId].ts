@@ -24,7 +24,7 @@ const requestValidation = z.object({
     "x-saleor-signature": z.string(),
   }),
   body: z.object({
-    app_token: z.string(),
+    app_token: z.string().optional(),
   }),
 });
 
@@ -53,7 +53,7 @@ export default async function handler(
       setupSaleor({
         domain,
         event,
-        appToken,
+        appToken: appToken ?? "",
         authToken: token.replace("Bearer ", ""),
         signature: signature.replace("sha1=", ""),
       }),
