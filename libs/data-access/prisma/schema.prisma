@@ -138,7 +138,10 @@ model TrackAndTraceEmails {
 
 model SaleorConfig {
   id           String @id @default(uuid())
+  // channelId    String @unique
+  // channelName  String
   domain       String @unique
+  // The saleor application id
   appId        String
   authToken    String
   webhookToken String @default(cuid())
@@ -151,7 +154,7 @@ model Tenant {
   id              String               @id @default(uuid())
   active          Boolean
   baseUrl         String
-  saleor          SaleorConfig?
+  saleor          SaleorConfig[]
   zoho            ZohoConfig?
   productdatafeed ProductDataFeed?
   mailchimp       MailchimpConfig?

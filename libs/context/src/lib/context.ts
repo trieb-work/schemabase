@@ -8,6 +8,7 @@ import { Zoho } from "./setup/zoho";
 import { Sentry } from "./setup/sentry";
 import { Saleor } from "./setup/saleor";
 import { RequestDataFeed } from "./setup/requestDataFeed";
+import { Tenant } from "./setup/tenant";
 
 export type Context = {
   prisma?: PrismaClient;
@@ -19,6 +20,7 @@ export type Context = {
   zoho?: Zoho;
   sentry?: Sentry;
   saleor?: Saleor;
+  tenant?: Tenant;
   requestDataFeed?: RequestDataFeed;
 };
 

@@ -5,62 +5,47 @@ import {
   setupRequestDataFeed,
   setupLogger,
   setupSaleor,
+  getTenant,
 } from "@eci/context";
 import { generateProductDataFeed } from "@eci/integrations/product-data-feed";
 import md5 from "md5";
 import { z } from "zod";
 
 const requestValidation = z.object({
+  method: z.string().refine((m) => m === "GET"),
   query: z.object({
     publicId: z.string(),
-    variant: z.string(),
-  }),
-  headers: z.object({
-    "x-saleor-domain": z.string(),
-    "x-saleor-token": z
+    variant: z
       .string()
-      .refine((s) => s.startsWith("Bearer "), "Must be a Bearer token"),
-    "x-saleor-event": z.string(),
-    "x-saleor-signature": z.string(),
-  }),
-  body: z.object({
-    app_token: z.string().optional(),
+      .refine((variant) =>
+        ["facebookcommerce", "googlemerchant"].includes(variant),
+      ),
   }),
 });
 
+/**
+ * The product data feed returns a google standard .csv file from products and their attributes in your shop.#
+ */
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ): Promise<void> {
-  let status;
   try {
     const {
-      headers: {
-        "x-saleor-domain": domain,
-        "x-saleor-event": event,
-        "x-saleor-signature": signature,
-        "x-saleor-token": token,
-      },
-      body: { app_token: appToken },
       query: { publicId, variant },
     } = await requestValidation.parseAsync(req).catch((err) => {
-      status = 400;
+      res.status(400);
       throw err;
     });
 
     const ctx = await createContext<
-      "prisma" | "requestDataFeed" | "logger" | "saleor"
+      "prisma" | "requestDataFeed" | "tenant" | "logger" | "saleor"
     >(
       setupPrisma(),
+      getTenant({ where: { productdatafeed: { publicId } } }),
       setupLogger(),
+      setupSaleor(),
       setupRequestDataFeed({ publicId, variant }),
-      setupSaleor({
-        domain,
-        event,
-        appToken: appToken ?? "",
-        authToken: token.replace("Bearer ", ""),
-        signature: signature.replace("sha1=", ""),
-      }),
     );
 
     if (!ctx.requestDataFeed.valid) {
@@ -72,13 +57,13 @@ export default async function handler(
 
     const productDataFeed = await generateProductDataFeed(
       ctx.saleor.graphqlClient,
-      "FIXME: channel",
       ctx.requestDataFeed.storefrontProductUrl,
       ctx.requestDataFeed.variant,
     );
 
     if (productDataFeed === null) {
-      throw new Error(`TODO: Handle this`);
+      res.status(500);
+      throw new Error("Unable to generate product data");
     }
 
     res.setHeader("Content-Type", "text/csv");
@@ -89,8 +74,7 @@ export default async function handler(
     res.setHeader("Cache-Control", "s-maxage=1, stale-while-revalidate");
     return res.send(productDataFeed);
   } catch (err) {
-    res.status(status ?? 500);
-    res.send(err);
+    return res.send(err);
   } finally {
     res.end();
   }

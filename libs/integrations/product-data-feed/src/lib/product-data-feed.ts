@@ -18,7 +18,6 @@ const edjsParser = edjsHTML();
  */
 export const generateProductDataFeed = async (
   saleorGraphQLClient: GraphqlClient,
-  channel: string,
   storefrontProductUrl: string,
   feedVariant: "googlemerchant" | "facebookcommerce",
 ): Promise<string | null> => {
@@ -29,7 +28,6 @@ export const generateProductDataFeed = async (
     query: ProductDataFeed,
     variables: {
       first: 100,
-      channel,
     },
   });
 
