@@ -6,25 +6,40 @@ import {
   setupLogger,
   setupSaleor,
 } from "@eci/context";
-import { getHeader } from "@eci/http";
 import { generateProductDataFeed } from "@eci/integrations/product-data-feed";
 import md5 from "md5";
 import { z } from "zod";
 
-const requestBodyValidation = z.object({
-  app_token: z.string(),
+const requestValidation = z.object({
+  query: z.object({
+    publicId: z.string(),
+    variant: z.string(),
+  }),
+  headers: z.object({
+    "x-saleor-domain": z.string(),
+    "x-saleor-token": z.string().refine((s) => s.startsWith("Bearer ")),
+    "x-saleor-event": z.string(),
+    "x-saleor-signature": z.string(),
+  }),
+  body: z.object({
+    app_token: z.string(),
+  }),
 });
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
-  const body = requestBodyValidation.parse(req.body);
-  const publicId = req.query["id"] as string;
-  if (!publicId) {
-    throw new Error(`Invalid request: missing id`);
-  }
-  const variant = req.query["variant"] as string;
-  if (!variant) {
-    throw new Error(`Invalid request: missing variant`);
-  }
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse,
+): Promise<void> {
+  const {
+    headers: {
+      "x-saleor-domain": domain,
+      "x-saleor-event": event,
+      "x-saleor-signature": signature,
+      "x-saleor-token": token,
+    },
+    body: { app_token: appToken },
+    query: { publicId, variant },
+  } = requestValidation.parse(req);
 
   const ctx = await createContext<
     "prisma" | "requestDataFeed" | "logger" | "saleor"
@@ -33,11 +48,11 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     setupLogger(),
     setupRequestDataFeed({ publicId, variant }),
     setupSaleor({
-      domain: getHeader(req, "x-saleor-domain"),
-      authToken: getHeader(req, "x-saleor-token").replace("Bearer ", ""),
-      event: getHeader(req, "x-saleor-event"),
-      signature: getHeader(req, "x-saleor-signature").replace("sha1=", ""),
-      appToken: body.app_token,
+      domain,
+      event,
+      appToken,
+      authToken: token.replace("Bearer ", ""),
+      signature: signature.replace("sha1=", ""),
     }),
   );
 
@@ -66,4 +81,4 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   );
   res.setHeader("Cache-Control", "s-maxage=1, stale-while-revalidate");
   return res.send(productDataFeed);
-};
+}
