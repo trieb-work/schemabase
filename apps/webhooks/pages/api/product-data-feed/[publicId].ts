@@ -7,9 +7,10 @@ import {
   setupSaleor,
   setupTenant,
 } from "@eci/context";
-import { generateProductDataFeed } from "@eci/integrations/product-data-feed";
+import { ProductDataFeedGenerator } from "@eci/integrations/product-data-feed";
 import md5 from "md5";
 import { z } from "zod";
+import { HTTPError } from "@eci/util/errors";
 
 const requestValidation = z.object({
   method: z.string().refine((m) => m === "GET"),
@@ -35,8 +36,7 @@ export default async function handler(
     const {
       query: { publicId, variant },
     } = await requestValidation.parseAsync(req).catch((err) => {
-      res.status(400);
-      throw err;
+      throw new HTTPError(400, err.message);
     });
 
     const ctx = await createContext<
@@ -50,22 +50,17 @@ export default async function handler(
     );
 
     if (!ctx.requestDataFeed.valid) {
-      ctx.logger.error("Invalid request");
-      return res.status(400).end();
+      throw new HTTPError(400, "Invalid request");
     }
 
     ctx.logger.info("Creating new product datafeed");
 
-    const productDataFeed = await generateProductDataFeed(
-      ctx.saleor.graphqlClient,
+    const generator = new ProductDataFeedGenerator(ctx.saleor.graphqlClient);
+
+    const productDataFeed = await generator.generateCSV(
       ctx.requestDataFeed.storefrontProductUrl,
       ctx.requestDataFeed.variant,
     );
-
-    if (productDataFeed === null) {
-      res.status(500);
-      throw new Error("Unable to generate product data");
-    }
 
     res.setHeader("Content-Type", "text/csv");
     res.setHeader(
@@ -75,6 +70,11 @@ export default async function handler(
     res.setHeader("Cache-Control", "s-maxage=1, stale-while-revalidate");
     return res.send(productDataFeed);
   } catch (err) {
+    if (err instanceof HTTPError) {
+      res.status(err.statusCode);
+    } else {
+      res.status(500);
+    }
     return res.send(err);
   } finally {
     res.end();

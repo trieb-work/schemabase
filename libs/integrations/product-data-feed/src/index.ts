@@ -1,1 +1,1 @@
-export * from "./lib/product-data-feed";
+export * from "./lib/service";

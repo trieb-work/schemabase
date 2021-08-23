@@ -8,5 +8,4 @@ export * from "./lib/setup/redis";
 export * from "./lib/setup/requestDataFeed";
 export * from "./lib/setup/saleor";
 export * from "./lib/setup/sentry";
-export * from "./lib/setup/zoho";
 export * from "./lib/setup/tenant";
