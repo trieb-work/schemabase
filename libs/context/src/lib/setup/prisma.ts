@@ -6,12 +6,6 @@ import { env } from "@eci/util/env";
  */
 export const setupPrisma = (): ExtendContextFn<"prisma"> => async (ctx) => {
   const url = env.require("DATABASE_URL_POOL");
-  return {
-    ...ctx,
-    prisma: new PrismaClient({
-      datasources: {
-        db: { url },
-      },
-    }),
-  };
+  const prisma = new PrismaClient({ datasources: { db: { url } } });
+  return Object.assign(ctx, { prisma });
 };

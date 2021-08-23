@@ -29,5 +29,5 @@ export const getElasticConfig =
       apmSecretToken: config.apmSecretToken,
       loggingServer: config.loggingServer,
     };
-    return { ...ctx, elasticSearch };
+    return Object.assign(ctx, { elasticSearch });
   };

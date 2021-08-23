@@ -60,9 +60,6 @@
     "graphql-client": {
       "tags": []
     },
-    "http": {
-      "tags": []
-    },
     "integrations-product-data-feed": {
       "tags": []
     },

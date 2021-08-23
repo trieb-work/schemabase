@@ -8,5 +8,5 @@ export type { Logger } from "tslog";
 export const setupLogger = (): ExtendContextFn<"logger"> => async (ctx) => {
   const logger = createLogger();
 
-  return { ...ctx, logger };
+  return Object.assign(ctx, { logger });
 };

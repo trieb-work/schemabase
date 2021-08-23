@@ -44,8 +44,7 @@ export const setupRequestDataFeed =
 
     const valid = !!productDataFeed?.active && storefrontProductUrl !== "";
 
-    return {
-      ...ctx,
+    return Object.assign(ctx, {
       requestDataFeed: { valid, storefrontProductUrl, variant },
-    };
+    });
   };

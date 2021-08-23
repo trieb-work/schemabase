@@ -79,9 +79,9 @@ model ZohoConfig {
   active              Boolean @default(false)
   // The public id used for lookups from incoming webhooks.
   publicId            String  @default(cuid())
-  orgId               String  @default("")
-  clientId            String  @default("")
-  clientSecret        String  @default("")
+  orgId               String  
+  clientId            String  
+  clientSecret        String  
   payPalAccountId     String?
   creditCardAccountId String?
   webhookToken        String  @default(cuid())
@@ -138,28 +138,33 @@ model TrackAndTraceEmails {
 
 model SaleorConfig {
   id           String @id @default(uuid())
+  // channelId    String @unique
+  // channelName  String
   domain       String @unique
-  appId        String
-  authToken    String
-  webhookToken String @default(cuid())
-  webhookID    String
+  // The saleor application id
+  // appId        String
+  appToken    String
+  // webhookToken String @default(cuid())
+  // webhookID    String
   tenant       Tenant @relation(fields: [tenantId], references: [id])
   tenantId     String @unique
 }
-
+// One tenant per company
 model Tenant {
   id              String               @id @default(uuid())
+  // customer data etc
+  // metadata Metadata
   active          Boolean
-  baseUrl         String
-  saleor          SaleorConfig?
-  zoho            ZohoConfig?
-  productdatafeed ProductDataFeed?
-  mailchimp       MailchimpConfig?
-  easypost        EasyPostConfig?
-  braintree       BraintreeConfig?
-  lexoffice       LexofficeConfig?
-  trackandtrace   TrackAndTraceConfig?
-  mailgun         MailgunConfig?
+  // baseUrl         String
+  saleor          SaleorConfig[]
+  zoho            ZohoConfig[]
+  productdatafeed ProductDataFeed[]
+  mailchimp       MailchimpConfig[]
+  easypost        EasyPostConfig[]
+  braintree       BraintreeConfig[]
+  lexoffice       LexofficeConfig[]
+  trackandtrace   TrackAndTraceConfig[]
+  sendgrid         MailgunConfig[]
 }
 
 // Internal Redis secrets used by our services.
