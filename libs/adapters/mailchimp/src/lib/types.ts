@@ -26,7 +26,7 @@ export type Promos = { code: string; amount_discounted: number; type: "fixed" };
 
 export type MailchimpOrder = {
   id: string;
-  customer: {};
+  customer: unknown;
   currency_code: string;
   order_total: number | string;
   shipping_total: number | string;

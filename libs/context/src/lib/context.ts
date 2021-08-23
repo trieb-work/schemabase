@@ -3,7 +3,6 @@ import { GoogleOAuthConfig } from "./setup/googleOAuth";
 import { RedisConfig } from "./setup/redis";
 import { ElasticSearchConfig } from "./setup/elasticSearch";
 import { Logger } from "./setup/logger";
-import { Zoho } from "./setup/zoho";
 import { Sentry } from "./setup/sentry";
 import { Saleor } from "./setup/saleor";
 import { RequestDataFeed } from "./setup/requestDataFeed";
@@ -15,7 +14,6 @@ export type Context = {
   redis?: RedisConfig;
   elasticSearch?: ElasticSearchConfig;
   logger?: Logger;
-  zoho?: Zoho;
   sentry?: Sentry;
   saleor?: Saleor;
   tenant?: Tenant;
@@ -46,6 +44,7 @@ export type ExtendContextFn<K extends keyof Context> = (
  * Convenience function to batch multiple setup functions together
  */
 export async function createContext<Keys extends keyof Context>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ...extendContext: ExtendContextFn<any>[]
 ): Promise<RequiredKeys<Keys>> {
   let ctx = {} as Context;

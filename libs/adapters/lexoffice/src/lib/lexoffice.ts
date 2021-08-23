@@ -1,26 +1,20 @@
-import axios, { AxiosInstance } from "axios";
-import assert from "assert";
 import FormData from "form-data";
-import { HTTPError } from "@eci/util/errors";
 import {
   LexofficeInvoiceObject,
   LexOfficeVoucher,
   VoucherStatus,
 } from "./types";
 import { retry } from "@eci/util/retry";
+import { HttpApi, HttpClient } from "@eci/http";
 type VoucherType = "invoice" | "salesinvoice";
 
 export class LexofficeInstance {
-  private req: AxiosInstance;
+  private httpClient: HttpApi;
 
   constructor(apiKey: string) {
-    this.req = axios.create({
-      baseURL: "https://api.lexoffice.io/v1",
-      timeout: 6000,
-      headers: {
-        Authorization: `Bearer: ${apiKey}`,
-      },
-    });
+    this.httpClient = new HttpClient();
+    // baseURL: "https://api.lexoffice.io/v1",
+    this.httpClient.setHeader("Authorization", `Bearer ${apiKey}`);
   }
 
   /**
@@ -32,15 +26,15 @@ export class LexofficeInstance {
     voucherType: VoucherType,
     voucherStatus: VoucherStatus,
   ) {
-    const vouchers = await this.req({
-      url: "/voucherlist",
+    const vouchers = await this.httpClient.call<{ content: unknown[] }>({
+      method: "GET",
+      url: "https://api.lexoffice.io/v1/voucherlist",
       params: {
         voucherType,
         voucherStatus,
       },
     });
-    assert.strictEqual(vouchers.status, 200);
-    return vouchers.data.content as [];
+    return vouchers.data?.content;
   }
 
   /**
@@ -48,14 +42,16 @@ export class LexofficeInstance {
    * @param voucherNumber
    */
   public async getVoucherByVoucherNumber(voucherNumber: string) {
-    const voucher = await this.req({
-      url: "/vouchers",
-      params: {
-        voucherNumber,
+    const voucher = await this.httpClient.call<{ content: LexOfficeVoucher[] }>(
+      {
+        method: "GET",
+        url: "https://api.lexoffice.io/v1/vouchers",
+        params: {
+          voucherNumber,
+        },
       },
-    });
-    assert.strictEqual(voucher.status, 200);
-    return (voucher.data?.content[0] as LexOfficeVoucher) || null;
+    );
+    return voucher.data?.content[0] ?? null;
   }
 
   /**
@@ -64,12 +60,12 @@ export class LexofficeInstance {
    * @returns lexOfficeInvoiceID
    */
   public async createVoucher(voucherData: LexofficeInvoiceObject) {
-    const result = await this.req({
-      url: "/vouchers",
-      method: "post",
-      data: voucherData,
+    const result = await this.httpClient.call<{ id: string }>({
+      method: "POST",
+      url: "https://api.lexoffice.io/v1/vouchers",
+      body: voucherData,
     });
-    return result.data.id as string;
+    return result.data?.id;
   }
 
   /**
@@ -84,11 +80,11 @@ export class LexofficeInstance {
   ) {
     const form = new FormData();
     form.append("file", filebuffer, filename);
-    await this.req({
-      url: `/vouchers/${voucherId}/files`,
-      method: "post",
+    await this.httpClient.call({
+      url: `https://api.lexoffice.io/v1/vouchers/${voucherId}/files`,
+      method: "POST",
       headers: form.getHeaders(),
-      data: form,
+      body: form,
     });
 
     return true;
@@ -110,17 +106,19 @@ export class LexofficeInstance {
     street: string;
     countryCode: string;
   }): Promise<string> {
-    const customerLookup = await this.req({
-      url: "/contacts",
+    const res = await this.httpClient.call<{
+      content: { id: string }[];
+    }>({
       method: "GET",
+      url: "https://api.lexoffice.io/v1/contacts",
       params: {
         email,
-        customer: true,
+        customer: "true",
       },
     });
-    if (customerLookup.data?.content?.length > 0) {
+    if (res.data?.content && res.data.content.length > 0) {
       console.log("Found a contact. Returning ID");
-      return customerLookup.data.content[0].id;
+      return res.data?.content[0].id;
     }
     const data = {
       version: 0,
@@ -144,24 +142,20 @@ export class LexofficeInstance {
       },
     };
 
-    const contacts = await retry(
+    const contact = await retry(
       async () => {
-        const res = await this.req({
-          url: "/contacts",
-          method: "post",
-          data,
+        const res = await this.httpClient.call<{ id: string }>({
+          url: "https://api.lexoffice.io/v1/contacts",
+          method: "POST",
+          body: data,
         });
         if (!res.data?.id) {
           throw new Error("Unable to create user in LexOffice");
         }
-        return res;
+        return res.data;
       },
       { maxAttempts: 5 },
     );
-    return contacts.data?.id;
-
-    throw new HTTPError(
-      `Unable to create new User in Lexoffice after 5 attempts`,
-    );
+    return contact.id;
   }
 }

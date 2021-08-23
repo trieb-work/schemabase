@@ -9,6 +9,7 @@ import { MailchimpMemberStatus, MailchimpOrder } from "./types";
  * Just recursively clean an object. Delete all empty values.
  * @param obj
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const removeEmpty = (obj: Record<any, any>): Record<any, any> => {
   Object.keys(obj).forEach((key) => {
     if (obj[key] && typeof obj[key] === "object") {
