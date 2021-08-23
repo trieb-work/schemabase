@@ -6,8 +6,7 @@ import {
   setupLogger,
   setupSaleor,
 } from "@eci/context";
-import { getHeader } from "@eci/http";
-import { generateProductDataFeed } from "@eci/integrations/product-data-feed";
+import { ProductDataFeedGenerator } from "@eci/integrations/product-data-feed";
 import md5 from "md5";
 import { z } from "zod";
 
@@ -15,7 +14,10 @@ const requestBodyValidation = z.object({
   app_token: z.string(),
 });
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
   const body = requestBodyValidation.parse(req.body);
   const publicId = req.query["id"] as string;
   if (!publicId) {
@@ -66,4 +68,4 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   );
   res.setHeader("Cache-Control", "s-maxage=1, stale-while-revalidate");
   return res.send(productDataFeed);
-};
+}
