@@ -16,12 +16,7 @@ const requestValidation = z.object({
   method: z.string().refine((m) => m === "GET"),
   query: z.object({
     publicId: z.string(),
-    variant: z
-      .string()
-      .refine(
-        (variant) => ["facebookcommerce", "googlemerchant"].includes(variant),
-        "only `facebookcommerce` and `googlemerchant` are currently supported",
-      ),
+    variant: z.enum(["facebookcommerce", "googlemerchant"]),
   }),
 });
 
@@ -55,7 +50,10 @@ export default async function handler(
 
     ctx.logger.info("Creating new product datafeed");
 
-    const generator = new ProductDataFeedGenerator(ctx.saleor.graphqlClient);
+    const generator = new ProductDataFeedGenerator({
+      saleorGraphqlClient: ctx.saleor.graphqlClient,
+      channelSlug: ctx.saleor.config.channelSlug,
+    });
 
     const productDataFeed = await generator.generateCSV(
       ctx.requestDataFeed.storefrontProductUrl,

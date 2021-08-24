@@ -1,0 +1,100 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`e2e returns all products in csv format 1`] = `
+"id,title,description,rich_text_description,image_link,additional_image_link,link,price,sale_price,condition,gtin,brand,unit_pricing_measure,availability,google_product_category
+pf-leb-3-gemischt,3 Lebkuchen in Bio Folie (),\\"xcbnxfn
+
+,
+
+ergh
+
+,
+
+ergh
+
+,
+
+
+H1\\",\\"xcbnxfn
+
+,
+
+ergh
+
+,
+
+ergh
+
+,
+
+
+H1\\",,,abc3-lebkuchen-in-bio-folie,5 EUR,5 EUR,new,,Pfeffer & Frost,,in stock,
+pf-leb-5-gemischt,asdf (Mixed),Laridari,Laridari,,,abc5-lebkuchen-in-bio-folie,14.9 EUR,14.9 EUR,new,,Pfeffer & Frost,,in stock,
+pf-dose-5-cd-dunkle,Designerdose Charlotte Dumortier (Dark Chocolate),,,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_dunkle_schokolade_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_dark_chocolate_01_en.jpg,abcdesignerdose-charlotte-dumortier,21.9 EUR,21.9 EUR,new,,,,in stock,
+pf-dose-5-cd-gemischt,Designerdose Charlotte Dumortier (Mixed),,,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_mix_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_mixed_01_en.jpg,abcdesignerdose-charlotte-dumortier,21.9 EUR,21.9 EUR,new,,,,in stock,
+pf-dose-5-cd-natur,Designerdose Charlotte Dumortier (Natural),,,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_natural_elisen_01_en.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_elisen_01_de.jpg,abcdesignerdose-charlotte-dumortier,21.9 EUR,21.9 EUR,new,,,,in stock,
+pf-dose-5-cd-weis,Designerdose Charlotte Dumortier (White Chocolate),,,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_weisse_schokolade_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_white_chocolate_01_en.jpg,abcdesignerdose-charlotte-dumortier,21.9 EUR,21.9 EUR,new,,,,out of stock,
+pf-dose-5-cd-zucker,Designerdose Charlotte Dumortier (Icing),,,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_zuckerguss_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_icing_01_en.jpg,abcdesignerdose-charlotte-dumortier,21.9 EUR,21.9 EUR,new,,,,in stock,
+pf-dose-5-cj-dunkle,Lebkuchendose Edition Cachetejack (Dark Chocolate),,,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_dunkleschokolade_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_dunkleschokolade_01_en.jpg,abcdose-cachetejack,21.9 EUR,21.9 EUR,new,,,,in stock,
+pf-dose-5-cj-gemischt,Lebkuchendose Edition Cachetejack (Mixed),,,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_mix_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_mix_01_en.jpg,abcdose-cachetejack,21.9 EUR,21.9 EUR,new,,,,in stock,
+pf-dose-5-cj-natur,Lebkuchendose Edition Cachetejack (Natural),,,https://s3.triebwork.com/static/products/pfefferundfrost_elisenlebkuchen_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_elisenlebkuchen_01_en.jpg,abcdose-cachetejack,21.9 EUR,21.9 EUR,new,,,,out of stock,
+pf-dose-5-cj-weis,Lebkuchendose Edition Cachetejack (White Chocolate),,,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_wei%C3%9Feschokolade_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_wei%C3%9Feschokolade_01_en.jpg,abcdose-cachetejack,21.9 EUR,21.9 EUR,new,,,,out of stock,
+pf-dose-5-cj-zucker,Lebkuchendose Edition Cachetejack (Icing),,,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_zuckerguss_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_zuckerguss_01_en.jpg,abcdose-cachetejack,21.9 EUR,21.9 EUR,new,,,,out of stock,
+PFE-Gutschein-10,Geschenkgutscheine 10€ - 100€ (10€),\\"Der Pfeffer & Frost Geschenk Gutschein zum Einlösen im Shop - mache anderen eine
+Freude
+
+,
+
+Bitte beachte: Es erfolgt KEIN Versand per Post!\\",\\"Der Pfeffer & Frost Geschenk Gutschein zum Einlösen im Shop - mache anderen eine
+Freude
+
+,
+
+Bitte beachte: Es erfolgt KEIN Versand per Post!\\",,,abcgeschenkgutschein,10 EUR,10 EUR,new,,,,in stock,
+PFE-Gutschein-20,Geschenkgutscheine 10€ - 100€ (20€),\\"Der Pfeffer & Frost Geschenk Gutschein zum Einlösen im Shop - mache anderen eine
+Freude
+
+,
+
+Bitte beachte: Es erfolgt KEIN Versand per Post!\\",\\"Der Pfeffer & Frost Geschenk Gutschein zum Einlösen im Shop - mache anderen eine
+Freude
+
+,
+
+Bitte beachte: Es erfolgt KEIN Versand per Post!\\",,,abcgeschenkgutschein,20 EUR,20 EUR,new,,,,in stock,
+PFE-Gutschein-30,Geschenkgutscheine 10€ - 100€ (30€),\\"Der Pfeffer & Frost Geschenk Gutschein zum Einlösen im Shop - mache anderen eine
+Freude
+
+,
+
+Bitte beachte: Es erfolgt KEIN Versand per Post!\\",\\"Der Pfeffer & Frost Geschenk Gutschein zum Einlösen im Shop - mache anderen eine
+Freude
+
+,
+
+Bitte beachte: Es erfolgt KEIN Versand per Post!\\",,,abcgeschenkgutschein,30 EUR,30 EUR,new,,,,in stock,
+PFE-Gutschein-50,Geschenkgutscheine 10€ - 100€ (50€),\\"Der Pfeffer & Frost Geschenk Gutschein zum Einlösen im Shop - mache anderen eine
+Freude
+
+,
+
+Bitte beachte: Es erfolgt KEIN Versand per Post!\\",\\"Der Pfeffer & Frost Geschenk Gutschein zum Einlösen im Shop - mache anderen eine
+Freude
+
+,
+
+Bitte beachte: Es erfolgt KEIN Versand per Post!\\",,,abcgeschenkgutschein,50 EUR,50 EUR,new,,,,in stock,
+PFE-Gutschein-100,Geschenkgutscheine 10€ - 100€ (100€),\\"Der Pfeffer & Frost Geschenk Gutschein zum Einlösen im Shop - mache anderen eine
+Freude
+
+,
+
+Bitte beachte: Es erfolgt KEIN Versand per Post!\\",\\"Der Pfeffer & Frost Geschenk Gutschein zum Einlösen im Shop - mache anderen eine
+Freude
+
+,
+
+Bitte beachte: Es erfolgt KEIN Versand per Post!\\",,,abcgeschenkgutschein,100 EUR,100 EUR,new,,,,in stock,
+buch-nudeln,asf,kkk,kkk,https://s3.triebwork.com/static/products/pfefferundfrost-nudelnmachengluecklich_kochbuch_katharinapflug_01.jpg,https://s3.triebwork.com/static/products/pfefferundfrost-nudelnmachengluecklich_kochbuch_katharinapflug_04.jpg,abcnudeln-machen-gluecklich,13.9 EUR,13.9 EUR,new,1234567891234,Pfeffer & Frost,,in stock,
+"
+`;

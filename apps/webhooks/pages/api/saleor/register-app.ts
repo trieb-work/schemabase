@@ -43,18 +43,18 @@ export default async function handler(
       setupSaleor(),
     );
 
-    const existingConfig = await ctx.prisma.saleorConfig.findUnique({
+    await ctx.prisma.saleorApp.upsert({
       where: { domain },
+      update: {},
+      create: {
+        tenantId,
+        name: "",
+        domain,
+        appToken,
+        channelSlug: "",
+      },
     });
-    if (!existingConfig) {
-      await ctx.prisma.saleorConfig.create({
-        data: {
-          tenantId,
-          domain,
-          appToken,
-        },
-      });
-    }
+
     res.status(200);
   } catch (err) {
     return res.send(err);

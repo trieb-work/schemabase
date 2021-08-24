@@ -7,11 +7,12 @@ beforeEach(() => {
 });
 
 describe("generate", () => {
-  const generator = new ProductDataFeedGenerator(
-    new ApolloClient({
+  const generator = new ProductDataFeedGenerator({
+    saleorGraphqlClient: new ApolloClient({
       cache: new InMemoryCache(),
     }),
-  );
+    channelSlug: "doesn't matter here",
+  });
 
   it("converts the products correctly", async () => {
     const getRawProductsSpy = jest
@@ -48,10 +49,6 @@ describe("generate", () => {
     const csv = await generator.generateCSV("abc", "facebookcommerce");
 
     expect(getRawProductsSpy).toBeCalledTimes(1);
-    expect(csv).toMatchInlineSnapshot(`
-      "id,title,description,rich_text_description,image_link,additional_image_link,link,price,sale_price,condition,gtin,brand,unit_pricing_measure,availability,google_product_category
-      sku,Name (name),,,,,abcslug,undefined undefined,undefined undefined,new,,,,out of stock,
-      "
-    `);
+    expect(csv).toMatchSnapshot();
   });
 });

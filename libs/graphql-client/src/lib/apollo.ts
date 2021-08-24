@@ -5,17 +5,21 @@ import {
   HttpLink,
   NormalizedCacheObject,
 } from "@apollo/client";
+
 import { RetryLink } from "@apollo/client/link/retry";
 import { onError } from "@apollo/client/link/error";
+import { env } from "@eci/util/env";
+import { Logger } from "tslog";
 
+const logger = new Logger();
 const loggerLink = new ApolloLink((operation, forward) => {
-  console.log(`GraphQL Request: ${operation.operationName}`);
+  logger.debug(`GraphQL Request: ${operation.operationName}`);
   operation.setContext({ start: new Date() });
   return forward(operation).map((response) => {
     const responseTime =
       new Date().getTime() -
       new Date(operation.getContext()["start"]).getTime();
-    console.log(`GraphQL Response took: ${responseTime}`);
+    logger.debug(`GraphQL Response took: ${responseTime}`);
     return response;
   });
 });
@@ -23,11 +27,11 @@ const loggerLink = new ApolloLink((operation, forward) => {
 const errorLink = onError(({ graphQLErrors, networkError }) => {
   if (graphQLErrors) {
     graphQLErrors.map(({ message }) =>
-      console.log(`GraphQL Error: ${message}`),
+      logger.debug(`GraphQL Error: ${message}`),
     );
   }
   if (networkError) {
-    console.log(`Network Error: ${networkError.message}`);
+    logger.debug(`Network Error: ${networkError.message}`);
   }
 });
 
@@ -51,7 +55,10 @@ export const createGraphqlClient = (
     }),
     errorLink,
     new HttpLink({
-      fetch,
+      /**
+       * Nextjs polyfills fetch already but unfortunately jest does not
+       */
+      fetch: env.get("NODE_ENV") === "test" ? require("node-fetch") : fetch,
       uri,
       headers: {
         authorization: token ? `Bearer ${token}` : "",
