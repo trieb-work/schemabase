@@ -29,9 +29,9 @@ jobs:
 
       - name: Setup Saleor
         run: |
+          docker ps
           docker exec saleor python manage.py migrate
           docker exec saleor python manage.py populatedb --createsuperuser
-          docker ps
 
       - name: Checkout code
         uses: actions/checkout@v2
