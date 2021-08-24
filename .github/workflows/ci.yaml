@@ -29,7 +29,8 @@ jobs:
 
       - name: Setup Saleor
         run: |
-
+          docker exec saleor python manage.py migrate
+          docker exec saleor python manage.py populatedb --createsuperuser
           docker ps
 
       - name: Checkout code
