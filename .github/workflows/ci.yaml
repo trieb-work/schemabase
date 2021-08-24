@@ -7,8 +7,9 @@ jobs:
   tests:
     name: Tests
     runs-on: ubuntu-latest
-    # container: node:16
-
+    strategy:
+      matrix:
+        saleor: [3.0]
     services:
       postgres:
         image: postgres
@@ -20,7 +21,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
       saleor:
-        image: registry.gitlab.com/trieb.work/saleor:3.0-triebwork7
+        image: registry.gitlab.com/trieb.work/saleor:${{ matrix.saleor }}-triebwork7
         env:
           DATABASE_URL: postgres://postgres:postgres@postgres:5432/postgres
           SECRET_KEY: can-be-anything
