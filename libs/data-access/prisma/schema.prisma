@@ -31,7 +31,6 @@ model ProductDataFeed {
   publicId                   String   @default(cuid())
   active                     Boolean? @default(false)
   productDetailStorefrontURL String?
-  channel                    String?
   tenant                     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId                   String   @unique
 }
