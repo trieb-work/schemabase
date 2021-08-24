@@ -13,8 +13,11 @@ generator typegraphql {
 }
 
 model MailchimpConfig {
-  id                String  @id @default(uuid())
-  active            Boolean @default(false)
+  id String @id @default(uuid())
+
+  // Indicates if the integration is currently enabled.
+  // The user might chose to disable it.
+  enabled           Boolean @default(false)
   listId            String
   apiToken          String
   storeUrl          String
@@ -26,20 +29,26 @@ model MailchimpConfig {
 }
 
 model ProductDataFeed {
-  id                         String   @id @default(uuid())
+  id       String @id @default(uuid())
   // The public id used for lookups from incoming webhooks.
-  publicId                   String   @default(cuid())
-  active                     Boolean? @default(false)
+  publicId String @default(cuid())
+
+  // Indicates if the integration is currently enabled.
+  // The user might chose to disable it.
+  enabled                    Boolean? @default(false)
   productDetailStorefrontURL String?
   tenant                     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId                   String   @unique
 }
 
 model EasyPostConfig {
-  id                        String                     @id @default(uuid())
+  id       String @id @default(uuid())
   // The public id used for lookups from incoming webhooks.
-  publicId                  String                     @default(cuid())
-  active                    Boolean?                   @default(false)
+  publicId String @default(cuid())
+
+  // Indicates if the integration is currently enabled.
+  // The user might chose to disable it.
+  enabled                   Boolean?                   @default(false)
   apiToken                  String?
   webhookID                 String?
   tenant                    Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -50,15 +59,21 @@ model EasyPostConfig {
 }
 
 model AddressVerificationConfig {
-  id             String         @id @default(uuid())
-  active         Boolean?       @default(false)
+  id String @id @default(uuid())
+
+  // Indicates if the integration is currently enabled.
+  // The user might chose to disable it.
+  enabled        Boolean?       @default(false)
   easypost       EasyPostConfig @relation(fields: [easyPostConfId], references: [id])
   easyPostConfId String
 }
 
 model BraintreeConfig {
-  id         String  @id @default(uuid())
-  active     Boolean @default(false)
+  id String @id @default(uuid())
+
+  // Indicates if the integration is currently enabled.
+  // The user might chose to disable it.
+  enabled    Boolean @default(false)
   merchantId String
   publicKey  String
   privateKey String
@@ -67,16 +82,22 @@ model BraintreeConfig {
 }
 
 model LexofficeConfig {
-  id       String  @id @default(uuid())
-  active   Boolean @default(false)
+  id String @id @default(uuid())
+
+  // Indicates if the integration is currently enabled.
+  // The user might chose to disable it.
+  enabled  Boolean @default(false)
   apiToken String
   tenant   Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String  @unique
 }
 
 model ZohoConfig {
-  id                  String  @id @default(uuid())
-  active              Boolean @default(false)
+  id String @id @default(uuid())
+
+  // Indicates if the integration is currently enabled.
+  // The user might chose to disable it.
+  enabled             Boolean @default(false)
   // The public id used for lookups from incoming webhooks.
   publicId            String  @default(cuid())
   orgId               String
@@ -107,8 +128,11 @@ model MailgunConfig {
 }
 
 model TrackAndTraceConfig {
-  id                  String                @id @default(uuid())
-  active              Boolean               @default(false)
+  id String @id @default(uuid())
+
+  // Indicates if the integration is currently enabled.
+  // The user might chose to disable it.
+  enabled             Boolean               @default(false)
   // The public id used for lookups from incoming webhooks.
   publicId            String                @default(cuid())
   mailgun             MailgunConfig?
@@ -152,10 +176,13 @@ model SaleorConfig {
 
 // One tenant per company
 model Tenant {
-  id              String                @id @default(uuid())
+  id String @id @default(uuid())
   // customer data etc
   // metadata Metadata
-  active          Boolean
+
+  // Indicates if the integration is currently enabled.
+  // The user might chose to disable it.
+  enabled         Boolean
   // baseUrl         String
   saleor          SaleorConfig[]
   zoho            ZohoConfig[]
