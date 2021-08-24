@@ -30,9 +30,19 @@ async function main() {
     create: {
       tenantId: tenant.id,
       name: "name",
-      domain: "https://pundf-test-api.triebwork.com",
+      domain: "pundf-test-api.triebwork.com",
       appToken,
       channelSlug: "storefront",
+    },
+  });
+
+  await prisma.productDataFeed.upsert({
+    where: { publicId: "cksq51dwk00009ci06armhpsq" },
+    update: {},
+    create: {
+      enabled: true,
+      productDetailStorefrontURL: "pundf-test-api.triebwork.com",
+      tenantId: tenant.id,
     },
   });
 }

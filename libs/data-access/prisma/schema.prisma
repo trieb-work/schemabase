@@ -31,7 +31,7 @@ model MailchimpConfig {
 model ProductDataFeed {
   id       String @id @default(uuid())
   // The public id used for lookups from incoming webhooks.
-  publicId String @default(cuid())
+  publicId String @unique @default(cuid())
 
   // Indicates if the integration is currently enabled.
   // The user might chose to disable it.

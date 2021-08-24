@@ -19,7 +19,6 @@ const requestValidation = z.object({
     variant: z.enum(["facebookcommerce", "googlemerchant"]),
   }),
 });
-
 /**
  * The product data feed returns a google standard .csv file from products and their attributes in your shop.#
  */
@@ -33,6 +32,8 @@ export default async function handler(
     } = await requestValidation.parseAsync(req).catch((err) => {
       throw new HTTPError(400, err.message);
     });
+
+    console.log({ publicId });
 
     const ctx = await createContext<
       "prisma" | "requestDataFeed" | "tenant" | "logger" | "saleor"
