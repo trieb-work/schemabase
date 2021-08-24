@@ -1,7 +1,7 @@
 version: "3.1"
 
 services:
-  db:
+  postgres:
     image: postgres
     ports:
       - "5432:5432"
@@ -9,3 +9,12 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+  saleor:
+    image: registry.gitlab.com/trieb.work/saleor:3.0-triebwork7
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/postgres
+      SECRET_KEY: adgkadgkajsdg
+    # exec
+    # python manage.py migrate
+    # python manage.py populatedb --createsuperuser
+    # email: admin@example.com, pw: admin
