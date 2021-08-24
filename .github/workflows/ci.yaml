@@ -23,15 +23,17 @@ jobs:
         image: registry.gitlab.com/trieb.work/saleor:3.0-triebwork7
         env:
           DATABASE_URL: postgres://postgres:postgres@postgres:5432/postgres
-          SECRET_KEY: adgkadgkajsdg
+          SECRET_KEY: can-be-anything
         options: --name=saleor
     steps:
 
       - name: Setup Saleor
         run: |
-          docker ps
           docker exec saleor python manage.py migrate
           docker exec saleor python manage.py populatedb --createsuperuser
+          # This will also create an admin user
+          # email: admin@example.com
+          # password: admin
 
       - name: Checkout code
         uses: actions/checkout@v2
@@ -60,8 +62,8 @@ jobs:
           yarn db:push
           yarn db:seed
         env:
-          DATABASE_URL: postgresql://postgres:postgres@postgres:5432/postgres
-          DATABASE_URL_POOL: postgresql://postgres:postgres@postgres:5432/postgres
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+          DATABASE_URL_POOL: postgresql://postgres:postgres@localhost:5432/postgres
           SALEOR_TEMPORARY_APP_TOKEN: ${{secrets.SALEOR_TEMPORARY_APP_TOKEN}}
 
       - name: Unit tests
