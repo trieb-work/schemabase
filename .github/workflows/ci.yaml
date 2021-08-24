@@ -24,7 +24,7 @@ jobs:
         env:
           DATABASE_URL: postgres://postgres:postgres@postgres:5432/postgres
           SECRET_KEY: adgkadgkajsdg
-
+        options: --name=saleor
     steps:
 
       - name: Setup Saleor
