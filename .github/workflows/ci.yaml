@@ -11,19 +11,34 @@ jobs:
       matrix:
         saleor: ["3.0-triebwork7", "3.0-triebwork11"]
     services:
-      postgres:
+      saleordb:
         image: postgres
         env:
           POSTGRES_PASSWORD: postgres
+        ports:
+          - "25432:5432"
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+          --name=saleordb
+      ecidb:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - "15432:5432"
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          --name=ecidb
       saleor:
         image: registry.gitlab.com/trieb.work/saleor:${{ matrix.saleor }}
         env:
-          DATABASE_URL: postgres://postgres:postgres@postgres:5432/postgres
+          DATABASE_URL: postgres://postgres:postgres@saleordb:25432/postgres
           SECRET_KEY: can-be-anything
         options: --name=saleor
     steps:
@@ -62,8 +77,8 @@ jobs:
           yarn db:push
           yarn db:seed
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
-          DATABASE_URL_POOL: postgresql://postgres:postgres@localhost:5432/postgres
+          DATABASE_URL: postgresql://postgres:postgres@localhost:15432/postgres
+          DATABASE_URL_POOL: postgresql://postgres:postgres@localhost:15432/postgres
           SALEOR_TEMPORARY_APP_TOKEN: ${{secrets.SALEOR_TEMPORARY_APP_TOKEN}}
 
       - name: Unit tests
