@@ -35,11 +35,11 @@ model ProductDataFeed {
 
   // Indicates if the integration is currently enabled.
   // The user might chose to disable it.
-  enabled                    Boolean? @default(false)
+  enabled Boolean? @default(false)
 
   productDetailStorefrontURL String?
-  tenant                     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId                   String   @unique
+  tenant                     Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId                   String  @unique
 }
 
 model EasyPostConfig {
@@ -161,20 +161,26 @@ model TrackAndTraceEmails {
   trackAndTraceConfId             String
 }
 
-model SaleorConfig {
-  id       String @id @default(uuid())
-  // channelId    String @unique
-   channelSlug  String
-  domain   String @unique
+// Saleor Apps are separate applications that use GraphQL to talk to a Saleor
+// server and receive webhooks with event notifications from Saleor.
+model SaleorApp {
+  id          String @id @default(uuid())
+  channelSlug String
+  domain      String @unique
 
   // The saleor application id
+  name String
   // appId        String
 
   // The app token is used to authenticate our requests with saleor.
   // It is obtained when the user registeres a new saleor app.
+  // Every request to saleor will include this token in the header
+  // `Authorization: Bearer <app-token>`
   appToken String
+
   // webhookToken String @default(cuid())
   // webhookID    String
+
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String @unique
 
@@ -182,6 +188,7 @@ model SaleorConfig {
 }
 
 // One tenant per company
+// Every tenant can have multiple connections with every integration.
 model Tenant {
   id String @id @default(uuid())
   // customer data etc
@@ -189,9 +196,9 @@ model Tenant {
 
   // Indicates if the integration is currently enabled.
   // The user might chose to disable it.
-  enabled         Boolean @default(false)
+  enabled         Boolean               @default(false)
   // baseUrl         String
-  saleor          SaleorConfig[]
+  saleorApps          SaleorApp[]
   zoho            ZohoConfig[]
   productdatafeed ProductDataFeed[]
   mailchimp       MailchimpConfig[]

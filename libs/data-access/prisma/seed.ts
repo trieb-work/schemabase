@@ -5,10 +5,12 @@ const prisma = new PrismaClient();
 const logger = new Logger({ name: "DB seed" });
 
 async function main() {
+  const tenantId = "294de72d-6498-4355-a182-422bbed7b825";
   const tenant = await prisma.tenant.upsert({
-    where: { id: "294de72d-6498-4355-a182-422bbed7b825" },
+    where: { id: tenantId },
     update: {},
     create: {
+      id: tenantId,
       enabled: true,
     },
   });
@@ -18,7 +20,7 @@ async function main() {
   if (!appToken) {
     throw new Error(`SALEOR_TEMPORARY_APP_TOKEN missing`);
   }
-  await prisma.saleorConfig.upsert({
+  await prisma.saleorApp.upsert({
     where: {
       domain: saleorDomain,
     },
@@ -27,6 +29,7 @@ async function main() {
     },
     create: {
       tenantId: tenant.id,
+      name: "name",
       domain: "https://pundf-test-api.triebwork.com",
       appToken,
       channelSlug: "storefront",

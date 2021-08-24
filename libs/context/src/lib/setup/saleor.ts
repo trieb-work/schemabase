@@ -1,11 +1,11 @@
 import { ExtendContextFn } from "../context";
 import { ContextMissingFieldError } from "@eci/util/errors";
 import { GraphqlClient, createGraphqlClient } from "@eci/graphql-client";
-import { SaleorConfig } from "@eci/data-access/prisma";
+import { SaleorApp } from "@eci/data-access/prisma";
 
 export type Saleor = {
   graphqlClient: GraphqlClient;
-  config: SaleorConfig;
+  config: SaleorApp;
 };
 
 /**
@@ -20,21 +20,21 @@ export const setupSaleor = (): ExtendContextFn<"saleor"> => async (ctx) => {
     throw new ContextMissingFieldError("tenant");
   }
 
-  const saleorConfig = await ctx.prisma.saleorConfig.findUnique({
+  const saleorApp = await ctx.prisma.saleorApp.findUnique({
     where: { tenantId: ctx.tenant.id },
   });
-  if (!saleorConfig) {
+  if (!saleorApp) {
     throw new Error("No saleor config found in database");
   }
 
   const unauthenticatedSaleorGraphqlClient = createGraphqlClient(
-    `https://${saleorConfig.domain}/graphql/`,
+    `https://${saleorApp.domain}/graphql/`,
   );
 
   return Object.assign(ctx, {
     saleor: {
       graphqlClient: unauthenticatedSaleorGraphqlClient,
-      config: saleorConfig,
+      config: saleorApp,
     },
   });
 };

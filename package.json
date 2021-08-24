@@ -36,7 +36,7 @@
   "dependencies": {
     "@apollo/client": "^3.4.7",
     "@easypost/api": "^3.11.2",
-    "@prisma/client": "2.27.0",
+    "@prisma/client": "^2.29.1",
     "@sendgrid/mail": "^7.4.5",
     "@sentry/node": "^6.11.0",
     "@trieb.work/zoho-ts": "^0.2.3",
@@ -121,7 +121,7 @@
     "node-fetch": "^2.6.1",
     "nx": "^12.6.3",
     "prettier": "^2.3.2",
-    "prisma": "2.27.0",
+    "prisma": "^2.29.1",
     "ts-jest": "^27.0.4",
     "ts-node": "^10.2.0",
     "typegraphql-prisma": "^0.14.7",

@@ -43,11 +43,12 @@ export default async function handler(
       setupSaleor(),
     );
 
-    await ctx.prisma.saleorConfig.upsert({
+    await ctx.prisma.saleorApp.upsert({
       where: { domain },
       update: {},
       create: {
         tenantId,
+        name: "",
         domain,
         appToken,
         channelSlug: "",
