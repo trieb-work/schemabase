@@ -1,5 +1,4 @@
 import ObjectsToCsv from "objects-to-csv";
-import isEmpty from "lodash/isEmpty";
 import { htmlToText } from "html-to-text";
 import { GraphqlClient } from "@eci/graphql-client";
 import {
@@ -8,7 +7,7 @@ import {
   ProductDataFeedQueryVariables,
 } from "@eci/types/graphql/global";
 // @ts-expect-error it doesn't detec types for some reason
-import edjsHTML from "editorjs-html";
+import * as edjsHTML from "editorjs-html";
 import { generateUnitPrice } from "./generate-unit-price";
 import { FeedVariant, Product } from "./types";
 
@@ -24,7 +23,7 @@ export interface ProductDataFeedService {
  */
 
 export class ProductDataFeedGenerator implements ProductDataFeedService {
-  private readonly saleorGraphqlClient: GraphqlClient;
+  public readonly saleorGraphqlClient: GraphqlClient;
 
   public constructor(saleorGraphqlClient: GraphqlClient) {
     this.saleorGraphqlClient = saleorGraphqlClient;
@@ -38,12 +37,11 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
     const csv = new ObjectsToCsv(products);
     return await csv.toString();
   }
-
-  private async generate(
-    storefrontProductUrl: string,
-    feedVariant: FeedVariant,
-  ): Promise<Product[]> {
-    const rawData = await this.saleorGraphqlClient.query<
+  /**
+   * Fetch the products from saleor
+   */
+  public async getRawProducts() {
+    const res = await this.saleorGraphqlClient.query<
       ProductDataFeedQuery,
       ProductDataFeedQueryVariables
     >({
@@ -53,15 +51,18 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
       },
     });
 
-    const products: Product[] = [];
-
-    if (!rawData.data.products) {
+    if (!res?.data.products) {
       throw new Error(`Saleor did not return any products`);
     }
+    return res.data.products.edges.map((p) => p.node);
+  }
 
-    const rawProducts = rawData.data.products.edges.map(
-      (product) => product.node,
-    );
+  public async generate(
+    storefrontProductUrl: string,
+    feedVariant: FeedVariant,
+  ): Promise<Product[]> {
+    const rawProducts = await this.getRawProducts();
+    const products: Product[] = [];
 
     for (const rawProduct of rawProducts) {
       // we get the brand from a product attribute called brand
@@ -77,9 +78,9 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
 
       const title = rawProduct.seoTitle ? rawProduct.seoTitle : rawProduct.name;
 
-      let description = isEmpty(JSON.parse(rawProduct?.descriptionJson))
-        ? rawProduct.seoDescription
-        : edjsHTML().parse(JSON.parse(rawProduct.descriptionJson))?.join("");
+      let description = rawProduct.descriptionJson
+        ? edjsHTML().parse(JSON.parse(rawProduct.descriptionJson))?.join("")
+        : rawProduct.seoDescription;
 
       description =
         feedVariant == "facebookcommerce"
