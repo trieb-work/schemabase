@@ -42,7 +42,7 @@ export const setupRequestDataFeed =
       );
     }
 
-    const valid = !!productDataFeed?.active && storefrontProductUrl !== "";
+    const valid = !!productDataFeed?.enabled && storefrontProductUrl !== "";
 
     return Object.assign(ctx, {
       requestDataFeed: { valid, storefrontProductUrl, variant },
