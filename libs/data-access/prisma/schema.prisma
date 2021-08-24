@@ -4,7 +4,8 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["referentialActions"]
 }
 
 generator typegraphql {
@@ -12,37 +13,45 @@ generator typegraphql {
 }
 
 model MailchimpConfig {
-  id                String  @id @default(uuid())
-  active            Boolean @default(false)
+  id String @id @default(uuid())
+
+  // Indicates if the integration is currently enabled.
+  // The user might chose to disable it.
+  enabled           Boolean @default(false)
   listId            String
   apiToken          String
   storeUrl          String
   storeId           String
   productUrlPattern String
   channel           String
-  tenant            Tenant  @relation(fields: [tenantId], references: [id])
+  tenant            Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId          String  @unique
 }
 
 model ProductDataFeed {
-  id                         String   @id @default(uuid())
+  id       String @id @default(uuid())
   // The public id used for lookups from incoming webhooks.
-  publicId                   String   @default(cuid())
-  active                     Boolean? @default(false)
+  publicId String @default(cuid())
+
+  // Indicates if the integration is currently enabled.
+  // The user might chose to disable it.
+  enabled                    Boolean? @default(false)
   productDetailStorefrontURL String?
-  channel                    String?
-  tenant                     Tenant   @relation(fields: [tenantId], references: [id])
+  tenant                     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId                   String   @unique
 }
 
 model EasyPostConfig {
-  id                        String                     @id @default(uuid())
+  id       String @id @default(uuid())
   // The public id used for lookups from incoming webhooks.
-  publicId                  String                     @default(cuid())
-  active                    Boolean?                   @default(false)
+  publicId String @default(cuid())
+
+  // Indicates if the integration is currently enabled.
+  // The user might chose to disable it.
+  enabled                   Boolean?                   @default(false)
   apiToken                  String?
   webhookID                 String?
-  tenant                    Tenant                     @relation(fields: [tenantId], references: [id])
+  tenant                    Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId                  String                     @unique
   trackAndTraceConfig       TrackAndTraceConfig?       @relation(fields: [trackAndTraceConfigId], references: [id])
   trackAndTraceConfigId     String?                    @unique
@@ -50,44 +59,56 @@ model EasyPostConfig {
 }
 
 model AddressVerificationConfig {
-  id             String         @id @default(uuid())
-  active         Boolean?       @default(false)
+  id String @id @default(uuid())
+
+  // Indicates if the integration is currently enabled.
+  // The user might chose to disable it.
+  enabled        Boolean?       @default(false)
   easypost       EasyPostConfig @relation(fields: [easyPostConfId], references: [id])
   easyPostConfId String
 }
 
 model BraintreeConfig {
-  id         String  @id @default(uuid())
-  active     Boolean @default(false)
+  id String @id @default(uuid())
+
+  // Indicates if the integration is currently enabled.
+  // The user might chose to disable it.
+  enabled    Boolean @default(false)
   merchantId String
   publicKey  String
   privateKey String
-  tenant     Tenant  @relation(fields: [tenantId], references: [id])
+  tenant     Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId   String  @unique
 }
 
 model LexofficeConfig {
-  id       String  @id @default(uuid())
-  active   Boolean @default(false)
+  id String @id @default(uuid())
+
+  // Indicates if the integration is currently enabled.
+  // The user might chose to disable it.
+  enabled  Boolean @default(false)
   apiToken String
-  tenant   Tenant  @relation(fields: [tenantId], references: [id])
+  tenant   Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String  @unique
 }
 
 model ZohoConfig {
-  id                  String  @id @default(uuid())
-  active              Boolean @default(false)
+  id String @id @default(uuid())
+
+  // Indicates if the integration is currently enabled.
+  // The user might chose to disable it.
+  enabled             Boolean @default(false)
   // The public id used for lookups from incoming webhooks.
   publicId            String  @default(cuid())
-  orgId               String  
-  clientId            String  
-  clientSecret        String  
+  orgId               String
+  clientId            String
+  clientSecret        String
   payPalAccountId     String?
   creditCardAccountId String?
   webhookToken        String  @default(cuid())
   webhookID           String?
   customFunctionID    String?
-  tenant              Tenant  @relation(fields: [tenantId], references: [id])
+  tenant              Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId            String  @unique
 }
 
@@ -100,20 +121,23 @@ model MailgunConfig {
   fromTitle             String?
   fromEmail             String?
   apiHost               String               @default("api.eu.mailgun.net")
-  tenant                Tenant               @relation(fields: [tenantId], references: [id])
+  tenant                Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId              String               @unique
   trackAndTraceConfig   TrackAndTraceConfig? @relation(fields: [trackAndTraceConfigId], references: [id])
   trackAndTraceConfigId String?              @unique
 }
 
 model TrackAndTraceConfig {
-  id                  String                @id @default(uuid())
-  active              Boolean               @default(false)
+  id String @id @default(uuid())
+
+  // Indicates if the integration is currently enabled.
+  // The user might chose to disable it.
+  enabled             Boolean               @default(false)
   // The public id used for lookups from incoming webhooks.
   publicId            String                @default(cuid())
   mailgun             MailgunConfig?
   easypost            EasyPostConfig?
-  tenant              Tenant                @relation(fields: [tenantId], references: [id])
+  tenant              Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId            String                @unique
   trackAndTraceEmails TrackAndTraceEmails[]
 }
@@ -137,24 +161,28 @@ model TrackAndTraceEmails {
 }
 
 model SaleorConfig {
-  id           String @id @default(uuid())
+  id       String @id @default(uuid())
   // channelId    String @unique
   // channelName  String
-  domain       String @unique
+  domain   String @unique
   // The saleor application id
   // appId        String
-  appToken    String
+  appToken String
   // webhookToken String @default(cuid())
   // webhookID    String
-  tenant       Tenant @relation(fields: [tenantId], references: [id])
-  tenantId     String @unique
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String @unique
 }
+
 // One tenant per company
 model Tenant {
-  id              String               @id @default(uuid())
+  id String @id @default(uuid())
   // customer data etc
   // metadata Metadata
-  active          Boolean
+
+  // Indicates if the integration is currently enabled.
+  // The user might chose to disable it.
+  enabled         Boolean
   // baseUrl         String
   saleor          SaleorConfig[]
   zoho            ZohoConfig[]
@@ -164,7 +192,7 @@ model Tenant {
   braintree       BraintreeConfig[]
   lexoffice       LexofficeConfig[]
   trackandtrace   TrackAndTraceConfig[]
-  sendgrid         MailgunConfig[]
+  sendgrid        MailgunConfig[]
 }
 
 // Internal Redis secrets used by our services.
