@@ -13,7 +13,7 @@ export class SaleorService implements SaleorWebHookReceiver {
     this.logger = config.logger;
   }
 
-  public async receive(event: string, ...middleware: any[]): Promise<void> {
+  public async receive(event: string): Promise<void> {
     // apply middleware
 
     switch (event) {
