@@ -31,7 +31,7 @@ export default async function handler(
       version: "1.0.0",
       name: "eCommerce Integrations for Saleor",
       about:
-        "The trieb.work ECI-Integration for saleors is a powerful App used for several services like data synchronisation to Zoho Inventory, Mailchimp, an advanced product data feed etc.. ",
+        "The trieb.work ECI for saleor is a powerful App used for several services like data synchronisation to Zoho Inventory, Mailchimp, an advanced product data feed etc.. ",
       permissions: [
         "MANAGE_SHIPPING",
         "MANAGE_PRODUCTS",
