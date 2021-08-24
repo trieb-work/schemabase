@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        saleor: [3.0]
+        saleor: ["3.0"]
     services:
       postgres:
         image: postgres
@@ -27,7 +27,6 @@ jobs:
           SECRET_KEY: can-be-anything
         options: --name=saleor
     steps:
-
       - name: Setup Saleor
         run: |
           docker exec saleor python manage.py migrate
@@ -40,7 +39,7 @@ jobs:
         uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
-          node-version: '16'
+          node-version: "16"
       - uses: actions/cache@v2
         with:
           path: "**/node_modules"
