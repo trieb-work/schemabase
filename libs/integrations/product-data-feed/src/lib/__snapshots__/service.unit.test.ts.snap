@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`generate converts the products correctly 1`] = `
+"id,title,description,rich_text_description,image_link,additional_image_link,link,price,sale_price,condition,gtin,brand,unit_pricing_measure,availability,google_product_category
+sku,Name (name),,,,,abcslug,undefined undefined,undefined undefined,new,,,,out of stock,
+"
+`;

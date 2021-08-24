@@ -2,7 +2,7 @@ export type Product = {
   id: string;
   title: string;
   description: string;
-  rich_text_description: string;
+  rich_text_description?: string;
   image_link?: string;
   additional_image_link?: string;
   link: string;

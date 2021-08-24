@@ -36,6 +36,7 @@ model ProductDataFeed {
   // Indicates if the integration is currently enabled.
   // The user might chose to disable it.
   enabled                    Boolean? @default(false)
+
   productDetailStorefrontURL String?
   tenant                     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId                   String   @unique
@@ -163,15 +164,21 @@ model TrackAndTraceEmails {
 model SaleorConfig {
   id       String @id @default(uuid())
   // channelId    String @unique
-  // channelName  String
+   channelSlug  String
   domain   String @unique
+
   // The saleor application id
   // appId        String
+
+  // The app token is used to authenticate our requests with saleor.
+  // It is obtained when the user registeres a new saleor app.
   appToken String
   // webhookToken String @default(cuid())
   // webhookID    String
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String @unique
+
+  @@unique([domain, channelSlug])
 }
 
 // One tenant per company
@@ -182,7 +189,7 @@ model Tenant {
 
   // Indicates if the integration is currently enabled.
   // The user might chose to disable it.
-  enabled         Boolean
+  enabled         Boolean @default(false)
   // baseUrl         String
   saleor          SaleorConfig[]
   zoho            ZohoConfig[]

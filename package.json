@@ -26,7 +26,11 @@
     "dep-graph": "nx dep-graph",
     "help": "nx help",
     "tsc": "tsc -p tsconfig.base.json --pretty",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "db:seed": "prisma db seed --preview-feature --schema=libs/data-access/prisma/schema.prisma",
+    "db:migrate": "prisma migrate dev --schema=libs/data-access/prisma/schema.prisma",
+    "db:studio": "prisma studio --schema=libs/data-access/prisma/schema.prisma",
+    "db:push": "prisma db push --schema=libs/data-access/prisma/schema.prisma"
   },
   "private": true,
   "dependencies": {
@@ -114,6 +118,7 @@
     "husky": "^7.0.1",
     "jest": "^27.0.6",
     "lint-staged": "^11.1.2",
+    "node-fetch": "^2.6.1",
     "nx": "^12.6.3",
     "prettier": "^2.3.2",
     "prisma": "2.27.0",

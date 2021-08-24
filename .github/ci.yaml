@@ -7,6 +7,19 @@ jobs:
   tests:
     name: Tests
     runs-on: ubuntu-latest
+    container: node:16
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -32,6 +45,15 @@ jobs:
 
       - name: Check types
         run: yarn tsc
+
+      - name: Seed database
+        run: |
+          yarn db:push
+          yarn db:seed
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@postgres:5432/postgres
+          DATABASE_URL_POOL: postgresql://postgres:postgres@postgres:5432/postgres
+          SALEOR_TEMPORARY_APP_TOKEN: ${{secrets.SALEOR_TEMPORARY_APP_TOKEN}}
 
       - name: Unit tests
         run: yarn test

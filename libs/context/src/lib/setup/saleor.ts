@@ -1,9 +1,11 @@
 import { ExtendContextFn } from "../context";
 import { ContextMissingFieldError } from "@eci/util/errors";
 import { GraphqlClient, createGraphqlClient } from "@eci/graphql-client";
+import { SaleorConfig } from "@eci/data-access/prisma";
 
 export type Saleor = {
   graphqlClient: GraphqlClient;
+  config: SaleorConfig;
 };
 
 /**
@@ -30,6 +32,9 @@ export const setupSaleor = (): ExtendContextFn<"saleor"> => async (ctx) => {
   );
 
   return Object.assign(ctx, {
-    saleor: { graphqlClient: unauthenticatedSaleorGraphqlClient },
+    saleor: {
+      graphqlClient: unauthenticatedSaleorGraphqlClient,
+      config: saleorConfig,
+    },
   });
 };

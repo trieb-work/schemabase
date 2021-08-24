@@ -7,7 +7,7 @@ import {
   ProductDataFeedQueryVariables,
 } from "@eci/types/graphql/global";
 // @ts-expect-error it doesn't detec types for some reason
-import * as edjsHTML from "editorjs-html";
+import edjsHTML from "editorjs-html";
 import { generateUnitPrice } from "./generate-unit-price";
 import { FeedVariant, Product } from "./types";
 
@@ -15,8 +15,14 @@ export interface ProductDataFeedService {
   generateCSV: (
     storefrontProductUrl: string,
     feedVariant: FeedVariant,
+    channelSlug: string,
   ) => Promise<string>;
 }
+
+export type ProductDataFeedServiceConfig = {
+  saleorGraphqlClient: GraphqlClient;
+  channelSlug: string;
+};
 
 /**
  * Generate product data as .csv
@@ -24,9 +30,11 @@ export interface ProductDataFeedService {
 
 export class ProductDataFeedGenerator implements ProductDataFeedService {
   public readonly saleorGraphqlClient: GraphqlClient;
+  public readonly channelSlug: string;
 
-  public constructor(saleorGraphqlClient: GraphqlClient) {
-    this.saleorGraphqlClient = saleorGraphqlClient;
+  public constructor(config: ProductDataFeedServiceConfig) {
+    this.saleorGraphqlClient = config.saleorGraphqlClient;
+    this.channelSlug = config.channelSlug;
   }
 
   public async generateCSV(
@@ -47,6 +55,7 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
     >({
       query: ProductDataFeed,
       variables: {
+        channel: this.channelSlug,
         first: 100,
       },
     });
@@ -57,7 +66,7 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
     return res.data.products.edges.map((p) => p.node);
   }
 
-  public async generate(
+  private async generate(
     storefrontProductUrl: string,
     feedVariant: FeedVariant,
   ): Promise<Product[]> {
@@ -78,9 +87,14 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
 
       const title = rawProduct.seoTitle ? rawProduct.seoTitle : rawProduct.name;
 
-      let description = rawProduct.descriptionJson
-        ? edjsHTML().parse(JSON.parse(rawProduct.descriptionJson))?.join("")
-        : rawProduct.seoDescription;
+      let description = "";
+      try {
+        description = rawProduct.descriptionJson
+          ? edjsHTML().parse(JSON.parse(rawProduct.descriptionJson))
+          : rawProduct.seoDescription;
+      } catch (err) {
+        // console.warn(err)
+      }
 
       description =
         feedVariant == "facebookcommerce"
