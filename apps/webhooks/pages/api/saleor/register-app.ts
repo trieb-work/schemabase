@@ -3,7 +3,7 @@ import {
   createContext,
   setupPrisma,
   setupSaleor,
-  setupTenant,
+  getTenant,
 } from "@eci/context";
 import { z } from "zod";
 
@@ -39,7 +39,7 @@ export default async function handler(
 
     const ctx = await createContext<"prisma" | "saleor">(
       setupPrisma(),
-      setupTenant({ where: { id: tenantId } }),
+      getTenant({ where: { id: tenantId } }),
       setupSaleor(),
     );
 

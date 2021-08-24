@@ -5,7 +5,7 @@ import {
   setupRequestDataFeed,
   setupLogger,
   setupSaleor,
-  setupTenant,
+  getTenant,
 } from "@eci/context";
 import { ProductDataFeedGenerator } from "@eci/integrations/product-data-feed";
 import md5 from "md5";
@@ -40,7 +40,7 @@ export default async function handler(
     >(
       setupLogger(),
       setupPrisma(),
-      setupTenant({ where: { productdatafeed: { some: { publicId } } } }),
+      getTenant({ where: { productdatafeed: { some: { publicId } } } }),
       setupSaleor(),
       setupRequestDataFeed({ publicId, variant }),
     );
