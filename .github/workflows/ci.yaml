@@ -15,8 +15,6 @@ jobs:
         image: postgres
         env:
           POSTGRES_PASSWORD: postgres
-        ports:
-          - "25432:5432"
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -38,7 +36,7 @@ jobs:
       saleor:
         image: registry.gitlab.com/trieb.work/saleor:${{ matrix.saleor }}
         env:
-          DATABASE_URL: postgres://postgres:postgres@saleordb:25432/postgres
+          DATABASE_URL: postgres://postgres:postgres@saleordb:5432/postgres
           SECRET_KEY: can-be-anything
         options: --name=saleor
     steps:
