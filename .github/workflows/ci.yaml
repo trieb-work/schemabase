@@ -7,6 +7,7 @@ jobs:
   tests:
     name: Tests
     runs-on: ubuntu-latest
+    container: node:16
 
     services:
       postgres:
@@ -21,11 +22,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Setup Node
-        uses: actions/setup-node@v2.1.5
-        with:
-          node-version: 14
 
       - uses: actions/cache@v2
         with:
@@ -49,8 +45,8 @@ jobs:
           yarn db:push
           yarn db:seed
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
-          DATABASE_URL_POOL: postgresql://postgres:postgres@localhost:5432/postgres
+          DATABASE_URL: postgresql://postgres:postgres@postgres:5432/postgres
+          DATABASE_URL_POOL: postgresql://postgres:postgres@postgres:5432/postgres
           SALEOR_TEMPORARY_APP_TOKEN: ${{secrets.SALEOR_TEMPORARY_APP_TOKEN}}
 
       - name: Unit tests
