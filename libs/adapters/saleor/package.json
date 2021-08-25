@@ -1,0 +1,7 @@
+{
+  "name": "@eci/adapters-saleor",
+  "version": "0.0.1",
+  "scripts": {
+    "build": "graphql-codegen --config codegen.yml"
+  }
+}

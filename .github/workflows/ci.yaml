@@ -7,10 +7,11 @@ jobs:
   tests:
     name: Tests
     runs-on: ubuntu-latest
-    container: node:16
-
+    strategy:
+      matrix:
+        saleor: ["3.0-triebwork7", "3.0-triebwork11"]
     services:
-      postgres:
+      saleor_db:
         image: postgres
         env:
           POSTGRES_PASSWORD: postgres
@@ -19,10 +20,39 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+          --name=saleor_db
+      eci_db:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - "15432:5432"
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          --name=eci_db
+      saleor_api:
+        image: registry.gitlab.com/trieb.work/saleor:${{ matrix.saleor }}
+        env:
+          DATABASE_URL: postgres://postgres:postgres@saleordb:5432/postgres
+          SECRET_KEY: can-be-anything
+        options: --name=saleor_api
     steps:
+      - name: Setup Saleor
+        run: |
+          docker exec saleor_api python manage.py migrate
+          docker exec saleor_api python manage.py populatedb --createsuperuser
+          # This will also create an admin user
+          # email: admin@example.com
+          # password: admin
+
       - name: Checkout code
         uses: actions/checkout@v2
-
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "16"
       - uses: actions/cache@v2
         with:
           path: "**/node_modules"
@@ -45,8 +75,8 @@ jobs:
           yarn db:push
           yarn db:seed
         env:
-          DATABASE_URL: postgresql://postgres:postgres@postgres:5432/postgres
-          DATABASE_URL_POOL: postgresql://postgres:postgres@postgres:5432/postgres
+          DATABASE_URL: postgresql://postgres:postgres@localhost:15432/postgres
+          DATABASE_URL_POOL: postgresql://postgres:postgres@localhost:15432/postgres
           SALEOR_TEMPORARY_APP_TOKEN: ${{secrets.SALEOR_TEMPORARY_APP_TOKEN}}
 
       - name: Unit tests

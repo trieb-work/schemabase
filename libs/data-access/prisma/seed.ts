@@ -23,7 +23,7 @@ async function main() {
   const seedSaleorApp = {
     tenantId: tenant.id,
     name: "name",
-    domain: "pundf-test-api.triebwork.com",
+    domain: "pundf-staging-api.triebwork.com",
     appToken,
     channelSlug: "storefront",
   };
@@ -38,7 +38,9 @@ async function main() {
   const seedProductDataFeed = {
     publicId: "cksq51dwk00009ci06armhpsq",
     enabled: true,
-    productDetailStorefrontURL: "pundf-test-api.triebwork.com",
+
+    // productDetailStorefrontURL: "pundf-test-api.triebwork.com", // v11 ~> v3
+    productDetailStorefrontURL: "pundf-staging-api.triebwork.com", // v7  ~> v2.7
     tenantId: tenant.id,
   };
   await prisma.productDataFeed.upsert({
