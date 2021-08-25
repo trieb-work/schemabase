@@ -191,6 +191,9 @@ model SaleorApp {
 // Every tenant can have multiple connections with every integration.
 model Tenant {
   id String @id @default(uuid())
+
+  // Human readable identifier
+  name String
   // customer data etc
   // metadata Metadata
 
@@ -198,7 +201,7 @@ model Tenant {
   // The user might chose to disable it.
   enabled         Boolean               @default(false)
   // baseUrl         String
-  saleorApps          SaleorApp[]
+  saleorApps      SaleorApp[]
   zoho            ZohoConfig[]
   productdatafeed ProductDataFeed[]
   mailchimp       MailchimpConfig[]
