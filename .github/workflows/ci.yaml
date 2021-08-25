@@ -11,7 +11,7 @@ jobs:
       matrix:
         saleor: ["3.0-triebwork7", "3.0-triebwork11"]
     services:
-      saleordb:
+      saleor_db:
         image: postgres
         env:
           POSTGRES_PASSWORD: postgres
@@ -20,8 +20,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-          --name=saleordb
-      ecidb:
+          --name=saleor_db
+      eci_db:
         image: postgres
         env:
           POSTGRES_PASSWORD: postgres
@@ -32,18 +32,18 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-          --name=ecidb
-      saleor:
+          --name=eci_db
+      saleor_api:
         image: registry.gitlab.com/trieb.work/saleor:${{ matrix.saleor }}
         env:
           DATABASE_URL: postgres://postgres:postgres@saleordb:5432/postgres
           SECRET_KEY: can-be-anything
-        options: --name=saleor
+        options: --name=saleor_api
     steps:
       - name: Setup Saleor
         run: |
-          docker exec saleor python manage.py migrate
-          docker exec saleor python manage.py populatedb --createsuperuser
+          docker exec saleor_api python manage.py migrate
+          docker exec saleor_api python manage.py populatedb --createsuperuser
           # This will also create an admin user
           # email: admin@example.com
           # password: admin

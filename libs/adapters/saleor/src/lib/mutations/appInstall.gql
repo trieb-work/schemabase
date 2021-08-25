@@ -1,0 +1,10 @@
+mutation appInstall($input: AppInstallInput!) {
+  appInstall(input: $input) {
+    errors {
+      field
+      message
+      code
+      permissions
+    }
+  }
+}

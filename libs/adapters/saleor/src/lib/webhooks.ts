@@ -3,13 +3,13 @@ import { Logger } from "tslog";
 export type SaleorWebHookReceiver = {
   receive: (event: string) => Promise<void>;
 };
-export type SaleorServiceConfig = {
+export type SaleorWebHookServiceConfig = {
   logger: Logger;
 };
 
-export class SaleorService implements SaleorWebHookReceiver {
+export class SaleorWebHookService implements SaleorWebHookReceiver {
   private logger: Logger;
-  constructor(config: SaleorServiceConfig) {
+  constructor(config: SaleorWebHookServiceConfig) {
     this.logger = config.logger;
   }
 
