@@ -7,6 +7,7 @@ const logger = new Logger({ name: "DB seed" });
 async function main() {
   const seedTenant = {
     id: "294de72d-6498-4355-a182-422bbed7b825",
+    name: "test tenant",
     enabled: true,
   };
   const tenant = await prisma.tenant.upsert({
