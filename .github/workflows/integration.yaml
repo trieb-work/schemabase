@@ -47,12 +47,6 @@ jobs:
 
       - name: Test (e2e)
         run: |
-          # choose a fixed version to download
-          echo "SALEOR_TAG=:${{matrix.saleor}}" >> .env
-
-          # Setup 3rd party services
-          make init
-
 
           # Start another container where the ECI run
           docker build -t eci:latest -f ./apps/e2e/src/Dockerfile -p "3000:3000" .
