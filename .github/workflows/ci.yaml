@@ -26,13 +26,13 @@ jobs:
         run: yarn install
 
       - name: Build
-        run: yarn build
+        run: make build
 
       - name: Lint
-        run: yarn fmt
+        run: make fmt
 
       - name: Check types
-        run: yarn tsc
+        run: make tsc
 
       # - name: Seed database
       #   run: |
