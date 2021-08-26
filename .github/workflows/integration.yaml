@@ -107,7 +107,7 @@ jobs:
 
       - name: Seed database
         run: |
-          yarn install typescript ts-node @types/node
+          yarn add typescript ts-node @types/node
           npx prisma db seed --preview-feature --schema=./libs/data-access/prisma/schema.prisma
 
       - name: Test (e2e)
