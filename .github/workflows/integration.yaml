@@ -106,7 +106,9 @@ jobs:
         run: npx prisma migrate deploy --schema=./libs/data-access/prisma/schema.prisma
 
       - name: Seed database
-        run: npx prisma db seed --preview-feature --schema=./libs/data-access/prisma/schema.prisma
+        run: |
+          yarn install typescript ts-node @types/node
+          npx prisma db seed --preview-feature --schema=./libs/data-access/prisma/schema.prisma
 
       - name: Test (e2e)
         run: npx nx e2e:e2e
