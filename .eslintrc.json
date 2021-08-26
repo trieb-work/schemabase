@@ -18,6 +18,18 @@
               }
             ]
           }
+        ],
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "axios",
+                "importNames": ["default"],
+                "message": "Please use `/libs/http`. See https://github.com/trieb-work/eci/blob/main/libs/http/README.md"
+              }
+            ]
+          }
         ]
       }
     },

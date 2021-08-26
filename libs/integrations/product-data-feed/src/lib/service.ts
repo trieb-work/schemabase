@@ -10,124 +10,133 @@ import {
 // @ts-expect-error it doesn't detec types for some reason
 import edjsHTML from "editorjs-html";
 import { generateUnitPrice } from "./generate-unit-price";
+import { FeedVariant, Product } from "./types";
 
-const edjsParser = edjsHTML();
-
-export type ProductDataFeedService = {
-  generate: (
-    saleorGraphQLClient: GraphqlClient,
-    channel: string,
+export interface ProductDataFeedService {
+  generateCSV: (
     storefrontProductUrl: string,
-    feedVariant: "googlemerchant" | "facebookcommerce",
-  ) => Promise<string | null>;
-};
+    feedVariant: FeedVariant,
+  ) => Promise<string>;
+}
 
 /**
  * Generate product data as .csv
  */
 
 export class ProductDataFeedGenerator implements ProductDataFeedService {
-  public async generate(
-    saleorGraphQLClient: GraphqlClient,
-    channel: string,
+  private readonly saleorGraphqlClient: GraphqlClient;
+
+  public constructor(saleorGraphqlClient: GraphqlClient) {
+    this.saleorGraphqlClient = saleorGraphqlClient;
+  }
+
+  public async generateCSV(
     storefrontProductUrl: string,
-    feedVariant: "googlemerchant" | "facebookcommerce",
-  ): Promise<string | null> {
-    const rawData = await saleorGraphQLClient.query<
+    feedVariant: FeedVariant,
+  ): Promise<string> {
+    const products = await this.generate(storefrontProductUrl, feedVariant);
+    const csv = new ObjectsToCsv(products);
+    return await csv.toString();
+  }
+
+  private async generate(
+    storefrontProductUrl: string,
+    feedVariant: FeedVariant,
+  ): Promise<Product[]> {
+    const rawData = await this.saleorGraphqlClient.query<
       ProductDataFeedQuery,
       ProductDataFeedQueryVariables
     >({
       query: ProductDataFeed,
       variables: {
         first: 100,
-        channel,
       },
     });
 
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    const products: object[] = [];
+    const products: Product[] = [];
 
-    if (!rawData.data.products) return null;
+    if (!rawData.data.products) {
+      throw new Error(`Saleor did not return any products`);
+    }
 
-    rawData.data.products.edges
-      .map((product) => product.node)
-      .map((product) => {
-        // we get the brand from a product attribute called brand
-        const brand = product.attributes.find(
-          (x) => x.attribute.name === "brand",
-        )?.values[0]?.name;
-        const googleProductCategory = product.attributes.find(
-          (x) => x.attribute.name === "googleProductCategory",
-        )?.values[0]?.name;
+    const rawProducts = rawData.data.products.edges.map(
+      (product) => product.node,
+    );
 
-        // if we want to prefer the title instead of the seoTitle
-        // const title = product.name ? product.name : product.seoTitle;
+    for (const rawProduct of rawProducts) {
+      // we get the brand from a product attribute called brand
+      const brand = rawProduct.attributes.find(
+        (x) => x.attribute.name === "brand",
+      )?.values[0]?.name;
+      const googleProductCategory = rawProduct.attributes.find(
+        (x) => x.attribute.name === "googleProductCategory",
+      )?.values[0]?.name;
 
-        const title = product.seoTitle ? product.seoTitle : product.name;
+      // if we want to prefer the title instead of the seoTitle
+      // const title = product.name ? product.name : product.seoTitle;
 
-        const description = isEmpty(JSON.parse(product?.descriptionJson))
-          ? product.seoDescription
-          : edjsParser.parse(JSON.parse(product.descriptionJson))?.join("");
+      const title = rawProduct.seoTitle ? rawProduct.seoTitle : rawProduct.name;
 
-        const { hasVariants } = product.productType;
+      let description = isEmpty(JSON.parse(rawProduct?.descriptionJson))
+        ? rawProduct.seoDescription
+        : edjsHTML().parse(JSON.parse(rawProduct.descriptionJson))?.join("");
 
-        if (!product.variants) {
-          return null;
+      description =
+        feedVariant == "facebookcommerce"
+          ? htmlToText(description)
+          : description;
+
+      const { hasVariants } = rawProduct.productType;
+
+      if (!rawProduct.variants) {
+        continue;
+      }
+
+      for (const variant of rawProduct.variants) {
+        if (!variant) {
+          continue;
         }
-        product.variants.map((variant) => {
-          if (!variant) {
-            return null;
-          }
-          const variantImageLink =
-            variant.images && variant.images.length > 0
+
+        const gtin = hasVariants
+          ? variant.metadata?.find((x) => x?.key === "EAN")?.value
+          : rawProduct.metadata?.find((x) => x?.key === "EAN")?.value;
+        const unit_pricing_measure =
+          variant.weight && rawProduct.weight
+            ? generateUnitPrice(variant.weight, rawProduct.weight)
+            : undefined;
+        const product: Product = {
+          id: variant.sku,
+          title: hasVariants ? `${title} (${variant.name})` : title,
+          description,
+          rich_text_description:
+            feedVariant === "facebookcommerce" ? description : undefined,
+          image_link: hasVariants
+            ? variant.images && variant.images.length > 0
               ? variant.images[0]?.url
-              : "";
-          const singleProductImageLink =
-            product.images && product.images.length > 0
-              ? product.images[1]?.url
-              : "";
-          const additionalImageLink = hasVariants
+              : ""
+            : rawProduct.images && rawProduct.images.length > 0
+            ? rawProduct.images[1]?.url
+            : "",
+          additional_image_link: hasVariants
             ? variant.images?.[1]?.url
-            : product.images?.[2]?.url;
-          const ean = hasVariants
-            ? variant.metadata?.find((x) => x?.key === "EAN")?.value
-            : product.metadata?.find((x) => x?.key === "EAN")?.value;
-          const unit_pricing_measure =
-            variant.weight && product.weight
-              ? generateUnitPrice(variant.weight, product.weight)
-              : undefined;
-          const finalProduct = {
-            id: variant.sku,
-            title: hasVariants ? `${title} (${variant.name})` : title,
-            description,
-            rich_text_description: description,
-            image_link: hasVariants ? variantImageLink : singleProductImageLink,
-            additional_image_link: additionalImageLink,
-            link: storefrontProductUrl + product.slug,
-            price: `${variant?.pricing?.priceUndiscounted?.gross.amount} ${variant?.pricing?.priceUndiscounted?.gross.currency}`,
-            sale_price: `${variant?.pricing?.price?.gross.amount} ${variant.pricing?.price?.gross.currency}`,
-            condition: "new",
-            gtin: ean,
-            brand,
-            unit_pricing_measure,
-            availability:
-              variant.quantityAvailable < 1 || !product.isAvailableForPurchase
-                ? "out of stock"
-                : "in stock",
-            google_product_category: googleProductCategory,
-          };
-          if (feedVariant === "facebookcommerce")
-            finalProduct.description = htmlToText(finalProduct.description);
-          if (feedVariant === "googlemerchant")
-            delete finalProduct.rich_text_description;
+            : rawProduct.images?.[2]?.url,
+          link: storefrontProductUrl + rawProduct.slug,
+          price: `${variant?.pricing?.priceUndiscounted?.gross.amount} ${variant?.pricing?.priceUndiscounted?.gross.currency}`,
+          sale_price: `${variant?.pricing?.price?.gross.amount} ${variant.pricing?.price?.gross.currency}`,
+          condition: "new",
+          gtin,
+          brand: brand ?? undefined,
+          unit_pricing_measure,
+          availability:
+            variant.quantityAvailable < 1 || !rawProduct.isAvailableForPurchase
+              ? "out of stock"
+              : "in stock",
+          google_product_category: googleProductCategory ?? undefined,
+        };
 
-          products.push(finalProduct);
-          return variant;
-        });
-        return product;
-      });
-
-    const csv = new ObjectsToCsv(products);
-    return await csv.toString();
+        products.push(product);
+      }
+    }
+    return products;
   }
 }

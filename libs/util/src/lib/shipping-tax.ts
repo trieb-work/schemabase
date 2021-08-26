@@ -9,13 +9,13 @@ export function calculateShippingTaxRate(
   identifier: TaxIdentifier,
 ) {
   const parsedLines = lines.map((line) => {
+    const tax = line[identifier];
     switch (identifier) {
       case "tax_rate":
-        const tax = line[identifier];
         if (typeof tax === "undefined") {
           throw new Error(`${line} does not have an attribute "${identifier}"`);
         }
-        return parseInt(tax, 10);
+        return parseInt(tax as string, 10);
       case "tax_percentage":
         return line.tax_percentage;
     }

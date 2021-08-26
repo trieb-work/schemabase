@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import axios from "axios";
 
 export type Request = {
@@ -5,13 +6,40 @@ export type Request = {
   url: string;
   body?: unknown;
   headers?: Record<string, string | number>;
+  params?: Record<string, string | number>;
 };
 
-export type Caller<Response = unknown> = (req: Request) => Promise<Response>;
-
-export const caller: Caller = async (req) => {
-  return await axios({
-    ...req,
-    data: JSON.stringify(req.body),
-  }).then((res) => res.data);
+export type Response<Data> = {
+  status: number;
+  data: Data | null;
 };
+
+export type HttpApi = {
+  call: <Data>(req: Request) => Promise<Response<Data>>;
+  setHeader(name: string, value: string | number): void;
+};
+
+export class HttpClient implements HttpApi {
+  public headers: Record<string, string | number>;
+
+  public constructor() {
+    this.headers = {};
+  }
+
+  public setHeader(name: string, value: string | number): void {
+    this.headers[name] = value;
+  }
+
+  public async call<Data>(req: Request): Promise<Response<Data>> {
+    return await axios({
+      method: req.method,
+      url: req.url,
+      params: req.params,
+      headers: { ...this.headers, ...req.headers },
+      data: JSON.stringify(req.body),
+    }).then((res) => ({
+      status: res.status,
+      data: res.data ?? null,
+    }));
+  }
+}

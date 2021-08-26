@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import EasyPost from "@easypost/api";
 import { env } from "@eci/util/env";

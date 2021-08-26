@@ -148,27 +148,6 @@
         }
       }
     },
-    "adapters-zoho": {
-      "root": "libs/adapters/zoho",
-      "sourceRoot": "libs/adapters/zoho/src",
-      "projectType": "library",
-      "targets": {
-        "lint": {
-          "executor": "@nrwl/linter:eslint",
-          "options": {
-            "lintFilePatterns": ["libs/adapters/zoho/**/*.ts"]
-          }
-        },
-        "test": {
-          "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/adapters/zoho"],
-          "options": {
-            "jestConfig": "libs/adapters/zoho/jest.config.js",
-            "passWithNoTests": true
-          }
-        }
-      }
-    },
     "context": {
       "root": "libs/context",
       "sourceRoot": "libs/context/src",
@@ -238,6 +217,27 @@
           "outputs": ["coverage/libs/graphql-client"],
           "options": {
             "jestConfig": "libs/graphql-client/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "http": {
+      "root": "libs/http",
+      "sourceRoot": "libs/http/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/http/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/http"],
+          "options": {
+            "jestConfig": "libs/http/jest.config.js",
             "passWithNoTests": true
           }
         }

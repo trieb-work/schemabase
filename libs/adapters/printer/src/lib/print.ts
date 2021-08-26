@@ -1,32 +1,32 @@
 import { Device, Options, PrintRequest } from "./types";
-import axios, { AxiosInstance } from "axios";
 import { env } from "@eci/util/env";
-
+import { HttpApi, HttpClient } from "@eci/http";
+import { HTTPError } from "@eci/util/errors";
 export class Printer {
-  public request: AxiosInstance;
+  public httpClient: HttpApi;
 
   constructor() {
-    this.request = axios.create({
-      baseURL: "https://api.printnode.com",
-      timeout: 4000,
-      auth: {
-        username: env.require("PRINTNODE_KEY"),
-        password: "",
-      },
-    });
+    this.httpClient = new HttpClient();
+    this.httpClient.setHeader(
+      "Authorization",
+      `Basic ${Buffer.from(`${env.require("PRINTNODE_KEY")}:`).toString(
+        "base64",
+      )}`,
+    );
   }
 
   /**
    * Get a list of all printers we have access to
    */
   public async getPrinters(): Promise<Device[]> {
-    const printers = await this.request({
-      url: "/printers",
+    const res = await this.httpClient.call<Device[]>({
+      method: "GET",
+      url: "https://api.printnode.com/printers",
     });
-    if (!printers?.data || printers.data.length < 1) {
-      throw new Error("No printers returned!");
+    if (!res.data) {
+      throw new HTTPError(500, "Unable to load available printers");
     }
-    return printers.data as Device[];
+    return res.data;
   }
 
   public async getPrinterIdByName(name: string): Promise<number | null> {
@@ -57,9 +57,8 @@ export class Printer {
     fitToPage = true,
     paper,
   }: PrintRequest) {
-    const headers: Record<string, string> = {};
     if (idempotencyKey) {
-      headers["X-Idempotency-Key"] = idempotencyKey;
+      this.httpClient.setHeader("X-Idempotency-Key", idempotencyKey);
     }
     const options: Options = {
       rotate,
@@ -71,11 +70,10 @@ export class Printer {
     if (paper) {
       options.paper = paper;
     }
-    const response = await this.request({
-      url: "/printjobs",
-      method: "post",
-      headers,
-      data: {
+    return await this.httpClient.call({
+      url: "https://api.printnode.com/printjobs",
+      method: "POST",
+      body: {
         printerId,
         title: `Automatic_Zoho_Job-${fileName}`,
         contentType: "pdf_base64",
@@ -86,6 +84,5 @@ export class Printer {
         options,
       },
     });
-    return response.data;
   }
 }
