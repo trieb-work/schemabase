@@ -41,6 +41,7 @@ build:
 test:
 	yarn nx run-many --target=test --all
 
+test-e2e: export ECI_BASE_URL=http://localhost:3000
 test-e2e: start
 	yarn nx test e2e
 
