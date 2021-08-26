@@ -51,17 +51,21 @@ jobs:
         with:
           node-version: "16"
 
-      - name: Build eci
+      - name: Build eci container
         run: docker build -t eci:latest -f ./apps/e2e/src/Dockerfile .
 
-      - name: Start eci
+      - name: Start eci server
         run: docker run -d -p "3000:3000" eci:latest
 
       - name: Apply database schema
         run: npx prisma migrate deploy --schema=./libs/data-access/prisma/schema.prisma --skip-generate
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
 
       - name: Seed database
         run: npx prisma db seed --preview-feature --schema=./libs/data-access/prisma/schema.prisma
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
 
       - name: Test (e2e)
         run: npx nx e2e:e2e
