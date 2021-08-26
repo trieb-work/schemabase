@@ -1,3 +1,4 @@
+# Location of prisma schema file
 prismaSchema := libs/data-access/prisma/schema.prisma
 
 
@@ -21,29 +22,33 @@ init: down
 
 	docker-compose up -d
 	docker-compose exec saleor_api python manage.py migrate
+
+  # An admin user is created with the following credentials:
+  # email: admin@example.com
+  # password: admin
 	docker-compose exec saleor_api python manage.py populatedb --createsuperuser
 
 
-# Start all services for local development or testing
-start: export DATABASE_URL = postgres://postgres:postgres@localhost:5432/postgres
-start: export SALEOR_TEMPORARY_APP_TOKEN = "token"
-start:
+up:
 	docker-compose up -d
-
-	yarn prisma migrate dev --schema=$(prismaSchema) --skip-generate
-	yarn prisma db seed --preview-feature --schema=$(prismaSchema)
-
 
 build:
 	yarn nx run-many --target=build --all --with-deps
 
 
+# Run all unit tests
 test:
 	yarn nx run-many --target=test --all
 
+
+# Run integration tests
+#
+# Make sure you have called `make init` before to setup all required services
+# You just need to do this once, not for every new test run.
 test-e2e: export ECI_BASE_URL=http://localhost:3000
-test-e2e: start
-	yarn nx test e2e
+test-e2e: export SALEOR_TEMPORARY_APP_TOKEN = "token"
+test-e2e: up db-push db-seed
+	yarn nx run e2e:e2e
 
 
 # DO NOT RUN THIS YOURSELF!
@@ -72,8 +77,6 @@ format:
 fmt: lint format
 
 
-
-
 db-seed:
 	yarn prisma db seed --preview-feature --schema=${prismaSchema}
 db-migrate:
@@ -81,4 +84,4 @@ db-migrate:
 db-studio:
 	yarn prisma studio --schema=${prismaSchema}
 db-push:
-	yarn prisma db push --schema=${prismaSchema
+	yarn prisma db push --schema=${prismaSchema} --skip-generate

@@ -163,6 +163,7 @@ model TrackAndTraceEmails {
 
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor
 // server and receive webhooks with event notifications from Saleor.
+// Every channel must have its own app
 model SaleorApp {
   id          String @id @default(uuid())
   channelSlug String
@@ -172,19 +173,30 @@ model SaleorApp {
   // The saleor application id
   // appId        String
 
-  // The app token is used to authenticate our requests with saleor.
-  // It is obtained when the user registeres a new saleor app.
-  // Every request to saleor will include this token in the header
-  // `Authorization: JWT <app-token>`
+  // Unlike regular users, Saleor Apps use a bearer token. The token is
+  // assigned at App installation time and needs to be stored in a secure manner.
+  // The authorization header for Apps has the following format:
+  // Authorization: Bearer <app-token>
   appToken String
 
-  // webhookToken String @default(cuid())
-  // webhookID    String
+  webhooks SaleorWebhook[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
   @@unique([domain, channelSlug])
+}
+
+model SaleorWebhook {
+  id String @id
+
+  // The secret key used to create a hash signature with each payload.
+  secretKey String @default(uuid())
+
+  // ID of the app to which webhook belongs.
+  appId     String
+  saleorApp SaleorApp @relation(fields: [appId], references: [id], onDelete: Cascade)
+
 }
 
 // One tenant per company

@@ -117,6 +117,6 @@ jobs:
         env:
           SALEOR_TEMPORARY_APP_TOKEN: abc
       - name: Test (e2e)
-        run: yarn nx run e2e:e2e
+        run: docker ps && yarn nx run e2e:e2e
         env:
           ECI_BASE_URL: http://localhost:3000

@@ -26,9 +26,6 @@ services:
   saleor_api:
     ports:
       - 8000:8000
-    # This will build the latest saleor image by default
-    # or download a prebuilt image when the tag is set (in ci)
-    image: registry.gitlab.com/trieb.work/saleor${SALEOR_TAG}
     build:
       context: https://github.com/mirumee/saleor.git
       dockerfile: ./Dockerfile

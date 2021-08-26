@@ -11,7 +11,6 @@ describe("productdatafeed", () => {
     });
 
     expect(res.status).toBe(200);
-    console.log(res.headers);
     expect(res.headers["content-type"]).toEqual("text/csv");
     expect(res.headers["cache-control"]).toEqual(
       "s-maxage=1, stale-while-revalidate",
