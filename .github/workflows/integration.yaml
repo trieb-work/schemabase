@@ -11,19 +11,23 @@ on:
 
 jobs:
   buildEci:
+    name: Build fresh eci service
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-      - name: Build and export
+
+      - name: Build eci image
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./apps/e2e/src/Dockerfile
           tags: eci:latest
           outputs: type=oci,dest=/tmp/eci_image.tar
+
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
