@@ -4,7 +4,7 @@ CREATE TYPE "Language" AS ENUM ('DE', 'EN');
 -- CreateTable
 CREATE TABLE "MailchimpConfig" (
     "id" TEXT NOT NULL,
-    "active" BOOLEAN NOT NULL DEFAULT false,
+    "enabled" BOOLEAN NOT NULL DEFAULT false,
     "listId" TEXT NOT NULL,
     "apiToken" TEXT NOT NULL,
     "storeUrl" TEXT NOT NULL,
@@ -20,9 +20,8 @@ CREATE TABLE "MailchimpConfig" (
 CREATE TABLE "ProductDataFeed" (
     "id" TEXT NOT NULL,
     "publicId" TEXT NOT NULL,
-    "active" BOOLEAN DEFAULT false,
+    "enabled" BOOLEAN DEFAULT false,
     "productDetailStorefrontURL" TEXT,
-    "channel" TEXT,
     "tenantId" TEXT NOT NULL,
 
     PRIMARY KEY ("id")
@@ -32,7 +31,7 @@ CREATE TABLE "ProductDataFeed" (
 CREATE TABLE "EasyPostConfig" (
     "id" TEXT NOT NULL,
     "publicId" TEXT NOT NULL,
-    "active" BOOLEAN DEFAULT false,
+    "enabled" BOOLEAN DEFAULT false,
     "apiToken" TEXT,
     "webhookID" TEXT,
     "tenantId" TEXT NOT NULL,
@@ -44,7 +43,7 @@ CREATE TABLE "EasyPostConfig" (
 -- CreateTable
 CREATE TABLE "AddressVerificationConfig" (
     "id" TEXT NOT NULL,
-    "active" BOOLEAN DEFAULT false,
+    "enabled" BOOLEAN DEFAULT false,
     "easyPostConfId" TEXT NOT NULL,
 
     PRIMARY KEY ("id")
@@ -53,7 +52,7 @@ CREATE TABLE "AddressVerificationConfig" (
 -- CreateTable
 CREATE TABLE "BraintreeConfig" (
     "id" TEXT NOT NULL,
-    "active" BOOLEAN NOT NULL DEFAULT false,
+    "enabled" BOOLEAN NOT NULL DEFAULT false,
     "merchantId" TEXT NOT NULL,
     "publicKey" TEXT NOT NULL,
     "privateKey" TEXT NOT NULL,
@@ -65,7 +64,7 @@ CREATE TABLE "BraintreeConfig" (
 -- CreateTable
 CREATE TABLE "LexofficeConfig" (
     "id" TEXT NOT NULL,
-    "active" BOOLEAN NOT NULL DEFAULT false,
+    "enabled" BOOLEAN NOT NULL DEFAULT false,
     "apiToken" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
 
@@ -75,11 +74,11 @@ CREATE TABLE "LexofficeConfig" (
 -- CreateTable
 CREATE TABLE "ZohoConfig" (
     "id" TEXT NOT NULL,
-    "active" BOOLEAN NOT NULL DEFAULT false,
+    "enabled" BOOLEAN NOT NULL DEFAULT false,
     "publicId" TEXT NOT NULL,
-    "orgId" TEXT NOT NULL DEFAULT E'',
-    "clientId" TEXT NOT NULL DEFAULT E'',
-    "clientSecret" TEXT NOT NULL DEFAULT E'',
+    "orgId" TEXT NOT NULL,
+    "clientId" TEXT NOT NULL,
+    "clientSecret" TEXT NOT NULL,
     "payPalAccountId" TEXT,
     "creditCardAccountId" TEXT,
     "webhookToken" TEXT NOT NULL,
@@ -108,7 +107,7 @@ CREATE TABLE "MailgunConfig" (
 -- CreateTable
 CREATE TABLE "TrackAndTraceConfig" (
     "id" TEXT NOT NULL,
-    "active" BOOLEAN NOT NULL DEFAULT false,
+    "enabled" BOOLEAN NOT NULL DEFAULT false,
     "publicId" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
 
@@ -131,13 +130,12 @@ CREATE TABLE "TrackAndTraceEmails" (
 );
 
 -- CreateTable
-CREATE TABLE "SaleorConfig" (
+CREATE TABLE "SaleorApp" (
     "id" TEXT NOT NULL,
+    "channelSlug" TEXT NOT NULL,
     "domain" TEXT NOT NULL,
-    "appId" TEXT NOT NULL,
-    "authToken" TEXT NOT NULL,
-    "webhookToken" TEXT NOT NULL,
-    "webhookID" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "appToken" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
 
     PRIMARY KEY ("id")
@@ -146,8 +144,7 @@ CREATE TABLE "SaleorConfig" (
 -- CreateTable
 CREATE TABLE "Tenant" (
     "id" TEXT NOT NULL,
-    "active" BOOLEAN NOT NULL,
-    "baseUrl" TEXT NOT NULL,
+    "enabled" BOOLEAN NOT NULL DEFAULT false,
 
     PRIMARY KEY ("id")
 );
@@ -218,10 +215,13 @@ CREATE UNIQUE INDEX "TrackAndTraceConfig.tenantId_unique" ON "TrackAndTraceConfi
 CREATE UNIQUE INDEX "TrackAndTraceEmails.language_unique" ON "TrackAndTraceEmails"("language");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "SaleorConfig.domain_unique" ON "SaleorConfig"("domain");
+CREATE UNIQUE INDEX "SaleorApp.domain_unique" ON "SaleorApp"("domain");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "SaleorConfig.tenantId_unique" ON "SaleorConfig"("tenantId");
+CREATE UNIQUE INDEX "SaleorApp.tenantId_unique" ON "SaleorApp"("tenantId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "SaleorApp.domain_channelSlug_unique" ON "SaleorApp"("domain", "channelSlug");
 
 -- AddForeignKey
 ALTER TABLE "MailchimpConfig" ADD FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -236,7 +236,7 @@ ALTER TABLE "EasyPostConfig" ADD FOREIGN KEY ("tenantId") REFERENCES "Tenant"("i
 ALTER TABLE "EasyPostConfig" ADD FOREIGN KEY ("trackAndTraceConfigId") REFERENCES "TrackAndTraceConfig"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "AddressVerificationConfig" ADD FOREIGN KEY ("easyPostConfId") REFERENCES "EasyPostConfig"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "AddressVerificationConfig" ADD FOREIGN KEY ("easyPostConfId") REFERENCES "EasyPostConfig"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "BraintreeConfig" ADD FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -257,7 +257,7 @@ ALTER TABLE "MailgunConfig" ADD FOREIGN KEY ("trackAndTraceConfigId") REFERENCES
 ALTER TABLE "TrackAndTraceConfig" ADD FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "TrackAndTraceEmails" ADD FOREIGN KEY ("trackAndTraceConfId") REFERENCES "TrackAndTraceConfig"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "TrackAndTraceEmails" ADD FOREIGN KEY ("trackAndTraceConfId") REFERENCES "TrackAndTraceConfig"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "SaleorConfig" ADD FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "SaleorApp" ADD FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE CASCADE ON UPDATE CASCADE;

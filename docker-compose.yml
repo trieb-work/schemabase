@@ -1,12 +1,50 @@
 version: "3.1"
 
 services:
-  db:
+  eci_db:
     image: postgres
-    restart: always
     ports:
       - "5432:5432"
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+
+  saleor_api:
+    ports:
+      - 8000:8000
+    build:
+      context: https://github.com/mirumee/saleor.git
+      dockerfile: ./Dockerfile
+      args:
+        STATIC_URL: "/static/"
+    depends_on:
+      - saleor_db
+    restart: always
+    environment:
+      DATABASE_URL: postgres://saleor:saleor@saleor_db:5432/postgres
+      SECRET_KEY: adgkadgkajsdg
+      STOREFRONT_URL: http://localhost:3000/
+      DASHBOARD_URL: http://localhost:9000/
+
+  saleor_db:
+    image: postgres
+    environment:
+      - POSTGRES_USER=saleor
+      - POSTGRES_PASSWORD=saleor
+
+  saleor_storefront:
+    build:
+      context: https://github.com/mirumee/saleor-storefront.git
+      dockerfile: ./Dockerfile.dev
+    ports:
+      - 4000:3000
+    command: npm start -- --host 0.0.0.0
+
+  saleor_dashboard:
+    build:
+      context: https://github.com/mirumee/saleor-dashboard.git
+      dockerfile: ./Dockerfile.dev
+    ports:
+      - 9000:9000
+    command: npm start -- --host 0.0.0.0

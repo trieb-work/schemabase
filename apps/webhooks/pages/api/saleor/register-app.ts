@@ -3,7 +3,7 @@ import {
   createContext,
   setupPrisma,
   setupSaleor,
-  setupTenant,
+  getTenant,
 } from "@eci/context";
 import { z } from "zod";
 
@@ -39,22 +39,22 @@ export default async function handler(
 
     const ctx = await createContext<"prisma" | "saleor">(
       setupPrisma(),
-      setupTenant({ where: { id: tenantId } }),
+      getTenant({ where: { id: tenantId } }),
       setupSaleor(),
     );
 
-    const existingConfig = await ctx.prisma.saleorConfig.findUnique({
+    await ctx.prisma.saleorApp.upsert({
       where: { domain },
+      update: {},
+      create: {
+        tenantId,
+        name: "",
+        domain,
+        appToken,
+        channelSlug: "",
+      },
     });
-    if (!existingConfig) {
-      await ctx.prisma.saleorConfig.create({
-        data: {
-          tenantId,
-          domain,
-          appToken,
-        },
-      });
-    }
+
     res.status(200);
   } catch (err) {
     return res.send(err);

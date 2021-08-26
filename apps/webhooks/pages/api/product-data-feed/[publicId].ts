@@ -5,7 +5,7 @@ import {
   setupRequestDataFeed,
   setupLogger,
   setupSaleor,
-  setupTenant,
+  getTenant,
 } from "@eci/context";
 import { ProductDataFeedGenerator } from "@eci/integrations/product-data-feed";
 import md5 from "md5";
@@ -16,15 +16,9 @@ const requestValidation = z.object({
   method: z.string().refine((m) => m === "GET"),
   query: z.object({
     publicId: z.string(),
-    variant: z
-      .string()
-      .refine(
-        (variant) => ["facebookcommerce", "googlemerchant"].includes(variant),
-        "only `facebookcommerce` and `googlemerchant` are currently supported",
-      ),
+    variant: z.enum(["facebookcommerce", "googlemerchant"]),
   }),
 });
-
 /**
  * The product data feed returns a google standard .csv file from products and their attributes in your shop.#
  */
@@ -39,12 +33,14 @@ export default async function handler(
       throw new HTTPError(400, err.message);
     });
 
+    console.log({ publicId });
+
     const ctx = await createContext<
       "prisma" | "requestDataFeed" | "tenant" | "logger" | "saleor"
     >(
       setupLogger(),
       setupPrisma(),
-      setupTenant({ where: { productdatafeed: { some: { publicId } } } }),
+      getTenant({ where: { productdatafeed: { some: { publicId } } } }),
       setupSaleor(),
       setupRequestDataFeed({ publicId, variant }),
     );
@@ -55,7 +51,10 @@ export default async function handler(
 
     ctx.logger.info("Creating new product datafeed");
 
-    const generator = new ProductDataFeedGenerator(ctx.saleor.graphqlClient);
+    const generator = new ProductDataFeedGenerator({
+      saleorGraphqlClient: ctx.saleor.graphqlClient,
+      channelSlug: ctx.saleor.config.channelSlug,
+    });
 
     const productDataFeed = await generator.generateCSV(
       ctx.requestDataFeed.storefrontProductUrl,
@@ -75,7 +74,7 @@ export default async function handler(
     } else {
       res.status(500);
     }
-    return res.send(err);
+    return res.send(err.message);
   } finally {
     res.end();
   }
