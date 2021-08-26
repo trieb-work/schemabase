@@ -1,9 +1,8 @@
 FROM node:16
 WORKDIR /eci
-ENV NODE_ENV production
 
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+RUN yarn install 
 
 COPY . .
 RUN yarn nx build webhooks
