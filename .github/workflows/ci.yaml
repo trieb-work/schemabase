@@ -52,3 +52,5 @@ jobs:
 
           # Run unit and e2e tests
           make e2e
+        env:
+          SALEOR_TAG: :${{matrix.saleor}}

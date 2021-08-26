@@ -17,7 +17,8 @@ pull-env:
 # Build and seeds all required external services
 init: down pull-env
 	docker-compose pull
-	docker-compose build --parallel
+	docker-compose build
+
 	docker-compose up -d
 	docker-compose exec saleor_api python manage.py migrate
 	docker-compose exec saleor_api python manage.py populatedb --createsuperuser
