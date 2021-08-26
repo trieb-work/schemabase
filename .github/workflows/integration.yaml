@@ -47,8 +47,6 @@ jobs:
           docker build \
             -t eci:latest
             -f ./apps/e2e/src/Dockerfile \
-            -e DATABASE_URL=postgres://postgres:postgres@localhost:5432/postgres \
-            -e DATABASE_URL_POOL=postgres://postgres:postgres@localhost:5432/postgres \
             .
       - name: Start eci
         run: docker run -d -p "3000:3000" eci:latest
@@ -57,4 +55,3 @@ jobs:
         env:
           ECI_BASE_URL: http://localhost:3000
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
-          DATABASE_URL_POOL: postgres://postgres:postgres@localhost:5432/postgres
