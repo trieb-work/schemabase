@@ -1,12 +1,11 @@
 name: Integration
 
-on: ["deployment_status"]
+on:
+  pull_request:
 
 jobs:
   tests:
     name: Integration
-    if: ${{ github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Production – eci-v2' }}
-
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -57,6 +56,6 @@ jobs:
           # Run unit and e2e tests
           make e2e
         env:
-          ECI_BASE_URL: ${{ github.event.deployment_status.target_url }}
+          ECI_BASE_URL: http://localhost:3000
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
           DATABASE_URL_POOL: postgres://postgres:postgres@localhost:5432/postgres
