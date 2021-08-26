@@ -111,7 +111,8 @@ jobs:
 
       - name: Seed database
         run: yarn prisma db seed --preview-feature --schema=./libs/data-access/prisma/schema.prisma
-
+        env:
+          SALEOR_TEMPORARY_APP_TOKEN: abc
       - name: Test (e2e)
         run: yarn nx e2e:e2e
         env:
