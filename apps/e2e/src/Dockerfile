@@ -1,3 +1,6 @@
+# Quick and dirty way of running a containerized instance.
+# This is intended only for integration tests in the CI or locally.
+
 FROM node:16
 WORKDIR /eci
 

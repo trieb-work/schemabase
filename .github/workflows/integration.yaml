@@ -1,5 +1,11 @@
 name: Integration
 
+# All required 3rd party services are hosted in docker containers and available
+# via localhost.
+#
+# The webhooks service is started inside a docker container as well and all
+# integration tests are being run with a fresh database seed
+
 on:
   pull_request:
 
@@ -41,11 +47,22 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "16"
 
       - name: Build eci
         run: docker build -t eci:latest -f ./apps/e2e/src/Dockerfile .
+
       - name: Start eci
         run: docker run -d -p "3000:3000" eci:latest
+
+      - name: Apply database schema
+        run: npx prisma migrate deploy --schema=./libs/data-access/prisma/schema.prisma --skip-generate
+
+      - name: Seed database
+        run: npx prisma db seed --preview-feature --schema=./libs/data-access/prisma/schema.prisma
+
       - name: Test (e2e)
         run: make test-e2e
         env:
