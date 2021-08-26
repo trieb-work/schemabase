@@ -46,11 +46,11 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build ECI
-        run: docker build -t eci:latest -f ./apps/e2e/src/Dockerfile -p "3000:3000" .
+        run: docker build -t eci:latest -f ./apps/e2e/src/Dockerfile .
       - name: Test (e2e)
         run: |
           # Start ECI
-          docker run -d eci:latest
+          docker run -d -p "3000:3000" eci:latest
 
           docker ps
           # Run unit and e2e tests
