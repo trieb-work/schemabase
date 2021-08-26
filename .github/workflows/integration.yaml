@@ -5,7 +5,7 @@ on:
 
 jobs:
   tests:
-    name: Tests
+    name: Integration
     runs-on: ubuntu-latest
     strategy:
       matrix:
