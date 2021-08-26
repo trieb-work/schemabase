@@ -53,5 +53,7 @@ jobs:
           # Setup 3rd party services
           make init
 
+
+          docker ps
           # Run unit and e2e tests
           make e2e
