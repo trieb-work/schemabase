@@ -91,6 +91,9 @@ jobs:
           path: "**/node_modules"
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
+      - name: Install dependencies
+        run: yarn install
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
