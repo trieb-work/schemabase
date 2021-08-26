@@ -39,7 +39,7 @@ build:
 
 
 test:
-	nx run-many --target=test --all
+	yarn nx run-many --target=test --all
 
 test-e2e: start
 	yarn nx test e2e
