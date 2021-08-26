@@ -15,7 +15,7 @@ pull-env:
 
 
 # Build and seeds all required external services
-init: down pull-env
+init: down
 	docker-compose pull
 	docker-compose build
 
