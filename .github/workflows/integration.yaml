@@ -26,13 +26,20 @@ jobs:
           context: .
           file: ./apps/e2e/src/Dockerfile
           tags: eci:latest
-          outputs: type=oci,dest=/tmp/eci_image.tar
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
+          outputs: type=docker,dest=/tmp/eci.tar
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: eci
-          path: /tmp/eci_image.tar
+          path: /tmp/eci.tar
 
   tests:
     name: Integration
@@ -87,13 +94,13 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: eci
-          path: /tmp/eci_image.tar
+          path: /tmp
 
       - name: Load image
-        run: docker load --input /tmp/eci_image.tar
+        run: docker load --input /tmp/eci.tar
 
       - name: Start eci server
-        run: docker run -d -p "3000:3000" eci
+        run: docker run -d -p "3000:3000" eci:latest
 
       - name: Apply database schema
         run: npx prisma migrate deploy --schema=./libs/data-access/prisma/schema.prisma --skip-generate
