@@ -6,18 +6,19 @@ services:
     image: postgres
     ports:
       # Must be exposed on the host for prisma to migrate and seed
-      - "5432:5432"
+      - 5432:5432
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+
   # Nextjs Serverless application to receive webhooks from various services
   eci_webhooks:
     build:
       context: .
       dockerfile: ./apps/e2e/src/Dockerfile
     ports:
-      - "3000:3000"
+      - 3000:3000
     environment:
       DATABASE_URL: postgres://postgres:postgres@eci_db:5432/postgres
       DATABASE_URL_POOL: postgres://postgres:postgres@eci_db:5432/postgres

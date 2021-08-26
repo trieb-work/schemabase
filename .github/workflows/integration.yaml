@@ -107,7 +107,7 @@ jobs:
         run: docker load --input /tmp/eci.tar
 
       - name: Start eci server
-        run: docker run -d -p "3000:3000" eci:latest
+        run: docker run -d -p "3000:3000" --name eci eci:latest
 
       - name: Apply database schema
         run: yarn prisma migrate deploy --schema=./libs/data-access/prisma/schema.prisma
@@ -117,6 +117,6 @@ jobs:
         env:
           SALEOR_TEMPORARY_APP_TOKEN: abc
       - name: Test (e2e)
-        run: docker ps && yarn nx run e2e:e2e
+        run: docker ps && docker logs eci && yarn nx run e2e:e2e
         env:
           ECI_BASE_URL: http://localhost:3000

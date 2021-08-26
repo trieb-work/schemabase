@@ -188,14 +188,15 @@ model SaleorApp {
 }
 
 model SaleorWebhook {
+  // Received from saleor when registering a webhook
   id String @id
 
   // The secret key used to create a hash signature with each payload.
   secretKey String @default(uuid())
 
   // ID of the app to which webhook belongs.
-  appId     String
-  saleorApp SaleorApp @relation(fields: [appId], references: [id], onDelete: Cascade)
+  saleorAppId     String
+  saleorApp SaleorApp @relation(fields: [saleorAppId], references: [id], onDelete: Cascade)
 
 }
 
