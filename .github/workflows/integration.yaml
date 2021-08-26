@@ -86,7 +86,7 @@ jobs:
         run: docker load --input /tmp/eci_image.tar
 
       - name: Start eci server
-        run: docker run -d -p "3000:3000" eci:latest
+        run: docker run -d -p "3000:3000" eci
 
       - name: Apply database schema
         run: npx prisma migrate deploy --schema=./libs/data-access/prisma/schema.prisma --skip-generate
