@@ -41,7 +41,7 @@ build:
 test:
 	yarn nx run-many --target=test --all
 
-test-e2e:
+test-e2e: start
 	yarn nx test e2e
 
 
