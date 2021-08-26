@@ -103,7 +103,7 @@ jobs:
         run: docker run -d -p "3000:3000" eci:latest
 
       - name: Apply database schema
-        run: npx prisma migrate deploy --schema=./libs/data-access/prisma/schema.prisma --skip-generate
+        run: npx prisma migrate deploy --schema=./libs/data-access/prisma/schema.prisma
 
       - name: Seed database
         run: npx prisma db seed --preview-feature --schema=./libs/data-access/prisma/schema.prisma
