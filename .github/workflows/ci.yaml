@@ -11,6 +11,36 @@ jobs:
       matrix:
         saleor: ["3.0-triebwork7", "3.0-triebwork11"]
 
+    services:
+      # Our own database where we store tenants and config
+      eci_db:
+        image: postgres
+        ports:
+          # Must be exposed on the host for prisma to migrate and seed
+          - "5432:5432"
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD:
+            postgres
+
+            # Saleor Graphql API
+      saleor_api:
+        ports:
+          - 8000:8000
+        image: registry.gitlab.com/trieb.work/saleor:${{matrix.saleor}}
+        env:
+          DATABASE_URL: postgres://saleor:saleor@saleor_db:5432/postgres
+          SECRET_KEY: adgkadgkajsdg
+          STOREFRONT_URL: http://localhost:4000/
+          DASHBOARD_URL: http://localhost:9000/
+        # Required by saleor
+      saleor_db:
+        image: postgres
+        env:
+          POSTGRES_USER: saleor
+          POSTGRES_PASSWORD: saleor
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -54,6 +84,13 @@ jobs:
           make init
 
 
+          # Start another container where the ECI run
+          docker build -t eci:latest -f ./apps/e2e/src/Dockerfile -p "3000:3000" .
+          docker run -d eci:latest
+
           docker ps
           # Run unit and e2e tests
           make e2e
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+          DATABASE_URL_POOL: postgres://postgres:postgres@localhost:5432/postgres
