@@ -86,6 +86,10 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: "16"
+      - uses: actions/cache@v2
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
@@ -103,14 +107,12 @@ jobs:
         run: docker run -d -p "3000:3000" eci:latest
 
       - name: Apply database schema
-        run: npx prisma migrate deploy --schema=./libs/data-access/prisma/schema.prisma
+        run: yarn prisma migrate deploy --schema=./libs/data-access/prisma/schema.prisma
 
       - name: Seed database
-        run: |
-          yarn add typescript ts-node @types/node
-          npx prisma db seed --preview-feature --schema=./libs/data-access/prisma/schema.prisma
+        run: yarn prisma db seed --preview-feature --schema=./libs/data-access/prisma/schema.prisma
 
       - name: Test (e2e)
-        run: npx nx e2e:e2e
+        run: yarn nx e2e:e2e
         env:
           ECI_BASE_URL: http://localhost:3000
