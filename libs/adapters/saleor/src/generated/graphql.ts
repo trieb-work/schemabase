@@ -1,3 +1,5 @@
+import { DocumentNode } from "graphql";
+import gql from "graphql-tag";
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
   [K in keyof T]: T[K];
@@ -11300,5 +11302,94 @@ export type AppInstallMutation = {
       code: AppErrorCode;
       permissions?: Maybe<Array<PermissionEnum>>;
     }>;
+    appInstallation?: Maybe<{
+      __typename?: "AppInstallation";
+      id: string;
+      status: JobStatusEnum;
+    }>;
   }>;
 };
+
+export type TokenCreateMutationVariables = Exact<{
+  email: Scalars["String"];
+  password: Scalars["String"];
+}>;
+
+export type TokenCreateMutation = {
+  __typename?: "Mutation";
+  tokenCreate?: Maybe<{
+    __typename?: "CreateToken";
+    token?: Maybe<string>;
+    refreshToken?: Maybe<string>;
+    csrfToken?: Maybe<string>;
+    user?: Maybe<{ __typename?: "User"; email: string }>;
+    errors: Array<{
+      __typename?: "AccountError";
+      field?: Maybe<string>;
+      message?: Maybe<string>;
+    }>;
+  }>;
+};
+
+export const AppInstallDocument = gql`
+  mutation appInstall($input: AppInstallInput!) {
+    appInstall(input: $input) {
+      errors {
+        field
+        message
+        code
+        permissions
+      }
+      appInstallation {
+        id
+        status
+      }
+    }
+  }
+`;
+export const TokenCreateDocument = gql`
+  mutation tokenCreate($email: String!, $password: String!) {
+    tokenCreate(email: $email, password: $password) {
+      token
+      refreshToken
+      csrfToken
+      user {
+        email
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`;
+export type Requester<C = {}> = <R, V>(
+  doc: DocumentNode,
+  vars?: V,
+  options?: C,
+) => Promise<R>;
+export function getSdk<C>(requester: Requester<C>) {
+  return {
+    appInstall(
+      variables: AppInstallMutationVariables,
+      options?: C,
+    ): Promise<AppInstallMutation> {
+      return requester<AppInstallMutation, AppInstallMutationVariables>(
+        AppInstallDocument,
+        variables,
+        options,
+      );
+    },
+    tokenCreate(
+      variables: TokenCreateMutationVariables,
+      options?: C,
+    ): Promise<TokenCreateMutation> {
+      return requester<TokenCreateMutation, TokenCreateMutationVariables>(
+        TokenCreateDocument,
+        variables,
+        options,
+      );
+    },
+  };
+}
+export type Sdk = ReturnType<typeof getSdk>;

@@ -6,5 +6,9 @@ mutation appInstall($input: AppInstallInput!) {
       code
       permissions
     }
+    appInstallation {
+      id
+      status
+    }
   }
 }

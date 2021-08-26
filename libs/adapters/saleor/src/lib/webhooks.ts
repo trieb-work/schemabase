@@ -7,7 +7,7 @@ export type SaleorWebHookServiceConfig = {
   logger: Logger;
 };
 
-export class SaleorWebHookService implements SaleorWebHookReceiver {
+export class Saleor implements SaleorWebHookReceiver {
   private logger: Logger;
   constructor(config: SaleorWebHookServiceConfig) {
     this.logger = config.logger;
