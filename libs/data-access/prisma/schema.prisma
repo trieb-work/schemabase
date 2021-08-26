@@ -168,21 +168,21 @@ model SaleorApp {
   channelSlug String
   domain      String @unique
 
-  // The saleor application id
   name String
+  // The saleor application id
   // appId        String
 
   // The app token is used to authenticate our requests with saleor.
   // It is obtained when the user registeres a new saleor app.
   // Every request to saleor will include this token in the header
-  // `Authorization: Bearer <app-token>`
+  // `Authorization: JWT <app-token>`
   appToken String
 
   // webhookToken String @default(cuid())
   // webhookID    String
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId String @unique
+  tenantId String
 
   @@unique([domain, channelSlug])
 }

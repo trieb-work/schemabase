@@ -11,6 +11,8 @@ export type Saleor = {
 /**
  * Fetch the client's configuration and expose it to the context
  * Either authToken ot appToken must be defined
+ *
+ * // FIXME: We need the appId or domain to find the unique app
  */
 export const setupSaleor = (): ExtendContextFn<"saleor"> => async (ctx) => {
   if (!ctx.prisma) {
@@ -20,7 +22,8 @@ export const setupSaleor = (): ExtendContextFn<"saleor"> => async (ctx) => {
     throw new ContextMissingFieldError("tenant");
   }
 
-  const saleorApp = await ctx.prisma.saleorApp.findUnique({
+  // FIXME: must be findUnique
+  const saleorApp = await ctx.prisma.saleorApp.findFirst({
     where: { tenantId: ctx.tenant.id },
   });
   if (!saleorApp) {
