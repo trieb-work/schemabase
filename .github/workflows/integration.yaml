@@ -70,6 +70,9 @@ jobs:
 
       - name: Build eci container
         run: docker build -t eci:latest -f=././apps/e2e/src/Dockerfile .
+        env:
+          DATABASE_URL: postgres://postgres:postgres@eci_db:5432/postgres
+          DATABASE_URL_POOL: postgres://postgres:postgres@eci_db:5432/postgres
 
       - name: Start eci server
         run: docker run -d -p "3000:3000" --network "${{ job.services.network }}"  --name eci eci:latest
