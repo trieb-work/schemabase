@@ -187,9 +187,11 @@ model SaleorApp {
   @@unique([domain, channelSlug])
 }
 
+
 model SaleorWebhook {
   // Received from saleor when registering a webhook
   id String @id
+
 
   // The secret key used to create a hash signature with each payload.
   secretKey String @default(uuid())
