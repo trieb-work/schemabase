@@ -23,12 +23,12 @@ init: down
 	docker-compose --env-file=.env.compose build
 
 	docker-compose --env-file=.env.compose up -d
-	docker-compose --env-file=.env.compose exec -T saleor_api python manage.py migrate
+	docker-compose --env-file=.env.compose exec saleor_api python manage.py migrate
 
 	@# An admin user is created with the following credentials:
 	@# email: admin@example.com
 	@# password: admin
-	docker-compose --env-file=.env.compose exec -T saleor_api python manage.py populatedb --createsuperuser
+	docker-compose --env-file=.env.compose exec saleor_api python manage.py populatedb --createsuperuser
 
 
 up:

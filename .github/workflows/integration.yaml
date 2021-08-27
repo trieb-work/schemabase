@@ -43,7 +43,17 @@ jobs:
         # Ignore the failure of a step and avoid terminating the job.
         continue-on-error: true
 
-      - run: make init
+      - name: Build remaining images
+        run: docker-compose --env-file=.env.compose build
+
+      - name: Start services
+        run: docker-compose --env-file=.env.compose up -d
+
+      - name: Migrate saleor
+        run: docker-compose --env-file=.env.compose exec -T saleor_api python manage.py migrate
+
+      - name: Seed saleor
+        run: docker-compose --env-file=.env.compose exec -T saleor_api python manage.py populatedb --createsuperuser
 
       - name: Apply database schema
         run: yarn prisma migrate deploy --schema=./libs/data-access/prisma/schema.prisma
