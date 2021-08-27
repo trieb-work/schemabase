@@ -10,42 +10,9 @@ on:
   pull_request:
 
 jobs:
-  buildEci:
-    name: Build fresh eci service
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Build eci image
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./apps/e2e/src/Dockerfile
-          tags: eci:latest
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new
-          outputs: type=docker,dest=/tmp/eci.tar
-
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: eci
-          path: /tmp/eci.tar
-
   tests:
     name: Integration
     runs-on: ubuntu-latest
-    needs:
-      - buildEci
     strategy:
       matrix:
         saleor: ["3.0-triebwork7", "3.0-triebwork11"]
@@ -94,17 +61,19 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Download eci image
-        uses: actions/download-artifact@v2
+      - name: Build eci image
+        uses: docker/build-push-action@v2
         with:
-          name: eci
-          path: /tmp
+          context: .
+          file: ./apps/e2e/src/Dockerfile
+          tags: eci:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
 
-      - name: Load image
-        run: docker load --input /tmp/eci.tar
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: Start eci server
         run: docker run -d -p "3000:3000" --name eci eci:latest
