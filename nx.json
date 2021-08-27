@@ -54,6 +54,9 @@
     "data-access-prisma": {
       "tags": []
     },
+    "e2e": {
+      "tags": []
+    },
     "graphql-client": {
       "tags": []
     },

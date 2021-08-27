@@ -16,7 +16,7 @@ async function main() {
     create: seedTenant,
   });
 
-  const saleorDomain = "https://pundf-test-api.triebwork.com";
+  const saleorDomain = "pundf-test-api.triebwork.com";
   const appToken = process.env["SALEOR_TEMPORARY_APP_TOKEN"];
   if (!appToken) {
     throw new Error(`SALEOR_TEMPORARY_APP_TOKEN missing`);
@@ -24,7 +24,7 @@ async function main() {
   const seedSaleorApp = {
     tenantId: tenant.id,
     name: "name",
-    domain: "pundf-staging-api.triebwork.com",
+    domain: saleorDomain,
     appToken,
     channelSlug: "storefront",
   };
@@ -32,7 +32,7 @@ async function main() {
     where: {
       domain: saleorDomain,
     },
-    update: seedSaleorApp,
+    update: {},
     create: seedSaleorApp,
   });
 
