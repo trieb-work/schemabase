@@ -3,13 +3,17 @@ import { env } from "@eci/util/env";
 describe("productdatafeed", () => {
   it("generates a feed for facebook", async () => {
     const http = new HttpClient();
-    const res = await http.call<string>({
-      method: "GET",
-      url: `${env.require(
-        "ECI_BASE_URL",
-      )}/api/product-data-feed/cksq51dwk00009ci06armhpsq?variant=facebookcommerce`,
-    });
-    console.log({ res });
+    const res = await http
+      .call<string>({
+        method: "GET",
+        url: `${env.require(
+          "ECI_BASE_URL",
+        )}/api/product-data-feed/cksq51dwk00009ci06armhpsq?variant=facebookcommerce`,
+      })
+      .catch((err) => {
+        console.error(err);
+        throw err;
+      });
 
     expect(res.status).toBe(200);
     expect(res.headers["content-type"]).toEqual("text/csv");
