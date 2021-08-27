@@ -1,50 +1,68 @@
 version: "3.1"
 
 services:
+  # Our own database where we store tenants and config
   eci_db:
     image: postgres
     ports:
-      - "5432:5432"
+      # Must be exposed on the host for prisma to migrate and seed
+      - 5432:5432
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
 
+  # Nextjs Serverless application to receive webhooks from various services
+  eci_webhooks:
+    build:
+      context: .
+      dockerfile: ./apps/e2e/src/Dockerfile
+    ports:
+      - 3000:3000
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@eci_db:5432/postgres
+      DATABASE_URL_POOL: postgres://postgres:postgres@eci_db:5432/postgres
+
+  # Saleor Graphql API
   saleor_api:
     ports:
       - 8000:8000
-    build:
-      context: https://github.com/mirumee/saleor.git
-      dockerfile: ./Dockerfile
-      args:
-        STATIC_URL: "/static/"
+    image: registry.gitlab.com/trieb.work/saleor:${SALEOR_VERSION}
     depends_on:
       - saleor_db
-    restart: always
+    command: python manage.py runserver 0.0.0.0:8000
+
     environment:
       DATABASE_URL: postgres://saleor:saleor@saleor_db:5432/postgres
       SECRET_KEY: adgkadgkajsdg
-      STOREFRONT_URL: http://localhost:3000/
+      STOREFRONT_URL: http://localhost:4000/
       DASHBOARD_URL: http://localhost:9000/
 
+  # Required by saleor
   saleor_db:
     image: postgres
     environment:
       - POSTGRES_USER=saleor
       - POSTGRES_PASSWORD=saleor
+    volumes:
+      - saleor-db:/var/lib/postgresql/data
 
-  saleor_storefront:
-    build:
-      context: https://github.com/mirumee/saleor-storefront.git
-      dockerfile: ./Dockerfile.dev
-    ports:
-      - 4000:3000
-    command: npm start -- --host 0.0.0.0
+      # Optional storefront, I doubt we actually need this
+  # saleor_storefront:
+  #   build:
+  #     context: https://github.com/mirumee/saleor-storefront.git
+  #     dockerfile: ./Dockerfile.dev
+  #   ports:
+  #     - 4000:3000
 
-  saleor_dashboard:
-    build:
-      context: https://github.com/mirumee/saleor-dashboard.git
-      dockerfile: ./Dockerfile.dev
-    ports:
-      - 9000:9000
-    command: npm start -- --host 0.0.0.0
+  #   # The saleor "admin" dashboard. Might be useful for debugging
+  # saleor_dashboard:
+  #   build:
+  #     context: https://github.com/mirumee/saleor-dashboard.git
+  #     dockerfile: ./Dockerfile.dev
+  #   ports:
+  #     - 9000:9000
+
+volumes:
+  # Migrating and seeding the db takes a long time so we "cache" it for local development
+  saleor-db:
