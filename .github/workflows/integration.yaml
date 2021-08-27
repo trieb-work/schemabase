@@ -10,7 +10,7 @@ on:
   pull_request:
 
 jobs:
-  tests:
+  e2e:
     name: Integration
     runs-on: ubuntu-latest
     strategy:
