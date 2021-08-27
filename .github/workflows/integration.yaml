@@ -17,39 +17,13 @@ jobs:
       matrix:
         saleor: ["3.0-triebwork7", "3.0-triebwork11"]
 
-    services:
-      # Our own database where we store tenants and config
-      eci_db:
-        image: postgres
-        ports:
-          # Must be exposed on the host for prisma to migrate and seed
-          - 5432:5432
-        env:
-          POSTGRES_DB: postgres
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-
-      # Saleor Graphql API
-      saleor_api:
-        ports:
-          - 8000:8000
-        image: registry.gitlab.com/trieb.work/saleor:${{matrix.saleor}}
-        env:
-          DATABASE_URL: postgres://saleor:saleor@saleor_db:5432/postgres
-          SECRET_KEY: super-secret
-      # Required by saleor
-      saleor_db:
-        image: postgres
-        env:
-          POSTGRES_USER: saleor
-          POSTGRES_PASSWORD: saleor
-
-    env:
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Install docker-docker-compose
+        run: sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+
       - uses: actions/setup-node@v2
         with:
           node-version: "16"
@@ -61,6 +35,7 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
+      - run: docker-compose pull
         # In this step, this action saves a list of existing images,
         # the cache is created without them in the post run.
         # It also restores the cache if it exists.
@@ -68,14 +43,7 @@ jobs:
         # Ignore the failure of a step and avoid terminating the job.
         continue-on-error: true
 
-      - name: Build eci container
-        run: docker build -t eci:latest -f=././apps/e2e/src/Dockerfile .
-        env:
-          DATABASE_URL: postgres://postgres:postgres@eci_db:5432/postgres
-          DATABASE_URL_POOL: postgres://postgres:postgres@eci_db:5432/postgres
-
-      - name: Start eci server
-        run: docker run -d -p "3000:3000" --network "${{ job.services.network }}"  --name eci eci:latest
+      - run: make init
 
       - name: Apply database schema
         run: yarn prisma migrate deploy --schema=./libs/data-access/prisma/schema.prisma
