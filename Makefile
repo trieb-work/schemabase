@@ -17,22 +17,22 @@ pull-env:
 
 # Build and seeds all required external services
 init: down
-	echo "SALEOR_VERSION=3.0-triebwork7" >> .env.compose
+	@echo "SALEOR_VERSION=3.0-triebwork7" >> .env.compose
 
 	docker-compose --env-file=.env.compose pull
 	docker-compose --env-file=.env.compose build
 
 	docker-compose --env-file=.env.compose up -d
-	docker-compose --env-file=.env.compose exec saleor_api python manage.py migrate
+	docker-compose --env-file=.env.compose exec -T saleor_api python manage.py migrate
 
-	# An admin user is created with the following credentials:
-	# email: admin@example.com
-	# password: admin
-	docker-compose exec saleor_api python manage.py populatedb --createsuperuser
+	@# An admin user is created with the following credentials:
+	@# email: admin@example.com
+	@# password: admin
+	docker-compose --env-file=.env.compose exec -T saleor_api python manage.py populatedb --createsuperuser
 
 
 up:
-	docker-compose up -d
+	docker-compose --env-file=.env.compose up -d
 
 build:
 	yarn nx run-many --target=build --all --with-deps
