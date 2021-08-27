@@ -33,8 +33,6 @@ export default async function handler(
       throw new HTTPError(400, err.message);
     });
 
-    console.log({ publicId });
-
     const ctx = await createContext<
       "prisma" | "requestDataFeed" | "tenant" | "logger" | "saleor"
     >(
@@ -69,6 +67,7 @@ export default async function handler(
     res.setHeader("Cache-Control", "s-maxage=1, stale-while-revalidate");
     return res.send(productDataFeed);
   } catch (err) {
+    console.error(err);
     if (err instanceof HTTPError) {
       res.status(err.statusCode);
     } else {
