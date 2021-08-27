@@ -23,7 +23,7 @@ jobs:
         image: postgres
         ports:
           # Must be exposed on the host for prisma to migrate and seed
-          - "5432:5432"
+          - 5432:5432
         env:
           POSTGRES_DB: postgres
           POSTGRES_USER: postgres
@@ -72,7 +72,7 @@ jobs:
         run: docker build -t eci:latest -f=././apps/e2e/src/Dockerfile .
 
       - name: Start eci server
-        run: docker run -d -p "3000:3000" --name eci eci:latest
+        run: docker run -d -p "3000:3000" --network "${{ job.services.network }}"  --name eci eci:latest
 
       - name: Apply database schema
         run: yarn prisma migrate deploy --schema=./libs/data-access/prisma/schema.prisma
@@ -85,5 +85,3 @@ jobs:
         run: yarn nx run e2e:e2e
         env:
           ECI_BASE_URL: http://localhost:3000
-
-      - run: docker logs eci
