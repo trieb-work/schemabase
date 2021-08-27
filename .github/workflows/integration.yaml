@@ -61,10 +61,24 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+      # So now you can use Actions' own caching!
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
       - name: Build eci image
         uses: docker/build-push-action@v2
         with:
+          push: false
           context: .
+          builder: ${{ steps.buildx-outputs.name }}
           file: ./apps/e2e/src/Dockerfile
           tags: eci:latest
           cache-from: type=local,src=/tmp/.buildx-cache
