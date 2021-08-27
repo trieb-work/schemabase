@@ -11331,6 +11331,113 @@ export type TokenCreateMutation = {
   }>;
 };
 
+export type ProductsQueryVariables = Exact<{
+  first: Scalars["Int"];
+  channel?: Maybe<Scalars["String"]>;
+}>;
+
+export type ProductsQuery = {
+  __typename?: "Query";
+  products?: Maybe<{
+    __typename?: "ProductCountableConnection";
+    edges: Array<{
+      __typename?: "ProductCountableEdge";
+      node: {
+        __typename?: "Product";
+        seoDescription?: Maybe<string>;
+        name: string;
+        seoTitle?: Maybe<string>;
+        isAvailableForPurchase?: Maybe<boolean>;
+        descriptionJson?: Maybe<any>;
+        slug: string;
+        weight?: Maybe<{
+          __typename?: "Weight";
+          unit: WeightUnitsEnum;
+          value: number;
+        }>;
+        images?: Maybe<
+          Array<Maybe<{ __typename?: "ProductImage"; id: string; url: string }>>
+        >;
+        metadata: Array<
+          Maybe<{ __typename?: "MetadataItem"; key: string; value: string }>
+        >;
+        attributes: Array<{
+          __typename?: "SelectedAttribute";
+          attribute: {
+            __typename?: "Attribute";
+            id: string;
+            name?: Maybe<string>;
+          };
+          values: Array<
+            Maybe<{
+              __typename?: "AttributeValue";
+              id: string;
+              name?: Maybe<string>;
+            }>
+          >;
+        }>;
+        productType: {
+          __typename?: "ProductType";
+          name: string;
+          id: string;
+          hasVariants: boolean;
+        };
+        variants?: Maybe<
+          Array<
+            Maybe<{
+              __typename?: "ProductVariant";
+              id: string;
+              name: string;
+              sku: string;
+              quantityAvailable: number;
+              weight?: Maybe<{
+                __typename?: "Weight";
+                unit: WeightUnitsEnum;
+                value: number;
+              }>;
+              metadata: Array<
+                Maybe<{
+                  __typename?: "MetadataItem";
+                  key: string;
+                  value: string;
+                }>
+              >;
+              pricing?: Maybe<{
+                __typename?: "VariantPricingInfo";
+                onSale?: Maybe<boolean>;
+                priceUndiscounted?: Maybe<{
+                  __typename?: "TaxedMoney";
+                  gross: {
+                    __typename?: "Money";
+                    amount: number;
+                    currency: string;
+                  };
+                }>;
+                price?: Maybe<{
+                  __typename?: "TaxedMoney";
+                  gross: {
+                    __typename?: "Money";
+                    amount: number;
+                    currency: string;
+                  };
+                  net: { __typename?: "Money"; amount: number };
+                }>;
+                discount?: Maybe<{
+                  __typename?: "TaxedMoney";
+                  gross: { __typename?: "Money"; amount: number };
+                }>;
+              }>;
+              images?: Maybe<
+                Array<Maybe<{ __typename?: "ProductImage"; url: string }>>
+              >;
+            }>
+          >
+        >;
+      };
+    }>;
+  }>;
+};
+
 export const AppInstallDocument = gql`
   mutation appInstall($input: AppInstallInput!) {
     appInstall(input: $input) {
@@ -11363,6 +11470,89 @@ export const TokenCreateDocument = gql`
     }
   }
 `;
+export const ProductsDocument = gql`
+  query products($first: Int!, $channel: String) {
+    products(first: $first, channel: $channel) {
+      edges {
+        node {
+          seoDescription
+          name
+          seoTitle
+          isAvailableForPurchase
+          descriptionJson
+          slug
+          weight {
+            unit
+            value
+          }
+          images {
+            id
+            url
+          }
+          metadata {
+            key
+            value
+          }
+          attributes {
+            attribute {
+              id
+              name
+            }
+            values {
+              id
+              name
+            }
+          }
+          productType {
+            name
+            id
+            hasVariants
+          }
+          variants {
+            id
+            name
+            sku
+            quantityAvailable
+            weight {
+              unit
+              value
+            }
+            metadata {
+              key
+              value
+            }
+            pricing {
+              priceUndiscounted {
+                gross {
+                  amount
+                  currency
+                }
+              }
+              price {
+                gross {
+                  amount
+                  currency
+                }
+                net {
+                  amount
+                }
+              }
+              onSale
+              discount {
+                gross {
+                  amount
+                }
+              }
+            }
+            images {
+              url
+            }
+          }
+        }
+      }
+    }
+  }
+`;
 export type Requester<C = {}> = <R, V>(
   doc: DocumentNode,
   vars?: V,
@@ -11386,6 +11576,16 @@ export function getSdk<C>(requester: Requester<C>) {
     ): Promise<TokenCreateMutation> {
       return requester<TokenCreateMutation, TokenCreateMutationVariables>(
         TokenCreateDocument,
+        variables,
+        options,
+      );
+    },
+    products(
+      variables: ProductsQueryVariables,
+      options?: C,
+    ): Promise<ProductsQuery> {
+      return requester<ProductsQuery, ProductsQueryVariables>(
+        ProductsDocument,
         variables,
         options,
       );

@@ -17,7 +17,7 @@ pull-env:
 
 # Build and seeds all required external services
 init: down
-	@echo "SALEOR_VERSION=3.0-triebwork7" >> .env.compose
+	@echo "SALEOR_VERSION=3.0-triebwork11" > .env.compose
 
 	docker-compose --env-file=.env.compose pull
 	docker-compose --env-file=.env.compose build
@@ -32,7 +32,8 @@ init: down
 
 
 up:
-	docker-compose --env-file=.env.compose up -d
+	docker-compose --env-file=.env.compose down
+	docker-compose --env-file=.env.compose up -d --build
 
 build:
 	yarn nx run-many --target=build --all --with-deps
@@ -47,10 +48,20 @@ test:
 #
 # Make sure you have called `make init` before to setup all required services
 # You just need to do this once, not for every new test run.
-test-e2e: export ECI_BASE_URL=http://localhost:3000
-test-e2e: export SALEOR_TEMPORARY_APP_TOKEN = "token"
-test-e2e: up db-push db-seed
-	yarn nx run e2e:e2e
+test-e2e: export ECI_BASE_URL               = http://localhost:3000
+test-e2e: export SALEOR_GRAPHQL_ENDPOINT    = http://localhost:8000/graphql/
+test-e2e: export SALEOR_TEMPORARY_APP_TOKEN = token
+test-e2e:
+	# Rebuild eci and ensure everything is up
+	docker-compose --env-file=.env.compose up -d --build eci_webhooks
+
+	# Reset and seed the eci database for every test run
+	docker-compose --env-file=.env.compose restart eci_db
+	yarn prisma db push --schema=${prismaSchema} --skip-generate
+	yarn prisma db seed --preview-feature --schema=${prismaSchema}
+
+
+	yarn nx run-many --target=e2e --all
 
 
 # DO NOT RUN THIS YOURSELF!

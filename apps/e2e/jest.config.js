@@ -1,5 +1,3 @@
-process.env["ECI_BASE_URL"] = "http://localhost:3000";
-
 module.exports = {
   displayName: "e2e",
   preset: "../../jest.preset.js",

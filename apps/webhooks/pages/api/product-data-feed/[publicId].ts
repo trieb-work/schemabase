@@ -50,7 +50,7 @@ export default async function handler(
     ctx.logger.info("Creating new product datafeed");
 
     const generator = new ProductDataFeedGenerator({
-      saleorGraphqlClient: ctx.saleor.graphqlClient,
+      saleorClient: ctx.saleor.client,
       channelSlug: ctx.saleor.config.channelSlug,
     });
 

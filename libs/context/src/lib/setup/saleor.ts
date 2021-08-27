@@ -1,10 +1,10 @@
 import { ExtendContextFn } from "../context";
 import { ContextMissingFieldError } from "@eci/util/errors";
-import { GraphqlClient, createGraphqlClient } from "@eci/graphql-client";
+import { SaleorClient, SaleorService } from "@eci/adapters/saleor";
 import { SaleorApp } from "@eci/data-access/prisma";
 
 export type Saleor = {
-  graphqlClient: GraphqlClient;
+  client: SaleorClient;
   config: SaleorApp;
 };
 
@@ -30,13 +30,13 @@ export const setupSaleor = (): ExtendContextFn<"saleor"> => async (ctx) => {
     throw new Error("No saleor config found in database");
   }
 
-  const unauthenticatedSaleorGraphqlClient = createGraphqlClient(
-    `https://${saleorApp.domain}/graphql/`,
-  );
+  const client = new SaleorService({
+    graphqlEndpoint: `https://${saleorApp.domain}/graphql/`,
+  });
 
   return Object.assign(ctx, {
     saleor: {
-      graphqlClient: unauthenticatedSaleorGraphqlClient,
+      client,
       config: saleorApp,
     },
   });
