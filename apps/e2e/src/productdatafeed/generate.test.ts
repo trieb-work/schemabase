@@ -9,6 +9,7 @@ describe("productdatafeed", () => {
         "ECI_BASE_URL",
       )}/api/product-data-feed/cksq51dwk00009ci06armhpsq?variant=facebookcommerce`,
     });
+    console.log({ res });
 
     expect(res.status).toBe(200);
     expect(res.headers["content-type"]).toEqual("text/csv");
