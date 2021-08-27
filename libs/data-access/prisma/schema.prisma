@@ -179,6 +179,9 @@ model SaleorApp {
   // Authorization: Bearer <app-token>
   appToken String
 
+  // Every SaleorApp can have multiple webhooks configured.
+  // This is not really necessary because a webhook can fire on multiple events
+  // but let's be on the safe side.
   webhooks SaleorWebhook[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -187,18 +190,17 @@ model SaleorApp {
   @@unique([domain, channelSlug])
 }
 
-
 model SaleorWebhook {
   // Received from saleor when registering a webhook
   id String @id
 
 
   // The secret key used to create a hash signature with each payload.
-  secretKey String @default(uuid())
+  secretKey String
 
-  // ID of the app to which webhook belongs.
-  saleorAppId     String
-  saleorApp SaleorApp @relation(fields: [saleorAppId], references: [id], onDelete: Cascade)
+  // ID of the app to which the webhook belongs.
+  saleorAppId String
+  saleorApp   SaleorApp @relation(fields: [saleorAppId], references: [id], onDelete: Cascade)
 
 }
 
