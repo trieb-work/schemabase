@@ -62,7 +62,3 @@ services:
   #     dockerfile: ./Dockerfile.dev
   #   ports:
   #     - 9000:9000
-
-volumes:
-  # Migrating and seeding the db takes a long time so we "cache" it for local development
-  saleor-db:

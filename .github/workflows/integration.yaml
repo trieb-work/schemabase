@@ -35,7 +35,8 @@ jobs:
       - name: Set saleor version
         run: echo "SALEOR_VERSION=${{ matrix.saleor }}" >> .env.compose
 
-      - run: docker-compose --env-file=.env.compose pull
+      - name: Pull images
+        run: docker-compose --env-file=.env.compose pull
         # In this step, this action saves a list of existing images,
         # the cache is created without them in the post run.
         # It also restores the cache if it exists.
@@ -49,18 +50,18 @@ jobs:
       - name: Start services
         run: docker-compose --env-file=.env.compose up -d
 
-      - name: Migrate saleor
+      - name: Migrate saleor schema
         run: docker-compose --env-file=.env.compose exec -T saleor_api python manage.py migrate
 
-      - name: Seed saleor
+      - name: Seed saleor database
         run: docker-compose --env-file=.env.compose exec -T saleor_api python manage.py populatedb --createsuperuser
 
-      - name: Apply database schema
+      - name: Migrate eci schema
         run: yarn prisma migrate deploy --schema=./libs/data-access/prisma/schema.prisma
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
 
-      - name: Seed database
+      - name: Seed eci database
         run: yarn prisma db seed --preview-feature --schema=./libs/data-access/prisma/schema.prisma
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
