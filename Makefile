@@ -19,8 +19,6 @@ pull-env:
 init: down
 	echo "SALEOR_VERSION=3.0-triebwork7" >> .env.compose
 
-
-
 	docker-compose --env-file=.env.compose pull
 	docker-compose --env-file=.env.compose build
 

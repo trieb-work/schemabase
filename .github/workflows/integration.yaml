@@ -32,7 +32,8 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - run: echo "SALEOR_VERSION=${{ matrix.saleor }}" >> .env.compose
+      - name: Set saleor version
+        run: echo "SALEOR_VERSION=${{ matrix.saleor }}" >> .env.compose
 
       - run: docker-compose --env-file=.env.compose pull
         # In this step, this action saves a list of existing images,

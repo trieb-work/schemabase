@@ -48,20 +48,20 @@ services:
       - saleor-db:/var/lib/postgresql/data
 
       # Optional storefront, I doubt we actually need this
-  saleor_storefront:
-    build:
-      context: https://github.com/mirumee/saleor-storefront.git
-      dockerfile: ./Dockerfile.dev
-    ports:
-      - 4000:3000
+  # saleor_storefront:
+  #   build:
+  #     context: https://github.com/mirumee/saleor-storefront.git
+  #     dockerfile: ./Dockerfile.dev
+  #   ports:
+  #     - 4000:3000
 
-    # The saleor "admin" dashboard. Might be useful for debugging
-  saleor_dashboard:
-    build:
-      context: https://github.com/mirumee/saleor-dashboard.git
-      dockerfile: ./Dockerfile.dev
-    ports:
-      - 9000:9000
+  #   # The saleor "admin" dashboard. Might be useful for debugging
+  # saleor_dashboard:
+  #   build:
+  #     context: https://github.com/mirumee/saleor-dashboard.git
+  #     dockerfile: ./Dockerfile.dev
+  #   ports:
+  #     - 9000:9000
 
 volumes:
   # Migrating and seeding the db takes a long time so we "cache" it for local development
