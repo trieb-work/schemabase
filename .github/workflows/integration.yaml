@@ -47,10 +47,13 @@ jobs:
 
       - name: Apply database schema
         run: yarn prisma migrate deploy --schema=./libs/data-access/prisma/schema.prisma
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
 
       - name: Seed database
         run: yarn prisma db seed --preview-feature --schema=./libs/data-access/prisma/schema.prisma
         env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
           SALEOR_TEMPORARY_APP_TOKEN: abc
       - name: Test (e2e)
         run: yarn nx run e2e:e2e
