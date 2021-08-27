@@ -27,11 +27,7 @@ services:
   saleor_api:
     ports:
       - 8000:8000
-    build:
-      context: https://github.com/mirumee/saleor.git
-      dockerfile: ./Dockerfile
-      args:
-        STATIC_URL: "/static/"
+    image: registry.gitlab.com/trieb.work/saleor:${SALEOR_VERSION}
     depends_on:
       - saleor_db
     command: python manage.py runserver 0.0.0.0:8000

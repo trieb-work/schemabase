@@ -35,7 +35,9 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - run: docker-compose pull
+      - run: echo "SALEOR_VERSION=${{ matrix.saleor }}" >> .env.compose
+
+      - run: docker-compose --env-file=.env.compose pull
         # In this step, this action saves a list of existing images,
         # the cache is created without them in the post run.
         # It also restores the cache if it exists.

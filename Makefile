@@ -3,7 +3,7 @@ prismaSchema := libs/data-access/prisma/schema.prisma
 
 
 down:
-	docker-compose down --remove-orphans --volumes
+	docker-compose --env-file=.env.compose down --remove-orphans --volumes
 
 destroy: down
 	docker system prune -af
@@ -17,15 +17,19 @@ pull-env:
 
 # Build and seeds all required external services
 init: down
-	docker-compose pull
-	docker-compose build
+	echo "SALEOR_VERSION=3.0-triebwork7" >> .env.compose
 
-	docker-compose up -d
-	docker-compose exec saleor_api python manage.py migrate
 
-  # An admin user is created with the following credentials:
-  # email: admin@example.com
-  # password: admin
+
+	docker-compose --env-file=.env.compose pull
+	docker-compose --env-file=.env.compose build
+
+	docker-compose --env-file=.env.compose up -d
+	docker-compose --env-file=.env.compose exec saleor_api python manage.py migrate
+
+	# An admin user is created with the following credentials:
+	# email: admin@example.com
+	# password: admin
 	docker-compose exec saleor_api python manage.py populatedb --createsuperuser
 
 
