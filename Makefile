@@ -16,7 +16,7 @@ pull-env:
 
 
 # Build and seeds all required external services
-init: down
+init: down build
 	@echo "SALEOR_VERSION=3.0-triebwork11" > .env.compose
 
 	docker-compose --env-file=.env.compose pull
@@ -30,17 +30,21 @@ init: down
 	@# password: admin
 	docker-compose --env-file=.env.compose exec saleor_api python manage.py populatedb --createsuperuser
 
+	yarn prisma db push --schema=${prismaSchema} --skip-generate
+	yarn prisma db seed --preview-feature --schema=${prismaSchema}
+
 
 up:
 	docker-compose --env-file=.env.compose down
 	docker-compose --env-file=.env.compose up -d --build
 
 build:
+	yarn install
 	yarn nx run-many --target=build --all --with-deps
 
 
 # Run all unit tests
-test:
+test: build
 	yarn nx run-many --target=test --all
 
 
@@ -51,7 +55,7 @@ test:
 test-e2e: export ECI_BASE_URL               = http://localhost:3000
 test-e2e: export SALEOR_GRAPHQL_ENDPOINT    = http://localhost:8000/graphql/
 test-e2e: export SALEOR_TEMPORARY_APP_TOKEN = token
-test-e2e:
+test-e2e: build
 	# Rebuild eci and ensure everything is up
 	docker-compose --env-file=.env.compose up -d --build eci_webhooks
 

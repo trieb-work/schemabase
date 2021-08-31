@@ -1,14 +1,8 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import {
-  createContext,
-  setupPrisma,
-  setupSaleor,
-  getTenant,
-} from "@eci/context";
+import { extendContext, setupPrisma, setupSaleor } from "@eci/context";
 import { z } from "zod";
+import { handleWebhook, Webhook } from "@eci/http";
 
 const requestValidation = z.object({
-  method: z.string().refine((m) => m === "POST"),
   query: z.object({
     tenantId: z.string(),
   }),
@@ -23,25 +17,23 @@ const requestValidation = z.object({
 /**
  * The product data feed returns a google standard .csv file from products and their attributes in your shop.#
  */
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
-): Promise<void> {
+const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
+  backgroundContext,
+  req,
+  res,
+}): Promise<void> => {
   try {
+    const ctx = await extendContext<"prisma" | "saleor">(
+      backgroundContext,
+      setupPrisma(),
+      setupSaleor({ traceId: backgroundContext.trace.id }),
+    );
+
     const {
       headers: { "x-saleor-domain": domain },
       body: { app_token: appToken },
       query: { tenantId },
-    } = await requestValidation.parseAsync(req).catch((err) => {
-      res.status(400);
-      throw err;
-    });
-
-    const ctx = await createContext<"prisma" | "saleor">(
-      setupPrisma(),
-      getTenant({ where: { id: tenantId } }),
-      setupSaleor(),
-    );
+    } = req;
 
     await ctx.prisma.saleorApp.upsert({
       where: { domain },
@@ -61,4 +53,12 @@ export default async function handler(
   } finally {
     res.end();
   }
-}
+};
+
+export default handleWebhook({
+  webhook,
+  validation: {
+    http: { allowedMethods: ["POST"] },
+    request: requestValidation,
+  },
+});

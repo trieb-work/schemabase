@@ -10,6 +10,6 @@ module.exports = {
   transform: {
     "^.+\\.[tj]s$": "ts-jest",
   },
-  moduleFileExtensions: ["ts", "js", "html"],
+  moduleFileExtensions: ["ts", "js", "html","json"],
   coverageDirectory: "../../coverage/apps/e2e",
 };

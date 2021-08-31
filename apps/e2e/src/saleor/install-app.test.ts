@@ -1,10 +1,11 @@
 import {SaleorService} from "@eci/adapters/saleor"
-import {env} from "@eci/util/env"
+import {env} from "@chronark/env"
 describe("Saleor app installation", () => {
 
 
-  it("works", async () => {
+  it.skip("works", async () => {
     const client = new SaleorService({
+      traceId: "test",
       graphqlEndpoint: env.require("SALEOR_GRAPHQL_ENDPOINT")
     })
 

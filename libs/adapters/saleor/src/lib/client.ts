@@ -1,14 +1,24 @@
-import { Sdk, getSdk, PermissionEnum, Product, ProductsQueryVariables } from "../generated/graphql";
+import {
+  Sdk,
+  getSdk,
+  PermissionEnum,
+  Product,
+  ProductsQueryVariables,
+} from "../generated/graphql";
 import { DocumentNode } from "graphql";
 import { GraphQLClient } from "graphql-request";
-import { env } from "@eci/util/env";
-
+import { env } from "@chronark/env";
+import { ECI_TRACE_HEADER } from "@eci/constants";
 export type SaleorClient = {
   installApp: (tenantId: string) => Promise<{ id: string }>;
   getProducts: (variables: ProductsQueryVariables) => Promise<Product[]>;
 };
 
 export type SaleorSericeConfig = {
+  /**
+   * Unique id to trace requests across systems
+   */
+  traceId: string;
   /**
    * The full url of your saleor graphql instance
    * @example http://localhost:3000/graphql
@@ -27,13 +37,19 @@ export class SaleorService implements SaleorClient {
   constructor(config: SaleorSericeConfig) {
     this.client = this.createGraphqlClient(
       config.graphqlEndpoint,
+      config.traceId,
       config.token,
     );
   }
 
-  private createGraphqlClient(url: string, token?: string): Sdk {
+  private createGraphqlClient(
+    url: string,
+    traceId: string,
+    token?: string,
+  ): Sdk {
     async function requester<R, V>(doc: DocumentNode, vars?: V): Promise<R> {
       const graphqlClient = new GraphQLClient(url);
+      graphqlClient.setHeader(ECI_TRACE_HEADER, traceId);
       if (token) {
         graphqlClient.setHeader("Authorization", `Bearer ${token}`);
       }
@@ -87,7 +103,9 @@ export class SaleorService implements SaleorClient {
     return { id: res.appInstall.appInstallation.id };
   }
 
-  public async getProducts(variables: ProductsQueryVariables): Promise<Product[]> {
+  public async getProducts(
+    variables: ProductsQueryVariables,
+  ): Promise<Product[]> {
     const res = await this.client.products(variables);
     if (!res.products) {
       throw new Error(`No products found`);

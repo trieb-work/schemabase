@@ -111,8 +111,6 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
           id: variant.sku,
           title: hasVariants ? `${title} (${variant.name})` : title,
           description,
-          rich_text_description:
-            feedVariant === "facebookcommerce" ? description : undefined,
           image_link: hasVariants
             ? variant.images && variant.images.length > 0
               ? variant.images[0]?.url
@@ -128,7 +126,7 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
           sale_price: `${variant?.pricing?.price?.gross.amount} ${variant.pricing?.price?.gross.currency}`,
           condition: "new",
           gtin,
-          brand: brand ?? undefined,
+          brand: brand ?? "undefined",
           unit_pricing_measure,
           availability:
             variant.quantityAvailable < 1 || !rawProduct.isAvailableForPurchase

@@ -1,6 +1,5 @@
 import { ProductDataFeedGenerator } from "./service";
-import { ApolloClient, InMemoryCache } from "@apollo/client";
-import { WeightUnitsEnum } from "@eci/types/graphql/global";
+import { SaleorService ,WeightUnitsEnum} from "@eci/adapters/saleor";
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -8,8 +7,9 @@ beforeEach(() => {
 
 describe("generate", () => {
   const generator = new ProductDataFeedGenerator({
-    saleorGraphqlClient: new ApolloClient({
-      cache: new InMemoryCache(),
+    saleorClient: new SaleorService({
+      traceId: "test",
+      graphqlEndpoint: "http://localhost:8000/graphql"
     }),
     channelSlug: "doesn't matter here",
   });

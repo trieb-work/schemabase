@@ -1,9 +1,12 @@
 import { GenericError } from "./base";
 
-export class HTTPError extends GenericError {
+/**
+ * HttpError is used to pass a status code inside nextjs api routes.
+ */
+export class HttpError extends GenericError {
   public readonly statusCode: number;
-  constructor(statusCode: number, message = "HTTPError") {
-    super("HTTPError", message, {});
+  constructor(statusCode: number, message = "HttpError") {
+    super("HttpError", message, {});
     this.statusCode = statusCode;
   }
 }

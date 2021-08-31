@@ -14,30 +14,33 @@ export type Saleor = {
  *
  * // FIXME: We need the appId or domain to find the unique app
  */
-export const setupSaleor = (): ExtendContextFn<"saleor"> => async (ctx) => {
-  if (!ctx.prisma) {
-    throw new ContextMissingFieldError("prisma");
-  }
-  if (!ctx.tenant) {
-    throw new ContextMissingFieldError("tenant");
-  }
+export const setupSaleor =
+  (config: { traceId: string }): ExtendContextFn<"saleor"> =>
+  async (ctx) => {
+    if (!ctx.prisma) {
+      throw new ContextMissingFieldError("prisma");
+    }
+    if (!ctx.tenant) {
+      throw new ContextMissingFieldError("tenant");
+    }
 
-  // FIXME: must be findUnique
-  const saleorApp = await ctx.prisma.saleorApp.findFirst({
-    where: { tenantId: ctx.tenant.id },
-  });
-  if (!saleorApp) {
-    throw new Error("No saleor config found in database");
-  }
+    // FIXME: must be findUnique
+    const saleorApp = await ctx.prisma.saleorApp.findFirst({
+      where: { tenantId: ctx.tenant.id },
+    });
+    if (!saleorApp) {
+      throw new Error("No saleor config found in database");
+    }
 
-  const client = new SaleorService({
-    graphqlEndpoint: `https://${saleorApp.domain}/graphql/`,
-  });
+    const client = new SaleorService({
+      traceId: config.traceId,
+      graphqlEndpoint: `https://${saleorApp.domain}/graphql/`,
+    });
 
-  return Object.assign(ctx, {
-    saleor: {
-      client,
-      config: saleorApp,
-    },
-  });
-};
+    return Object.assign(ctx, {
+      saleor: {
+        client,
+        config: saleorApp,
+      },
+    });
+  };
