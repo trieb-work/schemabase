@@ -1,6 +1,6 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-yarn tsc
-yarn test
+make tsc
+make test
 yarn lint-staged

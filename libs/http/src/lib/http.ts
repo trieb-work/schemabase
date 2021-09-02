@@ -10,6 +10,7 @@ export type Request = {
 };
 
 export type Response<Data> = {
+  headers: Record<string, string | number>;
   status: number;
   data: Data | null;
 };
@@ -40,6 +41,7 @@ export class HttpClient implements HttpApi {
     }).then((res) => ({
       status: res.status,
       data: res.data ?? null,
+      headers: res.headers,
     }));
   }
 }
