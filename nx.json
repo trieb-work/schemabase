@@ -36,9 +36,6 @@
     "adapters-lexoffice": {
       "tags": []
     },
-    "adapters-mailchimp": {
-      "tags": []
-    },
     "adapters-package-trackers": {
       "tags": []
     },
@@ -58,9 +55,6 @@
       "tags": []
     },
     "e2e": {
-      "tags": []
-    },
-    "graphql-client": {
       "tags": []
     },
     "http": {

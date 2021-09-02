@@ -96,15 +96,16 @@ export function handleWebhook<TRequest>({
        */
 
       await webhook({ backgroundContext, req: parsedRequest, res });
+      logger.warn(JSON.stringify(res.getHeaders()));
 
       /**
        * Handle errors gracefully
        */
     } catch (err) {
       logger.error(err);
-
+      res.status(err instanceof HttpError ? err.statusCode : 500);
       res.json({
-        error: err instanceof HttpError ? err.statusCode : 500,
+        error: err.message,
         traceId,
       });
     } finally {

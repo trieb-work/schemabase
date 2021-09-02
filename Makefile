@@ -17,7 +17,7 @@ pull-env:
 
 # Build and seeds all required external services
 init: down build
-	@echo "SALEOR_VERSION=3.0-triebwork11" > .env.compose
+	@echo "SALEOR_VERSION=3.0.0-b.13-triebwork1" > .env.compose
 
 	docker-compose --env-file=.env.compose pull
 	docker-compose --env-file=.env.compose build
@@ -63,7 +63,6 @@ test-e2e: build
 	docker-compose --env-file=.env.compose restart eci_db
 	yarn prisma db push --schema=${prismaSchema} --skip-generate
 	yarn prisma db seed --preview-feature --schema=${prismaSchema}
-
 
 	yarn nx run-many --target=e2e --all
 

@@ -14,7 +14,7 @@ describe("productdatafeed", () => {
 
         const res = await http
           .call<string>({
-            method: "GET",
+            method: "POST",
             url,
           })
           .catch((err) => {
@@ -23,7 +23,7 @@ describe("productdatafeed", () => {
           });
 
         expect(res.status).toBe(200);
-        expect(res.headers["eci-trace-id"]).toBeDefined()
+        expect(res.headers["eci-trace-id"]).toBeDefined();
         expect(res.headers["content-type"]).toEqual("text/csv");
         expect(res.headers["cache-control"]).toEqual(
           "s-maxage=1, stale-while-revalidate",

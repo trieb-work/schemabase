@@ -34,7 +34,6 @@
       "@eci/adapters/braintree": ["libs/adapters/braintree/src/index.ts"],
       "@eci/adapters/easypost": ["libs/adapters/easypost/src/index.ts"],
       "@eci/adapters/lexoffice": ["libs/adapters/lexoffice/src/index.ts"],
-      "@eci/adapters/mailchimp": ["libs/adapters/mailchimp/src/index.ts"],
       "@eci/adapters/package-trackers": [
         "libs/adapters/package-trackers/src/index.ts"
       ],
@@ -43,7 +42,6 @@
       "@eci/constants": ["libs/constants/src/index.ts"],
       "@eci/context": ["libs/context/src/index.ts"],
       "@eci/data-access/prisma": ["libs/data-access/prisma/src/index.ts"],
-      "@eci/graphql-client": ["libs/graphql-client/src/index.ts"],
       "@eci/http": ["libs/http/src/index.ts"],
       "@eci/integrations/product-data-feed": [
         "libs/integrations/product-data-feed/src/index.ts"
