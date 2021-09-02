@@ -1,5 +1,3 @@
-process.env["ECI_BASE_URL"] = "http://localhost:3000";
-
 module.exports = {
   displayName: "e2e",
   preset: "../../jest.preset.js",
@@ -12,6 +10,6 @@ module.exports = {
   transform: {
     "^.+\\.[tj]s$": "ts-jest",
   },
-  moduleFileExtensions: ["ts", "js", "html"],
+  moduleFileExtensions: ["ts", "js", "html","json"],
   coverageDirectory: "../../coverage/apps/e2e",
 };

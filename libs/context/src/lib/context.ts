@@ -1,26 +1,22 @@
 import { PrismaClient } from "@eci/data-access/prisma";
-import { GoogleOAuthConfig } from "./setup/googleOAuth";
-import { RedisConfig } from "./setup/redis";
-import { ElasticSearchConfig } from "./setup/elasticSearch";
-import { Logger } from "./setup/logger";
-import { Sentry } from "./setup/sentry";
 import { Saleor } from "./setup/saleor";
-import { RequestDataFeed } from "./setup/requestDataFeed";
 import { Tenant } from "./setup/tenant";
+import { Logger } from "@eci/util/logger";
 
 export type Context = {
+  trace: {
+    id:string
+  }
+  logger: Logger;
   prisma?: PrismaClient;
-  googleOAuth?: GoogleOAuthConfig;
-  redis?: RedisConfig;
-  elasticSearch?: ElasticSearchConfig;
-  logger?: Logger;
-  sentry?: Sentry;
   saleor?: Saleor;
   tenant?: Tenant;
-  requestDataFeed?: RequestDataFeed;
 };
 
-type RequiredKeys<Keys extends keyof Context> = Context &
+/**
+ * The basic Context where some additional keys are set as required
+ */
+export type ExtendedContext<Keys extends keyof Context> = Context &
   Required<Pick<Context, Keys>>;
 
 /**
@@ -38,20 +34,22 @@ type RequiredKeys<Keys extends keyof Context> = Context &
  */
 export type ExtendContextFn<K extends keyof Context> = (
   ctx: Context,
-) => Promise<RequiredKeys<K>>;
+) => Promise<ExtendedContext<K>>;
 
 /**
  * Convenience function to batch multiple setup functions together
  */
-export async function createContext<Keys extends keyof Context>(
+export async function extendContext<Keys extends keyof Context>(
+  ctx: Context,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ...extendContext: ExtendContextFn<any>[]
-): Promise<RequiredKeys<Keys>> {
-  let ctx = {} as Context;
-
-  for (const extend of extendContext) {
-    ctx = await extend(ctx);
+): Promise<ExtendedContext<Keys>> {
+  if (extendContext) {
+    for (const extend of extendContext) {
+      ctx = await extend(ctx);
+    }
   }
 
-  return ctx as RequiredKeys<Keys>;
+  return ctx as ExtendedContext<Keys>;
 }
+

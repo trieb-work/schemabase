@@ -1,7 +1,7 @@
 import { Device, Options, PrintRequest } from "./types";
-import { env } from "@eci/util/env";
+import { env } from "@chronark/env";
 import { HttpApi, HttpClient } from "@eci/http";
-import { HTTPError } from "@eci/util/errors";
+import { HttpError } from "@eci/util/errors";
 export class Printer {
   public httpClient: HttpApi;
 
@@ -24,7 +24,7 @@ export class Printer {
       url: "https://api.printnode.com/printers",
     });
     if (!res.data) {
-      throw new HTTPError(500, "Unable to load available printers");
+      throw new HttpError(500, "Unable to load available printers");
     }
     return res.data;
   }

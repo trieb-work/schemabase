@@ -158,6 +158,27 @@
         }
       }
     },
+    "constants": {
+      "root": "libs/constants",
+      "sourceRoot": "libs/constants/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/constants/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/constants"],
+          "options": {
+            "jestConfig": "libs/constants/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
     "context": {
       "root": "libs/context",
       "sourceRoot": "libs/context/src",
@@ -295,69 +316,6 @@
         }
       }
     },
-    "types-graphql-eci": {
-      "root": "libs/types/graphql/eci",
-      "sourceRoot": "libs/types/graphql/eci/src",
-      "projectType": "library",
-      "targets": {
-        "build": {
-          "executor": "@nrwl/node:package",
-          "outputs": ["{options.outputPath}"],
-          "options": {
-            "outputPath": "dist/libs/types/graphql/eci",
-            "tsConfig": "libs/types/graphql/eci/tsconfig.lib.json",
-            "packageJson": "libs/types/graphql/eci/package.json",
-            "main": "libs/types/graphql/eci/src/index.ts",
-            "assets": ["libs/types/graphql/eci/*.md"]
-          }
-        },
-        "lint": {
-          "executor": "@nrwl/linter:eslint",
-          "options": {
-            "lintFilePatterns": ["libs/types/graphql/eci/**/*.ts"]
-          }
-        },
-        "test": {
-          "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/types/graphql/eci"],
-          "options": {
-            "jestConfig": "libs/types/graphql/eci/jest.config.js",
-            "passWithNoTests": true
-          }
-        }
-      }
-    },
-    "types-graphql-global": {
-      "root": "libs/types/graphql/global",
-      "sourceRoot": "libs/types/graphql/global/src",
-      "projectType": "library",
-      "targets": {
-        "build": {
-          "executor": "@nrwl/workspace:run-commands",
-          "options": {
-            "commands": [
-              {
-                "command": "yarn --cwd=libs/types/graphql/global build"
-              }
-            ]
-          }
-        },
-        "lint": {
-          "executor": "@nrwl/linter:eslint",
-          "options": {
-            "lintFilePatterns": ["libs/types/graphql/global/**/*.ts"]
-          }
-        },
-        "test": {
-          "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/types/graphql/global"],
-          "options": {
-            "jestConfig": "libs/types/graphql/global/jest.config.js",
-            "passWithNoTests": true
-          }
-        }
-      }
-    },
     "util": {
       "root": "libs/util",
       "sourceRoot": "libs/util/src",
@@ -374,27 +332,6 @@
           "outputs": ["coverage/libs/util"],
           "options": {
             "jestConfig": "libs/util/jest.config.js",
-            "passWithNoTests": true
-          }
-        }
-      }
-    },
-    "util-env": {
-      "root": "libs/util/env",
-      "sourceRoot": "libs/util/env/src",
-      "projectType": "library",
-      "targets": {
-        "lint": {
-          "executor": "@nrwl/linter:eslint",
-          "options": {
-            "lintFilePatterns": ["libs/util/env/**/*.ts"]
-          }
-        },
-        "test": {
-          "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/util/env"],
-          "options": {
-            "jestConfig": "libs/util/env/jest.config.js",
             "passWithNoTests": true
           }
         }

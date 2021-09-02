@@ -8,7 +8,7 @@ import {
 
 import { RetryLink } from "@apollo/client/link/retry";
 import { onError } from "@apollo/client/link/error";
-import { env } from "@eci/util/env";
+import { env } from "@chronark/env";
 import { Logger } from "tslog";
 
 const logger = new Logger();

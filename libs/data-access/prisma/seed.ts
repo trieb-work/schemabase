@@ -1,8 +1,6 @@
 import { PrismaClient } from "@prisma/client";
-import { Logger } from "tslog";
 
 const prisma = new PrismaClient();
-const logger = new Logger({ name: "DB seed" });
 
 async function main() {
   const seedTenant = {
@@ -53,7 +51,7 @@ async function main() {
 
 main()
   .catch((err) => {
-    logger.prettyError(err);
+    console.error(err);
     process.exit(1);
   })
   .finally(async () => {
