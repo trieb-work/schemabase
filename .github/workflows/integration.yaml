@@ -54,6 +54,9 @@ jobs:
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
 
+      - name: Generate prisma client
+        run: yarn nx build data-access-prisma
+
       - name: Seed eci database
         run: yarn prisma db seed --preview-feature --schema=./libs/data-access/prisma/schema.prisma
         env:

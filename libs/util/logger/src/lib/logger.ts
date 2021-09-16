@@ -2,11 +2,9 @@ import winston from "winston";
 import { ElasticsearchTransport } from "winston-elasticsearch";
 import { env } from "@chronark/env";
 import APMAgent from "elastic-apm-node/start";
+import ecsFormat from "@elastic/ecs-winston-format";
 
-export type Field = {
-  key: string;
-  value: string | number | boolean | Record<string, unknown>;
-};
+export type Field = Record<string, unknown>;
 
 export type LoggerConfig = {
   /**
@@ -21,6 +19,7 @@ export type LoggerConfig = {
 
   enableElastic?: boolean;
 };
+
 export class Logger {
   private logger: winston.Logger;
   private elasticSearchTransport?: ElasticsearchTransport;
@@ -44,6 +43,14 @@ export class Logger {
     if (config.enableElastic) {
       this.debug("Enabling elastic transport");
       // this.apm ??= APMAgent.start({ serviceName: "eci-v2" });
+
+      /**
+       * ECS requires a special logging format.
+       * This overwrites the prettyprint or json format.
+       *
+       * @see https://www.elastic.co/guide/en/ecs-logging/nodejs/current/winston.html
+       */
+      this.logger.format = ecsFormat({ convertReqRes: true });
       /**
        * Ships all our logs to elasticsearch
        */
