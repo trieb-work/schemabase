@@ -15,9 +15,11 @@ describe("productdatafeed", () => {
         })
         .catch((err) => {
           console.error(err.message);
-          throw err;
         });
       console.log({ res });
+      if (!res) {
+        fail("No response returned");
+      }
 
       expect(res.status).toBe(200);
       expect(res.headers["content-type"]).toEqual("text/csv");
