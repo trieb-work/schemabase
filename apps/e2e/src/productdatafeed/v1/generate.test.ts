@@ -6,20 +6,12 @@ describe("productdatafeed", () => {
   const http = new HttpClient();
   for (const variant of variants) {
     it(`generates a feed for ${variant}`, async () => {
-      const res = await http
-        .call<string>({
-          method: "GET",
-          url: `${env.require(
-            "ECI_BASE_URL",
-          )}/api/product-data-feed/v1/cksq51dwk00009ci06armhpsq?variant=${variant}`,
-        })
-        .catch((err) => {
-          console.error(err.message);
-        });
-      console.log({ res });
-      if (!res) {
-        fail("No response returned");
-      }
+      const res = await http.call<string>({
+        method: "GET",
+        url: `${env.require(
+          "ECI_BASE_URL",
+        )}/api/product-data-feed/v1/cksq51dwk00009ci06armhpsq?variant=${variant}`,
+      });
 
       expect(res.status).toBe(200);
       expect(res.headers["content-type"]).toEqual("text/csv");
