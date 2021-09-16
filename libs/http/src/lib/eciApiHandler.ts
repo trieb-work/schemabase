@@ -101,7 +101,7 @@ export function handleWebhook<TRequest>({
        * Handle errors gracefully
        */
     } catch (err) {
-      logger.error(err);
+      logger.error(err.message);
 
       res.json({
         error: err instanceof HttpError ? err.statusCode : 500,

@@ -13,8 +13,13 @@ jobs:
     name: Integration
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        saleor: ["3.0-triebwork7", "3.0.0-b.13-triebwork1"]
+        saleor: [
+            "3.0-triebwork7", # actually v2
+            "3.0-triebwork11", # actually v3
+            "3.0.0-b.13-triebwork1", # v3 latest
+          ]
 
     steps:
       - name: Checkout code
