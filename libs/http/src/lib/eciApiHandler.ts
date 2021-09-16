@@ -59,7 +59,7 @@ export function handleWebhook<TRequest>({
 
     const logger = new Logger({
       traceId,
-      enableElastic: env.get("NODE_ENV") === "production",
+      enableElastic: env.get("VERCEL_ENV") === "production",
       webhookId: req.url,
     });
 
@@ -101,11 +101,10 @@ export function handleWebhook<TRequest>({
        * Handle errors gracefully
        */
     } catch (err) {
-      logger.error(err.message);
+      logger.error(err);
 
       res.json({
         error: err instanceof HttpError ? err.statusCode : 500,
-        message: err.message,
         traceId,
       });
     } finally {
