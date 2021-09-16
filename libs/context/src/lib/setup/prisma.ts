@@ -1,6 +1,6 @@
 import { ExtendContextFn } from "../context";
 import { PrismaClient } from "@eci/data-access/prisma";
-import { env } from "@eci/util/env";
+import { env } from "@chronark/env";
 /**
  * Initialize a prisma client and make it public to the context
  */

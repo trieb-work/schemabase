@@ -1,7 +1,6 @@
 name: Integration
 
-# All required 3rd party services are hosted in docker containers and available
-# via localhost.
+# All required 3rd party services are hosted in docker containers.
 #
 # The webhooks service is started inside a docker container as well and all
 # integration tests are being run with a fresh database seed
@@ -15,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        saleor: ["3.0-triebwork7", "3.0-triebwork11"]
+        saleor: ["3.0-triebwork7", "3.0.0-b.13-triebwork1"]
 
     steps:
       - name: Checkout code

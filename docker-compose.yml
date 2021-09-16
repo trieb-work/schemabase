@@ -47,22 +47,12 @@ services:
     volumes:
       - saleor-db:/var/lib/postgresql/data
 
-      # Optional storefront, I doubt we actually need this
-  # saleor_storefront:
-  #   build:
-  #     context: https://github.com/mirumee/saleor-storefront.git
-  #     dockerfile: ./Dockerfile.dev
-  #   ports:
-  #     - 4000:3000
-
-  #   # The saleor "admin" dashboard. Might be useful for debugging
-  # saleor_dashboard:
-  #   build:
-  #     context: https://github.com/mirumee/saleor-dashboard.git
-  #     dockerfile: ./Dockerfile.dev
-  #   ports:
-  #     - 9000:9000
-
+  # MailHog is an email testing tool
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - 1025:1025 # smtp server
+      - 8025:8025 # web ui. Visit http://localhost:8025/ to check emails
 volumes:
   # Migrating and seeding the db takes a long time so we "cache" it for local development
   saleor-db:

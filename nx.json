@@ -48,6 +48,9 @@
     "adapters-saleor": {
       "tags": []
     },
+    "constants": {
+      "tags": []
+    },
     "context": {
       "tags": []
     },
@@ -57,25 +60,13 @@
     "e2e": {
       "tags": []
     },
-    "graphql-client": {
-      "tags": []
-    },
     "http": {
       "tags": []
     },
     "integrations-product-data-feed": {
       "tags": []
     },
-    "types-graphql-eci": {
-      "tags": []
-    },
-    "types-graphql-global": {
-      "tags": []
-    },
     "util": {
-      "tags": []
-    },
-    "util-env": {
       "tags": []
     },
     "util-errors": {
