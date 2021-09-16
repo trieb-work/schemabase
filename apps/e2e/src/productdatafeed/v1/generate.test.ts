@@ -14,9 +14,10 @@ describe("productdatafeed", () => {
           )}/api/product-data-feed/v1/cksq51dwk00009ci06armhpsq?variant=${variant}`,
         })
         .catch((err) => {
-          console.error(err);
+          console.error(err.message);
           throw err;
         });
+      console.log({ res });
 
       expect(res.status).toBe(200);
       expect(res.headers["content-type"]).toEqual("text/csv");

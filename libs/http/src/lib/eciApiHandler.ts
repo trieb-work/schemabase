@@ -105,6 +105,7 @@ export function handleWebhook<TRequest>({
 
       res.json({
         error: err instanceof HttpError ? err.statusCode : 500,
+        message: err.message,
         traceId,
       });
     } finally {
