@@ -52,6 +52,7 @@
       "@eci/util": ["libs/util/src/index.ts"],
       "@eci/util/env": ["libs/util/env/src/index.ts"],
       "@eci/util/errors": ["libs/util/errors/src/index.ts"],
+      "@eci/util/ids": ["libs/util/ids/src/index.ts"],
       "@eci/util/logger": ["libs/util/logger/src/index.ts"],
       "@eci/util/retry": ["libs/util/retry/src/index.ts"]
     }

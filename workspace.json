@@ -421,6 +421,38 @@
         }
       }
     },
+    "util-ids": {
+      "root": "libs/util/ids",
+      "sourceRoot": "libs/util/ids/src",
+      "projectType": "library",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/node:package",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/libs/util/ids",
+            "tsConfig": "libs/util/ids/tsconfig.lib.json",
+            "packageJson": "libs/util/ids/package.json",
+            "main": "libs/util/ids/src/index.ts",
+            "assets": ["libs/util/ids/*.md"]
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/util/ids/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/util/ids"],
+          "options": {
+            "jestConfig": "libs/util/ids/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
     "util-logger": {
       "root": "libs/util/logger",
       "sourceRoot": "libs/util/logger/src",

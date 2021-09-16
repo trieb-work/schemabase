@@ -1,7 +1,4 @@
 import { PrismaClient } from "@eci/data-access/prisma";
-import { GoogleOAuthConfig } from "./setup/googleOAuth";
-import { RedisConfig } from "./setup/redis";
-import { ElasticSearchConfig } from "./setup/elasticSearch";
 import { Logger } from "./setup/logger";
 import { Sentry } from "./setup/sentry";
 import { Saleor } from "./setup/saleor";
@@ -10,9 +7,6 @@ import { Tenant } from "./setup/tenant";
 
 export type Context = {
   prisma?: PrismaClient;
-  googleOAuth?: GoogleOAuthConfig;
-  redis?: RedisConfig;
-  elasticSearch?: ElasticSearchConfig;
   logger?: Logger;
   sentry?: Sentry;
   saleor?: Saleor;

@@ -6,6 +6,7 @@ import {
   getTenant,
 } from "@eci/context";
 import { z } from "zod";
+import {id} from "@eci/util/ids"
 
 const requestValidation = z.object({
   method: z.string().refine((m) => m === "POST"),
@@ -47,6 +48,7 @@ export default async function handler(
       where: { domain },
       update: {},
       create: {
+        id: id("saleorApp"),
         tenantId,
         name: "",
         domain,
