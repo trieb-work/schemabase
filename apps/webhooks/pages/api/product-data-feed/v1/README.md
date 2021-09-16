@@ -2,7 +2,6 @@
 
 Generate the product data in xml form for google and facebook
 
-
 # Parameters
 
 ## publicId (Path)

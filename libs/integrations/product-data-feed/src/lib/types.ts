@@ -67,7 +67,7 @@ export type Product = {
    * Your product’s mobile-optimized landing page when you have a different URL for mobile and desktop traffic
    *
    * @example
-   * http://www.m.example.com/asp/ sp.asp?cat=12 id=1030
+   * http://www.m.example.com/asp/sp.asp?cat=12&id=1030
    *
    * Syntax
    * Max 2000 alphanumeric characters
@@ -78,7 +78,7 @@ export type Product = {
    * Your product’s landing page
    *
    * @example
-   * http://​www.example.​com/​asp​/sp.asp?cat=​12&id=1030
+   * http://www.m.example.com/asp/sp.asp?cat=12&id=1030
    */
   link: string;
 

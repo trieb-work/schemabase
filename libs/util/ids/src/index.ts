@@ -1,3 +1,2 @@
 import { idGenerator } from "./lib/idGenerator";
-export const id = idGenerator.id
-;
+export const id = idGenerator.id;
