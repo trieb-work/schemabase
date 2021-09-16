@@ -22,6 +22,7 @@ services:
     environment:
       DATABASE_URL: postgres://postgres:postgres@eci_db:5432/postgres
       DATABASE_URL_POOL: postgres://postgres:postgres@eci_db:5432/postgres
+      CI:
 
   # Saleor Graphql API
   saleor_api:

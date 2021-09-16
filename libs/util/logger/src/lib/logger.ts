@@ -40,7 +40,8 @@ export class Logger {
       },
     });
 
-    if (config.enableElastic) {
+    const isCI = env.get("CI") === "true";
+    if (!isCI && config.enableElastic) {
       this.debug("Enabling elastic transport");
       // this.apm ??= APMAgent.start({ serviceName: "eci-v2" });
 

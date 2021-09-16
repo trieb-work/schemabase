@@ -59,7 +59,7 @@ export function handleWebhook<TRequest>({
 
     const logger = new Logger({
       traceId,
-      enableElastic: env.get("VERCEL_ENV") === "production",
+      enableElastic: env.get("NODE_ENV") === "production",
       webhookId: req.url,
     });
 

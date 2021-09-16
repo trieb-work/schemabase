@@ -3,7 +3,7 @@ prismaSchema := libs/data-access/prisma/schema.prisma
 
 
 down:
-	docker-compose --env-file=.env.compose down --remove-orphans --volumes
+	docker-compose down --remove-orphans --volumes
 
 destroy: down
 	docker system prune -af
@@ -16,27 +16,26 @@ pull-env:
 
 
 # Build and seeds all required external services
+init: export SALEOR_VERSION=3.0-triebwork11
 init: down build
-	@echo "SALEOR_VERSION=3.0-triebwork11" > .env.compose
+	docker-compose pull
+	docker-compose build
 
-	docker-compose --env-file=.env.compose pull
-	docker-compose --env-file=.env.compose build
-
-	docker-compose --env-file=.env.compose up -d
-	docker-compose --env-file=.env.compose exec saleor_api python manage.py migrate
+	docker-compose up -d
+	docker-compose exec saleor_api python manage.py migrate
 
 	@# An admin user is created with the following credentials:
 	@# email: admin@example.com
 	@# password: admin
-	docker-compose --env-file=.env.compose exec saleor_api python manage.py populatedb --createsuperuser
+	docker-compose exec saleor_api python manage.py populatedb --createsuperuser
 
 	yarn prisma db push --schema=${prismaSchema} --skip-generate
 	yarn prisma db seed --preview-feature --schema=${prismaSchema}
 
 
 up:
-	docker-compose --env-file=.env.compose down
-	docker-compose --env-file=.env.compose up -d --build
+	docker-compose down
+	docker-compose up -d --build
 
 build:
 	yarn install
@@ -57,10 +56,10 @@ test-e2e: export SALEOR_GRAPHQL_ENDPOINT    = http://localhost:8000/graphql/
 test-e2e: export SALEOR_TEMPORARY_APP_TOKEN = token
 test-e2e: build
 	# Rebuild eci and ensure everything is up
-	docker-compose --env-file=.env.compose up -d --build eci_webhooks
+	docker-compose up -d --build eci_webhooks
 
 	# Reset and seed the eci database for every test run
-	docker-compose --env-file=.env.compose restart eci_db
+	docker-compose  restart eci_db
 	yarn prisma db push --schema=${prismaSchema} --skip-generate
 	yarn prisma db seed --preview-feature --schema=${prismaSchema}
 
