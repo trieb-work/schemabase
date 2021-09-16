@@ -21,11 +21,19 @@ export type LoggerConfig = {
 };
 
 export class Logger {
+  private static instance: Logger | null;
   private logger: winston.Logger;
   private elasticSearchTransport?: ElasticsearchTransport;
   private apm?: typeof APMAgent;
 
-  public constructor(config: LoggerConfig) {
+  public static new(config: LoggerConfig): Logger {
+    if (!Logger.instance) {
+      Logger.instance = new Logger(config);
+    }
+    return Logger.instance;
+  }
+
+  private constructor(config: LoggerConfig) {
     this.logger = winston.createLogger({
       transports: [new winston.transports.Console()],
       format:
@@ -41,6 +49,7 @@ export class Logger {
     });
 
     const isCI = env.get("CI") === "true";
+    this.logger.info("CI", { isCI });
     if (!isCI && config.enableElastic) {
       this.debug("Enabling elastic transport");
       // this.apm ??= APMAgent.start({ serviceName: "eci-v2" });

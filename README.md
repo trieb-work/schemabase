@@ -29,19 +29,19 @@ You might want to stop the webhooks container (created by `make init`) if the po
 
 =======
 
-
 # Get started
 
 ## Setup environment
 
 In order to get the required environment variables please run `make get-env`.
 If you are not logged into vercel, or don't want to pull them automatically you need to create and populate the following files:
+
 ```
 cp apps/webhooks/.env.example apps/webhooks/.env.local
 cp libs/data-access/prisma/.env.example libs/data-access/prisma/.env
 ```
-The `VERCEL_...` variables can be left empty
 
+The `VERCEL_...` variables can be left empty
 
 ## Database
 
