@@ -71,5 +71,6 @@ jobs:
         run: yarn nx run e2e:e2e
         env:
           ECI_BASE_URL: http://localhost:3000
+        continue-on-error: true
       - name: Get logs
         run: docker-compose --env-file=.env.compose logs eci_webhooks
