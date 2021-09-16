@@ -163,8 +163,20 @@
       "sourceRoot": "libs/constants/src",
       "projectType": "library",
       "targets": {
+        "build": {
+          "executor": "@nrwl/node:package",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/libs/constants",
+            "tsConfig": "libs/constants/tsconfig.lib.json",
+            "packageJson": "libs/constants/package.json",
+            "main": "libs/constants/src/index.ts",
+            "assets": ["libs/constants/*.md"]
+          }
+        },
         "lint": {
           "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
           "options": {
             "lintFilePatterns": ["libs/constants/**/*.ts"]
           }
@@ -248,27 +260,6 @@
           "outputs": ["coverage/apps/e2e"],
           "options": {
             "jestConfig": "apps/e2e/jest.config.js",
-            "passWithNoTests": true
-          }
-        }
-      }
-    },
-    "graphql-client": {
-      "root": "libs/graphql-client",
-      "sourceRoot": "libs/graphql-client/src",
-      "projectType": "library",
-      "targets": {
-        "lint": {
-          "executor": "@nrwl/linter:eslint",
-          "options": {
-            "lintFilePatterns": ["libs/graphql-client/**/*.ts"]
-          }
-        },
-        "test": {
-          "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/graphql-client"],
-          "options": {
-            "jestConfig": "libs/graphql-client/jest.config.js",
             "passWithNoTests": true
           }
         }
@@ -358,13 +349,57 @@
         }
       }
     },
+    "util-ids": {
+      "root": "libs/util/ids",
+      "sourceRoot": "libs/util/ids/src",
+      "projectType": "library",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/node:package",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/libs/util/ids",
+            "tsConfig": "libs/util/ids/tsconfig.lib.json",
+            "packageJson": "libs/util/ids/package.json",
+            "main": "libs/util/ids/src/index.ts",
+            "assets": ["libs/util/ids/*.md"]
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/util/ids/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/util/ids"],
+          "options": {
+            "jestConfig": "libs/util/ids/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
     "util-logger": {
       "root": "libs/util/logger",
       "sourceRoot": "libs/util/logger/src",
       "projectType": "library",
       "targets": {
+        "build": {
+          "executor": "@nrwl/node:package",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/libs/util/logger",
+            "tsConfig": "libs/util/logger/tsconfig.lib.json",
+            "packageJson": "libs/util/logger/package.json",
+            "main": "libs/util/logger/src/index.ts",
+            "assets": ["libs/util/logger/*.md"]
+          }
+        },
         "lint": {
           "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
           "options": {
             "lintFilePatterns": ["libs/util/logger/**/*.ts"]
           }

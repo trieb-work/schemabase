@@ -1,4 +1,4 @@
-import {Weight} from "@eci/adapters/saleor"
+import { Weight } from "@eci/adapters/saleor";
 
 export const generateUnitPrice = (
   variantWeight: Weight,

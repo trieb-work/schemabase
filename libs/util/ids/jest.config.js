@@ -1,9 +1,9 @@
 module.exports = {
-  displayName: "types-graphql-eci",
-  preset: "../../jest.preset.js",
+  displayName: "ids",
+  preset: "../../../jest.preset.js",
   globals: {
     "ts-jest": {
-      tsconfig: "<rootDir>/tsconfig.test.json",
+      tsconfig: "<rootDir>/tsconfig.spec.json",
     },
   },
   testEnvironment: "node",
@@ -11,5 +11,5 @@ module.exports = {
     "^.+\\.[tj]sx?$": "ts-jest",
   },
   moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
-  coverageDirectory: "../../coverage/libs/test",
+  coverageDirectory: "../../../coverage/libs/util/ids",
 };

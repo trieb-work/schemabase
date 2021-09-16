@@ -1,5 +1,7 @@
 /**
  * Specs according to https://support.google.com/merchants/answer/7052112?hl=en
+ *
+ * And for facebook: https://developers.facebook.com/docs/commerce-platform/catalog/fields/
  */
 export type Product = {
   /**
@@ -36,6 +38,13 @@ export type Product = {
   description: string;
 
   /**
+   * Rich text description is identical to `description` but allows HTML markup
+   *
+   * Only supported for facebook. Google does not list it in their specs.
+   */
+  rich_text_description?: string;
+
+  /**
    * The URL of your product’s main image
    *
    * @example
@@ -58,7 +67,7 @@ export type Product = {
    * Your product’s mobile-optimized landing page when you have a different URL for mobile and desktop traffic
    *
    * @example
-   * http://www.m.example.com/asp/ sp.asp?cat=12 id=1030
+   * http://www.m.example.com/asp/sp.asp?cat=12&id=1030
    *
    * Syntax
    * Max 2000 alphanumeric characters
@@ -69,7 +78,7 @@ export type Product = {
    * Your product’s landing page
    *
    * @example
-   * http://​www.example.​com/​asp​/sp.asp?cat=​12&id=1030
+   * http://www.m.example.com/asp/sp.asp?cat=12&id=1030
    */
   link: string;
 

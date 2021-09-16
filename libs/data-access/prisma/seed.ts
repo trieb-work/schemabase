@@ -1,5 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-
 const prisma = new PrismaClient();
 
 async function main() {
@@ -20,6 +19,7 @@ async function main() {
     throw new Error(`SALEOR_TEMPORARY_APP_TOKEN missing`);
   }
   const seedSaleorApp = {
+    id: "id",
     tenantId: tenant.id,
     name: "name",
     domain: saleorDomain,

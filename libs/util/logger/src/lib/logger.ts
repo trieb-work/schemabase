@@ -2,11 +2,9 @@ import winston from "winston";
 import { ElasticsearchTransport } from "winston-elasticsearch";
 import { env } from "@chronark/env";
 import APMAgent from "elastic-apm-node/start";
+import ecsFormat from "@elastic/ecs-winston-format";
 
-export type Field = {
-  key: string;
-  value: string | number | boolean | Record<string, unknown>;
-};
+export type Field = Record<string, unknown>;
 
 export type LoggerConfig = {
   /**
@@ -21,20 +19,27 @@ export type LoggerConfig = {
 
   enableElastic?: boolean;
 };
+
 export class Logger {
+  private static instance: Logger | null;
   private logger: winston.Logger;
   private elasticSearchTransport?: ElasticsearchTransport;
   private apm?: typeof APMAgent;
 
-  public constructor(config: LoggerConfig) {
+  public static new(config: LoggerConfig): Logger {
+    if (!Logger.instance) {
+      Logger.instance = new Logger(config);
+    }
+    return Logger.instance;
+  }
+
+  private constructor(config: LoggerConfig) {
     this.logger = winston.createLogger({
-      transports:[
-        new winston.transports.Console()
-      ],
-      format: winston.format.prettyPrint(),
-        // env.get("NODE_ENV") === "production"
-        //   ? winston.format.json()
-        //   : winston.format.prettyPrint(),
+      transports: [new winston.transports.Console()],
+      format:
+        env.get("NODE_ENV") === "production"
+          ? winston.format.json()
+          : winston.format.prettyPrint(),
       defaultMeta: {
         traceId: config.traceId,
         webhookId: config.webhookId,
@@ -43,9 +48,19 @@ export class Logger {
       },
     });
 
-    if (config.enableElastic) {
-      this.debug("Enabling elastic transport")
+    const isCI = env.get("CI") === "true";
+    this.logger.info("CI", { isCI });
+    if (!isCI && config.enableElastic) {
+      this.debug("Enabling elastic transport");
       // this.apm ??= APMAgent.start({ serviceName: "eci-v2" });
+
+      /**
+       * ECS requires a special logging format.
+       * This overwrites the prettyprint or json format.
+       *
+       * @see https://www.elastic.co/guide/en/ecs-logging/nodejs/current/winston.html
+       */
+      this.logger.format = ecsFormat({ convertReqRes: true });
       /**
        * Ships all our logs to elasticsearch
        */
@@ -79,11 +94,7 @@ export class Logger {
    * Serialize the message
    */
   private log(level: string, message: string, fields?: Field[]): void {
-    this.logger.log(
-      level,
-      message,
-      fields
-    );
+    this.logger.log(level, message, fields);
   }
 
   public debug(message: string, ...fields: Field[]): void {

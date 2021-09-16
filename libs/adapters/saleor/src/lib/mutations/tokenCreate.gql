@@ -1,5 +1,4 @@
-
-mutation  tokenCreate($email: String!, $password:String!){
+mutation tokenCreate($email: String!, $password: String!) {
   tokenCreate(email: $email, password: $password) {
     token
     refreshToken

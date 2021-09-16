@@ -60,9 +60,6 @@
     "e2e": {
       "tags": []
     },
-    "graphql-client": {
-      "tags": []
-    },
     "http": {
       "tags": []
     },
@@ -73,6 +70,9 @@
       "tags": []
     },
     "util-errors": {
+      "tags": []
+    },
+    "util-ids": {
       "tags": []
     },
     "util-logger": {

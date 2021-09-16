@@ -1,5 +1,6 @@
 import { extendContext, setupPrisma, setupSaleor } from "@eci/context";
 import { z } from "zod";
+import { idGenerator } from "@eci/util/ids";
 import { handleWebhook, Webhook } from "@eci/http";
 
 const requestValidation = z.object({
@@ -39,6 +40,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
       where: { domain },
       update: {},
       create: {
+        id: idGenerator.id("saleorApp"),
         tenantId,
         name: "",
         domain,

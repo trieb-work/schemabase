@@ -84,11 +84,6 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
         // console.warn(err)
       }
 
-      description =
-        feedVariant == "facebookcommerce"
-          ? htmlToText(description)
-          : description;
-
       const { hasVariants } = rawProduct.productType;
 
       if (!rawProduct.variants) {
@@ -110,7 +105,9 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
         const product: Product = {
           id: variant.sku,
           title: hasVariants ? `${title} (${variant.name})` : title,
-          description,
+          description: htmlToText(description),
+          rich_text_description:
+            feedVariant === "facebookcommerce" ? description : undefined,
           image_link: hasVariants
             ? variant.images && variant.images.length > 0
               ? variant.images[0]?.url

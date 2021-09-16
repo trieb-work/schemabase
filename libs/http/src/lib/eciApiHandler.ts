@@ -1,6 +1,6 @@
 import { NextApiHandler, NextApiResponse, NextApiRequest } from "next";
 import { Logger } from "@eci/util/logger";
-import { v4 as uuid } from "uuid";
+import { idGenerator } from "@eci/util/ids";
 import { env } from "@chronark/env";
 import { HttpError } from "@eci/util/errors";
 import { Context } from "@eci/context";
@@ -54,10 +54,11 @@ export function handleWebhook<TRequest>({
     /**
      * A unique id for this request. This is useful for searching the logs.
      */
-    const traceId = (req.headers[ECI_TRACE_HEADER] as string) ?? uuid();
+    const traceId =
+      (req.headers[ECI_TRACE_HEADER] as string) ?? idGenerator.id("trace");
     res.setHeader(ECI_TRACE_HEADER, traceId);
 
-    const logger = new Logger({
+    const logger = Logger.new({
       traceId,
       enableElastic: env.get("NODE_ENV") === "production",
       webhookId: req.url,

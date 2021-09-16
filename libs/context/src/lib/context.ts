@@ -5,8 +5,8 @@ import { Logger } from "@eci/util/logger";
 
 export type Context = {
   trace: {
-    id:string
-  }
+    id: string;
+  };
   logger: Logger;
   prisma?: PrismaClient;
   saleor?: Saleor;
@@ -52,4 +52,3 @@ export async function extendContext<Keys extends keyof Context>(
 
   return ctx as ExtendedContext<Keys>;
 }
-

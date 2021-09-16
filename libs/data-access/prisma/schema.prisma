@@ -31,7 +31,7 @@ model MailchimpConfig {
 model ProductDataFeed {
   id       String @id @default(uuid())
   // The public id used for lookups from incoming webhooks.
-  publicId String @unique @default(cuid())
+  publicId String @unique
 
   // Indicates if the integration is currently enabled.
   // The user might chose to disable it.
@@ -45,7 +45,7 @@ model ProductDataFeed {
 model EasyPostConfig {
   id       String @id @default(uuid())
   // The public id used for lookups from incoming webhooks.
-  publicId String @default(cuid())
+  publicId String
 
   // Indicates if the integration is currently enabled.
   // The user might chose to disable it.
@@ -100,13 +100,13 @@ model ZohoConfig {
   // The user might chose to disable it.
   enabled             Boolean @default(false)
   // The public id used for lookups from incoming webhooks.
-  publicId            String  @default(cuid())
+  publicId            String
   orgId               String
   clientId            String
   clientSecret        String
   payPalAccountId     String?
   creditCardAccountId String?
-  webhookToken        String  @default(cuid())
+  webhookToken        String
   webhookID           String?
   customFunctionID    String?
   tenant              Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -116,7 +116,7 @@ model ZohoConfig {
 model MailgunConfig {
   id                    String               @id @default(uuid())
   // The public id used for lookups from incoming webhooks.
-  publicId              String?              @default(cuid())
+  publicId              String?
   apiToken              String
   fromDomain            String
   fromTitle             String?
@@ -135,7 +135,7 @@ model TrackAndTraceConfig {
   // The user might chose to disable it.
   enabled             Boolean               @default(false)
   // The public id used for lookups from incoming webhooks.
-  publicId            String                @default(cuid())
+  publicId            String
   mailgun             MailgunConfig?
   easypost            EasyPostConfig?
   tenant              Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -165,7 +165,7 @@ model TrackAndTraceEmails {
 // server and receive webhooks with event notifications from Saleor.
 // Every channel must have its own app
 model SaleorApp {
-  id          String @id @default(uuid())
+  id          String @id
   channelSlug String
   domain      String @unique
 
@@ -207,7 +207,7 @@ model SaleorWebhook {
 // One tenant per company
 // Every tenant can have multiple connections with every integration.
 model Tenant {
-  id String @id @default(uuid())
+  id String @id
 
   // Human readable identifier
   name String
@@ -227,27 +227,4 @@ model Tenant {
   lexoffice       LexofficeConfig[]
   trackandtrace   TrackAndTraceConfig[]
   sendgrid        MailgunConfig[]
-}
-
-// Internal Redis secrets used by our services.
-model RedisConfig {
-  id       String @id @default(uuid())
-  host     String
-  password String
-  port     Int
-}
-
-// Internal Elastic secrets used by our services.
-model ElasticConfig {
-  id             String @id @default(uuid())
-  apmServer      String
-  apmSecretToken String
-  loggingServer  String
-}
-
-// Internal GoogleOAuth secrets used by our services.
-model GoogleOAuthConfig {
-  id           String @id @default(uuid())
-  clientId     String
-  clientSecret String
 }

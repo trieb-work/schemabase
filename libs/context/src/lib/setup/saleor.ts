@@ -31,7 +31,7 @@ export const setupSaleor =
     if (!saleorApp) {
       throw new Error("No saleor config found in database");
     }
-
+    ctx.logger.addMetadata("saleorApp", saleorApp.id);
     const client = new SaleorService({
       traceId: config.traceId,
       graphqlEndpoint: `https://${saleorApp.domain}/graphql/`,
