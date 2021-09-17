@@ -4,18 +4,26 @@ import { env } from "@chronark/env";
 import APMAgent from "elastic-apm-node/start";
 import ecsFormat from "@elastic/ecs-winston-format";
 
-export type Field = Record<string, unknown>;
+export type Fields = Record<string, unknown>;
 
 export type LoggerConfig = {
-  /**
-   * Unique id for every request.
-   */
-  traceId: string;
-  /**
-   * A unique identifier for each webhook.
-   * Take the url path for example
-   */
-  webhookId?: string;
+  defaultMeta: {
+    /**
+     * Unique id for every trace.
+     */
+    traceId: string;
+
+    /**
+     * A unique identifier for each webhook.
+     * Take the url path for example
+     */
+    webhookId?: string;
+
+    /**
+     * Unique id for every trace.
+     */
+    requestId: string;
+  } & Fields;
 
   enableElastic?: boolean;
 };
@@ -23,6 +31,7 @@ export type LoggerConfig = {
 export class Logger {
   private static instance: Logger | null;
   private logger: winston.Logger;
+  private meta: Record<string, unknown>;
   private elasticSearchTransport?: ElasticsearchTransport;
   private apm?: typeof APMAgent;
 
@@ -34,18 +43,18 @@ export class Logger {
   }
 
   private constructor(config: LoggerConfig) {
+    this.meta = {
+      ...config.defaultMeta,
+      env: env.get("NODE_ENV"),
+      commit: env.get("VERCEL_GIT_COMMIT_SHA"),
+    };
+
     this.logger = winston.createLogger({
       transports: [new winston.transports.Console()],
       format:
         env.get("NODE_ENV") === "production"
           ? winston.format.json()
           : winston.format.prettyPrint(),
-      defaultMeta: {
-        traceId: config.traceId,
-        webhookId: config.webhookId,
-        env: env.get("NODE_ENV"),
-        commit: env.get("VERCEL_GIT_COMMIT_SHA"),
-      },
     });
 
     const isCI = env.get("CI") === "true";
@@ -84,32 +93,32 @@ export class Logger {
    * Inject more metadata to be logged with every logging request.
    * Existing metadata is carried over unless overwritten
    */
-  public addMetadata(key: string, value: string | number | boolean): void {
-    const metaData = this.logger.defaultMeta;
-    metaData[key] = value;
-    this.logger = this.logger.child(metaData);
+  public addMetadata(newMeta: Fields): void {
+    this.meta = Object.assign(this.meta, newMeta);
   }
 
   /**
    * Serialize the message
+   *
+   * The fields will overwrite the default metadata if keys overlap.
    */
-  private log(level: string, message: string, fields?: Field[]): void {
-    this.logger.log(level, message, fields);
+  private log(level: string, message: string, fields: Fields = {}): void {
+    this.logger.log(level, message, { ...this.meta, ...fields });
   }
 
-  public debug(message: string, ...fields: Field[]): void {
+  public debug(message: string, fields: Fields = {}): void {
     return this.log("debug", message, fields);
   }
 
-  public info(message: string, ...fields: Field[]): void {
+  public info(message: string, fields: Fields = {}): void {
     return this.log("info", message, fields);
   }
 
-  public warn(message: string, ...fields: Field[]): void {
+  public warn(message: string, fields: Fields = {}): void {
     return this.log("warn", message, fields);
   }
 
-  public error(message: string, ...fields: Field[]): void {
+  public error(message: string, fields: Fields = {}): void {
     return this.log("error", message, fields);
   }
 

@@ -16,7 +16,7 @@ export const getTenant =
     if (!tenant) {
       throw new Error("Unable to find tenant in database");
     }
-    ctx.logger.addMetadata("tenant", tenant.id);
+    ctx.logger.addMetadata({ tenant: tenant.id });
 
     return Object.assign(ctx, { tenant });
   };
