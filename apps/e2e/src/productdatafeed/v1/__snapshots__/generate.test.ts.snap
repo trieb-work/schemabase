@@ -1,0 +1,539 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`productdatafeed generates a feed for facebookcommerce 1`] = `
+"id,title,description,rich_text_description,image_link,additional_image_link,link,price,sale_price,condition,gtin,brand,unit_pricing_measure,availability,google_product_category
+pf-leb-3-gemischt,3 Lebkuchen in Bio Folie (Mixed),\\"xcbnxfn
+
+,
+
+ergh
+
+,
+
+ergh
+
+,
+
+
+H1\\",\\"[\\"\\"<p>xcbnxfn</p>\\"\\",\\"\\"<p>ergh</p>\\"\\",\\"\\"<p>ergh</p>\\"\\",\\"\\"<h1>H1</h1>\\"\\"]\\",,,pundf-staging-api.triebwork.com3-lebkuchen-in-bio-folie,5 EUR,5 EUR,new,,Pfeffer & Frost,,in stock,
+pf-leb-5-gemischt,asdf (Mixed),Laridari,\\"[\\"\\"<p>Laridari</p>\\"\\"]\\",,,pundf-staging-api.triebwork.com5-lebkuchen-in-bio-folie,14.9 EUR,14.9 EUR,new,,Pfeffer & Frost,,in stock,
+pf-dose-5-cd-dunkle,Designerdose Charlotte Dumortier (Dark Chocolate),\\"Preis pro 100g: 5,09 €, Preis inkl. 5% MwSt. zzgl. Versand
+
+,
+
+Lebkuchen aus Nürnberg kann man immer verschenken, aber um einiges besser, wenn
+ihre Verpackung unverwechselbar ist. Im zauberhaften Wunderland von Charlotte
+Dumortier schlängeln sich rastlose Hasen, schnabulierende Raupen durch einen
+mannshohen Blumengarten.
+
+,
+
+Der Lebkuchen aus Nürnberg ist aus gutem Grund weltberühmt: Er ist wahnsinnig
+lecker. In der traditionellen Backstube unseres Bäckers kommen dafür nur die
+besten Zutaten, wie feine Mandeln, süßer Marzipan und leckere Haselnüsse auf den
+Backstubentisch – inklusive regionalem Honig. Und die Umwelt freut sich über
+unsere kompostierbare Innenfolie, die den Elisen-Lebkuchen lange frisch hält.
+
+,
+
+Außen hübsch, innen lecker – die perfekte Kombination für eine unverwechselbare
+Geschenkidee.
+
+,
+
+Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm\\",\\"[\\"\\"<p>Preis pro 100g: 5,09 €, Preis inkl. 5% MwSt. zzgl. Versand</p>\\"\\",\\"\\"<p>Lebkuchen aus Nürnberg kann man immer verschenken, aber um einiges besser, wenn ihre Verpackung unverwechselbar ist. Im zauberhaften Wunderland von Charlotte Dumortier schlängeln sich rastlose Hasen, schnabulierende Raupen durch einen mannshohen Blumengarten. </p>\\"\\",\\"\\"<p>Der Lebkuchen aus Nürnberg ist aus gutem Grund weltberühmt: Er ist wahnsinnig lecker. In der traditionellen Backstube unseres Bäckers kommen dafür nur die besten Zutaten, wie feine Mandeln, süßer Marzipan und leckere Haselnüsse auf den Backstubentisch – inklusive regionalem Honig. Und die Umwelt freut sich über unsere kompostierbare Innenfolie, die den Elisen-Lebkuchen lange frisch hält.</p>\\"\\",\\"\\"<p>Außen hübsch, innen lecker – die perfekte Kombination für eine unverwechselbare Geschenkidee. </p>\\"\\",\\"\\"<p>Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm</p>\\"\\"]\\",https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_dunkle_schokolade_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_dark_chocolate_01_en.jpg,pundf-staging-api.triebwork.comdesignerdose-charlotte-dumortier,21.9 EUR,21.9 EUR,new,,Pfeffer & Frost,,in stock,
+pf-dose-5-cd-gemischt,Designerdose Charlotte Dumortier (Mixed),\\"Preis pro 100g: 5,09 €, Preis inkl. 5% MwSt. zzgl. Versand
+
+,
+
+Lebkuchen aus Nürnberg kann man immer verschenken, aber um einiges besser, wenn
+ihre Verpackung unverwechselbar ist. Im zauberhaften Wunderland von Charlotte
+Dumortier schlängeln sich rastlose Hasen, schnabulierende Raupen durch einen
+mannshohen Blumengarten.
+
+,
+
+Der Lebkuchen aus Nürnberg ist aus gutem Grund weltberühmt: Er ist wahnsinnig
+lecker. In der traditionellen Backstube unseres Bäckers kommen dafür nur die
+besten Zutaten, wie feine Mandeln, süßer Marzipan und leckere Haselnüsse auf den
+Backstubentisch – inklusive regionalem Honig. Und die Umwelt freut sich über
+unsere kompostierbare Innenfolie, die den Elisen-Lebkuchen lange frisch hält.
+
+,
+
+Außen hübsch, innen lecker – die perfekte Kombination für eine unverwechselbare
+Geschenkidee.
+
+,
+
+Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm\\",\\"[\\"\\"<p>Preis pro 100g: 5,09 €, Preis inkl. 5% MwSt. zzgl. Versand</p>\\"\\",\\"\\"<p>Lebkuchen aus Nürnberg kann man immer verschenken, aber um einiges besser, wenn ihre Verpackung unverwechselbar ist. Im zauberhaften Wunderland von Charlotte Dumortier schlängeln sich rastlose Hasen, schnabulierende Raupen durch einen mannshohen Blumengarten. </p>\\"\\",\\"\\"<p>Der Lebkuchen aus Nürnberg ist aus gutem Grund weltberühmt: Er ist wahnsinnig lecker. In der traditionellen Backstube unseres Bäckers kommen dafür nur die besten Zutaten, wie feine Mandeln, süßer Marzipan und leckere Haselnüsse auf den Backstubentisch – inklusive regionalem Honig. Und die Umwelt freut sich über unsere kompostierbare Innenfolie, die den Elisen-Lebkuchen lange frisch hält.</p>\\"\\",\\"\\"<p>Außen hübsch, innen lecker – die perfekte Kombination für eine unverwechselbare Geschenkidee. </p>\\"\\",\\"\\"<p>Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm</p>\\"\\"]\\",https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_mix_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_mixed_01_en.jpg,pundf-staging-api.triebwork.comdesignerdose-charlotte-dumortier,21.9 EUR,21.9 EUR,new,,Pfeffer & Frost,,in stock,
+pf-dose-5-cd-natur,Designerdose Charlotte Dumortier (Natural),\\"Preis pro 100g: 5,09 €, Preis inkl. 5% MwSt. zzgl. Versand
+
+,
+
+Lebkuchen aus Nürnberg kann man immer verschenken, aber um einiges besser, wenn
+ihre Verpackung unverwechselbar ist. Im zauberhaften Wunderland von Charlotte
+Dumortier schlängeln sich rastlose Hasen, schnabulierende Raupen durch einen
+mannshohen Blumengarten.
+
+,
+
+Der Lebkuchen aus Nürnberg ist aus gutem Grund weltberühmt: Er ist wahnsinnig
+lecker. In der traditionellen Backstube unseres Bäckers kommen dafür nur die
+besten Zutaten, wie feine Mandeln, süßer Marzipan und leckere Haselnüsse auf den
+Backstubentisch – inklusive regionalem Honig. Und die Umwelt freut sich über
+unsere kompostierbare Innenfolie, die den Elisen-Lebkuchen lange frisch hält.
+
+,
+
+Außen hübsch, innen lecker – die perfekte Kombination für eine unverwechselbare
+Geschenkidee.
+
+,
+
+Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm\\",\\"[\\"\\"<p>Preis pro 100g: 5,09 €, Preis inkl. 5% MwSt. zzgl. Versand</p>\\"\\",\\"\\"<p>Lebkuchen aus Nürnberg kann man immer verschenken, aber um einiges besser, wenn ihre Verpackung unverwechselbar ist. Im zauberhaften Wunderland von Charlotte Dumortier schlängeln sich rastlose Hasen, schnabulierende Raupen durch einen mannshohen Blumengarten. </p>\\"\\",\\"\\"<p>Der Lebkuchen aus Nürnberg ist aus gutem Grund weltberühmt: Er ist wahnsinnig lecker. In der traditionellen Backstube unseres Bäckers kommen dafür nur die besten Zutaten, wie feine Mandeln, süßer Marzipan und leckere Haselnüsse auf den Backstubentisch – inklusive regionalem Honig. Und die Umwelt freut sich über unsere kompostierbare Innenfolie, die den Elisen-Lebkuchen lange frisch hält.</p>\\"\\",\\"\\"<p>Außen hübsch, innen lecker – die perfekte Kombination für eine unverwechselbare Geschenkidee. </p>\\"\\",\\"\\"<p>Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm</p>\\"\\"]\\",https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_natural_elisen_01_en.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_elisen_01_de.jpg,pundf-staging-api.triebwork.comdesignerdose-charlotte-dumortier,21.9 EUR,21.9 EUR,new,,Pfeffer & Frost,,in stock,
+pf-dose-5-cd-weis,Designerdose Charlotte Dumortier (White Chocolate),\\"Preis pro 100g: 5,09 €, Preis inkl. 5% MwSt. zzgl. Versand
+
+,
+
+Lebkuchen aus Nürnberg kann man immer verschenken, aber um einiges besser, wenn
+ihre Verpackung unverwechselbar ist. Im zauberhaften Wunderland von Charlotte
+Dumortier schlängeln sich rastlose Hasen, schnabulierende Raupen durch einen
+mannshohen Blumengarten.
+
+,
+
+Der Lebkuchen aus Nürnberg ist aus gutem Grund weltberühmt: Er ist wahnsinnig
+lecker. In der traditionellen Backstube unseres Bäckers kommen dafür nur die
+besten Zutaten, wie feine Mandeln, süßer Marzipan und leckere Haselnüsse auf den
+Backstubentisch – inklusive regionalem Honig. Und die Umwelt freut sich über
+unsere kompostierbare Innenfolie, die den Elisen-Lebkuchen lange frisch hält.
+
+,
+
+Außen hübsch, innen lecker – die perfekte Kombination für eine unverwechselbare
+Geschenkidee.
+
+,
+
+Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm\\",\\"[\\"\\"<p>Preis pro 100g: 5,09 €, Preis inkl. 5% MwSt. zzgl. Versand</p>\\"\\",\\"\\"<p>Lebkuchen aus Nürnberg kann man immer verschenken, aber um einiges besser, wenn ihre Verpackung unverwechselbar ist. Im zauberhaften Wunderland von Charlotte Dumortier schlängeln sich rastlose Hasen, schnabulierende Raupen durch einen mannshohen Blumengarten. </p>\\"\\",\\"\\"<p>Der Lebkuchen aus Nürnberg ist aus gutem Grund weltberühmt: Er ist wahnsinnig lecker. In der traditionellen Backstube unseres Bäckers kommen dafür nur die besten Zutaten, wie feine Mandeln, süßer Marzipan und leckere Haselnüsse auf den Backstubentisch – inklusive regionalem Honig. Und die Umwelt freut sich über unsere kompostierbare Innenfolie, die den Elisen-Lebkuchen lange frisch hält.</p>\\"\\",\\"\\"<p>Außen hübsch, innen lecker – die perfekte Kombination für eine unverwechselbare Geschenkidee. </p>\\"\\",\\"\\"<p>Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm</p>\\"\\"]\\",https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_weisse_schokolade_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_white_chocolate_01_en.jpg,pundf-staging-api.triebwork.comdesignerdose-charlotte-dumortier,21.9 EUR,21.9 EUR,new,,Pfeffer & Frost,,out of stock,
+pf-dose-5-cd-zucker,Designerdose Charlotte Dumortier (Icing),\\"Preis pro 100g: 5,09 €, Preis inkl. 5% MwSt. zzgl. Versand
+
+,
+
+Lebkuchen aus Nürnberg kann man immer verschenken, aber um einiges besser, wenn
+ihre Verpackung unverwechselbar ist. Im zauberhaften Wunderland von Charlotte
+Dumortier schlängeln sich rastlose Hasen, schnabulierende Raupen durch einen
+mannshohen Blumengarten.
+
+,
+
+Der Lebkuchen aus Nürnberg ist aus gutem Grund weltberühmt: Er ist wahnsinnig
+lecker. In der traditionellen Backstube unseres Bäckers kommen dafür nur die
+besten Zutaten, wie feine Mandeln, süßer Marzipan und leckere Haselnüsse auf den
+Backstubentisch – inklusive regionalem Honig. Und die Umwelt freut sich über
+unsere kompostierbare Innenfolie, die den Elisen-Lebkuchen lange frisch hält.
+
+,
+
+Außen hübsch, innen lecker – die perfekte Kombination für eine unverwechselbare
+Geschenkidee.
+
+,
+
+Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm\\",\\"[\\"\\"<p>Preis pro 100g: 5,09 €, Preis inkl. 5% MwSt. zzgl. Versand</p>\\"\\",\\"\\"<p>Lebkuchen aus Nürnberg kann man immer verschenken, aber um einiges besser, wenn ihre Verpackung unverwechselbar ist. Im zauberhaften Wunderland von Charlotte Dumortier schlängeln sich rastlose Hasen, schnabulierende Raupen durch einen mannshohen Blumengarten. </p>\\"\\",\\"\\"<p>Der Lebkuchen aus Nürnberg ist aus gutem Grund weltberühmt: Er ist wahnsinnig lecker. In der traditionellen Backstube unseres Bäckers kommen dafür nur die besten Zutaten, wie feine Mandeln, süßer Marzipan und leckere Haselnüsse auf den Backstubentisch – inklusive regionalem Honig. Und die Umwelt freut sich über unsere kompostierbare Innenfolie, die den Elisen-Lebkuchen lange frisch hält.</p>\\"\\",\\"\\"<p>Außen hübsch, innen lecker – die perfekte Kombination für eine unverwechselbare Geschenkidee. </p>\\"\\",\\"\\"<p>Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm</p>\\"\\"]\\",https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_zuckerguss_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_icing_01_en.jpg,pundf-staging-api.triebwork.comdesignerdose-charlotte-dumortier,21.9 EUR,21.9 EUR,new,,Pfeffer & Frost,,in stock,
+pf-dose-5-cj-dunkle,Lebkuchendose Edition Cachetejack (Dark Chocolate),\\"Preis pro 100g: 3,60 €, Preis inkl. 7% MwSt. zzgl. Versand
+
+,
+
+Wer verdreht Dir zu Weihnachten den Kopf? Es sind die sagenhaften Sorten in
+unserer bunten Dose! Das traumhaft illustrierte Bergpanorama vom spanischen
+Illustratoren-Duo Cachetejack erinnert uns an Alpen-Urlaub im Indian Summer:
+Wanderfans treffen Murmeltiere auf dem weißen Zuckerguss-Gipfel oder Relaxen bei
+einer Runde Goat-Yoga.
+
+,
+
+Der eine mag die Elisen-Lebkuchen in dunkle Schokolade getaucht, die andere
+liebt Vollmilch, einer greift zu weißer Schokolade, während andere wiederum
+Puristen sind. Mit dem traditionellen Elisen-Lebkuchen in der kompostierbaren
+Bio-Folie lässt sich zum Ende des Jahres herrlich „Danke“ sagen.
+
+,
+
+Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm\\",\\"[\\"\\"<p>Preis pro 100g: 3,60 €, Preis inkl. 7% MwSt. zzgl. Versand</p>\\"\\",\\"\\"<p>Wer verdreht Dir zu Weihnachten den Kopf? Es sind die sagenhaften Sorten in unserer bunten Dose! Das traumhaft illustrierte Bergpanorama vom spanischen Illustratoren-Duo Cachetejack erinnert uns an Alpen-Urlaub im Indian Summer: Wanderfans treffen Murmeltiere auf dem weißen Zuckerguss-Gipfel oder Relaxen bei einer Runde Goat-Yoga. </p>\\"\\",\\"\\"<p>Der eine mag die Elisen-Lebkuchen in dunkle Schokolade getaucht, die andere liebt Vollmilch, einer greift zu weißer Schokolade, während andere wiederum Puristen sind. Mit dem traditionellen Elisen-Lebkuchen in der kompostierbaren Bio-Folie lässt sich zum Ende des Jahres herrlich „Danke“ sagen.</p>\\"\\",\\"\\"<p>Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm</p>\\"\\"]\\",https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_dunkleschokolade_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_dunkleschokolade_01_en.jpg,pundf-staging-api.triebwork.comdose-cachetejack,21.9 EUR,21.9 EUR,new,,Pfeffer & Frost,,in stock,
+pf-dose-5-cj-gemischt,Lebkuchendose Edition Cachetejack (Mixed),\\"Preis pro 100g: 3,60 €, Preis inkl. 7% MwSt. zzgl. Versand
+
+,
+
+Wer verdreht Dir zu Weihnachten den Kopf? Es sind die sagenhaften Sorten in
+unserer bunten Dose! Das traumhaft illustrierte Bergpanorama vom spanischen
+Illustratoren-Duo Cachetejack erinnert uns an Alpen-Urlaub im Indian Summer:
+Wanderfans treffen Murmeltiere auf dem weißen Zuckerguss-Gipfel oder Relaxen bei
+einer Runde Goat-Yoga.
+
+,
+
+Der eine mag die Elisen-Lebkuchen in dunkle Schokolade getaucht, die andere
+liebt Vollmilch, einer greift zu weißer Schokolade, während andere wiederum
+Puristen sind. Mit dem traditionellen Elisen-Lebkuchen in der kompostierbaren
+Bio-Folie lässt sich zum Ende des Jahres herrlich „Danke“ sagen.
+
+,
+
+Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm\\",\\"[\\"\\"<p>Preis pro 100g: 3,60 €, Preis inkl. 7% MwSt. zzgl. Versand</p>\\"\\",\\"\\"<p>Wer verdreht Dir zu Weihnachten den Kopf? Es sind die sagenhaften Sorten in unserer bunten Dose! Das traumhaft illustrierte Bergpanorama vom spanischen Illustratoren-Duo Cachetejack erinnert uns an Alpen-Urlaub im Indian Summer: Wanderfans treffen Murmeltiere auf dem weißen Zuckerguss-Gipfel oder Relaxen bei einer Runde Goat-Yoga. </p>\\"\\",\\"\\"<p>Der eine mag die Elisen-Lebkuchen in dunkle Schokolade getaucht, die andere liebt Vollmilch, einer greift zu weißer Schokolade, während andere wiederum Puristen sind. Mit dem traditionellen Elisen-Lebkuchen in der kompostierbaren Bio-Folie lässt sich zum Ende des Jahres herrlich „Danke“ sagen.</p>\\"\\",\\"\\"<p>Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm</p>\\"\\"]\\",https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_mix_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_mix_01_en.jpg,pundf-staging-api.triebwork.comdose-cachetejack,21.9 EUR,21.9 EUR,new,,Pfeffer & Frost,,in stock,
+pf-dose-5-cj-natur,Lebkuchendose Edition Cachetejack (Natural),\\"Preis pro 100g: 3,60 €, Preis inkl. 7% MwSt. zzgl. Versand
+
+,
+
+Wer verdreht Dir zu Weihnachten den Kopf? Es sind die sagenhaften Sorten in
+unserer bunten Dose! Das traumhaft illustrierte Bergpanorama vom spanischen
+Illustratoren-Duo Cachetejack erinnert uns an Alpen-Urlaub im Indian Summer:
+Wanderfans treffen Murmeltiere auf dem weißen Zuckerguss-Gipfel oder Relaxen bei
+einer Runde Goat-Yoga.
+
+,
+
+Der eine mag die Elisen-Lebkuchen in dunkle Schokolade getaucht, die andere
+liebt Vollmilch, einer greift zu weißer Schokolade, während andere wiederum
+Puristen sind. Mit dem traditionellen Elisen-Lebkuchen in der kompostierbaren
+Bio-Folie lässt sich zum Ende des Jahres herrlich „Danke“ sagen.
+
+,
+
+Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm\\",\\"[\\"\\"<p>Preis pro 100g: 3,60 €, Preis inkl. 7% MwSt. zzgl. Versand</p>\\"\\",\\"\\"<p>Wer verdreht Dir zu Weihnachten den Kopf? Es sind die sagenhaften Sorten in unserer bunten Dose! Das traumhaft illustrierte Bergpanorama vom spanischen Illustratoren-Duo Cachetejack erinnert uns an Alpen-Urlaub im Indian Summer: Wanderfans treffen Murmeltiere auf dem weißen Zuckerguss-Gipfel oder Relaxen bei einer Runde Goat-Yoga. </p>\\"\\",\\"\\"<p>Der eine mag die Elisen-Lebkuchen in dunkle Schokolade getaucht, die andere liebt Vollmilch, einer greift zu weißer Schokolade, während andere wiederum Puristen sind. Mit dem traditionellen Elisen-Lebkuchen in der kompostierbaren Bio-Folie lässt sich zum Ende des Jahres herrlich „Danke“ sagen.</p>\\"\\",\\"\\"<p>Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm</p>\\"\\"]\\",https://s3.triebwork.com/static/products/pfefferundfrost_elisenlebkuchen_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_elisenlebkuchen_01_en.jpg,pundf-staging-api.triebwork.comdose-cachetejack,21.9 EUR,21.9 EUR,new,,Pfeffer & Frost,,out of stock,
+pf-dose-5-cj-weis,Lebkuchendose Edition Cachetejack (White Chocolate),\\"Preis pro 100g: 3,60 €, Preis inkl. 7% MwSt. zzgl. Versand
+
+,
+
+Wer verdreht Dir zu Weihnachten den Kopf? Es sind die sagenhaften Sorten in
+unserer bunten Dose! Das traumhaft illustrierte Bergpanorama vom spanischen
+Illustratoren-Duo Cachetejack erinnert uns an Alpen-Urlaub im Indian Summer:
+Wanderfans treffen Murmeltiere auf dem weißen Zuckerguss-Gipfel oder Relaxen bei
+einer Runde Goat-Yoga.
+
+,
+
+Der eine mag die Elisen-Lebkuchen in dunkle Schokolade getaucht, die andere
+liebt Vollmilch, einer greift zu weißer Schokolade, während andere wiederum
+Puristen sind. Mit dem traditionellen Elisen-Lebkuchen in der kompostierbaren
+Bio-Folie lässt sich zum Ende des Jahres herrlich „Danke“ sagen.
+
+,
+
+Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm\\",\\"[\\"\\"<p>Preis pro 100g: 3,60 €, Preis inkl. 7% MwSt. zzgl. Versand</p>\\"\\",\\"\\"<p>Wer verdreht Dir zu Weihnachten den Kopf? Es sind die sagenhaften Sorten in unserer bunten Dose! Das traumhaft illustrierte Bergpanorama vom spanischen Illustratoren-Duo Cachetejack erinnert uns an Alpen-Urlaub im Indian Summer: Wanderfans treffen Murmeltiere auf dem weißen Zuckerguss-Gipfel oder Relaxen bei einer Runde Goat-Yoga. </p>\\"\\",\\"\\"<p>Der eine mag die Elisen-Lebkuchen in dunkle Schokolade getaucht, die andere liebt Vollmilch, einer greift zu weißer Schokolade, während andere wiederum Puristen sind. Mit dem traditionellen Elisen-Lebkuchen in der kompostierbaren Bio-Folie lässt sich zum Ende des Jahres herrlich „Danke“ sagen.</p>\\"\\",\\"\\"<p>Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm</p>\\"\\"]\\",https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_wei%C3%9Feschokolade_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_wei%C3%9Feschokolade_01_en.jpg,pundf-staging-api.triebwork.comdose-cachetejack,21.9 EUR,21.9 EUR,new,,Pfeffer & Frost,,out of stock,
+pf-dose-5-cj-zucker,Lebkuchendose Edition Cachetejack (Icing),\\"Preis pro 100g: 3,60 €, Preis inkl. 7% MwSt. zzgl. Versand
+
+,
+
+Wer verdreht Dir zu Weihnachten den Kopf? Es sind die sagenhaften Sorten in
+unserer bunten Dose! Das traumhaft illustrierte Bergpanorama vom spanischen
+Illustratoren-Duo Cachetejack erinnert uns an Alpen-Urlaub im Indian Summer:
+Wanderfans treffen Murmeltiere auf dem weißen Zuckerguss-Gipfel oder Relaxen bei
+einer Runde Goat-Yoga.
+
+,
+
+Der eine mag die Elisen-Lebkuchen in dunkle Schokolade getaucht, die andere
+liebt Vollmilch, einer greift zu weißer Schokolade, während andere wiederum
+Puristen sind. Mit dem traditionellen Elisen-Lebkuchen in der kompostierbaren
+Bio-Folie lässt sich zum Ende des Jahres herrlich „Danke“ sagen.
+
+,
+
+Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm\\",\\"[\\"\\"<p>Preis pro 100g: 3,60 €, Preis inkl. 7% MwSt. zzgl. Versand</p>\\"\\",\\"\\"<p>Wer verdreht Dir zu Weihnachten den Kopf? Es sind die sagenhaften Sorten in unserer bunten Dose! Das traumhaft illustrierte Bergpanorama vom spanischen Illustratoren-Duo Cachetejack erinnert uns an Alpen-Urlaub im Indian Summer: Wanderfans treffen Murmeltiere auf dem weißen Zuckerguss-Gipfel oder Relaxen bei einer Runde Goat-Yoga. </p>\\"\\",\\"\\"<p>Der eine mag die Elisen-Lebkuchen in dunkle Schokolade getaucht, die andere liebt Vollmilch, einer greift zu weißer Schokolade, während andere wiederum Puristen sind. Mit dem traditionellen Elisen-Lebkuchen in der kompostierbaren Bio-Folie lässt sich zum Ende des Jahres herrlich „Danke“ sagen.</p>\\"\\",\\"\\"<p>Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm</p>\\"\\"]\\",https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_zuckerguss_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_zuckerguss_01_en.jpg,pundf-staging-api.triebwork.comdose-cachetejack,21.9 EUR,21.9 EUR,new,,Pfeffer & Frost,,out of stock,
+buch-nudeln,asf,\\"Nudeln mit den Händen herzustellen ist ein meditativer, haptischer und duftender
+Genuss für Groß und Klein. So sehen es auch Food Fotografin Katharina Pflug und
+Koch Manuel Kohler und haben dem Lieblingsgericht der Deutschen ihre erste
+Rezeptsammlung gewidmet. Mit zwei einfachen Grundteigen, sowie diversen
+Variationen zeigen sie uns wie man ganz leicht die köstlichsten und schönsten
+Nudelsorten selbst machen kann. Perfekt für alle Foodlover und Hobbyköche die
+gleichsam Wert auf Geschmack und Ästhetik legen.
+
+,
+
+2 Grundteige, 11 Nudel-Anleitungen und 10 Beilagen/Soßen auf 88 Seiten natürlich
+plastikfrei verpackt. Sehr gut geeignet für Anfänger und auch Fortgeschrittene.
+Kein bis wenig Werkzeug notwendig.
+
+,
+
+Nudeln: Orecchiette, Casarecce, Drachenzähne, Waldpilz-Pici, Ciecamariti,
+Tagliatelle, Gnocchi; Gefüllte Nudeln: Anolini, Rotweinravioli, Raviolo mit
+Eigelb; Dessert: Rohrnudeln mit Vanillesoße; Grund-Teig: Mehl-Wasser-Teig,
+Mehl-Ei-Teig
+
+,
+
+Fotos: Katharina Pflug, Portrait: Anika Maaß Sprache: Deutsch\\",\\"[\\"\\"<p>Nudeln mit den Händen herzustellen ist ein meditativer, haptischer und duftender Genuss für Groß und Klein. So sehen es auch Food Fotografin Katharina Pflug und Koch Manuel Kohler und haben dem Lieblingsgericht der Deutschen ihre erste Rezeptsammlung gewidmet. Mit zwei einfachen Grundteigen, sowie diversen Variationen zeigen sie uns wie man ganz leicht die köstlichsten und schönsten Nudelsorten selbst machen kann. Perfekt für alle Foodlover und Hobbyköche die gleichsam Wert auf Geschmack und Ästhetik legen.</p>\\"\\",\\"\\"<p>2 Grundteige, 11 Nudel-Anleitungen und 10 Beilagen/Soßen auf 88 Seiten natürlich plastikfrei verpackt.\\\\n\\\\nSehr gut geeignet für Anfänger und auch Fortgeschrittene. Kein bis wenig Werkzeug notwendig.</p>\\"\\",\\"\\"<p>Nudeln: Orecchiette, Casarecce, Drachenzähne, Waldpilz-Pici, Ciecamariti, Tagliatelle, Gnocchi; Gefüllte Nudeln: Anolini, Rotweinravioli, Raviolo mit Eigelb; Dessert: Rohrnudeln mit Vanillesoße; Grund-Teig: Mehl-Wasser-Teig, Mehl-Ei-Teig\\\\n</p>\\"\\",\\"\\"<p>Fotos: Katharina Pflug, Portrait: Anika Maaß\\\\nSprache: Deutsch</p>\\"\\"]\\",https://s3.triebwork.com/static/products/pfefferundfrost-nudelnmachengluecklich_kochbuch_katharinapflug_01.jpg,https://s3.triebwork.com/static/products/pfefferundfrost-nudelnmachengluecklich_kochbuch_katharinapflug_04.jpg,pundf-staging-api.triebwork.comnudeln-machen-gluecklich,13.9 EUR,13.9 EUR,new,1234567891234,Pfeffer & Frost,,in stock,
+"
+`;
+
+exports[`productdatafeed generates a feed for googlemerchant 1`] = `
+"id,title,description,rich_text_description,image_link,additional_image_link,link,price,sale_price,condition,gtin,brand,unit_pricing_measure,availability,google_product_category
+pf-leb-3-gemischt,3 Lebkuchen in Bio Folie (Mixed),\\"xcbnxfn
+
+,
+
+ergh
+
+,
+
+ergh
+
+,
+
+
+H1\\",,,,pundf-staging-api.triebwork.com3-lebkuchen-in-bio-folie,5 EUR,5 EUR,new,,Pfeffer & Frost,,in stock,
+pf-leb-5-gemischt,asdf (Mixed),Laridari,,,,pundf-staging-api.triebwork.com5-lebkuchen-in-bio-folie,14.9 EUR,14.9 EUR,new,,Pfeffer & Frost,,in stock,
+pf-dose-5-cd-dunkle,Designerdose Charlotte Dumortier (Dark Chocolate),\\"Preis pro 100g: 5,09 €, Preis inkl. 5% MwSt. zzgl. Versand
+
+,
+
+Lebkuchen aus Nürnberg kann man immer verschenken, aber um einiges besser, wenn
+ihre Verpackung unverwechselbar ist. Im zauberhaften Wunderland von Charlotte
+Dumortier schlängeln sich rastlose Hasen, schnabulierende Raupen durch einen
+mannshohen Blumengarten.
+
+,
+
+Der Lebkuchen aus Nürnberg ist aus gutem Grund weltberühmt: Er ist wahnsinnig
+lecker. In der traditionellen Backstube unseres Bäckers kommen dafür nur die
+besten Zutaten, wie feine Mandeln, süßer Marzipan und leckere Haselnüsse auf den
+Backstubentisch – inklusive regionalem Honig. Und die Umwelt freut sich über
+unsere kompostierbare Innenfolie, die den Elisen-Lebkuchen lange frisch hält.
+
+,
+
+Außen hübsch, innen lecker – die perfekte Kombination für eine unverwechselbare
+Geschenkidee.
+
+,
+
+Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm\\",,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_dunkle_schokolade_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_dark_chocolate_01_en.jpg,pundf-staging-api.triebwork.comdesignerdose-charlotte-dumortier,21.9 EUR,21.9 EUR,new,,Pfeffer & Frost,,in stock,
+pf-dose-5-cd-gemischt,Designerdose Charlotte Dumortier (Mixed),\\"Preis pro 100g: 5,09 €, Preis inkl. 5% MwSt. zzgl. Versand
+
+,
+
+Lebkuchen aus Nürnberg kann man immer verschenken, aber um einiges besser, wenn
+ihre Verpackung unverwechselbar ist. Im zauberhaften Wunderland von Charlotte
+Dumortier schlängeln sich rastlose Hasen, schnabulierende Raupen durch einen
+mannshohen Blumengarten.
+
+,
+
+Der Lebkuchen aus Nürnberg ist aus gutem Grund weltberühmt: Er ist wahnsinnig
+lecker. In der traditionellen Backstube unseres Bäckers kommen dafür nur die
+besten Zutaten, wie feine Mandeln, süßer Marzipan und leckere Haselnüsse auf den
+Backstubentisch – inklusive regionalem Honig. Und die Umwelt freut sich über
+unsere kompostierbare Innenfolie, die den Elisen-Lebkuchen lange frisch hält.
+
+,
+
+Außen hübsch, innen lecker – die perfekte Kombination für eine unverwechselbare
+Geschenkidee.
+
+,
+
+Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm\\",,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_mix_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_mixed_01_en.jpg,pundf-staging-api.triebwork.comdesignerdose-charlotte-dumortier,21.9 EUR,21.9 EUR,new,,Pfeffer & Frost,,in stock,
+pf-dose-5-cd-natur,Designerdose Charlotte Dumortier (Natural),\\"Preis pro 100g: 5,09 €, Preis inkl. 5% MwSt. zzgl. Versand
+
+,
+
+Lebkuchen aus Nürnberg kann man immer verschenken, aber um einiges besser, wenn
+ihre Verpackung unverwechselbar ist. Im zauberhaften Wunderland von Charlotte
+Dumortier schlängeln sich rastlose Hasen, schnabulierende Raupen durch einen
+mannshohen Blumengarten.
+
+,
+
+Der Lebkuchen aus Nürnberg ist aus gutem Grund weltberühmt: Er ist wahnsinnig
+lecker. In der traditionellen Backstube unseres Bäckers kommen dafür nur die
+besten Zutaten, wie feine Mandeln, süßer Marzipan und leckere Haselnüsse auf den
+Backstubentisch – inklusive regionalem Honig. Und die Umwelt freut sich über
+unsere kompostierbare Innenfolie, die den Elisen-Lebkuchen lange frisch hält.
+
+,
+
+Außen hübsch, innen lecker – die perfekte Kombination für eine unverwechselbare
+Geschenkidee.
+
+,
+
+Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm\\",,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_natural_elisen_01_en.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_elisen_01_de.jpg,pundf-staging-api.triebwork.comdesignerdose-charlotte-dumortier,21.9 EUR,21.9 EUR,new,,Pfeffer & Frost,,in stock,
+pf-dose-5-cd-weis,Designerdose Charlotte Dumortier (White Chocolate),\\"Preis pro 100g: 5,09 €, Preis inkl. 5% MwSt. zzgl. Versand
+
+,
+
+Lebkuchen aus Nürnberg kann man immer verschenken, aber um einiges besser, wenn
+ihre Verpackung unverwechselbar ist. Im zauberhaften Wunderland von Charlotte
+Dumortier schlängeln sich rastlose Hasen, schnabulierende Raupen durch einen
+mannshohen Blumengarten.
+
+,
+
+Der Lebkuchen aus Nürnberg ist aus gutem Grund weltberühmt: Er ist wahnsinnig
+lecker. In der traditionellen Backstube unseres Bäckers kommen dafür nur die
+besten Zutaten, wie feine Mandeln, süßer Marzipan und leckere Haselnüsse auf den
+Backstubentisch – inklusive regionalem Honig. Und die Umwelt freut sich über
+unsere kompostierbare Innenfolie, die den Elisen-Lebkuchen lange frisch hält.
+
+,
+
+Außen hübsch, innen lecker – die perfekte Kombination für eine unverwechselbare
+Geschenkidee.
+
+,
+
+Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm\\",,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_weisse_schokolade_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_white_chocolate_01_en.jpg,pundf-staging-api.triebwork.comdesignerdose-charlotte-dumortier,21.9 EUR,21.9 EUR,new,,Pfeffer & Frost,,out of stock,
+pf-dose-5-cd-zucker,Designerdose Charlotte Dumortier (Icing),\\"Preis pro 100g: 5,09 €, Preis inkl. 5% MwSt. zzgl. Versand
+
+,
+
+Lebkuchen aus Nürnberg kann man immer verschenken, aber um einiges besser, wenn
+ihre Verpackung unverwechselbar ist. Im zauberhaften Wunderland von Charlotte
+Dumortier schlängeln sich rastlose Hasen, schnabulierende Raupen durch einen
+mannshohen Blumengarten.
+
+,
+
+Der Lebkuchen aus Nürnberg ist aus gutem Grund weltberühmt: Er ist wahnsinnig
+lecker. In der traditionellen Backstube unseres Bäckers kommen dafür nur die
+besten Zutaten, wie feine Mandeln, süßer Marzipan und leckere Haselnüsse auf den
+Backstubentisch – inklusive regionalem Honig. Und die Umwelt freut sich über
+unsere kompostierbare Innenfolie, die den Elisen-Lebkuchen lange frisch hält.
+
+,
+
+Außen hübsch, innen lecker – die perfekte Kombination für eine unverwechselbare
+Geschenkidee.
+
+,
+
+Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm\\",,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_zuckerguss_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_charlotte_icing_01_en.jpg,pundf-staging-api.triebwork.comdesignerdose-charlotte-dumortier,21.9 EUR,21.9 EUR,new,,Pfeffer & Frost,,in stock,
+pf-dose-5-cj-dunkle,Lebkuchendose Edition Cachetejack (Dark Chocolate),\\"Preis pro 100g: 3,60 €, Preis inkl. 7% MwSt. zzgl. Versand
+
+,
+
+Wer verdreht Dir zu Weihnachten den Kopf? Es sind die sagenhaften Sorten in
+unserer bunten Dose! Das traumhaft illustrierte Bergpanorama vom spanischen
+Illustratoren-Duo Cachetejack erinnert uns an Alpen-Urlaub im Indian Summer:
+Wanderfans treffen Murmeltiere auf dem weißen Zuckerguss-Gipfel oder Relaxen bei
+einer Runde Goat-Yoga.
+
+,
+
+Der eine mag die Elisen-Lebkuchen in dunkle Schokolade getaucht, die andere
+liebt Vollmilch, einer greift zu weißer Schokolade, während andere wiederum
+Puristen sind. Mit dem traditionellen Elisen-Lebkuchen in der kompostierbaren
+Bio-Folie lässt sich zum Ende des Jahres herrlich „Danke“ sagen.
+
+,
+
+Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm\\",,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_dunkleschokolade_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_dunkleschokolade_01_en.jpg,pundf-staging-api.triebwork.comdose-cachetejack,21.9 EUR,21.9 EUR,new,,Pfeffer & Frost,,in stock,
+pf-dose-5-cj-gemischt,Lebkuchendose Edition Cachetejack (Mixed),\\"Preis pro 100g: 3,60 €, Preis inkl. 7% MwSt. zzgl. Versand
+
+,
+
+Wer verdreht Dir zu Weihnachten den Kopf? Es sind die sagenhaften Sorten in
+unserer bunten Dose! Das traumhaft illustrierte Bergpanorama vom spanischen
+Illustratoren-Duo Cachetejack erinnert uns an Alpen-Urlaub im Indian Summer:
+Wanderfans treffen Murmeltiere auf dem weißen Zuckerguss-Gipfel oder Relaxen bei
+einer Runde Goat-Yoga.
+
+,
+
+Der eine mag die Elisen-Lebkuchen in dunkle Schokolade getaucht, die andere
+liebt Vollmilch, einer greift zu weißer Schokolade, während andere wiederum
+Puristen sind. Mit dem traditionellen Elisen-Lebkuchen in der kompostierbaren
+Bio-Folie lässt sich zum Ende des Jahres herrlich „Danke“ sagen.
+
+,
+
+Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm\\",,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_mix_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_mix_01_en.jpg,pundf-staging-api.triebwork.comdose-cachetejack,21.9 EUR,21.9 EUR,new,,Pfeffer & Frost,,in stock,
+pf-dose-5-cj-natur,Lebkuchendose Edition Cachetejack (Natural),\\"Preis pro 100g: 3,60 €, Preis inkl. 7% MwSt. zzgl. Versand
+
+,
+
+Wer verdreht Dir zu Weihnachten den Kopf? Es sind die sagenhaften Sorten in
+unserer bunten Dose! Das traumhaft illustrierte Bergpanorama vom spanischen
+Illustratoren-Duo Cachetejack erinnert uns an Alpen-Urlaub im Indian Summer:
+Wanderfans treffen Murmeltiere auf dem weißen Zuckerguss-Gipfel oder Relaxen bei
+einer Runde Goat-Yoga.
+
+,
+
+Der eine mag die Elisen-Lebkuchen in dunkle Schokolade getaucht, die andere
+liebt Vollmilch, einer greift zu weißer Schokolade, während andere wiederum
+Puristen sind. Mit dem traditionellen Elisen-Lebkuchen in der kompostierbaren
+Bio-Folie lässt sich zum Ende des Jahres herrlich „Danke“ sagen.
+
+,
+
+Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm\\",,https://s3.triebwork.com/static/products/pfefferundfrost_elisenlebkuchen_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_elisenlebkuchen_01_en.jpg,pundf-staging-api.triebwork.comdose-cachetejack,21.9 EUR,21.9 EUR,new,,Pfeffer & Frost,,out of stock,
+pf-dose-5-cj-weis,Lebkuchendose Edition Cachetejack (White Chocolate),\\"Preis pro 100g: 3,60 €, Preis inkl. 7% MwSt. zzgl. Versand
+
+,
+
+Wer verdreht Dir zu Weihnachten den Kopf? Es sind die sagenhaften Sorten in
+unserer bunten Dose! Das traumhaft illustrierte Bergpanorama vom spanischen
+Illustratoren-Duo Cachetejack erinnert uns an Alpen-Urlaub im Indian Summer:
+Wanderfans treffen Murmeltiere auf dem weißen Zuckerguss-Gipfel oder Relaxen bei
+einer Runde Goat-Yoga.
+
+,
+
+Der eine mag die Elisen-Lebkuchen in dunkle Schokolade getaucht, die andere
+liebt Vollmilch, einer greift zu weißer Schokolade, während andere wiederum
+Puristen sind. Mit dem traditionellen Elisen-Lebkuchen in der kompostierbaren
+Bio-Folie lässt sich zum Ende des Jahres herrlich „Danke“ sagen.
+
+,
+
+Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm\\",,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_wei%C3%9Feschokolade_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_wei%C3%9Feschokolade_01_en.jpg,pundf-staging-api.triebwork.comdose-cachetejack,21.9 EUR,21.9 EUR,new,,Pfeffer & Frost,,out of stock,
+pf-dose-5-cj-zucker,Lebkuchendose Edition Cachetejack (Icing),\\"Preis pro 100g: 3,60 €, Preis inkl. 7% MwSt. zzgl. Versand
+
+,
+
+Wer verdreht Dir zu Weihnachten den Kopf? Es sind die sagenhaften Sorten in
+unserer bunten Dose! Das traumhaft illustrierte Bergpanorama vom spanischen
+Illustratoren-Duo Cachetejack erinnert uns an Alpen-Urlaub im Indian Summer:
+Wanderfans treffen Murmeltiere auf dem weißen Zuckerguss-Gipfel oder Relaxen bei
+einer Runde Goat-Yoga.
+
+,
+
+Der eine mag die Elisen-Lebkuchen in dunkle Schokolade getaucht, die andere
+liebt Vollmilch, einer greift zu weißer Schokolade, während andere wiederum
+Puristen sind. Mit dem traditionellen Elisen-Lebkuchen in der kompostierbaren
+Bio-Folie lässt sich zum Ende des Jahres herrlich „Danke“ sagen.
+
+,
+
+Dose – Inhalt: ca. 430g, Größe: Durchmesser ca. 12cm, Höhe ca. 14,5 cm\\",,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_zuckerguss_01_de.jpg,https://s3.triebwork.com/static/products/pfefferundfrost_lebkuchen_zuckerguss_01_en.jpg,pundf-staging-api.triebwork.comdose-cachetejack,21.9 EUR,21.9 EUR,new,,Pfeffer & Frost,,out of stock,
+buch-nudeln,asf,\\"Nudeln mit den Händen herzustellen ist ein meditativer, haptischer und duftender
+Genuss für Groß und Klein. So sehen es auch Food Fotografin Katharina Pflug und
+Koch Manuel Kohler und haben dem Lieblingsgericht der Deutschen ihre erste
+Rezeptsammlung gewidmet. Mit zwei einfachen Grundteigen, sowie diversen
+Variationen zeigen sie uns wie man ganz leicht die köstlichsten und schönsten
+Nudelsorten selbst machen kann. Perfekt für alle Foodlover und Hobbyköche die
+gleichsam Wert auf Geschmack und Ästhetik legen.
+
+,
+
+2 Grundteige, 11 Nudel-Anleitungen und 10 Beilagen/Soßen auf 88 Seiten natürlich
+plastikfrei verpackt. Sehr gut geeignet für Anfänger und auch Fortgeschrittene.
+Kein bis wenig Werkzeug notwendig.
+
+,
+
+Nudeln: Orecchiette, Casarecce, Drachenzähne, Waldpilz-Pici, Ciecamariti,
+Tagliatelle, Gnocchi; Gefüllte Nudeln: Anolini, Rotweinravioli, Raviolo mit
+Eigelb; Dessert: Rohrnudeln mit Vanillesoße; Grund-Teig: Mehl-Wasser-Teig,
+Mehl-Ei-Teig
+
+,
+
+Fotos: Katharina Pflug, Portrait: Anika Maaß Sprache: Deutsch\\",,https://s3.triebwork.com/static/products/pfefferundfrost-nudelnmachengluecklich_kochbuch_katharinapflug_01.jpg,https://s3.triebwork.com/static/products/pfefferundfrost-nudelnmachengluecklich_kochbuch_katharinapflug_04.jpg,pundf-staging-api.triebwork.comnudeln-machen-gluecklich,13.9 EUR,13.9 EUR,new,1234567891234,Pfeffer & Frost,,in stock,
+"
+`;

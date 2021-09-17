@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import EasyPost from "@easypost/api";
-import { env } from "@eci/util/env";
+import { env } from "@chronark/env";
 type TrackingStatus = "delivered" | "in_transit" | "out_for_delivery";
 type TrackingDetail = {
   object: "TrackingDetail";

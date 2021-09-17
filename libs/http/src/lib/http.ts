@@ -1,5 +1,6 @@
 // eslint-disable-next-line no-restricted-imports
 import axios from "axios";
+import { ECI_TRACE_HEADER } from "@eci/constants";
 
 export type Request = {
   method: "GET" | "POST" | "PUT" | "DELETE";
@@ -23,8 +24,11 @@ export type HttpApi = {
 export class HttpClient implements HttpApi {
   public headers: Record<string, string | number>;
 
-  public constructor() {
+  public constructor(config?: { traceId?: string }) {
     this.headers = {};
+    if (config?.traceId) {
+      this.setHeader(ECI_TRACE_HEADER, config?.traceId);
+    }
   }
 
   public setHeader(name: string, value: string | number): void {

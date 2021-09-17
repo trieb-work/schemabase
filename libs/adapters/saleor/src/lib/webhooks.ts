@@ -1,4 +1,4 @@
-import { Logger } from "tslog";
+import { Logger } from "@eci/util/logger";
 
 export type SaleorWebHookReceiver = {
   receive: (event: string) => Promise<void>;
@@ -7,7 +7,7 @@ export type SaleorWebHookServiceConfig = {
   logger: Logger;
 };
 
-export class SaleorWebHookService implements SaleorWebHookReceiver {
+export class Saleor implements SaleorWebHookReceiver {
   private logger: Logger;
   constructor(config: SaleorWebHookServiceConfig) {
     this.logger = config.logger;
@@ -38,18 +38,18 @@ export class SaleorWebHookService implements SaleorWebHookReceiver {
   }
 
   private async onCustomerCreated(): Promise<void> {
-    this.logger.fatal("IMPLEMENT ME");
+    this.logger.error("IMPLEMENT ME");
   }
   private async onOrderCreatedOrConfirmed(): Promise<void> {
-    this.logger.fatal("IMPLEMENT ME");
+    this.logger.error("IMPLEMENT ME");
   }
   private async onCheckoutUpdate(): Promise<void> {
-    this.logger.fatal("IMPLEMENT ME");
+    this.logger.error("IMPLEMENT ME");
   }
   private async onOrderFullyPayed(): Promise<void> {
-    this.logger.fatal("IMPLEMENT ME");
+    this.logger.error("IMPLEMENT ME");
   }
   private async onProductCreatedOrUpdated(): Promise<void> {
-    this.logger.fatal("IMPLEMENT ME");
+    this.logger.error("IMPLEMENT ME");
   }
 }

@@ -1,23 +1,15 @@
 import { ProductDataFeedGenerator } from "./service";
-import { ApolloClient, InMemoryCache } from "@apollo/client";
-import { WeightUnitsEnum } from "@eci/types/graphql/global";
+import { SaleorService, WeightUnitsEnum } from "@eci/adapters/saleor";
+import { FeedVariant } from "./types";
 
 beforeEach(() => {
   jest.clearAllMocks();
 });
 
 describe("generate", () => {
-  const generator = new ProductDataFeedGenerator({
-    saleorGraphqlClient: new ApolloClient({
-      cache: new InMemoryCache(),
-    }),
-    channelSlug: "doesn't matter here",
-  });
-
-  it("converts the products correctly", async () => {
-    const getRawProductsSpy = jest
-      .spyOn(generator, "getRawProducts")
-      .mockResolvedValue([
+  const mockedSaleorClient = {
+    getProducts: async (_opts: { first: number; channel: string }) =>
+      Promise.resolve([
         {
           __typename: "Product",
           name: "Name",
@@ -44,11 +36,18 @@ describe("generate", () => {
           attributes: [],
           metadata: [],
         },
-      ]);
-
-    const csv = await generator.generateCSV("abc", "facebookcommerce");
-
-    expect(getRawProductsSpy).toBeCalledTimes(1);
-    expect(csv).toMatchSnapshot();
+      ]),
+  } as unknown as SaleorService;
+  const generator = new ProductDataFeedGenerator({
+    saleorClient: mockedSaleorClient,
+    channelSlug: "doesn't matter here",
   });
+  const variants: FeedVariant[] = ["facebookcommerce", "googlemerchant"];
+  for (const variant of variants) {
+    it("converts the products correctly", async () => {
+      const csv = await generator.generateCSV("abc", variant);
+
+      expect(csv).toMatchSnapshot();
+    });
+  }
 });
