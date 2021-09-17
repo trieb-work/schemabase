@@ -29,20 +29,12 @@ export type LoggerConfig = {
 };
 
 export class Logger {
-  private static instance: Logger | null;
   private logger: winston.Logger;
   private meta: Record<string, unknown>;
   private elasticSearchTransport?: ElasticsearchTransport;
   private apm?: typeof APMAgent;
 
-  public static new(config: LoggerConfig): Logger {
-    if (!Logger.instance) {
-      Logger.instance = new Logger(config);
-    }
-    return Logger.instance;
-  }
-
-  private constructor(config: LoggerConfig) {
+  public constructor(config: LoggerConfig) {
     this.meta = {
       ...config.defaultMeta,
       env: env.get("NODE_ENV"),
@@ -90,11 +82,17 @@ export class Logger {
   }
 
   /**
-   * Inject more metadata to be logged with every logging request.
+   * Create a child logger with more metadata to be logged.
    * Existing metadata is carried over unless overwritten
    */
-  public addMetadata(newMeta: Fields): void {
-    this.meta = Object.assign(this.meta, newMeta);
+  public with(additionalMeta: Fields): Logger {
+    const copy = Object.assign(
+      Object.create(Object.getPrototypeOf(this)),
+      this,
+    ) as Logger;
+
+    copy.meta = { ...this.meta, ...additionalMeta };
+    return copy;
   }
 
   /**

@@ -66,6 +66,9 @@
     "integrations-product-data-feed": {
       "tags": []
     },
+    "queue": {
+      "tags": []
+    },
     "util": {
       "tags": []
     },

@@ -61,7 +61,7 @@ export function handleWebhook<TRequest>({
 
     res.setHeader(ECI_TRACE_HEADER, traceId);
 
-    const logger = Logger.new({
+    let logger = new Logger({
       enableElastic: env.get("NODE_ENV") === "production",
       defaultMeta: {
         traceId,
@@ -71,7 +71,7 @@ export function handleWebhook<TRequest>({
     });
 
     try {
-      logger.addMetadata({ req });
+      logger = logger.with({ req });
       /**
        * Perform http validation
        */

@@ -307,6 +307,39 @@
         }
       }
     },
+    "queue": {
+      "root": "libs/queue",
+      "sourceRoot": "libs/queue/src",
+      "projectType": "library",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/node:package",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/libs/queue",
+            "tsConfig": "libs/queue/tsconfig.lib.json",
+            "packageJson": "libs/queue/package.json",
+            "main": "libs/queue/src/index.ts",
+            "assets": ["libs/queue/*.md"]
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["libs/queue/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/queue"],
+          "options": {
+            "jestConfig": "libs/queue/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
     "util": {
       "root": "libs/util",
       "sourceRoot": "libs/util/src",
