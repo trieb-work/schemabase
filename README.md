@@ -61,3 +61,7 @@ You might want to stop the webhooks container (created by `make init`) if the po
 ## Prisma
 
 Run `make db-studio` to run prisma studio
+
+# Endpoints
+
+All endpoints are designated with a specific version. Versions vary per endpoint and are not global.

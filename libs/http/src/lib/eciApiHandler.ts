@@ -52,19 +52,26 @@ export function handleWebhook<TRequest>({
 }: HandleWebhookConfig<TRequest>): NextApiHandler {
   return async (req: NextApiRequest, res: NextApiResponse) => {
     /**
-     * A unique id for this request. This is useful for searching the logs.
+     * A unique id for this trace. This is useful for searching the logs.
      */
     const traceId =
       (req.headers[ECI_TRACE_HEADER] as string) ?? idGenerator.id("trace");
+
+    const requestId = idGenerator.id("request");
+
     res.setHeader(ECI_TRACE_HEADER, traceId);
 
     const logger = Logger.new({
-      traceId,
       enableElastic: env.get("NODE_ENV") === "production",
-      webhookId: req.url,
+      defaultMeta: {
+        traceId,
+        requestId,
+        webhookId: req.url,
+      },
     });
 
     try {
+      logger.addMetadata({ req });
       /**
        * Perform http validation
        */
@@ -80,7 +87,6 @@ export function handleWebhook<TRequest>({
       /**
        * Perform request validation
        */
-
       const parsedRequest = (await validation.request
         .parseAsync(req)
         .catch((err) => {
@@ -95,7 +101,6 @@ export function handleWebhook<TRequest>({
       /**
        * Run the actual webhook logic
        */
-
       await webhook({ backgroundContext, req: parsedRequest, res });
 
       /**
@@ -104,8 +109,9 @@ export function handleWebhook<TRequest>({
     } catch (err) {
       logger.error(err);
 
+      res.status(err instanceof HttpError ? err.statusCode : 500);
       res.json({
-        error: err instanceof HttpError ? err.statusCode : 500,
+        error: "Something went wrong",
         traceId,
       });
     } finally {
