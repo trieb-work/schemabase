@@ -1,4 +1,4 @@
-import { Weight } from "@eci/types/graphql/global";
+import { Weight } from "@eci/adapters/saleor";
 
 export const generateUnitPrice = (
   variantWeight: Weight,

@@ -1,7 +1,6 @@
 name: Integration
 
-# All required 3rd party services are hosted in docker containers and available
-# via localhost.
+# All required 3rd party services are hosted in docker containers.
 #
 # The webhooks service is started inside a docker container as well and all
 # integration tests are being run with a fresh database seed
@@ -14,9 +13,15 @@ jobs:
     name: Integration
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        saleor: ["3.0-triebwork7", "3.0-triebwork11"]
-
+        saleor: [
+            "3.0-triebwork7", # actually v2
+            "3.0.0-b.13-triebwork1", # v3 latest
+          ]
+    env:
+      SALEOR_VERSION: ${{ matrix.saleor }}
+      CI: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -32,28 +37,28 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - name: Set saleor version
-        run: echo "SALEOR_VERSION=${{ matrix.saleor }}" >> .env.compose
-
       - name: Pull images
-        run: docker-compose --env-file=.env.compose pull
+        run: docker-compose pull
 
       - name: Build remaining images
-        run: docker-compose --env-file=.env.compose build
+        run: docker-compose build
 
       - name: Start services
-        run: docker-compose --env-file=.env.compose up -d
+        run: docker-compose up -d
 
       - name: Migrate saleor schema
-        run: docker-compose --env-file=.env.compose exec -T saleor_api python manage.py migrate
+        run: docker-compose exec -T saleor_api python manage.py migrate
 
       - name: Seed saleor database
-        run: docker-compose --env-file=.env.compose exec -T saleor_api python manage.py populatedb --createsuperuser
+        run: docker-compose exec -T saleor_api python manage.py populatedb --createsuperuser
 
       - name: Migrate eci schema
         run: yarn prisma migrate deploy --schema=./libs/data-access/prisma/schema.prisma
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+
+      - name: Generate prisma client
+        run: yarn nx build data-access-prisma
 
       - name: Seed eci database
         run: yarn prisma db seed --preview-feature --schema=./libs/data-access/prisma/schema.prisma
@@ -64,3 +69,6 @@ jobs:
         run: yarn nx run e2e:e2e
         env:
           ECI_BASE_URL: http://localhost:3000
+      #   continue-on-error: true
+      # - name: Get logs
+      #   run: docker-compose logs eci_webhooks

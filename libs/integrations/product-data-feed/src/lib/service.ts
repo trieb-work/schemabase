@@ -1,11 +1,6 @@
 import ObjectsToCsv from "objects-to-csv";
 import { htmlToText } from "html-to-text";
-import { GraphqlClient } from "@eci/graphql-client";
-import {
-  ProductDataFeed,
-  ProductDataFeedQuery,
-  ProductDataFeedQueryVariables,
-} from "@eci/types/graphql/global";
+import { Product as RawProduct } from "@eci/adapters/saleor";
 // @ts-expect-error it doesn't detec types for some reason
 import edjsHTML from "editorjs-html";
 import { generateUnitPrice } from "./generate-unit-price";
@@ -20,7 +15,12 @@ export interface ProductDataFeedService {
 }
 
 export type ProductDataFeedServiceConfig = {
-  saleorGraphqlClient: GraphqlClient;
+  saleorClient: {
+    getProducts: (variables: {
+      first: number;
+      channel: string;
+    }) => Promise<RawProduct[]>;
+  };
   channelSlug: string;
 };
 
@@ -29,11 +29,16 @@ export type ProductDataFeedServiceConfig = {
  */
 
 export class ProductDataFeedGenerator implements ProductDataFeedService {
-  public readonly saleorGraphqlClient: GraphqlClient;
+  public readonly saleorClient: {
+    getProducts: (variables: {
+      first: number;
+      channel: string;
+    }) => Promise<RawProduct[]>;
+  };
   public readonly channelSlug: string;
 
   public constructor(config: ProductDataFeedServiceConfig) {
-    this.saleorGraphqlClient = config.saleorGraphqlClient;
+    this.saleorClient = config.saleorClient;
     this.channelSlug = config.channelSlug;
   }
 
@@ -45,32 +50,15 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
     const csv = new ObjectsToCsv(products);
     return await csv.toString();
   }
-  /**
-   * Fetch the products from saleor
-   */
-  public async getRawProducts() {
-    const res = await this.saleorGraphqlClient.query<
-      ProductDataFeedQuery,
-      ProductDataFeedQueryVariables
-    >({
-      query: ProductDataFeed,
-      variables: {
-        channel: this.channelSlug,
-        first: 100,
-      },
-    });
-
-    if (!res?.data.products) {
-      throw new Error(`Saleor did not return any products`);
-    }
-    return res.data.products.edges.map((p) => p.node);
-  }
 
   private async generate(
     storefrontProductUrl: string,
     feedVariant: FeedVariant,
   ): Promise<Product[]> {
-    const rawProducts = await this.getRawProducts();
+    const rawProducts = await this.saleorClient.getProducts({
+      first: 100,
+      channel: this.channelSlug,
+    });
     const products: Product[] = [];
 
     for (const rawProduct of rawProducts) {
@@ -96,11 +84,6 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
         // console.warn(err)
       }
 
-      description =
-        feedVariant == "facebookcommerce"
-          ? htmlToText(description)
-          : description;
-
       const { hasVariants } = rawProduct.productType;
 
       if (!rawProduct.variants) {
@@ -122,7 +105,7 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
         const product: Product = {
           id: variant.sku,
           title: hasVariants ? `${title} (${variant.name})` : title,
-          description,
+          description: htmlToText(description),
           rich_text_description:
             feedVariant === "facebookcommerce" ? description : undefined,
           image_link: hasVariants
@@ -140,7 +123,7 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
           sale_price: `${variant?.pricing?.price?.gross.amount} ${variant.pricing?.price?.gross.currency}`,
           condition: "new",
           gtin,
-          brand: brand ?? undefined,
+          brand: brand ?? "undefined",
           unit_pricing_measure,
           availability:
             variant.quantityAvailable < 1 || !rawProduct.isAvailableForPurchase

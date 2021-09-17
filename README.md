@@ -1,90 +1,63 @@
-# TriebWork
+# Get started
 
-This project was generated using [Nx](https://nx.dev).
+## Setup environment
 
-<p style="text-align: center;"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="450"></p>
+In order to get the required environment variables please run `make get-env`.
+If you are not logged into vercel, or don't want to pull them automatically you need to create and populate the following files:
 
-🔎 **Smart, Extensible Build Framework**
+```
+cp apps/webhooks/.env.example apps/webhooks/.env.local
+cp libs/data-access/prisma/.env.example libs/data-access/prisma/.env
+```
 
-## Adding capabilities to your workspace
+The `VERCEL_...` variables can be left empty
 
-Nx supports many plugins which add capabilities for developing different types of applications and different tools.
+## Database
 
-These capabilities include generating applications, libraries, etc as well as the devtools to test, and build projects as well.
+You need a postgresql database for development. Either create one or run `make init` Which sets up a complete development stack including 3rd party services.
 
-Below are our core plugins:
+Then run `make db-push` to apply the schema.
 
-- [React](https://reactjs.org)
-  - `npm install --save-dev @nrwl/react`
-- Web (no framework frontends)
-  - `npm install --save-dev @nrwl/web`
-- [Angular](https://angular.io)
-  - `npm install --save-dev @nrwl/angular`
-- [Nest](https://nestjs.com)
-  - `npm install --save-dev @nrwl/nest`
-- [Express](https://expressjs.com)
-  - `npm install --save-dev @nrwl/express`
-- [Node](https://nodejs.org)
-  - `npm install --save-dev @nrwl/node`
+## Code generation
 
-There are also many [community plugins](https://nx.dev/community) you could add.
+Run `make build` to run all code generations
 
-## Generate an application
+## Development
 
-Run `nx g @nrwl/react:app my-app` to generate an application.
+Run `yarn nx serve webhooks --port=xxxx` to run the nextjs app in development mode.
+You might want to stop the webhooks container (created by `make init`) if the ports collide.
 
-> You can use any of the plugins above to generate applications as well.
+=======
 
-When using Nx, you can create multiple applications and libraries in the same workspace.
+# Get started
 
-## Generate a library
+## Setup environment
 
-Run `nx g @nrwl/react:lib my-lib` to generate a library.
+In order to get the required environment variables please run `make get-env`.
+If you are not logged into vercel, or don't want to pull them automatically you need to create and populate the following files:
 
-> You can also use any of the plugins above to generate libraries as well.
+```
+cp apps/webhooks/.env.example apps/webhooks/.env.local
+cp libs/data-access/prisma/.env.example libs/data-access/prisma/.env
+```
 
-Libraries are shareable across libraries and applications. They can be imported from `@trieb-work/mylib`.
+The `VERCEL_...` variables can be left empty
 
-## Development server
+## Database
 
-Run `nx serve my-app` for a dev server. Navigate to http://localhost:4200/. The app will automatically reload if you change any of the source files.
+You need a postgresql database for development. Either create one or run `make init` Which sets up a complete development stack including 3rd party services.
 
-## Code scaffolding
+Then run `make db-push` to apply the schema.
 
-Run `nx g @nrwl/react:component my-component --project=my-app` to generate a new component.
+## Code generation
 
-## Build
+Run `make build` to run all code generations
 
-Run `nx build my-app` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+## Development
 
-## Running unit tests
+Run `yarn nx serve webhooks --port=xxxx` to run the nextjs app in development mode.
+You might want to stop the webhooks container (created by `make init`) if the ports collide.
 
-Run `nx test my-app` to execute the unit tests via [Jest](https://jestjs.io).
+## Prisma
 
-Run `nx affected:test` to execute the unit tests affected by a change.
-
-## Running end-to-end tests
-
-Run `ng e2e my-app` to execute the end-to-end tests via [Cypress](https://www.cypress.io).
-
-Run `nx affected:e2e` to execute the end-to-end tests affected by a change.
-
-## Understand your workspace
-
-Run `nx dep-graph` to see a diagram of the dependencies of your projects.
-
-## Further help
-
-Visit the [Nx Documentation](https://nx.dev) to learn more.
-
-## ☁ Nx Cloud
-
-### Distributed Computation Caching & Distributed Task Execution
-
-<p style="text-align: center;"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-cloud-card.png"></p>
-
-Nx Cloud pairs with Nx in order to enable you to build and test code more rapidly, by up to 10 times. Even teams that are new to Nx can connect to Nx Cloud and start saving time instantly.
-
-Teams using Nx gain the advantage of building full-stack applications with their preferred framework alongside Nx’s advanced code generation and project dependency graph, plus a unified experience for both frontend and backend developers.
-
-Visit [Nx Cloud](https://nx.app/) to learn more.
+Run `make db-studio` to run prisma studio
