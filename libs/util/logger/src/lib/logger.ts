@@ -7,22 +7,11 @@ import ecsFormat from "@elastic/ecs-winston-format";
 export type Fields = Record<string, unknown>;
 
 export type LoggerConfig = {
-  defaultMeta: {
+  meta?: {
     /**
      * Unique id for every trace.
      */
-    traceId: string;
-
-    /**
-     * A unique identifier for each webhook.
-     * Take the url path for example
-     */
-    webhookId?: string;
-
-    /**
-     * Unique id for every trace.
-     */
-    requestId: string;
+    traceId?: string;
   } & Fields;
 
   enableElastic?: boolean;
@@ -36,17 +25,16 @@ export class Logger {
 
   public constructor(config: LoggerConfig) {
     this.meta = {
-      ...config.defaultMeta,
+      ...config.meta,
       env: env.get("NODE_ENV"),
       commit: env.get("VERCEL_GIT_COMMIT_SHA"),
     };
-
     this.logger = winston.createLogger({
       transports: [new winston.transports.Console()],
       format:
         env.get("NODE_ENV") === "production"
           ? winston.format.json()
-          : winston.format.prettyPrint(),
+          : winston.format.prettyPrint({ colorize: true }),
     });
 
     const isCI = env.get("CI") === "true";
@@ -101,7 +89,10 @@ export class Logger {
    * The fields will overwrite the default metadata if keys overlap.
    */
   private log(level: string, message: string, fields: Fields = {}): void {
-    this.logger.log(level, message, { ...this.meta, ...fields });
+    this.logger.log(level, message, {
+      ...this.meta,
+      ...fields,
+    });
   }
 
   public debug(message: string, fields: Fields = {}): void {

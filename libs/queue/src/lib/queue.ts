@@ -3,8 +3,10 @@ import { env } from "@chronark/env";
 import { Signer } from "./signature";
 import { Logger } from "@eci/util/logger";
 
-export interface IQueue<TMessage> {
+export interface QueuePusher<TMessage> {
   push: (message: TMessage) => Promise<void>;
+}
+export interface QueueReceiver<TMessage> {
   onReceive: (process: (message: TMessage) => Promise<void>) => void;
 }
 
@@ -47,7 +49,9 @@ export type QueueOptions = {
   logger: Logger;
 };
 
-export class Queue<TPayload> implements IQueue<Message<TPayload>> {
+export class Queue<TPayload>
+  implements QueuePusher<Message<TPayload>>, QueueReceiver<Message<TPayload>>
+{
   private queue: Bull.Queue<MessageWithSignature<TPayload>>;
   /**
    * Used to sign and verify messages
@@ -58,7 +62,6 @@ export class Queue<TPayload> implements IQueue<Message<TPayload>> {
   constructor({ name, signer, logger }: QueueOptions) {
     this.queue = new Bull(name, {
       prefix: this.prefix(name),
-      redis: env.require("REDIS_CONNECTION"),
     });
     this.signer = signer;
     this.logger = logger;
@@ -80,8 +83,9 @@ export class Queue<TPayload> implements IQueue<Message<TPayload>> {
       ...msg,
       signature: this.signer.sign(msg),
     };
+    this.logger.info("pushing message", { msg: message });
     await this.queue.add(message);
-    this.logger.info("Pushed message", { message });
+    this.logger.info("Pushed message", { msg: message });
   }
 
   public onReceive(

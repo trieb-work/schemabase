@@ -86,6 +86,9 @@
     },
     "webhooks": {
       "tags": []
+    },
+    "worker": {
+      "tags": []
     }
   }
 }

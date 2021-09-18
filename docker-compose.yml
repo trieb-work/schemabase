@@ -52,6 +52,12 @@ services:
     image: redis
     ports:
       - 6379:6379
+  redis-commander:
+    image: rediscommander/redis-commander
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+      - HTTP_USER=root
+      - HTTP_PASSWORD=abcd
 
   # MailHog is an email testing tool
   mailhog:

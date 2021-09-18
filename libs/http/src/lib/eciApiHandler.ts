@@ -57,15 +57,12 @@ export function handleWebhook<TRequest>({
     const traceId =
       (req.headers[ECI_TRACE_HEADER] as string) ?? idGenerator.id("trace");
 
-    const requestId = idGenerator.id("request");
-
     res.setHeader(ECI_TRACE_HEADER, traceId);
 
     let logger = new Logger({
       enableElastic: env.get("NODE_ENV") === "production",
-      defaultMeta: {
+      meta: {
         traceId,
-        requestId,
         webhookId: req.url,
       },
     });

@@ -27,6 +27,7 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": false,
     "noPropertyAccessFromIndexSignature": true,
+    "esModuleInterop": true,
     "jsx": "preserve",
     "noEmit": true,
     "baseUrl": ".",
@@ -52,7 +53,7 @@
       "@eci/util/ids": ["libs/util/ids/src/index.ts"],
       "@eci/util/logger": ["libs/util/logger/src/index.ts"],
       "@eci/util/retry": ["libs/util/retry/src/index.ts"],
-      "@trieb.work/queue": ["libs/queue/src/index.ts"]
+      "@eci/queue": ["libs/queue/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
