@@ -40,7 +40,6 @@
       ],
       "@eci/adapters/printer": ["libs/adapters/printer/src/index.ts"],
       "@eci/adapters/saleor": ["libs/adapters/saleor/src/index.ts"],
-      "@eci/constants": ["libs/constants/src/index.ts"],
       "@eci/context": ["libs/context/src/index.ts"],
       "@eci/data-access/prisma": ["libs/data-access/prisma/src/index.ts"],
       "@eci/http": ["libs/http/src/index.ts"],
@@ -48,6 +47,7 @@
         "libs/integrations/product-data-feed/src/index.ts"
       ],
       "@eci/util": ["libs/util/src/index.ts"],
+      "@eci/util/constants": ["libs/util/constants/src/index.ts"],
       "@eci/util/errors": ["libs/util/errors/src/index.ts"],
       "@eci/util/ids": ["libs/util/ids/src/index.ts"],
       "@eci/util/logger": ["libs/util/logger/src/index.ts"],

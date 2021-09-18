@@ -4,7 +4,7 @@ import { idGenerator } from "@eci/util/ids";
 import { env } from "@chronark/env";
 import { HttpError } from "@eci/util/errors";
 import { Context } from "@eci/context";
-import { ECI_TRACE_HEADER } from "@eci/constants";
+import { ECI_TRACE_HEADER } from "@eci/util/constants";
 import { z } from "zod";
 
 export type Webhook<TRequest> = (config: {

@@ -1,6 +1,7 @@
 import { createHmac, randomUUID } from "crypto";
 import { env } from "@chronark/env";
 import { Logger } from "@eci/util/logger";
+import { SignatureError } from "./errors";
 
 /**
  * Sign and verify json objects
@@ -39,8 +40,10 @@ export class Signer {
   /**
    * Verify the data was signed by the given signature.
    */
-  public verify(data: unknown, expectedSignature: string): boolean {
+  public verify(data: unknown, expectedSignature: string): void {
     const signature = this.sign(data);
-    return signature === expectedSignature;
+    if (signature !== expectedSignature) {
+      throw new SignatureError();
+    }
   }
 }

@@ -19,9 +19,14 @@ export type Message<TPayload> = {
   payload: TPayload;
 
   /**
-   * Used to uniquely identify a distributed trace through a system
+   * Additional meta information about the message
    */
-  traceId: string;
+  meta: {
+    /**
+     * Used to uniquely identify a distributed trace through a system
+     */
+    traceId: string;
+  };
 };
 
 /**
@@ -85,12 +90,13 @@ export class Queue<TPayload> implements IQueue<Message<TPayload>> {
     this.queue.process(async ({ data }) => {
       try {
         this.logger.info("Received message", { message: data });
+        this.signer.verify(data, data.signature);
         await process(data);
         this.logger.info("Processed message", { message: data });
       } catch (err) {
         this.logger.error("Error processing message", {
           message: data,
-          error: err,
+          error: err.message,
         });
       }
     });

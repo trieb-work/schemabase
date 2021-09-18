@@ -6,7 +6,7 @@ import { GenericError } from "./base";
 export class HttpError extends GenericError {
   public readonly statusCode: number;
   constructor(statusCode: number, message = "HttpError") {
-    super("HttpError", message, {});
+    super("HttpError", message);
     this.statusCode = statusCode;
   }
 }

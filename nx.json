@@ -48,9 +48,6 @@
     "adapters-saleor": {
       "tags": []
     },
-    "constants": {
-      "tags": []
-    },
     "context": {
       "tags": []
     },
@@ -70,6 +67,9 @@
       "tags": []
     },
     "util": {
+      "tags": []
+    },
+    "util-constants": {
       "tags": []
     },
     "util-errors": {
