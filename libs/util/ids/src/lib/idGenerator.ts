@@ -4,7 +4,8 @@ const prefixes = {
   tenant: "t",
   saleorApp: "sa",
   trace: "trace",
-  request: "req",
+  secretKey: "sk",
+  publicKey: "pk",
 };
 
 export const idGenerator = new IdGenerator(prefixes);
