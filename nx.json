@@ -66,6 +66,9 @@
     "integrations-product-data-feed": {
       "tags": []
     },
+    "integrations-strapi-orders-to-zoho": {
+      "tags": []
+    },
     "util": {
       "tags": []
     },

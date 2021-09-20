@@ -47,6 +47,9 @@
       "@eci/integrations/product-data-feed": [
         "libs/integrations/product-data-feed/src/index.ts"
       ],
+      "@eci/integrations/strapi-orders-to-zoho": [
+        "libs/integrations/strapi-orders-to-zoho/src/index.ts"
+      ],
       "@eci/util": ["libs/util/src/index.ts"],
       "@eci/util/errors": ["libs/util/errors/src/index.ts"],
       "@eci/util/ids": ["libs/util/ids/src/index.ts"],

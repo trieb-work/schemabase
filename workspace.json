@@ -307,6 +307,40 @@
         }
       }
     },
+    "integrations-strapi-orders-to-zoho": {
+      "root": "libs/integrations/strapi-orders-to-zoho",
+      "sourceRoot": "libs/integrations/strapi-orders-to-zoho/src",
+      "projectType": "library",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/node:package",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/libs/integrations/strapi-orders-to-zoho",
+            "tsConfig": "libs/integrations/strapi-orders-to-zoho/tsconfig.lib.json",
+            "packageJson": "libs/integrations/strapi-orders-to-zoho/package.json",
+            "main": "libs/integrations/strapi-orders-to-zoho/src/index.ts",
+            "assets": ["libs/integrations/strapi-orders-to-zoho/*.md"]
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": [
+              "libs/integrations/strapi-orders-to-zoho/**/*.ts"
+            ]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/integrations/strapi-orders-to-zoho"],
+          "options": {
+            "jestConfig": "libs/integrations/strapi-orders-to-zoho/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
     "util": {
       "root": "libs/util",
       "sourceRoot": "libs/util/src",
