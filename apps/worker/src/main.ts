@@ -1,7 +1,8 @@
-import { Signer, Queue } from "@eci/queue";
+import { Signer } from "@eci/events-client";
 import { Logger } from "@eci/util/logger";
 import { Worker } from "./service";
 import { config } from "dotenv";
+import * as strapi from "@eci/events/strapi";
 config({ path: ".env.local" });
 
 async function main() {
@@ -14,24 +15,27 @@ async function main() {
 
   const signer = new Signer(logger);
 
-  const strapiQueue = new Queue<{ eventId: string }>({
-    name: "strapiQueue",
+  const strapiConsumer = new strapi.Consumer({
     signer,
     logger,
   });
-  await strapiQueue.push({ meta: { traceId: "1" }, payload: { eventId: "1" } });
-  logger.info("Hello");
-  new Worker({
+
+  const worker = new Worker({
     logger,
     sources: {
       strapi: {
-        receiver: strapiQueue,
-        handler: async (message) => {
-          console.log(message);
-        },
+        consumer: strapiConsumer,
+        handler: [
+          {
+            topic: strapi.Topic.ENTRY_CREATE,
+            handler: async (message) => {
+              console.log(message);
+            },
+          },
+        ],
       },
     },
   });
-  // worker.start();
+  worker.start();
 }
 main();

@@ -33,6 +33,7 @@ init: down build
 	yarn prisma db seed --preview-feature --schema=${prismaSchema}
 
 
+
 up:
 	docker-compose down
 	docker-compose up -d --build

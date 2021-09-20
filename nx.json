@@ -57,13 +57,16 @@
     "e2e": {
       "tags": []
     },
+    "events-client": {
+      "tags": []
+    },
+    "events-strapi": {
+      "tags": []
+    },
     "http": {
       "tags": []
     },
     "integrations-product-data-feed": {
-      "tags": []
-    },
-    "queue": {
       "tags": []
     },
     "util": {

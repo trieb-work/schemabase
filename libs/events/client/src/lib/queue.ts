@@ -3,11 +3,14 @@ import { env } from "@chronark/env";
 import { Signer } from "./signature";
 import { Logger } from "@eci/util/logger";
 
-export interface QueuePusher<TMessage> {
-  push: (message: TMessage) => Promise<void>;
+export interface IProducer<TTopic, TMessage> {
+  produce: (topic: TTopic, message: TMessage) => Promise<void>;
 }
-export interface QueueReceiver<TMessage> {
-  onReceive: (process: (message: TMessage) => Promise<void>) => void;
+export interface IConsumer<TTopic, TMessage> {
+  onReceive: (
+    topic: TTopic,
+    process: (message: TMessage) => Promise<void>,
+  ) => void;
 }
 
 /**
@@ -41,16 +44,27 @@ export type MessageWithSignature<TPayload> = Message<TPayload> & {
   signature: string;
 };
 
-export type QueueOptions = {
+export type QueueConfig = {
   name: string;
 
   signer: Signer;
 
   logger: Logger;
+
+  redis?: {
+    host?: string;
+    port?: string;
+    password?: string;
+  };
 };
 
-export class Queue<TPayload>
-  implements QueuePusher<Message<TPayload>>, QueueReceiver<Message<TPayload>>
+/**
+ * TTopic: strings that can be topics
+ */
+export class Queue<TTopic extends string, TPayload = Record<string, never>>
+  implements
+    IProducer<TTopic, Message<TPayload>>,
+    IConsumer<TTopic, Message<TPayload>>
 {
   private queue: Bull.Queue<MessageWithSignature<TPayload>>;
   /**
@@ -59,9 +73,15 @@ export class Queue<TPayload>
   private readonly signer: Signer;
   private readonly logger: Logger;
 
-  constructor({ name, signer, logger }: QueueOptions) {
+  constructor({ name, signer, logger, redis }: QueueConfig) {
     this.queue = new Bull(name, {
       prefix: this.prefix(name),
+      redis: redis
+        ? {
+            ...redis,
+            port: redis.port ? parseInt(redis.port, 10) : undefined,
+          }
+        : undefined,
     });
     this.signer = signer;
     this.logger = logger;
@@ -78,20 +98,24 @@ export class Queue<TPayload>
    * Send a message to the queue
    * a new traceId is generated if not provided
    */
-  public async push(msg: Message<TPayload>): Promise<void> {
-    const message = {
-      ...msg,
-      signature: this.signer.sign(msg),
+  public async produce(
+    topic: TTopic,
+    message: Message<TPayload>,
+  ): Promise<void> {
+    const signedMessage = {
+      ...message,
+      signature: this.signer.sign(message),
     };
-    this.logger.info("pushing message", { msg: message });
-    await this.queue.add(message);
-    this.logger.info("Pushed message", { msg: message });
+    this.logger.info("pushing message", { signedMessage });
+    await this.queue.add(topic, signedMessage);
+    this.logger.info("Pushed message", { signedMessage });
   }
 
   public onReceive(
+    topic: TTopic,
     process: (message: Message<TPayload>) => Promise<void>,
   ): void {
-    this.queue.process(async ({ data }) => {
+    this.queue.process(topic, async ({ data }) => {
       try {
         this.logger.info("Received message", { message: data });
         this.signer.verify(data, data.signature);

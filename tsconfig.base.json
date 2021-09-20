@@ -43,6 +43,7 @@
       "@eci/adapters/saleor": ["libs/adapters/saleor/src/index.ts"],
       "@eci/context": ["libs/context/src/index.ts"],
       "@eci/data-access/prisma": ["libs/data-access/prisma/src/index.ts"],
+      "@eci/events-client": ["libs/events/client/src/index.ts"],
       "@eci/http": ["libs/http/src/index.ts"],
       "@eci/integrations/product-data-feed": [
         "libs/integrations/product-data-feed/src/index.ts"
@@ -53,7 +54,7 @@
       "@eci/util/ids": ["libs/util/ids/src/index.ts"],
       "@eci/util/logger": ["libs/util/logger/src/index.ts"],
       "@eci/util/retry": ["libs/util/retry/src/index.ts"],
-      "@eci/queue": ["libs/queue/src/index.ts"]
+      "@eci/events/strapi": ["libs/events/strapi/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
