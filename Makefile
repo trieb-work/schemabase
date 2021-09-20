@@ -33,6 +33,7 @@ init: down build
 	yarn prisma db seed --preview-feature --schema=${prismaSchema}
 
 
+
 up:
 	docker-compose down
 	docker-compose up -d --build
@@ -73,7 +74,7 @@ test-e2e: build
 # Setup on vercel:
 #  Build Command: `make build-webhooks-prod`
 #  Output Directory: `dist/apps/webhooks/.next`
-build-webhooks-prod:
+build-webhooks-prod: install
 	yarn nx build webhooks --prod
 	yarn prisma migrate deploy --schema=${prismaSchema}
 
@@ -81,6 +82,8 @@ build-webhooks-prod:
 tsc:
 	yarn tsc -p tsconfig.base.json --pretty
 
+install:
+	yarn install
 
 lint:
 	yarn nx workspace-lint

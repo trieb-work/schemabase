@@ -4,7 +4,7 @@ import { idGenerator } from "@eci/util/ids";
 import { env } from "@chronark/env";
 import { HttpError } from "@eci/util/errors";
 import { Context } from "@eci/context";
-import { ECI_TRACE_HEADER } from "@eci/constants";
+import { ECI_TRACE_HEADER } from "@eci/util/constants";
 import { z } from "zod";
 
 export type Webhook<TRequest> = (config: {
@@ -57,21 +57,18 @@ export function handleWebhook<TRequest>({
     const traceId =
       (req.headers[ECI_TRACE_HEADER] as string) ?? idGenerator.id("trace");
 
-    const requestId = idGenerator.id("request");
-
     res.setHeader(ECI_TRACE_HEADER, traceId);
 
-    const logger = Logger.new({
+    let logger = new Logger({
       enableElastic: env.get("NODE_ENV") === "production",
-      defaultMeta: {
+      meta: {
         traceId,
-        requestId,
         webhookId: req.url,
       },
     });
 
     try {
-      logger.addMetadata({ req });
+      logger = logger.with({ req });
       /**
        * Perform http validation
        */

@@ -7,54 +7,34 @@ import ecsFormat from "@elastic/ecs-winston-format";
 export type Fields = Record<string, unknown>;
 
 export type LoggerConfig = {
-  defaultMeta: {
+  meta?: {
     /**
      * Unique id for every trace.
      */
-    traceId: string;
-
-    /**
-     * A unique identifier for each webhook.
-     * Take the url path for example
-     */
-    webhookId?: string;
-
-    /**
-     * Unique id for every trace.
-     */
-    requestId: string;
+    traceId?: string;
   } & Fields;
 
   enableElastic?: boolean;
 };
 
 export class Logger {
-  private static instance: Logger | null;
   private logger: winston.Logger;
   private meta: Record<string, unknown>;
   private elasticSearchTransport?: ElasticsearchTransport;
   private apm?: typeof APMAgent;
 
-  public static new(config: LoggerConfig): Logger {
-    if (!Logger.instance) {
-      Logger.instance = new Logger(config);
-    }
-    return Logger.instance;
-  }
-
-  private constructor(config: LoggerConfig) {
+  public constructor(config: LoggerConfig) {
     this.meta = {
-      ...config.defaultMeta,
+      ...config.meta,
       env: env.get("NODE_ENV"),
       commit: env.get("VERCEL_GIT_COMMIT_SHA"),
     };
-
     this.logger = winston.createLogger({
       transports: [new winston.transports.Console()],
       format:
         env.get("NODE_ENV") === "production"
           ? winston.format.json()
-          : winston.format.prettyPrint(),
+          : winston.format.prettyPrint({ colorize: true }),
     });
 
     const isCI = env.get("CI") === "true";
@@ -90,11 +70,17 @@ export class Logger {
   }
 
   /**
-   * Inject more metadata to be logged with every logging request.
+   * Create a child logger with more metadata to be logged.
    * Existing metadata is carried over unless overwritten
    */
-  public addMetadata(newMeta: Fields): void {
-    this.meta = Object.assign(this.meta, newMeta);
+  public with(additionalMeta: Fields): Logger {
+    const copy = Object.assign(
+      Object.create(Object.getPrototypeOf(this)),
+      this,
+    ) as Logger;
+
+    copy.meta = { ...this.meta, ...additionalMeta };
+    return copy;
   }
 
   /**
@@ -103,7 +89,10 @@ export class Logger {
    * The fields will overwrite the default metadata if keys overlap.
    */
   private log(level: string, message: string, fields: Fields = {}): void {
-    this.logger.log(level, message, { ...this.meta, ...fields });
+    this.logger.log(level, message, {
+      ...this.meta,
+      ...fields,
+    });
   }
 
   public debug(message: string, fields: Fields = {}): void {

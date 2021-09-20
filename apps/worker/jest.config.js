@@ -1,5 +1,5 @@
 module.exports = {
-  displayName: "constants",
+  displayName: "worker",
   preset: "../../jest.preset.js",
   globals: {
     "ts-jest": {
@@ -8,8 +8,8 @@ module.exports = {
   },
   testEnvironment: "node",
   transform: {
-    "^.+\\.[tj]sx?$": "ts-jest",
+    "^.+\\.[tj]s$": "ts-jest",
   },
-  moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
-  coverageDirectory: "../../coverage/libs/constants",
+  moduleFileExtensions: ["ts", "js", "html"],
+  coverageDirectory: "../../coverage/apps/worker",
 };
