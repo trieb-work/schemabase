@@ -33,8 +33,8 @@ jobs:
         uses: docker/login-action@v1
         with:
           registry: ${{ env.REGISTRY }}
-          username: chronark
-          password: ${{ secrets.CHRONARK_TOKEN }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Cache Docker layers
         uses: actions/cache@v2
@@ -47,7 +47,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: ghcr.io/triebwork/eci-worker
+          images: ${{ env.REGISTRY }}/triebwork/eci-worker
 
       - name: Build and push
         id: docker_build
