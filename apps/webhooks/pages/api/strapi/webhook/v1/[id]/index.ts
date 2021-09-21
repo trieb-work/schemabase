@@ -4,10 +4,10 @@ import {
   getTenant,
   extendContext,
 } from "@eci/context";
+import crypto from "crypto";
 import { z } from "zod";
 import { HttpError } from "@eci/util/errors";
 import { handleWebhook, Webhook } from "@eci/http";
-import bcrypt from "bcrypt";
 
 import * as strapi from "@eci/events/strapi";
 import { env } from "@chronark/env";
@@ -68,7 +68,11 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   if (!webhook) {
     throw new Error(`No webhook found: ${id}`);
   }
-  if (!bcrypt.compareSync(authorization, webhook.tokenHash)) {
+
+  if (
+    crypto.createHash("sha512").update(authorization).digest("hex") !==
+    webhook.tokenHash
+  ) {
     throw new HttpError(403, "Authorization token invalid");
   }
 

@@ -128,7 +128,7 @@ model Strapi{
 model StrapiWebhook {
   id String @id
 
-  // The bcrypt hash of the authorization token
+  // The sha512 hash of the authorization token
   tokenHash String
 
   // ID of the strapi instance to which the webhook belongs.
