@@ -10,7 +10,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}-worker
+  IMAGE_NAME: ${{ github.repository }}/worker
 
 jobs:
   docker:
