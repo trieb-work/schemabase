@@ -19,6 +19,5 @@ jobs:
         with:
           owner: ${{ github.repository_owner }}
           name: ghcr.io/${{ github.repository }}/${{ env.SERVICE }}
-          # NOTE: using Personal Access Token
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: pr-${{github.event.pull_request.number}}
