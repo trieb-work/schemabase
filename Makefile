@@ -74,7 +74,7 @@ test-e2e: build
 # Setup on vercel:
 #  Build Command: `make build-webhooks-prod`
 #  Output Directory: `dist/apps/webhooks/.next`
-build-webhooks-prod: install
+build-webhooks-prod:
 	yarn nx build webhooks --prod
 	yarn prisma migrate deploy --schema=${prismaSchema}
 
