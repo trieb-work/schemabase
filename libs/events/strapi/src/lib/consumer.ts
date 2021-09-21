@@ -1,4 +1,4 @@
-import { Message } from "@eci/events-client";
+import { IConsumer, Message } from "@eci/events-client";
 import {
   EntryCreateEvent,
   EntryDeleteEvent,
@@ -8,9 +8,20 @@ import {
 import { Topic, StrapiQueueConfig } from "./types";
 import { StrapiQueue } from "./strapi_queue";
 
-export class Consumer extends StrapiQueue {
+export class Consumer
+  extends StrapiQueue
+  implements IConsumer<Topic, EntryEvent>
+{
   constructor(config: StrapiQueueConfig) {
     super(config);
+  }
+
+  public async pause(): Promise<void> {
+    await this.queue.pause();
+  }
+
+  public async resume(): Promise<void> {
+    await this.queue.resume();
   }
 
   public onReceive(

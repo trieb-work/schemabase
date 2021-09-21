@@ -13,4 +13,8 @@ export abstract class StrapiQueue {
       ...config,
     });
   }
+
+  async pause(): Promise<void> {
+    await this.queue.pause();
+  }
 }
