@@ -65,3 +65,12 @@ Run `make db-studio` to run prisma studio
 # Endpoints
 
 All endpoints are designated with a specific version. Versions vary per endpoint and are not global.
+
+# Worker
+
+The worker is a nodejs application running in k8s. Its job is to process batches for work
+that would take too long to handle in a single nextjs api route.
+
+## Deployment
+
+For every PR a new docker image is pushed to the github registry and removed after the pr is merged. There is an edge case where an image could remain in the registry when the branch is closed while a new image is currently being built and pushed.
