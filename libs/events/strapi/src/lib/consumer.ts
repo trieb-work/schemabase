@@ -5,6 +5,7 @@ import {
   EntryUpdateEvent,
   EntryEvent,
 } from "./validation/entry";
+
 import { Topic, StrapiQueueConfig } from "./types";
 import { StrapiQueue } from "./strapi_queue";
 
