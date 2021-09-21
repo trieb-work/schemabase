@@ -14,20 +14,6 @@ jobs:
       - name: Check out
         uses: actions/checkout@v2
 
-      - name: Git branch name
-        id: git-branch-name
-        uses: EthanSK/git-branch-name-action@v1
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v3
-        with:
-          images: ${{ env.REGISTRY }}/triebwork/eci-worker
-
-      - run: |
-          echo ${{ steps.meta.outputs.tags }}
-          echo ${{ steps.meta.outputs.labels }}
-
       - name: Delete tag
         uses: bots-house/ghcr-delete-image-action@v1.0.0
         with:
