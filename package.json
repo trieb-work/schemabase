@@ -16,7 +16,7 @@
     "@sendgrid/mail": "7.4.5",
     "@sentry/node": "6.11.0",
     "@trieb.work/zoho-ts": "0.2.3",
-    "axios": "0.21.1",
+    "axios": "0.21.2",
     "braintree": "3.7.0",
     "bull": "3.29.2",
     "document-register-element": "1.14.10",
