@@ -1,7 +1,7 @@
 import { z } from "zod";
+import { Topic } from "../types";
 
-export const entryValidation = z.object({
-  event: z.enum(["entry.create", "entry.update", "entry.delete"]),
+const entryValidation = z.object({
   created_at: z.string(),
   model: z.string(),
   entry: z.object({
@@ -11,4 +11,25 @@ export const entryValidation = z.object({
   }),
 });
 
-export type EntryEvent = z.infer<typeof entryValidation>;
+export const validation: Record<Topic, z.AnyZodObject> = {
+  "entry.create": z
+    .object({
+      event: z.enum(["entry.create"]),
+    })
+    .merge(entryValidation),
+  "entry.update": z
+    .object({
+      event: z.enum(["entry.update"]),
+    })
+    .merge(entryValidation),
+  "entry.delete": z
+    .object({
+      event: z.enum(["entry.delete"]),
+    })
+    .merge(entryValidation),
+};
+
+export type EntryCreateEvent = z.infer<typeof validation[Topic.ENTRY_CREATE]>;
+export type EntryUpdateEvent = z.infer<typeof validation[Topic.ENTRY_UPDATE]>;
+export type EntryDeleteEvent = z.infer<typeof validation[Topic.ENTRY_DELETE]>;
+export type EntryEvent = EntryCreateEvent | EntryUpdateEvent | EntryDeleteEvent;
