@@ -66,8 +66,6 @@ Run `make db-studio` to run prisma studio
 
 All endpoints are designated with a specific version. Versions vary per endpoint and are not global.
 
-
-
 # Worker
 
 The worker is a nodejs application running in k8s. Its job is to process batches for work
