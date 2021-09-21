@@ -1,4 +1,4 @@
-name: Clear registry after PR close
+name: Clean registry after PR close
 
 # only trigger on pull request closed events
 on:
@@ -6,7 +6,7 @@ on:
     types: [closed]
 
 jobs:
-  clearRegistry:
+  cleanRegistry:
     runs-on: ubuntu-latest
     steps:
       - name: Check out
@@ -25,3 +25,12 @@ jobs:
       - run: |
           echo ${{ steps.meta.outputs.tags }}
           echo ${{ steps.meta.outputs.labels }}
+
+      - name: Delete tag
+        uses: bots-house/ghcr-delete-image-action@v1.0.0
+        with:
+          owner: ${{ github.repository_owner }}
+          name: ghcr.io/${{ github.repository }}/worker
+          # NOTE: using Personal Access Token
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: pr-${{github.event.pull_request.number}}
