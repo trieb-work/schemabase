@@ -16,6 +16,6 @@ jobs:
         uses: bots-house/ghcr-delete-image-action@v1.0.0
         with:
           owner: ${{ github.repository_owner }}
-          name: eci/worker
+          name: ${{ github.repository }}/worker
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: pr-${{github.event.pull_request.number}}
