@@ -64,14 +64,17 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     }),
     setupSaleor({ traceId: backgroundContext.trace.id }),
   );
-  const webhook = await ctx.prisma.strapiWebhook.findUnique({ where: { id } });
+  const webhook = await ctx.prisma.incomingWebhook.findUnique({
+    where: { id },
+    include: { strapi: true, secret: true },
+  });
   if (!webhook) {
     throw new Error(`No webhook found: ${id}`);
   }
 
   if (
     crypto.createHash("sha512").update(authorization).digest("hex") !==
-    webhook.tokenHash
+    webhook.secret.hash
   ) {
     throw new HttpError(403, "Authorization token invalid");
   }
