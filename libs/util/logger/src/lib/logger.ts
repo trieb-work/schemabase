@@ -17,7 +17,16 @@ export type LoggerConfig = {
   enableElastic?: boolean;
 };
 
-export class Logger {
+export interface ILogger {
+  with(additionalMeta: Fields): ILogger;
+  debug(message: string, fields?: Fields): void;
+  info(message: string, fields?: Fields): void;
+  warn(message: string, fields?: Fields): void;
+  error(message: string, fields?: Fields): void;
+  flush(): Promise<void>;
+}
+
+export class Logger implements ILogger {
   private logger: winston.Logger;
   private meta: Record<string, unknown>;
   private elasticSearchTransport?: ElasticsearchTransport;
@@ -73,7 +82,7 @@ export class Logger {
    * Create a child logger with more metadata to be logged.
    * Existing metadata is carried over unless overwritten
    */
-  public with(additionalMeta: Fields): Logger {
+  public with(additionalMeta: Fields): ILogger {
     const copy = Object.assign(
       Object.create(Object.getPrototypeOf(this)),
       this,

@@ -1,7 +1,7 @@
 import Bull from "bull";
 import { env } from "@chronark/env";
-import { Signer } from "./signature";
-import { Logger } from "@eci/util/logger";
+import { ISigner } from "./signature";
+import { ILogger } from "@eci/util/logger";
 
 export interface IProducer<TTopic, TMessage> {
   produce: (topic: TTopic, message: TMessage) => Promise<void>;
@@ -47,9 +47,9 @@ export type MessageWithSignature<TPayload> = Message<TPayload> & {
 export type QueueConfig = {
   name: string;
 
-  signer: Signer;
+  signer: ISigner;
 
-  logger: Logger;
+  logger: ILogger;
 
   redis?: {
     host?: string;
@@ -70,8 +70,8 @@ export class Queue<TTopic extends string, TPayload = Record<string, never>>
   /**
    * Used to sign and verify messages
    */
-  private readonly signer: Signer;
-  private readonly logger: Logger;
+  private readonly signer: ISigner;
+  private readonly logger: ILogger;
 
   constructor({ name, signer, logger, redis }: QueueConfig) {
     this.queue = new Bull(name, {

@@ -1,13 +1,13 @@
 import { PrismaClient } from "@eci/data-access/prisma";
 import { Saleor } from "./setup/saleor";
 import { Tenant } from "./setup/tenant";
-import { Logger } from "@eci/util/logger";
+import { ILogger } from "@eci/util/logger";
 
 export type Context = {
   trace: {
     id: string;
   };
-  logger: Logger;
+  logger: ILogger;
   prisma?: PrismaClient;
   saleor?: Saleor;
   tenant?: Tenant;
