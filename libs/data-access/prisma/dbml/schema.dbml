@@ -9,6 +9,7 @@ Table ProductDataFeed {
   productDetailStorefrontURL String
   tenant Tenant [not null]
   tenantId String [unique, not null]
+  ProductDataFeedWebhook IncomingWebhook [not null]
 }
 
 Table ZohoConfig {
@@ -33,20 +34,13 @@ Table SaleorApp {
   domain String [unique, not null]
   name String [not null]
   appToken String [not null]
-  webhooks SaleorWebhook [not null]
+  webhooks IncomingWebhook [not null]
   tenant Tenant [not null]
   tenantId String [not null]
 
   indexes {
     (domain, channelSlug) [unique]
   }
-}
-
-Table SaleorWebhook {
-  id String [pk]
-  secretKey String [not null]
-  saleorAppId String [not null]
-  saleorApp SaleorApp [not null]
 }
 
 Table Tenant {
@@ -62,16 +56,34 @@ Table Tenant {
 Table Strapi {
   id String [pk]
   name String [not null]
-  webhooks StrapiWebhook [not null]
+  webhooks IncomingWebhook [not null]
   tenant Tenant [not null]
   tenantId String [not null]
 }
 
-Table StrapiWebhook {
+Table IncomingWebhook {
   id String [pk]
-  tokenHash String [not null]
-  strapiId String [not null]
-  strapi Strapi [not null]
+  name String
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  lastUsed DateTime
+  secret SecretKey [not null]
+  secretId String [not null]
+  strapi Strapi
+  strapiId String
+  saleor SaleorApp
+  saleorApp String
+  productDataFeed ProductDataFeed
+  productDataFeedId String
+}
+
+Table SecretKey {
+  id String [pk]
+  name String
+  hash String [not null]
+  createdAt DateTime [default: `now()`, not null]
+  lastUsed DateTime
+  IncomingWebhook IncomingWebhook
 }
 
 Ref: ProductDataFeed.tenantId > Tenant.id
@@ -80,8 +92,12 @@ Ref: ZohoConfig.tenantId > Tenant.id
 
 Ref: SaleorApp.tenantId > Tenant.id
 
-Ref: SaleorWebhook.saleorAppId > SaleorApp.id
-
 Ref: Strapi.tenantId > Tenant.id
 
-Ref: StrapiWebhook.strapiId > Strapi.id
+Ref: IncomingWebhook.secretId - SecretKey.id
+
+Ref: IncomingWebhook.strapiId > Strapi.id
+
+Ref: IncomingWebhook.saleorApp > SaleorApp.id
+
+Ref: IncomingWebhook.productDataFeedId > ProductDataFeed.id

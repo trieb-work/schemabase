@@ -19,7 +19,6 @@ generator dbml {
   provider = "prisma-dbml-generator"
 }
 
-
 model ProductDataFeed {
   id       String @id @default(uuid())
   // The public id used for lookups from incoming webhooks.
@@ -29,9 +28,11 @@ model ProductDataFeed {
   // The user might chose to disable it.
   enabled Boolean? @default(false)
 
+  // Graphql endpoint of a saleor app
   productDetailStorefrontURL String?
-  tenant                     Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId                   String  @unique
+  tenant                     Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId                   String            @unique
+  ProductDataFeedWebhook     IncomingWebhook[]
 }
 
 model ZohoConfig {
@@ -54,8 +55,6 @@ model ZohoConfig {
   tenantId            String  @unique
 }
 
-
-
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor
 // server and receive webhooks with event notifications from Saleor.
 // Every channel must have its own app
@@ -77,26 +76,12 @@ model SaleorApp {
   // Every SaleorApp can have multiple webhooks configured.
   // This is not really necessary because a webhook can fire on multiple events
   // but let's be on the safe side.
-  webhooks SaleorWebhook[]
+  webhooks IncomingWebhook[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
   @@unique([domain, channelSlug])
-}
-
-model SaleorWebhook {
-  // Received from saleor when registering a webhook
-  id String @id
-
-
-  // The secret key used to create a hash signature with each payload.
-  secretKey String
-
-  // ID of the app to which the webhook belongs.
-  saleorAppId String
-  saleorApp   SaleorApp @relation(fields: [saleorAppId], references: [id], onDelete: Cascade)
-
 }
 
 // One tenant per company
@@ -111,36 +96,67 @@ model Tenant {
 
   // Indicates if the integration is currently enabled.
   // The user might chose to disable it.
-  enabled         Boolean               @default(false)
+  enabled         Boolean           @default(false)
   // baseUrl         String
   saleorApps      SaleorApp[]
   zoho            ZohoConfig[]
   productdatafeed ProductDataFeed[]
-  strapi Strapi[]
+  strapi          Strapi[]
 }
 
+model Strapi {
+  id String @id
 
-model Strapi{
-  id          String @id
-
-  name String
-  webhooks StrapiWebhook[]
+  name     String
+  webhooks IncomingWebhook[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
 }
 
+// ----------------------------------------------------------------------------
+// Every Config/App can have multiple webhooks attached
+// ----------------------------------------------------------------------------
 
-model StrapiWebhook {
+model IncomingWebhook {
   id String @id
 
-  // The sha512 hash of the authorization token
-  tokenHash String
+  // Human readable name
+  name String?
 
-  // ID of the strapi instance to which the webhook belongs.
-  strapiId String
-  strapi   Strapi @relation(fields: [strapiId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  lastUsed  DateTime?
 
+  secret   SecretKey @relation(fields: [secretId], references: [id])
+  secretId String
+
+
+  // Various configs that process incoming webhooks:
+
+  strapi   Strapi? @relation(fields: [strapiId], references: [id], onDelete: Cascade)
+  strapiId String?
+
+  saleor    SaleorApp? @relation(fields: [saleorApp], references: [id], onDelete: Cascade)
+  saleorApp String?
+
+  productDataFeed   ProductDataFeed? @relation(fields: [productDataFeedId], references: [id], onDelete: Cascade)
+  productDataFeedId String?
 }
 
+model SecretKey {
+  id   String  @id @default(uuid())
+  // Human readable name
+  name String?
+
+  // sha256 of the actual key
+  hash String
+
+  createdAt DateTime  @default(now())
+  lastUsed  DateTime?
+
+  // Connections ..
+  // Required by prisma
+  IncomingWebhook IncomingWebhook?
+}
