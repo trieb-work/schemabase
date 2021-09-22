@@ -137,7 +137,7 @@
           "options": {
             "commands": [
               {
-                "command": "yarn --cwd=libs/adapters/saleor build"
+                "command": "yarn graphql-codegen --config=libs/adapters/saleor/codegen.yml"
               }
             ]
           }

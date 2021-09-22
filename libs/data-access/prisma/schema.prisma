@@ -12,6 +12,13 @@ generator typegraphql {
   provider = "typegraphql-prisma"
 }
 
+// Visualize the schema
+// https://github.com/notiz-dev/prisma-dbml-generator
+// https://dbdiagram.io/d
+generator dbml {
+  provider = "prisma-dbml-generator"
+}
+
 
 model ProductDataFeed {
   id       String @id @default(uuid())

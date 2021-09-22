@@ -96,6 +96,7 @@
     "lint-staged": "11.1.2",
     "nx": "12.6.3",
     "prettier": "2.3.2",
+    "prisma-dbml-generator": "^0.7.0",
     "regenerator-runtime": "0.13.9",
     "ts-jest": "27.0.4",
     "ts-node": "10.2.0",

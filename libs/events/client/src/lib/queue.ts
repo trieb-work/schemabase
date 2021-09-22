@@ -11,6 +11,17 @@ export interface IConsumer<TTopic, TMessage> {
     topic: TTopic,
     process: (message: TMessage) => Promise<void>,
   ) => void;
+
+  /**
+   * Stop receiving new tasks.
+   * The current task will still be finished.
+   */
+  pause(): Promise<void>;
+
+  /**
+   * Start receiving new tasks.
+   */
+  resume(): Promise<void>;
 }
 
 /**
@@ -51,6 +62,11 @@ export type QueueConfig = {
 
   logger: ILogger;
 
+  /**
+   * Redis connection
+   *
+   * If you leave this undefined, it will attempt to connect to localhost
+   */
   redis?: {
     host?: string;
     port?: string;
@@ -85,6 +101,13 @@ export class Queue<TTopic extends string, TPayload = Record<string, never>>
     });
     this.signer = signer;
     this.logger = logger;
+  }
+
+  public async pause(): Promise<void> {
+    await this.queue.pause();
+  }
+  public async resume(): Promise<void> {
+    await this.queue.resume();
   }
 
   /**
