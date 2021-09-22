@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { Topic } from "../types";
 
-const entryValidation = z.object({
+export const entryValidation = z.object({
   created_at: z.string(),
   model: z.string(),
   entry: z.object({
