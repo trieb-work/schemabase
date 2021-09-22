@@ -92,6 +92,7 @@ lint:
 
 format:
 	yarn prettier --write --loglevel=warn .
+	yarn prisma format --schema=${prismaSchema}
 
 
 fmt: lint format
