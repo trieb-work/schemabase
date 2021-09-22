@@ -19,7 +19,7 @@ pull-env:
 init: export SALEOR_VERSION=3.0-triebwork11
 init: down build
 	docker-compose pull
-	docker-compose build
+	docker-compose build --parallel
 
 	docker-compose up -d
 	docker-compose exec saleor_api python manage.py migrate
@@ -31,6 +31,7 @@ init: down build
 
 	yarn prisma db push --schema=${prismaSchema} --skip-generate
 	yarn prisma db seed --preview-feature --schema=${prismaSchema}
+
 
 
 up:
@@ -51,12 +52,13 @@ test: build
 #
 # Make sure you have called `make init` before to setup all required services
 # You just need to do this once, not for every new test run.
+test-e2e: export SALEOR_VERSION             = 3.0-triebwork11
 test-e2e: export ECI_BASE_URL               = http://localhost:3000
 test-e2e: export SALEOR_GRAPHQL_ENDPOINT    = http://localhost:8000/graphql/
 test-e2e: export SALEOR_TEMPORARY_APP_TOKEN = token
 test-e2e: build
 	# Rebuild eci and ensure everything is up
-	docker-compose up -d --build eci_webhooks
+	docker-compose up -d --build
 
 	# Reset and seed the eci database for every test run
 	docker-compose  restart eci_db
@@ -81,6 +83,8 @@ build-webhooks-prod:
 tsc:
 	yarn tsc -p tsconfig.base.json --pretty
 
+install:
+	yarn install
 
 lint:
 	yarn nx workspace-lint

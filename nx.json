@@ -48,9 +48,6 @@
     "adapters-saleor": {
       "tags": []
     },
-    "constants": {
-      "tags": []
-    },
     "context": {
       "tags": []
     },
@@ -60,6 +57,12 @@
     "e2e": {
       "tags": []
     },
+    "events-client": {
+      "tags": []
+    },
+    "events-strapi": {
+      "tags": []
+    },
     "http": {
       "tags": []
     },
@@ -67,6 +70,9 @@
       "tags": []
     },
     "util": {
+      "tags": []
+    },
+    "util-constants": {
       "tags": []
     },
     "util-errors": {
@@ -82,6 +88,9 @@
       "tags": []
     },
     "webhooks": {
+      "tags": []
+    },
+    "worker": {
       "tags": []
     }
   }

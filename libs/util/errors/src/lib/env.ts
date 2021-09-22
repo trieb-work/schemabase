@@ -8,7 +8,6 @@ export class EnvironmentVariableNotFoundError extends GenericError {
     super(
       "EnvironmentNotFoundError",
       `Environment variable "${name}" not found.`,
-      {},
     );
   }
 }

@@ -8,7 +8,7 @@ import {
 import { DocumentNode } from "graphql";
 import { GraphQLClient } from "graphql-request";
 import { env } from "@chronark/env";
-import { ECI_TRACE_HEADER } from "@eci/constants";
+import { ECI_TRACE_HEADER } from "@eci/util/constants";
 export type SaleorClient = {
   installApp: (tenantId: string) => Promise<{ id: string }>;
   getProducts: (variables: ProductsQueryVariables) => Promise<Product[]>;

@@ -14,15 +14,29 @@ services:
 
   # Nextjs Serverless application to receive webhooks from various services
   eci_webhooks:
+    image: triebwork/eci-webhooks
     build:
       context: .
-      dockerfile: ./apps/e2e/src/Dockerfile
+      dockerfile: ./apps/webhooks/Dockerfile
     ports:
       - 3000:3000
     environment:
       DATABASE_URL: postgres://postgres:postgres@eci_db:5432/postgres
       DATABASE_URL_POOL: postgres://postgres:postgres@eci_db:5432/postgres
       CI:
+
+  eci_worker:
+    image: triebwork/eci-worker
+    build:
+      context: .
+      dockerfile: ./apps/worker/Dockerfile
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@eci_db:5432/postgres
+      DATABASE_URL_POOL: postgres://postgres:postgres@eci_db:5432/postgres
+      CI:
+      REDIS_HOST: redis
+      REDIS:PORT: 6379
+      REDIS_PASSWORD: redis_password
 
   # Saleor Graphql API
   saleor_api:
@@ -47,6 +61,17 @@ services:
       - POSTGRES_PASSWORD=saleor
     volumes:
       - saleor-db:/var/lib/postgresql/data
+
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+
+  redis-commander:
+    image: rediscommander/redis-commander
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+      - HTTP_PASSWORD=redis_password
 
   # MailHog is an email testing tool
   mailhog:

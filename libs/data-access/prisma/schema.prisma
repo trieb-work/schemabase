@@ -12,21 +12,13 @@ generator typegraphql {
   provider = "typegraphql-prisma"
 }
 
-model MailchimpConfig {
-  id String @id @default(uuid())
-
-  // Indicates if the integration is currently enabled.
-  // The user might chose to disable it.
-  enabled           Boolean @default(false)
-  listId            String
-  apiToken          String
-  storeUrl          String
-  storeId           String
-  productUrlPattern String
-  channel           String
-  tenant            Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId          String  @unique
+// Visualize the schema
+// https://github.com/notiz-dev/prisma-dbml-generator
+// https://dbdiagram.io/d
+generator dbml {
+  provider = "prisma-dbml-generator"
 }
+
 
 model ProductDataFeed {
   id       String @id @default(uuid())
@@ -40,57 +32,6 @@ model ProductDataFeed {
   productDetailStorefrontURL String?
   tenant                     Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId                   String  @unique
-}
-
-model EasyPostConfig {
-  id       String @id @default(uuid())
-  // The public id used for lookups from incoming webhooks.
-  publicId String
-
-  // Indicates if the integration is currently enabled.
-  // The user might chose to disable it.
-  enabled                   Boolean?                   @default(false)
-  apiToken                  String?
-  webhookID                 String?
-  tenant                    Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId                  String                     @unique
-  trackAndTraceConfig       TrackAndTraceConfig?       @relation(fields: [trackAndTraceConfigId], references: [id])
-  trackAndTraceConfigId     String?                    @unique
-  AddressVerificationConfig AddressVerificationConfig?
-}
-
-model AddressVerificationConfig {
-  id String @id @default(uuid())
-
-  // Indicates if the integration is currently enabled.
-  // The user might chose to disable it.
-  enabled        Boolean?       @default(false)
-  easypost       EasyPostConfig @relation(fields: [easyPostConfId], references: [id])
-  easyPostConfId String
-}
-
-model BraintreeConfig {
-  id String @id @default(uuid())
-
-  // Indicates if the integration is currently enabled.
-  // The user might chose to disable it.
-  enabled    Boolean @default(false)
-  merchantId String
-  publicKey  String
-  privateKey String
-  tenant     Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId   String  @unique
-}
-
-model LexofficeConfig {
-  id String @id @default(uuid())
-
-  // Indicates if the integration is currently enabled.
-  // The user might chose to disable it.
-  enabled  Boolean @default(false)
-  apiToken String
-  tenant   Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId String  @unique
 }
 
 model ZohoConfig {
@@ -113,53 +54,7 @@ model ZohoConfig {
   tenantId            String  @unique
 }
 
-model MailgunConfig {
-  id                    String               @id @default(uuid())
-  // The public id used for lookups from incoming webhooks.
-  publicId              String?
-  apiToken              String
-  fromDomain            String
-  fromTitle             String?
-  fromEmail             String?
-  apiHost               String               @default("api.eu.mailgun.net")
-  tenant                Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId              String               @unique
-  trackAndTraceConfig   TrackAndTraceConfig? @relation(fields: [trackAndTraceConfigId], references: [id])
-  trackAndTraceConfigId String?              @unique
-}
 
-model TrackAndTraceConfig {
-  id String @id @default(uuid())
-
-  // Indicates if the integration is currently enabled.
-  // The user might chose to disable it.
-  enabled             Boolean               @default(false)
-  // The public id used for lookups from incoming webhooks.
-  publicId            String
-  mailgun             MailgunConfig?
-  easypost            EasyPostConfig?
-  tenant              Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId            String                @unique
-  trackAndTraceEmails TrackAndTraceEmails[]
-}
-
-enum Language {
-  DE
-  EN
-}
-
-model TrackAndTraceEmails {
-  id                              String              @id @default(uuid())
-  language                        Language            @unique @default(DE)
-  inTransitEmailEnabled           Boolean
-  inTransitEmailSubject           String?
-  inTransitEmailTemplateName      String?
-  outForDeliveryEmailEnabled      Boolean
-  outForDeliveryEmailTemplateName String?
-  outForDeliveryEmailSubject      String?
-  trackAndTraceConfig             TrackAndTraceConfig @relation(fields: [trackAndTraceConfId], references: [id])
-  trackAndTraceConfId             String
-}
 
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor
 // server and receive webhooks with event notifications from Saleor.
@@ -221,10 +116,31 @@ model Tenant {
   saleorApps      SaleorApp[]
   zoho            ZohoConfig[]
   productdatafeed ProductDataFeed[]
-  mailchimp       MailchimpConfig[]
-  easypost        EasyPostConfig[]
-  braintree       BraintreeConfig[]
-  lexoffice       LexofficeConfig[]
-  trackandtrace   TrackAndTraceConfig[]
-  sendgrid        MailgunConfig[]
+  strapi Strapi[]
 }
+
+
+model Strapi{
+  id          String @id
+
+  name String
+  webhooks StrapiWebhook[]
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+}
+
+
+model StrapiWebhook {
+  id String @id
+
+  // The sha512 hash of the authorization token
+  tokenHash String
+
+  // ID of the strapi instance to which the webhook belongs.
+  strapiId String
+  strapi   Strapi @relation(fields: [strapiId], references: [id], onDelete: Cascade)
+
+}
+

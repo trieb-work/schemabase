@@ -8,7 +8,6 @@ export class ContextMissingFieldError extends GenericError {
     super(
       "ContextMissingFieldError",
       `The context is missing a required field: ${missingField}. Is the context set up in the correct order?`,
-      {},
     );
   }
 }
