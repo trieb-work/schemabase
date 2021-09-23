@@ -71,7 +71,8 @@ export function handleWebhook<TRequest>({
       enableElastic: env.get("NODE_ENV") === "production",
       meta: {
         traceId,
-        webhookId: req.url,
+        endpoint: req.url,
+        req: env.get("NODE_ENV") === "production" ? req : undefined,
       },
     });
 
