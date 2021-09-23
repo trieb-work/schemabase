@@ -1,11 +1,11 @@
-import { Message } from "@eci/events-client";
+import { IProducer, Message } from "@eci/events-client";
 import { validation, EntryEvent } from "./validation/entry";
 import { Topic, StrapiQueueConfig } from "./types";
-import { StrapiQueue } from "./strapi_queue";
-
-export class Producer extends StrapiQueue {
+import { QueueManager } from "@eci/events-client";
+export class Producer implements IProducer<Topic, Message<EntryEvent>> {
+  private queueManager: QueueManager<Topic, EntryEvent>;
   constructor(config: StrapiQueueConfig) {
-    super(config);
+    this.queueManager = new QueueManager({ ...config, name: "strapi" });
   }
 
   /**
@@ -19,6 +19,6 @@ export class Producer extends StrapiQueue {
       throw new Error(`Trying to push malformed event: ${message}, ${err}`);
     });
 
-    await this.queue.produce(topic, message);
+    await this.queueManager.produce(topic, message);
   }
 }

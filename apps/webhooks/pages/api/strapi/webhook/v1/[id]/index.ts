@@ -18,7 +18,7 @@ const requestValidation = z.object({
   query: z.object({
     id: z.string(),
   }),
-  header: z.object({
+  headers: z.object({
     authorization: z.string(),
   }),
   body: z.object({
@@ -42,7 +42,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   res,
 }): Promise<void> => {
   const {
-    header: { authorization },
+    headers: { authorization },
     query: { id },
   } = req;
 
@@ -64,6 +64,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     }),
     setupSaleor({ traceId: backgroundContext.trace.id }),
   );
+
   const webhook = await ctx.prisma.incomingWebhook.findUnique({
     where: { id },
     include: { strapi: true, secret: true },
@@ -83,8 +84,8 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
   const queue = new strapi.Producer({
     logger: ctx.logger,
-    signer: new Signer(ctx.logger),
-    redis: {
+    signer: new Signer({ signingKey: env.require("SIGNING_KEY") }),
+    connection: {
       host: env.require("REDIS_HOST"),
       port: env.require("REDIS_PORT"),
       password: env.require("REDIS_PASSWORD"),

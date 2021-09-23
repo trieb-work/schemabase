@@ -24,6 +24,10 @@ services:
       DATABASE_URL: postgres://postgres:postgres@eci_db:5432/postgres
       DATABASE_URL_POOL: postgres://postgres:postgres@eci_db:5432/postgres
       CI:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      SIGNING_KEY: anything
+      NODE_ENV: production
 
   eci_worker:
     image: triebwork/eci-worker
@@ -35,8 +39,9 @@ services:
       DATABASE_URL_POOL: postgres://postgres:postgres@eci_db:5432/postgres
       CI:
       REDIS_HOST: redis
-      REDIS:PORT: 6379
-      REDIS_PASSWORD: redis_password
+      REDIS_PORT: 6379
+      SIGNING_KEY: anything
+      NODE_ENV: production
 
   # Saleor Graphql API
   saleor_api:
@@ -72,6 +77,12 @@ services:
     environment:
       - REDIS_HOSTS=local:redis:6379
       - HTTP_PASSWORD=redis_password
+    ports:
+      - 8081:8081
+  redis-insight:
+    image: redislabs/redisinsight:latest
+    ports:
+      - 8001:8001
 
   # MailHog is an email testing tool
   mailhog:

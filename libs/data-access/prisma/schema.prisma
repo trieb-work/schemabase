@@ -30,9 +30,10 @@ model ProductDataFeed {
 
   // Graphql endpoint of a saleor app
   productDetailStorefrontURL String?
-  tenant                     Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId                   String            @unique
+  tenant                     Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId                   String                       @unique
   ProductDataFeedWebhook     IncomingWebhook[]
+  ProductDataFeedIntegration ProductDataFeedIntegration[]
 }
 
 model ZohoConfig {
@@ -91,28 +92,78 @@ model Tenant {
 
   // Human readable identifier
   name String
-  // customer data etc
-  // metadata Metadata
 
-  // Indicates if the integration is currently enabled.
-  // The user might chose to disable it.
-  enabled         Boolean           @default(false)
-  // baseUrl         String
-  saleorApps      SaleorApp[]
-  zoho            ZohoConfig[]
-  productdatafeed ProductDataFeed[]
-  strapi          Strapi[]
+  Subscriptions Subscription[]
+
+  // App configurations
+  saleorApps                 SaleorApp[]
+  zoho                       ZohoConfig[]
+  productdatafeed            ProductDataFeed[]
+  strapi                     Strapi[]
+  ProductDataFeedIntegration ProductDataFeedIntegration[]
+  StrapiToZohoIntegration    StrapiToZohoIntegration[]
 }
 
+// A subscription indicates a tenant has payed for one integration.
+model Subscription {
+  id String @id
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+
+  payedUntil DateTime?
+
+  ProductDataFeedIntegration ProductDataFeedIntegration[]
+}
+
+// ----------------------------------------------------------------------------
+// Integrations
+//
+// Every integration is a connection between application configurations and a tenant
+// ----------------------------------------------------------------------------
+
+model ProductDataFeedIntegration {
+  id String @id
+
+
+  // Allow the user to manually enabled or disable the integration
+  // Regardless of current subscription state.
+  enabled Boolean @default(true)
+
+
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  subscriptionId String?       @unique
+
+
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  productDataFeed   ProductDataFeed? @relation(fields: [productDataFeedId], references: [id])
+  productDataFeedId String?
+}
+
+model StrapiToZohoIntegration {
+  id         String    @id
+  payedUntil DateTime?
+  enabled    Boolean   @default(true)
+  tenant     Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId   String
+  strapi     Strapi?   @relation(fields: [strapiId], references: [id])
+  strapiId   String?
+}
+
+// Every tenant can have multiple strapi instances
 model Strapi {
   id String @id
 
   name     String
   webhooks IncomingWebhook[]
 
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId String
-
+  tenant                  Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId                String
+  StrapiToZohoIntegration StrapiToZohoIntegration[]
 }
 
 // ----------------------------------------------------------------------------

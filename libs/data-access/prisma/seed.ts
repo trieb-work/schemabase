@@ -13,6 +13,17 @@ async function main() {
     create: seedTenant,
   });
 
+  const strapi = {
+    id: "strapiId",
+    name: "testing",
+    tenantId: tenant.id,
+  };
+  await prisma.strapi.upsert({
+    where: { id: strapi.id },
+    update: strapi,
+    create: strapi,
+  });
+
   const saleorDomain = "pundf-test-api.triebwork.com";
   const appToken = process.env["SALEOR_TEMPORARY_APP_TOKEN"];
   if (!appToken) {
