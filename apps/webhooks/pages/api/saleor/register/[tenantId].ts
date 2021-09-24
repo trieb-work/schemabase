@@ -1,17 +1,17 @@
-import { extendContext, setupPrisma, setupSaleor } from "@eci/context";
+import { extendContext, setupPrisma } from "@eci/context";
 import { z } from "zod";
-import { idGenerator } from "@eci/util/ids";
+// import { idGenerator } from "@eci/util/ids";
 import { handleWebhook, Webhook } from "@eci/http";
 
 const requestValidation = z.object({
   query: z.object({
     tenantId: z.string(),
   }),
-  headers: z.object({
-    "x-saleor-domain": z.string(),
-  }),
+  // headers: z.object({
+  //   "x-saleor-domain": z.string(),
+  // }),
   body: z.object({
-    app_token: z.string(),
+    auth_token: z.string(),
   }),
 });
 
@@ -24,30 +24,18 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   res,
 }): Promise<void> => {
   try {
-    const ctx = await extendContext<"prisma" | "saleor">(
-      backgroundContext,
-      setupPrisma(),
-      setupSaleor({ traceId: backgroundContext.trace.id }),
-    );
+    const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
-    const {
-      headers: { "x-saleor-domain": domain },
-      body: { app_token: appToken },
-      query: { tenantId },
-    } = req;
+    ctx.logger.info("Registering app", { req });
+    ctx.logger.info("body", { token: req.body.auth_token });
 
-    await ctx.prisma.saleorApp.upsert({
-      where: { domain },
-      update: {},
-      create: {
-        id: idGenerator.id("saleorApp"),
-        tenantId,
-        name: "",
-        domain,
-        appToken,
-        channelSlug: "",
-      },
-    });
+
+  await ctx.prisma.saleorApp.create({
+    data:{
+      
+    }
+  })
+
 
     res.status(200);
   } catch (err) {

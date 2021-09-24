@@ -2,26 +2,28 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  const seedTenant = {
-    id: "294de72d-6498-4355-a182-422bbed7b825",
-    name: "test tenant",
-    enabled: true,
-  };
+  const tenantId = "294de72d-6498-4355-a182-422bbed7b825";
   const tenant = await prisma.tenant.upsert({
-    where: { id: seedTenant.id },
-    update: seedTenant,
-    create: seedTenant,
+    where: { id: tenantId },
+    update: {},
+    create: {
+      id: tenantId,
+      name: "test tenant",
+    },
   });
 
-  const strapi = {
-    id: "strapiId",
-    name: "testing",
-    tenantId: tenant.id,
-  };
-  await prisma.strapi.upsert({
-    where: { id: strapi.id },
-    update: strapi,
-    create: strapi,
+  const strapi = await prisma.strapiApp.upsert({
+    where: { id: "strapiId" },
+    update: {},
+    create: {
+      id: "strapiId",
+      name: "testing",
+      tenant: {
+        connect: {
+          id: tenant.id,
+        },
+      },
+    },
   });
 
   const saleorDomain = "pundf-test-api.triebwork.com";
@@ -29,34 +31,39 @@ async function main() {
   if (!appToken) {
     throw new Error(`SALEOR_TEMPORARY_APP_TOKEN missing`);
   }
-  const seedSaleorApp = {
-    id: "id",
-    tenantId: tenant.id,
-    name: "name",
-    domain: saleorDomain,
-    appToken,
-    channelSlug: "storefront",
-  };
   await prisma.saleorApp.upsert({
-    where: {
-      domain: saleorDomain,
-    },
+    where: { id: "id" },
     update: {},
-    create: seedSaleorApp,
+    create: {
+      id: "id",
+      tenantId: tenant.id,
+      name: "name",
+      domain: saleorDomain,
+      appToken,
+      channelSlug: "storefront",
+    },
   });
 
-  const seedProductDataFeed = {
-    publicId: "cksq51dwk00009ci06armhpsq",
-    enabled: true,
-
-    // productDetailStorefrontURL: "pundf-test-api.triebwork.com", // v11 ~> v3
-    productDetailStorefrontURL: "pundf-staging-api.triebwork.com", // v7  ~> v2.7
-    tenantId: tenant.id,
-  };
-  await prisma.productDataFeed.upsert({
-    where: { publicId: seedProductDataFeed.publicId },
-    update: seedProductDataFeed,
-    create: seedProductDataFeed,
+  const productDataFeedId = "cksq51dwk00009ci06armhpsq";
+  await prisma.productDataFeedApp.upsert({
+    where: { id: productDataFeedId },
+    update: {},
+    create: {
+      id: productDataFeedId,
+      productDetailStorefrontURL: "pundf-staging-api.triebwork.com",
+      tenantId: tenant.id,
+      webhooks: {
+        create: {
+          id: "webhookId",
+          secret: {
+            create: {
+              id: "cksq51dwk00009ci06armhpsq_secret",
+              hash: "c026162c68d176033fddcf60711d3de76ff9899d278f884e491d7ee3027938e3",
+            },
+          },
+        },
+      },
+    },
   });
 }
 

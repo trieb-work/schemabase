@@ -1,8 +1,8 @@
 import {
   setupPrisma,
-  setupSaleor,
-  getTenant,
   extendContext,
+  newSaleorClient,
+  authorizeIntegration,
 } from "@eci/context";
 import { ProductDataFeedGenerator } from "@eci/integrations/product-data-feed";
 import md5 from "md5";
@@ -12,7 +12,7 @@ import { handleWebhook, Webhook } from "@eci/http";
 
 const requestValidation = z.object({
   query: z.object({
-    publicId: z.string(),
+    id: z.string(),
     variant: z.enum(["facebookcommerce", "googlemerchant"]),
   }),
 });
@@ -26,44 +26,62 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   res,
 }): Promise<void> => {
   const {
-    query: { publicId, variant },
+    query: { id, variant },
   } = req;
 
-  const ctx = await extendContext<"prisma" | "tenant" | "saleor">(
-    backgroundContext,
-    setupPrisma(),
-    getTenant({ where: { productdatafeed: { some: { publicId } } } }),
-    setupSaleor({ traceId: backgroundContext.trace.id }),
-  );
+  const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
+
+  const app = await ctx.prisma.productDataFeedApp.findFirst({
+    where: {
+      webhooks: {
+        some: {
+          id,
+        },
+      },
+    },
+    include: {
+      webhooks: {
+        include: {
+          secret: true,
+        },
+      },
+      integration: {
+        include: {
+          saleorApp: true,
+          subscription: true,
+        },
+      },
+    },
+  });
+
+  if (!app) {
+    throw new HttpError(404, `Webhook not found: ${id}`);
+  }
+
+  const { integration } = app;
+  if (!integration) {
+    throw new HttpError(400, "Integration is not configured");
+  }
+  /**
+   * Ensure the integration is enabled and payed for
+   */
+  authorizeIntegration(integration);
 
   ctx.logger.info("Creating new product datafeed");
 
-  const productDataFeed = await ctx.prisma.productDataFeed.findFirst({
-    where: { publicId },
-  });
-  if (!productDataFeed) {
-    throw new HttpError(
-      400,
-      `No productDataFeed found in database: ${{ publicId }}`,
-    );
-  }
-  const storefrontProductUrl =
-    productDataFeed?.productDetailStorefrontURL ?? "";
+  const { saleorApp } = integration;
 
-  if (
-    !productDataFeed ||
-    !productDataFeed.enabled ||
-    storefrontProductUrl === ""
-  ) {
-    throw new HttpError(500, "Can not generate Productdatafeed");
-  }
+  const saleorClient = newSaleorClient(ctx, saleorApp.domain);
 
   const generator = new ProductDataFeedGenerator({
-    saleorClient: ctx.saleor.client,
-    channelSlug: ctx.saleor.config.channelSlug,
+    saleorClient,
+    channelSlug: saleorApp.channelSlug,
   });
 
-  const products = await generator.generateCSV(storefrontProductUrl, variant);
+  const products = await generator.generateCSV(
+    app.productDetailStorefrontURL,
+    variant,
+  );
 
   res.setHeader("Content-Type", "text/csv");
   res.setHeader(

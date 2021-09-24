@@ -19,31 +19,28 @@ generator dbml {
   provider = "prisma-dbml-generator"
 }
 
-model ProductDataFeed {
-  id       String @id @default(uuid())
-  // The public id used for lookups from incoming webhooks.
-  publicId String @unique
+model ProductDataFeedApp {
+  id String @id
 
   // Indicates if the integration is currently enabled.
   // The user might chose to disable it.
   enabled Boolean? @default(false)
 
   // Graphql endpoint of a saleor app
-  productDetailStorefrontURL String?
-  tenant                     Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId                   String                       @unique
-  ProductDataFeedWebhook     IncomingWebhook[]
-  ProductDataFeedIntegration ProductDataFeedIntegration[]
+  productDetailStorefrontURL String
+  tenant                     Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId                   String                      @unique
+  webhooks                   IncomingWebhook[]
+  integration                ProductDataFeedIntegration?
 }
 
-model ZohoConfig {
-  id String @id @default(uuid())
+model ZohoApp {
+  id String @id
 
   // Indicates if the integration is currently enabled.
   // The user might chose to disable it.
   enabled             Boolean @default(false)
   // The public id used for lookups from incoming webhooks.
-  publicId            String
   orgId               String
   clientId            String
   clientSecret        String
@@ -82,6 +79,7 @@ model SaleorApp {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
+  ProductDataFeedIntegration ProductDataFeedIntegration[]
   @@unique([domain, channelSlug])
 }
 
@@ -97,9 +95,9 @@ model Tenant {
 
   // App configurations
   saleorApps                 SaleorApp[]
-  zoho                       ZohoConfig[]
-  productdatafeed            ProductDataFeed[]
-  strapi                     Strapi[]
+  zohoApps                   ZohoApp[]
+  productdatafeedApps        ProductDataFeedApp[]
+  strapiApps                 StrapiApp[]
   ProductDataFeedIntegration ProductDataFeedIntegration[]
   StrapiToZohoIntegration    StrapiToZohoIntegration[]
 }
@@ -114,7 +112,7 @@ model Subscription {
 
   payedUntil DateTime?
 
-  ProductDataFeedIntegration ProductDataFeedIntegration[]
+  productDataFeedIntegration ProductDataFeedIntegration?
 }
 
 // ----------------------------------------------------------------------------
@@ -140,22 +138,25 @@ model ProductDataFeedIntegration {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  productDataFeed   ProductDataFeed? @relation(fields: [productDataFeedId], references: [id])
-  productDataFeedId String?
+  productDataFeedApp   ProductDataFeedApp @relation(fields: [productDataFeedAppId], references: [id])
+  productDataFeedAppId String
+
+  saleorApp   SaleorApp @relation(fields: [saleorAppId], references: [id])
+  saleorAppId String
 }
 
 model StrapiToZohoIntegration {
-  id         String    @id
-  payedUntil DateTime?
-  enabled    Boolean   @default(true)
-  tenant     Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId   String
-  strapi     Strapi?   @relation(fields: [strapiId], references: [id])
-  strapiId   String?
+  id          String    @id
+  payedUntil  DateTime?
+  enabled     Boolean   @default(true)
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId    String
+  strapiApp   StrapiApp @relation(fields: [strapiAppId], references: [id])
+  strapiAppId String
 }
 
 // Every tenant can have multiple strapi instances
-model Strapi {
+model StrapiApp {
   id String @id
 
   name     String
@@ -183,17 +184,13 @@ model IncomingWebhook {
   secret   SecretKey @relation(fields: [secretId], references: [id])
   secretId String
 
-
-  // Various configs that process incoming webhooks:
-
-  strapi   Strapi? @relation(fields: [strapiId], references: [id], onDelete: Cascade)
-  strapiId String?
-
-  saleor    SaleorApp? @relation(fields: [saleorApp], references: [id], onDelete: Cascade)
-  saleorApp String?
-
-  productDataFeed   ProductDataFeed? @relation(fields: [productDataFeedId], references: [id], onDelete: Cascade)
+  // Webhook connections
+  productDataFeed   ProductDataFeedApp? @relation(fields: [productDataFeedId], references: [id], onDelete: Cascade)
   productDataFeedId String?
+  saleorApp         SaleorApp?          @relation(fields: [saleorAppId], references: [id], onDelete: Cascade)
+  saleorAppId       String?
+  strapi            StrapiApp?          @relation(fields: [strapiAppId], references: [id], onDelete: Cascade)
+  strapiAppId       String?
 }
 
 model SecretKey {

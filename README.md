@@ -74,3 +74,27 @@ that would take too long to handle in a single nextjs api route.
 ## Deployment
 
 For every PR a new docker image is pushed to the github registry and removed after the pr is merged. There is an edge case where an image could remain in the registry when the branch is closed while a new image is currently being built and pushed.
+
+# System design
+
+## Entities
+
+### Tenant
+
+A tenant represents a single eci customer. A company that pays us money to use our integrations. (P&F would be a tenant)
+
+### Apps
+
+Apps are only configuration connections to our services. For instance the strapi instance from P&F will be a `StrapiApp`.
+Each app can have multiple incoming webhooks configured as well as required data about the app itself.
+
+### Integrations
+
+Integrations are the connection between tenants and apps.
+Example:
+A tenant has subscribed to the strapi->zoho integration. In this case the integration links 1 strapiApp with 1 zohoApp and 1 tenant.
+Integrations also carry information about current payment status and can be disabled manually by the user.
+
+### Webhooks
+
+Most integrations work by receiving webhooks. Each app can have multiple incoming webhooks to allow rerolling secrets without downtime.

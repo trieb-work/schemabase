@@ -48,8 +48,6 @@ test: build
 	yarn nx run-many --target=test --all
 
 
-reset: export SALEOR_VERSION             = 3.0-triebwork11
-reset: export ECI_BASE_URL               = http://localhost:3000
 reset: export SALEOR_GRAPHQL_ENDPOINT    = http://localhost:8000/graphql/
 reset: export SALEOR_TEMPORARY_APP_TOKEN = token
 reset:
@@ -66,18 +64,16 @@ reset:
 # Make sure you have called `make init` before to setup all required services
 # You just need to do this once, not for every new test run.
 # test-e2e: export SALEOR_VERSION             = 3.0-triebwork11
-# test-e2e: export ECI_BASE_URL               = http://localhost:3000
 # test-e2e: export SALEOR_GRAPHQL_ENDPOINT    = http://localhost:8000/graphql/
 # test-e2e: export SALEOR_TEMPORARY_APP_TOKEN = token
 test-e2e:
 	yarn nx run-many --target=e2e --all --skip-nx-cache
 
-
 # DO NOT RUN THIS YOURSELF!
 #
 # Build the webhooks application on vercel
 # Setup on vercel:
-#  Build Command: `make build-webhooks-prod`i
+#  Build Command: `make build-webhooks-prod`
 #  Output Directory: `dist/apps/webhooks/.next`
 build-webhooks-prod:
 	yarn nx build webhooks --prod

@@ -56,7 +56,11 @@ export function handleWebhook<TRequest>({
      * parse the body manually.
      */
     if (typeof req.body === "string") {
-      req.body = JSON.parse(req.body);
+      try {
+        req.body = JSON.parse(req.body);
+      } catch (err) {
+        // Do nothing
+      }
     }
 
     /**

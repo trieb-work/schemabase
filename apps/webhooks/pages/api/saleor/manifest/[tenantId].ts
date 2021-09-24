@@ -2,7 +2,6 @@ import { z } from "zod";
 import { env } from "@chronark/env";
 import { handleWebhook, Webhook } from "@eci/http";
 const requestValidation = z.object({
-  method: z.string().refine((m) => m === "GET"),
   query: z.object({
     tenantId: z.string(),
   }),
@@ -12,12 +11,14 @@ const requestValidation = z.object({
  * Return an app manifest including the tenantId
  */
 const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
+  backgroundContext,
   req,
   res,
 }): Promise<void> => {
   const {
     query: { tenantId },
   } = req;
+  backgroundContext.logger.info(`Manifest requested`);
   const baseUrl = env.require("ECI_BASE_URL");
 
   const manifest = {
@@ -50,7 +51,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 export default handleWebhook({
   webhook,
   validation: {
-    http: { allowedMethods: ["POST"] },
+    http: { allowedMethods: ["GET"] },
     request: requestValidation,
   },
 });

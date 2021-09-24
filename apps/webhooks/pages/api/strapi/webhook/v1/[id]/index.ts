@@ -1,9 +1,4 @@
-import {
-  setupPrisma,
-  setupSaleor,
-  getTenant,
-  extendContext,
-} from "@eci/context";
+import { setupPrisma, extendContext } from "@eci/context";
 import crypto from "crypto";
 import { z } from "zod";
 import { HttpError } from "@eci/util/errors";
@@ -46,36 +41,19 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     query: { id },
   } = req;
 
-  const ctx = await extendContext<"prisma" | "tenant">(
-    backgroundContext,
-    setupPrisma(),
-    getTenant({
-      where: {
-        strapi: {
-          some: {
-            webhooks: {
-              some: {
-                id,
-              },
-            },
-          },
-        },
-      },
-    }),
-    setupSaleor({ traceId: backgroundContext.trace.id }),
-  );
+  const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
-  const webhook = await ctx.prisma.incomingWebhook.findUnique({
-    where: { id },
-    include: { strapi: true, secret: true },
+  const app = await ctx.prisma.strapiApp.findFirst({
+    where: { webhooks: { some: { id } } },
+    include: { webhooks: { include: { secret: true } } },
   });
-  if (!webhook) {
-    throw new Error(`No webhook found: ${id}`);
+  if (!app) {
+    throw new HttpError(404, `No webhook found: ${id}`);
   }
 
   if (
-    crypto.createHash("sha512").update(authorization).digest("hex") !==
-    webhook.secret.hash
+    crypto.createHash("sha256").update(authorization).digest("hex") !==
+    app.webhooks.find((w) => w.id === id)?.secret.hash
   ) {
     throw new HttpError(403, "Authorization token invalid");
   }

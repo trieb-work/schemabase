@@ -11,10 +11,12 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+      - POSTGRES_MULTIPLE_DATABASES=postgres
 
   # Nextjs Serverless application to receive webhooks from various services
   eci_webhooks:
     image: triebwork/eci-webhooks
+    container_name: webhooks.eci
     build:
       context: .
       dockerfile: ./apps/webhooks/Dockerfile
@@ -28,6 +30,7 @@ services:
       REDIS_PORT: 6379
       SIGNING_KEY: anything
       NODE_ENV: production
+      ECI_BASE_URL: http://webhooks.eci:3000
 
   eci_worker:
     image: triebwork/eci-worker
@@ -45,9 +48,12 @@ services:
 
   # Saleor Graphql API
   saleor_api:
+    image: chronark/saleor
+    build:
+      context: ./vendor/saleor
+      dockerfile: Dockerfile
     ports:
       - 8000:8000
-    image: registry.gitlab.com/trieb.work/saleor:${SALEOR_VERSION}
     depends_on:
       - saleor_db
     command: python manage.py runserver 0.0.0.0:8000
@@ -57,6 +63,16 @@ services:
       SECRET_KEY: adgkadgkajsdg
       STOREFRONT_URL: http://localhost:4000/
       DASHBOARD_URL: http://localhost:9000/
+      REDIS_URL: redis://redis:6379/0
+
+  saleor_dashboard:
+    image: chronark/saleor-dashboard
+    build:
+      context: ./vendor/saleor-dashboard
+      dockerfile: Dockerfile.dev
+    ports:
+      - 9000:9000
+    command: npm start -- --host 0.0.0.0
 
   # Required by saleor
   saleor_db:
@@ -64,6 +80,8 @@ services:
     environment:
       - POSTGRES_USER=saleor
       - POSTGRES_PASSWORD=saleor
+    ports:
+      - 15432:5432
     volumes:
       - saleor-db:/var/lib/postgresql/data
 
@@ -76,20 +94,9 @@ services:
     image: rediscommander/redis-commander
     environment:
       - REDIS_HOSTS=local:redis:6379
-      - HTTP_PASSWORD=redis_password
     ports:
       - 8081:8081
-  redis-insight:
-    image: redislabs/redisinsight:latest
-    ports:
-      - 8001:8001
 
-  # MailHog is an email testing tool
-  mailhog:
-    image: mailhog/mailhog
-    ports:
-      - 1025:1025 # smtp server
-      - 8025:8025 # web ui. Visit http://localhost:8025/ to check emails
 volumes:
   # Migrating and seeding the db takes a long time so we "cache" it for local development
   saleor-db:
