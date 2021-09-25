@@ -29,13 +29,11 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     ctx.logger.info("Registering app", { req });
     ctx.logger.info("body", { token: req.body.auth_token });
 
+    // await ctx.prisma.saleorApp.create({
+    //   data:{
 
-  await ctx.prisma.saleorApp.create({
-    data:{
-      
-    }
-  })
-
+    //   }
+    // })
 
     res.status(200);
   } catch (err) {

@@ -35,7 +35,7 @@ beforeAll(async () => {
       secret: {
         create: {
           id: secret,
-          hash: secretHash,
+          secret: secretHash,
         },
       },
     },

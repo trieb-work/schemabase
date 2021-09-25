@@ -114,7 +114,7 @@ Table IncomingWebhook {
 Table SecretKey {
   id String [pk]
   name String
-  hash String [not null]
+  secret String [not null]
   createdAt DateTime [default: `now()`, not null]
   lastUsed DateTime
   IncomingWebhook IncomingWebhook

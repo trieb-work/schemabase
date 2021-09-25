@@ -198,8 +198,7 @@ model SecretKey {
   // Human readable name
   name String?
 
-  // sha256 of the actual key
-  hash String
+  secret String
 
   createdAt DateTime  @default(now())
   lastUsed  DateTime?

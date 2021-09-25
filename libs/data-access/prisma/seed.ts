@@ -12,7 +12,7 @@ async function main() {
     },
   });
 
-  const strapi = await prisma.strapiApp.upsert({
+  await prisma.strapiApp.upsert({
     where: { id: "strapiId" },
     update: {},
     create: {
@@ -58,7 +58,8 @@ async function main() {
           secret: {
             create: {
               id: "cksq51dwk00009ci06armhpsq_secret",
-              hash: "c026162c68d176033fddcf60711d3de76ff9899d278f884e491d7ee3027938e3",
+              secret:
+                "c026162c68d176033fddcf60711d3de76ff9899d278f884e491d7ee3027938e3",
             },
           },
         },
