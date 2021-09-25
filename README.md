@@ -27,8 +27,6 @@ Run `make build` to run all code generations
 Run `yarn nx serve webhooks --port=xxxx` to run the nextjs app in development mode.
 You might want to stop the webhooks container (created by `make init`) if the ports collide.
 
-=======
-
 # Get started
 
 ## Setup environment

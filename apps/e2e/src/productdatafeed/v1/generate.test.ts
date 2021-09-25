@@ -87,7 +87,6 @@ describe("productdatafeed", () => {
   const variants = ["facebookcommerce", "googlemerchant"];
 
   const http = new HttpClient();
-
   for (const variant of variants) {
     it(`generates a feed for ${variant}`, async () => {
       const res = await http.call<string>({

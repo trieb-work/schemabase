@@ -8,7 +8,7 @@ RUN yarn add -D esbuild
 COPY . .
 
 RUN yarn esbuild ./apps/worker/src/main.ts \
-  --bundle \ 
+  --bundle \
   --platform=node \
   --target=node16 \
   --outfile=./dist/apps/worker/main.js

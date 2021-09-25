@@ -11,7 +11,6 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_MULTIPLE_DATABASES=postgres
 
   # Nextjs Serverless application to receive webhooks from various services
   eci_webhooks:
