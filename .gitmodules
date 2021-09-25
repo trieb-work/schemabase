@@ -1,6 +1,0 @@
-[submodule "vendor/saleor-dashboard"]
-	path = vendor/saleor-dashboard
-	url = git@github.com:mirumee/saleor-dashboard.git
-[submodule "vendor/saleor"]
-	path = vendor/saleor
-	url = git@github.com:mirumee/saleor.git
