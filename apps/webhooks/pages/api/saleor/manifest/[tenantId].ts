@@ -11,15 +11,18 @@ const requestValidation = z.object({
  * Return an app manifest including the tenantId
  */
 const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
-  backgroundContext,
+  backgroundContext: ctx,
   req,
   res,
 }): Promise<void> => {
   const {
     query: { tenantId },
   } = req;
-  backgroundContext.logger.info(`Manifest requested`);
+  ctx.logger = ctx.logger.with({ tenantId });
+  ctx.logger.info(`Manifest requested`);
+
   const baseUrl = env.require("ECI_BASE_URL");
+  ctx.logger.info("baseURl", { baseUrl });
 
   const manifest = {
     id: "triebwork.eci",
@@ -28,6 +31,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     about:
       "The trieb.work ECI for saleor is a powerful App used for several services like data synchronisation to Zoho Inventory, Mailchimp, an advanced product data feed etc.. ",
     permissions: [
+      "MANAGE_APPS",
       "MANAGE_SHIPPING",
       "MANAGE_PRODUCTS",
       "MANAGE_ORDERS",

@@ -28,9 +28,9 @@ model ProductDataFeedApp {
 
   // Graphql endpoint of a saleor app
   productDetailStorefrontURL String
-  tenant                     Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId                   String                      @unique
-  webhooks                   IncomingWebhook[]
+  tenant                     Tenant                           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId                   String                           @unique
+  webhooks                   IncomingProductDataFeedWebhook[]
   integration                ProductDataFeedIntegration?
 }
 
@@ -74,7 +74,7 @@ model SaleorApp {
   // Every SaleorApp can have multiple webhooks configured.
   // This is not really necessary because a webhook can fire on multiple events
   // but let's be on the safe side.
-  webhooks IncomingWebhook[]
+  webhooks IncomingSaleorWebhook[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -160,7 +160,7 @@ model StrapiApp {
   id String @id
 
   name     String
-  webhooks IncomingWebhook[]
+  webhooks IncomingStrapiWebhook[]
 
   tenant                  Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId                String
@@ -171,39 +171,90 @@ model StrapiApp {
 // Every Config/App can have multiple webhooks attached
 // ----------------------------------------------------------------------------
 
-model IncomingWebhook {
-  id String @id
-
+model IncomingSaleorWebhook {
+  id   String  @id
   // Human readable name
   name String?
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  lastUsed  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   secret   SecretKey @relation(fields: [secretId], references: [id])
   secretId String
 
-  // Webhook connections
-  productDataFeed   ProductDataFeedApp? @relation(fields: [productDataFeedId], references: [id], onDelete: Cascade)
-  productDataFeedId String?
-  saleorApp         SaleorApp?          @relation(fields: [saleorAppId], references: [id], onDelete: Cascade)
-  saleorAppId       String?
-  strapi            StrapiApp?          @relation(fields: [strapiAppId], references: [id], onDelete: Cascade)
-  strapiAppId       String?
+  saleorApp   SaleorApp @relation(fields: [saleorAppId], references: [id], onDelete: Cascade)
+  saleorAppId String
 }
 
-model SecretKey {
-  id   String  @id @default(uuid())
+model IncomingStrapiWebhook {
+  id   String  @id
   // Human readable name
   name String?
 
-  secret String
 
-  createdAt DateTime  @default(now())
-  lastUsed  DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  secret   SecretKey @relation(fields: [secretId], references: [id])
+  secretId String
+
+  strapiApp   StrapiApp @relation(fields: [strapiAppId], references: [id], onDelete: Cascade)
+  strapiAppId String
+}
+
+model IncomingProductDataFeedWebhook {
+  id   String  @id
+  // Human readable name
+  name String?
+
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  secret   SecretKey @relation(fields: [secretId], references: [id])
+  secretId String
+
+  productDataFeedApp   ProductDataFeedApp @relation(fields: [productDataFeedAppId], references: [id], onDelete: Cascade)
+  productDataFeedAppId String
+}
+
+// Until prisma allows for inheritance we are stuck createing different webhook modules
+// with duplicate code
+
+// model IncomingWebhook {
+//   id String @id
+
+//   // Human readable name
+//   name String?
+
+//   createdAt DateTime  @default(now())
+//   updatedAt DateTime  @updatedAt
+//
+
+//   secret   SecretKey @relation(fields: [secretId], references: [id])
+//   secretId String
+
+//   // Webhook connections
+//   productDataFeed   ProductDataFeedApp? @relation(fields: [productDataFeedId], references: [id], onDelete: Cascade)
+//   productDataFeedId String?
+//   saleorApp         SaleorApp?          @relation(fields: [saleorAppId], references: [id], onDelete: Cascade)
+//   saleorAppId       String?
+//   strapi            StrapiApp?          @relation(fields: [strapiAppId], references: [id], onDelete: Cascade)
+//   strapiAppId       String?
+// }
+model SecretKey {
+  id String @id @default(uuid())
+
+  // Human readable name
+  name      String?
+  secret    String
+  createdAt DateTime @default(now())
+
 
   // Connections ..
   // Required by prisma
-  IncomingWebhook IncomingWebhook?
+  incomingSaleorWebhook          IncomingSaleorWebhook?
+  IncomingStrapiWebhook          IncomingStrapiWebhook?
+  IncomingProductDataFeedWebhook IncomingProductDataFeedWebhook?
 }

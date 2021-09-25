@@ -50,7 +50,7 @@ services:
   saleor_api:
     image: chronark/saleor
     build:
-      context: ./vendor/saleor
+      context: https://github.com/mirumee/saleor.git
       dockerfile: Dockerfile
     ports:
       - 8000:8000
@@ -68,7 +68,7 @@ services:
   saleor_dashboard:
     image: chronark/saleor-dashboard
     build:
-      context: ./vendor/saleor-dashboard
+      context: https://github.com/mirumee/saleor-dashboard.git
       dockerfile: Dockerfile.dev
     ports:
       - 9000:9000

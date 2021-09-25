@@ -1,0 +1,5 @@
+query app($id: ID!) {
+  app(id: $id) {
+    id
+  }
+}

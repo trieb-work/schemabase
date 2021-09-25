@@ -24,10 +24,10 @@ beforeAll(async () => {
 
   const secret = randomUUID();
   const secretHash = createHash("sha256").update(secret).digest("hex");
-  await prisma.incomingWebhook.create({
+  await prisma.incomingProductDataFeedWebhook.create({
     data: {
       id: webhookId,
-      productDataFeed: {
+      productDataFeedApp: {
         connect: {
           id: productDataFeed.id,
         },

@@ -12318,6 +12318,15 @@ export type AppInstallMutation = {
   }>;
 };
 
+export type AppTokenVerifyMutationVariables = Exact<{
+  token: Scalars["String"];
+}>;
+
+export type AppTokenVerifyMutation = {
+  __typename?: "Mutation";
+  appTokenVerify?: Maybe<{ __typename?: "AppTokenVerify"; valid: boolean }>;
+};
+
 export type TokenCreateMutationVariables = Exact<{
   email: Scalars["String"];
   password: Scalars["String"];
@@ -12337,6 +12346,33 @@ export type TokenCreateMutation = {
       message?: Maybe<string>;
     }>;
   }>;
+};
+
+export type WebhookCreateMutationVariables = Exact<{
+  input: WebhookCreateInput;
+}>;
+
+export type WebhookCreateMutation = {
+  __typename?: "Mutation";
+  webhookCreate?: Maybe<{
+    __typename?: "WebhookCreate";
+    errors: Array<{
+      __typename?: "WebhookError";
+      field?: Maybe<string>;
+      message?: Maybe<string>;
+      code: WebhookErrorCode;
+    }>;
+    webhook?: Maybe<{ __typename?: "Webhook"; id: string }>;
+  }>;
+};
+
+export type AppQueryVariables = Exact<{
+  id: Scalars["ID"];
+}>;
+
+export type AppQuery = {
+  __typename?: "Query";
+  app?: Maybe<{ __typename?: "App"; id: string }>;
 };
 
 export type ProductsQueryVariables = Exact<{
@@ -12462,6 +12498,13 @@ export const AppInstallDocument = gql`
     }
   }
 `;
+export const AppTokenVerifyDocument = gql`
+  mutation appTokenVerify($token: String!) {
+    appTokenVerify(token: $token) {
+      valid
+    }
+  }
+`;
 export const TokenCreateDocument = gql`
   mutation tokenCreate($email: String!, $password: String!) {
     tokenCreate(email: $email, password: $password) {
@@ -12475,6 +12518,27 @@ export const TokenCreateDocument = gql`
         field
         message
       }
+    }
+  }
+`;
+export const WebhookCreateDocument = gql`
+  mutation webhookCreate($input: WebhookCreateInput!) {
+    webhookCreate(input: $input) {
+      errors {
+        field
+        message
+        code
+      }
+      webhook {
+        id
+      }
+    }
+  }
+`;
+export const AppDocument = gql`
+  query app($id: ID!) {
+    app(id: $id) {
+      id
     }
   }
 `;
@@ -12578,12 +12642,39 @@ export function getSdk<C>(requester: Requester<C>) {
         options,
       );
     },
+    appTokenVerify(
+      variables: AppTokenVerifyMutationVariables,
+      options?: C,
+    ): Promise<AppTokenVerifyMutation> {
+      return requester<AppTokenVerifyMutation, AppTokenVerifyMutationVariables>(
+        AppTokenVerifyDocument,
+        variables,
+        options,
+      );
+    },
     tokenCreate(
       variables: TokenCreateMutationVariables,
       options?: C,
     ): Promise<TokenCreateMutation> {
       return requester<TokenCreateMutation, TokenCreateMutationVariables>(
         TokenCreateDocument,
+        variables,
+        options,
+      );
+    },
+    webhookCreate(
+      variables: WebhookCreateMutationVariables,
+      options?: C,
+    ): Promise<WebhookCreateMutation> {
+      return requester<WebhookCreateMutation, WebhookCreateMutationVariables>(
+        WebhookCreateDocument,
+        variables,
+        options,
+      );
+    },
+    app(variables: AppQueryVariables, options?: C): Promise<AppQuery> {
+      return requester<AppQuery, AppQueryVariables>(
+        AppDocument,
         variables,
         options,
       );

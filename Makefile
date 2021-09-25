@@ -64,7 +64,7 @@ reset:
 # Make sure you have called `make init` before to setup all required services
 # You just need to do this once, not for every new test run.
 # test-e2e: export SALEOR_VERSION             = 3.0-triebwork11
-# test-e2e: export SALEOR_GRAPHQL_ENDPOINT    = http://localhost:8000/graphql/
+test-e2e: export SALEOR_GRAPHQL_ENDPOINT    = http://localhost:8000/graphql/
 # test-e2e: export SALEOR_TEMPORARY_APP_TOKEN = token
 test-e2e:
 	yarn nx run-many --target=e2e --all --skip-nx-cache

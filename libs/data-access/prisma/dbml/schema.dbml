@@ -8,7 +8,7 @@ Table ProductDataFeedApp {
   productDetailStorefrontURL String [not null]
   tenant Tenant [not null]
   tenantId String [unique, not null]
-  webhooks IncomingWebhook [not null]
+  webhooks IncomingProductDataFeedWebhook [not null]
   integration ProductDataFeedIntegration
 }
 
@@ -33,7 +33,7 @@ Table SaleorApp {
   domain String [unique, not null]
   name String [not null]
   appToken String [not null]
-  webhooks IncomingWebhook [not null]
+  webhooks IncomingSaleorWebhook [not null]
   tenant Tenant [not null]
   tenantId String [not null]
   ProductDataFeedIntegration ProductDataFeedIntegration [not null]
@@ -89,26 +89,43 @@ Table StrapiToZohoIntegration {
 Table StrapiApp {
   id String [pk]
   name String [not null]
-  webhooks IncomingWebhook [not null]
+  webhooks IncomingStrapiWebhook [not null]
   tenant Tenant [not null]
   tenantId String [not null]
   StrapiToZohoIntegration StrapiToZohoIntegration [not null]
 }
 
-Table IncomingWebhook {
+Table IncomingSaleorWebhook {
   id String [pk]
   name String
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-  lastUsed DateTime
   secret SecretKey [not null]
   secretId String [not null]
-  productDataFeed ProductDataFeedApp
-  productDataFeedId String
-  saleorApp SaleorApp
-  saleorAppId String
-  strapi StrapiApp
-  strapiAppId String
+  saleorApp SaleorApp [not null]
+  saleorAppId String [not null]
+}
+
+Table IncomingStrapiWebhook {
+  id String [pk]
+  name String
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  secret SecretKey [not null]
+  secretId String [not null]
+  strapiApp StrapiApp [not null]
+  strapiAppId String [not null]
+}
+
+Table IncomingProductDataFeedWebhook {
+  id String [pk]
+  name String
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  secret SecretKey [not null]
+  secretId String [not null]
+  productDataFeedApp ProductDataFeedApp [not null]
+  productDataFeedAppId String [not null]
 }
 
 Table SecretKey {
@@ -116,8 +133,9 @@ Table SecretKey {
   name String
   secret String [not null]
   createdAt DateTime [default: `now()`, not null]
-  lastUsed DateTime
-  IncomingWebhook IncomingWebhook
+  incomingSaleorWebhook IncomingSaleorWebhook
+  IncomingStrapiWebhook IncomingStrapiWebhook
+  IncomingProductDataFeedWebhook IncomingProductDataFeedWebhook
 }
 
 Ref: ProductDataFeedApp.tenantId > Tenant.id
@@ -142,10 +160,14 @@ Ref: StrapiToZohoIntegration.strapiAppId > StrapiApp.id
 
 Ref: StrapiApp.tenantId > Tenant.id
 
-Ref: IncomingWebhook.secretId - SecretKey.id
+Ref: IncomingSaleorWebhook.secretId - SecretKey.id
 
-Ref: IncomingWebhook.productDataFeedId > ProductDataFeedApp.id
+Ref: IncomingSaleorWebhook.saleorAppId > SaleorApp.id
 
-Ref: IncomingWebhook.saleorAppId > SaleorApp.id
+Ref: IncomingStrapiWebhook.secretId - SecretKey.id
 
-Ref: IncomingWebhook.strapiAppId > StrapiApp.id
+Ref: IncomingStrapiWebhook.strapiAppId > StrapiApp.id
+
+Ref: IncomingProductDataFeedWebhook.secretId - SecretKey.id
+
+Ref: IncomingProductDataFeedWebhook.productDataFeedAppId > ProductDataFeedApp.id

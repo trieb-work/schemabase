@@ -1,6 +1,6 @@
 import ObjectsToCsv from "objects-to-csv";
 import { htmlToText } from "html-to-text";
-import { Product as RawProduct } from "@eci/adapters/saleor";
+import { ProductsQuery } from "@eci/adapters/saleor";
 // @ts-expect-error it doesn't detec types for some reason
 import edjsHTML from "editorjs-html";
 import { generateUnitPrice } from "./generate-unit-price";
@@ -16,10 +16,10 @@ export interface ProductDataFeedService {
 
 export type ProductDataFeedServiceConfig = {
   saleorClient: {
-    getProducts: (variables: {
+    products: (variables: {
       first: number;
       channel: string;
-    }) => Promise<RawProduct[]>;
+    }) => Promise<ProductsQuery>;
   };
   channelSlug: string;
 };
@@ -30,10 +30,10 @@ export type ProductDataFeedServiceConfig = {
 
 export class ProductDataFeedGenerator implements ProductDataFeedService {
   public readonly saleorClient: {
-    getProducts: (variables: {
+    products: (variables: {
       first: number;
       channel: string;
-    }) => Promise<RawProduct[]>;
+    }) => Promise<ProductsQuery>;
   };
   public readonly channelSlug: string;
 
@@ -55,10 +55,14 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
     storefrontProductUrl: string,
     feedVariant: FeedVariant,
   ): Promise<Product[]> {
-    const rawProducts = await this.saleorClient.getProducts({
+    const res = await this.saleorClient.products({
       first: 100,
       channel: this.channelSlug,
     });
+    if (!res) {
+      throw new Error("Unable to");
+    }
+    const rawProducts = res.products?.edges.map((edge) => edge.node) ?? [];
     const products: Product[] = [];
 
     for (const rawProduct of rawProducts) {
