@@ -39,7 +39,7 @@ jobs:
           push: false
           file: ./apps/${{ matrix.app }}/Dockerfile
           tags: eci/${{ matrix.app }}:latest
-          outputs: type=docker,dest=images/${{ matrix.app }}.tar
+          outputs: type=docker,dest=/tmp/${{ matrix.app }}.tar
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 
@@ -53,7 +53,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.app }}
-          path: images/${{ matrix.app }}.tar
+          path: /tmp/${{ matrix.app }}.tar
           retention-days: 1
 
   e2e:
