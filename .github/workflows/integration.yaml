@@ -87,8 +87,8 @@ jobs:
 
       - name: Load docker images
         run: |-
-          docker load -i eci/webhooks_img
-          docker load -i eci/worker_img
+          docker load -i webhooks_img
+          docker load -i worker_img
           docker images
 
       - uses: actions/cache@v2
