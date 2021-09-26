@@ -1,0 +1,10 @@
+version: "3.9"
+
+# This will override in local development.
+# In ci this file will be replaced by `docker-compose.ci.yml`
+
+services:
+  saleor_api:
+    build:
+      context: https://github.com/mirumee/saleor.git
+      dockerfile: Dockerfile
