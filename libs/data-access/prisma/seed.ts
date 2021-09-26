@@ -26,23 +26,23 @@ async function main() {
     },
   });
 
-  const saleorDomain = "pundf-test-api.triebwork.com";
-  const appToken = process.env["SALEOR_TEMPORARY_APP_TOKEN"];
-  if (!appToken) {
-    throw new Error(`SALEOR_TEMPORARY_APP_TOKEN missing`);
-  }
-  await prisma.saleorApp.upsert({
-    where: { id: "id" },
-    update: {},
-    create: {
-      id: "id",
-      tenantId: tenant.id,
-      name: "name",
-      domain: saleorDomain,
-      appToken,
-      channelSlug: "storefront",
-    },
-  });
+  // const saleorDomain = "pundf-test-api.triebwork.com";
+  // const appToken = process.env["SALEOR_TEMPORARY_APP_TOKEN"];
+  // if (!appToken) {
+  //   throw new Error(`SALEOR_TEMPORARY_APP_TOKEN missing`);
+  // }
+  // await prisma.saleorApp.upsert({
+  //   where: { id: "id" },
+  //   update: {},
+  //   create: {
+  //     id: "id",
+  //     tenantId: tenant.id,
+  //     name: "name",
+  //     domain: saleorDomain,
+  //     appToken,
+  //     channelSlug: "storefront",
+  //   },
+  // });
 
   const productDataFeedId = "cksq51dwk00009ci06armhpsq";
   await prisma.productDataFeedApp.upsert({
