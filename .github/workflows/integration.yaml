@@ -22,6 +22,9 @@ jobs:
     env:
       SALEOR_VERSION: ${{ matrix.saleor }}
       CI: true
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+      ECI_BASE_URL: http://webhooks.eci:3000
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -55,6 +58,12 @@ jobs:
       - name: Fix docker-compose version
         run: sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 
+      - name: Pull images
+        run: docker-compose pull
+
+      - name: Build remaining images
+        run: docker-compose build
+
       - name: Start services
         run: docker-compose up -d
 
@@ -66,8 +75,6 @@ jobs:
 
       - name: Migrate eci schema
         run: yarn prisma migrate deploy --schema=./libs/data-access/prisma/schema.prisma
-        env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
 
       - name: Generate prisma client
         run: yarn nx build data-access-prisma
@@ -75,12 +82,10 @@ jobs:
       - name: Seed eci database
         run: yarn prisma db seed --preview-feature --schema=./libs/data-access/prisma/schema.prisma
         env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
           SALEOR_TEMPORARY_APP_TOKEN: abc
       - name: Test (e2e)
         run: yarn nx run e2e:e2e
-        env:
-          ECI_BASE_URL: http://localhost:3000
+
       #   continue-on-error: true
       # - name: Get logs
       #   run: docker-compose logs eci_webhooks
