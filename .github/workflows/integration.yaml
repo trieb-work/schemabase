@@ -91,6 +91,7 @@ jobs:
         run: |
           ls -al
           ls -al images
+          ls -al images/webhooks
           docker load -i images/webhooks
           docker load -i images/worker
           docker images
