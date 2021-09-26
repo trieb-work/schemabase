@@ -14,7 +14,7 @@ services:
 
   # Nextjs Serverless application to receive webhooks from various services
   eci_webhooks:
-    image: triebwork/eci-webhooks
+    image: eci-webhooks
     container_name: webhooks.eci
     build:
       context: .
@@ -30,9 +30,11 @@ services:
       SIGNING_KEY: anything
       NODE_ENV: production
       ECI_BASE_URL: http://webhooks.eci:3000
+    depends_on:
+      - eci_db
 
   eci_worker:
-    image: triebwork/eci-worker
+    image: eci-worker
     build:
       context: .
       dockerfile: ./apps/worker/Dockerfile
@@ -44,6 +46,9 @@ services:
       REDIS_PORT: 6379
       SIGNING_KEY: anything
       NODE_ENV: production
+    depends_on:
+      - eci_db
+      - redis
 
   # Saleor Graphql API
   saleor_api:
@@ -53,8 +58,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - 8000:8000
-    depends_on:
-      - saleor_db
     command: python manage.py runserver 0.0.0.0:8000
 
     environment:
@@ -63,6 +66,8 @@ services:
       STOREFRONT_URL: http://localhost:4000/
       DASHBOARD_URL: http://localhost:9000/
       REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - saleor_db
 
   saleor_dashboard:
     image: chronark/saleor-dashboard
@@ -72,6 +77,8 @@ services:
     ports:
       - 9000:9000
     command: npm start -- --host 0.0.0.0
+    depends_on:
+      - saleor_api
 
   # Required by saleor
   saleor_db:
@@ -95,6 +102,8 @@ services:
       - REDIS_HOSTS=local:redis:6379
     ports:
       - 8081:8081
+    depends_on:
+      - redis
 
 volumes:
   # Migrating and seeding the db takes a long time so we "cache" it for local development
