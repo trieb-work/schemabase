@@ -39,7 +39,7 @@ jobs:
 
         # Necesarry to test against the predefined saleor versions
       - name: Use docker-compose ci config
-        run: cp docker-compose.ci.yaml docker-compose.override.yaml
+        run: cp docker-compose.ci.yml docker-compose.override.yml
 
       - name: Pull images
         run: docker-compose pull
