@@ -14,7 +14,7 @@ services:
 
   # Nextjs Serverless application to receive webhooks from various services
   eci_webhooks:
-    image: eci/webhooks
+    image: eci_webhooks
     container_name: webhooks.eci
     ports:
       - 3000:3000
@@ -31,7 +31,7 @@ services:
       - eci_db
 
   eci_worker:
-    image: eci/worker
+    image: eci_worker
 
     environment:
       DATABASE_URL: postgres://postgres:postgres@eci_db:5432/postgres

@@ -38,7 +38,7 @@ jobs:
           context: .
           push: false
           file: ./apps/${{ matrix.app }}/Dockerfile
-          tags: eci/${{ matrix.app }}:latest
+          tags: eci_${{ matrix.app }}:latest
           outputs: type=docker,dest=/tmp/${{ matrix.app }}.tar
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
@@ -89,12 +89,8 @@ jobs:
 
       - name: Load docker images
         run: |
-          ls -al
-          ls -al images
-          ls -al images/webhooks
           docker load -i images/webhooks/webhooks.tar
           docker load -i images/worker/worker.tar
-          docker images
 
       - uses: actions/cache@v2
         with:
