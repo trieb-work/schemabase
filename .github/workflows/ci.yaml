@@ -19,7 +19,7 @@ jobs:
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: Install
-        run: yarn install
+        run: yarn install --frozen-lockfile --non-interactive
 
       - name: Build
         run: make build
