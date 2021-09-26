@@ -4,7 +4,8 @@
   "scripts": {
     "update": "nx migrate latest",
     "dep-graph": "nx dep-graph",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "cm": "cz"
   },
   "private": true,
   "dependencies": {
@@ -76,9 +77,11 @@
     "@typescript-eslint/eslint-plugin": "4.29.1",
     "@typescript-eslint/parser": "4.29.1",
     "babel-jest": "27.0.6",
+    "commitizen": "^4.2.4",
     "commitlint": "13.1.0",
     "core-js": "3.16.1",
     "cypress": "8.2.0",
+    "cz-conventional-changelog": "^3.3.0",
     "dayjs": "1.10.6",
     "eslint": "7.32.0",
     "eslint-config-next": "11.0.1",
@@ -88,6 +91,7 @@
     "eslint-plugin-jsx-a11y": "6.4.1",
     "eslint-plugin-react": "7.24.0",
     "eslint-plugin-react-hooks": "4.2.0",
+    "git-cz": "^4.7.6",
     "graphql": "15.5.1",
     "husky": "7.0.1",
     "jest": "27.0.6",
@@ -115,5 +119,11 @@
     "extends": [
       "@commitlint/config-conventional"
     ]
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog",
+      "disableEmoji": true
+    }
   }
 }

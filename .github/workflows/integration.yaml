@@ -34,18 +34,20 @@ jobs:
           path: "**/node_modules"
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
       - name: Install dependencies
         run: yarn install
 
         # Necesarry to test against the predefined saleor versions
       - name: Use docker-compose ci config
         run: cp docker-compose.ci.yml docker-compose.override.yml
-
-      - name: Pull images
-        run: docker-compose pull
-
-      - name: Build remaining images
-        run: docker-compose build
 
       - name: Start services
         run: docker-compose up -d
