@@ -84,12 +84,15 @@ jobs:
       # load docker images from build jobs
       - name: Load images from artifacts
         uses: actions/download-artifact@v2
+        with:
+          path: images
 
       - name: Load docker images
         run: |
           ls -al
-          docker load -i webhooks.tar
-          docker load -i worker.tar
+          ls -al images
+          docker load -i images/webhooks
+          docker load -i images/worker
           docker images
 
       - uses: actions/cache@v2
