@@ -21,7 +21,7 @@ init: down
 	docker-compose pull
 	docker-compose build --parallel
 
-	docker-compose up -d
+	docker-compose up -d --profile="dev"
 	docker-compose exec saleor_api python manage.py migrate
 
 	@# An admin user is created with the following credentials:
@@ -36,7 +36,7 @@ init: down
 
 up:
 	docker-compose down
-	docker-compose up -d --build
+	docker-compose up -d --build --profile="dev"
 
 build:
 	yarn install

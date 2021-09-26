@@ -67,6 +67,8 @@ services:
       - saleor_db
 
   saleor_dashboard:
+    profile:
+      - dev
     image: chronark/saleor-dashboard
     build:
       context: https://github.com/mirumee/saleor-dashboard.git
@@ -94,6 +96,8 @@ services:
       - 6379:6379
 
   redis-commander:
+    profile:
+      - dev
     image: rediscommander/redis-commander
     environment:
       - REDIS_HOSTS=local:redis:6379
