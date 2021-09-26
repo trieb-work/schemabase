@@ -92,8 +92,8 @@ jobs:
           ls -al
           ls -al images
           ls -al images/webhooks
-          docker load -i images/webhooks
-          docker load -i images/worker
+          docker load -i images/webhooks/webhooks.tar
+          docker load -i images/worker/worker.tar
           docker images
 
       - uses: actions/cache@v2
