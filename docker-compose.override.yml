@@ -9,6 +9,16 @@ services:
       context: https://github.com/mirumee/saleor.git
       dockerfile: Dockerfile
 
+  eci_worker:
+    build:
+      context: .
+      dockerfile: ./apps/worker/Dockerfile
+
+  eci_webhooks:
+    build:
+      context: .
+      dockerfile: ./apps/webhooks/Dockerfile
+
   saleor_dashboard:
     image: chronark/saleor-dashboard
     build:
