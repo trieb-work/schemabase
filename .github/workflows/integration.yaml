@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    name: Build docker
+    name: Build
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -31,7 +31,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
-      - name: Build and push
+      - name: Build image
         id: docker_build
         uses: docker/build-push-action@v2
         with:
@@ -39,6 +39,7 @@ jobs:
           push: false
           file: ./apps/${{ matrix.app }}/Dockerfile
           tags: eci/${{ matrix.app }}:latest
+          outputs: type=docker,dest=${{ matrix.app }}_img
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 
