@@ -1,4 +1,4 @@
-query app($id: ID!) {
+query app($id: ID) {
   app(id: $id) {
     id
   }

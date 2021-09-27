@@ -51,7 +51,22 @@ async function main() {
     create: {
       id: productDataFeedId,
       productDetailStorefrontURL: "pundf-staging-api.triebwork.com",
-      tenantId: tenant.id,
+      tenant: {
+        connect: { id: tenant.id },
+      },
+      saleorApp: {
+        create: {
+          id: "id",
+          domain: "localhost:8000",
+          name: "saleor",
+
+          tenant: {
+            connect: {
+              id: tenant.id,
+            },
+          },
+        },
+      },
       webhooks: {
         create: {
           id: "webhookId",

@@ -14,9 +14,10 @@ export const newSaleorClient = (
     throw new ContextMissingFieldError("prisma");
   }
   ctx.logger = ctx.logger.with({ saleorDomain: domain });
+  domain = domain.startsWith("http") ? domain : `https://${domain}`;
   return createSaleorClient({
     traceId: ctx.trace.id,
-    graphqlEndpoint: `https://${domain}/graphql/`,
+    graphqlEndpoint: `${domain}/graphql/`,
     token,
   });
 };

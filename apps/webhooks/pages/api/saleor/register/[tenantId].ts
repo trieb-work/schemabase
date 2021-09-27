@@ -3,6 +3,7 @@ import { z } from "zod";
 import { idGenerator } from "@eci/util/ids";
 import { env } from "@chronark/env";
 import { handleWebhook, Webhook } from "@eci/http";
+import { HttpError } from "@eci/util/errors";
 
 const requestValidation = z.object({
   query: z.object({
@@ -27,21 +28,25 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   const {
     query: { tenantId },
     headers: { "x-saleor-domain": domain },
-    body: { auth_token: appToken },
+    body: { auth_token: token },
   } = req;
   try {
     const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
     ctx.logger = ctx.logger.with({ tenantId, saleor: domain });
     ctx.logger.info("Registering app");
+    ctx.logger.info("req", { req });
 
-    const app = await ctx.prisma.saleorApp.create({
+    const saleorClient = newSaleorClient(ctx, domain, token);
+
+    const idResponse = await saleorClient.app();
+    if (!idResponse.app?.id) {
+      throw new HttpError(500, "No app found");
+    }
+
+    const app = await ctx.prisma.installedSaleorApp.create({
       data: {
-        id: idGenerator.id("publicKey"),
-        name: "eCommerce Integration",
-        channelSlug: "",
-        tenantId,
-        domain,
-        appToken,
+        id: idResponse.app.id,
+        token,
         webhooks: {
           create: {
             id: idGenerator.id("publicKey"),
@@ -53,15 +58,23 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
             },
           },
         },
+        saleorApp: {
+          create: {
+            id: idGenerator.id("publicKey"),
+            name: "eCommerce Integration",
+            // channelSlug: "",
+            tenantId,
+            domain,
+          },
+        },
       },
       include: {
+        saleorApp: true,
         webhooks: {
           include: { secret: true },
         },
       },
     });
-    const saleorClient = newSaleorClient(ctx, domain, appToken);
-
     await saleorClient.webhookCreate({
       input: {
         targetUrl: `${env.require("ECI_BASE_URL")}/api/saleor/webhook/v1/${

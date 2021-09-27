@@ -12367,7 +12367,7 @@ export type WebhookCreateMutation = {
 };
 
 export type AppQueryVariables = Exact<{
-  id: Scalars["ID"];
+  id?: Maybe<Scalars["ID"]>;
 }>;
 
 export type AppQuery = {
@@ -12536,7 +12536,7 @@ export const WebhookCreateDocument = gql`
   }
 `;
 export const AppDocument = gql`
-  query app($id: ID!) {
+  query app($id: ID) {
     app(id: $id) {
       id
     }
@@ -12672,7 +12672,7 @@ export function getSdk<C>(requester: Requester<C>) {
         options,
       );
     },
-    app(variables: AppQueryVariables, options?: C): Promise<AppQuery> {
+    app(variables?: AppQueryVariables, options?: C): Promise<AppQuery> {
       return requester<AppQuery, AppQueryVariables>(
         AppDocument,
         variables,

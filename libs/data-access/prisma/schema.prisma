@@ -28,10 +28,15 @@ model ProductDataFeedApp {
 
   // Graphql endpoint of a saleor app
   productDetailStorefrontURL String
-  tenant                     Tenant                           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId                   String                           @unique
-  webhooks                   IncomingProductDataFeedWebhook[]
-  integration                ProductDataFeedIntegration?
+
+  saleorApp   SaleorApp @relation(fields: [saleorAppId], references: [id])
+  saleorAppId String
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String @unique
+
+  webhooks    IncomingProductDataFeedWebhook[]
+  integration ProductDataFeedIntegration?
 }
 
 model ZohoApp {
@@ -55,32 +60,52 @@ model ZohoApp {
 
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor
 // server and receive webhooks with event notifications from Saleor.
-// Every channel must have its own app
+// Every tenant can have multiple saleor apps which correspond to different
+// saleor instances.
 model SaleorApp {
-  id          String @id
-  channelSlug String
-  domain      String @unique
+
+  id String @id
+
+  // The domain of a running saleor instance.
+  // You can prefix with http:// or https:// if you want.
+  // If no protocol is specified, https:// is assumed.
+  domain String
 
   name String
-  // The saleor application id
-  // appId        String
 
-  // Unlike regular users, Saleor Apps use a bearer token. The token is
-  // assigned at App installation time and needs to be stored in a secure manner.
-  // The authorization header for Apps has the following format:
-  // Authorization: Bearer <app-token>
-  appToken String
+  channelSlug String?
+
+  installedSaleorApp InstalledSaleorApp?
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  productDataFeedIntegration ProductDataFeedIntegration[]
+
+  ProductDataFeedApp ProductDataFeedApp[]
+  @@unique([domain, channelSlug])
+}
+
+model InstalledSaleorApp {
+  // The saleor application id
+  // This is the id for the app on saleor's side and can be used in queries and
+  // mutations to identify the app.
+  id String @id
 
   // Every SaleorApp can have multiple webhooks configured.
   // This is not really necessary because a webhook can fire on multiple events
   // but let's be on the safe side.
   webhooks IncomingSaleorWebhook[]
 
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId String
+  // Unlike regular users, Saleor Apps use a bearer token. The token is
+  // assigned at App installation time and needs to be stored in a secure manner.
+  // The authorization header for Apps has the following format:
+  // Authorization: Bearer <app-token>
+  token String
 
-  ProductDataFeedIntegration ProductDataFeedIntegration[]
-  @@unique([domain, channelSlug])
+
+  saleorApp   SaleorApp @relation(fields: [saleorAppId], references: [id], onDelete: Cascade)
+  saleorAppId String    @unique
 }
 
 // One tenant per company
@@ -124,25 +149,20 @@ model Subscription {
 model ProductDataFeedIntegration {
   id String @id
 
-
   // Allow the user to manually enabled or disable the integration
   // Regardless of current subscription state.
   enabled Boolean @default(true)
 
-
   subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
   subscriptionId String?       @unique
-
-
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
   productDataFeedApp   ProductDataFeedApp @relation(fields: [productDataFeedAppId], references: [id])
   productDataFeedAppId String
-
-  saleorApp   SaleorApp @relation(fields: [saleorAppId], references: [id])
-  saleorAppId String
+  saleorApp            SaleorApp          @relation(fields: [saleorAppId], references: [id])
+  saleorAppId          String
 }
 
 model StrapiToZohoIntegration {
@@ -183,8 +203,8 @@ model IncomingSaleorWebhook {
   secret   SecretKey @relation(fields: [secretId], references: [id])
   secretId String
 
-  saleorApp   SaleorApp @relation(fields: [saleorAppId], references: [id], onDelete: Cascade)
-  saleorAppId String
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String
 }
 
 model IncomingStrapiWebhook {

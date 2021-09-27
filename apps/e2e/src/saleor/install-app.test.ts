@@ -67,9 +67,13 @@ describe("Saleor app installation", () => {
       include: {
         saleorApps: {
           include: {
-            webhooks: {
+            installedSaleorApp: {
               include: {
-                secret: true,
+                webhooks: {
+                  include: {
+                    secret: true,
+                  },
+                },
               },
             },
           },
@@ -84,7 +88,8 @@ describe("Saleor app installation", () => {
     console.error(tenant);
     const app = tenant!.saleorApps.find((a) => a.id === appId);
     expect(app).toBeDefined();
-    expect(app!.webhooks.length).toBe(1);
+    expect(app!.installedSaleorApp).toBeDefined();
+    expect(app!.installedSaleorApp!.webhooks.length).toBe(1);
 
     /**
      * Assert app exists in saleor
@@ -98,7 +103,7 @@ describe("Saleor app installation", () => {
      * Assert we have stored a valid access token
      */
     const res = await client.appTokenVerify({
-      token: app!.appToken,
+      token: app!.installedSaleorApp!.token,
     });
     expect(res.appTokenVerify).not.toBeNull();
     expect(res.appTokenVerify!.valid).toBe(true);

@@ -48,6 +48,8 @@ services:
   # Saleor Graphql API
   saleor_api:
     image: chronark/saleor
+    container_name: saleor.eci
+
     ports:
       - 8000:8000
     command: python manage.py runserver 0.0.0.0:8000
@@ -55,11 +57,15 @@ services:
     environment:
       DATABASE_URL: postgres://saleor:saleor@saleor_db:5432/postgres
       SECRET_KEY: adgkadgkajsdg
-      STOREFRONT_URL: http://localhost:4000/
-      DASHBOARD_URL: http://localhost:9000/
+      STOREFRONT_URL: http://storefront.saleor.api:4000/
+      DASHBOARD_URL: http://dashboard.saleor.api:9000/
       REDIS_URL: redis://redis:6379/0
+      ALLOWED_CLIENT_HOSTS: localhost,webhooks.eci
+      ALLOWED_HOSTS: saleor.api
+      DEBUG: "True"
     depends_on:
       - saleor_db
+      - redis
 
   # Required by saleor
   saleor_db:

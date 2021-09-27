@@ -14,11 +14,38 @@ beforeAll(async () => {
       name: randomUUID(),
     },
   });
+
+  /**
+   * Upserting because there is a unique constraint on the domain
+   */
+  const saleorApp = await prisma.saleorApp.upsert({
+    where: {
+      domain_channelSlug: {
+        channelSlug: "default-channel",
+        domain: "http://saleor.eci:8000",
+      },
+    },
+    update: {},
+    create: {
+      id: randomUUID(),
+      name: randomUUID(),
+      tenantId: tenant.id,
+      channelSlug: "default-channel",
+      domain: "http://saleor.eci:8000",
+    },
+  });
   const productDataFeed = await prisma.productDataFeedApp.create({
     data: {
       id: randomUUID(),
-      tenantId: tenant.id,
-      productDetailStorefrontURL: "pundf-staging-api.triebwork.com",
+      tenant: {
+        connect: {
+          id: tenant.id,
+        },
+      },
+      productDetailStorefrontURL: "www.storefront.com",
+      saleorApp: {
+        connect: { id: saleorApp.id },
+      },
     },
   });
 
@@ -41,31 +68,13 @@ beforeAll(async () => {
     },
   });
 
-  /**
-   * Upserting because there is a unique constraint on the domain
-   */
-  const saleor = await prisma.saleorApp.upsert({
-    where: {
-      domain: "pundf-test-api.triebwork.com",
-    },
-    update: {},
-    create: {
-      id: randomUUID(),
-      name: randomUUID(),
-      tenantId: tenant.id,
-      channelSlug: "storefront",
-      domain: "pundf-test-api.triebwork.com",
-      appToken: env.require("SALEOR_TEMPORARY_APP_TOKEN"),
-    },
-  });
-
   const integration = await prisma.productDataFeedIntegration.create({
     data: {
       id: randomUUID(),
       tenantId: tenant.id,
       enabled: true,
       productDataFeedAppId: productDataFeed.id,
-      saleorAppId: saleor.id,
+      saleorAppId: saleorApp.id,
     },
   });
   await prisma.subscription.create({

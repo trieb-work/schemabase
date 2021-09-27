@@ -71,11 +71,21 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
   const { saleorApp } = integration;
 
-  const saleorClient = newSaleorClient(ctx, saleorApp.domain);
+  if (!saleorApp.channelSlug) {
+    throw new HttpError(
+      500,
+      `Saleor app does not have a channel configured: ${saleorApp}`,
+    );
+  }
 
+  const saleorClient = newSaleorClient(ctx, saleorApp.domain);
   const generator = new ProductDataFeedGenerator({
     saleorClient,
     channelSlug: saleorApp.channelSlug,
+
+    logger: ctx.logger.with({
+      saleor: { domain: saleorApp.domain, channel: saleorApp.channelSlug },
+    }),
   });
 
   const products = await generator.generateCSV(

@@ -18,8 +18,6 @@ pull-env:
 # Build and seeds all required external services
 init: export SALEOR_VERSION=3.0-triebwork11
 init: down
-	docker-compose pull
-	docker-compose build --parallel
 
 	docker-compose up -d
 	docker-compose exec saleor_api python manage.py migrate
@@ -32,6 +30,9 @@ init: down
 	yarn prisma db push --schema=${prismaSchema} --skip-generate
 	yarn prisma db seed --preview-feature --schema=${prismaSchema}
 
+	@# Upload now so we can pull them later during development
+	docker-compose push saleor_api
+	docker-compose push saleor_dashboard
 
 
 up:
@@ -51,8 +52,10 @@ test: build
 reset: export SALEOR_GRAPHQL_ENDPOINT    = http://localhost:8000/graphql/
 reset: export SALEOR_TEMPORARY_APP_TOKEN = token
 reset:
-  # Rebuild eci and ensure everything is up
-	docker-compose up -d --build
+	# Rebuild eci and ensure everything is up
+	docker-compose build eci_worker
+	docker-compose build eci_webhooks
+	docker-compose up -d
 
 	# Reset and seed the eci database for every test run
 	docker-compose  restart eci_db

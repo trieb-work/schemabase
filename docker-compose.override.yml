@@ -20,6 +20,7 @@ services:
       dockerfile: ./apps/webhooks/Dockerfile
 
   saleor_dashboard:
+    container_name: dashboard.saleor.eci
     image: chronark/saleor-dashboard
     build:
       context: https://github.com/mirumee/saleor-dashboard.git
