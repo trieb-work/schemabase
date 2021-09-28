@@ -131,4 +131,4 @@ jobs:
       - name: Test (e2e)
         run: yarn nx run e2e:e2e
         env:
-          SALEOR_GRAPHQL_ENDPOINT: http://localhost:8000/graphql/
+          SALEOR_URL: http://localhost:8000/graphql/
