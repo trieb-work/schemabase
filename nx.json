@@ -54,7 +54,14 @@
     "data-access-prisma": {
       "tags": []
     },
-    "e2e": {
+
+    "e2e-product-data-feed": {
+      "tags": []
+    },
+    "e2e-queue": {
+      "tags": []
+    },
+    "e2e-saleor": {
       "tags": []
     },
     "events-client": {

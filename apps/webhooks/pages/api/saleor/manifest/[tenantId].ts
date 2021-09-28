@@ -22,7 +22,6 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   ctx.logger.info(`Manifest requested`);
 
   const baseUrl = env.require("ECI_BASE_URL");
-  ctx.logger.info("baseURl", { baseUrl });
 
   const manifest = {
     id: "triebwork.eci",

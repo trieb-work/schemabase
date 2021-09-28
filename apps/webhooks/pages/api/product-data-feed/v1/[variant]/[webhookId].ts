@@ -12,7 +12,7 @@ import { handleWebhook, Webhook } from "@eci/http";
 
 const requestValidation = z.object({
   query: z.object({
-    id: z.string(),
+    webhookId: z.string(),
     variant: z.enum(["facebookcommerce", "googlemerchant"]),
   }),
 });
@@ -26,7 +26,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   res,
 }): Promise<void> => {
   const {
-    query: { id, variant },
+    query: { webhookId, variant },
   } = req;
 
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
@@ -35,7 +35,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     where: {
       webhooks: {
         some: {
-          id,
+          id: webhookId,
         },
       },
     },
@@ -55,7 +55,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   });
 
   if (!app) {
-    throw new HttpError(404, `Webhook not found: ${id}`);
+    throw new HttpError(404, `Webhook not found: ${webhookId}`);
   }
 
   const { integration } = app;

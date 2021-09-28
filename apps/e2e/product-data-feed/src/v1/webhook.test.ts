@@ -1,5 +1,4 @@
 import { HttpClient } from "@eci/http";
-import { env } from "@chronark/env";
 import { PrismaClient } from "@eci/data-access/prisma";
 import { randomUUID, createHash } from "crypto";
 
@@ -100,9 +99,7 @@ describe("productdatafeed", () => {
     it(`generates a feed for ${variant}`, async () => {
       const res = await http.call<string>({
         method: "GET",
-        url: `${env.require(
-          "ECI_BASE_URL",
-        )}/api/product-data-feed/v1/${webhookId}?variant=${variant}`,
+        url: `http://localhost:3000/api/product-data-feed/v1/${variant}/${webhookId}`,
       });
 
       expect(res.status).toBe(200);

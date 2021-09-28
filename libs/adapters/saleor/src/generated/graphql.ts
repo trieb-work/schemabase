@@ -12372,7 +12372,21 @@ export type AppQueryVariables = Exact<{
 
 export type AppQuery = {
   __typename?: "Query";
-  app?: Maybe<{ __typename?: "App"; id: string }>;
+  app?: Maybe<{
+    __typename?: "App";
+    id: string;
+    webhooks?: Maybe<
+      Array<
+        Maybe<{
+          __typename?: "Webhook";
+          id: string;
+          targetUrl: string;
+          secretKey?: Maybe<string>;
+          isActive: boolean;
+        }>
+      >
+    >;
+  }>;
 };
 
 export type ProductsQueryVariables = Exact<{
@@ -12539,6 +12553,12 @@ export const AppDocument = gql`
   query app($id: ID) {
     app(id: $id) {
       id
+      webhooks {
+        id
+        targetUrl
+        secretKey
+        isActive
+      }
     }
   }
 `;

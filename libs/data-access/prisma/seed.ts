@@ -25,62 +25,6 @@ async function main() {
       },
     },
   });
-
-  // const saleorDomain = "pundf-test-api.triebwork.com";
-  // const appToken = process.env["SALEOR_TEMPORARY_APP_TOKEN"];
-  // if (!appToken) {
-  //   throw new Error(`SALEOR_TEMPORARY_APP_TOKEN missing`);
-  // }
-  // await prisma.saleorApp.upsert({
-  //   where: { id: "id" },
-  //   update: {},
-  //   create: {
-  //     id: "id",
-  //     tenantId: tenant.id,
-  //     name: "name",
-  //     domain: saleorDomain,
-  //     appToken,
-  //     channelSlug: "storefront",
-  //   },
-  // });
-
-  const productDataFeedId = "cksq51dwk00009ci06armhpsq";
-  await prisma.productDataFeedApp.upsert({
-    where: { id: productDataFeedId },
-    update: {},
-    create: {
-      id: productDataFeedId,
-      productDetailStorefrontURL: "pundf-staging-api.triebwork.com",
-      tenant: {
-        connect: { id: tenant.id },
-      },
-      saleorApp: {
-        create: {
-          id: "id",
-          domain: "localhost:8000",
-          name: "saleor",
-
-          tenant: {
-            connect: {
-              id: tenant.id,
-            },
-          },
-        },
-      },
-      webhooks: {
-        create: {
-          id: "webhookId",
-          secret: {
-            create: {
-              id: "cksq51dwk00009ci06armhpsq_secret",
-              secret:
-                "c026162c68d176033fddcf60711d3de76ff9899d278f884e491d7ee3027938e3",
-            },
-          },
-        },
-      },
-    },
-  });
 }
 
 main()

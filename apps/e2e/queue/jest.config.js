@@ -1,6 +1,6 @@
 module.exports = {
-  displayName: "e2e",
-  preset: "../../jest.preset.js",
+  displayName: "e2e-queue",
+  preset: "../../../jest.preset.js",
   globals: {
     "ts-jest": {
       tsconfig: "<rootDir>/tsconfig.test.json",
@@ -10,6 +10,6 @@ module.exports = {
   transform: {
     "^.+\\.[tj]s$": "ts-jest",
   },
-  moduleFileExtensions: ["ts", "js", "html", "json"],
-  coverageDirectory: "../../coverage/apps/e2e",
+  moduleFileExtensions: ["ts", "js", "html"],
+  coverageDirectory: "../../../coverage/apps/e2e/queue",
 };

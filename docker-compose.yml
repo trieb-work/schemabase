@@ -61,7 +61,7 @@ services:
       DASHBOARD_URL: http://dashboard.saleor.api:9000/
       REDIS_URL: redis://redis:6379/0
       ALLOWED_CLIENT_HOSTS: localhost,webhooks.eci
-      ALLOWED_HOSTS: saleor.api
+      ALLOWED_HOSTS: saleor.eci,localhost
       DEBUG: "True"
     depends_on:
       - saleor_db

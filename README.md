@@ -96,3 +96,13 @@ Integrations also carry information about current payment status and can be disa
 ### Webhooks
 
 Most integrations work by receiving webhooks. Each app can have multiple incoming webhooks to allow rerolling secrets without downtime.
+
+## Local development
+
+A complete development environment with all services can be started with docker-compose.
+Run `make init` to build and start all containers.
+
+The makefile also sets some required environment variables but not all.
+
+Run `make pull-env` to pull development environment variables from vercel after you
+you have authenticated youself with `npx vercel login`

@@ -27,18 +27,28 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 }): Promise<void> => {
   const {
     query: { tenantId },
-    headers: { "x-saleor-domain": domain },
+    headers,
     body: { auth_token: token },
   } = req;
   try {
     const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
+
+    /**
+     * Saleor in a container will not have a real domain, so we override it here :/
+     * see https://github.com/trieb-work/eci/issues/88
+     */
+    const domain = headers["x-saleor-domain"].replace(
+      "localhost",
+      "saleor.eci",
+    );
+
     ctx.logger = ctx.logger.with({ tenantId, saleor: domain });
     ctx.logger.info("Registering app");
-    ctx.logger.info("req", { req });
 
     const saleorClient = newSaleorClient(ctx, domain, token);
 
     const idResponse = await saleorClient.app();
+    ctx.logger.info("app", { idResponse });
     if (!idResponse.app?.id) {
       throw new HttpError(500, "No app found");
     }
@@ -75,7 +85,9 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
         },
       },
     });
-    await saleorClient.webhookCreate({
+
+    ctx.logger.info("Added app to db", { app });
+    const webhook = await saleorClient.webhookCreate({
       input: {
         targetUrl: `${env.require("ECI_BASE_URL")}/api/saleor/webhook/v1/${
           app.webhooks[0].id
@@ -83,8 +95,12 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
         secretKey: app.webhooks[0].secret.secret,
       },
     });
+    ctx.logger.info("Added webhook to saleor", { webhook });
 
-    res.status(200);
+    res.json({
+      status: "received",
+      traceId: ctx.trace.id,
+    });
   } catch (err) {
     return res.send(err);
   } finally {

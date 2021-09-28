@@ -1,6 +1,7 @@
 import { ProductDataFeedGenerator } from "./service";
 import { SaleorClient, WeightUnitsEnum } from "@eci/adapters/saleor";
 import { FeedVariant } from "./types";
+import { NoopLogger } from "@eci/util/logger";
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -47,6 +48,7 @@ describe("generate", () => {
   const generator = new ProductDataFeedGenerator({
     saleorClient: mockedSaleorClient,
     channelSlug: "doesn't matter here",
+    logger: new NoopLogger(),
   });
   const variants: FeedVariant[] = ["facebookcommerce", "googlemerchant"];
   for (const variant of variants) {

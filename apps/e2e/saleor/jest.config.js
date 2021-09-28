@@ -1,5 +1,5 @@
 module.exports = {
-  displayName: "constants",
+  displayName: "e2e-saleor",
   preset: "../../../jest.preset.js",
   globals: {
     "ts-jest": {
@@ -8,8 +8,8 @@ module.exports = {
   },
   testEnvironment: "node",
   transform: {
-    "^.+\\.[tj]sx?$": "ts-jest",
+    "^.+\\.[tj]s$": "ts-jest",
   },
-  moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
-  coverageDirectory: "../../../coverage/libs/util/constants",
+  moduleFileExtensions: ["ts", "js", "html"],
+  coverageDirectory: "../../../coverage/apps/e2e/saleor",
 };

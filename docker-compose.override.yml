@@ -18,6 +18,8 @@ services:
     build:
       context: .
       dockerfile: ./apps/webhooks/Dockerfile
+    environment:
+      NODE_ENV: development
 
   saleor_dashboard:
     container_name: dashboard.saleor.eci
