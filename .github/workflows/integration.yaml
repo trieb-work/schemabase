@@ -129,6 +129,6 @@ jobs:
         run: yarn prisma db seed --preview-feature --schema=./libs/data-access/prisma/schema.prisma
 
       - name: Test (e2e)
-        run: yarn nx run e2e:e2e
+        run: yarn nx run-many --target=e2e --all
         env:
           SALEOR_URL: http://localhost:8000/graphql/
