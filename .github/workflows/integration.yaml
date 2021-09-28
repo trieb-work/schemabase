@@ -73,6 +73,8 @@ jobs:
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
       ECI_BASE_URL: http://localhost:3000
       ECI_BASE_URL_FROM_CONTAINER: http://webhooks.eci:3000
+      SALEOR_URL: http://localhost:8000/graphql/
+      SALEOR_URL_FROM_CONTAINER: http://saleor.eci:8000/graphql/
 
     steps:
       - name: Checkout code
@@ -131,5 +133,3 @@ jobs:
 
       - name: Test (e2e)
         run: yarn nx run-many --target=e2e --all
-        env:
-          SALEOR_URL: http://localhost:8000/graphql/
