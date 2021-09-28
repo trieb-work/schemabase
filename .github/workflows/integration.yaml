@@ -71,7 +71,8 @@ jobs:
       SALEOR_VERSION: ${{ matrix.saleor }}
       CI: true
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
-      ECI_BASE_URL: http://webhooks.eci:3000
+      ECI_BASE_URL: http://localhost:3000
+      ECI_BASE_URL_FROM_CONTAINER: http://webhooks.eci:3000
 
     steps:
       - name: Checkout code
