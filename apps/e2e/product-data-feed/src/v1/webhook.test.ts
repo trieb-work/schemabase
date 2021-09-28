@@ -96,7 +96,7 @@ describe("productdatafeed", () => {
 
   const http = new HttpClient();
   for (const variant of variants) {
-    it(`generates a feed for ${variant}`, async () => {
+    it.skip(`generates a feed for ${variant}`, async () => {
       const res = await http.call<string>({
         method: "GET",
         url: `http://localhost:3000/api/product-data-feed/v1/${variant}/${webhookId}`,
