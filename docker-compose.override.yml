@@ -5,6 +5,7 @@ version: "3.9"
 
 services:
   saleor_api:
+    image: chronark/saleor
     build:
       context: https://github.com/mirumee/saleor.git
       dockerfile: Dockerfile

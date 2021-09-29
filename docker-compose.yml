@@ -47,7 +47,6 @@ services:
 
   # Saleor Graphql API
   saleor_api:
-    image: chronark/saleor
     container_name: saleor.eci
 
     ports:

@@ -87,7 +87,9 @@ jobs:
 
   release-worker:
     name: Release worker
-    needs: build
+    needs:
+      - build
+      - test
     runs-on: ubuntu-latest
     env:
       REGISTRY: ghcr.io
@@ -130,11 +132,10 @@ jobs:
       fail-fast: false
       matrix:
         saleor: [
-            "3.0-triebwork7", # actually v2
-            "3.0.0-b.13-triebwork1", # v3 latest
+            "registry.gitlab.com/trieb.work/saleor:3.0.0-b.13-triebwork1", # v3 latest
           ]
     env:
-      SALEOR_VERSION: ${{ matrix.saleor }}
+      SALEOR_IMAGE: ${{ matrix.saleor }}
       CI: true
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
       ECI_BASE_URL: http://localhost:3000

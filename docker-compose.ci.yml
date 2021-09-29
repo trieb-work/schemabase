@@ -5,4 +5,4 @@
 
 services:
   saleor_api:
-    image: registry.gitlab.com/trieb.work/saleor:${SALEOR_VERSION}
+    image: ${SALEOR_IMAGE}
