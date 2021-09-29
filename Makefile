@@ -30,8 +30,8 @@ init: down
 	yarn prisma db seed --preview-feature --schema=${prismaSchema}
 
 	@# Upload now so we can pull them later during development
-	docker-compose push saleor_api
-	docker-compose push saleor_dashboard
+	docker-compose push saleor_api || true
+	docker-compose push saleor_dashboard || true
 
 
 up:

@@ -86,8 +86,6 @@ services:
   # By default strapi uses a SQLite db.
   strapi:
     image: strapi/strapi
-    volumes:
-      - ./app:/srv/app
     ports:
       - "1337:1337"
 
