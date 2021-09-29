@@ -12307,8 +12307,6 @@ export type AppInstallMutation = {
       __typename?: "AppError";
       field?: Maybe<string>;
       message?: Maybe<string>;
-      code: AppErrorCode;
-      permissions?: Maybe<Array<PermissionEnum>>;
     }>;
     appInstallation?: Maybe<{
       __typename?: "AppInstallation";
@@ -12502,8 +12500,6 @@ export const AppInstallDocument = gql`
       errors {
         field
         message
-        code
-        permissions
       }
       appInstallation {
         id
