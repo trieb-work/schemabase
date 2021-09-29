@@ -30,8 +30,8 @@ init: down
 	yarn prisma db seed --preview-feature --schema=${prismaSchema}
 
 	@# Upload now so we can pull them later during development
-	docker-compose push saleor_api
-	docker-compose push saleor_dashboard
+	# docker-compose push saleor_api
+	# docker-compose push saleor_dashboard
 
 
 up:
@@ -65,7 +65,6 @@ reset:
 #
 # Make sure you have called `make init` before to setup all required services
 # You just need to do this once, not for every new test run.
-# test-e2e: export SALEOR_VERSION             = 3.0-triebwork11
 test-e2e: export ECI_BASE_URL                 = http://localhost:3000
 test-e2e: export ECI_BASE_URL_FROM_CONTAINER  = http://webhooks.eci:3000
 test-e2e: export SALEOR_URL                   = http://localhost:8000/graphql/
@@ -111,3 +110,5 @@ db-studio:
 	yarn prisma studio --schema=${prismaSchema}
 db-push:
 	yarn prisma db push --schema=${prismaSchema} --skip-generate
+
+

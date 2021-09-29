@@ -1,4 +1,4 @@
-name: Pull
+name: CI
 
 # All required 3rd party services are hosted in docker containers.
 #
