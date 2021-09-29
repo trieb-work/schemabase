@@ -2,10 +2,146 @@ import { HttpClient } from "@eci/http";
 import { PrismaClient } from "@eci/data-access/prisma";
 import { randomUUID, createHash } from "crypto";
 
+import {
+  CountryCode,
+  createSaleorClient,
+  ProductTypeKindEnum,
+} from "@eci/adapters/saleor";
+import { idGenerator } from "@eci/util/ids";
+import { env } from "@chronark/env";
+
 const webhookId = randomUUID();
 
 beforeAll(async () => {
   const prisma = new PrismaClient();
+
+  let saleorClient = await createSaleorClient({
+    traceId: idGenerator.id("trace"),
+    graphqlEndpoint: env.require("SALEOR_URL"),
+  });
+
+  const setup = await saleorClient.tokenCreate({
+    email: "admin@example.com",
+    password: "admin",
+  });
+  if (!setup?.tokenCreate?.token) {
+    throw new Error(`Unable to get saleor token`);
+  }
+
+  saleorClient = createSaleorClient({
+    traceId: idGenerator.id("trace"),
+    graphqlEndpoint: env.require("SALEOR_URL"),
+    token: setup.tokenCreate.token,
+  });
+
+  const categoryResponse = await saleorClient.categoryCreate({
+    input: {
+      name: "juices",
+    },
+  });
+  const category = categoryResponse?.categoryCreate?.category;
+
+  if (!category) {
+    throw new Error(
+      `Unable to create category: ${JSON.stringify(categoryResponse, null, 2)}`,
+    );
+  }
+
+  const channelResponse = await saleorClient.channelCreate({
+    input: {
+      isActive: true,
+      name: randomUUID(),
+      slug: randomUUID(),
+      currencyCode: "EUR",
+      defaultCountry: CountryCode.De,
+    },
+  });
+  const channel = channelResponse?.channelCreate?.channel;
+
+  if (!channel) {
+    throw new Error(
+      `Unable to create channel: ${JSON.stringify(channelResponse, null, 2)}`,
+    );
+  }
+
+  const productTypeResponse = await saleorClient.productTypeCreate({
+    input: {
+      name: randomUUID(),
+      slug: randomUUID(),
+      hasVariants: false,
+      isDigital: true,
+      isShippingRequired: false,
+      weight: 2,
+      kind: ProductTypeKindEnum.Normal,
+    },
+  });
+  const productType = productTypeResponse?.productTypeCreate?.productType?.id;
+  if (!productType) {
+    throw new Error(
+      `Unable to create productType: ${JSON.stringify(
+        productTypeResponse,
+        null,
+        2,
+      )}`,
+    );
+  }
+
+  const productResponse = await saleorClient.productCreate({
+    input: {
+      name: "Apple Juice",
+      slug: "apple-juice",
+      category: category.id,
+      // description: "Apple juice is great",
+      // weight: 2,
+      productType,
+    },
+  });
+  const product = productResponse?.productCreate?.product;
+  if (!product) {
+    throw new Error("no product " + JSON.stringify(productResponse, null, 2));
+  }
+  const productVariantResponse = await saleorClient.productVariantCreate({
+    input: {
+      attributes: [],
+      product: product.id,
+      sku: "apple-juice-sku",
+      trackInventory: true,
+    },
+  });
+  const productVariant =
+    productVariantResponse?.productVariantCreate?.productVariant;
+  if (!productVariant) {
+    throw new Error(
+      "no productVariant " + JSON.stringify(productVariantResponse, null, 2),
+    );
+  }
+
+  await saleorClient.productChannelListingUpdate({
+    id: product.id,
+    input: {
+      updateChannels: [
+        {
+          channelId: channel.id,
+          availableForPurchaseDate: null,
+          isPublished: true,
+          visibleInListings: true,
+          isAvailableForPurchase: true,
+          addVariants: [productVariant.id],
+        },
+      ],
+    },
+  });
+
+  await saleorClient.productVariantChannelListingUpdate({
+    id: productVariant.id,
+    input: [
+      {
+        channelId: channel.id,
+        price: "1",
+        costPrice: "2",
+      },
+    ],
+  });
 
   const tenant = await prisma.tenant.create({
     data: {
@@ -17,19 +153,12 @@ beforeAll(async () => {
   /**
    * Upserting because there is a unique constraint on the domain
    */
-  const saleorApp = await prisma.saleorApp.upsert({
-    where: {
-      domain_channelSlug: {
-        channelSlug: "default-channel",
-        domain: "http://saleor.eci:8000",
-      },
-    },
-    update: {},
-    create: {
+  const saleorApp = await prisma.saleorApp.create({
+    data: {
       id: randomUUID(),
       name: randomUUID(),
       tenantId: tenant.id,
-      channelSlug: "default-channel",
+      channelSlug: channel.slug,
       domain: "http://saleor.eci:8000",
     },
   });
@@ -92,7 +221,7 @@ beforeAll(async () => {
 });
 
 describe("productdatafeed", () => {
-  const variants = ["facebookcommerce", "googlemerchant"];
+  const variants = ["facebookcommerce"]; //, "googlemerchant"];
 
   const http = new HttpClient();
   for (const variant of variants) {
@@ -101,7 +230,6 @@ describe("productdatafeed", () => {
         method: "GET",
         url: `http://localhost:3000/api/product-data-feed/v1/${variant}/${webhookId}`,
       });
-
       expect(res.status).toBe(200);
       expect(res.headers["content-type"]).toEqual("text/csv");
       expect(res.headers["cache-control"]).toEqual(

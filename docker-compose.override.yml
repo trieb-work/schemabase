@@ -4,21 +4,7 @@ version: "3.9"
 # In ci this file will be replaced by `docker-compose.ci.yml`
 
 services:
-  saleor_api:
-    image: chronark/saleor
-    build:
-      context: https://github.com/mirumee/saleor.git
-      dockerfile: Dockerfile
-
-  eci_worker:
-    build:
-      context: .
-      dockerfile: ./apps/worker/Dockerfile
-
   eci_webhooks:
-    build:
-      context: .
-      dockerfile: ./apps/webhooks/Dockerfile
     environment:
       NODE_ENV: development
 

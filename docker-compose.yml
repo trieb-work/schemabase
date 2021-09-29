@@ -15,6 +15,9 @@ services:
   # Nextjs Serverless application to receive webhooks from various services
   eci_webhooks:
     image: eci_webhooks
+    build:
+      context: .
+      dockerfile: ./apps/webhooks/Dockerfile
     container_name: webhooks.eci
     ports:
       - 3000:3000
@@ -32,6 +35,9 @@ services:
 
   eci_worker:
     image: eci_worker
+    build:
+      context: .
+      dockerfile: ./apps/worker/Dockerfile
 
     environment:
       DATABASE_URL: postgres://postgres:postgres@eci_db:5432/postgres
@@ -47,6 +53,7 @@ services:
 
   # Saleor Graphql API
   saleor_api:
+    image: ghcr.io/mirumee/saleor:3.1.0-a.6
     container_name: saleor.eci
 
     ports:
@@ -74,8 +81,6 @@ services:
       - POSTGRES_PASSWORD=saleor
     ports:
       - 15432:5432
-    volumes:
-      - saleor-db:/var/lib/postgresql/data
 
   redis:
     image: redis
@@ -87,7 +92,3 @@ services:
     image: strapi/strapi
     ports:
       - "1337:1337"
-
-volumes:
-  # Migrating and seeding the db takes a long time so we "cache" it for local development
-  saleor-db:

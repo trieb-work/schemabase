@@ -15,32 +15,38 @@ pull-env:
 	cp apps/webhooks/.env.local libs/data-access/prisma/.env
 
 
-# Build and seeds all required external services
-init: down
-
-	docker-compose up -d
+migrate-saleor:
 	docker-compose exec saleor_api python manage.py migrate
+	docker-compose exec \
+	-e DJANGO_SUPERUSER_PASSWORD=admin \
+	saleor_api \
+	python manage.py createsuperuser \
+	--email admin@example.com \
+	--noinput
 
-	@# An admin user is created with the following credentials:
-	@# email: admin@example.com
-	@# password: admin
-	docker-compose exec saleor_api python manage.py populatedb --createsuperuser
+# Build and seeds all required external services
+init: down build
+
+
+
+	docker-compose pull
+	docker-compose up -d
+
+	$(MAKE) migrate-saleor
 
 	yarn prisma db push --schema=${prismaSchema} --skip-generate
-	yarn prisma db seed --preview-feature --schema=${prismaSchema}
 
 	@# Upload now so we can pull them later during development
 	docker-compose push saleor_api || true
 	docker-compose push saleor_dashboard || true
 
-
-up:
-	docker-compose down
-	docker-compose up -d --build
-
-build:
+build: update-saleor-schema
 	yarn install
+
 	yarn nx run-many --target=build --all --with-deps
+
+update-saleor-schema:
+  curl "https://raw.githubusercontent.com/mirumee/saleor/master/saleor/graphql/schema.graphql" > libs/adapters/saleor/src/lib/schema.gql
 
 
 # Run all unit tests
@@ -48,18 +54,9 @@ test: build
 	yarn nx run-many --target=test --all
 
 
-reset: export SALEOR_URL                  = http://localhost:8000/graphql/
-reset: export SALEOR_TEMPORARY_APP_TOKEN  = token
-reset:
-	# Rebuild eci and ensure everything is up
-	docker-compose build eci_worker
-	docker-compose build eci_webhooks
-	docker-compose up -d
-
-	# Reset and seed the eci database for every test run
-	docker-compose  restart eci_db
-	yarn prisma db push --schema=${prismaSchema} --skip-generate
-	yarn prisma db seed --preview-feature --schema=${prismaSchema}
+reset: down
+	docker-compose build
+	$(MAKE) init
 
 # Run integration tests
 #

@@ -30,82 +30,73 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     headers,
     body: { auth_token: token },
   } = req;
-  try {
-    const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
+  const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
-    /**
-     * Saleor in a container will not have a real domain, so we override it here :/
-     * see https://github.com/trieb-work/eci/issues/88
-     */
-    const domain = headers["x-saleor-domain"].replace(
-      "localhost",
-      "saleor.eci",
-    );
+  /**
+   * Saleor in a container will not have a real domain, so we override it here :/
+   * see https://github.com/trieb-work/eci/issues/88
+   */
+  const domain = headers["x-saleor-domain"].replace("localhost", "saleor.eci");
 
-    ctx.logger = ctx.logger.with({ tenantId, saleor: domain });
-    ctx.logger.info("Registering app");
+  ctx.logger = ctx.logger.with({ tenantId, saleor: domain });
+  ctx.logger.info("Registering app");
 
-    const saleorClient = newSaleorClient(ctx, domain, token);
+  const saleorClient = newSaleorClient(ctx, domain, token);
 
-    const idResponse = await saleorClient.app();
-    ctx.logger.info("app", { idResponse });
-    if (!idResponse.app?.id) {
-      throw new HttpError(500, "No app found");
-    }
+  const idResponse = await saleorClient.app();
+  ctx.logger.info("app", { idResponse });
+  if (!idResponse.app?.id) {
+    throw new HttpError(500, "No app found");
+  }
 
-    const app = await ctx.prisma.installedSaleorApp.create({
-      data: {
-        id: idResponse.app.id,
-        token,
-        webhooks: {
-          create: {
-            id: idGenerator.id("publicKey"),
-            secret: {
-              create: {
-                id: idGenerator.id("publicKey"),
-                secret: idGenerator.id("secretKey"),
-              },
+  const app = await ctx.prisma.installedSaleorApp.create({
+    data: {
+      id: idResponse.app.id,
+      token,
+      webhooks: {
+        create: {
+          id: idGenerator.id("publicKey"),
+          secret: {
+            create: {
+              id: idGenerator.id("publicKey"),
+              secret: idGenerator.id("secretKey"),
             },
           },
         },
-        saleorApp: {
-          create: {
-            id: idGenerator.id("publicKey"),
-            name: "eCommerce Integration",
-            // channelSlug: "",
-            tenantId,
-            domain,
-          },
+      },
+      saleorApp: {
+        create: {
+          id: idGenerator.id("publicKey"),
+          name: "eCommerce Integration",
+          // channelSlug: "",
+          tenantId,
+          domain,
         },
       },
-      include: {
-        saleorApp: true,
-        webhooks: {
-          include: { secret: true },
-        },
+    },
+    include: {
+      saleorApp: true,
+      webhooks: {
+        include: { secret: true },
       },
-    });
+    },
+  });
 
-    ctx.logger.info("Added app to db", { app });
-    const webhook = await saleorClient.webhookCreate({
-      input: {
-        targetUrl: `${env.require("ECI_BASE_URL")}/api/saleor/webhook/v1/${
-          app.webhooks[0].id
-        }`,
-        secretKey: app.webhooks[0].secret.secret,
-      },
-    });
-    ctx.logger.info("Added webhook to saleor", { webhook });
+  ctx.logger.info("Added app to db", { app });
+  const webhook = await saleorClient.webhookCreate({
+    input: {
+      targetUrl: `${env.require("ECI_BASE_URL")}/api/saleor/webhook/v1/${
+        app.webhooks[0].id
+      }`,
+      secretKey: app.webhooks[0].secret.secret,
+    },
+  });
+  ctx.logger.info("Added webhook to saleor", { webhook });
 
-    res.json({
-      status: "received",
-      traceId: ctx.trace.id,
-    });
-  } catch (err) {
-    return res.send(err);
-  } finally {
-    res.end();
-  }
+  res.json({
+    status: "received",
+    traceId: ctx.trace.id,
+  });
 };
 
 export default handleWebhook({

@@ -1,5 +1,5 @@
 overwrite: true
-schema: "https://pundf-test-api.triebwork.com/graphql/"
+schema: "./libs/adapters/saleor/src/lib/schema.gql"
 documents: "./libs/adapters/saleor/src/lib/{mutations,queries}/**/*.gql"
 generates:
   ./libs/adapters/saleor/src/generated/graphql.ts:
