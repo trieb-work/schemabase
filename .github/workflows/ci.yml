@@ -122,7 +122,9 @@ jobs:
 
   e2e:
     name: Integration
-    needs: build
+    needs:
+      - test
+      - build
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
