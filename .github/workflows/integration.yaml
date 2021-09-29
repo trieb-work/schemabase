@@ -133,3 +133,7 @@ jobs:
 
       - name: Test (e2e)
         run: yarn nx run-many --target=e2e --all
+
+      - name: log
+        if: always()
+        run: docker-compose logs
