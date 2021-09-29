@@ -76,12 +76,10 @@ export function handleWebhook<TRequest>({
       meta: {
         traceId,
         endpoint: req.url,
-        req: env.get("NODE_ENV") === "production" ? req : undefined,
       },
     });
 
     try {
-      // logger = logger.with({ req });
       /**
        * Perform http validation
        */

@@ -19,7 +19,8 @@ export const newSaleorClient = (
    * Add a protocol if none is provided
    */
   if (!domain.startsWith("http")) {
-    const protocol = env.get("NODE_ENV") === "production" ? "https" : "http";
+    const protocol =
+      env.get("NODE_ENV") === "production" && !env.get("CI") ? "https" : "http";
     domain = `${protocol}://${domain}`;
   }
   return createSaleorClient({
