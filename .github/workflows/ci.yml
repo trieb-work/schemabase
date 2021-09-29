@@ -90,6 +90,7 @@ jobs:
     needs:
       - build
       - test
+      - e2e
     runs-on: ubuntu-latest
     env:
       REGISTRY: ghcr.io
