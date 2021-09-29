@@ -16,8 +16,8 @@ pull-env:
 
 
 migrate-saleor:
-	docker-compose exec saleor_api python manage.py migrate
-	docker-compose exec \
+	docker-compose exec -T saleor_api python manage.py migrate
+	docker-compose exec -T \
 	-e DJANGO_SUPERUSER_PASSWORD=admin \
 	saleor_api \
 	python manage.py createsuperuser \
