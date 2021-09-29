@@ -9,8 +9,8 @@ on:
   pull_request:
 
 jobs:
-  tests:
-    name: Tests
+  test:
+    name: Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
