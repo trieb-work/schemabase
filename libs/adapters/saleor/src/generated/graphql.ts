@@ -124,9 +124,7 @@ export type AccountRegister = {
 export type AccountRegisterInput = {
   channel?: Maybe<Scalars["String"]>;
   email: Scalars["String"];
-  firstName?: Maybe<Scalars["String"]>;
   languageCode?: Maybe<LanguageCodeEnum>;
-  lastName?: Maybe<Scalars["String"]>;
   metadata?: Maybe<Array<MetadataInput>>;
   password: Scalars["String"];
   redirectUrl?: Maybe<Scalars["String"]>;
@@ -5127,7 +5125,6 @@ export type MutationOrderFulfillArgs = {
 };
 
 export type MutationOrderFulfillmentApproveArgs = {
-  allowStockToBeExceeded?: Maybe<Scalars["Boolean"]>;
   id: Scalars["ID"];
   notifyCustomer: Scalars["Boolean"];
 };
@@ -6101,6 +6098,7 @@ export type OrderFilterInput = {
   channels?: Maybe<Array<Maybe<Scalars["ID"]>>>;
   created?: Maybe<DateRangeInput>;
   customer?: Maybe<Scalars["String"]>;
+  ids?: Maybe<Array<Maybe<Scalars["ID"]>>>;
   metadata?: Maybe<Array<Maybe<MetadataFilter>>>;
   paymentStatus?: Maybe<Array<Maybe<PaymentChargeStatusEnum>>>;
   search?: Maybe<Scalars["String"]>;
@@ -6117,7 +6115,6 @@ export type OrderFulfill = {
 };
 
 export type OrderFulfillInput = {
-  allowStockToBeExceeded?: Maybe<Scalars["Boolean"]>;
   lines: Array<OrderFulfillLineInput>;
   notifyCustomer?: Maybe<Scalars["Boolean"]>;
 };
@@ -7898,7 +7895,6 @@ export type Query = {
   exportFile?: Maybe<ExportFile>;
   exportFiles?: Maybe<ExportFileCountableConnection>;
   giftCard?: Maybe<GiftCard>;
-  giftCardCurrencies: Array<Scalars["String"]>;
   giftCardSettings: GiftCardSettings;
   giftCards?: Maybe<GiftCardCountableConnection>;
   homepageEvents?: Maybe<OrderEventCountableConnection>;
@@ -10040,9 +10036,6 @@ export enum WebhookEventTypeEnum {
   CheckoutUpdated = "CHECKOUT_UPDATED",
   CustomerCreated = "CUSTOMER_CREATED",
   CustomerUpdated = "CUSTOMER_UPDATED",
-  DraftOrderCreated = "DRAFT_ORDER_CREATED",
-  DraftOrderDeleted = "DRAFT_ORDER_DELETED",
-  DraftOrderUpdated = "DRAFT_ORDER_UPDATED",
   FulfillmentCanceled = "FULFILLMENT_CANCELED",
   FulfillmentCreated = "FULFILLMENT_CREATED",
   InvoiceDeleted = "INVOICE_DELETED",
@@ -10082,9 +10075,6 @@ export enum WebhookSampleEventTypeEnum {
   CheckoutUpdated = "CHECKOUT_UPDATED",
   CustomerCreated = "CUSTOMER_CREATED",
   CustomerUpdated = "CUSTOMER_UPDATED",
-  DraftOrderCreated = "DRAFT_ORDER_CREATED",
-  DraftOrderDeleted = "DRAFT_ORDER_DELETED",
-  DraftOrderUpdated = "DRAFT_ORDER_UPDATED",
   FulfillmentCanceled = "FULFILLMENT_CANCELED",
   FulfillmentCreated = "FULFILLMENT_CREATED",
   InvoiceDeleted = "INVOICE_DELETED",

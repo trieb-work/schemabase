@@ -40,13 +40,12 @@ init: down build
 	docker-compose push saleor_api || true
 	docker-compose push saleor_dashboard || true
 
-build: update-saleor-schema
+build:
 	yarn install
 
 	yarn nx run-many --target=build --all --with-deps
 
-update-saleor-schema:
-  curl "https://raw.githubusercontent.com/mirumee/saleor/master/saleor/graphql/schema.graphql" > libs/adapters/saleor/src/lib/schema.gql
+
 
 
 # Run all unit tests

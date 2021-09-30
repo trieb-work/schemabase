@@ -1,3 +1,7 @@
+# v3.1 as of 30.09.2021
+# https://github.com/mirumee/saleor/blob/3.1/saleor/graphql/schema.graphql
+# commit ae553c9819ead775bdf3dc8849e00724f822b4d0
+
 schema {
   query: Query
   mutation: Mutation
@@ -75,9 +79,9 @@ enum AccountErrorCode {
 input AccountInput {
   firstName: String
   lastName: String
-  languageCode: LanguageCodeEnum
   defaultBillingAddress: AddressInput
   defaultShippingAddress: AddressInput
+  languageCode: LanguageCodeEnum
 }
 
 type AccountRegister {
@@ -88,12 +92,10 @@ type AccountRegister {
 }
 
 input AccountRegisterInput {
-  firstName: String
-  lastName: String
-  languageCode: LanguageCodeEnum
   email: String!
   password: String!
   redirectUrl: String
+  languageCode: LanguageCodeEnum
   metadata: [MetadataInput!]
   channel: String
 }
@@ -3826,7 +3828,7 @@ type Mutation {
   orderConfirm(id: ID!): OrderConfirm
   orderFulfill(input: OrderFulfillInput!, order: ID): OrderFulfill
   orderFulfillmentCancel(id: ID!, input: FulfillmentCancelInput): FulfillmentCancel
-  orderFulfillmentApprove(allowStockToBeExceeded: Boolean = false, id: ID!, notifyCustomer: Boolean!): FulfillmentApprove
+  orderFulfillmentApprove(id: ID!, notifyCustomer: Boolean!): FulfillmentApprove
   orderFulfillmentUpdateTracking(id: ID!, input: FulfillmentUpdateTrackingInput!): FulfillmentUpdateTracking
   orderFulfillmentRefundProducts(input: OrderRefundProductsInput!, order: ID!): FulfillmentRefundProducts
   orderFulfillmentReturnProducts(input: OrderReturnProductsInput!, order: ID!): FulfillmentReturnProducts
@@ -4326,6 +4328,7 @@ input OrderFilterInput {
   search: String
   metadata: [MetadataFilter]
   channels: [ID]
+  ids: [ID]
 }
 
 type OrderFulfill {
@@ -4338,7 +4341,6 @@ type OrderFulfill {
 input OrderFulfillInput {
   lines: [OrderFulfillLineInput!]!
   notifyCustomer: Boolean
-  allowStockToBeExceeded: Boolean = false
 }
 
 input OrderFulfillLineInput {
@@ -5828,7 +5830,6 @@ type Query {
   menuItems(channel: String, sortBy: MenuItemSortingInput, filter: MenuItemFilterInput, before: String, after: String, first: Int, last: Int): MenuItemCountableConnection
   giftCard(id: ID!): GiftCard
   giftCards(sortBy: GiftCardSortingInput, filter: GiftCardFilterInput, before: String, after: String, first: Int, last: Int): GiftCardCountableConnection
-  giftCardCurrencies: [String!]!
   plugin(id: ID!): Plugin
   plugins(filter: PluginFilterInput, sortBy: PluginSortingInput, before: String, after: String, first: Int, last: Int): PluginCountableConnection
   sale(id: ID!, channel: String): Sale
@@ -7185,9 +7186,6 @@ enum WebhookEventTypeEnum {
   ORDER_UPDATED
   ORDER_CANCELLED
   ORDER_FULFILLED
-  DRAFT_ORDER_CREATED
-  DRAFT_ORDER_UPDATED
-  DRAFT_ORDER_DELETED
   INVOICE_REQUESTED
   INVOICE_DELETED
   INVOICE_SENT
@@ -7227,9 +7225,6 @@ enum WebhookSampleEventTypeEnum {
   ORDER_UPDATED
   ORDER_CANCELLED
   ORDER_FULFILLED
-  DRAFT_ORDER_CREATED
-  DRAFT_ORDER_UPDATED
-  DRAFT_ORDER_DELETED
   INVOICE_REQUESTED
   INVOICE_DELETED
   INVOICE_SENT
