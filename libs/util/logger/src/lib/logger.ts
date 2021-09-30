@@ -32,9 +32,9 @@ export class Logger implements ILogger {
   private elasticSearchTransport?: ElasticsearchTransport;
   private apm?: typeof APMAgent;
 
-  public constructor(config: LoggerConfig) {
+  public constructor(config?: LoggerConfig) {
     this.meta = {
-      ...config.meta,
+      ...config?.meta,
       env: env.get("NODE_ENV"),
       commit: env.get("VERCEL_GIT_COMMIT_SHA"),
     };
@@ -47,8 +47,7 @@ export class Logger implements ILogger {
     });
 
     const isCI = env.get("CI") === "true";
-    this.logger.info("CI", { isCI });
-    if (!isCI && config.enableElastic) {
+    if (!isCI && config?.enableElastic) {
       this.debug("Enabling elastic transport");
       // this.apm ??= APMAgent.start({ serviceName: "eci-v2" });
 

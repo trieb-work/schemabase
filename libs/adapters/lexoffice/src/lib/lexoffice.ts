@@ -117,7 +117,6 @@ export class LexofficeInstance {
       },
     });
     if (res.data?.content && res.data.content.length > 0) {
-      console.log("Found a contact. Returning ID");
       return res.data?.content[0].id;
     }
     const data = {

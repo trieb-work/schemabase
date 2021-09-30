@@ -1,0 +1,11 @@
+mutation productVariantChannelListingUpdate($id:ID!,$ input: [ProductVariantChannelListingAddInput!]!){
+  productVariantChannelListingUpdate(id:$id,input: $input){
+    errors {
+      field
+      message
+    }
+    variant {
+      id
+    }
+  }
+}

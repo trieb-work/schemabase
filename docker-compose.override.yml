@@ -1,0 +1,30 @@
+version: "3.9"
+
+# This will apply in local development.
+# In ci this file will be replaced by `docker-compose.ci.yml`
+
+services:
+  eci_webhooks:
+    environment:
+      NODE_ENV: development
+
+  saleor_dashboard:
+    container_name: dashboard.saleor.eci
+    image: chronark/saleor-dashboard
+    build:
+      context: https://github.com/mirumee/saleor-dashboard.git
+      dockerfile: Dockerfile.dev
+    ports:
+      - 9000:9000
+    command: npm start -- --host 0.0.0.0
+    depends_on:
+      - saleor_api
+
+  redis-commander:
+    image: rediscommander/redis-commander
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - 8081:8081
+    depends_on:
+      - redis

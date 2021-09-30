@@ -211,22 +211,65 @@
         }
       }
     },
-    "e2e": {
-      "root": "apps/e2e",
-      "sourceRoot": "apps/e2e/src",
+
+    "e2e-product-data-feed": {
+      "root": "apps/e2e/product-data-feed",
+      "sourceRoot": "apps/e2e/product-data-feed/src",
       "projectType": "application",
       "targets": {
         "lint": {
           "executor": "@nrwl/linter:eslint",
           "options": {
-            "lintFilePatterns": ["apps/e2e/**/*.ts"]
+            "lintFilePatterns": ["apps/e2e/product-data-feed/**/*.ts"]
           }
         },
         "e2e": {
           "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/apps/e2e"],
+          "outputs": ["coverage/apps/e2e/product-data-feed"],
           "options": {
-            "jestConfig": "apps/e2e/jest.config.js",
+            "jestConfig": "apps/e2e/product-data-feed/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "e2e-queue": {
+      "root": "apps/e2e/queue",
+      "sourceRoot": "apps/e2e/queue/src",
+      "projectType": "application",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["apps/e2e/queue/**/*.ts"]
+          }
+        },
+        "e2e": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/apps/e2e/queue"],
+          "options": {
+            "jestConfig": "apps/e2e/queue/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "e2e-saleor": {
+      "root": "apps/e2e/saleor",
+      "sourceRoot": "apps/e2e/saleor/src",
+      "projectType": "application",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["apps/e2e/saleor/**/*.ts"]
+          }
+        },
+        "e2e": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/apps/e2e/saleor"],
+          "options": {
+            "jestConfig": "apps/e2e/saleor/jest.config.js",
             "passWithNoTests": true
           }
         }
@@ -528,7 +571,6 @@
             "production": {}
           }
         },
-
         "serve": {
           "executor": "@nrwl/next:server",
           "options": {
@@ -591,7 +633,6 @@
             }
           }
         },
-
         "serve": {
           "executor": "@nrwl/node:execute",
           "options": {

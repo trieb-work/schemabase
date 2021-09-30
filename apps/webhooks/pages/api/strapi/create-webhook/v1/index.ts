@@ -1,4 +1,4 @@
-import { setupPrisma, getTenant, extendContext } from "@eci/context";
+import { setupPrisma, extendContext } from "@eci/context";
 import { createHash } from "crypto";
 import { z } from "zod";
 import { handleWebhook, Webhook } from "@eci/http";
@@ -23,25 +23,13 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     query: { strapiId },
   } = req;
 
-  const ctx = await extendContext<"prisma" | "tenant">(
-    backgroundContext,
-    setupPrisma(),
-    getTenant({
-      where: {
-        strapi: {
-          some: {
-            id: strapiId,
-          },
-        },
-      },
-    }),
-  );
+  const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
   const secret = idGenerator.id("secretKey");
-  const webhook = await ctx.prisma.incomingWebhook.create({
+  const webhook = await ctx.prisma.incomingStrapiWebhook.create({
     data: {
       id: idGenerator.id("publicKey"),
-      strapi: {
+      strapiApp: {
         connect: {
           id: strapiId,
         },
@@ -49,7 +37,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
       secret: {
         create: {
           id: idGenerator.id("publicKey"),
-          hash: createHash("256").update(secret).digest("hex"),
+          secret: createHash("256").update(secret).digest("hex"),
         },
       },
     },

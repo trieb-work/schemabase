@@ -15,32 +15,37 @@ pull-env:
 	cp apps/webhooks/.env.local libs/data-access/prisma/.env
 
 
+migrate-saleor:
+	docker-compose exec -T saleor_api python manage.py migrate
+	docker-compose exec -T \
+	-e DJANGO_SUPERUSER_PASSWORD=admin \
+	saleor_api \
+	python manage.py createsuperuser \
+	--email admin@example.com \
+	--noinput
+
 # Build and seeds all required external services
-init: export SALEOR_VERSION=3.0-triebwork11
 init: down build
+
+
+
 	docker-compose pull
-	docker-compose build --parallel
-
 	docker-compose up -d
-	docker-compose exec saleor_api python manage.py migrate
 
-	@# An admin user is created with the following credentials:
-	@# email: admin@example.com
-	@# password: admin
-	docker-compose exec saleor_api python manage.py populatedb --createsuperuser
+	$(MAKE) migrate-saleor
 
 	yarn prisma db push --schema=${prismaSchema} --skip-generate
-	yarn prisma db seed --preview-feature --schema=${prismaSchema}
 
-
-
-up:
-	docker-compose down
-	docker-compose up -d --build
+	@# Upload now so we can pull them later during development
+	docker-compose push saleor_api || true
+	docker-compose push saleor_dashboard || true
 
 build:
 	yarn install
+
 	yarn nx run-many --target=build --all --with-deps
+
+
 
 
 # Run all unit tests
@@ -48,26 +53,21 @@ test: build
 	yarn nx run-many --target=test --all
 
 
+reset: down
+	docker-compose build
+	$(MAKE) init
+
 # Run integration tests
 #
 # Make sure you have called `make init` before to setup all required services
 # You just need to do this once, not for every new test run.
-test-e2e: export SALEOR_VERSION             = 3.0-triebwork11
-test-e2e: export ECI_BASE_URL               = http://localhost:3000
-test-e2e: export SALEOR_GRAPHQL_ENDPOINT    = http://localhost:8000/graphql/
-test-e2e: export SALEOR_TEMPORARY_APP_TOKEN = token
-test-e2e: build
-	# Rebuild eci and ensure everything is up
-	docker-compose up -d --build
-
-	# Reset and seed the eci database for every test run
-	docker-compose  restart eci_db
-	yarn prisma db push --schema=${prismaSchema} --skip-generate
-	yarn prisma db seed --preview-feature --schema=${prismaSchema}
-
-
+test-e2e: export ECI_BASE_URL                 = http://localhost:3000
+test-e2e: export ECI_BASE_URL_FROM_CONTAINER  = http://webhooks.eci:3000
+test-e2e: export SALEOR_URL                   = http://localhost:8000/graphql/
+test-e2e: export SALEOR_URL_FROM_CONTAINER    = http://saleor.eci:8000/graphql/
+# test-e2e: export SALEOR_TEMPORARY_APP_TOKEN = token
+test-e2e:
 	yarn nx run-many --target=e2e --all --skip-nx-cache
-
 
 # DO NOT RUN THIS YOURSELF!
 #
@@ -106,3 +106,5 @@ db-studio:
 	yarn prisma studio --schema=${prismaSchema}
 db-push:
 	yarn prisma db push --schema=${prismaSchema} --skip-generate
+
+

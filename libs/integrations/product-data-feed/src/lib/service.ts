@@ -1,10 +1,11 @@
 import ObjectsToCsv from "objects-to-csv";
 import { htmlToText } from "html-to-text";
-import { Product as RawProduct } from "@eci/adapters/saleor";
+import { ProductsQuery } from "@eci/adapters/saleor";
 // @ts-expect-error it doesn't detec types for some reason
 import edjsHTML from "editorjs-html";
 import { generateUnitPrice } from "./generate-unit-price";
 import { FeedVariant, Product } from "./types";
+import { ILogger } from "@eci/util/logger";
 
 export interface ProductDataFeedService {
   generateCSV: (
@@ -16,12 +17,13 @@ export interface ProductDataFeedService {
 
 export type ProductDataFeedServiceConfig = {
   saleorClient: {
-    getProducts: (variables: {
+    products: (variables: {
       first: number;
       channel: string;
-    }) => Promise<RawProduct[]>;
+    }) => Promise<ProductsQuery>;
   };
   channelSlug: string;
+  logger: ILogger;
 };
 
 /**
@@ -30,16 +32,18 @@ export type ProductDataFeedServiceConfig = {
 
 export class ProductDataFeedGenerator implements ProductDataFeedService {
   public readonly saleorClient: {
-    getProducts: (variables: {
+    products: (variables: {
       first: number;
       channel: string;
-    }) => Promise<RawProduct[]>;
+    }) => Promise<ProductsQuery>;
   };
   public readonly channelSlug: string;
+  private readonly logger: ILogger;
 
   public constructor(config: ProductDataFeedServiceConfig) {
     this.saleorClient = config.saleorClient;
     this.channelSlug = config.channelSlug;
+    this.logger = config.logger;
   }
 
   public async generateCSV(
@@ -55,10 +59,16 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
     storefrontProductUrl: string,
     feedVariant: FeedVariant,
   ): Promise<Product[]> {
-    const rawProducts = await this.saleorClient.getProducts({
+    this.logger.info("Fetching products from saleor");
+    const res = await this.saleorClient.products({
       first: 100,
       channel: this.channelSlug,
     });
+    if (!res) {
+      throw new Error("Unable to load products");
+    }
+    this.logger.info(`Found ${res.products?.edges.length ?? 0} products`);
+    const rawProducts = res.products?.edges.map((edge) => edge.node) ?? [];
     const products: Product[] = [];
 
     for (const rawProduct of rawProducts) {

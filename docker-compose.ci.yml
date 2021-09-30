@@ -1,0 +1,8 @@
+# In ci we want to test against very specific version of saleor
+# (namely the ones we have in production)
+# This can be achieved by running the following command:
+# $ export SALEOR_VERSION="XXX" docker-compose -f docker-compose.ci.yaml up
+
+services:
+  saleor_api:
+    image: ${SALEOR_IMAGE}
