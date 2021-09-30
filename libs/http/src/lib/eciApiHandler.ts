@@ -52,6 +52,18 @@ export function handleWebhook<TRequest>({
 }: HandleWebhookConfig<TRequest>): NextApiHandler {
   return async (req: NextApiRequest, res: NextApiResponse) => {
     /**
+     * Not all webhooks will send the Content-Type header so we need to
+     * parse the body manually.
+     */
+    if (typeof req.body === "string") {
+      try {
+        req.body = JSON.parse(req.body);
+      } catch (err) {
+        // Do nothing
+      }
+    }
+
+    /**
      * A unique id for this trace. This is useful for searching the logs.
      */
     const traceId =
@@ -59,16 +71,15 @@ export function handleWebhook<TRequest>({
 
     res.setHeader(ECI_TRACE_HEADER, traceId);
 
-    let logger: ILogger = new Logger({
+    const logger: ILogger = new Logger({
       enableElastic: env.get("NODE_ENV") === "production",
       meta: {
         traceId,
-        webhookId: req.url,
+        endpoint: req.url,
       },
     });
 
     try {
-      logger = logger.with({ req });
       /**
        * Perform http validation
        */

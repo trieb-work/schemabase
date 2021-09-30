@@ -1,6 +1,4 @@
 import { PrismaClient } from "@eci/data-access/prisma";
-import { Saleor } from "./setup/saleor";
-import { Tenant } from "./setup/tenant";
 import { ILogger } from "@eci/util/logger";
 
 export type Context = {
@@ -9,8 +7,6 @@ export type Context = {
   };
   logger: ILogger;
   prisma?: PrismaClient;
-  saleor?: Saleor;
-  tenant?: Tenant;
 };
 
 /**

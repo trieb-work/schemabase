@@ -3,8 +3,6 @@ mutation appInstall($input: AppInstallInput!) {
     errors {
       field
       message
-      code
-      permissions
     }
     appInstallation {
       id

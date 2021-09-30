@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`productdatafeed generates a feed for facebookcommerce 1`] = `
+"id,title,description,rich_text_description,image_link,additional_image_link,link,price,sale_price,condition,gtin,brand,unit_pricing_measure,availability,google_product_category
+apple-juice-sku,Apple Juice,,,,,www.storefront.comapple-juice,1 EUR,1 EUR,new,,undefined,,out of stock,
+"
+`;

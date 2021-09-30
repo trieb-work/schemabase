@@ -2,20 +2,21 @@
 //// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 //// ------------------------------------------------------
 
-Table ProductDataFeed {
+Table ProductDataFeedApp {
   id String [pk]
-  publicId String [unique, not null]
   enabled Boolean [default: false]
-  productDetailStorefrontURL String
+  productDetailStorefrontURL String [not null]
+  saleorApp SaleorApp [not null]
+  saleorAppId String [not null]
   tenant Tenant [not null]
   tenantId String [unique, not null]
-  ProductDataFeedWebhook IncomingWebhook [not null]
+  webhooks IncomingProductDataFeedWebhook [not null]
+  integration ProductDataFeedIntegration
 }
 
-Table ZohoConfig {
+Table ZohoApp {
   id String [pk]
   enabled Boolean [not null, default: false]
-  publicId String [not null]
   orgId String [not null]
   clientId String [not null]
   clientSecret String [not null]
@@ -30,74 +31,157 @@ Table ZohoConfig {
 
 Table SaleorApp {
   id String [pk]
-  channelSlug String [not null]
-  domain String [unique, not null]
+  domain String [not null]
   name String [not null]
-  appToken String [not null]
-  webhooks IncomingWebhook [not null]
+  channelSlug String
+  installedSaleorApp InstalledSaleorApp
   tenant Tenant [not null]
   tenantId String [not null]
+  productDataFeedIntegration ProductDataFeedIntegration [not null]
+  ProductDataFeedApp ProductDataFeedApp [not null]
 
   indexes {
     (domain, channelSlug) [unique]
   }
 }
 
+Table InstalledSaleorApp {
+  id String [pk]
+  webhooks IncomingSaleorWebhook [not null]
+  token String [not null]
+  saleorApp SaleorApp [not null]
+  saleorAppId String [unique, not null]
+}
+
 Table Tenant {
   id String [pk]
   name String [not null]
-  enabled Boolean [not null, default: false]
+  Subscriptions Subscription [not null]
   saleorApps SaleorApp [not null]
-  zoho ZohoConfig [not null]
-  productdatafeed ProductDataFeed [not null]
-  strapi Strapi [not null]
+  zohoApps ZohoApp [not null]
+  productdatafeedApps ProductDataFeedApp [not null]
+  strapiApps StrapiApp [not null]
+  ProductDataFeedIntegration ProductDataFeedIntegration [not null]
+  StrapiToZohoIntegration StrapiToZohoIntegration [not null]
 }
 
-Table Strapi {
+Table Subscription {
   id String [pk]
-  name String [not null]
-  webhooks IncomingWebhook [not null]
   tenant Tenant [not null]
   tenantId String [not null]
+  payedUntil DateTime
+  productDataFeedIntegration ProductDataFeedIntegration
 }
 
-Table IncomingWebhook {
+Table ProductDataFeedIntegration {
+  id String [pk]
+  enabled Boolean [not null, default: true]
+  subscription Subscription
+  subscriptionId String [unique]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  productDataFeedApp ProductDataFeedApp [not null]
+  productDataFeedAppId String [not null]
+  saleorApp SaleorApp [not null]
+  saleorAppId String [not null]
+}
+
+Table StrapiToZohoIntegration {
+  id String [pk]
+  payedUntil DateTime
+  enabled Boolean [not null, default: true]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  strapiApp StrapiApp [not null]
+  strapiAppId String [not null]
+}
+
+Table StrapiApp {
+  id String [pk]
+  name String [not null]
+  webhooks IncomingStrapiWebhook [not null]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  StrapiToZohoIntegration StrapiToZohoIntegration [not null]
+}
+
+Table IncomingSaleorWebhook {
   id String [pk]
   name String
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-  lastUsed DateTime
   secret SecretKey [not null]
   secretId String [not null]
-  strapi Strapi
-  strapiId String
-  saleor SaleorApp
-  saleorApp String
-  productDataFeed ProductDataFeed
-  productDataFeedId String
+  installedSaleorApp InstalledSaleorApp [not null]
+  installedSaleorAppId String [not null]
+}
+
+Table IncomingStrapiWebhook {
+  id String [pk]
+  name String
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  secret SecretKey [not null]
+  secretId String [not null]
+  strapiApp StrapiApp [not null]
+  strapiAppId String [not null]
+}
+
+Table IncomingProductDataFeedWebhook {
+  id String [pk]
+  name String
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  secret SecretKey [not null]
+  secretId String [not null]
+  productDataFeedApp ProductDataFeedApp [not null]
+  productDataFeedAppId String [not null]
 }
 
 Table SecretKey {
   id String [pk]
   name String
-  hash String [not null]
+  secret String [not null]
   createdAt DateTime [default: `now()`, not null]
-  lastUsed DateTime
-  IncomingWebhook IncomingWebhook
+  incomingSaleorWebhook IncomingSaleorWebhook
+  IncomingStrapiWebhook IncomingStrapiWebhook
+  IncomingProductDataFeedWebhook IncomingProductDataFeedWebhook
 }
 
-Ref: ProductDataFeed.tenantId > Tenant.id
+Ref: ProductDataFeedApp.saleorAppId > SaleorApp.id
 
-Ref: ZohoConfig.tenantId > Tenant.id
+Ref: ProductDataFeedApp.tenantId > Tenant.id
+
+Ref: ZohoApp.tenantId > Tenant.id
 
 Ref: SaleorApp.tenantId > Tenant.id
 
-Ref: Strapi.tenantId > Tenant.id
+Ref: InstalledSaleorApp.saleorAppId - SaleorApp.id
 
-Ref: IncomingWebhook.secretId - SecretKey.id
+Ref: Subscription.tenantId > Tenant.id
 
-Ref: IncomingWebhook.strapiId > Strapi.id
+Ref: ProductDataFeedIntegration.subscriptionId - Subscription.id
 
-Ref: IncomingWebhook.saleorApp > SaleorApp.id
+Ref: ProductDataFeedIntegration.tenantId > Tenant.id
 
-Ref: IncomingWebhook.productDataFeedId > ProductDataFeed.id
+Ref: ProductDataFeedIntegration.productDataFeedAppId - ProductDataFeedApp.id
+
+Ref: ProductDataFeedIntegration.saleorAppId > SaleorApp.id
+
+Ref: StrapiToZohoIntegration.tenantId > Tenant.id
+
+Ref: StrapiToZohoIntegration.strapiAppId > StrapiApp.id
+
+Ref: StrapiApp.tenantId > Tenant.id
+
+Ref: IncomingSaleorWebhook.secretId - SecretKey.id
+
+Ref: IncomingSaleorWebhook.installedSaleorAppId > InstalledSaleorApp.id
+
+Ref: IncomingStrapiWebhook.secretId - SecretKey.id
+
+Ref: IncomingStrapiWebhook.strapiAppId > StrapiApp.id
+
+Ref: IncomingProductDataFeedWebhook.secretId - SecretKey.id
+
+Ref: IncomingProductDataFeedWebhook.productDataFeedAppId > ProductDataFeedApp.id

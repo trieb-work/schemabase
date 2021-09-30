@@ -5,7 +5,7 @@ FROM node:16-alpine
 WORKDIR /eci
 
 COPY package.json yarn.lock ./
-RUN yarn install
+RUN yarn install --frozen-lockfile
 
 COPY . .
 
