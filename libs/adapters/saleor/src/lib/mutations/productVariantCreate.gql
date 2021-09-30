@@ -1,5 +1,5 @@
-mutation productVariantCreate($input: ProductVariantCreateInput!){
-  productVariantCreate(input: $input){
+mutation productVariantCreate($input: ProductVariantCreateInput!) {
+  productVariantCreate(input: $input) {
     errors {
       field
       message

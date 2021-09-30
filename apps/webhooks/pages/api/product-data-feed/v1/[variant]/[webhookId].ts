@@ -31,34 +31,30 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
-  const app = await ctx.prisma.productDataFeedApp.findFirst({
+  const webhook = await ctx.prisma.incomingProductDataFeedWebhook.findUnique({
     where: {
-      webhooks: {
-        some: {
-          id: webhookId,
-        },
-      },
+      id: webhookId,
     },
     include: {
-      webhooks: {
+      secret: true,
+      productDataFeedApp: {
         include: {
-          secret: true,
-        },
-      },
-      integration: {
-        include: {
-          saleorApp: true,
-          subscription: true,
+          integration: {
+            include: { subscription: true, saleorApp: true },
+          },
         },
       },
     },
   });
 
-  if (!app) {
+  if (!webhook) {
     throw new HttpError(404, `Webhook not found: ${webhookId}`);
   }
-
-  const { integration } = app;
+  const { productDataFeedApp } = webhook;
+  if (!productDataFeedApp) {
+    throw new HttpError(400, "productDataFeedApp is not configured");
+  }
+  const { integration } = productDataFeedApp;
   if (!integration) {
     throw new HttpError(400, "Integration is not configured");
   }
@@ -89,7 +85,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   });
 
   const products = await generator.generateCSV(
-    app.productDetailStorefrontURL,
+    productDataFeedApp.productDetailStorefrontURL,
     variant,
   );
 
