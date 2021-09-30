@@ -1,0 +1,7 @@
+@eci/events-client
+
+@eci/util-errors
+
+@eci/util/logger
+
+@trieb.work/eci-events-strapi

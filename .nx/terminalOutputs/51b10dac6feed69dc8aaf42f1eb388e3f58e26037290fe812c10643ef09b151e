@@ -1,0 +1,15 @@
+
+Linting "integrations-saleor-to-zoho"...
+[0m[0m
+[0m[4m/home/chronark/github/trieb-work/eci/libs/integrations/saleor-to-zoho/src/lib/saleor-to-zoho.ts[24m[0m
+[0m  [2m15:16[22m  [33mwarning[39m  'customer' is defined but never used    [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m15:51[22m  [31merror[39m    Unexpected empty method 'syncCustomer'  [2m@typescript-eslint/no-empty-function[22m[0m
+[0m  [2m20:15[22m  [33mwarning[39m  'payment' is defined but never used     [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m20:48[22m  [31merror[39m    Unexpected empty method 'syncPayment'   [2m@typescript-eslint/no-empty-function[22m[0m
+[0m[0m
+[0m[31m[1m✖ 4 problems (2 errors, 2 warnings)[22m[39m[0m
+[0m[31m[1m[22m[39m[0m
+Lint warnings found in the listed files.
+
+Lint errors found in the listed files.
+

@@ -1,7 +1,7 @@
-import { IProducer, Message } from "@eci/events-client";
+import { IProducer, Message } from "@eci/events/client";
 import { validation, EntryEvent } from "./validation/entry";
 import { Topic, StrapiQueueConfig } from "./types";
-import { QueueManager } from "@eci/events-client";
+import { QueueManager } from "@eci/events/client";
 export class Producer implements IProducer<Topic, Message<EntryEvent>> {
   private queueManager: QueueManager<Topic, EntryEvent>;
   constructor(config: StrapiQueueConfig) {

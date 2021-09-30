@@ -1,5 +1,5 @@
 import { Logger } from "@eci/util/logger";
-import { IConsumer, Message } from "@eci/events-client";
+import { IConsumer, Message } from "@eci/events/client";
 import { Topic, EntryEvent } from "@eci/events/strapi";
 
 export type EventSource<TTopic extends string, TMessage> = {

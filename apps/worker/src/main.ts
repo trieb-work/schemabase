@@ -1,4 +1,4 @@
-import { Signer } from "@eci/events-client";
+import { Signer } from "@eci/events/client";
 import { Logger } from "@eci/util/logger";
 import { Worker } from "./service";
 import * as strapi from "@eci/events/strapi";

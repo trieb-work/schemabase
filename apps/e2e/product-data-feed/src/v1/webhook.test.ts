@@ -1,16 +1,15 @@
 import { HttpClient } from "@eci/http";
 import { PrismaClient } from "@eci/data-access/prisma";
-import { randomUUID, createHash } from "crypto";
-
+import { createHash } from "crypto";
+import {idGenerator} from "@eci/util/ids"
 import {
   CountryCode,
   createSaleorClient,
   ProductTypeKindEnum,
-} from "@eci/adapters/saleor";
-import { idGenerator } from "@eci/util/ids";
+} from "@eci/adapters/saleor/api";
 import { env } from "@chronark/env";
 
-const webhookId = randomUUID();
+const webhookId = idGenerator.id("test");
 
 beforeAll(async () => {
   const prisma = new PrismaClient();
@@ -50,8 +49,8 @@ beforeAll(async () => {
   const channelResponse = await saleorClient.channelCreate({
     input: {
       isActive: true,
-      name: randomUUID(),
-      slug: randomUUID(),
+      name: idGenerator.id("test"),
+      slug: idGenerator.id("test"),
       currencyCode: "EUR",
       defaultCountry: CountryCode.De,
     },
@@ -66,8 +65,8 @@ beforeAll(async () => {
 
   const productTypeResponse = await saleorClient.productTypeCreate({
     input: {
-      name: randomUUID(),
-      slug: randomUUID(),
+      name: idGenerator.id("test"),
+      slug: idGenerator.id("test"),
       hasVariants: false,
       isDigital: true,
       isShippingRequired: false,
@@ -145,8 +144,8 @@ beforeAll(async () => {
 
   const tenant = await prisma.tenant.create({
     data: {
-      id: randomUUID(),
-      name: randomUUID(),
+      id: idGenerator.id("test"),
+      name: idGenerator.id("test"),
     },
   });
 
@@ -155,8 +154,8 @@ beforeAll(async () => {
    */
   const saleorApp = await prisma.saleorApp.create({
     data: {
-      id: randomUUID(),
-      name: randomUUID(),
+      id: idGenerator.id("test"),
+      name: idGenerator.id("test"),
       tenantId: tenant.id,
       channelSlug: channel.slug,
       domain: "http://saleor.eci:8000",
@@ -164,7 +163,7 @@ beforeAll(async () => {
   });
   const productDataFeed = await prisma.productDataFeedApp.create({
     data: {
-      id: randomUUID(),
+      id: idGenerator.id("test"),
       tenant: {
         connect: {
           id: tenant.id,
@@ -177,7 +176,7 @@ beforeAll(async () => {
     },
   });
 
-  const secret = randomUUID();
+  const secret = idGenerator.id("test");
   const secretHash = createHash("sha256").update(secret).digest("hex");
   await prisma.incomingProductDataFeedWebhook.create({
     data: {
@@ -198,7 +197,7 @@ beforeAll(async () => {
 
   const integration = await prisma.productDataFeedIntegration.create({
     data: {
-      id: randomUUID(),
+      id: idGenerator.id("test"),
       tenantId: tenant.id,
       enabled: true,
       productDataFeedAppId: productDataFeed.id,
@@ -207,7 +206,7 @@ beforeAll(async () => {
   });
   await prisma.subscription.create({
     data: {
-      id: randomUUID(),
+      id: idGenerator.id("test"),
       tenantId: tenant.id,
       payedUntil: new Date(Date.now() + 1000 * 60 * 5),
       productDataFeedIntegration: {

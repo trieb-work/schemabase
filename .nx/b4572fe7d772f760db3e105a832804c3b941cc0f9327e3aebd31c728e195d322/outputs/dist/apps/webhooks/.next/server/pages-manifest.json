@@ -1,0 +1,15 @@
+{
+  "/_app": "pages/_app.js",
+  "/api/management/tenant/create": "pages/api/management/tenant/create.js",
+  "/api/product-data-feed/v1/[variant]/[webhookId]": "pages/api/product-data-feed/v1/[variant]/[webhookId].js",
+  "/api/saleor/manifest": "pages/api/saleor/manifest.js",
+  "/api/saleor/manifest/[tenantId]": "pages/api/saleor/manifest/[tenantId].js",
+  "/api/saleor/register/[tenantId]": "pages/api/saleor/register/[tenantId].js",
+  "/api/saleor/webhook/v1/[webhookId]": "pages/api/saleor/webhook/v1/[webhookId].js",
+  "/api/strapi/create-webhook/v1": "pages/api/strapi/create-webhook/v1.js",
+  "/api/strapi/webhook/create/v1/[strapiId]": "pages/api/strapi/webhook/create/v1/[strapiId].js",
+  "/api/strapi/webhook/v1/[id]": "pages/api/strapi/webhook/v1/[id].js",
+  "/_error": "pages/_error.js",
+  "/_document": "pages/_document.js",
+  "/404": "pages/404.html"
+}

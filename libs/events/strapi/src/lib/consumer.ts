@@ -1,4 +1,4 @@
-import { IConsumer, SignedMessage, QueueManager } from "@eci/events-client";
+import { IConsumer, SignedMessage, QueueManager } from "@eci/events/client";
 import {
   EntryCreateEvent,
   EntryDeleteEvent,

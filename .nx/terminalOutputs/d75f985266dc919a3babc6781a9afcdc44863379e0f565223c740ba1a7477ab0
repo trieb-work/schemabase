@@ -1,0 +1,14 @@
+[2K[1G[2m$ /home/chronark/github/trieb-work/eci/node_modules/.bin/prisma generate --schema=libs/data-access/prisma/schema.prisma[22m
+[2mEnvironment variables loaded from .env[22m
+[2mPrisma schema loaded from libs/data-access/prisma/schema.prisma[22m
+
+✔ Generated [1mPrisma Client[22m (2.27.0)[2m to ./node_modules/@prisma/client[22m in 333ms
+
+✔ Generated [1mTypeGraphQL integration[22m[2m to ./libs/data-access/prisma/node_modules/@generated/type-graphql[22m in 29.48s
+
+✔ Generated [1mDBML Schema[22m[2m to ./libs/data-access/prisma/dbml[22m in 104ms
+You can now start using Prisma Client in your code. Reference: [4mhttps://pris.ly/d/client[24m
+[2m```[22m
+[36mimport[39m [38;2;107;139;140m{[39m PrismaClient [38;2;107;139;140m}[39m [36mfrom[39m [38;2;127;155;175m'@prisma/client'[39m
+[36mconst[39m prisma = [36mnew[39m PrismaClient[38;2;107;139;140m([39m[38;2;107;139;140m)[39m
+[2m```[22m

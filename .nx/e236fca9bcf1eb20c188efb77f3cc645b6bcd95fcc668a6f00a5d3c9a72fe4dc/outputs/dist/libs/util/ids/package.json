@@ -1,0 +1,10 @@
+{
+  "name": "@eci/util-ids",
+  "version": "0.0.1",
+  "main": "./src/index.js",
+  "typings": "./src/index.d.ts",
+  "dependencies": {
+    "@chronark/prefixed-id": "0.0.1"
+  },
+  "peerDependencies": {}
+}

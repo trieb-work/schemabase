@@ -1,0 +1,10 @@
+{
+  "name": "@eci/adapters/saleor/validation",
+  "version": "0.0.1",
+  "main": "./src/index.js",
+  "typings": "./src/index.d.ts",
+  "dependencies": {
+    "zod": "3.7.1"
+  },
+  "peerDependencies": {}
+}

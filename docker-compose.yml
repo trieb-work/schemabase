@@ -11,6 +11,8 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+    volumes:
+      - eci_db:/var/lib/postgresql
 
   # Nextjs Serverless application to receive webhooks from various services
   eci_webhooks:
@@ -65,13 +67,11 @@ services:
       SECRET_KEY: adgkadgkajsdg
       STOREFRONT_URL: http://storefront.saleor.api:4000/
       DASHBOARD_URL: http://dashboard.saleor.api:9000/
-      REDIS_URL: redis://redis:6379/0
       ALLOWED_CLIENT_HOSTS: localhost,webhooks.eci
       ALLOWED_HOSTS: saleor.eci,localhost
       DEBUG: "True"
     depends_on:
       - saleor_db
-      - redis
 
   # Required by saleor
   saleor_db:
@@ -81,6 +81,8 @@ services:
       - POSTGRES_PASSWORD=saleor
     ports:
       - 15432:5432
+    volumes:
+      - saleor_db:/var/lib/postgresql
 
   redis:
     image: redis
@@ -92,3 +94,9 @@ services:
     image: strapi/strapi
     ports:
       - "1337:1337"
+
+
+volumes:
+  eci_db:
+  saleor_db:
+

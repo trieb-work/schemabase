@@ -1,0 +1,25 @@
+[36minfo[39m  - Loaded env from apps/webhooks/.env.local
+[36minfo[39m  - Using webpack 5. Reason: Enabled by default https://nextjs.org/docs/messages/webpack5
+[36minfo[39m  - Using webpack 5. Reason: Enabled by default https://nextjs.org/docs/messages/webpack5
+[36minfo[39m  - automatically enabled Fast Refresh for 1 custom loader
+[35mevent[39m - compiled successfully
+[37m[ [32mready[39m[37m ] on http://localhost:3000[39m
+[35mevent[39m - build page: /api/saleor/webhook/v1/[webhookId]
+[36mwait[39m  - compiling...
+[35mevent[39m - compiled successfully
+{
+  traceId: [32m'tr_c5822e1d1f7243bd888949e2d423f88e'[39m,
+  endpoint: [32m'/api/saleor/webhook/v1/pk_02a0e2917ef74ea889ce81f3086586bc'[39m,
+  env: [32m'development'[39m,
+  commit: [32m''[39m,
+  level: [32m'info'[39m,
+  message: [32m'Incoming saleor webhook: pk_02a0e2917ef74ea889ce81f3086586bc'[39m
+}
+{
+  traceId: [32m'tr_c5822e1d1f7243bd888949e2d423f88e'[39m,
+  endpoint: [32m'/api/saleor/webhook/v1/pk_02a0e2917ef74ea889ce81f3086586bc'[39m,
+  env: [32m'development'[39m,
+  commit: [32m''[39m,
+  level: [32m'info'[39m,
+  message: [32m'Received saleor webhook'[39m
+}
