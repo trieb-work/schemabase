@@ -1,4 +1,7 @@
-mutation productChannelListingUpdate($id: ID!, $input: ProductChannelListingUpdateInput!) {
+mutation productChannelListingUpdate(
+  $id: ID!
+  $input: ProductChannelListingUpdateInput!
+) {
   productChannelListingUpdate(id: $id, input: $input) {
     errors {
       field
