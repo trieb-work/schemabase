@@ -232,8 +232,8 @@ model IncomingProductDataFeedWebhook {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  secret   SecretKey @relation(fields: [secretId], references: [id])
-  secretId String
+  secret   SecretKey? @relation(fields: [secretId], references: [id])
+  secretId String?
 
   productDataFeedApp   ProductDataFeedApp @relation(fields: [productDataFeedAppId], references: [id], onDelete: Cascade)
   productDataFeedAppId String
