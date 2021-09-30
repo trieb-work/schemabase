@@ -1,6 +1,6 @@
-mutation productTypeCreate($input: ProductTypeInput!){
-  productTypeCreate(input: $input){
-    productType{
+mutation productTypeCreate($input: ProductTypeInput!) {
+  productTypeCreate(input: $input) {
+    productType {
       id
     }
     errors {

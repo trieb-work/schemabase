@@ -1,6 +1,6 @@
-mutation categoryCreate($input: CategoryInput!){
-  categoryCreate(input: $input){
-    category{
+mutation categoryCreate($input: CategoryInput!) {
+  categoryCreate(input: $input) {
+    category {
       id
     }
     errors {
