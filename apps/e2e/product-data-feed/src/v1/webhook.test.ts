@@ -91,7 +91,9 @@ beforeAll(async () => {
       name: "Apple Juice",
       slug: "apple-juice",
       category: category.id,
-      // description: "Apple juice is great",
+      description:
+        '{"time": 1633343031152, "blocks": [{"data": {"text": "Hello world"}, "type": "paragraph"}], "version": "2.20.0"}',
+
       // weight: 2,
       productType,
     },
