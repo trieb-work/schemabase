@@ -1,9 +1,12 @@
+# syntax=docker/dockerfile:1
 FROM node:16-alpine as builder
 WORKDIR /eci/worker
 
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --non-interactive
-RUN yarn add -D esbuild
+ENV YARN_CACHE_FOLDER /root/.yarn
+RUN --mount=type=cache,target=/root/.yarn yarn --frozen-lockfile
+
+RUN --mount=type=cache,target=/root/.yarn yarn add -D esbuild
 
 COPY . .
 

@@ -10394,7 +10394,7 @@ export type ProductsQuery = {
         name: string;
         seoTitle?: Maybe<string>;
         isAvailableForPurchase?: Maybe<boolean>;
-        descriptionJson?: Maybe<any>;
+        description?: Maybe<any>;
         slug: string;
         weight?: Maybe<{
           __typename?: "Weight";
@@ -10655,7 +10655,7 @@ export const ProductsDocument = gql`
           name
           seoTitle
           isAvailableForPurchase
-          descriptionJson
+          description
           slug
           weight {
             unit
