@@ -1,1 +1,1 @@
-export * from "./lib/integrations-saleor-to-zoho";
+export * from "./lib/saleor-to-zoho";
