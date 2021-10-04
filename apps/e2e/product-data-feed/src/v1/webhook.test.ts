@@ -88,7 +88,7 @@ beforeAll(async () => {
   const productResponse = await saleorClient.productCreate({
     input: {
       name: "Apple Juice",
-      slug: "apple-juice",
+      slug: "slug",
       category: category.id,
       description:
         '{"time": 1633343031152, "blocks": [{"data": {"text": "Hello world"}, "type": "paragraph"}], "version": "2.20.0"}',
@@ -105,7 +105,7 @@ beforeAll(async () => {
     input: {
       attributes: [],
       product: product.id,
-      sku: "apple-juice-sku",
+      sku: "juicy-juicy-sku",
       trackInventory: true,
     },
   });
@@ -222,7 +222,7 @@ beforeAll(async () => {
 });
 
 describe("productdatafeed", () => {
-  const variants = ["facebookcommerce"]; //, "googlemerchant"];
+  const variants = ["facebookcommerce", "googlemerchant"];
 
   const http = new HttpClient();
   for (const variant of variants) {

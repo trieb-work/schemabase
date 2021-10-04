@@ -99,7 +99,10 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
           ? edjsHTML().parse(JSON.parse(rawProduct.description)).join("")
           : rawProduct.seoDescription;
       } catch (err) {
-        // console.warn(err)
+        this.logger.warn("Unable to parse description", {
+          description: rawProduct.description,
+          err,
+        });
       }
 
       const { hasVariants } = rawProduct.productType;
@@ -135,7 +138,10 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
           additional_image_link: hasVariants
             ? variant.images?.[1]?.url
             : rawProduct.images?.[2]?.url,
-          link: storefrontProductUrl + rawProduct.slug,
+          link:
+            storefrontProductUrl + storefrontProductUrl.endsWith("/")
+              ? ""
+              : "/" + rawProduct.slug,
           price: `${variant?.pricing?.priceUndiscounted?.gross.amount} ${variant?.pricing?.priceUndiscounted?.gross.currency}`,
           sale_price: `${variant?.pricing?.price?.gross.amount} ${variant.pricing?.price?.gross.currency}`,
           condition: "new",
