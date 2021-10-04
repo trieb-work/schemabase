@@ -1,4 +1,3 @@
-import { NoopLogger } from "@eci/util/logger";
 import { Signer } from "./signature";
 
 const testCases: { name: string; message: unknown; signature: string }[] = [
@@ -8,34 +7,34 @@ const testCases: { name: string; message: unknown; signature: string }[] = [
       hello: "world",
     },
     signature:
-      "2e405baa007ec09a02d0b8db166e52596914f89788f2fef1f5e85e8ce88e5a4f",
+      "2677ad3e7c090b2fa2c0fb13020d66d5420879b8316eb356a2d60fb9073bc778",
   },
   {
     name: "strings",
     message: "I am a string",
     signature:
-      "7524a1884508acd5e12b5bbf10777484f3c567fcb7a303e2832498ee37621590",
+      "61185ff480c83442fd597f087be0b9b17829f3753bf5c676ad3fec162d59543d",
   },
   {
     name: "numbers",
     message: 123,
     signature:
-      "90315c4583544dad7ba552b927f150d7ae8d9fa817c919c4216f309aa55038c3",
+      "77de38e4b50e618a0ebb95db61e2f42697391659d82c064a5f81b9f48d85ccd5",
   },
   {
     name: "booleans",
     message: false,
     signature:
-      "71387594c59105dda3f561f058613c49adabc30bb02e1a988eecbcf1cd87a1e2",
+      "6a20f9fc3e1489885684d050218266e98e8a932c8ebe27cfbf97ca05f992c5dd",
   },
   {
     name: "arrays",
     message: ["no", 1, true],
     signature:
-      "efa573414426547e2f3eca3bd0984e619b0574cef328a5cd003cbe73ca23f598",
+      "41f423075c35fa8026b88912a98ab56950efd6279527c38d9aba82b18e8dc89a",
   },
 ];
-const signer = new Signer(new NoopLogger());
+const signer = new Signer({ signingKey: "secret" });
 
 describe("sign()", () => {
   for (const tc of testCases) {

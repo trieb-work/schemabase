@@ -1,4 +1,4 @@
-version: "3.1"
+version: "3.9"
 
 services:
   # Our own database where we store tenants and config
@@ -11,47 +11,67 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+    volumes:
+      - eci_db:/var/lib/postgresql
 
   # Nextjs Serverless application to receive webhooks from various services
   eci_webhooks:
-    image: triebwork/eci-webhooks
+    image: eci_webhooks
     build:
       context: .
       dockerfile: ./apps/webhooks/Dockerfile
+    container_name: webhooks.eci
     ports:
       - 3000:3000
     environment:
       DATABASE_URL: postgres://postgres:postgres@eci_db:5432/postgres
       DATABASE_URL_POOL: postgres://postgres:postgres@eci_db:5432/postgres
       CI:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      SIGNING_KEY: anything
+      NODE_ENV: production
+      ECI_BASE_URL: http://webhooks.eci:3000
+    depends_on:
+      - eci_db
 
   eci_worker:
-    image: triebwork/eci-worker
+    image: eci_worker
     build:
       context: .
       dockerfile: ./apps/worker/Dockerfile
+
     environment:
       DATABASE_URL: postgres://postgres:postgres@eci_db:5432/postgres
       DATABASE_URL_POOL: postgres://postgres:postgres@eci_db:5432/postgres
       CI:
       REDIS_HOST: redis
-      REDIS:PORT: 6379
-      REDIS_PASSWORD: redis_password
+      REDIS_PORT: 6379
+      SIGNING_KEY: anything
+      NODE_ENV: production
+    depends_on:
+      - eci_db
+      - redis
 
   # Saleor Graphql API
   saleor_api:
+    image: ghcr.io/mirumee/saleor:3.1.0-a.6
+    container_name: saleor.eci
+
     ports:
       - 8000:8000
-    image: registry.gitlab.com/trieb.work/saleor:${SALEOR_VERSION}
-    depends_on:
-      - saleor_db
     command: python manage.py runserver 0.0.0.0:8000
 
     environment:
       DATABASE_URL: postgres://saleor:saleor@saleor_db:5432/postgres
       SECRET_KEY: adgkadgkajsdg
-      STOREFRONT_URL: http://localhost:4000/
-      DASHBOARD_URL: http://localhost:9000/
+      STOREFRONT_URL: http://storefront.saleor.api:4000/
+      DASHBOARD_URL: http://dashboard.saleor.api:9000/
+      ALLOWED_CLIENT_HOSTS: localhost,webhooks.eci
+      ALLOWED_HOSTS: saleor.eci,localhost
+      DEBUG: "True"
+    depends_on:
+      - saleor_db
 
   # Required by saleor
   saleor_db:
@@ -59,26 +79,22 @@ services:
     environment:
       - POSTGRES_USER=saleor
       - POSTGRES_PASSWORD=saleor
+    ports:
+      - 15432:5432
     volumes:
-      - saleor-db:/var/lib/postgresql/data
+      - saleor_db:/var/lib/postgresql
 
   redis:
     image: redis
     ports:
       - 6379:6379
 
-  redis-commander:
-    image: rediscommander/redis-commander
-    environment:
-      - REDIS_HOSTS=local:redis:6379
-      - HTTP_PASSWORD=redis_password
-
-  # MailHog is an email testing tool
-  mailhog:
-    image: mailhog/mailhog
+  # By default strapi uses a SQLite db.
+  strapi:
+    image: strapi/strapi
     ports:
-      - 1025:1025 # smtp server
-      - 8025:8025 # web ui. Visit http://localhost:8025/ to check emails
+      - "1337:1337"
+
 volumes:
-  # Migrating and seeding the db takes a long time so we "cache" it for local development
-  saleor-db:
+  eci_db:
+  saleor_db:

@@ -1,0 +1,197 @@
+name: CI
+
+# All required 3rd party services are hosted in docker containers.
+#
+# The webhooks service is started inside a docker container as well and all
+# integration tests are being run with a fresh database seed
+
+on:
+  pull_request:
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+      - uses: actions/cache@v2
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install
+        run: yarn install --frozen-lockfile --non-interactive
+
+      - name: Build
+        run: make build
+
+      - name: Lint
+        run: make fmt
+
+      - name: Check types
+        run: make tsc
+
+      - name: Test (unit)
+        run: make test
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [webhooks, worker]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build image
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: false
+          file: ./apps/${{ matrix.app }}/Dockerfile
+          tags: eci_${{ matrix.app }}:latest
+          outputs: type=docker,dest=/tmp/${{ matrix.app }}.tar
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      # export docker images to be used in next jobs below
+      - name: Upload image ${{ matrix.app }} as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.app }}
+          path: /tmp/${{ matrix.app }}.tar
+          retention-days: 1
+
+  release-worker:
+    name: Release worker
+    needs:
+      - build
+      - test
+      - e2e
+    runs-on: ubuntu-latest
+    env:
+      REGISTRY: ghcr.io
+
+    steps:
+      - name: Load images from artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: images
+
+      - name: Load docker images
+        run: |
+          docker load -i images/worker/worker.tar
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/worker
+      - name: Tag image
+        run: docker tag eci_worker ${{ steps.meta.outputs.tags }}
+
+      - name: Push image
+        run: docker push ${{ steps.meta.outputs.tags }}
+
+  e2e:
+    name: Integration
+    needs:
+      - test
+      - build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        saleor: [
+            # "registry.gitlab.com/trieb.work/saleor:3.0.0-b.13-triebwork1", #v3 custom
+            # "ghcr.io/mirumee/saleor:3.0.0-b.22",
+            "ghcr.io/mirumee/saleor:3.1.0-a.6",
+          ]
+    env:
+      SALEOR_IMAGE: ${{ matrix.saleor }}
+      CI: true
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+      ECI_BASE_URL: http://localhost:3000
+      ECI_BASE_URL_FROM_CONTAINER: http://webhooks.eci:3000
+      SALEOR_URL: http://localhost:8000/graphql/
+      SALEOR_URL_FROM_CONTAINER: http://saleor.eci:8000/graphql/
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+      # load docker images from build jobs
+      - name: Load images from artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: images
+
+      - name: Load docker images
+        run: |
+          docker load -i images/webhooks/webhooks.tar
+          docker load -i images/worker/worker.tar
+
+      - uses: actions/cache@v2
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile --non-interactive
+
+        # Necesarry to test against the predefined saleor versions
+      - name: Use docker-compose ci config
+        run: cp docker-compose.ci.yml docker-compose.override.yml
+
+      - name: Start services
+        run: docker-compose up -d
+
+      - name: Migrate saleor schema
+        run: make migrate-saleor
+
+      - name: Migrate eci schema
+        run: yarn prisma migrate deploy --schema=./libs/data-access/prisma/schema.prisma
+
+      - name: Generate prisma client
+        run: yarn nx build data-access-prisma
+
+      - name: Test (e2e)
+        run: yarn nx run-many --target=e2e --all
+
+      - name: log
+        if: always()
+        run: docker-compose logs

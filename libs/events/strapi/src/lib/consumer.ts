@@ -1,4 +1,4 @@
-import { IConsumer, Message } from "@eci/events-client";
+import { IConsumer, Message, QueueManager } from "@eci/events/client";
 import {
   EntryCreateEvent,
   EntryDeleteEvent,
@@ -7,27 +7,22 @@ import {
 } from "./validation/entry";
 
 import { Topic, StrapiQueueConfig } from "./types";
-import { StrapiQueue } from "./strapi_queue";
 
-export class Consumer
-  extends StrapiQueue
-  implements IConsumer<Topic, EntryEvent>
-{
+export class Consumer implements IConsumer<Topic, EntryEvent> {
+  private queueManager: QueueManager<Topic, EntryEvent>;
   constructor(config: StrapiQueueConfig) {
-    super(config);
+    this.queueManager = new QueueManager({
+      ...config,
+      name: "strapi",
+    });
+  }
+  public async close(): Promise<void> {
+    return await this.queueManager.close();
   }
 
-  public async pause(): Promise<void> {
-    await this.queue.pause();
-  }
-
-  public async resume(): Promise<void> {
-    await this.queue.resume();
-  }
-
-  public onReceive(
+  public consume(
     topic: Topic,
-    process: (message: Message<EntryEvent>) => Promise<void>,
+    process: (message: Message<Topic, EntryEvent>) => Promise<void>,
   ): void {
     switch (topic) {
       case Topic.ENTRY_CREATE:
@@ -40,27 +35,27 @@ export class Consumer
   }
 
   private onEntryCreateEvent(
-    process: (message: Message<EntryCreateEvent>) => Promise<void>,
+    process: (message: Message<Topic, EntryCreateEvent>) => Promise<void>,
   ): void {
-    this.queue.onReceive(
+    this.queueManager.consume(
       Topic.ENTRY_CREATE,
       async (message) => await process(message),
     );
   }
 
   private onEntryUpdateEvent(
-    process: (message: Message<EntryUpdateEvent>) => Promise<void>,
+    process: (message: Message<Topic, EntryUpdateEvent>) => Promise<void>,
   ): void {
-    this.queue.onReceive(
+    this.queueManager.consume(
       Topic.ENTRY_UPDATE,
       async (message) => await process(message),
     );
   }
 
   private onEntryDeleteEvent(
-    process: (message: Message<EntryDeleteEvent>) => Promise<void>,
+    process: (message: Message<Topic, EntryDeleteEvent>) => Promise<void>,
   ): void {
-    this.queue.onReceive(
+    this.queueManager.consume(
       Topic.ENTRY_DELETE,
       async (message) => await process(message),
     );

@@ -1,0 +1,11 @@
+mutation categoryCreate($input: CategoryInput!) {
+  categoryCreate(input: $input) {
+    category {
+      id
+    }
+    errors {
+      field
+      message
+    }
+  }
+}

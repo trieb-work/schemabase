@@ -19,29 +19,33 @@ generator dbml {
   provider = "prisma-dbml-generator"
 }
 
-
-model ProductDataFeed {
-  id       String @id @default(uuid())
-  // The public id used for lookups from incoming webhooks.
-  publicId String @unique
+model ProductDataFeedApp {
+  id String @id
 
   // Indicates if the integration is currently enabled.
   // The user might chose to disable it.
   enabled Boolean? @default(false)
 
-  productDetailStorefrontURL String?
-  tenant                     Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId                   String  @unique
+  // Graphql endpoint of a saleor app
+  productDetailStorefrontURL String
+
+  saleorApp   SaleorApp @relation(fields: [saleorAppId], references: [id])
+  saleorAppId String
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String @unique
+
+  webhooks    IncomingProductDataFeedWebhook[]
+  integration ProductDataFeedIntegration?
 }
 
-model ZohoConfig {
-  id String @id @default(uuid())
+model ZohoApp {
+  id String @id
 
   // Indicates if the integration is currently enabled.
   // The user might chose to disable it.
   enabled             Boolean @default(false)
   // The public id used for lookups from incoming webhooks.
-  publicId            String
   orgId               String
   clientId            String
   clientSecret        String
@@ -54,49 +58,54 @@ model ZohoConfig {
   tenantId            String  @unique
 }
 
-
-
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor
 // server and receive webhooks with event notifications from Saleor.
-// Every channel must have its own app
+// Every tenant can have multiple saleor apps which correspond to different
+// saleor instances.
 model SaleorApp {
-  id          String @id
-  channelSlug String
-  domain      String @unique
+
+  id String @id
+
+  // The domain of a running saleor instance.
+  // You can prefix with http:// or https:// if you want.
+  // If no protocol is specified, https:// is assumed.
+  domain String
 
   name String
+
+  channelSlug String?
+
+  installedSaleorApp InstalledSaleorApp?
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  productDataFeedIntegration ProductDataFeedIntegration[]
+
+  ProductDataFeedApp ProductDataFeedApp[]
+  @@unique([domain, channelSlug])
+}
+
+model InstalledSaleorApp {
   // The saleor application id
-  // appId        String
+  // This is the id for the app on saleor's side and can be used in queries and
+  // mutations to identify the app.
+  id String @id
+
+  // Every SaleorApp can have multiple webhooks configured.
+  // This is not really necessary because a webhook can fire on multiple events
+  // but let's be on the safe side.
+  webhooks IncomingSaleorWebhook[]
 
   // Unlike regular users, Saleor Apps use a bearer token. The token is
   // assigned at App installation time and needs to be stored in a secure manner.
   // The authorization header for Apps has the following format:
   // Authorization: Bearer <app-token>
-  appToken String
-
-  // Every SaleorApp can have multiple webhooks configured.
-  // This is not really necessary because a webhook can fire on multiple events
-  // but let's be on the safe side.
-  webhooks SaleorWebhook[]
-
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId String
-
-  @@unique([domain, channelSlug])
-}
-
-model SaleorWebhook {
-  // Received from saleor when registering a webhook
-  id String @id
+  token String
 
 
-  // The secret key used to create a hash signature with each payload.
-  secretKey String
-
-  // ID of the app to which the webhook belongs.
-  saleorAppId String
   saleorApp   SaleorApp @relation(fields: [saleorAppId], references: [id], onDelete: Cascade)
-
+  saleorAppId String    @unique
 }
 
 // One tenant per company
@@ -106,41 +115,166 @@ model Tenant {
 
   // Human readable identifier
   name String
-  // customer data etc
-  // metadata Metadata
 
-  // Indicates if the integration is currently enabled.
-  // The user might chose to disable it.
-  enabled         Boolean               @default(false)
-  // baseUrl         String
-  saleorApps      SaleorApp[]
-  zoho            ZohoConfig[]
-  productdatafeed ProductDataFeed[]
-  strapi Strapi[]
+  Subscriptions Subscription[]
+
+  // App configurations
+  saleorApps                 SaleorApp[]
+  zohoApps                   ZohoApp[]
+  productdatafeedApps        ProductDataFeedApp[]
+  strapiApps                 StrapiApp[]
+  ProductDataFeedIntegration ProductDataFeedIntegration[]
+  StrapiToZohoIntegration    StrapiToZohoIntegration[]
 }
 
-
-model Strapi{
-  id          String @id
-
-  name String
-  webhooks StrapiWebhook[]
+// A subscription indicates a tenant has payed for one integration.
+model Subscription {
+  id String @id
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
+
+  payedUntil DateTime?
+
+  productDataFeedIntegration ProductDataFeedIntegration?
 }
 
+// ----------------------------------------------------------------------------
+// Integrations
+//
+// Every integration is a connection between application configurations and a tenant
+// ----------------------------------------------------------------------------
 
-model StrapiWebhook {
+model ProductDataFeedIntegration {
   id String @id
 
-  // The sha512 hash of the authorization token
-  tokenHash String
+  // Allow the user to manually enabled or disable the integration
+  // Regardless of current subscription state.
+  enabled Boolean @default(true)
 
-  // ID of the strapi instance to which the webhook belongs.
-  strapiId String
-  strapi   Strapi @relation(fields: [strapiId], references: [id], onDelete: Cascade)
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  subscriptionId String?       @unique
 
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  productDataFeedApp   ProductDataFeedApp @relation(fields: [productDataFeedAppId], references: [id])
+  productDataFeedAppId String
+  saleorApp            SaleorApp          @relation(fields: [saleorAppId], references: [id])
+  saleorAppId          String
 }
 
+model StrapiToZohoIntegration {
+  id          String    @id
+  payedUntil  DateTime?
+  enabled     Boolean   @default(true)
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId    String
+  strapiApp   StrapiApp @relation(fields: [strapiAppId], references: [id])
+  strapiAppId String
+}
+
+// Every tenant can have multiple strapi instances
+model StrapiApp {
+  id String @id
+
+  name     String
+  webhooks IncomingStrapiWebhook[]
+
+  tenant                  Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId                String
+  StrapiToZohoIntegration StrapiToZohoIntegration[]
+}
+
+// ----------------------------------------------------------------------------
+// Every Config/App can have multiple webhooks attached
+// ----------------------------------------------------------------------------
+
+model IncomingSaleorWebhook {
+  id   String  @id
+  // Human readable name
+  name String?
+
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  secret   SecretKey @relation(fields: [secretId], references: [id])
+  secretId String
+
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String
+}
+
+model IncomingStrapiWebhook {
+  id   String  @id
+  // Human readable name
+  name String?
+
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  secret   SecretKey @relation(fields: [secretId], references: [id])
+  secretId String
+
+  strapiApp   StrapiApp @relation(fields: [strapiAppId], references: [id], onDelete: Cascade)
+  strapiAppId String
+}
+
+model IncomingProductDataFeedWebhook {
+  id   String  @id
+  // Human readable name
+  name String?
+
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  secret   SecretKey? @relation(fields: [secretId], references: [id])
+  secretId String?
+
+  productDataFeedApp   ProductDataFeedApp @relation(fields: [productDataFeedAppId], references: [id], onDelete: Cascade)
+  productDataFeedAppId String
+}
+
+// Until prisma allows for inheritance we are stuck createing different webhook modules
+// with duplicate code
+
+// model IncomingWebhook {
+//   id String @id
+
+//   // Human readable name
+//   name String?
+
+//   createdAt DateTime  @default(now())
+//   updatedAt DateTime  @updatedAt
+//
+
+//   secret   SecretKey @relation(fields: [secretId], references: [id])
+//   secretId String
+
+//   // Webhook connections
+//   productDataFeed   ProductDataFeedApp? @relation(fields: [productDataFeedId], references: [id], onDelete: Cascade)
+//   productDataFeedId String?
+//   saleorApp         SaleorApp?          @relation(fields: [saleorAppId], references: [id], onDelete: Cascade)
+//   saleorAppId       String?
+//   strapi            StrapiApp?          @relation(fields: [strapiAppId], references: [id], onDelete: Cascade)
+//   strapiAppId       String?
+// }
+model SecretKey {
+  id String @id @default(uuid())
+
+  // Human readable name
+  name      String?
+  secret    String
+  createdAt DateTime @default(now())
+
+
+  // Connections ..
+  // Required by prisma
+  incomingSaleorWebhook          IncomingSaleorWebhook?
+  IncomingStrapiWebhook          IncomingStrapiWebhook?
+  IncomingProductDataFeedWebhook IncomingProductDataFeedWebhook?
+}

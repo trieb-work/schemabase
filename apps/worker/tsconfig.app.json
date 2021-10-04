@@ -5,6 +5,6 @@
     "module": "ESNext",
     "types": ["node"]
   },
-  "exclude": ["**/*.spec.ts"],
+  "exclude": ["**/*.test.ts"],
   "include": ["**/*.ts"]
 }

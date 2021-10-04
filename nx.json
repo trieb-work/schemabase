@@ -14,7 +14,8 @@
     "default": {
       "runner": "@nrwl/workspace/tasks-runners/default",
       "options": {
-        "cacheableOperations": ["build", "lint", "test", "e2e"]
+        "cacheableOperations": ["build", "lint", "test", "e2e"],
+        "cacheDirectory": ".nx"
       }
     }
   },
@@ -45,7 +46,10 @@
     "adapters-printer": {
       "tags": []
     },
-    "adapters-saleor": {
+    "adapters-saleor-api": {
+      "tags": []
+    },
+    "adapters-saleor-validation": {
       "tags": []
     },
     "context": {
@@ -54,7 +58,13 @@
     "data-access-prisma": {
       "tags": []
     },
-    "e2e": {
+    "e2e-product-data-feed": {
+      "tags": []
+    },
+    "e2e-queue": {
+      "tags": []
+    },
+    "e2e-saleor": {
       "tags": []
     },
     "events-client": {
@@ -67,6 +77,9 @@
       "tags": []
     },
     "integrations-product-data-feed": {
+      "tags": []
+    },
+    "integrations-saleor-to-zoho": {
       "tags": []
     },
     "integrations-strapi-orders-to-zoho": {

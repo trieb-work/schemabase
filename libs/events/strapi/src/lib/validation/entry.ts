@@ -12,17 +12,17 @@ export const entryValidation = z.object({
 });
 
 export const validation: Record<Topic, z.AnyZodObject> = {
-  "entry.create": z
+  "strapi.entry.create": z
     .object({
       event: z.enum(["entry.create"]),
     })
     .merge(entryValidation),
-  "entry.update": z
+  "strapi.entry.update": z
     .object({
       event: z.enum(["entry.update"]),
     })
     .merge(entryValidation),
-  "entry.delete": z
+  "strapi.entry.delete": z
     .object({
       event: z.enum(["entry.delete"]),
     })

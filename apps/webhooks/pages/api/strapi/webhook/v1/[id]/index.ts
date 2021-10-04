@@ -1,9 +1,4 @@
-import {
-  setupPrisma,
-  setupSaleor,
-  getTenant,
-  extendContext,
-} from "@eci/context";
+import { setupPrisma, extendContext } from "@eci/context";
 import crypto from "crypto";
 import { z } from "zod";
 import { HttpError } from "@eci/util/errors";
@@ -11,14 +6,14 @@ import { handleWebhook, Webhook } from "@eci/http";
 
 import * as strapi from "@eci/events/strapi";
 import { env } from "@chronark/env";
-import { Signer } from "@eci/events-client";
+import { Signer } from "@eci/events/client";
 import { idGenerator } from "@eci/util/ids";
 
 const requestValidation = z.object({
   query: z.object({
     id: z.string(),
   }),
-  header: z.object({
+  headers: z.object({
     authorization: z.string(),
   }),
   body: z.object({
@@ -42,36 +37,26 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   res,
 }): Promise<void> => {
   const {
-    header: { authorization },
+    headers: { authorization },
     query: { id },
   } = req;
 
-  const ctx = await extendContext<"prisma" | "tenant">(
-    backgroundContext,
-    setupPrisma(),
-    getTenant({
-      where: {
-        strapi: {
-          some: {
-            webhooks: {
-              some: {
-                id,
-              },
-            },
-          },
-        },
-      },
-    }),
-    setupSaleor({ traceId: backgroundContext.trace.id }),
-  );
-  const webhook = await ctx.prisma.strapiWebhook.findUnique({ where: { id } });
+  const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
+
+  const webhook = await ctx.prisma.incomingStrapiWebhook.findUnique({
+    where: { id },
+    include: {
+      secret: true,
+      strapiApp: true,
+    },
+  });
   if (!webhook) {
-    throw new Error(`No webhook found: ${id}`);
+    throw new HttpError(404, `No webhook found: ${id}`);
   }
 
   if (
-    crypto.createHash("sha512").update(authorization).digest("hex") !==
-    webhook.tokenHash
+    crypto.createHash("sha256").update(authorization).digest("hex") !==
+    webhook.secret.secret
   ) {
     throw new HttpError(403, "Authorization token invalid");
   }
@@ -80,34 +65,38 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
   const queue = new strapi.Producer({
     logger: ctx.logger,
-    signer: new Signer(ctx.logger),
-    redis: {
+    signer: new Signer({ signingKey: env.require("SIGNING_KEY") }),
+    connection: {
       host: env.require("REDIS_HOST"),
       port: env.require("REDIS_PORT"),
       password: env.require("REDIS_PASSWORD"),
     },
   });
 
-  const message = {
-    payload: req.body,
-    meta: {
-      traceId: idGenerator.id("trace"),
-    },
-  };
+  let topic: strapi.Topic;
   switch (req.body.event) {
     case "entry.create":
-      await queue.produce(strapi.Topic.ENTRY_CREATE, message);
+      topic = strapi.Topic.ENTRY_CREATE;
       break;
     case "entry.update":
-      await queue.produce(strapi.Topic.ENTRY_UPDATE, message);
+      topic = strapi.Topic.ENTRY_UPDATE;
       break;
     case "entry.delete":
-      await queue.produce(strapi.Topic.ENTRY_DELETE, message);
+      topic = strapi.Topic.ENTRY_DELETE;
       break;
 
     default:
-      break;
+      throw new Error(`Invalid strapi event: ${req.body.event}`);
   }
+
+  await queue.produce({
+    payload: req.body,
+    header: {
+      id: idGenerator.id("publicKey"),
+      traceId: idGenerator.id("trace"),
+      topic,
+    },
+  });
 
   res.json({
     status: "received",
