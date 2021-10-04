@@ -1,7 +1,7 @@
 import { HttpClient } from "@eci/http";
 import { PrismaClient } from "@eci/data-access/prisma";
 import { createHash } from "crypto";
-import {idGenerator} from "@eci/util/ids"
+import { idGenerator } from "@eci/util/ids";
 import {
   CountryCode,
   createSaleorClient,
@@ -90,7 +90,9 @@ beforeAll(async () => {
       name: "Apple Juice",
       slug: "apple-juice",
       category: category.id,
-      // description: "Apple juice is great",
+      description:
+        '{"time": 1633343031152, "blocks": [{"data": {"text": "Hello world"}, "type": "paragraph"}], "version": "2.20.0"}',
+
       // weight: 2,
       productType,
     },

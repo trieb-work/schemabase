@@ -1,6 +1,8 @@
 # Location of prisma schema file
 prismaSchema := libs/data-access/prisma/schema.prisma
 
+export COMPOSE_DOCKER_CLI_BUILD=1
+
 
 down:
 	docker-compose down --remove-orphans --volumes
@@ -25,6 +27,7 @@ migrate-saleor:
 	--noinput
 
 # Build and seeds all required external services
+init: export COMPOSE_DOCKER_CLI_BUILD=1
 init: down build
 
 
@@ -52,9 +55,11 @@ build:
 test: build
 	yarn nx run-many --target=test --all
 
-
+reset: export COMPOSE_DOCKER_CLI_BUILD=1
+reset: export DOCKER_BUILDKIT=1
 reset: down
-	docker-compose build
+	docker-compose build eci_worker
+	docker-compose build eci_webhooks
 	$(MAKE) init
 
 # Run integration tests

@@ -9,7 +9,7 @@ beforeEach(() => {
 
 describe("generate", () => {
   const mockedSaleorClient = {
-    products: async (_variables: { first: number; channel: string }) =>
+    products: async (variables: { first: number; channel: string }) =>
       Promise.resolve({
         products: {
           edges: [
@@ -18,12 +18,14 @@ describe("generate", () => {
                 __typename: "Product",
                 name: "Name",
                 slug: "slug",
+                seoDescription: "SeoDescription",
                 productType: {
                   hasVariants: true,
                   __typename: "ProductType",
                   name: "name",
                   id: "id",
                 },
+                channel: variables.channel,
                 variants: [
                   {
                     metadata: [],

@@ -87,8 +87,16 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
 
       let description = "";
       try {
-        description = rawProduct.descriptionJson
-          ? edjsHTML().parse(JSON.parse(rawProduct.descriptionJson))
+        /**
+         * `description` looks like this:
+         * -> "{\"time\": 1633343031152, \"blocks\": [{\"data\": {\"text\": \"Hello world\"}, \"type\": \"paragraph\"}], \"version\": \"2.20.0\"}"
+         *
+         * `edjsHTML().parse(JSON.parse(description))` will return an array
+         * -> [ "<p>Hello World</p>" ]
+         */
+
+        description = rawProduct.description
+          ? edjsHTML().parse(JSON.parse(rawProduct.description)).join("")
           : rawProduct.seoDescription;
       } catch (err) {
         // console.warn(err)
