@@ -1,4 +1,4 @@
-import { QueueManager } from "@eci/events-client";
+import { QueueManager } from "@eci/events/client";
 import { EntryEvent } from "./validation/entry";
 import { Topic, StrapiQueueConfig } from "./types";
 

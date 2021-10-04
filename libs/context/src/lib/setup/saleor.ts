@@ -1,5 +1,5 @@
 import { ContextMissingFieldError } from "@eci/util/errors";
-import { SaleorClient, createSaleorClient } from "@eci/adapters/saleor";
+import { SaleorClient, createSaleorClient } from "@eci/adapters/saleor/api";
 import { Context } from "@eci/context";
 import { env } from "@chronark/env";
 

@@ -127,9 +127,9 @@
         }
       }
     },
-    "adapters-saleor": {
-      "root": "libs/adapters/saleor",
-      "sourceRoot": "libs/adapters/saleor/src",
+    "adapters-saleor-api": {
+      "root": "libs/adapters/saleor/api",
+      "sourceRoot": "libs/adapters/saleor/api/src",
       "projectType": "library",
       "targets": {
         "build": {
@@ -137,7 +137,7 @@
           "options": {
             "commands": [
               {
-                "command": "yarn graphql-codegen --config=libs/adapters/saleor/codegen.yml"
+                "command": "yarn graphql-codegen --config=libs/adapters/saleor/api/codegen.yml"
               }
             ]
           }
@@ -145,14 +145,46 @@
         "lint": {
           "executor": "@nrwl/linter:eslint",
           "options": {
-            "lintFilePatterns": ["libs/adapters/saleor/**/*.ts"]
+            "lintFilePatterns": ["libs/adapters/saleor/api/**/*.ts"]
           }
         },
         "test": {
           "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/adapters/saleor"],
+          "outputs": ["coverage/libs/adapters/saleor/api"],
           "options": {
-            "jestConfig": "libs/adapters/saleor/jest.config.js",
+            "jestConfig": "libs/adapters/saleor/api/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "adapters-saleor-validation": {
+      "root": "libs/adapters/saleor/validation",
+      "sourceRoot": "libs/adapters/saleor/validation/src",
+      "projectType": "library",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/node:package",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/libs/adapters/saleor/validation",
+            "tsConfig": "libs/adapters/saleor/validation/tsconfig.lib.json",
+            "packageJson": "libs/adapters/saleor/validation/package.json",
+            "main": "libs/adapters/saleor/validation/src/index.ts",
+            "assets": ["libs/adapters/saleor/validation/*.md"]
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/adapters/saleor/validation/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/adapters/saleor/validation"],
+          "options": {
+            "jestConfig": "libs/adapters/saleor/validation/jest.config.js",
             "passWithNoTests": true
           }
         }
@@ -211,7 +243,6 @@
         }
       }
     },
-
     "e2e-product-data-feed": {
       "root": "apps/e2e/product-data-feed",
       "sourceRoot": "apps/e2e/product-data-feed/src",
@@ -378,6 +409,38 @@
           "outputs": ["coverage/libs/integrations/product-data-feed"],
           "options": {
             "jestConfig": "libs/integrations/product-data-feed/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "integrations-saleor-to-zoho": {
+      "root": "libs/integrations/saleor-to-zoho",
+      "sourceRoot": "libs/integrations/saleor-to-zoho/src",
+      "projectType": "library",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/node:package",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/libs/integrations/saleor-to-zoho",
+            "tsConfig": "libs/integrations/saleor-to-zoho/tsconfig.lib.json",
+            "packageJson": "libs/integrations/saleor-to-zoho/package.json",
+            "main": "libs/integrations/saleor-to-zoho/src/index.ts",
+            "assets": ["libs/integrations/saleor-to-zoho/*.md"]
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/integrations/saleor-to-zoho/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/integrations/saleor-to-zoho"],
+          "options": {
+            "jestConfig": "libs/integrations/saleor-to-zoho/jest.config.js",
             "passWithNoTests": true
           }
         }

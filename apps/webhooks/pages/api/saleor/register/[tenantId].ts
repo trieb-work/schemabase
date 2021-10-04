@@ -4,6 +4,7 @@ import { idGenerator } from "@eci/util/ids";
 import { env } from "@chronark/env";
 import { handleWebhook, Webhook } from "@eci/http";
 import { HttpError } from "@eci/util/errors";
+import { WebhookEventTypeEnum } from "@eci/adapters/saleor/api";
 
 const requestValidation = z.object({
   query: z.object({
@@ -56,6 +57,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
       webhooks: {
         create: {
           id: idGenerator.id("publicKey"),
+          name: "Catch all",
           secret: {
             create: {
               id: idGenerator.id("publicKey"),
@@ -83,15 +85,19 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   });
 
   ctx.logger.info("Added app to db", { app });
-  const webhook = await saleorClient.webhookCreate({
+  const saleorWebhook = await saleorClient.webhookCreate({
     input: {
       targetUrl: `${env.require("ECI_BASE_URL")}/api/saleor/webhook/v1/${
         app.webhooks[0].id
       }`,
+      events: [WebhookEventTypeEnum.AnyEvents],
       secretKey: app.webhooks[0].secret.secret,
+      isActive: true,
+      name: app.webhooks[0].name,
+      app: app.id
     },
   });
-  ctx.logger.info("Added webhook to saleor", { webhook });
+  ctx.logger.info("Added webhook to saleor", { saleorWebhook });
 
   res.json({
     status: "received",

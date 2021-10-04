@@ -14,7 +14,7 @@ destroy: down
 # Copy over database connections for prisma
 pull-env:
 	cd apps/webhooks && npx vercel env pull && mv .env .env.local
-	cp apps/webhooks/.env.local libs/data-access/prisma/.env
+	cp apps/webhooks/.env.local .env.local
 
 
 migrate-saleor:
