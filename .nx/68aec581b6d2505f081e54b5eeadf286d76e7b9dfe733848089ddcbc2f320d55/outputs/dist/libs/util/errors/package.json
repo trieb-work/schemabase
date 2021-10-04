@@ -1,6 +1,0 @@
-{
-  "name": "@eci/util-errors",
-  "version": "0.0.1",
-  "main": "./src/index.js",
-  "typings": "./src/index.d.ts"
-}
