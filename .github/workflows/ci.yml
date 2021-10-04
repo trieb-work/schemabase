@@ -189,9 +189,6 @@ jobs:
       - name: Generate prisma client
         run: yarn nx build data-access-prisma
 
-      - name: Seed eci database
-        run: yarn prisma db seed --preview-feature --schema=./libs/data-access/prisma/schema.prisma
-
       - name: Test (e2e)
         run: yarn nx run-many --target=e2e --all
 

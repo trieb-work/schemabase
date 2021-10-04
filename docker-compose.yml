@@ -11,6 +11,8 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+    volumes:
+      - eci_db:/var/lib/postgresql
 
   # Nextjs Serverless application to receive webhooks from various services
   eci_webhooks:
@@ -79,6 +81,8 @@ services:
       - POSTGRES_PASSWORD=saleor
     ports:
       - 15432:5432
+    volumes:
+      - saleor_db:/var/lib/postgresql
 
   redis:
     image: redis
@@ -90,3 +94,9 @@ services:
     image: strapi/strapi
     ports:
       - "1337:1337"
+
+
+volumes:
+  eci_db:
+  saleor_db:
+

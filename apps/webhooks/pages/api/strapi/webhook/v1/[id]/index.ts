@@ -6,7 +6,7 @@ import { handleWebhook, Webhook } from "@eci/http";
 
 import * as strapi from "@eci/events/strapi";
 import { env } from "@chronark/env";
-import { Signer } from "@eci/events-client";
+import { Signer } from "@eci/events/client";
 import { idGenerator } from "@eci/util/ids";
 
 const requestValidation = z.object({

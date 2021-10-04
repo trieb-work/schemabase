@@ -1,10 +1,10 @@
-import { QueueManager, Signer } from "@eci/events-client";
+import { QueueManager, Signer } from "@eci/events/client";
 import { NoopLogger } from "@eci/util/logger";
-import { randomUUID } from "crypto";
+import {idGenerator} from "@eci/util/ids"
 describe("produce and consume over redis", () => {
   const logger = new NoopLogger();
 
-  const topic = randomUUID();
+  const topic = idGenerator.id("test");
   const queue = new QueueManager<string, { hello: string }>({
     name: "testQueue",
     signer: new Signer({ signingKey: "test" }),

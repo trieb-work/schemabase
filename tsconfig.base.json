@@ -40,14 +40,20 @@
         "libs/adapters/package-trackers/src/index.ts"
       ],
       "@eci/adapters/printer": ["libs/adapters/printer/src/index.ts"],
-      "@eci/adapters/saleor": ["libs/adapters/saleor/src/index.ts"],
+      "@eci/adapters/saleor/api": ["libs/adapters/saleor/api/src/index.ts"],
+      "@eci/adapters/saleor/validation": [
+        "libs/adapters/saleor/validation/src/index.ts"
+      ],
       "@eci/context": ["libs/context/src/index.ts"],
       "@eci/data-access/prisma": ["libs/data-access/prisma/src/index.ts"],
-      "@eci/events-client": ["libs/events/client/src/index.ts"],
+      "@eci/events/client": ["libs/events/client/src/index.ts"],
       "@eci/events/strapi": ["libs/events/strapi/src/index.ts"],
       "@eci/http": ["libs/http/src/index.ts"],
       "@eci/integrations/product-data-feed": [
         "libs/integrations/product-data-feed/src/index.ts"
+      ],
+      "@eci/integrations/saleor-to-zoho": [
+        "libs/integrations/saleor-to-zoho/src/index.ts"
       ],
       "@eci/util": ["libs/util/src/index.ts"],
       "@eci/util/constants": ["libs/util/constants/src/index.ts"],

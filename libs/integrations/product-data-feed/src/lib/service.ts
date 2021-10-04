@@ -1,6 +1,6 @@
 import ObjectsToCsv from "objects-to-csv";
 import { htmlToText } from "html-to-text";
-import { ProductsQuery } from "@eci/adapters/saleor";
+import { ProductsQuery } from "@eci/adapters/saleor/api";
 // @ts-expect-error it doesn't detec types for some reason
 import edjsHTML from "editorjs-html";
 import { generateUnitPrice } from "./generate-unit-price";

@@ -1,5 +1,5 @@
 import { ProductDataFeedGenerator } from "./service";
-import { SaleorClient, WeightUnitsEnum } from "@eci/adapters/saleor";
+import { SaleorClient, WeightUnitsEnum } from "@eci/adapters/saleor/api";
 import { FeedVariant } from "./types";
 import { NoopLogger } from "@eci/util/logger";
 

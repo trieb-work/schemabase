@@ -1,9 +1,8 @@
-import { createSaleorClient } from "@eci/adapters/saleor";
+import { createSaleorClient } from "@eci/adapters/saleor/api";
 import { env } from "@chronark/env";
 
 import { PrismaClient } from "@eci/data-access/prisma";
-import { randomUUID } from "crypto";
-
+import {idGenerator} from "@eci/util/ids"
 /**
  * The saleor endpoint reachable from outside of the cluster
  * For example: "http://localhost:8000/graphql/";
@@ -40,8 +39,8 @@ describe("Saleor app installation", () => {
   it("should create a new saleor app using the manifest route", async () => {
     const tenant = await prisma.tenant.create({
       data: {
-        id: randomUUID(),
-        name: randomUUID(),
+        id: idGenerator.id("test"),
+        name: idGenerator.id("test"),
       },
     });
 
@@ -63,7 +62,7 @@ describe("Saleor app installation", () => {
     await client.appInstall({
       input: {
         activateAfterInstallation: true,
-        appName: randomUUID(),
+        appName: idGenerator.id("test"),
         manifestUrl: `${env.require(
           "ECI_BASE_URL_FROM_CONTAINER",
         )}/api/saleor/manifest/${tenant.id}`,
