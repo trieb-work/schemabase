@@ -89,12 +89,6 @@ services:
     ports:
       - 6379:6379
 
-  # By default strapi uses a SQLite db.
-  strapi:
-    image: strapi/strapi
-    ports:
-      - "1337:1337"
-
 volumes:
   eci_db:
   saleor_db:
