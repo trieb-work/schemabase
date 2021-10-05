@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { Topic } from "../types";
 
-export const entryValidation = z.object({
+export const eventValidation = z.object({
   created_at: z.string(),
   model: z.string(),
   entry: z.object({
@@ -16,17 +16,17 @@ export const validation: Record<Topic, z.AnyZodObject> = {
     .object({
       event: z.enum(["entry.create"]),
     })
-    .merge(entryValidation),
+    .merge(eventValidation),
   "strapi.entry.update": z
     .object({
       event: z.enum(["entry.update"]),
     })
-    .merge(entryValidation),
+    .merge(eventValidation),
   "strapi.entry.delete": z
     .object({
       event: z.enum(["entry.delete"]),
     })
-    .merge(entryValidation),
+    .merge(eventValidation),
 };
 
 export type EntryCreateEvent = z.infer<typeof validation[Topic.ENTRY_CREATE]>;
