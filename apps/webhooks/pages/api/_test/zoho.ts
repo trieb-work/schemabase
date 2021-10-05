@@ -13,7 +13,6 @@ export default async function handler(
       zohoClientSecret: env.require("ZOHO_CLIENT_SECRET"),
       zohoOrgId: env.require("ZOHO_ORG_ID"),
     });
-    console.log(req);
 
     const strapiBaseUrl = req.headers["origin"] as string | undefined;
     if (!strapiBaseUrl) {
@@ -22,11 +21,7 @@ export default async function handler(
 
     const integration = await StrapiOrdersToZoho.new({ zoho, strapiBaseUrl });
 
-    const order = await integration.transformStrapiEventToZohoOrder(req.body);
-    console.log({ order });
-
-    const createdOrder = await integration.createZohoOrder(order);
-    console.log({ createdOrder });
+    await integration.syncOrders(req.body);
   } catch (err) {
     console.error(err);
     return res.send(err.message);
