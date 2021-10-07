@@ -138,6 +138,7 @@ model Subscription {
   payedUntil DateTime?
 
   productDataFeedIntegration ProductDataFeedIntegration?
+  strapiToZohoIntegration    StrapiToZohoIntegration[]
 }
 
 // ----------------------------------------------------------------------------
@@ -166,9 +167,13 @@ model ProductDataFeedIntegration {
 }
 
 model StrapiToZohoIntegration {
-  id          String    @id
-  payedUntil  DateTime?
-  enabled     Boolean   @default(true)
+  id         String    @id
+  payedUntil DateTime?
+  enabled    Boolean   @default(true)
+
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  subscriptionId String?       @unique
+
   tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId    String
   strapiApp   StrapiApp @relation(fields: [strapiAppId], references: [id])

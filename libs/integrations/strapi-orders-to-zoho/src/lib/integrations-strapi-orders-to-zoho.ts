@@ -1,13 +1,9 @@
-import {
-  Topic,
-  eventValidation,
-  EntryCreateEvent,
-  EntryUpdateEvent,
-} from "@eci/events/strapi";
+import { EntryEvent } from "@eci/events/strapi";
 import { z } from "zod";
 import { ZohoClientInstance, SalesOrder } from "@trieb.work/zoho-ts";
 import { createHash } from "crypto";
 import csvToJson from "csvtojson";
+import { ILogger } from "@eci/util/logger";
 const statusValidation = z.enum(["Draft", "Confirmed"]);
 
 const addressValidation = z.object({
@@ -20,7 +16,7 @@ const addressValidation = z.object({
   country: z.string(),
 });
 const orderValidation = z.object({
-  event: z.enum([Topic.ENTRY_CREATE, Topic.ENTRY_UPDATE]),
+  event: z.enum(["entry.create", "entry.update", "entry.delete"]),
   model: z.enum(["order"]),
   entry: z.object({
     customerName: z.string(),
@@ -44,8 +40,7 @@ const orderValidation = z.object({
   }),
 });
 
-export type CreateOrderEvent = z.infer<typeof eventValidation> &
-  z.infer<typeof orderValidation>;
+export type OrderEvent = EntryEvent & z.infer<typeof orderValidation>;
 
 type CreateSalesOrder = Required<
   Pick<SalesOrder, "customer_id" | "salesorder_number" | "line_items">
@@ -54,18 +49,22 @@ type CreateSalesOrder = Required<
 export class StrapiOrdersToZoho {
   private readonly strapiBaseUrl: string;
   private readonly zoho: ZohoClientInstance;
+  private readonly logger: ILogger;
 
   private constructor(config: {
     zoho: ZohoClientInstance;
     strapiBaseUrl: string;
+    logger: ILogger;
   }) {
     this.zoho = config.zoho;
     this.strapiBaseUrl = config.strapiBaseUrl;
+    this.logger = config.logger;
   }
 
   public static async new(config: {
     zoho: ZohoClientInstance;
     strapiBaseUrl: string;
+    logger: ILogger;
   }): Promise<StrapiOrdersToZoho> {
     const instance = new StrapiOrdersToZoho(config);
     await instance.zoho.authenticate();
@@ -90,6 +89,7 @@ export class StrapiOrdersToZoho {
       return entry.addresses;
     }
 
+    this.logger.info("Merging addresses from .csv");
     const url = `${this.strapiBaseUrl}${entry.addressCSV.url}`;
     const res = await fetch(url);
     if (!res.ok) {
@@ -115,10 +115,11 @@ export class StrapiOrdersToZoho {
    * Transform a strapi event into a zoho sales order type
    */
   private async transformStrapiEventToZohoOrders(
-    rawEvent: EntryCreateEvent | EntryUpdateEvent,
+    rawEvent: OrderEvent,
   ): Promise<
     { order: CreateSalesOrder; address: z.infer<typeof addressValidation> }[]
   > {
+    this.logger.info("Transforming strapi event to zoho orders", { rawEvent });
     const event = await orderValidation.parseAsync(rawEvent).catch((err) => {
       throw new Error(`Malformed event: ${err}`);
     });
@@ -142,46 +143,40 @@ export class StrapiOrdersToZoho {
       };
     });
   }
-  /**
-   * Add a new address to a contact.
-   *
-   * @returns The addressId
-   */
-  private async addAddress(
-    contactId: string,
-    address: z.infer<typeof addressValidation>,
-  ): Promise<string> {
-    return await this.zoho.addAddresstoContact(contactId, {
-      address: address.address,
-      city: address.city,
-      zip: address.zip.toString(),
-      country: address.country,
-    });
-  }
 
-  public async syncOrders(
-    rawEvent: EntryCreateEvent | EntryUpdateEvent,
-  ): Promise<void> {
+  public async syncOrders(rawEvent: OrderEvent): Promise<void> {
+    this.logger.info("Syncing orders between strapi and zoho", { rawEvent });
     const event = await orderValidation.parseAsync(rawEvent).catch((err) => {
       throw new Error(`Malformed event: ${err}`);
     });
 
-    const existingOrders = await this.zoho.searchSalesOrdersWithScrolling(
-      ["RP", event.entry.orderId].join("-"),
-    );
+    const existingOrders = await this.zoho
+      .searchSalesOrdersWithScrolling(["RP", event.entry.orderId].join("-"))
+      .catch((err) => {
+        throw new Error(`Unable to fetch existing orders from zoho: ${err}`);
+      });
+
+    this.logger.info("Existing orders in zoho", { existingOrders });
     const existingSalesorderNumbers = existingOrders.map(
       (o) => o.salesorder_number,
     );
 
-    const allOrders = await this.transformStrapiEventToZohoOrders(event);
+    const allOrders = await this.transformStrapiEventToZohoOrders(rawEvent);
     const newOrders = allOrders.filter(
       (o) => !existingSalesorderNumbers.includes(o.order.salesorder_number),
     );
 
     for (const { order, address } of newOrders) {
-      const addressId = await this.addAddress(
+      this.logger.info("Creating new order in zoho", { order, address });
+
+      const addressId = await this.zoho.addAddresstoContact(
         event.entry.zohoCustomerId,
-        address,
+        {
+          address: address.address,
+          city: address.city,
+          zip: address.zip.toString(),
+          country: address.country,
+        },
       );
       await this.zoho.createSalesorder({
         ...order,

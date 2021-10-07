@@ -6,8 +6,6 @@ import { ISigner } from "./signature";
 import { ILogger } from "@eci/util/logger";
 
 export type QueueConfig = {
-  name: string;
-
   signer: ISigner;
 
   logger: ILogger;
@@ -52,11 +50,6 @@ export class QueueManager<
    */
   private readonly signer: ISigner;
   private readonly logger: ILogger;
-  /**
-   * The queue prefix.
-   * Each topic will be a unique queue with this prefix and topic name.
-   */
-  private readonly prefix: string;
 
   private connection: {
     host: string;
@@ -76,10 +69,9 @@ export class QueueManager<
     >;
   };
   constructor(
-    { name, signer, logger, connection }: QueueConfig, // consume: (topic: TTopic, message: Message<TPayload>) => Promise<void>,
+    { signer, logger, connection }: QueueConfig, // consume: (topic: TTopic, message: Message<TPayload>) => Promise<void>,
   ) {
     this.logger = logger;
-    this.prefix = name;
     this.connection = {
       host: connection.host,
       port: parseInt(connection.port, 10),
@@ -91,7 +83,7 @@ export class QueueManager<
   }
 
   private queueId(topic: TTopic): string {
-    return ["eci", env.get("NODE_ENV", "development"), this.prefix, topic]
+    return ["eci", env.get("NODE_ENV", "development"), topic]
       .join(":")
       .toLowerCase();
   }
@@ -143,15 +135,15 @@ export class QueueManager<
   ): (
     job: Job<SignedMessage<Message<TTopic, TPayload>>, void, TTopic>,
   ) => Promise<void> {
-    return async ({ data }) => {
+    return async ({ data: { message, signature } }) => {
       try {
-        this.logger.info("Received message", { message: data });
-        this.signer.verify({ ...data, signature: undefined }, data.signature);
-        await handler(data.message);
-        this.logger.info("Processed message", { message: data });
+        this.logger.info("Received message", { message });
+        this.signer.verify(message, signature);
+        await handler(message);
+        this.logger.info("Processed message", { message });
       } catch (err) {
         this.logger.error("Error processing message", {
-          message: data,
+          message,
           error: err.message,
         });
       }

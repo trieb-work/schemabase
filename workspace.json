@@ -319,6 +319,28 @@
         }
       }
     },
+    "e2e-strapi-orders-to-zoho": {
+      "root": "apps/e2e/strapi-orders-to-zoho",
+      "sourceRoot": "apps/e2e/strapi-orders-to-zoho/src",
+      "projectType": "application",
+      "targets": {
+        "e2e": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/apps/e2e/strapi-orders-to-zoho"],
+          "options": {
+            "jestConfig": "apps/e2e/strapi-orders-to-zoho/jest.config.js",
+            "passWithNoTests": true
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["apps/e2e/strapi-orders-to-zoho/**/*.ts"]
+          }
+        }
+      }
+    },
     "events-client": {
       "root": "libs/events/client",
       "sourceRoot": "libs/events/client/src",

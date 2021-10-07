@@ -40,10 +40,9 @@ export class Logger implements ILogger {
     };
     this.logger = winston.createLogger({
       transports: [new winston.transports.Console()],
-      format:
-        env.get("NODE_ENV") === "production"
-          ? winston.format.json()
-          : winston.format.prettyPrint({ colorize: true }),
+      format: winston.format.prettyPrint({
+        colorize: true,
+      }),
     });
 
     const isCI = env.get("CI") === "true";
@@ -98,8 +97,14 @@ export class Logger implements ILogger {
    */
   private log(level: string, message: string, fields: Fields = {}): void {
     this.logger.log(level, message, {
-      ...this.meta,
-      ...fields,
+      fields: JSON.stringify(
+        {
+          ...this.meta,
+          ...fields,
+        },
+        null,
+        env.get("NODE_ENV") === "production" ? 0 : 2,
+      ),
     });
   }
 

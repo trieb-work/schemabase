@@ -27,7 +27,7 @@ export class HttpClient implements HttpApi {
   public constructor(config?: { traceId?: string }) {
     this.headers = {};
     if (config?.traceId) {
-      this.setHeader(ECI_TRACE_HEADER, config?.traceId);
+      this.setHeader(ECI_TRACE_HEADER, config.traceId);
     }
   }
 
@@ -41,11 +41,19 @@ export class HttpClient implements HttpApi {
       url: req.url,
       params: req.params,
       headers: { ...this.headers, ...req.headers },
-      data: JSON.stringify(req.body),
-    }).then((res) => ({
-      status: res.status,
-      data: res.data ?? null,
-      headers: res.headers,
-    }));
+      data: req.body,
+    })
+      .then((res) => ({
+        status: res.status,
+        data: res.data ?? null,
+        headers: res.headers,
+      }))
+      .catch((err) => {
+        return {
+          status: err.response.status,
+          data: err.response.data,
+          headers: err.response.headers,
+        };
+      });
   }
 }

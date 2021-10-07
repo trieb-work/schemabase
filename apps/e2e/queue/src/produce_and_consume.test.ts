@@ -6,7 +6,6 @@ describe("produce and consume over redis", () => {
 
   const topic = idGenerator.id("test");
   const queue = new QueueManager<string, { hello: string }>({
-    name: idGenerator.id("test"),
     signer: new Signer({ signingKey: "test" }),
     logger,
     connection: {

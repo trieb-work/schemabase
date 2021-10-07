@@ -15,6 +15,7 @@ const requestValidation = z.object({
   }),
   headers: z.object({
     authorization: z.string(),
+    origin: z.string(),
   }),
   body: z.object({
     event: z.enum(["entry.create", "entry.update", "entry.delete"]),
@@ -37,12 +38,14 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   res,
 }): Promise<void> => {
   const {
-    headers: { authorization },
+    headers: { authorization, origin },
     query: { id },
+    body,
   } = req;
 
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
+  ctx.logger.info("request", { body });
   const webhook = await ctx.prisma.incomingStrapiWebhook.findUnique({
     where: { id },
     include: {
@@ -74,7 +77,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   });
 
   let topic: strapi.Topic;
-  switch (req.body.event) {
+  switch (body.event) {
     case "entry.create":
       topic = strapi.Topic.ENTRY_CREATE;
       break;
@@ -86,11 +89,11 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
       break;
 
     default:
-      throw new Error(`Invalid strapi event: ${req.body.event}`);
+      throw new Error(`Invalid strapi event: ${body.event}`);
   }
-
+  ctx.logger.info("Producing new event", { body: req.body });
   await queue.produce({
-    payload: req.body,
+    payload: { ...req.body, origin },
     header: {
       id: idGenerator.id("publicKey"),
       traceId: idGenerator.id("trace"),

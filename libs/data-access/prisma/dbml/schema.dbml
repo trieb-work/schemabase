@@ -71,6 +71,7 @@ Table Subscription {
   tenantId String [not null]
   payedUntil DateTime
   productDataFeedIntegration ProductDataFeedIntegration
+  strapiToZohoIntegration StrapiToZohoIntegration [not null]
 }
 
 Table ProductDataFeedIntegration {
@@ -90,6 +91,8 @@ Table StrapiToZohoIntegration {
   id String [pk]
   payedUntil DateTime
   enabled Boolean [not null, default: true]
+  subscription Subscription
+  subscriptionId String [unique]
   tenant Tenant [not null]
   tenantId String [not null]
   strapiApp StrapiApp [not null]
@@ -167,6 +170,8 @@ Ref: ProductDataFeedIntegration.tenantId > Tenant.id
 Ref: ProductDataFeedIntegration.productDataFeedAppId - ProductDataFeedApp.id
 
 Ref: ProductDataFeedIntegration.saleorAppId > SaleorApp.id
+
+Ref: StrapiToZohoIntegration.subscriptionId > Subscription.id
 
 Ref: StrapiToZohoIntegration.tenantId > Tenant.id
 

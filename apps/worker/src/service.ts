@@ -11,7 +11,7 @@ export type WorkerConfig = {
   logger: Logger;
 
   sources: {
-    [name: string]: EventSource<Topic, Message<Topic, EntryEvent>>;
+    strapi: EventSource<Topic, Message<Topic, EntryEvent>>;
   };
 };
 

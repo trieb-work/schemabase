@@ -57,9 +57,10 @@ test: build
 
 reset: export COMPOSE_DOCKER_CLI_BUILD=1
 reset: export DOCKER_BUILDKIT=1
-reset: down
+reset:
 	docker-compose build eci_worker
 	docker-compose build eci_webhooks
+
 	$(MAKE) init
 
 # Run integration tests

@@ -78,7 +78,10 @@ export function handleWebhook<TRequest>({
         endpoint: req.url,
       },
     });
-
+    const backgroundContext: Context = {
+      trace: { id: traceId },
+      logger,
+    };
     try {
       /**
        * Perform http validation
@@ -95,21 +98,17 @@ export function handleWebhook<TRequest>({
       /**
        * Perform request validation
        */
-      const parsedRequest = (await validation.request
-        .parseAsync(req)
-        .catch((err) => {
-          throw new HttpError(400, err.message);
-        })) as TRequest;
-
-      const backgroundContext: Context = {
-        trace: { id: traceId },
-        logger,
-      };
-
+      await validation.request.parseAsync(req).catch((err) => {
+        throw new HttpError(400, err.message);
+      });
       /**
        * Run the actual webhook logic
        */
-      await webhook({ backgroundContext, req: parsedRequest, res });
+      await webhook({
+        backgroundContext,
+        req: req as unknown as TRequest,
+        res,
+      });
 
       /**
        * Handle errors gracefully
