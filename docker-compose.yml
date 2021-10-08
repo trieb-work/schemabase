@@ -34,6 +34,7 @@ services:
       ECI_BASE_URL: http://webhooks.eci:3000
     depends_on:
       - eci_db
+      - redis
 
   eci_worker:
     image: eci_worker
@@ -51,7 +52,7 @@ services:
       NODE_ENV: production
       ZOHO_CLIENT_ID: ${ZOHO_CLIENT_ID}
       ZOHO_CLIENT_SECRET: ${ZOHO_CLIENT_SECRET}
-      ZOHO_ORG_ID: ${ZOHO_CLIENT_ID}
+      ZOHO_ORG_ID: ${ZOHO_ORG_ID}
     depends_on:
       - eci_db
       - redis

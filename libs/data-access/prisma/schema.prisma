@@ -42,20 +42,12 @@ model ProductDataFeedApp {
 model ZohoApp {
   id String @id
 
-  // Indicates if the integration is currently enabled.
-  // The user might chose to disable it.
-  enabled             Boolean @default(false)
-  // The public id used for lookups from incoming webhooks.
-  orgId               String
-  clientId            String
-  clientSecret        String
-  payPalAccountId     String?
-  creditCardAccountId String?
-  webhookToken        String
-  webhookID           String?
-  customFunctionID    String?
-  tenant              Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId            String  @unique
+  orgId                   String
+  clientId                String
+  clientSecret            String
+  tenant                  Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId                String                    @unique
+  strapiToZohoIntegration StrapiToZohoIntegration[]
 }
 
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor
@@ -178,6 +170,9 @@ model StrapiToZohoIntegration {
   tenantId    String
   strapiApp   StrapiApp @relation(fields: [strapiAppId], references: [id])
   strapiAppId String
+  zohoApp     ZohoApp   @relation(fields: [zohoAppId], references: [id])
+  zohoAppId   String
+
 }
 
 // Every tenant can have multiple strapi instances

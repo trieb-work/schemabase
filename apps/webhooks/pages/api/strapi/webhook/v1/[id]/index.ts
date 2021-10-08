@@ -15,7 +15,6 @@ const requestValidation = z.object({
   }),
   headers: z.object({
     authorization: z.string(),
-    origin: z.string(),
   }),
   body: z.object({
     event: z.enum(["entry.create", "entry.update", "entry.delete"]),
@@ -38,7 +37,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   res,
 }): Promise<void> => {
   const {
-    headers: { authorization, origin },
+    headers: { authorization },
     query: { id },
     body,
   } = req;
@@ -93,7 +92,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   }
   ctx.logger.info("Producing new event", { body: req.body });
   await queue.produce({
-    payload: { ...req.body, origin },
+    payload: req.body,
     header: {
       id: idGenerator.id("publicKey"),
       traceId: idGenerator.id("trace"),

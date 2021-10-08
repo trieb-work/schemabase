@@ -27,13 +27,16 @@ async function main() {
       port: env.require("REDIS_PORT"),
     },
   });
-
-  const zoho = new ZohoClientInstance({
+  const zohoConfig = {
     zohoClientId: env.require("ZOHO_CLIENT_ID"),
     zohoClientSecret: env.require("ZOHO_CLIENT_SECRET"),
     zohoOrgId: env.require("ZOHO_ORG_ID"),
+  };
+  const zoho = new ZohoClientInstance(zohoConfig);
+  const strapiOrdersToZoho = await StrapiOrdersToZoho.new({
+    zoho,
+    logger,
   });
-  logger.info("zoho", { zoho });
 
   const worker = new Worker({
     logger,
@@ -43,17 +46,17 @@ async function main() {
         handlers: [
           {
             topic: strapi.Topic.ENTRY_UPDATE,
-            handler: async (message) => {
-              const strapiOrdersToZoho = await StrapiOrdersToZoho.new({
-                zoho,
-                strapiBaseUrl: message.payload["origin"],
-                logger,
-              });
-
+            handler: async (message) =>
               await strapiOrdersToZoho.syncOrders(
                 message.payload as OrderEvent,
-              );
-            },
+              ),
+          },
+          {
+            topic: strapi.Topic.ENTRY_CREATE,
+            handler: async (message) =>
+              await strapiOrdersToZoho.syncOrders(
+                message.payload as OrderEvent,
+              ),
           },
         ],
       },

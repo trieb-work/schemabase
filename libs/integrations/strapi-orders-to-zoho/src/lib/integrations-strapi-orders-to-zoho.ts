@@ -2,9 +2,8 @@ import { EntryEvent } from "@eci/events/strapi";
 import { z } from "zod";
 import { ZohoClientInstance, SalesOrder } from "@trieb.work/zoho-ts";
 import { createHash } from "crypto";
-import csvToJson from "csvtojson";
 import { ILogger } from "@eci/util/logger";
-const statusValidation = z.enum(["Draft", "Confirmed"]);
+const statusValidation = z.enum(["Draft", "Confirmed", "Sending", "Finished"]);
 
 const addressValidation = z.object({
   name: z.string(),
@@ -22,11 +21,6 @@ const orderValidation = z.object({
     customerName: z.string(),
     orderId: z.string(),
     addresses: z.array(addressValidation),
-    addressCSV: z
-      .object({
-        url: z.string(),
-      })
-      .nullable(),
     status: statusValidation,
     zohoCustomerId: z.string(),
     products: z.array(
@@ -47,68 +41,23 @@ type CreateSalesOrder = Required<
 > &
   SalesOrder;
 export class StrapiOrdersToZoho {
-  private readonly strapiBaseUrl: string;
   private readonly zoho: ZohoClientInstance;
   private readonly logger: ILogger;
+  private readonly orderPrefix = "BULK";
 
-  private constructor(config: {
-    zoho: ZohoClientInstance;
-    strapiBaseUrl: string;
-    logger: ILogger;
-  }) {
+  private constructor(config: { zoho: ZohoClientInstance; logger: ILogger }) {
     this.zoho = config.zoho;
-    this.strapiBaseUrl = config.strapiBaseUrl;
     this.logger = config.logger;
   }
 
   public static async new(config: {
     zoho: ZohoClientInstance;
-    strapiBaseUrl: string;
     logger: ILogger;
   }): Promise<StrapiOrdersToZoho> {
     const instance = new StrapiOrdersToZoho(config);
     await instance.zoho.authenticate();
 
     return instance;
-  }
-
-  /**
-   * Addresses can be supplied via .csv file or manually in strapi.
-   *
-   * Fetch the .csv file if it exists and transform it to json.
-   * Afterwards the addresses from .csv and manual are merged.
-   *
-   * This does not deduplicate the addresses yet.
-   */
-  private async mergeAddresses({
-    entry,
-  }: z.infer<typeof orderValidation>): Promise<
-    z.infer<typeof addressValidation>[]
-  > {
-    if (!entry.addressCSV) {
-      return entry.addresses;
-    }
-
-    this.logger.info("Merging addresses from .csv");
-    const url = `${this.strapiBaseUrl}${entry.addressCSV.url}`;
-    const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error(`Unable to get addresses from strapi: ${url} `);
-    }
-    let json = await csvToJson().fromString(await res.text());
-    json = json.map((row) => ({
-      ...row,
-      zip: parseInt(row.zip),
-    }));
-
-    const addresses = await z
-      .array(addressValidation)
-      .parseAsync(json)
-      .catch((err) => {
-        throw new Error(`addresses csv is invalid: ${err}`);
-      });
-
-    return [...addresses, ...entry.addresses];
   }
 
   /**
@@ -124,8 +73,7 @@ export class StrapiOrdersToZoho {
       throw new Error(`Malformed event: ${err}`);
     });
 
-    const addresses = await this.mergeAddresses(event);
-    return addresses.map((address) => {
+    return event.entry.addresses.map((address) => {
       const addressHash = createHash("sha256")
         .update(JSON.stringify(address))
         .digest("hex")
@@ -134,7 +82,11 @@ export class StrapiOrdersToZoho {
       return {
         order: {
           customer_id: event.entry.zohoCustomerId,
-          salesorder_number: ["RP", event.entry.orderId, addressHash].join("-"),
+          salesorder_number: [
+            this.orderPrefix,
+            event.entry.orderId,
+            addressHash,
+          ].join("-"),
           line_items: event.entry.products.map((p) => ({
             item_id: p.product.zohoId,
           })),
@@ -145,13 +97,15 @@ export class StrapiOrdersToZoho {
   }
 
   public async syncOrders(rawEvent: OrderEvent): Promise<void> {
-    this.logger.info("Syncing orders between strapi and zoho", { rawEvent });
+    this.logger.info("Syncing orders between strapi and zoho");
     const event = await orderValidation.parseAsync(rawEvent).catch((err) => {
       throw new Error(`Malformed event: ${err}`);
     });
 
+    const search = [this.orderPrefix, event.entry.orderId].join("-");
+    this.logger.info("Searching zoho for existing orders", { search });
     const existingOrders = await this.zoho
-      .searchSalesOrdersWithScrolling(["RP", event.entry.orderId].join("-"))
+      .searchSalesOrdersWithScrolling(search)
       .catch((err) => {
         throw new Error(`Unable to fetch existing orders from zoho: ${err}`);
       });
@@ -166,22 +120,79 @@ export class StrapiOrdersToZoho {
       (o) => !existingSalesorderNumbers.includes(o.order.salesorder_number),
     );
 
-    for (const { order, address } of newOrders) {
-      this.logger.info("Creating new order in zoho", { order, address });
+    /** Update the existing orders status */
+    for (const existingOrder of existingOrders) {
+      if (existingOrder.status === "confirmed") {
+        if (event.entry.status !== "Sending") {
+          await this.zoho.updateSalesorder(existingOrder.salesorder_id, {
+            status: "draft",
+          });
+        }
+      } else {
+        if (event.entry.status === "Sending") {
+          await this.zoho.updateSalesorder(existingOrder.salesorder_id, {
+            status: "confirmed",
+          });
+        }
+      }
+    }
 
-      const addressId = await this.zoho.addAddresstoContact(
-        event.entry.zohoCustomerId,
-        {
+    for (const { order, address } of newOrders) {
+      // order.status = event.entry.status === "Sending" ? "confirmed" : "draft";
+      this.logger.info("Adding new address to contact", {
+        address,
+        contact: event.entry.zohoCustomerId,
+      });
+
+      const addressId = await this.zoho
+        .addAddresstoContact(event.entry.zohoCustomerId, {
           address: address.address,
           city: address.city,
           zip: address.zip.toString(),
           country: address.country,
-        },
-      );
-      await this.zoho.createSalesorder({
-        ...order,
-        billing_address_id: addressId,
+        })
+        .catch((err) => {
+          throw new Error(`Unable to add address to contact: ${err}`);
+        });
+      this.logger.info("Adding new order", {
+        order,
       });
+      await this.zoho
+        .createSalesorder({
+          ...order,
+          billing_address_id: addressId,
+        })
+        .catch((err) => {
+          throw new Error(
+            `Unable to create sales order: ${JSON.stringify(
+              {
+                ...order,
+                billing_address_id: addressId,
+              },
+              null,
+              2,
+            )}, Error: ${err}`,
+          );
+        });
+    }
+    if (event.entry.status === "Sending") {
+      await this.confirmOrders(search);
+    }
+  }
+
+  /**
+   * Load all available orders by search string and mark them as confirmed
+   */
+  private async confirmOrders(search: string): Promise<void> {
+    const existingOrders = await this.zoho
+      .searchSalesOrdersWithScrolling(search)
+      .catch((err) => {
+        throw new Error(`Unable to fetch existing orders from zoho: ${err}`);
+      });
+    for (const order of existingOrders) {
+      if (order.status !== "confirmed") {
+        await this.zoho.salesorderConfirm(order.salesorder_id);
+      }
     }
   }
 }

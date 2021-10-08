@@ -4,7 +4,7 @@ import { Topic, EntryEvent } from "@eci/events/strapi";
 
 export type EventSource<TTopic extends string, TMessage> = {
   consumer: IConsumer<TTopic, TMessage>;
-  handlers: [{ topic: TTopic; handler: (message: TMessage) => Promise<void> }];
+  handlers: { topic: TTopic; handler: (message: TMessage) => Promise<void> }[];
 };
 
 export type WorkerConfig = {

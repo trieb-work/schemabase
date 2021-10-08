@@ -15,14 +15,9 @@ export default async function handler(
       zohoOrgId: env.require("ZOHO_ORG_ID"),
     });
     console.log({ body: JSON.stringify(req.body, null, 2) });
-    const strapiBaseUrl = req.headers["origin"] as string | undefined;
-    if (!strapiBaseUrl) {
-      throw new Error("origin header missing");
-    }
 
     const integration = await StrapiOrdersToZoho.new({
       zoho,
-      strapiBaseUrl,
       logger: new NoopLogger(),
     });
 

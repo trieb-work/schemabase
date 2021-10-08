@@ -63,6 +63,21 @@ reset:
 
 	$(MAKE) init
 
+
+reset-webhooks: export COMPOSE_DOCKER_CLI_BUILD=1
+reset-webhooks: export DOCKER_BUILDKIT=1
+reset-webhooks: build db-migrate
+	docker-compose stop eci_webhooks
+	docker-compose build eci_webhooks
+	docker-compose up -d
+
+reset-worker: export COMPOSE_DOCKER_CLI_BUILD=1
+reset-worker: export DOCKER_BUILDKIT=1
+reset-worker:
+	docker-compose stop eci_worker
+	docker-compose build eci_worker
+	docker-compose up -d
+
 # Run integration tests
 #
 # Make sure you have called `make init` before to setup all required services
