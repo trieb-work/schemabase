@@ -97,7 +97,6 @@ describe("Saleor app installation", () => {
     /**
      * Assert data in our db
      */
-    console.warn(JSON.stringify({ savedTenant }, null, 2));
     const appInDatabase = savedTenant?.saleorApps[0].installedSaleorApp;
     if (!appInDatabase) {
       fail();

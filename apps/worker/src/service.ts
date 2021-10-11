@@ -11,7 +11,10 @@ export type WorkerConfig = {
   logger: Logger;
 
   sources: {
-    strapi: EventSource<Topic, Message<Topic, EntryEvent>>;
+    strapi: EventSource<
+      Topic,
+      Message<Topic, EntryEvent & { zohoAppId: string }>
+    >;
   };
 };
 
@@ -19,7 +22,7 @@ export class Worker {
   private logger: Logger;
   private readonly sources: Record<
     string,
-    EventSource<Topic, Message<Topic, EntryEvent>>
+    EventSource<Topic, Message<Topic, EntryEvent & { zohoAppId: string }>>
   >;
 
   constructor(config: WorkerConfig) {

@@ -8,6 +8,7 @@ import {
   StrapiOrdersToZoho,
 } from "@eci/integrations/strapi-orders-to-zoho";
 import { ZohoClientInstance } from "@trieb.work/zoho-ts";
+import { PrismaClient } from "@eci/data-access/prisma";
 
 async function main() {
   const logger = new Logger({
@@ -27,16 +28,8 @@ async function main() {
       port: env.require("REDIS_PORT"),
     },
   });
-  const zohoConfig = {
-    zohoClientId: env.require("ZOHO_CLIENT_ID"),
-    zohoClientSecret: env.require("ZOHO_CLIENT_SECRET"),
-    zohoOrgId: env.require("ZOHO_ORG_ID"),
-  };
-  const zoho = new ZohoClientInstance(zohoConfig);
-  const strapiOrdersToZoho = await StrapiOrdersToZoho.new({
-    zoho,
-    logger,
-  });
+
+  const prisma = new PrismaClient();
 
   const worker = new Worker({
     logger,
@@ -46,17 +39,57 @@ async function main() {
         handlers: [
           {
             topic: strapi.Topic.ENTRY_UPDATE,
-            handler: async (message) =>
-              await strapiOrdersToZoho.syncOrders(
-                message.payload as OrderEvent,
-              ),
+            handler: async (message) => {
+              const zohoApp = await prisma.zohoApp.findUnique({
+                where: { id: message.payload.zohoAppId },
+              });
+              if (!zohoApp) {
+                throw new Error(
+                  `No zoho app found: ${message.payload.zohoAppId}`,
+                );
+              }
+
+              const zoho = new ZohoClientInstance({
+                zohoClientId: zohoApp.clientId,
+                zohoClientSecret: zohoApp.clientSecret,
+                zohoOrgId: zohoApp.orgId,
+              });
+              const strapiOrdersToZoho = await StrapiOrdersToZoho.new({
+                zoho,
+                logger,
+              });
+
+              await strapiOrdersToZoho.updateBulkOrders(
+                message.payload as unknown as OrderEvent,
+              );
+            },
           },
           {
             topic: strapi.Topic.ENTRY_CREATE,
-            handler: async (message) =>
-              await strapiOrdersToZoho.syncOrders(
-                message.payload as OrderEvent,
-              ),
+            handler: async (message) => {
+              const zohoApp = await prisma.zohoApp.findUnique({
+                where: { id: message.payload.zohoAppId },
+              });
+              if (!zohoApp) {
+                throw new Error(
+                  `No zoho app found: ${message.payload.zohoAppId}`,
+                );
+              }
+
+              const zoho = new ZohoClientInstance({
+                zohoClientId: zohoApp.clientId,
+                zohoClientSecret: zohoApp.clientSecret,
+                zohoOrgId: zohoApp.orgId,
+              });
+              const strapiOrdersToZoho = await StrapiOrdersToZoho.new({
+                zoho,
+                logger,
+              });
+
+              await strapiOrdersToZoho.createNewBulkOrders(
+                message.payload as unknown as OrderEvent,
+              );
+            },
           },
         ],
       },

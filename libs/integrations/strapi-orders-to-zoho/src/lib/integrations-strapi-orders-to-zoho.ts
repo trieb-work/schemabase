@@ -96,11 +96,120 @@ export class StrapiOrdersToZoho {
     });
   }
 
-  public async syncOrders(rawEvent: OrderEvent): Promise<void> {
+  // public async syncOrders(rawEvent: OrderEvent): Promise<void> {
+  //   this.logger.info("Syncing orders between strapi and zoho");
+  //   const event = await orderValidation.parseAsync(rawEvent).catch((err) => {
+  //     throw new Error(`Malformed event: ${err}`);
+  //   });
+
+  //   const search = [this.orderPrefix, event.entry.orderId].join("-");
+  //   this.logger.info("Searching zoho for existing orders", { search });
+  //   const existingOrders = await this.zoho
+  //     .searchSalesOrdersWithScrolling(search)
+  //     .catch((err) => {
+  //       throw new Error(`Unable to fetch existing orders from zoho: ${err}`);
+  //     });
+
+  //   const existingSalesorderNumbers = existingOrders.map(
+  //     (o) => o.salesorder_number,
+  //   );
+
+  //   const allOrders = await this.transformStrapiEventToZohoOrders(rawEvent);
+  //   const newOrders = allOrders.filter(
+  //     (o) => !existingSalesorderNumbers.includes(o.order.salesorder_number),
+  //   );
+
+  //   if (event.event === "entry.update") {
+  //     const deletedOrderNumbers = existingSalesorderNumbers.filter(
+  //       (salesorderNumber) =>
+  //         !allOrders
+  //           .map((o) => o.order.salesorder_number)
+  //           .includes(salesorderNumber),
+  //     );
+  //     this.logger.info("deletedOrderNumber", { deletedOrderNumbers });
+  //     for (const deletedOrderNumber of deletedOrderNumbers) {
+  //       const orderId = existingOrders.find(
+  //         (o) => o.salesorder_number === deletedOrderNumber,
+  //       )?.salesorder_id;
+  //       if (!orderId) {
+  //         throw new Error(
+  //           `There is no existing order with number: ${deletedOrderNumber}`,
+  //         );
+  //       }
+  //       await this.zoho.deleteSalesorder(orderId).catch((err) => {
+  //         throw new Error(`Unable to delete order: ${orderId}: ${err}`);
+  //       });
+  //     }
+
+  //     /** Update the existing orders status */
+  //     for (const existingOrder of existingOrders) {
+  //       if (existingOrder.status === "confirmed") {
+  //         if (event.entry.status !== "Sending") {
+  //           await this.zoho.updateSalesorder(existingOrder.salesorder_id, {
+  //             status: "draft",
+  //           });
+  //         }
+  //       } else {
+  //         if (event.entry.status === "Sending") {
+  //           await this.zoho.updateSalesorder(existingOrder.salesorder_id, {
+  //             status: "confirmed",
+  //           });
+  //         }
+  //       }
+  //     }
+  //   }
+
+  //   for (const { order, address } of newOrders) {
+  //     // order.status = event.entry.status === "Sending" ? "confirmed" : "draft";
+  //     this.logger.info("Adding new address to contact", {
+  //       address,
+  //       contact: event.entry.zohoCustomerId,
+  //     });
+
+  //     const addressId = await this.zoho
+  //       .addAddresstoContact(event.entry.zohoCustomerId, {
+  //         address: address.address,
+  //         city: address.city,
+  //         zip: address.zip.toString(),
+  //         country: address.country,
+  //       })
+  //       .catch((err) => {
+  //         throw new Error(`Unable to add address to contact: ${err}`);
+  //       });
+  //     this.logger.info("Adding new order", {
+  //       order,
+  //     });
+  //     await this.zoho
+  //       .createSalesorder({
+  //         ...order,
+  //         billing_address_id: addressId,
+  //       })
+  //       .catch((err) => {
+  //         throw new Error(
+  //           `Unable to create sales order: ${JSON.stringify(
+  //             {
+  //               ...order,
+  //               billing_address_id: addressId,
+  //             },
+  //             null,
+  //             2,
+  //           )}, Error: ${err}`,
+  //         );
+  //       });
+  //   }
+  //   if (event.entry.status === "Sending") {
+  //     await this.confirmOrders(search);
+  //   }
+  // }
+
+  public async updateBulkOrders(rawEvent: OrderEvent): Promise<void> {
     this.logger.info("Syncing orders between strapi and zoho");
-    const event = await orderValidation.parseAsync(rawEvent).catch((err) => {
-      throw new Error(`Malformed event: ${err}`);
-    });
+    const event = await orderValidation
+      .merge(z.object({ event: z.enum(["entry.update"]) }))
+      .parseAsync(rawEvent)
+      .catch((err) => {
+        throw new Error(`Malformed event: ${err}`);
+      });
 
     const search = [this.orderPrefix, event.entry.orderId].join("-");
     this.logger.info("Searching zoho for existing orders", { search });
@@ -110,7 +219,6 @@ export class StrapiOrdersToZoho {
         throw new Error(`Unable to fetch existing orders from zoho: ${err}`);
       });
 
-    this.logger.info("Existing orders in zoho", { existingOrders });
     const existingSalesorderNumbers = existingOrders.map(
       (o) => o.salesorder_number,
     );
@@ -119,6 +227,27 @@ export class StrapiOrdersToZoho {
     const newOrders = allOrders.filter(
       (o) => !existingSalesorderNumbers.includes(o.order.salesorder_number),
     );
+
+    const deletedOrderNumbers = existingSalesorderNumbers.filter(
+      (salesorderNumber) =>
+        !allOrders
+          .map((o) => o.order.salesorder_number)
+          .includes(salesorderNumber),
+    );
+    this.logger.info("deletedOrderNumber", { deletedOrderNumbers });
+    for (const deletedOrderNumber of deletedOrderNumbers) {
+      const orderId = existingOrders.find(
+        (o) => o.salesorder_number === deletedOrderNumber,
+      )?.salesorder_id;
+      if (!orderId) {
+        throw new Error(
+          `There is no existing order with number: ${deletedOrderNumber}`,
+        );
+      }
+      await this.zoho.deleteSalesorder(orderId).catch((err) => {
+        throw new Error(`Unable to delete order: ${orderId}: ${err}`);
+      });
+    }
 
     /** Update the existing orders status */
     for (const existingOrder of existingOrders) {
@@ -177,6 +306,59 @@ export class StrapiOrdersToZoho {
     }
     if (event.entry.status === "Sending") {
       await this.confirmOrders(search);
+    }
+  }
+
+  public async createNewBulkOrders(rawEvent: OrderEvent): Promise<void> {
+    this.logger.info("Syncing orders between strapi and zoho");
+    const event = await orderValidation
+      .merge(z.object({ event: z.enum(["entry.create"]) }))
+      .parseAsync(rawEvent)
+      .catch((err) => {
+        throw new Error(`Malformed event: ${err}`);
+      });
+
+    const orders = await this.transformStrapiEventToZohoOrders(rawEvent);
+
+    for (const { order, address } of orders) {
+      this.logger.info("Adding new address to contact", {
+        address,
+        contact: event.entry.zohoCustomerId,
+      });
+
+      const addressId = await this.zoho
+        .addAddresstoContact(event.entry.zohoCustomerId, {
+          address: address.address,
+          city: address.city,
+          zip: address.zip.toString(),
+          country: address.country,
+        })
+        .catch((err) => {
+          throw new Error(`Unable to add address to contact: ${err}`);
+        });
+      this.logger.info("Adding new order", {
+        order,
+      });
+      const createdSalesorder = await this.zoho
+        .createSalesorder({
+          ...order,
+          billing_address_id: addressId,
+        })
+        .catch((err) => {
+          throw new Error(
+            `Unable to create sales order: ${JSON.stringify(
+              {
+                ...order,
+                billing_address_id: addressId,
+              },
+              null,
+              2,
+            )}, Error: ${err}`,
+          );
+        });
+      if (event.entry.status === "Sending") {
+        this.zoho.salesorderConfirm(createdSalesorder.salesorder_id);
+      }
     }
   }
 

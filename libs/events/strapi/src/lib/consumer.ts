@@ -3,8 +3,10 @@ import { EntryEvent } from "./validation/entry";
 
 import { Topic, QueueConfig } from "./types";
 
-export class Consumer implements IConsumer<Topic, Message<Topic, EntryEvent>> {
-  private queueManager: QueueManager<Topic, EntryEvent>;
+type Payload = EntryEvent & { zohoAppId: string };
+
+export class Consumer implements IConsumer<Topic, Message<Topic, Payload>> {
+  private queueManager: QueueManager<Topic, Payload>;
   constructor(config: QueueConfig) {
     this.queueManager = new QueueManager(config);
   }
@@ -14,7 +16,7 @@ export class Consumer implements IConsumer<Topic, Message<Topic, EntryEvent>> {
 
   public consume(
     topic: Topic,
-    process: (message: Message<Topic, EntryEvent>) => Promise<void>,
+    process: (message: Message<Topic, Payload>) => Promise<void>,
   ): void {
     return this.queueManager.consume(topic, process);
   }

@@ -16,11 +16,38 @@ const zoho = new ZohoClientInstance({
   zohoOrgId: env.require("ZOHO_ORG_ID"),
 });
 
+const createdContactIds: string[] = [];
+
 const webhookId = idGenerator.id("test");
 const webhookSecret = idGenerator.id("test");
-let zohoCustomerId = "";
 
-function generateEvent(event: string, status: string, addresses = 1) {
+const generateAddress = (id: number) => {
+  const name = faker.name.firstName();
+  const surname = faker.name.lastName();
+  return {
+    id,
+    name,
+    surname,
+    address: `${faker.address.streetAddress()} ${randomInt(1, 200)}`,
+    zip: randomInt(1, 100_000),
+    city: faker.address.cityName(),
+    country: faker.address.country(),
+    fullName: [name, surname].join(" "),
+  };
+};
+
+const generateEvent = async (event: string, status: string, addresses = 1) => {
+  const companyName = idGenerator.id("test");
+
+  const { contact_id } = await zoho.createContact({
+    company_name: companyName,
+    contact_name: companyName,
+    contact_type: "customer",
+  });
+  if (!contact_id || contact_id === "") {
+    throw new Error("Unable to setup testing contact");
+  }
+  createdContactIds.push(contact_id);
   return {
     event,
     created_at: new Date().toISOString(),
@@ -28,21 +55,12 @@ function generateEvent(event: string, status: string, addresses = 1) {
     entry: {
       id: 1,
       customerName: faker.company.companyName(),
-      zohoCustomerId,
+      zohoCustomerId: contact_id,
       status,
-      orderId: [event, status, randomInt(1_000_000).toString()].join("-"),
+      orderId: randomInt(1_000_000).toString(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      addresses: [...Array(addresses)].map((_, id) => ({
-        id,
-        name: faker.name.firstName(),
-        surname: faker.name.lastName(),
-        address: `${faker.address.streetAddress()} ${randomInt(1, 200)}`,
-        zip: randomInt(1, 100_000),
-        city: faker.address.cityName(),
-        country: faker.address.country(),
-        fullName: "fullName",
-      })),
+      addresses: [...Array(addresses)].map((_, id) => generateAddress(id)),
       products: [
         {
           quantity: randomInt(1, 6),
@@ -58,21 +76,11 @@ function generateEvent(event: string, status: string, addresses = 1) {
       ],
     },
   };
-}
+};
 
 beforeAll(async () => {
   await zoho.authenticate();
 
-  const companyName = idGenerator.id("test");
-  const { contact_id } = await zoho.createContact({
-    company_name: companyName,
-    contact_name: companyName,
-    contact_type: "customer",
-  });
-  if (!contact_id || contact_id === "") {
-    throw new Error("Unable to setup testing contact");
-  }
-  zohoCustomerId = contact_id;
   const tenant = await prisma.tenant.create({
     data: {
       id: idGenerator.id("test"),
@@ -88,23 +96,20 @@ beforeAll(async () => {
       id: idGenerator.id("test"),
       name: idGenerator.id("test"),
       tenantId: tenant.id,
-    },
-  });
-
-  const secretHash = createHash("sha256").update(webhookSecret).digest("hex");
-  await prisma.incomingStrapiWebhook.create({
-    data: {
-      id: webhookId,
-      strapiApp: {
-        connect: {
-          id: strapiApp.id,
-        },
-      },
-      secret: {
-        create: {
-          id: idGenerator.id("test"),
-          secret: secretHash,
-        },
+      webhooks: {
+        create: [
+          {
+            id: webhookId,
+            secret: {
+              create: {
+                id: idGenerator.id("test"),
+                secret: createHash("sha256")
+                  .update(webhookSecret)
+                  .digest("hex"),
+              },
+            },
+          },
+        ],
       },
     },
   });
@@ -112,9 +117,30 @@ beforeAll(async () => {
   const integration = await prisma.strapiToZohoIntegration.create({
     data: {
       id: idGenerator.id("test"),
-      tenantId: tenant.id,
+      tenant: {
+        connect: {
+          id: tenant.id,
+        },
+      },
       enabled: true,
-      strapiAppId: strapiApp.id,
+      strapiApp: {
+        connect: {
+          id: strapiApp.id,
+        },
+      },
+      zohoApp: {
+        create: {
+          id: idGenerator.id("test"),
+          orgId: env.require("ZOHO_ORG_ID"),
+          clientId: env.require("ZOHO_CLIENT_ID"),
+          clientSecret: env.require("ZOHO_CLIENT_SECRET"),
+          tenant: {
+            connect: {
+              id: tenant.id,
+            },
+          },
+        },
+      },
     },
   });
   await prisma.subscription.create({
@@ -133,53 +159,63 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await prisma.$disconnect();
+
+  /** Clean up created entries */
+  const ordersInZoho = await zoho.searchSalesOrdersWithScrolling("BULK-");
+  for (const order of ordersInZoho) {
+    await zoho.deleteSalesorder(order.salesorder_id);
+  }
+  for (const contactId of createdContactIds) {
+    await zoho.deleteContact(contactId);
+  }
 });
 
-describe("without authorization header", () => {
-  it("fails with status 400", async () => {
-    const res = await new HttpClient().call({
-      url: `http://localhost:3000/api/strapi/webhook/v1/${webhookId}`,
-      method: "POST",
-      body: generateEvent("entry.create", "Draft"),
+describe("with invalid webhook", () => {
+  describe("without authorization header", () => {
+    it("fails with status 400", async () => {
+      const res = await new HttpClient().call({
+        url: `http://localhost:3000/api/strapi/webhook/v1/${webhookId}`,
+        method: "POST",
+        body: await generateEvent("entry.create", "Draft"),
+      });
+      expect(res.status).toBe(400);
     });
-    expect(res.status).toBe(400);
   });
-});
 
-describe("with wrong webhook id", () => {
-  it("fails with status 404", async () => {
-    const res = await new HttpClient().call({
-      url: `http://localhost:3000/api/strapi/webhook/v1/not-a-valid-id`,
-      method: "POST",
-      body: generateEvent("entry.create", "Draft"),
-      headers: {
-        authorization: "hello",
-      },
+  describe("with wrong webhook id", () => {
+    it("fails with status 404", async () => {
+      const res = await new HttpClient().call({
+        url: `http://localhost:3000/api/strapi/webhook/v1/not-a-valid-id`,
+        method: "POST",
+        body: await generateEvent("entry.create", "Draft"),
+        headers: {
+          authorization: webhookSecret,
+        },
+      });
+      expect(res.status).toBe(404);
     });
-    expect(res.status).toBe(404);
+  });
+  describe("with wrong authorization secret", () => {
+    it("fails with status 403", async () => {
+      const res = await new HttpClient().call({
+        url: `http://localhost:3000/api/strapi/webhook/v1/${webhookId}`,
+        method: "POST",
+        body: await generateEvent("entry.create", "Draft"),
+        headers: {
+          authorization: "hello",
+        },
+      });
+      expect(res.status).toBe(403);
+    });
   });
 });
-describe("with wrong authorization secret", () => {
-  it("fails with status 403", async () => {
-    const res = await new HttpClient().call({
-      url: `http://localhost:3000/api/strapi/webhook/v1/${webhookId}`,
-      method: "POST",
-      body: generateEvent("entry.create", "Draft"),
-      headers: {
-        authorization: "hello",
-      },
-    });
-    expect(res.status).toBe(403);
-  });
-});
-
-describe("with valid webhook content", () => {
+describe("with valid webhook", () => {
   for (const status of ["Draft", "Sending"]) {
     describe("entry.create", () => {
       describe(`with status: ${status}`, () => {
-        const event = generateEvent("entry.create", status);
-
         it(`syncs all orders correctly`, async () => {
+          const event = await generateEvent("entry.create", status);
+
           const res = await new HttpClient().call<{
             status: string;
             traceId: string;
@@ -204,7 +240,6 @@ describe("with valid webhook content", () => {
             `BULK-${event.entry.orderId}`,
           );
 
-          // console.warn({ordersInZoho, id: `BULK-${event.entry.orderId}`})
           expect(ordersInZoho.length).toBe(event.entry.addresses.length);
           for (const order of ordersInZoho) {
             if (status === "Sending") {
@@ -213,64 +248,70 @@ describe("with valid webhook content", () => {
               expect(order.status).toEqual("draft");
             }
           }
-        }, 60_000);
-      });
-    });
-    describe("entry.update", () => {
-      describe("when an address has been removed", () => {
-        it("removes it from zoho", async () => {
-          const event = generateEvent("entry.create", status, 5);
-          const createRes = await new HttpClient().call<{
-            status: string;
-            traceId: string;
-          }>({
-            url: `http://localhost:3000/api/strapi/webhook/v1/${webhookId}`,
-            method: "POST",
-            body: event,
-            headers: {
-              authorization: webhookSecret,
-            },
+        });
+        describe("entry.update", () => {
+          describe("with shuffled addresses", () => {
+            it("does not modify the zoho orders", async () => {
+              const event = await generateEvent("entry.create", status);
+
+              /**
+               * Create first orders
+               */
+              const res = await new HttpClient().call<{
+                status: string;
+              }>({
+                url: `http://localhost:3000/api/strapi/webhook/v1/${webhookId}`,
+                method: "POST",
+                body: event,
+                headers: {
+                  authorization: webhookSecret,
+                },
+              });
+              expect(res.status).toBe(200);
+
+              /**
+               * Shuffle addresses aroujd
+               */
+              event.event = "entry.update";
+              event.entry.addresses.sort(() => Math.random() - 1);
+              const updateResponse = await new HttpClient().call<{
+                status: string;
+                traceId: string;
+              }>({
+                url: `http://localhost:3000/api/strapi/webhook/v1/${webhookId}`,
+                method: "POST",
+                body: event,
+                headers: {
+                  authorization: webhookSecret,
+                },
+              });
+              expect(updateResponse.status).toBe(200);
+              expect(updateResponse.data?.status).toEqual("received");
+              expect(updateResponse.data?.traceId).toBeDefined();
+
+              /**
+               * Wait for requests to happen in the background
+               */
+              await new Promise((resolve) => setTimeout(resolve, 15_000));
+
+              const ordersInZohoAfterUpdate =
+                await zoho.searchSalesOrdersWithScrolling(
+                  `BULK-${event.entry.orderId}`,
+                );
+
+              expect(ordersInZohoAfterUpdate.length).toBe(
+                event.entry.addresses.length,
+              );
+              for (const order of ordersInZohoAfterUpdate) {
+                if (status === "Sending") {
+                  expect(order.status).toEqual("confirmed");
+                } else {
+                  expect(order.status).toEqual("draft");
+                }
+              }
+            }, 60_000);
           });
-          expect(createRes.status).toBe(200);
-          expect(createRes.data?.status).toEqual("received");
-          expect(createRes.data?.traceId).toBeDefined();
-
-          await new Promise((resolve) => setTimeout(resolve, 10_000));
-
-          const ordersInZoho = await zoho.searchSalesOrdersWithScrolling(
-            `BULK-${event.entry.orderId}`,
-          );
-
-          // console.warn({ordersInZoho, id: `BULK-${event.entry.orderId}`})
-          expect(ordersInZoho.length).toBe(event.entry.addresses.length);
-
-          event.entry.addresses = event.entry.addresses.slice(0, 2);
-
-          const updateRes = await new HttpClient().call<{
-            status: string;
-            traceId: string;
-          }>({
-            url: `http://localhost:3000/api/strapi/webhook/v1/${webhookId}`,
-            method: "POST",
-            body: event,
-            headers: {
-              authorization: webhookSecret,
-            },
-          });
-          expect(updateRes.status).toBe(200);
-          expect(updateRes.data?.status).toEqual("received");
-          expect(updateRes.data?.traceId).toBeDefined();
-
-          const ordersInZohoAfterUpdate =
-            await zoho.searchSalesOrdersWithScrolling(
-              `BULK-${event.entry.orderId}`,
-            );
-
-          // console.warn({ordersInZohoAfterUpdate, id: `BULK-${event.entry.orderId}`})
-          expect(ordersInZohoAfterUpdate.length).toBe(
-            event.entry.addresses.length,
-          );
-        }, 60_000);
+        });
       });
     });
   }

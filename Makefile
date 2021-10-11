@@ -68,15 +68,17 @@ reset-webhooks: export COMPOSE_DOCKER_CLI_BUILD=1
 reset-webhooks: export DOCKER_BUILDKIT=1
 reset-webhooks: build db-migrate
 	docker-compose stop eci_webhooks
+	docker-compose up -d eci_db
 	docker-compose build eci_webhooks
-	docker-compose up -d
+	docker-compose up -d eci_webhooks
 
 reset-worker: export COMPOSE_DOCKER_CLI_BUILD=1
 reset-worker: export DOCKER_BUILDKIT=1
 reset-worker:
 	docker-compose stop eci_worker
+	docker-compose up -d eci_db
 	docker-compose build eci_worker
-	docker-compose up -d
+	docker-compose up -d eci_worker
 
 # Run integration tests
 #

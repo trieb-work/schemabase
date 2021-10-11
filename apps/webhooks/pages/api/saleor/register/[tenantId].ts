@@ -44,9 +44,6 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
   const saleorClient = newSaleorClient(ctx, domain, token);
 
-  ctx.logger.info("SaleorClient", {
-    client: JSON.stringify(Object.keys(saleorClient), null, 2),
-  });
   const idResponse = await saleorClient.app();
   ctx.logger.info("app", { idResponse });
   if (!idResponse.app?.id) {

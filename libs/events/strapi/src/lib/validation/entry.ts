@@ -2,14 +2,7 @@ import { z } from "zod";
 
 export const entryEventValidation = z.object({
   created_at: z.string(),
-  event: z
-    .string()
-    .refine(
-      (e) =>
-        e.includes("entry.create") ||
-        e.includes("entry.update") ||
-        e.includes("entry.delete"),
-    ),
+  event: z.enum(["entry.create", "entry.update", "entry.delete"]),
   model: z.string(),
   entry: z.object({
     id: z.number().int(),

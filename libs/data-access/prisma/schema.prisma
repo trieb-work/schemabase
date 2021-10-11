@@ -115,8 +115,8 @@ model Tenant {
   zohoApps                   ZohoApp[]
   productdatafeedApps        ProductDataFeedApp[]
   strapiApps                 StrapiApp[]
-  ProductDataFeedIntegration ProductDataFeedIntegration[]
-  StrapiToZohoIntegration    StrapiToZohoIntegration[]
+  productDataFeedIntegration ProductDataFeedIntegration[]
+  strapiToZohoIntegration    StrapiToZohoIntegration[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
@@ -130,7 +130,7 @@ model Subscription {
   payedUntil DateTime?
 
   productDataFeedIntegration ProductDataFeedIntegration?
-  strapiToZohoIntegration    StrapiToZohoIntegration[]
+  strapiToZohoIntegration    StrapiToZohoIntegration?
 }
 
 // ----------------------------------------------------------------------------
@@ -182,9 +182,11 @@ model StrapiApp {
   name     String
   webhooks IncomingStrapiWebhook[]
 
-  tenant                  Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId                String
-  StrapiToZohoIntegration StrapiToZohoIntegration[]
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+
+  integration StrapiToZohoIntegration?
 }
 
 // ----------------------------------------------------------------------------

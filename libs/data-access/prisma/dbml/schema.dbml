@@ -16,17 +16,12 @@ Table ProductDataFeedApp {
 
 Table ZohoApp {
   id String [pk]
-  enabled Boolean [not null, default: false]
   orgId String [not null]
   clientId String [not null]
   clientSecret String [not null]
-  payPalAccountId String
-  creditCardAccountId String
-  webhookToken String [not null]
-  webhookID String
-  customFunctionID String
   tenant Tenant [not null]
   tenantId String [unique, not null]
+  strapiToZohoIntegration StrapiToZohoIntegration [not null]
 }
 
 Table SaleorApp {
@@ -61,8 +56,8 @@ Table Tenant {
   zohoApps ZohoApp [not null]
   productdatafeedApps ProductDataFeedApp [not null]
   strapiApps StrapiApp [not null]
-  ProductDataFeedIntegration ProductDataFeedIntegration [not null]
-  StrapiToZohoIntegration StrapiToZohoIntegration [not null]
+  productDataFeedIntegration ProductDataFeedIntegration [not null]
+  strapiToZohoIntegration StrapiToZohoIntegration [not null]
 }
 
 Table Subscription {
@@ -71,7 +66,7 @@ Table Subscription {
   tenantId String [not null]
   payedUntil DateTime
   productDataFeedIntegration ProductDataFeedIntegration
-  strapiToZohoIntegration StrapiToZohoIntegration [not null]
+  strapiToZohoIntegration StrapiToZohoIntegration
 }
 
 Table ProductDataFeedIntegration {
@@ -97,6 +92,8 @@ Table StrapiToZohoIntegration {
   tenantId String [not null]
   strapiApp StrapiApp [not null]
   strapiAppId String [not null]
+  zohoApp ZohoApp [not null]
+  zohoAppId String [not null]
 }
 
 Table StrapiApp {
@@ -105,7 +102,7 @@ Table StrapiApp {
   webhooks IncomingStrapiWebhook [not null]
   tenant Tenant [not null]
   tenantId String [not null]
-  StrapiToZohoIntegration StrapiToZohoIntegration [not null]
+  integration StrapiToZohoIntegration
 }
 
 Table IncomingSaleorWebhook {
@@ -171,11 +168,13 @@ Ref: ProductDataFeedIntegration.productDataFeedAppId - ProductDataFeedApp.id
 
 Ref: ProductDataFeedIntegration.saleorAppId > SaleorApp.id
 
-Ref: StrapiToZohoIntegration.subscriptionId > Subscription.id
+Ref: StrapiToZohoIntegration.subscriptionId - Subscription.id
 
 Ref: StrapiToZohoIntegration.tenantId > Tenant.id
 
-Ref: StrapiToZohoIntegration.strapiAppId > StrapiApp.id
+Ref: StrapiToZohoIntegration.strapiAppId - StrapiApp.id
+
+Ref: StrapiToZohoIntegration.zohoAppId > ZohoApp.id
 
 Ref: StrapiApp.tenantId > Tenant.id
 
