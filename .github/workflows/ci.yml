@@ -145,6 +145,9 @@ jobs:
       ECI_BASE_URL_FROM_CONTAINER: http://webhooks.eci:3000
       SALEOR_URL: http://localhost:8000/graphql/
       SALEOR_URL_FROM_CONTAINER: http://saleor.eci:8000/graphql/
+      ZOHO_CLIENT_SECRET: ${{ secrets.ZOHO_CLIENT_SECRET }}
+      ZOHO_CLIENT_ID: ${{ secrets.ZOHO_CLIENT_ID }}
+      ZOHO_ORG_ID: ${{ secrets.ZOHO_ORG_ID }}
 
     steps:
       - name: Checkout code
