@@ -10,7 +10,7 @@ COPY package.json yarn.lock ./
 RUN --mount=type=cache,target=/root/.yarn yarn --frozen-lockfile
 
 COPY . .
-RUN --mount=type=cache,target=/root/.yarn yarn nx build webhooks --prod
+RUN --mount=type=cache,target=.nx yarn nx build webhooks --prod --skip-nx-cache
 
 EXPOSE 3000
 

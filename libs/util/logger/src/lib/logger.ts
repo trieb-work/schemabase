@@ -103,7 +103,7 @@ export class Logger implements ILogger {
           ...fields,
         },
         null,
-        env.get("NODE_ENV") === "production" ? 0 : 2,
+        env.get("NODE_ENV") === "production" ? 2 : 2,
       ),
     });
   }

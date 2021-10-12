@@ -98,7 +98,7 @@ export function handleWebhook<TRequest>({
       /**
        * Perform request validation
        */
-      await validation.request.parseAsync(req).catch((err) => {
+      await validation.request.parseAsync(req).catch((err: Error) => {
         throw new HttpError(400, err.message);
       });
       /**

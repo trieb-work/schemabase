@@ -1,12 +1,12 @@
 // eslint-disable-next-line no-restricted-imports
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { ECI_TRACE_HEADER } from "@eci/util/constants";
 
 export type Request = {
   method: "GET" | "POST" | "PUT" | "DELETE";
   url: string;
   body?: unknown;
-  headers?: Record<string, string | number>;
+  headers?: Record<string, string>;
   params?: Record<string, string | number>;
 };
 
@@ -22,7 +22,7 @@ export type HttpApi = {
 };
 
 export class HttpClient implements HttpApi {
-  public headers: Record<string, string | number>;
+  public headers: Record<string, string>;
 
   public constructor(config?: { traceId?: string }) {
     this.headers = {};
@@ -31,7 +31,7 @@ export class HttpClient implements HttpApi {
     }
   }
 
-  public setHeader(name: string, value: string | number): void {
+  public setHeader(name: string, value: string): void {
     this.headers[name] = value;
   }
 
@@ -48,7 +48,10 @@ export class HttpClient implements HttpApi {
         data: res.data ?? null,
         headers: res.headers,
       }))
-      .catch((err) => {
+      .catch((err: AxiosError) => {
+        if (!err.response) {
+          throw err;
+        }
         return {
           status: err.response.status,
           data: err.response.data,

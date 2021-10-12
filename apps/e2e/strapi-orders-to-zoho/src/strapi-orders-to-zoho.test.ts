@@ -1,13 +1,13 @@
 import { expect, it, describe, beforeAll, afterAll } from "@jest/globals";
 import { PrismaClient } from "@eci/data-access/prisma";
 import faker from "faker";
-import { randomInt, createHash } from "crypto";
+import { createHash } from "crypto";
 import { HttpClient } from "@eci/http";
 import { idGenerator } from "@eci/util/ids";
 import { ZohoClientInstance } from "@trieb.work/zoho-ts";
 import { env } from "@chronark/env";
-faker.setLocale("de");
-
+import { randomInt } from "crypto";
+import { generateAddress, sendWebhook } from "./util";
 const prisma = new PrismaClient();
 
 const zoho = new ZohoClientInstance({
@@ -21,22 +21,7 @@ const createdContactIds: string[] = [];
 const webhookId = idGenerator.id("test");
 const webhookSecret = idGenerator.id("test");
 
-const generateAddress = (id: number) => {
-  const name = faker.name.firstName();
-  const surname = faker.name.lastName();
-  return {
-    id,
-    name,
-    surname,
-    address: `${faker.address.streetAddress()} ${randomInt(1, 200)}`,
-    zip: randomInt(1, 100_000),
-    city: faker.address.cityName(),
-    country: faker.address.country(),
-    fullName: [name, surname].join(" "),
-  };
-};
-
-const generateEvent = async (event: string, status: string, addresses = 1) => {
+async function generateEvent(event: string, status: string, addresses = 1) {
   const companyName = idGenerator.id("test");
 
   const { contact_id } = await zoho.createContact({
@@ -51,13 +36,13 @@ const generateEvent = async (event: string, status: string, addresses = 1) => {
   return {
     event,
     created_at: new Date().toISOString(),
-    model: "order",
+    model: "bulkOrder",
     entry: {
       id: 1,
       customerName: faker.company.companyName(),
       zohoCustomerId: contact_id,
       status,
-      orderId: randomInt(1_000_000).toString(),
+      bulkOrderId: randomInt(1_000_000).toString(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       addresses: [...Array(addresses)].map((_, id) => generateAddress(id)),
@@ -76,7 +61,7 @@ const generateEvent = async (event: string, status: string, addresses = 1) => {
       ],
     },
   };
-};
+}
 
 beforeAll(async () => {
   await zoho.authenticate();
@@ -160,14 +145,14 @@ beforeAll(async () => {
 afterAll(async () => {
   await prisma.$disconnect();
 
-  /** Clean up created entries */
-  const ordersInZoho = await zoho.searchSalesOrdersWithScrolling("BULK-");
-  for (const order of ordersInZoho) {
-    await zoho.deleteSalesorder(order.salesorder_id);
-  }
-  for (const contactId of createdContactIds) {
-    await zoho.deleteContact(contactId);
-  }
+  // /** Clean up created entries */
+  // const ordersInZoho = await zoho.searchSalesOrdersWithScrolling("BULK-");
+  // for (const order of ordersInZoho) {
+  //   await zoho.deleteSalesorder(order.salesorder_id);
+  // }
+  // for (const contactId of createdContactIds) {
+  //   await zoho.deleteContact(contactId);
+  // }
 });
 
 describe("with invalid webhook", () => {
@@ -211,8 +196,8 @@ describe("with invalid webhook", () => {
 });
 describe("with valid webhook", () => {
   for (const status of ["Draft", "Sending"]) {
-    describe("entry.create", () => {
-      describe(`with status: ${status}`, () => {
+    describe(`status: ${status}`, () => {
+      describe("entry.create", () => {
         it(`syncs all orders correctly`, async () => {
           const event = await generateEvent("entry.create", status);
 
@@ -237,7 +222,7 @@ describe("with valid webhook", () => {
           await new Promise((resolve) => setTimeout(resolve, 15_000));
 
           const ordersInZoho = await zoho.searchSalesOrdersWithScrolling(
-            `BULK-${event.entry.orderId}`,
+            `BULK-${event.entry.bulkOrderId}`,
           );
 
           expect(ordersInZoho.length).toBe(event.entry.addresses.length);
@@ -249,68 +234,205 @@ describe("with valid webhook", () => {
             }
           }
         });
-        describe("entry.update", () => {
-          describe("with shuffled addresses", () => {
-            it("does not modify the zoho orders", async () => {
-              const event = await generateEvent("entry.create", status);
+      });
 
-              /**
-               * Create first orders
-               */
-              const res = await new HttpClient().call<{
-                status: string;
-              }>({
-                url: `http://localhost:3000/api/strapi/webhook/v1/${webhookId}`,
-                method: "POST",
-                body: event,
-                headers: {
-                  authorization: webhookSecret,
-                },
-              });
-              expect(res.status).toBe(200);
+      describe("entry.update", () => {
+        describe("with a new address", () => {
+          it("adds a new zoho order", async () => {
+            const event = await generateEvent("entry.create", status);
 
-              /**
-               * Shuffle addresses aroujd
-               */
-              event.event = "entry.update";
-              event.entry.addresses.sort(() => Math.random() - 1);
-              const updateResponse = await new HttpClient().call<{
-                status: string;
-                traceId: string;
-              }>({
-                url: `http://localhost:3000/api/strapi/webhook/v1/${webhookId}`,
-                method: "POST",
-                body: event,
-                headers: {
-                  authorization: webhookSecret,
-                },
-              });
-              expect(updateResponse.status).toBe(200);
-              expect(updateResponse.data?.status).toEqual("received");
-              expect(updateResponse.data?.traceId).toBeDefined();
+            /**
+             * Create first order
+             */
+            const res = await sendWebhook(webhookId, webhookSecret, event);
+            expect(res.status).toBe(200);
 
-              /**
-               * Wait for requests to happen in the background
-               */
-              await new Promise((resolve) => setTimeout(resolve, 15_000));
+            /**
+             * Create second order
+             */
+            event.event = "entry.update";
+            event.entry.addresses.push(
+              generateAddress(event.entry.addresses.length + 1),
+            );
+            const updateResponse = await sendWebhook(
+              webhookId,
+              webhookSecret,
+              event,
+            );
+            expect(updateResponse.status).toBe(200);
+            expect(updateResponse.data?.status).toEqual("received");
+            expect(updateResponse.data?.traceId).toBeDefined();
 
-              const ordersInZohoAfterUpdate =
-                await zoho.searchSalesOrdersWithScrolling(
-                  `BULK-${event.entry.orderId}`,
-                );
+            /**
+             * Wait for requests to happen in the background
+             */
+            await new Promise((resolve) => setTimeout(resolve, 15_000));
 
-              expect(ordersInZohoAfterUpdate.length).toBe(
-                event.entry.addresses.length,
+            const ordersInZohoAfterUpdate =
+              await zoho.searchSalesOrdersWithScrolling(
+                `BULK-${event.entry.bulkOrderId}`,
               );
-              for (const order of ordersInZohoAfterUpdate) {
-                if (status === "Sending") {
-                  expect(order.status).toEqual("confirmed");
-                } else {
-                  expect(order.status).toEqual("draft");
-                }
+
+            expect(ordersInZohoAfterUpdate.length).toBe(
+              event.entry.addresses.length,
+            );
+            for (const order of ordersInZohoAfterUpdate) {
+              if (status === "Sending") {
+                expect(order.status).toEqual("confirmed");
+              } else {
+                expect(order.status).toEqual("draft");
               }
-            }, 60_000);
-          });
+            }
+          }, 60_000);
+        });
+        describe("with a modified address", () => {
+          it("does replaces the modified order", async () => {
+            const event = await generateEvent("entry.create", status);
+
+            /**
+             * Create first orders
+             */
+            const res = await sendWebhook(webhookId, webhookSecret, event);
+            expect(res.status).toBe(200);
+            /**
+             * Shuffle addresses aroujd
+             */
+            event.event = "entry.update";
+            event.entry.addresses[0].address = "ChangedStreet 5";
+            const updateResponse = await sendWebhook(
+              webhookId,
+              webhookSecret,
+              event,
+            );
+            expect(updateResponse.status).toBe(200);
+            expect(updateResponse.data?.status).toEqual("received");
+            expect(updateResponse.data?.traceId).toBeDefined();
+
+            /**
+             * Wait for requests to happen in the background
+             */
+            await new Promise((resolve) => setTimeout(resolve, 15_000));
+
+            const ordersInZohoAfterUpdate =
+              await zoho.searchSalesOrdersWithScrolling(
+                `BULK-${event.entry.bulkOrderId}`,
+              );
+
+            expect(ordersInZohoAfterUpdate.length).toBe(
+              event.entry.addresses.length,
+            );
+            for (const order of ordersInZohoAfterUpdate) {
+              if (status === "Sending") {
+                expect(order.status).toEqual("confirmed");
+              } else {
+                expect(order.status).toEqual("draft");
+              }
+            }
+          }, 60_000);
+        });
+        describe("with a modified product", () => {
+          it("does replaces the modified order", async () => {
+            const event = await generateEvent("entry.create", status);
+
+            /**
+             * Create first orders
+             */
+            const res = await sendWebhook(webhookId, webhookSecret, event);
+            expect(res.status).toBe(200);
+            await new Promise((resolve) => setTimeout(resolve, 15_000));
+            /**
+             * Shuffle addresses aroujd
+             */
+            event.event = "entry.update";
+            event.entry.products[0].quantity = 999;
+            const updateResponse = await sendWebhook(
+              webhookId,
+              webhookSecret,
+              event,
+            );
+            expect(updateResponse.status).toBe(200);
+            expect(updateResponse.data?.status).toEqual("received");
+            expect(updateResponse.data?.traceId).toBeDefined();
+
+            /**
+             * Wait for requests to happen in the background
+             */
+            await new Promise((resolve) => setTimeout(resolve, 15_000));
+
+            const ordersInZohoAfterUpdate =
+              await zoho.searchSalesOrdersWithScrolling(
+                `BULK-${event.entry.bulkOrderId}`,
+              );
+
+            expect(ordersInZohoAfterUpdate.length).toBe(
+              event.entry.addresses.length,
+            );
+
+            expect(ordersInZohoAfterUpdate[0].quantity).toBe(999);
+
+            for (const order of ordersInZohoAfterUpdate) {
+              if (status === "Sending") {
+                expect(order.status).toEqual("confirmed");
+              } else {
+                expect(order.status).toEqual("draft");
+              }
+            }
+          }, 60_000);
+        });
+        // describe("with a removed address", () => {});
+
+        describe("with shuffled addresses", () => {
+          it("does not modify the zoho orders", async () => {
+            const event = await generateEvent("entry.create", status);
+
+            /**
+             * Create first orders
+             */
+            const res = await sendWebhook(webhookId, webhookSecret, event);
+            expect(res.status).toBe(200);
+            await new Promise((resolve) => setTimeout(resolve, 15_000));
+
+            const ordersInZohoBeforeUpdate =
+              await zoho.searchSalesOrdersWithScrolling(
+                `BULK-${event.entry.bulkOrderId}`,
+              );
+            /**
+             * Shuffle addresses aroujd
+             */
+            event.event = "entry.update";
+            event.entry.addresses.sort(() => Math.random() - 1);
+            const updateResponse = await sendWebhook(
+              webhookId,
+              webhookSecret,
+              event,
+            );
+            expect(updateResponse.status).toBe(200);
+            expect(updateResponse.data?.status).toEqual("received");
+            expect(updateResponse.data?.traceId).toBeDefined();
+
+            /**
+             * Wait for requests to happen in the background
+             */
+            await new Promise((resolve) => setTimeout(resolve, 15_000));
+
+            const ordersInZohoAfterUpdate =
+              await zoho.searchSalesOrdersWithScrolling(
+                `BULK-${event.entry.bulkOrderId}`,
+              );
+
+            expect(ordersInZohoAfterUpdate.length).toBe(
+              event.entry.addresses.length,
+            );
+
+            expect(ordersInZohoBeforeUpdate).toEqual(ordersInZohoAfterUpdate);
+            for (const order of ordersInZohoAfterUpdate) {
+              if (status === "Sending") {
+                expect(order.status).toEqual("confirmed");
+              } else {
+                expect(order.status).toEqual("draft");
+              }
+            }
+          }, 60_000);
         });
       });
     });

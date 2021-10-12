@@ -44,6 +44,5 @@ RUN --mount=type=cache,target=/root/.yarn yarn --frozen-lockfile
 COPY . .
 
 
-RUN yarn nx build data-access-prisma
-RUN --mount=type=cache,target=.nx yarn nx build worker --with-deps
+RUN --mount=type=cache,target=.nx yarn nx build worker --with-deps --skip-nx-cache
 CMD ["node", "dist/apps/worker/main.js"]

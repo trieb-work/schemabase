@@ -16,10 +16,9 @@ const addressValidation = z.object({
 });
 const orderValidation = z.object({
   event: z.enum(["entry.create", "entry.update", "entry.delete"]),
-  model: z.enum(["order"]),
+  model: z.enum(["bulkOrder"]),
   entry: z.object({
-    customerName: z.string(),
-    orderId: z.string(),
+    bulkOrderId: z.string(),
     addresses: z.array(addressValidation),
     status: statusValidation,
     zohoCustomerId: z.string(),
@@ -68,14 +67,15 @@ export class StrapiOrdersToZoho {
   ): Promise<
     { order: CreateSalesOrder; address: z.infer<typeof addressValidation> }[]
   > {
-    this.logger.info("Transforming strapi event to zoho orders", { rawEvent });
-    const event = await orderValidation.parseAsync(rawEvent).catch((err) => {
-      throw new Error(`Malformed event: ${err}`);
-    });
+    const event = await orderValidation
+      .parseAsync(rawEvent)
+      .catch((err: Error) => {
+        throw new Error(`Malformed event: ${err}`);
+      });
 
     return event.entry.addresses.map((address) => {
-      const addressHash = createHash("sha256")
-        .update(JSON.stringify(address))
+      const hash = createHash("sha256")
+        .update(JSON.stringify({ address, products: event.entry.products }))
         .digest("hex")
         .slice(0, 8);
 
@@ -84,11 +84,12 @@ export class StrapiOrdersToZoho {
           customer_id: event.entry.zohoCustomerId,
           salesorder_number: [
             this.orderPrefix,
-            event.entry.orderId,
-            addressHash,
+            event.entry.bulkOrderId,
+            hash,
           ].join("-"),
           line_items: event.entry.products.map((p) => ({
             item_id: p.product.zohoId,
+            quantity: p.quantity,
           })),
         },
         address,
@@ -96,126 +97,20 @@ export class StrapiOrdersToZoho {
     });
   }
 
-  // public async syncOrders(rawEvent: OrderEvent): Promise<void> {
-  //   this.logger.info("Syncing orders between strapi and zoho");
-  //   const event = await orderValidation.parseAsync(rawEvent).catch((err) => {
-  //     throw new Error(`Malformed event: ${err}`);
-  //   });
-
-  //   const search = [this.orderPrefix, event.entry.orderId].join("-");
-  //   this.logger.info("Searching zoho for existing orders", { search });
-  //   const existingOrders = await this.zoho
-  //     .searchSalesOrdersWithScrolling(search)
-  //     .catch((err) => {
-  //       throw new Error(`Unable to fetch existing orders from zoho: ${err}`);
-  //     });
-
-  //   const existingSalesorderNumbers = existingOrders.map(
-  //     (o) => o.salesorder_number,
-  //   );
-
-  //   const allOrders = await this.transformStrapiEventToZohoOrders(rawEvent);
-  //   const newOrders = allOrders.filter(
-  //     (o) => !existingSalesorderNumbers.includes(o.order.salesorder_number),
-  //   );
-
-  //   if (event.event === "entry.update") {
-  //     const deletedOrderNumbers = existingSalesorderNumbers.filter(
-  //       (salesorderNumber) =>
-  //         !allOrders
-  //           .map((o) => o.order.salesorder_number)
-  //           .includes(salesorderNumber),
-  //     );
-  //     this.logger.info("deletedOrderNumber", { deletedOrderNumbers });
-  //     for (const deletedOrderNumber of deletedOrderNumbers) {
-  //       const orderId = existingOrders.find(
-  //         (o) => o.salesorder_number === deletedOrderNumber,
-  //       )?.salesorder_id;
-  //       if (!orderId) {
-  //         throw new Error(
-  //           `There is no existing order with number: ${deletedOrderNumber}`,
-  //         );
-  //       }
-  //       await this.zoho.deleteSalesorder(orderId).catch((err) => {
-  //         throw new Error(`Unable to delete order: ${orderId}: ${err}`);
-  //       });
-  //     }
-
-  //     /** Update the existing orders status */
-  //     for (const existingOrder of existingOrders) {
-  //       if (existingOrder.status === "confirmed") {
-  //         if (event.entry.status !== "Sending") {
-  //           await this.zoho.updateSalesorder(existingOrder.salesorder_id, {
-  //             status: "draft",
-  //           });
-  //         }
-  //       } else {
-  //         if (event.entry.status === "Sending") {
-  //           await this.zoho.updateSalesorder(existingOrder.salesorder_id, {
-  //             status: "confirmed",
-  //           });
-  //         }
-  //       }
-  //     }
-  //   }
-
-  //   for (const { order, address } of newOrders) {
-  //     // order.status = event.entry.status === "Sending" ? "confirmed" : "draft";
-  //     this.logger.info("Adding new address to contact", {
-  //       address,
-  //       contact: event.entry.zohoCustomerId,
-  //     });
-
-  //     const addressId = await this.zoho
-  //       .addAddresstoContact(event.entry.zohoCustomerId, {
-  //         address: address.address,
-  //         city: address.city,
-  //         zip: address.zip.toString(),
-  //         country: address.country,
-  //       })
-  //       .catch((err) => {
-  //         throw new Error(`Unable to add address to contact: ${err}`);
-  //       });
-  //     this.logger.info("Adding new order", {
-  //       order,
-  //     });
-  //     await this.zoho
-  //       .createSalesorder({
-  //         ...order,
-  //         billing_address_id: addressId,
-  //       })
-  //       .catch((err) => {
-  //         throw new Error(
-  //           `Unable to create sales order: ${JSON.stringify(
-  //             {
-  //               ...order,
-  //               billing_address_id: addressId,
-  //             },
-  //             null,
-  //             2,
-  //           )}, Error: ${err}`,
-  //         );
-  //       });
-  //   }
-  //   if (event.entry.status === "Sending") {
-  //     await this.confirmOrders(search);
-  //   }
-  // }
-
   public async updateBulkOrders(rawEvent: OrderEvent): Promise<void> {
     this.logger.info("Syncing orders between strapi and zoho");
     const event = await orderValidation
       .merge(z.object({ event: z.enum(["entry.update"]) }))
       .parseAsync(rawEvent)
-      .catch((err) => {
+      .catch((err: Error) => {
         throw new Error(`Malformed event: ${err}`);
       });
 
-    const search = [this.orderPrefix, event.entry.orderId].join("-");
-    this.logger.info("Searching zoho for existing orders", { search });
     const existingOrders = await this.zoho
-      .searchSalesOrdersWithScrolling(search)
-      .catch((err) => {
+      .searchSalesOrdersWithScrolling(
+        [this.orderPrefix, event.entry.bulkOrderId].join("-"),
+      )
+      .catch((err: Error) => {
         throw new Error(`Unable to fetch existing orders from zoho: ${err}`);
       });
 
@@ -223,75 +118,102 @@ export class StrapiOrdersToZoho {
       (o) => o.salesorder_number,
     );
 
-    const allOrders = await this.transformStrapiEventToZohoOrders(rawEvent);
-    const newOrders = allOrders.filter(
+    const strapiOrders = await this.transformStrapiEventToZohoOrders(rawEvent);
+
+    const deleteOrderNumbers = existingSalesorderNumbers.filter(
+      (o) => !strapiOrders.map((o) => o.order.salesorder_number).includes(o),
+    );
+
+    const createOrders = strapiOrders.filter(
       (o) => !existingSalesorderNumbers.includes(o.order.salesorder_number),
     );
 
-    const deletedOrderNumbers = existingSalesorderNumbers.filter(
-      (salesorderNumber) =>
-        !allOrders
-          .map((o) => o.order.salesorder_number)
-          .includes(salesorderNumber),
-    );
-    this.logger.info("deletedOrderNumber", { deletedOrderNumbers });
-    for (const deletedOrderNumber of deletedOrderNumbers) {
-      const orderId = existingOrders.find(
-        (o) => o.salesorder_number === deletedOrderNumber,
-      )?.salesorder_id;
-      if (!orderId) {
-        throw new Error(
-          `There is no existing order with number: ${deletedOrderNumber}`,
-        );
-      }
-      await this.zoho.deleteSalesorder(orderId).catch((err) => {
-        throw new Error(`Unable to delete order: ${orderId}: ${err}`);
-      });
-    }
+    /**
+     * Deleting orders that are no longer present in strpai
+     */
 
-    /** Update the existing orders status */
-    for (const existingOrder of existingOrders) {
-      if (existingOrder.status === "confirmed") {
-        if (event.entry.status !== "Sending") {
-          await this.zoho.updateSalesorder(existingOrder.salesorder_id, {
-            status: "draft",
-          });
+    if (deleteOrderNumbers.length > 0) {
+      this.logger.info("Orders must be deleted", { deleteOrderNumbers });
+      for (const deletedOrderNumber of deleteOrderNumbers) {
+        const bulkOrderId = existingOrders.find(
+          (o) => o.salesorder_number === deletedOrderNumber,
+        )?.salesorder_id;
+        if (!bulkOrderId) {
+          throw new Error(
+            `There is no existing order with number: ${deletedOrderNumber}`,
+          );
         }
-      } else {
-        if (event.entry.status === "Sending") {
-          await this.zoho.updateSalesorder(existingOrder.salesorder_id, {
-            status: "confirmed",
-          });
-        }
+        await this.zoho.deleteSalesorder(bulkOrderId).catch((err: Error) => {
+          throw new Error(`Unable to delete order: ${bulkOrderId}: ${err}`);
+        });
       }
     }
 
-    for (const { order, address } of newOrders) {
-      // order.status = event.entry.status === "Sending" ? "confirmed" : "draft";
+    /**
+     * Handle new orders
+     */
+    if (createOrders.length > 0) {
+      this.logger.info("New orders need to be created", { createOrders });
+      await this.addNewOrders(event.entry.zohoCustomerId, createOrders);
+    }
+
+    /**
+     * Set status for all synced orders
+     */
+    if (event.entry.status === "Sending") {
+      const syncedOrders = await this.zoho
+        .searchSalesOrdersWithScrolling(
+          [this.orderPrefix, event.entry.bulkOrderId].join("-"),
+        )
+        .catch((err: Error) => {
+          throw new Error(`Unable to fetch existing orders from zoho: ${err}`);
+        });
+
+      await this.zoho.salesordersConfirm(
+        syncedOrders.map((o) => o.salesorder_id),
+      );
+    }
+  }
+  /**
+   *
+   * @param zohoCustomerId
+   * @param orders
+   * @returns The order_ids of the newly created orders
+   */
+  private async addNewOrders(
+    zohoCustomerId: string,
+    orders: {
+      order: CreateSalesOrder;
+      address: z.infer<typeof addressValidation>;
+    }[],
+  ): Promise<string[]> {
+    const bulkOrderIds: string[] = [];
+
+    for (const { order, address } of orders) {
       this.logger.info("Adding new address to contact", {
         address,
-        contact: event.entry.zohoCustomerId,
+        contact: zohoCustomerId,
       });
 
       const addressId = await this.zoho
-        .addAddresstoContact(event.entry.zohoCustomerId, {
+        .addAddresstoContact(zohoCustomerId, {
           address: address.address,
           city: address.city,
           zip: address.zip.toString(),
           country: address.country,
         })
-        .catch((err) => {
+        .catch((err: Error) => {
           throw new Error(`Unable to add address to contact: ${err}`);
         });
       this.logger.info("Adding new order", {
         order,
       });
-      await this.zoho
+      const { salesorder_id } = await this.zoho
         .createSalesorder({
           ...order,
           billing_address_id: addressId,
         })
-        .catch((err) => {
+        .catch((err: Error) => {
           throw new Error(
             `Unable to create sales order: ${JSON.stringify(
               {
@@ -303,10 +225,9 @@ export class StrapiOrdersToZoho {
             )}, Error: ${err}`,
           );
         });
+      bulkOrderIds.push(salesorder_id);
     }
-    if (event.entry.status === "Sending") {
-      await this.confirmOrders(search);
-    }
+    return bulkOrderIds;
   }
 
   public async createNewBulkOrders(rawEvent: OrderEvent): Promise<void> {
@@ -314,67 +235,18 @@ export class StrapiOrdersToZoho {
     const event = await orderValidation
       .merge(z.object({ event: z.enum(["entry.create"]) }))
       .parseAsync(rawEvent)
-      .catch((err) => {
+      .catch((err: Error) => {
         throw new Error(`Malformed event: ${err}`);
       });
 
     const orders = await this.transformStrapiEventToZohoOrders(rawEvent);
 
-    for (const { order, address } of orders) {
-      this.logger.info("Adding new address to contact", {
-        address,
-        contact: event.entry.zohoCustomerId,
-      });
-
-      const addressId = await this.zoho
-        .addAddresstoContact(event.entry.zohoCustomerId, {
-          address: address.address,
-          city: address.city,
-          zip: address.zip.toString(),
-          country: address.country,
-        })
-        .catch((err) => {
-          throw new Error(`Unable to add address to contact: ${err}`);
-        });
-      this.logger.info("Adding new order", {
-        order,
-      });
-      const createdSalesorder = await this.zoho
-        .createSalesorder({
-          ...order,
-          billing_address_id: addressId,
-        })
-        .catch((err) => {
-          throw new Error(
-            `Unable to create sales order: ${JSON.stringify(
-              {
-                ...order,
-                billing_address_id: addressId,
-              },
-              null,
-              2,
-            )}, Error: ${err}`,
-          );
-        });
-      if (event.entry.status === "Sending") {
-        this.zoho.salesorderConfirm(createdSalesorder.salesorder_id);
-      }
-    }
-  }
-
-  /**
-   * Load all available orders by search string and mark them as confirmed
-   */
-  private async confirmOrders(search: string): Promise<void> {
-    const existingOrders = await this.zoho
-      .searchSalesOrdersWithScrolling(search)
-      .catch((err) => {
-        throw new Error(`Unable to fetch existing orders from zoho: ${err}`);
-      });
-    for (const order of existingOrders) {
-      if (order.status !== "confirmed") {
-        await this.zoho.salesorderConfirm(order.salesorder_id);
-      }
+    const createdOrderIds = await this.addNewOrders(
+      event.entry.zohoCustomerId,
+      orders,
+    );
+    if (event.entry.status === "Sending") {
+      await this.zoho.salesordersConfirm(createdOrderIds);
     }
   }
 }
