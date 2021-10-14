@@ -6,6 +6,7 @@ import { ILogger } from "@eci/util/logger";
 const statusValidation = z.enum(["Draft", "Confirmed", "Sending", "Finished"]);
 
 const addressValidation = z.object({
+  orderId: z.string(),
   name: z.string(),
   surname: z.string(),
   fullName: z.string(),
@@ -18,8 +19,7 @@ const orderValidation = z.object({
   event: z.enum(["entry.create", "entry.update", "entry.delete"]),
   model: z.enum(["bulkOrder"]),
   entry: z.object({
-    bulkOrderId: z.string(),
-    addresses: z.array(addressValidation),
+    addresses: z.array(addressValidation).nonempty(),
     status: statusValidation,
     zohoCustomerId: z.string(),
     products: z.array(
@@ -33,6 +33,43 @@ const orderValidation = z.object({
   }),
 });
 
+export class PrefixedOrderId {
+  public prefix: string;
+  public orderId: string;
+  public rowId: string;
+  public hash: string | undefined;
+
+  /**
+   *
+   * @param id The id is separated by `-
+   */
+  constructor(id: string) {
+    const split = id.split("-");
+
+    switch (split.length) {
+      case 3:
+        [this.prefix, this.orderId, this.rowId] = split;
+        break;
+      case 4:
+        [this.prefix, this.orderId, this.rowId, this.hash] = split;
+        break;
+      default:
+        throw new Error(`id is malformed: ${id}`);
+    }
+  }
+
+  public get searchFragment(): string {
+    return [this.prefix, this.orderId].join("-");
+  }
+  public toString(): string {
+    const arr = [this.prefix, this.orderId, this.rowId];
+    if (this.hash) {
+      arr.push(this.hash);
+    }
+    return arr.join("-");
+  }
+}
+
 export type OrderEvent = EntryEvent & z.infer<typeof orderValidation>;
 
 type CreateSalesOrder = Required<
@@ -42,7 +79,6 @@ type CreateSalesOrder = Required<
 export class StrapiOrdersToZoho {
   private readonly zoho: ZohoClientInstance;
   private readonly logger: ILogger;
-  private readonly orderPrefix = "BULK";
 
   private constructor(config: { zoho: ZohoClientInstance; logger: ILogger }) {
     this.zoho = config.zoho;
@@ -74,19 +110,27 @@ export class StrapiOrdersToZoho {
       });
 
     return event.entry.addresses.map((address) => {
-      const hash = createHash("sha256")
-        .update(JSON.stringify({ address, products: event.entry.products }))
+      const orderId = new PrefixedOrderId(address.orderId);
+      orderId.hash = createHash("sha256")
+        .update(
+          JSON.stringify({
+            /**
+             * The rowId should not affect the hash.
+             */
+            address: {
+              ...address,
+              orderId: undefined,
+            },
+            products: event.entry.products,
+          }),
+        )
         .digest("hex")
         .slice(0, 8);
 
       return {
         order: {
           customer_id: event.entry.zohoCustomerId,
-          salesorder_number: [
-            this.orderPrefix,
-            event.entry.bulkOrderId,
-            hash,
-          ].join("-"),
+          salesorder_number: orderId.toString(),
           line_items: event.entry.products.map((p) => ({
             item_id: p.product.zohoId,
             quantity: p.quantity,
@@ -106,13 +150,16 @@ export class StrapiOrdersToZoho {
         throw new Error(`Malformed event: ${err}`);
       });
 
+    const searchString = new PrefixedOrderId(event.entry.addresses[0].orderId)
+      .searchFragment;
+    this.logger.warn("SearchString", { searchString });
+
     const existingOrders = await this.zoho
-      .searchSalesOrdersWithScrolling(
-        [this.orderPrefix, event.entry.bulkOrderId].join("-"),
-      )
+      .searchSalesOrdersWithScrolling(searchString)
       .catch((err: Error) => {
         throw new Error(`Unable to fetch existing orders from zoho: ${err}`);
       });
+    this.logger.info("Existing orders", { searchString, existingOrders });
 
     const existingSalesorderNumbers = existingOrders.map(
       (o) => o.salesorder_number,
@@ -124,9 +171,13 @@ export class StrapiOrdersToZoho {
       (o) => !strapiOrders.map((o) => o.order.salesorder_number).includes(o),
     );
 
-    const createOrders = strapiOrders.filter(
-      (o) => !existingSalesorderNumbers.includes(o.order.salesorder_number),
-    );
+    const createOrders = strapiOrders.filter((o) => {
+      this.logger.warn("Filtering create orders", {
+        o: o.order.salesorder_number,
+        existingSalesorderNumbers,
+      });
+      return !existingSalesorderNumbers.includes(o.order.salesorder_number);
+    });
 
     /**
      * Deleting orders that are no longer present in strpai
@@ -162,9 +213,7 @@ export class StrapiOrdersToZoho {
      */
     if (event.entry.status === "Sending") {
       const syncedOrders = await this.zoho
-        .searchSalesOrdersWithScrolling(
-          [this.orderPrefix, event.entry.bulkOrderId].join("-"),
-        )
+        .searchSalesOrdersWithScrolling(searchString)
         .catch((err: Error) => {
           throw new Error(`Unable to fetch existing orders from zoho: ${err}`);
         });
@@ -208,24 +257,30 @@ export class StrapiOrdersToZoho {
       this.logger.info("Adding new order", {
         order,
       });
-      const { salesorder_id } = await this.zoho
+      const res = await this.zoho
         .createSalesorder({
           ...order,
-          billing_address_id: addressId,
+          shipping_address_id: addressId,
         })
         .catch((err: Error) => {
-          throw new Error(
-            `Unable to create sales order: ${JSON.stringify(
-              {
-                ...order,
-                billing_address_id: addressId,
-              },
-              null,
-              2,
-            )}, Error: ${err}`,
-          );
+          if (err.message.includes("This sales order number already exists")) {
+            this.logger.warn(err.message);
+          } else {
+            throw new Error(
+              `Unable to create sales order: ${JSON.stringify(
+                {
+                  ...order,
+                  shipping_address_id: addressId,
+                },
+                null,
+                2,
+              )}, Error: ${err}`,
+            );
+          }
         });
-      bulkOrderIds.push(salesorder_id);
+      if (res?.salesorder_id) {
+        bulkOrderIds.push(res.salesorder_id);
+      }
     }
     return bulkOrderIds;
   }

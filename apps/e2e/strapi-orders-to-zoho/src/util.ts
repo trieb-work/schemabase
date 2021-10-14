@@ -22,11 +22,11 @@ export async function sendWebhook(
   });
 }
 
-export function generateAddress(id: number) {
+export function generateAddress(orderId: number, rowId: number) {
   const name = faker.name.firstName();
   const surname = faker.name.lastName();
   return {
-    id,
+    orderId: ["BULK", orderId, rowId].join("-"),
     name,
     surname,
     address: `${faker.address.streetAddress()} ${randomInt(1, 200)}`,

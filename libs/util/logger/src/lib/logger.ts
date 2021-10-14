@@ -42,6 +42,7 @@ export class Logger implements ILogger {
       transports: [new winston.transports.Console()],
       format: winston.format.prettyPrint({
         colorize: true,
+        depth: 10,
       }),
     });
 
@@ -103,7 +104,7 @@ export class Logger implements ILogger {
           ...fields,
         },
         null,
-        env.get("NODE_ENV") === "production" ? 2 : 2,
+        2,
       ),
     });
   }

@@ -8,6 +8,7 @@ import { ZohoClientInstance } from "@trieb.work/zoho-ts";
 import { env } from "@chronark/env";
 import { randomInt } from "crypto";
 import { generateAddress, sendWebhook } from "./util";
+import { PrefixedOrderId } from "@eci/integrations/strapi-orders-to-zoho";
 const prisma = new PrismaClient();
 
 const zoho = new ZohoClientInstance({
@@ -33,6 +34,7 @@ async function generateEvent(event: string, status: string, addresses = 1) {
     throw new Error("Unable to setup testing contact");
   }
   createdContactIds.push(contact_id);
+  const orderId = randomInt(1_000_000);
   return {
     event,
     created_at: new Date().toISOString(),
@@ -42,10 +44,11 @@ async function generateEvent(event: string, status: string, addresses = 1) {
       customerName: faker.company.companyName(),
       zohoCustomerId: contact_id,
       status,
-      bulkOrderId: randomInt(1_000_000).toString(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      addresses: [...Array(addresses)].map((_, id) => generateAddress(id)),
+      addresses: [...Array(addresses)].map((_, rowId) =>
+        generateAddress(orderId, rowId),
+      ),
       products: [
         {
           quantity: randomInt(1, 6),
@@ -222,7 +225,8 @@ describe("with valid webhook", () => {
           await new Promise((resolve) => setTimeout(resolve, 15_000));
 
           const ordersInZoho = await zoho.searchSalesOrdersWithScrolling(
-            `BULK-${event.entry.bulkOrderId}`,
+            new PrefixedOrderId(event.entry.addresses[0].orderId)
+              .searchFragment,
           );
 
           expect(ordersInZoho.length).toBe(event.entry.addresses.length);
@@ -252,8 +256,12 @@ describe("with valid webhook", () => {
              */
             event.event = "entry.update";
             event.entry.addresses.push(
-              generateAddress(event.entry.addresses.length + 1),
+              generateAddress(
+                Number(event.entry.addresses[0].orderId.split("-")[1]),
+                event.entry.addresses.length + 1,
+              ),
             );
+            console.warn(JSON.stringify(event, null, 2));
             const updateResponse = await sendWebhook(
               webhookId,
               webhookSecret,
@@ -270,7 +278,8 @@ describe("with valid webhook", () => {
 
             const ordersInZohoAfterUpdate =
               await zoho.searchSalesOrdersWithScrolling(
-                `BULK-${event.entry.bulkOrderId}`,
+                new PrefixedOrderId(event.entry.addresses[0].orderId)
+                  .searchFragment,
               );
 
             expect(ordersInZohoAfterUpdate.length).toBe(
@@ -315,7 +324,8 @@ describe("with valid webhook", () => {
 
             const ordersInZohoAfterUpdate =
               await zoho.searchSalesOrdersWithScrolling(
-                `BULK-${event.entry.bulkOrderId}`,
+                new PrefixedOrderId(event.entry.addresses[0].orderId)
+                  .searchFragment,
               );
 
             expect(ordersInZohoAfterUpdate.length).toBe(
@@ -361,7 +371,8 @@ describe("with valid webhook", () => {
 
             const ordersInZohoAfterUpdate =
               await zoho.searchSalesOrdersWithScrolling(
-                `BULK-${event.entry.bulkOrderId}`,
+                new PrefixedOrderId(event.entry.addresses[0].orderId)
+                  .searchFragment,
               );
 
             expect(ordersInZohoAfterUpdate.length).toBe(
@@ -394,7 +405,8 @@ describe("with valid webhook", () => {
 
             const ordersInZohoBeforeUpdate =
               await zoho.searchSalesOrdersWithScrolling(
-                `BULK-${event.entry.bulkOrderId}`,
+                new PrefixedOrderId(event.entry.addresses[0].orderId)
+                  .searchFragment,
               );
             /**
              * Shuffle addresses aroujd
@@ -417,7 +429,8 @@ describe("with valid webhook", () => {
 
             const ordersInZohoAfterUpdate =
               await zoho.searchSalesOrdersWithScrolling(
-                `BULK-${event.entry.bulkOrderId}`,
+                new PrefixedOrderId(event.entry.addresses[0].orderId)
+                  .searchFragment,
               );
 
             expect(ordersInZohoAfterUpdate.length).toBe(
