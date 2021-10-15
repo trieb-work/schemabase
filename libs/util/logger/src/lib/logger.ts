@@ -35,8 +35,8 @@ export class Logger implements ILogger {
   public constructor(config?: LoggerConfig) {
     this.meta = {
       ...config?.meta,
-      env: env.get("NODE_ENV"),
-      commit: env.get("VERCEL_GIT_COMMIT_SHA"),
+      env: env.get("NODE_ENV", "development"),
+      commit: env.get("VERCEL_GIT_COMMIT_SHA", undefined),
     };
     this.logger = winston.createLogger({
       transports: [new winston.transports.Console()],
@@ -96,17 +96,8 @@ export class Logger implements ILogger {
    *
    * The fields will overwrite the default metadata if keys overlap.
    */
-  private log(level: string, message: string, fields: Fields = {}): void {
-    this.logger.log(level, message, {
-      fields: JSON.stringify(
-        {
-          ...this.meta,
-          ...fields,
-        },
-        null,
-        2,
-      ),
-    });
+  private log(level: string, message: string, fields: Fields): void {
+    this.logger.log(level, message, { ...this.meta, ...fields });
   }
 
   public debug(message: string, fields: Fields = {}): void {

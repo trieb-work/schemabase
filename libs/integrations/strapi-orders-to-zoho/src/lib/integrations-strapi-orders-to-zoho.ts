@@ -5,21 +5,20 @@ import { createHash } from "crypto";
 import { ILogger } from "@eci/util/logger";
 const statusValidation = z.enum(["Draft", "Confirmed", "Sending", "Finished"]);
 
-const addressValidation = z.object({
+export const addressValidation = z.object({
   orderId: z.string(),
   name: z.string(),
   surname: z.string(),
-  fullName: z.string(),
   address: z.string(),
-  zip: z.number().int().positive(),
+  zip: z.string(),
   city: z.string(),
   country: z.string(),
 });
-const orderValidation = z.object({
+export const orderValidation = z.object({
   event: z.enum(["entry.create", "entry.update", "entry.delete"]),
   model: z.enum(["bulkOrder"]),
   entry: z.object({
-    addresses: z.array(addressValidation).nonempty(),
+    addresses: z.array(addressValidation),
     status: statusValidation,
     zohoCustomerId: z.string(),
     products: z.array(
@@ -46,24 +45,18 @@ export class PrefixedOrderId {
   constructor(id: string) {
     const split = id.split("-");
 
-    switch (split.length) {
-      case 3:
-        [this.prefix, this.orderId, this.rowId] = split;
-        break;
-      case 4:
-        [this.prefix, this.orderId, this.rowId, this.hash] = split;
-        break;
-      default:
-        throw new Error(`id is malformed: ${id}`);
+    if (split.length !== 3 && split.length !== 4) {
+      throw new Error(`id is malformed: ${id}`);
     }
+    [this.prefix, this.orderId, this.rowId, this.hash] = split;
   }
 
   public get searchFragment(): string {
     return [this.prefix, this.orderId].join("-");
   }
-  public toString(): string {
+  public toString(withHash?: boolean): string {
     const arr = [this.prefix, this.orderId, this.rowId];
-    if (this.hash) {
+    if (withHash && this.hash) {
       arr.push(this.hash);
     }
     return arr.join("-");
@@ -130,7 +123,7 @@ export class StrapiOrdersToZoho {
       return {
         order: {
           customer_id: event.entry.zohoCustomerId,
-          salesorder_number: orderId.toString(),
+          salesorder_number: orderId.toString(true),
           line_items: event.entry.products.map((p) => ({
             item_id: p.product.zohoId,
             quantity: p.quantity,
@@ -263,20 +256,20 @@ export class StrapiOrdersToZoho {
           shipping_address_id: addressId,
         })
         .catch((err: Error) => {
-          if (err.message.includes("This sales order number already exists")) {
-            this.logger.warn(err.message);
-          } else {
-            throw new Error(
-              `Unable to create sales order: ${JSON.stringify(
-                {
-                  ...order,
-                  shipping_address_id: addressId,
-                },
-                null,
-                2,
-              )}, Error: ${err}`,
-            );
-          }
+          // if (err.message.includes("This sales order number already exists")) {
+          //   this.logger.warn(err.message);
+          // } else {
+          throw new Error(
+            `Unable to create sales order: ${JSON.stringify(
+              {
+                ...order,
+                shipping_address_id: addressId,
+              },
+              null,
+              2,
+            )}, Error: ${err}`,
+          );
+          // }
         });
       if (res?.salesorder_id) {
         bulkOrderIds.push(res.salesorder_id);

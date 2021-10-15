@@ -137,13 +137,13 @@ export class QueueManager<
   ) => Promise<void> {
     return async ({ data: { message, signature } }) => {
       try {
-        this.logger.info("Received message", { message });
+        this.logger.info("Received message", { messageId: message.header.id });
         this.signer.verify(message, signature);
         await handler(message);
-        this.logger.info("Processed message", { message });
+        this.logger.info("Processed message", { messageId: message.header.id });
       } catch (err) {
         this.logger.error("Error processing message", {
-          message,
+          messageId: message.header.id,
           error: err.message,
         });
       }
