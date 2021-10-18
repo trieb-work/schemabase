@@ -138,10 +138,9 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
           additional_image_link: hasVariants
             ? variant.images?.[1]?.url
             : rawProduct.images?.[2]?.url,
-          link:
-            storefrontProductUrl + storefrontProductUrl.endsWith("/")
-              ? ""
-              : "/" + rawProduct.slug,
+          link: `${storefrontProductUrl}${
+            storefrontProductUrl.endsWith("/") ? "" : "/"
+          }${rawProduct.slug}`,
           price: `${variant?.pricing?.priceUndiscounted?.gross.amount} ${variant?.pricing?.priceUndiscounted?.gross.currency}`,
           sale_price: `${variant?.pricing?.price?.gross.amount} ${variant.pricing?.price?.gross.currency}`,
           condition: "new",
