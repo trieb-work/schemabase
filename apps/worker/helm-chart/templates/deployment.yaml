@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eci-worker
+spec:
+  selector:
+    matchLabels:
+      app: eci-worker
+      tier: backend
+  replicas: 1
+  template:
+    metadata:
+      # annotations:
+      #   timestamp: {{ now | quote }}
+      labels:
+        app: eci-worker
+        tier: backend
+    spec:
+      containers:
+        - name: eci-worker
+          imagePullPolicy: IfNotPresent
+          image: "{{ .Values.imageName }}"
+          env:
+            - name: NODE_ENV
+              value: { { .Values.nodeEnv } }
+          envFrom:
+            - secretRef:
+                name: eci-worker-secrets
+          resources:
+            requests:
+              cpu: 50m
+              memory: 180Mi
+            limits:
+              cpu: 100m
+              memory: 250Mi

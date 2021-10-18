@@ -1,0 +1,18 @@
+# The Environment, where the Worker should register to
+nodeEnv: dev
+
+imageName: registry.gitlab.com/trieb.work/ecommerce-integrations/worker
+
+databaseUrl:
+databaseUrlPool:
+signingKey:
+
+redis:
+  host:
+  port:
+  password:
+
+elasticsearch:
+  host:
+  username:
+  password:
