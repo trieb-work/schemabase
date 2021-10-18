@@ -123,6 +123,8 @@ jobs:
       - name: Push image
         run: docker push ${{ steps.meta.outputs.tags }}
 
+      - run: cat ~/.docker/config.json
+
   e2e:
     name: Integration
     needs:
