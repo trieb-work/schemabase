@@ -40,7 +40,7 @@ export class PrefixedOrderId {
 
   /**
    *
-   * @param id The id is separated by `-
+   * @param id The id is separated by `-`
    */
   constructor(id: string) {
     const split = id.split("-");

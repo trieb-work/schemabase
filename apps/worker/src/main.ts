@@ -15,7 +15,7 @@ async function main() {
     meta: {
       traceId: "",
     },
-    enableElastic: false,
+    enableElastic: env.get("NODE_ENV") === "production",
   });
 
   const signer = new Signer({ signingKey: env.require("SIGNING_KEY") });

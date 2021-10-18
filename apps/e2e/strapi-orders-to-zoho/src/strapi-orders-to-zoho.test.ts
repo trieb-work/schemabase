@@ -42,7 +42,7 @@ async function generateEvent(
     throw new Error("Unable to setup testing contact");
   }
   createdContactIds.push(contact_id);
-  const orderId = randomInt(1_000_000);
+  const orderId = randomInt(999_999_999);
   return {
     event,
     created_at: new Date().toISOString(),
@@ -280,6 +280,9 @@ describe("with valid webhook", () => {
         const orderId = new PrefixedOrderId(event.entry.addresses[0].orderId)
           .searchFragment;
 
+        if (event.entry.addresses.length === 0) {
+          throw new Error("asd");
+        }
         expect(
           async () => await verifySyncedOrders(zoho, orderId, event),
         ).not.toThrow();
@@ -412,7 +415,7 @@ describe("with valid webhook", () => {
     });
     describe("with shuffled addresses", () => {
       it("does not modify the zoho orders", async () => {
-        const event = await generateEvent("entry.create", "Draft");
+        const event = await generateEvent("entry.create", "Draft", 2);
 
         /**
          * Create first orders
@@ -422,15 +425,16 @@ describe("with valid webhook", () => {
         await new Promise((resolve) => setTimeout(resolve, 15_000));
 
         /**
-         * Shuffle addresses aroujd
+         * Shuffle addresses around
          */
         event.event = "entry.update";
-        event.entry.addresses.sort(() => Math.random() - 0.5);
+        event.entry.addresses.reverse();
         const updateResponse = await sendWebhook(
           webhookId,
           webhookSecret,
           event,
         );
+
         expect(updateResponse.status).toBe(200);
         expect(updateResponse.data?.status).toEqual("received");
         expect(updateResponse.data?.traceId).toBeDefined();
@@ -443,9 +447,13 @@ describe("with valid webhook", () => {
         const orderId = new PrefixedOrderId(event.entry.addresses[0].orderId)
           .searchFragment;
 
-        expect(
-          async () => await verifySyncedOrders(zoho, orderId, event),
-        ).not.toThrow();
+        if (event.entry.addresses.length === 0) {
+          throw new Error("A");
+        }
+
+        const zohoOrders = await zoho.searchSalesOrdersWithScrolling(orderId);
+
+        expect(zohoOrders.length).toBe(event.entry.addresses.length);
       }, 60_000);
     });
   });
