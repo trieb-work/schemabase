@@ -1,0 +1,26 @@
+name: "Production deployment"
+
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  build:
+  deploy-worker:
+    name: Deploy Worker
+    needs: release-worker
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set Kubernetes Context
+        uses: azure/k8s-set-context@v1
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+      - name: Create the image-pull-secret in Kubernetes
+        run: |
+          kubectl create secret generic regcred \
+            --from-file=.dockerconfigjson=~/.docker/config.json \
+            --type=kubernetes.io/dockerconfigjson   
+            --namespace=eci-prod
