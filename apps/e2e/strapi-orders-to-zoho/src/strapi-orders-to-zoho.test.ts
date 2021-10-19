@@ -163,7 +163,7 @@ afterAll(async () => {
   for (const contactId of createdContactIds) {
     await zoho.deleteContact(contactId);
   }
-});
+}, 60_000);
 
 describe("with invalid webhook", () => {
   describe("without authorization header", () => {
