@@ -28,7 +28,6 @@ services:
       DATABASE_URL_POOL: postgres://postgres:postgres@eci_db:5432/postgres
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD:
       SIGNING_KEY: anything
       NODE_ENV: production
       ECI_BASE_URL: http://webhooks.eci:3000

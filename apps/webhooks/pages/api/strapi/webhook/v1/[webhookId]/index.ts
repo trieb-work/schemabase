@@ -90,7 +90,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     connection: {
       host: env.require("REDIS_HOST"),
       port: env.require("REDIS_PORT"),
-      password: env.require("REDIS_PASSWORD"),
+      password: env.get("REDIS_PASSWORD"),
     },
   });
 

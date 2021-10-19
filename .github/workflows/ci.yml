@@ -148,7 +148,6 @@ jobs:
       ZOHO_CLIENT_ID: ${{ secrets.ZOHO_CLIENT_ID }}
       ZOHO_ORG_ID: ${{ secrets.ZOHO_ORG_ID }}
       ECI_ENV: ci
-      REDIS_PASSWORD: ""
       REDIS_HOST: redis
       REDIS_PORT: 6379
 
