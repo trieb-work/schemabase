@@ -234,7 +234,7 @@ describe("with valid webhook", () => {
       expect(
         async () => await verifySyncedOrders(zoho, orderId, event),
       ).not.toThrow();
-    });
+    }, 60_000);
   });
 
   describe("entry.update", () => {

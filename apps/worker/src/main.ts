@@ -13,7 +13,6 @@ import { PrismaClient } from "@eci/data-access/prisma";
 async function main() {
   const logger = new Logger({
     meta: {
-      traceId: "",
       env: env.require("ECI_ENV"),
     },
   });
