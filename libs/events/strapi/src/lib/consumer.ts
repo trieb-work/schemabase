@@ -1,20 +1,14 @@
-import { IConsumer, SignedMessage, QueueManager } from "@eci/events/client";
-import {
-  EntryCreateEvent,
-  EntryDeleteEvent,
-  EntryUpdateEvent,
-  EntryEvent,
-} from "./validation/entry";
+import { IConsumer, Message, QueueManager } from "@eci/events/client";
+import { EntryEvent } from "./validation/entry";
 
-import { Topic, StrapiQueueConfig } from "./types";
+import { Topic, QueueConfig } from "./types";
 
-export class Consumer implements IConsumer<Topic, EntryEvent> {
-  private queueManager: QueueManager<Topic, EntryEvent>;
-  constructor(config: StrapiQueueConfig) {
-    this.queueManager = new QueueManager({
-      ...config,
-      name: "strapi",
-    });
+type Payload = EntryEvent & { zohoAppId: string };
+
+export class Consumer implements IConsumer<Topic, Message<Topic, Payload>> {
+  private queueManager: QueueManager<Topic, Payload>;
+  constructor(config: QueueConfig) {
+    this.queueManager = new QueueManager(config);
   }
   public async close(): Promise<void> {
     return await this.queueManager.close();
@@ -22,42 +16,8 @@ export class Consumer implements IConsumer<Topic, EntryEvent> {
 
   public consume(
     topic: Topic,
-    process: (message: SignedMessage<EntryEvent>) => Promise<void>,
+    process: (message: Message<Topic, Payload>) => Promise<void>,
   ): void {
-    switch (topic) {
-      case Topic.ENTRY_CREATE:
-        return this.onEntryCreateEvent(process);
-      case Topic.ENTRY_UPDATE:
-        return this.onEntryUpdateEvent(process);
-      case Topic.ENTRY_DELETE:
-        return this.onEntryDeleteEvent(process);
-    }
-  }
-
-  private onEntryCreateEvent(
-    process: (message: SignedMessage<EntryCreateEvent>) => Promise<void>,
-  ): void {
-    this.queueManager.consume(
-      Topic.ENTRY_CREATE,
-      async (message) => await process(message),
-    );
-  }
-
-  private onEntryUpdateEvent(
-    process: (message: SignedMessage<EntryUpdateEvent>) => Promise<void>,
-  ): void {
-    this.queueManager.consume(
-      Topic.ENTRY_UPDATE,
-      async (message) => await process(message),
-    );
-  }
-
-  private onEntryDeleteEvent(
-    process: (message: SignedMessage<EntryDeleteEvent>) => Promise<void>,
-  ): void {
-    this.queueManager.consume(
-      Topic.ENTRY_DELETE,
-      async (message) => await process(message),
-    );
+    return this.queueManager.consume(topic, process);
   }
 }

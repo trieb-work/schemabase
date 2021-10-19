@@ -6,8 +6,6 @@ import { ISigner } from "./signature";
 import { ILogger } from "@eci/util/logger";
 
 export type QueueConfig = {
-  name: string;
-
   signer: ISigner;
 
   logger: ILogger;
@@ -33,8 +31,8 @@ export interface IConsumer<TTopic, TMessage> {
   close(): Promise<void>;
 }
 
-export interface IProducer<TTopic, TMessage> {
-  produce: (topic: TTopic, message: TMessage) => Promise<void>;
+export interface IProducer<TMessage> {
+  produce: (message: TMessage) => Promise<void>;
 }
 
 /**
@@ -44,19 +42,14 @@ export class QueueManager<
   TTopic extends string,
   TPayload = Record<string, never>,
 > implements
-    IConsumer<TTopic, Message<TPayload>>,
-    IProducer<TTopic, Message<TPayload>>
+    IConsumer<TTopic, Message<TTopic, TPayload>>,
+    IProducer<Message<TTopic, TPayload>>
 {
   /**
    * Used to sign and verify messages
    */
   private readonly signer: ISigner;
   private readonly logger: ILogger;
-  /**
-   * The queue prefix.
-   * Each topic will be a unique queue with this prefix and topic name.
-   */
-  private readonly prefix: string;
 
   private connection: {
     host: string;
@@ -65,16 +58,20 @@ export class QueueManager<
   };
 
   private workers: {
-    [topic: string]: Worker<SignedMessage<TPayload>>;
+    [topic: string]: Worker<SignedMessage<Message<TTopic, TPayload>>>;
   };
+
   private queues: {
-    [topic: string]: Queue<SignedMessage<TPayload>, void, TTopic>;
+    [topic: string]: Queue<
+      SignedMessage<Message<TTopic, TPayload>>,
+      void,
+      TTopic
+    >;
   };
   constructor(
-    { name, signer, logger, connection }: QueueConfig, // consume: (topic: TTopic, message: Message<TPayload>) => Promise<void>,
+    { signer, logger, connection }: QueueConfig, // consume: (topic: TTopic, message: Message<TPayload>) => Promise<void>,
   ) {
     this.logger = logger;
-    this.prefix = name;
     this.connection = {
       host: connection.host,
       port: parseInt(connection.port, 10),
@@ -86,9 +83,7 @@ export class QueueManager<
   }
 
   private queueId(topic: TTopic): string {
-    return ["eci", env.get("NODE_ENV", "development"), this.prefix, topic]
-      .join(":")
-      .toLowerCase();
+    return ["eci", env.require("ECI_ENV"), topic].join(":").toLowerCase();
   }
 
   public async close(): Promise<void> {
@@ -104,7 +99,7 @@ export class QueueManager<
 
   public consume(
     topic: TTopic,
-    receiver: (message: SignedMessage<TPayload>) => Promise<void>,
+    receiver: (message: Message<TTopic, TPayload>) => Promise<void>,
   ): void {
     const id = this.queueId(topic);
     this.logger.info("Creating topic consumer", { topic: id });
@@ -134,17 +129,19 @@ export class QueueManager<
   }
 
   private wrapReceiver(
-    handler: (message: SignedMessage<TPayload>) => Promise<void>,
-  ): (job: Job<SignedMessage<TPayload>, void, TTopic>) => Promise<void> {
-    return async ({ data }) => {
+    handler: (message: Message<TTopic, TPayload>) => Promise<void>,
+  ): (
+    job: Job<SignedMessage<Message<TTopic, TPayload>>, void, TTopic>,
+  ) => Promise<void> {
+    return async ({ data: { message, signature } }) => {
       try {
-        this.logger.info("Received message", { message: data });
-        this.signer.verify({ ...data, signature: undefined }, data.signature);
-        await handler(data);
-        this.logger.info("Processed message", { message: data });
+        this.logger.info("Received message", { messageId: message.header.id });
+        this.signer.verify(message, signature);
+        await handler(message);
+        this.logger.info("Processed message", { messageId: message.header.id });
       } catch (err) {
         this.logger.error("Error processing message", {
-          message: data,
+          messageId: message.header.id,
           error: err.message,
         });
       }
@@ -155,15 +152,12 @@ export class QueueManager<
    * Send a message to the queue
    * a new traceId is generated if not provided
    */
-  public async produce(
-    topic: TTopic,
-    message: Message<TPayload>,
-  ): Promise<void> {
+  public async produce(message: Message<TTopic, TPayload>): Promise<void> {
     const signedMessage = {
-      ...message,
+      message,
       signature: this.signer.sign(message),
     };
-
+    const topic = message.header.topic;
     /**
      * Create a new queue for this topic if necessary
      */

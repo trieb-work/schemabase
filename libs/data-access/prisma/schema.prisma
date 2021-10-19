@@ -42,20 +42,12 @@ model ProductDataFeedApp {
 model ZohoApp {
   id String @id
 
-  // Indicates if the integration is currently enabled.
-  // The user might chose to disable it.
-  enabled             Boolean @default(false)
-  // The public id used for lookups from incoming webhooks.
-  orgId               String
-  clientId            String
-  clientSecret        String
-  payPalAccountId     String?
-  creditCardAccountId String?
-  webhookToken        String
-  webhookID           String?
-  customFunctionID    String?
-  tenant              Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId            String  @unique
+  orgId                   String
+  clientId                String
+  clientSecret            String
+  tenant                  Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId                String                    @unique
+  strapiToZohoIntegration StrapiToZohoIntegration[]
 }
 
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor
@@ -123,8 +115,8 @@ model Tenant {
   zohoApps                   ZohoApp[]
   productdatafeedApps        ProductDataFeedApp[]
   strapiApps                 StrapiApp[]
-  ProductDataFeedIntegration ProductDataFeedIntegration[]
-  StrapiToZohoIntegration    StrapiToZohoIntegration[]
+  productDataFeedIntegration ProductDataFeedIntegration[]
+  strapiToZohoIntegration    StrapiToZohoIntegration[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
@@ -138,6 +130,7 @@ model Subscription {
   payedUntil DateTime?
 
   productDataFeedIntegration ProductDataFeedIntegration?
+  strapiToZohoIntegration    StrapiToZohoIntegration?
 }
 
 // ----------------------------------------------------------------------------
@@ -166,13 +159,20 @@ model ProductDataFeedIntegration {
 }
 
 model StrapiToZohoIntegration {
-  id          String    @id
-  payedUntil  DateTime?
-  enabled     Boolean   @default(true)
+  id         String    @id
+  payedUntil DateTime?
+  enabled    Boolean   @default(true)
+
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  subscriptionId String?       @unique
+
   tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId    String
   strapiApp   StrapiApp @relation(fields: [strapiAppId], references: [id])
   strapiAppId String
+  zohoApp     ZohoApp   @relation(fields: [zohoAppId], references: [id])
+  zohoAppId   String
+
 }
 
 // Every tenant can have multiple strapi instances
@@ -182,9 +182,11 @@ model StrapiApp {
   name     String
   webhooks IncomingStrapiWebhook[]
 
-  tenant                  Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId                String
-  StrapiToZohoIntegration StrapiToZohoIntegration[]
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+
+  integration StrapiToZohoIntegration?
 }
 
 // ----------------------------------------------------------------------------
