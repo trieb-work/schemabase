@@ -1,13 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`generate converts the products correctly 1`] = `
-"id,title,description,rich_text_description,image_link,additional_image_link,link,price,sale_price,condition,gtin,brand,unit_pricing_measure,availability,google_product_category
-sku,Name (name),SeoDescription,SeoDescription,,,abcslug,undefined undefined,undefined undefined,new,,undefined,,out of stock,
+exports[`generate converts the products correctly for facebookcommerce 1`] = `
+"id,title,description,image_link,additional_image_link,link,price,sale_price,condition,gtin,brand,unit_pricing_measure,availability,google_product_category,rich_text_description
+sku,Name (name),Hello world,,,http://baseurl.com/slug,undefined undefined,undefined undefined,new,,undefined,,out of stock,,<p>Hello world</p>
 "
 `;
 
-exports[`generate converts the products correctly 2`] = `
-"id,title,description,rich_text_description,image_link,additional_image_link,link,price,sale_price,condition,gtin,brand,unit_pricing_measure,availability,google_product_category
-sku,Name (name),SeoDescription,,,,abcslug,undefined undefined,undefined undefined,new,,undefined,,out of stock,
+exports[`generate converts the products correctly for googlemerchant 1`] = `
+"id,title,description,image_link,additional_image_link,link,price,sale_price,condition,gtin,brand,unit_pricing_measure,availability,google_product_category
+sku,Name (name),Hello world,,,http://baseurl.com/slug,undefined undefined,undefined undefined,new,,undefined,,out of stock,
 "
 `;

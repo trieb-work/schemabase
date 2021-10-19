@@ -1,7 +1,6 @@
 import { NextApiHandler, NextApiResponse, NextApiRequest } from "next";
 import { ILogger, Logger } from "@eci/util/logger";
 import { idGenerator } from "@eci/util/ids";
-import { env } from "@chronark/env";
 import { HttpError } from "@eci/util/errors";
 import { Context } from "@eci/context";
 import { ECI_TRACE_HEADER } from "@eci/util/constants";
@@ -72,13 +71,15 @@ export function handleWebhook<TRequest>({
     res.setHeader(ECI_TRACE_HEADER, traceId);
 
     const logger: ILogger = new Logger({
-      enableElastic: env.get("NODE_ENV") === "production",
       meta: {
         traceId,
         endpoint: req.url,
       },
     });
-
+    const backgroundContext: Context = {
+      trace: { id: traceId },
+      logger,
+    };
     try {
       /**
        * Perform http validation
@@ -95,21 +96,17 @@ export function handleWebhook<TRequest>({
       /**
        * Perform request validation
        */
-      const parsedRequest = (await validation.request
-        .parseAsync(req)
-        .catch((err) => {
-          throw new HttpError(400, err.message);
-        })) as TRequest;
-
-      const backgroundContext: Context = {
-        trace: { id: traceId },
-        logger,
-      };
-
+      await validation.request.parseAsync(req).catch((err: Error) => {
+        throw new HttpError(400, err.message);
+      });
       /**
        * Run the actual webhook logic
        */
-      await webhook({ backgroundContext, req: parsedRequest, res });
+      await webhook({
+        backgroundContext,
+        req: req as unknown as TRequest,
+        res,
+      });
 
       /**
        * Handle errors gracefully

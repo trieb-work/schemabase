@@ -40,7 +40,7 @@ export class Signer implements ISigner {
   public verify(data: unknown, expectedSignature: string): void {
     const signature = this.sign(data);
     if (signature !== expectedSignature) {
-      throw new SignatureError();
+      throw new SignatureError(signature, expectedSignature);
     }
   }
 }

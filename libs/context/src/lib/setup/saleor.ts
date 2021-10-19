@@ -8,24 +8,31 @@ import { env } from "@chronark/env";
  */
 export const newSaleorClient = (
   ctx: Context,
-  domain: string,
+  /**
+   * The domain of the graphql server, with or without protocol.
+   * `/graphql/` will be appended automatically to the url
+   * @example
+   *  `http://localhost:3000`
+   */
+  host: string,
   token?: string,
 ): SaleorClient => {
   if (!ctx.prisma) {
     throw new ContextMissingFieldError("prisma");
   }
-  ctx.logger = ctx.logger.with({ saleorDomain: domain });
+  ctx.logger = ctx.logger.with({ saleorHost: host });
   /**
    * Add a protocol if none is provided
    */
-  if (!domain.startsWith("http")) {
+  if (!host.startsWith("http")) {
+    const eciEnv = env.require("ECI_ENV");
     const protocol =
-      env.get("NODE_ENV") === "production" && !env.get("CI") ? "https" : "http";
-    domain = `${protocol}://${domain}`;
+      eciEnv === "production" || eciEnv === "preview" ? "https" : "http";
+    host = `${protocol}://${host}`;
   }
   return createSaleorClient({
     traceId: ctx.trace.id,
-    graphqlEndpoint: `${domain}/graphql/`,
+    graphqlEndpoint: `${host}/graphql/`,
     token,
   });
 };

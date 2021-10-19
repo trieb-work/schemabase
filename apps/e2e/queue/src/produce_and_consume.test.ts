@@ -1,12 +1,11 @@
 import { QueueManager, Signer } from "@eci/events/client";
 import { NoopLogger } from "@eci/util/logger";
-import {idGenerator} from "@eci/util/ids"
+import { idGenerator } from "@eci/util/ids";
 describe("produce and consume over redis", () => {
   const logger = new NoopLogger();
 
   const topic = idGenerator.id("test");
   const queue = new QueueManager<string, { hello: string }>({
-    name: "testQueue",
     signer: new Signer({ signingKey: "test" }),
     logger,
     connection: {
@@ -27,9 +26,11 @@ describe("produce and consume over redis", () => {
       await queue.close();
     });
 
-    await queue.produce(topic, {
+    await queue.produce({
       payload,
-      meta: {
+      header: {
+        id: "id",
+        topic: "topic",
         traceId: "traceId",
       },
     });

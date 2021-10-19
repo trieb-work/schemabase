@@ -7,7 +7,7 @@ const prefixes = {
   /**
    * Only used in automatic tests
    */
-  "test": "test"
+  test: "test",
 };
 
 export const idGenerator = new IdGenerator(prefixes);
