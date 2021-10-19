@@ -26,6 +26,7 @@ async function main() {
     connection: {
       host: env.require("REDIS_HOST"),
       port: env.require("REDIS_PORT"),
+      password: env.get("REDIS_PASSWORD"),
     },
   });
 
