@@ -135,11 +135,10 @@ jobs:
       matrix:
         saleor: [
             "registry.gitlab.com/trieb.work/saleor:3.0.0-b.13-triebwork1", #v3 custom
-            "ghcr.io/mirumee/saleor:3.0.0-b.27",
+            "ghcr.io/saleor/saleor:3.0.0-b.27",
           ]
     env:
       SALEOR_IMAGE: ${{ matrix.saleor }}
-      CI: true
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
       ECI_BASE_URL: http://localhost:3000
       ECI_BASE_URL_FROM_CONTAINER: http://webhooks.eci:3000
