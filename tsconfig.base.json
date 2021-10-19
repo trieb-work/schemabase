@@ -55,6 +55,9 @@
       "@eci/integrations/saleor-to-zoho": [
         "libs/integrations/saleor-to-zoho/src/index.ts"
       ],
+      "@eci/integrations/strapi-orders-to-zoho": [
+        "libs/integrations/strapi-orders-to-zoho/src/index.ts"
+      ],
       "@eci/util": ["libs/util/src/index.ts"],
       "@eci/util/constants": ["libs/util/constants/src/index.ts"],
       "@eci/util/errors": ["libs/util/errors/src/index.ts"],

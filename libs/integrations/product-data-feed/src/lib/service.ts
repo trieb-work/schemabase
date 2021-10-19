@@ -99,7 +99,10 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
           ? edjsHTML().parse(JSON.parse(rawProduct.description)).join("")
           : rawProduct.seoDescription;
       } catch (err) {
-        // console.warn(err)
+        this.logger.warn("Unable to parse description", {
+          description: rawProduct.description,
+          err,
+        });
       }
 
       const { hasVariants } = rawProduct.productType;
@@ -124,8 +127,7 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
           id: variant.sku,
           title: hasVariants ? `${title} (${variant.name})` : title,
           description: htmlToText(description),
-          rich_text_description:
-            feedVariant === "facebookcommerce" ? description : undefined,
+
           image_link: hasVariants
             ? variant.images && variant.images.length > 0
               ? variant.images[0]?.url
@@ -136,7 +138,9 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
           additional_image_link: hasVariants
             ? variant.images?.[1]?.url
             : rawProduct.images?.[2]?.url,
-          link: storefrontProductUrl + rawProduct.slug,
+          link: `${storefrontProductUrl}${
+            storefrontProductUrl.endsWith("/") ? "" : "/"
+          }${rawProduct.slug}`,
           price: `${variant?.pricing?.priceUndiscounted?.gross.amount} ${variant?.pricing?.priceUndiscounted?.gross.currency}`,
           sale_price: `${variant?.pricing?.price?.gross.amount} ${variant.pricing?.price?.gross.currency}`,
           condition: "new",
@@ -149,6 +153,9 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
               : "in stock",
           google_product_category: googleProductCategory ?? undefined,
         };
+        if (feedVariant === "facebookcommerce") {
+          product.rich_text_description = description;
+        }
 
         products.push(product);
       }

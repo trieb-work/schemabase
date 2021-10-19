@@ -1,29 +1,18 @@
 # syntax=docker/dockerfile:1
-FROM node:16-alpine as builder
-WORKDIR /eci/worker
-
-COPY package.json yarn.lock ./
-ENV YARN_CACHE_FOLDER /root/.yarn
-RUN --mount=type=cache,target=/root/.yarn yarn --frozen-lockfile
-
-RUN --mount=type=cache,target=/root/.yarn yarn add -D esbuild
-
-COPY . .
-
-RUN yarn esbuild ./apps/worker/src/main.ts \
-  --bundle \
-  --platform=node \
-  --target=node16 \
-  --outfile=./dist/apps/worker/main.js
-
-
 FROM node:16-alpine
 WORKDIR /eci/worker
 
-COPY --from=builder /eci/worker/dist/apps/worker/main.js .
+ARG commit_sha
+ENV GIT_COMMIT_SHA=$commit_sha
 
-# Bull requires some lua scritpts internally but esbuild does not handle them at all
-# So we copy them over ourselves and everyone is happy.
-COPY --from=builder /eci/worker/node_modules/bullmq/dist/commands/*.lua ./
+ENV YARN_CACHE_FOLDER /root/.yarn
 
-CMD ["node", "main.js"]
+COPY package.json yarn.lock ./
+
+
+RUN --mount=type=cache,target=/root/.yarn yarn --frozen-lockfile
+COPY . .
+
+
+RUN --mount=type=cache,target=.nx yarn nx build worker --with-deps --skip-nx-cache
+CMD ["node", "dist/apps/worker/main.js"]

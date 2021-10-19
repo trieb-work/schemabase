@@ -10,7 +10,8 @@
           "executor": "@nrwl/linter:eslint",
           "options": {
             "lintFilePatterns": ["libs/adapters/braintree/**/*.ts"]
-          }
+          },
+          "outputs": ["{options.outputFile}"]
         },
         "test": {
           "executor": "@nrwl/jest:jest",
@@ -31,7 +32,8 @@
           "executor": "@nrwl/linter:eslint",
           "options": {
             "lintFilePatterns": ["libs/adapters/easypost/**/*.ts"]
-          }
+          },
+          "outputs": ["{options.outputFile}"]
         },
         "test": {
           "executor": "@nrwl/jest:jest",
@@ -52,7 +54,8 @@
           "executor": "@nrwl/linter:eslint",
           "options": {
             "lintFilePatterns": ["libs/adapters/lexoffice/**/*.ts"]
-          }
+          },
+          "outputs": ["{options.outputFile}"]
         },
         "test": {
           "executor": "@nrwl/jest:jest",
@@ -73,7 +76,8 @@
           "executor": "@nrwl/linter:eslint",
           "options": {
             "lintFilePatterns": ["libs/adapters/mailchimp/**/*.ts"]
-          }
+          },
+          "outputs": ["{options.outputFile}"]
         },
         "test": {
           "executor": "@nrwl/jest:jest",
@@ -94,7 +98,8 @@
           "executor": "@nrwl/linter:eslint",
           "options": {
             "lintFilePatterns": ["libs/adapters/package-trackers/**/*.ts"]
-          }
+          },
+          "outputs": ["{options.outputFile}"]
         },
         "test": {
           "executor": "@nrwl/jest:jest",
@@ -115,7 +120,8 @@
           "executor": "@nrwl/linter:eslint",
           "options": {
             "lintFilePatterns": ["libs/adapters/printer/**/*.ts"]
-          }
+          },
+          "outputs": ["{options.outputFile}"]
         },
         "test": {
           "executor": "@nrwl/jest:jest",
@@ -146,7 +152,8 @@
           "executor": "@nrwl/linter:eslint",
           "options": {
             "lintFilePatterns": ["libs/adapters/saleor/api/**/*.ts"]
-          }
+          },
+          "outputs": ["{options.outputFile}"]
         },
         "test": {
           "executor": "@nrwl/jest:jest",
@@ -178,7 +185,8 @@
           "executor": "@nrwl/linter:eslint",
           "options": {
             "lintFilePatterns": ["libs/adapters/saleor/validation/**/*.ts"]
-          }
+          },
+          "outputs": ["{options.outputFile}"]
         },
         "test": {
           "executor": "@nrwl/jest:jest",
@@ -199,7 +207,8 @@
           "executor": "@nrwl/linter:eslint",
           "options": {
             "lintFilePatterns": ["libs/context/**/*.ts"]
-          }
+          },
+          "outputs": ["{options.outputFile}"]
         },
         "test": {
           "executor": "@nrwl/jest:jest",
@@ -231,7 +240,8 @@
           "executor": "@nrwl/linter:eslint",
           "options": {
             "lintFilePatterns": ["libs/data-access/prisma/**/*.ts"]
-          }
+          },
+          "outputs": ["{options.outputFile}"]
         },
         "test": {
           "executor": "@nrwl/jest:jest",
@@ -252,7 +262,8 @@
           "executor": "@nrwl/linter:eslint",
           "options": {
             "lintFilePatterns": ["apps/e2e/product-data-feed/**/*.ts"]
-          }
+          },
+          "outputs": ["{options.outputFile}"]
         },
         "e2e": {
           "executor": "@nrwl/jest:jest",
@@ -273,7 +284,8 @@
           "executor": "@nrwl/linter:eslint",
           "options": {
             "lintFilePatterns": ["apps/e2e/queue/**/*.ts"]
-          }
+          },
+          "outputs": ["{options.outputFile}"]
         },
         "e2e": {
           "executor": "@nrwl/jest:jest",
@@ -294,7 +306,8 @@
           "executor": "@nrwl/linter:eslint",
           "options": {
             "lintFilePatterns": ["apps/e2e/saleor/**/*.ts"]
-          }
+          },
+          "outputs": ["{options.outputFile}"]
         },
         "e2e": {
           "executor": "@nrwl/jest:jest",
@@ -302,6 +315,28 @@
           "options": {
             "jestConfig": "apps/e2e/saleor/jest.config.js",
             "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "e2e-strapi-orders-to-zoho": {
+      "root": "apps/e2e/strapi-orders-to-zoho",
+      "sourceRoot": "apps/e2e/strapi-orders-to-zoho/src",
+      "projectType": "application",
+      "targets": {
+        "e2e": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/apps/e2e/strapi-orders-to-zoho"],
+          "options": {
+            "jestConfig": "apps/e2e/strapi-orders-to-zoho/jest.config.js",
+            "passWithNoTests": true
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["apps/e2e/strapi-orders-to-zoho/**/*.ts"]
           }
         }
       }
@@ -381,7 +416,8 @@
           "executor": "@nrwl/linter:eslint",
           "options": {
             "lintFilePatterns": ["libs/http/**/*.ts"]
-          }
+          },
+          "outputs": ["{options.outputFile}"]
         },
         "test": {
           "executor": "@nrwl/jest:jest",
@@ -402,7 +438,8 @@
           "executor": "@nrwl/linter:eslint",
           "options": {
             "lintFilePatterns": ["libs/integrations/product-data-feed/**/*.ts"]
-          }
+          },
+          "outputs": ["{options.outputFile}"]
         },
         "test": {
           "executor": "@nrwl/jest:jest",
@@ -434,13 +471,49 @@
           "executor": "@nrwl/linter:eslint",
           "options": {
             "lintFilePatterns": ["libs/integrations/saleor-to-zoho/**/*.ts"]
-          }
+          },
+          "outputs": ["{options.outputFile}"]
         },
         "test": {
           "executor": "@nrwl/jest:jest",
           "outputs": ["coverage/libs/integrations/saleor-to-zoho"],
           "options": {
             "jestConfig": "libs/integrations/saleor-to-zoho/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "integrations-strapi-orders-to-zoho": {
+      "root": "libs/integrations/strapi-orders-to-zoho",
+      "sourceRoot": "libs/integrations/strapi-orders-to-zoho/src",
+      "projectType": "library",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/node:package",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/libs/integrations/strapi-orders-to-zoho",
+            "tsConfig": "libs/integrations/strapi-orders-to-zoho/tsconfig.lib.json",
+            "packageJson": "libs/integrations/strapi-orders-to-zoho/package.json",
+            "main": "libs/integrations/strapi-orders-to-zoho/src/index.ts",
+            "assets": ["libs/integrations/strapi-orders-to-zoho/*.md"]
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": [
+              "libs/integrations/strapi-orders-to-zoho/**/*.ts"
+            ]
+          },
+          "outputs": ["{options.outputFile}"]
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/integrations/strapi-orders-to-zoho"],
+          "options": {
+            "jestConfig": "libs/integrations/strapi-orders-to-zoho/jest.config.js",
             "passWithNoTests": true
           }
         }
@@ -455,7 +528,8 @@
           "executor": "@nrwl/linter:eslint",
           "options": {
             "lintFilePatterns": ["libs/util/**/*.ts"]
-          }
+          },
+          "outputs": ["{options.outputFile}"]
         },
         "test": {
           "executor": "@nrwl/jest:jest",
@@ -509,7 +583,8 @@
           "executor": "@nrwl/linter:eslint",
           "options": {
             "lintFilePatterns": ["libs/util/errors/**/*.ts"]
-          }
+          },
+          "outputs": ["{options.outputFile}"]
         },
         "test": {
           "executor": "@nrwl/jest:jest",
@@ -552,7 +627,8 @@
           "executor": "@nrwl/linter:eslint",
           "options": {
             "lintFilePatterns": ["libs/util/ids/**/*.ts"]
-          }
+          },
+          "outputs": ["{options.outputFile}"]
         },
         "test": {
           "executor": "@nrwl/jest:jest",
@@ -606,7 +682,8 @@
           "executor": "@nrwl/linter:eslint",
           "options": {
             "lintFilePatterns": ["libs/util/retry/**/*.ts"]
-          }
+          },
+          "outputs": ["{options.outputFile}"]
         },
         "test": {
           "executor": "@nrwl/jest:jest",
@@ -665,7 +742,8 @@
           "executor": "@nrwl/linter:eslint",
           "options": {
             "lintFilePatterns": ["apps/webhooks/**/*.{ts,tsx,js,jsx}"]
-          }
+          },
+          "outputs": ["{options.outputFile}"]
         }
       }
     },

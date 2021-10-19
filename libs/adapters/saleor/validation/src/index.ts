@@ -1,1 +1,1 @@
-export * from "./lib/account_confirmation"
+export * from "./lib/account_confirmation";

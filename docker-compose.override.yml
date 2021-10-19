@@ -4,10 +4,6 @@ version: "3.9"
 # In ci this file will be replaced by `docker-compose.ci.yml`
 
 services:
-  eci_webhooks:
-    environment:
-      NODE_ENV: development
-
   saleor_dashboard:
     container_name: dashboard.saleor.eci
     image: chronark/saleor-dashboard
