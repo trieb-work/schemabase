@@ -2,7 +2,7 @@ import { createSaleorClient } from "@eci/adapters/saleor/api";
 import { env } from "@chronark/env";
 
 import { PrismaClient } from "@eci/data-access/prisma";
-import {idGenerator} from "@eci/util/ids"
+import { idGenerator } from "@eci/util/ids";
 /**
  * The saleor endpoint reachable from outside of the cluster
  * For example: "http://localhost:8000/graphql/";
