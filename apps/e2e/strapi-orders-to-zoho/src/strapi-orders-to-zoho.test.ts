@@ -304,9 +304,6 @@ describe("with valid webhook", () => {
          */
         await new Promise((resolve) => setTimeout(resolve, 5_000));
 
-        /**
-         * Shuffle addresses aroujd
-         */
         event.event = "entry.update";
         event.entry.addresses[0].address = "ChangedStreet 5";
         const updateResponse = await sendWebhook(
@@ -414,7 +411,7 @@ describe("with valid webhook", () => {
       }, 60_000);
     });
     describe("with shuffled addresses", () => {
-      it("does not modify the zoho orders", async () => {
+      it.skip("does not modify the zoho orders", async () => {
         const event = await generateEvent("entry.create", "Draft", 2);
 
         /**

@@ -83,9 +83,7 @@ export class QueueManager<
   }
 
   private queueId(topic: TTopic): string {
-    return ["eci", env.get("NODE_ENV", "development"), topic]
-      .join(":")
-      .toLowerCase();
+    return ["eci", env.require("ECI_ENV"), topic].join(":").toLowerCase();
   }
 
   public async close(): Promise<void> {

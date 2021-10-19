@@ -33,9 +33,14 @@ init: down build
 
 
 	docker-compose pull
+
+	@# Migrating saleor is expensiev and should be done
+	@# before all memory is used for the other services
+	docker-compose up -d saleor_api
+	$(MAKE) migrate-saleor
+
 	docker-compose up -d
 
-	$(MAKE) migrate-saleor
 
 	yarn prisma db push --schema=${prismaSchema} --skip-generate
 
@@ -57,7 +62,7 @@ test: build
 
 reset: export COMPOSE_DOCKER_CLI_BUILD=1
 reset: export DOCKER_BUILDKIT=1
-reset:
+reset: down
 	docker-compose build eci_worker
 	docker-compose build eci_webhooks
 
@@ -80,6 +85,7 @@ reset-worker:
 	docker-compose build eci_worker
 	docker-compose up -d eci_worker
 
+
 # Run integration tests
 #
 # Make sure you have called `make init` before to setup all required services
@@ -88,7 +94,6 @@ test-e2e: export ECI_BASE_URL                 = http://localhost:3000
 test-e2e: export ECI_BASE_URL_FROM_CONTAINER  = http://webhooks.eci:3000
 test-e2e: export SALEOR_URL                   = http://localhost:8000/graphql/
 test-e2e: export SALEOR_URL_FROM_CONTAINER    = http://saleor.eci:8000/graphql/
-# test-e2e: export SALEOR_TEMPORARY_APP_TOKEN = token
 test-e2e:
 	yarn nx run-many --target=e2e --all --skip-nx-cache
 

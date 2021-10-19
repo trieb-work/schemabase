@@ -26,37 +26,39 @@ services:
     environment:
       DATABASE_URL: postgres://postgres:postgres@eci_db:5432/postgres
       DATABASE_URL_POOL: postgres://postgres:postgres@eci_db:5432/postgres
-      CI:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       SIGNING_KEY: anything
       NODE_ENV: production
       ECI_BASE_URL: http://webhooks.eci:3000
+      ECI_ENV: development
     depends_on:
       - eci_db
       - redis
 
   eci_worker:
     image: eci_worker
+
     build:
       context: .
       dockerfile: ./apps/worker/Dockerfile
-
+      args:
+        - commit_sha=development
     environment:
       DATABASE_URL: postgres://postgres:postgres@eci_db:5432/postgres
       DATABASE_URL_POOL: postgres://postgres:postgres@eci_db:5432/postgres
-      CI:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       SIGNING_KEY: anything
       NODE_ENV: production
+      ECI_ENV: development
     depends_on:
       - eci_db
       - redis
 
   # Saleor Graphql API
   saleor_api:
-    image: ghcr.io/mirumee/saleor:3.1.0-a.6
+    image: ghcr.io/saleor/saleor:3.0.0-b.27
     container_name: saleor.eci
 
     ports:

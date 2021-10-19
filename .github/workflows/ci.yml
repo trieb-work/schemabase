@@ -68,6 +68,7 @@ jobs:
           push: false
           file: ./apps/${{ matrix.app }}/Dockerfile
           tags: eci_${{ matrix.app }}:latest
+          build-args: commit_sha=${{ github.sha }}
           outputs: type=docker,dest=/tmp/${{ matrix.app }}.tar
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
@@ -133,9 +134,8 @@ jobs:
       fail-fast: false
       matrix:
         saleor: [
-            # "registry.gitlab.com/trieb.work/saleor:3.0.0-b.13-triebwork1", #v3 custom
-            # "ghcr.io/mirumee/saleor:3.0.0-b.22",
-            "ghcr.io/mirumee/saleor:3.1.0-a.8",
+            "registry.gitlab.com/trieb.work/saleor:3.0.0-b.13-triebwork1", #v3 custom
+            "ghcr.io/mirumee/saleor:3.0.0-b.27",
           ]
     env:
       SALEOR_IMAGE: ${{ matrix.saleor }}
@@ -148,6 +148,7 @@ jobs:
       ZOHO_CLIENT_SECRET: ${{ secrets.ZOHO_CLIENT_SECRET }}
       ZOHO_CLIENT_ID: ${{ secrets.ZOHO_CLIENT_ID }}
       ZOHO_ORG_ID: ${{ secrets.ZOHO_ORG_ID }}
+      ECI_ENV: ci
 
     steps:
       - name: Checkout code
@@ -194,7 +195,3 @@ jobs:
 
       - name: Test (e2e)
         run: yarn nx run-many --target=e2e --all
-
-      - name: log
-        if: always()
-        run: docker-compose logs

@@ -13,8 +13,6 @@ export type LoggerConfig = {
      */
     traceId?: string;
   } & Fields;
-
-  enableElastic?: boolean;
 };
 
 export interface ILogger {
@@ -34,9 +32,9 @@ export class Logger implements ILogger {
 
   public constructor(config?: LoggerConfig) {
     this.meta = {
+      env: env.require("ECI_ENV"),
+      commit: env.get("GIT_COMMIT_SHA", env.get("VERCEL_GIT_COMMIT_SHA")),
       ...config?.meta,
-      env: env.get("NODE_ENV", "development"),
-      commit: env.get("VERCEL_GIT_COMMIT_SHA", undefined),
     };
     this.logger = winston.createLogger({
       transports: [new winston.transports.Console()],
@@ -46,8 +44,7 @@ export class Logger implements ILogger {
       }),
     });
 
-    const isCI = env.get("CI") === "true";
-    if (!isCI && config?.enableElastic) {
+    if (this.meta["env"] === "production") {
       this.debug("Enabling elastic transport");
       // this.apm ??= APMAgent.start({ serviceName: "eci-v2" });
 
@@ -58,6 +55,7 @@ export class Logger implements ILogger {
        * @see https://www.elastic.co/guide/en/ecs-logging/nodejs/current/winston.html
        */
       this.logger.format = ecsFormat({ convertReqRes: true });
+
       /**
        * Ships all our logs to elasticsearch
        */

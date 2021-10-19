@@ -1,7 +1,6 @@
 import { NextApiHandler, NextApiResponse, NextApiRequest } from "next";
 import { ILogger, Logger } from "@eci/util/logger";
 import { idGenerator } from "@eci/util/ids";
-import { env } from "@chronark/env";
 import { HttpError } from "@eci/util/errors";
 import { Context } from "@eci/context";
 import { ECI_TRACE_HEADER } from "@eci/util/constants";
@@ -72,7 +71,6 @@ export function handleWebhook<TRequest>({
     res.setHeader(ECI_TRACE_HEADER, traceId);
 
     const logger: ILogger = new Logger({
-      enableElastic: env.get("NODE_ENV") === "production",
       meta: {
         traceId,
         endpoint: req.url,

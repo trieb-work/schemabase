@@ -14,8 +14,8 @@ async function main() {
   const logger = new Logger({
     meta: {
       traceId: "",
+      env: env.require("ECI_ENV"),
     },
-    enableElastic: env.get("NODE_ENV") === "production",
   });
 
   const signer = new Signer({ signingKey: env.require("SIGNING_KEY") });
