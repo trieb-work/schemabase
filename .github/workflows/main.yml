@@ -68,12 +68,21 @@ jobs:
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create the image-pull-secret in Kubernetes
         run: |
           kubectl create secret generic regcred \
             --from-file=.dockerconfigjson=~/.docker/config.json \
             --type=kubernetes.io/dockerconfigjson   
             --namespace=eci-prod
+
       - name: Run helm deploy
         run: >
           helm upgrade eci-worker apps/worker/helm-chart
