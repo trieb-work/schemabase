@@ -7,9 +7,52 @@ on:
 
 jobs:
   build:
+    runs-on: ubuntu-latest
+    outputs:
+      docker_sha: ${{ steps.docker-build-push.outputs.digest }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build image
+        id: docker-build-push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          file: ./apps/${{ matrix.app }}/Dockerfile
+          tags: eci_${{ matrix.app }}:latest
+          build-args: commit_sha=${{ github.sha }}
+          outputs: type=docker,dest=/tmp/${{ matrix.app }}.tar
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
   deploy-worker:
     name: Deploy Worker
-    needs: release-worker
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
@@ -24,3 +67,11 @@ jobs:
             --from-file=.dockerconfigjson=~/.docker/config.json \
             --type=kubernetes.io/dockerconfigjson   
             --namespace=eci-prod
+      - name: Run helm deploy
+        run: >
+          helm upgrade eci-worker apps/worker/helm-chart
+            --install
+            --create-namespace 
+            --namespace=eci-prod
+            --set=imagePullSecrets="{regcred}"
+            --set=image.imageName="ghcr.io/${{ env.IMAGE_NAME }}@${{ needs.build.outputs.docker_sha }}"

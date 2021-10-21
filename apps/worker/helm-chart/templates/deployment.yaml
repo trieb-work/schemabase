@@ -10,19 +10,21 @@ spec:
   replicas: 1
   template:
     metadata:
-      # annotations:
-      #   timestamp: {{ now | quote }}
       labels:
         app: eci-worker
         tier: backend
     spec:
+      # {{- with .Values.imagePullSecrets }}
+      # imagePullSecrets:
+      #   {{- toYaml . | nindent 8 }}
+      # {{- end }}
       containers:
         - name: eci-worker
           imagePullPolicy: IfNotPresent
-          image: "{{ .Values.imageName }}"
+          image: "{{ .Values.image.imageName }}"
           env:
-            - name: NODE_ENV
-              value: { { .Values.nodeEnv } }
+            - name: ECI_ENV
+              value: "{{ .Values.eciEnv }}"
           envFrom:
             - secretRef:
                 name: eci-worker-secrets
