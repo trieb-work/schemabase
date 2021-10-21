@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       docker_sha: ${{ steps.docker-build-push.outputs.digest }}
+    env:
+      REGISTRY: ghcr.io
     steps:
       - name: Checkout
         uses: actions/checkout@v2
