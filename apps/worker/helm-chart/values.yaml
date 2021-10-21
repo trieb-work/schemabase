@@ -1,0 +1,22 @@
+# The Environment, where the Worker should register to
+eciEnv: development
+
+image:
+  imageName: registry.gitlab.com/trieb.work/ecommerce-integrations/worker
+
+databaseUrl:
+databaseUrlPool:
+signingKey:
+
+imagePullSecrets:
+  -
+
+redis:
+  host:
+  port:
+  password:
+
+elasticsearch:
+  host:
+  username:
+  password:
