@@ -39,7 +39,7 @@ jobs:
           context: .
           push: true
           file: ./apps/${{ matrix.app }}/Dockerfile
-          tags: eci_${{ matrix.app }}:latest
+          tags: eci_worker:latest
           build-args: commit_sha=${{ github.sha }}
           outputs: type=docker,dest=/tmp/${{ matrix.app }}.tar
           cache-from: type=local,src=/tmp/.buildx-cache
@@ -74,7 +74,7 @@ jobs:
             --create-namespace 
             --namespace=eci-prod
             --set=imagePullSecrets="{regcred}"
-            --set=image.imageName="ghcr.io/${{ env.IMAGE_NAME }}@${{ needs.build.outputs.docker_sha }}"
+            --set=image.imageName="${{ env.REGISTRY }}/${{ github.repository }}/worker@${{ needs.build.outputs.docker_sha }}"
             --set=eciEnv="production"
             --set=databaseUrl="${{ secrets.DATABASE_URL }}"
             --set=databaseUrlPool="${{ secrets.DATABASE_URL_POOL }}"
