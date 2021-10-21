@@ -75,3 +75,13 @@ jobs:
             --namespace=eci-prod
             --set=imagePullSecrets="{regcred}"
             --set=image.imageName="ghcr.io/${{ env.IMAGE_NAME }}@${{ needs.build.outputs.docker_sha }}"
+            --set=eciEnv="production"
+            --set=databaseUrl="${{ secrets.DATABASE_URL }}"
+            --set=databaseUrlPool="${{ secrets.DATABASE_URL_POOL }}"
+            --set=signingKey="${{ secrets.SIGNING_KEY }}"
+            --set=redis.host="${{ secrets.REDIS_HOST }}"
+            --set=redis.port="${{ secrets.REDIS_PORT }}"
+            --set=redis.password="${{ secrets.REDIS_PASSWORD }}"
+            --set=elasticsearch.host="${{ secrets.ELASTIC_LOGGING_SERVER }}"
+            --set=elasticsearch.username="${{ secrets.ELASTIC_LOGGING_USERNAME }}"
+            --set=elasticsearch.password="${{ secrets.ELASTIC_LOGGING_PASSWORD }}"
