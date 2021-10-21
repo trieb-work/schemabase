@@ -40,7 +40,7 @@ jobs:
         with:
           context: .
           push: true
-          file: ./apps/${{ matrix.app }}/Dockerfile
+          file: ./apps/worker/Dockerfile
           tags: eci_worker:latest
           build-args: commit_sha=${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
