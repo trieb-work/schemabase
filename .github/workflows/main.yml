@@ -61,6 +61,9 @@ jobs:
     name: Deploy Worker
     needs: build
     runs-on: ubuntu-latest
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}/worker
 
     steps:
       - name: Set Kubernetes Context
