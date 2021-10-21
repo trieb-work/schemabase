@@ -14,10 +14,10 @@ spec:
         app: eci-worker
         tier: backend
     spec:
-      # {{- with .Values.imagePullSecrets }}
-      # imagePullSecrets:
-      #   {{- toYaml . | nindent 8 }}
-      # {{- end }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: eci-worker
           imagePullPolicy: IfNotPresent
