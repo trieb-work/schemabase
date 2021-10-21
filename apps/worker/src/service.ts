@@ -4,14 +4,17 @@ import { Topic, EntryEvent } from "@eci/events/strapi";
 
 export type EventSource<TTopic extends string, TMessage> = {
   consumer: IConsumer<TTopic, TMessage>;
-  handlers: [{ topic: TTopic; handler: (message: TMessage) => Promise<void> }];
+  handlers: { topic: TTopic; handler: (message: TMessage) => Promise<void> }[];
 };
 
 export type WorkerConfig = {
   logger: Logger;
 
   sources: {
-    [name: string]: EventSource<Topic, Message<EntryEvent>>;
+    strapi: EventSource<
+      Topic,
+      Message<Topic, EntryEvent & { zohoAppId: string }>
+    >;
   };
 };
 
@@ -19,7 +22,7 @@ export class Worker {
   private logger: Logger;
   private readonly sources: Record<
     string,
-    EventSource<Topic, Message<EntryEvent>>
+    EventSource<Topic, Message<Topic, EntryEvent & { zohoAppId: string }>>
   >;
 
   constructor(config: WorkerConfig) {

@@ -94,7 +94,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
       secretKey: app.webhooks[0].secret.secret,
       isActive: true,
       name: app.webhooks[0].name,
-      app: app.id
+      app: app.id,
     },
   });
   ctx.logger.info("Added webhook to saleor", { saleorWebhook });

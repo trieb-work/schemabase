@@ -19,6 +19,9 @@ describe("generate", () => {
                 name: "Name",
                 slug: "slug",
                 seoDescription: "SeoDescription",
+                description:
+                  '{"time": 1633343031152, "blocks": [{"data": {"text": "Hello world"}, "type": "paragraph"}], "version": "2.20.0"}',
+
                 productType: {
                   hasVariants: true,
                   __typename: "ProductType",
@@ -54,8 +57,8 @@ describe("generate", () => {
   });
   const variants: FeedVariant[] = ["facebookcommerce", "googlemerchant"];
   for (const variant of variants) {
-    it("converts the products correctly", async () => {
-      const csv = await generator.generateCSV("abc", variant);
+    it(`converts the products correctly for ${variant}`, async () => {
+      const csv = await generator.generateCSV("http://baseurl.com/", variant);
 
       expect(csv).toMatchSnapshot();
     });

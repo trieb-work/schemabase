@@ -13,8 +13,6 @@ export type LoggerConfig = {
      */
     traceId?: string;
   } & Fields;
-
-  enableElastic?: boolean;
 };
 
 export interface ILogger {
@@ -34,20 +32,19 @@ export class Logger implements ILogger {
 
   public constructor(config?: LoggerConfig) {
     this.meta = {
+      env: env.require("ECI_ENV"),
+      commit: env.get("GIT_COMMIT_SHA", env.get("VERCEL_GIT_COMMIT_SHA")),
       ...config?.meta,
-      env: env.get("NODE_ENV"),
-      commit: env.get("VERCEL_GIT_COMMIT_SHA"),
     };
     this.logger = winston.createLogger({
       transports: [new winston.transports.Console()],
-      format:
-        env.get("NODE_ENV") === "production"
-          ? winston.format.json()
-          : winston.format.prettyPrint({ colorize: true }),
+      format: winston.format.prettyPrint({
+        colorize: true,
+        depth: 10,
+      }),
     });
 
-    const isCI = env.get("CI") === "true";
-    if (!isCI && config?.enableElastic) {
+    if (this.meta["env"] === "production") {
       this.debug("Enabling elastic transport");
       // this.apm ??= APMAgent.start({ serviceName: "eci-v2" });
 
@@ -58,6 +55,7 @@ export class Logger implements ILogger {
        * @see https://www.elastic.co/guide/en/ecs-logging/nodejs/current/winston.html
        */
       this.logger.format = ecsFormat({ convertReqRes: true });
+
       /**
        * Ships all our logs to elasticsearch
        */
@@ -96,11 +94,8 @@ export class Logger implements ILogger {
    *
    * The fields will overwrite the default metadata if keys overlap.
    */
-  private log(level: string, message: string, fields: Fields = {}): void {
-    this.logger.log(level, message, {
-      ...this.meta,
-      ...fields,
-    });
+  private log(level: string, message: string, fields: Fields): void {
+    this.logger.log(level, message, { ...this.meta, ...fields });
   }
 
   public debug(message: string, fields: Fields = {}): void {

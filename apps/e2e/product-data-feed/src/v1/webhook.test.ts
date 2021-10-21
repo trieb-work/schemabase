@@ -2,11 +2,7 @@ import { HttpClient } from "@eci/http";
 import { PrismaClient } from "@eci/data-access/prisma";
 import { createHash } from "crypto";
 import { idGenerator } from "@eci/util/ids";
-import {
-  CountryCode,
-  createSaleorClient,
-  ProductTypeKindEnum,
-} from "@eci/adapters/saleor/api";
+import { CountryCode, createSaleorClient } from "@eci/adapters/saleor/api";
 import { env } from "@chronark/env";
 
 const webhookId = idGenerator.id("test");
@@ -14,7 +10,7 @@ const webhookId = idGenerator.id("test");
 beforeAll(async () => {
   const prisma = new PrismaClient();
 
-  let saleorClient = await createSaleorClient({
+  let saleorClient = createSaleorClient({
     traceId: idGenerator.id("trace"),
     graphqlEndpoint: env.require("SALEOR_URL"),
   });
@@ -71,7 +67,6 @@ beforeAll(async () => {
       isDigital: true,
       isShippingRequired: false,
       weight: 2,
-      kind: ProductTypeKindEnum.Normal,
     },
   });
   const productType = productTypeResponse?.productTypeCreate?.productType?.id;
@@ -88,7 +83,7 @@ beforeAll(async () => {
   const productResponse = await saleorClient.productCreate({
     input: {
       name: "Apple Juice",
-      slug: "apple-juice",
+      slug: "slug",
       category: category.id,
       description:
         '{"time": 1633343031152, "blocks": [{"data": {"text": "Hello world"}, "type": "paragraph"}], "version": "2.20.0"}',
@@ -105,7 +100,7 @@ beforeAll(async () => {
     input: {
       attributes: [],
       product: product.id,
-      sku: "apple-juice-sku",
+      sku: "juicy-juicy-sku",
       trackInventory: true,
     },
   });
@@ -222,7 +217,7 @@ beforeAll(async () => {
 });
 
 describe("productdatafeed", () => {
-  const variants = ["facebookcommerce"]; //, "googlemerchant"];
+  const variants = ["facebookcommerce", "googlemerchant"];
 
   const http = new HttpClient();
   for (const variant of variants) {

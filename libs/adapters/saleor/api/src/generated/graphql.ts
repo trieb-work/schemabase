@@ -28,7 +28,7 @@ export type Scalars = {
 
 export type AccountAddressCreate = {
   __typename?: "AccountAddressCreate";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   address?: Maybe<Address>;
   errors: Array<AccountError>;
@@ -37,7 +37,7 @@ export type AccountAddressCreate = {
 
 export type AccountAddressDelete = {
   __typename?: "AccountAddressDelete";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   address?: Maybe<Address>;
   errors: Array<AccountError>;
@@ -46,7 +46,7 @@ export type AccountAddressDelete = {
 
 export type AccountAddressUpdate = {
   __typename?: "AccountAddressUpdate";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   address?: Maybe<Address>;
   errors: Array<AccountError>;
@@ -55,7 +55,7 @@ export type AccountAddressUpdate = {
 
 export type AccountDelete = {
   __typename?: "AccountDelete";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   errors: Array<AccountError>;
   user?: Maybe<User>;
@@ -70,6 +70,7 @@ export type AccountError = {
 };
 
 export enum AccountErrorCode {
+  AccountNotConfirmed = "ACCOUNT_NOT_CONFIRMED",
   ActivateOwnAccount = "ACTIVATE_OWN_ACCOUNT",
   ActivateSuperuserAccount = "ACTIVATE_SUPERUSER_ACCOUNT",
   ChannelInactive = "CHANNEL_INACTIVE",
@@ -114,7 +115,7 @@ export type AccountInput = {
 
 export type AccountRegister = {
   __typename?: "AccountRegister";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   errors: Array<AccountError>;
   requiresConfirmation?: Maybe<Scalars["Boolean"]>;
@@ -132,14 +133,14 @@ export type AccountRegisterInput = {
 
 export type AccountRequestDeletion = {
   __typename?: "AccountRequestDeletion";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   errors: Array<AccountError>;
 };
 
 export type AccountSetDefaultAddress = {
   __typename?: "AccountSetDefaultAddress";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   errors: Array<AccountError>;
   user?: Maybe<User>;
@@ -147,7 +148,7 @@ export type AccountSetDefaultAddress = {
 
 export type AccountUpdate = {
   __typename?: "AccountUpdate";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   errors: Array<AccountError>;
   user?: Maybe<User>;
@@ -173,7 +174,7 @@ export type Address = Node & {
 
 export type AddressCreate = {
   __typename?: "AddressCreate";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   address?: Maybe<Address>;
   errors: Array<AccountError>;
@@ -182,7 +183,7 @@ export type AddressCreate = {
 
 export type AddressDelete = {
   __typename?: "AddressDelete";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   address?: Maybe<Address>;
   errors: Array<AccountError>;
@@ -205,7 +206,7 @@ export type AddressInput = {
 
 export type AddressSetDefault = {
   __typename?: "AddressSetDefault";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   errors: Array<AccountError>;
   user?: Maybe<User>;
@@ -218,7 +219,7 @@ export enum AddressTypeEnum {
 
 export type AddressUpdate = {
   __typename?: "AddressUpdate";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   address?: Maybe<Address>;
   errors: Array<AccountError>;
@@ -263,7 +264,6 @@ export type App = Node &
     created?: Maybe<Scalars["DateTime"]>;
     dataPrivacy?: Maybe<Scalars["String"]>;
     dataPrivacyUrl?: Maybe<Scalars["String"]>;
-    extensions: Array<AppExtension>;
     homepageUrl?: Maybe<Scalars["String"]>;
     id: Scalars["ID"];
     isActive?: Maybe<Scalars["Boolean"]>;
@@ -281,7 +281,7 @@ export type App = Node &
 export type AppActivate = {
   __typename?: "AppActivate";
   app?: Maybe<App>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   appErrors: Array<AppError>;
   errors: Array<AppError>;
 };
@@ -302,7 +302,7 @@ export type AppCountableEdge = {
 export type AppCreate = {
   __typename?: "AppCreate";
   app?: Maybe<App>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   appErrors: Array<AppError>;
   authToken?: Maybe<Scalars["String"]>;
   errors: Array<AppError>;
@@ -311,7 +311,7 @@ export type AppCreate = {
 export type AppDeactivate = {
   __typename?: "AppDeactivate";
   app?: Maybe<App>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   appErrors: Array<AppError>;
   errors: Array<AppError>;
 };
@@ -319,14 +319,14 @@ export type AppDeactivate = {
 export type AppDelete = {
   __typename?: "AppDelete";
   app?: Maybe<App>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   appErrors: Array<AppError>;
   errors: Array<AppError>;
 };
 
 export type AppDeleteFailedInstallation = {
   __typename?: "AppDeleteFailedInstallation";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   appErrors: Array<AppError>;
   appInstallation?: Maybe<AppInstallation>;
   errors: Array<AppError>;
@@ -356,55 +356,9 @@ export enum AppErrorCode {
   Unique = "UNIQUE",
 }
 
-export type AppExtension = Node & {
-  __typename?: "AppExtension";
-  accessToken?: Maybe<Scalars["String"]>;
-  app: App;
-  id: Scalars["ID"];
-  label: Scalars["String"];
-  permissions: Array<Permission>;
-  target: AppExtensionTargetEnum;
-  type: AppExtensionTypeEnum;
-  url: Scalars["String"];
-  view: AppExtensionViewEnum;
-};
-
-export type AppExtensionCountableConnection = {
-  __typename?: "AppExtensionCountableConnection";
-  edges: Array<AppExtensionCountableEdge>;
-  pageInfo: PageInfo;
-  totalCount?: Maybe<Scalars["Int"]>;
-};
-
-export type AppExtensionCountableEdge = {
-  __typename?: "AppExtensionCountableEdge";
-  cursor: Scalars["String"];
-  node: AppExtension;
-};
-
-export type AppExtensionFilterInput = {
-  target?: Maybe<AppExtensionTargetEnum>;
-  type?: Maybe<AppExtensionTypeEnum>;
-  view?: Maybe<AppExtensionViewEnum>;
-};
-
-export enum AppExtensionTargetEnum {
-  Create = "CREATE",
-  MoreActions = "MORE_ACTIONS",
-}
-
-export enum AppExtensionTypeEnum {
-  Details = "DETAILS",
-  Overview = "OVERVIEW",
-}
-
-export enum AppExtensionViewEnum {
-  Product = "PRODUCT",
-}
-
 export type AppFetchManifest = {
   __typename?: "AppFetchManifest";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   appErrors: Array<AppError>;
   errors: Array<AppError>;
   manifest?: Maybe<Manifest>;
@@ -423,7 +377,7 @@ export type AppInput = {
 
 export type AppInstall = {
   __typename?: "AppInstall";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   appErrors: Array<AppError>;
   appInstallation?: Maybe<AppInstallation>;
   errors: Array<AppError>;
@@ -448,19 +402,9 @@ export type AppInstallation = Job &
     updatedAt: Scalars["DateTime"];
   };
 
-export type AppManifestExtension = {
-  __typename?: "AppManifestExtension";
-  label: Scalars["String"];
-  permissions: Array<Permission>;
-  target: AppExtensionTargetEnum;
-  type: AppExtensionTypeEnum;
-  url: Scalars["String"];
-  view: AppExtensionViewEnum;
-};
-
 export type AppRetryInstall = {
   __typename?: "AppRetryInstall";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   appErrors: Array<AppError>;
   appInstallation?: Maybe<AppInstallation>;
   errors: Array<AppError>;
@@ -485,7 +429,7 @@ export type AppToken = Node & {
 
 export type AppTokenCreate = {
   __typename?: "AppTokenCreate";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   appErrors: Array<AppError>;
   appToken?: Maybe<AppToken>;
   authToken?: Maybe<Scalars["String"]>;
@@ -494,7 +438,7 @@ export type AppTokenCreate = {
 
 export type AppTokenDelete = {
   __typename?: "AppTokenDelete";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   appErrors: Array<AppError>;
   appToken?: Maybe<AppToken>;
   errors: Array<AppError>;
@@ -507,7 +451,7 @@ export type AppTokenInput = {
 
 export type AppTokenVerify = {
   __typename?: "AppTokenVerify";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   appErrors: Array<AppError>;
   errors: Array<AppError>;
   valid: Scalars["Boolean"];
@@ -521,7 +465,7 @@ export enum AppTypeEnum {
 export type AppUpdate = {
   __typename?: "AppUpdate";
   app?: Maybe<App>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   appErrors: Array<AppError>;
   errors: Array<AppError>;
 };
@@ -539,7 +483,7 @@ export type AssignNavigation = {
   __typename?: "AssignNavigation";
   errors: Array<MenuError>;
   menu?: Maybe<Menu>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   menuErrors: Array<MenuError>;
 };
 
@@ -597,7 +541,7 @@ export type AttributeTranslationArgs = {
 
 export type AttributeBulkDelete = {
   __typename?: "AttributeBulkDelete";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   attributeErrors: Array<AttributeError>;
   count: Scalars["Int"];
   errors: Array<AttributeError>;
@@ -629,7 +573,7 @@ export type AttributeCountableEdge = {
 export type AttributeCreate = {
   __typename?: "AttributeCreate";
   attribute?: Maybe<Attribute>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   attributeErrors: Array<AttributeError>;
   errors: Array<AttributeError>;
 };
@@ -654,7 +598,7 @@ export type AttributeCreateInput = {
 export type AttributeDelete = {
   __typename?: "AttributeDelete";
   attribute?: Maybe<Attribute>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   attributeErrors: Array<AttributeError>;
   errors: Array<AttributeError>;
 };
@@ -715,13 +659,12 @@ export enum AttributeInputTypeEnum {
   Numeric = "NUMERIC",
   Reference = "REFERENCE",
   RichText = "RICH_TEXT",
-  Swatch = "SWATCH",
 }
 
 export type AttributeReorderValues = {
   __typename?: "AttributeReorderValues";
   attribute?: Maybe<Attribute>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   attributeErrors: Array<AttributeError>;
   errors: Array<AttributeError>;
 };
@@ -745,7 +688,7 @@ export type AttributeSortingInput = {
 
 export type AttributeTranslatableContent = Node & {
   __typename?: "AttributeTranslatableContent";
-  /** @deprecated This field will be removed in Saleor 4.0. Get model fields from the root level queries. */
+  /** @deprecated Will be removed in Saleor 4.0. Get model fields from the root level. */
   attribute?: Maybe<Attribute>;
   id: Scalars["ID"];
   name: Scalars["String"];
@@ -760,7 +703,7 @@ export type AttributeTranslate = {
   __typename?: "AttributeTranslate";
   attribute?: Maybe<Attribute>;
   errors: Array<TranslationError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   translationErrors: Array<TranslationError>;
 };
 
@@ -779,13 +722,13 @@ export enum AttributeTypeEnum {
 export type AttributeUpdate = {
   __typename?: "AttributeUpdate";
   attribute?: Maybe<Attribute>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   attributeErrors: Array<AttributeError>;
   errors: Array<AttributeError>;
 };
 
 export type AttributeUpdateInput = {
-  addValues?: Maybe<Array<Maybe<AttributeValueUpdateInput>>>;
+  addValues?: Maybe<Array<Maybe<AttributeValueCreateInput>>>;
   availableInGrid?: Maybe<Scalars["Boolean"]>;
   filterableInDashboard?: Maybe<Scalars["Boolean"]>;
   filterableInStorefront?: Maybe<Scalars["Boolean"]>;
@@ -821,7 +764,7 @@ export type AttributeValueTranslationArgs = {
 
 export type AttributeValueBulkDelete = {
   __typename?: "AttributeValueBulkDelete";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   attributeErrors: Array<AttributeError>;
   count: Scalars["Int"];
   errors: Array<AttributeError>;
@@ -843,15 +786,13 @@ export type AttributeValueCountableEdge = {
 export type AttributeValueCreate = {
   __typename?: "AttributeValueCreate";
   attribute?: Maybe<Attribute>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   attributeErrors: Array<AttributeError>;
   attributeValue?: Maybe<AttributeValue>;
   errors: Array<AttributeError>;
 };
 
 export type AttributeValueCreateInput = {
-  contentType?: Maybe<Scalars["String"]>;
-  fileUrl?: Maybe<Scalars["String"]>;
   name: Scalars["String"];
   richText?: Maybe<Scalars["JSONString"]>;
   value?: Maybe<Scalars["String"]>;
@@ -860,7 +801,7 @@ export type AttributeValueCreateInput = {
 export type AttributeValueDelete = {
   __typename?: "AttributeValueDelete";
   attribute?: Maybe<Attribute>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   attributeErrors: Array<AttributeError>;
   attributeValue?: Maybe<AttributeValue>;
   errors: Array<AttributeError>;
@@ -884,7 +825,7 @@ export type AttributeValueInput = {
 
 export type AttributeValueTranslatableContent = Node & {
   __typename?: "AttributeValueTranslatableContent";
-  /** @deprecated This field will be removed in Saleor 4.0. Get model fields from the root level queries. */
+  /** @deprecated Will be removed in Saleor 4.0. Get model fields from the root level. */
   attributeValue?: Maybe<AttributeValue>;
   id: Scalars["ID"];
   name: Scalars["String"];
@@ -900,7 +841,7 @@ export type AttributeValueTranslate = {
   __typename?: "AttributeValueTranslate";
   attributeValue?: Maybe<AttributeValue>;
   errors: Array<TranslationError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   translationErrors: Array<TranslationError>;
 };
 
@@ -920,18 +861,10 @@ export type AttributeValueTranslationInput = {
 export type AttributeValueUpdate = {
   __typename?: "AttributeValueUpdate";
   attribute?: Maybe<Attribute>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   attributeErrors: Array<AttributeError>;
   attributeValue?: Maybe<AttributeValue>;
   errors: Array<AttributeError>;
-};
-
-export type AttributeValueUpdateInput = {
-  contentType?: Maybe<Scalars["String"]>;
-  fileUrl?: Maybe<Scalars["String"]>;
-  name?: Maybe<Scalars["String"]>;
-  richText?: Maybe<Scalars["JSONString"]>;
-  value?: Maybe<Scalars["String"]>;
 };
 
 export type BulkAttributeValueInput = {
@@ -975,7 +908,7 @@ export type Category = Node &
     backgroundImage?: Maybe<Image>;
     children?: Maybe<CategoryCountableConnection>;
     description?: Maybe<Scalars["JSONString"]>;
-    /** @deprecated This field will be removed in Saleor 4.0. Use the `description` field instead. */
+    /** @deprecated Will be removed in Saleor 4.0. Use the `description` field instead. */
     descriptionJson?: Maybe<Scalars["JSONString"]>;
     id: Scalars["ID"];
     level: Scalars["Int"];
@@ -1024,7 +957,7 @@ export type CategoryBulkDelete = {
   __typename?: "CategoryBulkDelete";
   count: Scalars["Int"];
   errors: Array<ProductError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
 };
 
@@ -1045,7 +978,7 @@ export type CategoryCreate = {
   __typename?: "CategoryCreate";
   category?: Maybe<Category>;
   errors: Array<ProductError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
 };
 
@@ -1053,7 +986,7 @@ export type CategoryDelete = {
   __typename?: "CategoryDelete";
   category?: Maybe<Category>;
   errors: Array<ProductError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
 };
 
@@ -1086,10 +1019,10 @@ export type CategorySortingInput = {
 
 export type CategoryTranslatableContent = Node & {
   __typename?: "CategoryTranslatableContent";
-  /** @deprecated This field will be removed in Saleor 4.0. Get model fields from the root level queries. */
+  /** @deprecated Will be removed in Saleor 4.0. Get model fields from the root level. */
   category?: Maybe<Category>;
   description?: Maybe<Scalars["JSONString"]>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use the `description` field instead. */
+  /** @deprecated Will be removed in Saleor 4.0. Use the `description` field instead. */
   descriptionJson?: Maybe<Scalars["JSONString"]>;
   id: Scalars["ID"];
   name: Scalars["String"];
@@ -1106,14 +1039,14 @@ export type CategoryTranslate = {
   __typename?: "CategoryTranslate";
   category?: Maybe<Category>;
   errors: Array<TranslationError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   translationErrors: Array<TranslationError>;
 };
 
 export type CategoryTranslation = Node & {
   __typename?: "CategoryTranslation";
   description?: Maybe<Scalars["JSONString"]>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use the `description` field instead. */
+  /** @deprecated Will be removed in Saleor 4.0. Use the `description` field instead. */
   descriptionJson?: Maybe<Scalars["JSONString"]>;
   id: Scalars["ID"];
   language: LanguageDisplay;
@@ -1126,7 +1059,7 @@ export type CategoryUpdate = {
   __typename?: "CategoryUpdate";
   category?: Maybe<Category>;
   errors: Array<ProductError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
 };
 
@@ -1144,7 +1077,7 @@ export type Channel = Node & {
 export type ChannelActivate = {
   __typename?: "ChannelActivate";
   channel?: Maybe<Channel>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   channelErrors: Array<ChannelError>;
   errors: Array<ChannelError>;
 };
@@ -1152,7 +1085,7 @@ export type ChannelActivate = {
 export type ChannelCreate = {
   __typename?: "ChannelCreate";
   channel?: Maybe<Channel>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   channelErrors: Array<ChannelError>;
   errors: Array<ChannelError>;
 };
@@ -1169,7 +1102,7 @@ export type ChannelCreateInput = {
 export type ChannelDeactivate = {
   __typename?: "ChannelDeactivate";
   channel?: Maybe<Channel>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   channelErrors: Array<ChannelError>;
   errors: Array<ChannelError>;
 };
@@ -1177,7 +1110,7 @@ export type ChannelDeactivate = {
 export type ChannelDelete = {
   __typename?: "ChannelDelete";
   channel?: Maybe<Channel>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   channelErrors: Array<ChannelError>;
   errors: Array<ChannelError>;
 };
@@ -1209,7 +1142,7 @@ export enum ChannelErrorCode {
 export type ChannelUpdate = {
   __typename?: "ChannelUpdate";
   channel?: Maybe<Channel>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   channelErrors: Array<ChannelError>;
   errors: Array<ChannelError>;
 };
@@ -1226,13 +1159,11 @@ export type ChannelUpdateInput = {
 export type Checkout = Node &
   ObjectWithMetadata & {
     __typename?: "Checkout";
-    availableCollectionPoints: Array<Warehouse>;
     availablePaymentGateways: Array<PaymentGateway>;
     availableShippingMethods: Array<Maybe<ShippingMethod>>;
     billingAddress?: Maybe<Address>;
     channel: Channel;
     created: Scalars["DateTime"];
-    deliveryMethod?: Maybe<DeliveryMethod>;
     discount?: Maybe<Money>;
     discountName?: Maybe<Scalars["String"]>;
     email: Scalars["String"];
@@ -1247,7 +1178,6 @@ export type Checkout = Node &
     privateMetadata: Array<Maybe<MetadataItem>>;
     quantity: Scalars["Int"];
     shippingAddress?: Maybe<Address>;
-    /** @deprecated This field will be removed in Saleor 4.0. Use `deliveryMethod` instead. */
     shippingMethod?: Maybe<ShippingMethod>;
     shippingPrice?: Maybe<TaxedMoney>;
     subtotalPrice?: Maybe<TaxedMoney>;
@@ -1261,7 +1191,7 @@ export type Checkout = Node &
 export type CheckoutAddPromoCode = {
   __typename?: "CheckoutAddPromoCode";
   checkout?: Maybe<Checkout>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   checkoutErrors: Array<CheckoutError>;
   errors: Array<CheckoutError>;
 };
@@ -1269,14 +1199,14 @@ export type CheckoutAddPromoCode = {
 export type CheckoutBillingAddressUpdate = {
   __typename?: "CheckoutBillingAddressUpdate";
   checkout?: Maybe<Checkout>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   checkoutErrors: Array<CheckoutError>;
   errors: Array<CheckoutError>;
 };
 
 export type CheckoutComplete = {
   __typename?: "CheckoutComplete";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   checkoutErrors: Array<CheckoutError>;
   confirmationData?: Maybe<Scalars["JSONString"]>;
   confirmationNeeded: Scalars["Boolean"];
@@ -1300,9 +1230,8 @@ export type CheckoutCountableEdge = {
 export type CheckoutCreate = {
   __typename?: "CheckoutCreate";
   checkout?: Maybe<Checkout>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   checkoutErrors: Array<CheckoutError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Always returns `True`. */
   created?: Maybe<Scalars["Boolean"]>;
   errors: Array<CheckoutError>;
 };
@@ -1319,7 +1248,7 @@ export type CheckoutCreateInput = {
 export type CheckoutCustomerAttach = {
   __typename?: "CheckoutCustomerAttach";
   checkout?: Maybe<Checkout>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   checkoutErrors: Array<CheckoutError>;
   errors: Array<CheckoutError>;
 };
@@ -1327,21 +1256,15 @@ export type CheckoutCustomerAttach = {
 export type CheckoutCustomerDetach = {
   __typename?: "CheckoutCustomerDetach";
   checkout?: Maybe<Checkout>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   checkoutErrors: Array<CheckoutError>;
-  errors: Array<CheckoutError>;
-};
-
-export type CheckoutDeliveryMethodUpdate = {
-  __typename?: "CheckoutDeliveryMethodUpdate";
-  checkout?: Maybe<Checkout>;
   errors: Array<CheckoutError>;
 };
 
 export type CheckoutEmailUpdate = {
   __typename?: "CheckoutEmailUpdate";
   checkout?: Maybe<Checkout>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   checkoutErrors: Array<CheckoutError>;
   errors: Array<CheckoutError>;
 };
@@ -1359,8 +1282,6 @@ export enum CheckoutErrorCode {
   BillingAddressNotSet = "BILLING_ADDRESS_NOT_SET",
   ChannelInactive = "CHANNEL_INACTIVE",
   CheckoutNotFullyPaid = "CHECKOUT_NOT_FULLY_PAID",
-  DeliveryMethodNotApplicable = "DELIVERY_METHOD_NOT_APPLICABLE",
-  GiftCardNotApplicable = "GIFT_CARD_NOT_APPLICABLE",
   GraphqlError = "GRAPHQL_ERROR",
   InsufficientStock = "INSUFFICIENT_STOCK",
   Invalid = "INVALID",
@@ -1386,7 +1307,7 @@ export enum CheckoutErrorCode {
 export type CheckoutLanguageCodeUpdate = {
   __typename?: "CheckoutLanguageCodeUpdate";
   checkout?: Maybe<Checkout>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   checkoutErrors: Array<CheckoutError>;
   errors: Array<CheckoutError>;
 };
@@ -1416,7 +1337,7 @@ export type CheckoutLineCountableEdge = {
 export type CheckoutLineDelete = {
   __typename?: "CheckoutLineDelete";
   checkout?: Maybe<Checkout>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   checkoutErrors: Array<CheckoutError>;
   errors: Array<CheckoutError>;
 };
@@ -1429,7 +1350,7 @@ export type CheckoutLineInput = {
 export type CheckoutLinesAdd = {
   __typename?: "CheckoutLinesAdd";
   checkout?: Maybe<Checkout>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   checkoutErrors: Array<CheckoutError>;
   errors: Array<CheckoutError>;
 };
@@ -1437,7 +1358,7 @@ export type CheckoutLinesAdd = {
 export type CheckoutLinesUpdate = {
   __typename?: "CheckoutLinesUpdate";
   checkout?: Maybe<Checkout>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   checkoutErrors: Array<CheckoutError>;
   errors: Array<CheckoutError>;
 };
@@ -1447,14 +1368,14 @@ export type CheckoutPaymentCreate = {
   checkout?: Maybe<Checkout>;
   errors: Array<PaymentError>;
   payment?: Maybe<Payment>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   paymentErrors: Array<PaymentError>;
 };
 
 export type CheckoutRemovePromoCode = {
   __typename?: "CheckoutRemovePromoCode";
   checkout?: Maybe<Checkout>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   checkoutErrors: Array<CheckoutError>;
   errors: Array<CheckoutError>;
 };
@@ -1462,7 +1383,7 @@ export type CheckoutRemovePromoCode = {
 export type CheckoutShippingAddressUpdate = {
   __typename?: "CheckoutShippingAddressUpdate";
   checkout?: Maybe<Checkout>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   checkoutErrors: Array<CheckoutError>;
   errors: Array<CheckoutError>;
 };
@@ -1470,7 +1391,7 @@ export type CheckoutShippingAddressUpdate = {
 export type CheckoutShippingMethodUpdate = {
   __typename?: "CheckoutShippingMethodUpdate";
   checkout?: Maybe<Checkout>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   checkoutErrors: Array<CheckoutError>;
   errors: Array<CheckoutError>;
 };
@@ -1488,7 +1409,7 @@ export type Collection = Node &
     channel?: Maybe<Scalars["String"]>;
     channelListings?: Maybe<Array<CollectionChannelListing>>;
     description?: Maybe<Scalars["JSONString"]>;
-    /** @deprecated This field will be removed in Saleor 4.0. Use the `description` field instead. */
+    /** @deprecated Will be removed in Saleor 4.0. Use the `description` field instead. */
     descriptionJson?: Maybe<Scalars["JSONString"]>;
     id: Scalars["ID"];
     metadata: Array<Maybe<MetadataItem>>;
@@ -1521,14 +1442,14 @@ export type CollectionTranslationArgs = {
 export type CollectionAddProducts = {
   __typename?: "CollectionAddProducts";
   collection?: Maybe<Collection>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   collectionErrors: Array<CollectionError>;
   errors: Array<CollectionError>;
 };
 
 export type CollectionBulkDelete = {
   __typename?: "CollectionBulkDelete";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   collectionErrors: Array<CollectionError>;
   count: Scalars["Int"];
   errors: Array<CollectionError>;
@@ -1555,7 +1476,7 @@ export type CollectionChannelListingError = {
 export type CollectionChannelListingUpdate = {
   __typename?: "CollectionChannelListingUpdate";
   collection?: Maybe<Collection>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   collectionChannelListingErrors: Array<CollectionChannelListingError>;
   errors: Array<CollectionChannelListingError>;
 };
@@ -1581,7 +1502,7 @@ export type CollectionCountableEdge = {
 export type CollectionCreate = {
   __typename?: "CollectionCreate";
   collection?: Maybe<Collection>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   collectionErrors: Array<CollectionError>;
   errors: Array<CollectionError>;
 };
@@ -1601,7 +1522,7 @@ export type CollectionCreateInput = {
 export type CollectionDelete = {
   __typename?: "CollectionDelete";
   collection?: Maybe<Collection>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   collectionErrors: Array<CollectionError>;
   errors: Array<CollectionError>;
 };
@@ -1651,7 +1572,7 @@ export enum CollectionPublished {
 export type CollectionRemoveProducts = {
   __typename?: "CollectionRemoveProducts";
   collection?: Maybe<Collection>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   collectionErrors: Array<CollectionError>;
   errors: Array<CollectionError>;
 };
@@ -1659,7 +1580,7 @@ export type CollectionRemoveProducts = {
 export type CollectionReorderProducts = {
   __typename?: "CollectionReorderProducts";
   collection?: Maybe<Collection>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   collectionErrors: Array<CollectionError>;
   errors: Array<CollectionError>;
 };
@@ -1679,10 +1600,10 @@ export type CollectionSortingInput = {
 
 export type CollectionTranslatableContent = Node & {
   __typename?: "CollectionTranslatableContent";
-  /** @deprecated This field will be removed in Saleor 4.0. Get model fields from the root level queries. */
+  /** @deprecated Will be removed in Saleor 4.0. Get model fields from the root level. */
   collection?: Maybe<Collection>;
   description?: Maybe<Scalars["JSONString"]>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use the `description` field instead. */
+  /** @deprecated Will be removed in Saleor 4.0. Use the `description` field instead. */
   descriptionJson?: Maybe<Scalars["JSONString"]>;
   id: Scalars["ID"];
   name: Scalars["String"];
@@ -1699,14 +1620,14 @@ export type CollectionTranslate = {
   __typename?: "CollectionTranslate";
   collection?: Maybe<Collection>;
   errors: Array<TranslationError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   translationErrors: Array<TranslationError>;
 };
 
 export type CollectionTranslation = Node & {
   __typename?: "CollectionTranslation";
   description?: Maybe<Scalars["JSONString"]>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use the `description` field instead. */
+  /** @deprecated Will be removed in Saleor 4.0. Use the `description` field instead. */
   descriptionJson?: Maybe<Scalars["JSONString"]>;
   id: Scalars["ID"];
   language: LanguageDisplay;
@@ -1718,7 +1639,7 @@ export type CollectionTranslation = Node & {
 export type CollectionUpdate = {
   __typename?: "CollectionUpdate";
   collection?: Maybe<Collection>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   collectionErrors: Array<CollectionError>;
   errors: Array<CollectionError>;
 };
@@ -1749,7 +1670,7 @@ export enum ConfigurationTypeFieldEnum {
 
 export type ConfirmAccount = {
   __typename?: "ConfirmAccount";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   errors: Array<AccountError>;
   user?: Maybe<User>;
@@ -1757,7 +1678,7 @@ export type ConfirmAccount = {
 
 export type ConfirmEmailChange = {
   __typename?: "ConfirmEmailChange";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   errors: Array<AccountError>;
   user?: Maybe<User>;
@@ -2025,7 +1946,7 @@ export type CountryDisplay = {
 
 export type CreateToken = {
   __typename?: "CreateToken";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   csrfToken?: Maybe<Scalars["String"]>;
   errors: Array<AccountError>;
@@ -2045,7 +1966,7 @@ export type CreditCard = {
 
 export type CustomerBulkDelete = {
   __typename?: "CustomerBulkDelete";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   count: Scalars["Int"];
   errors: Array<AccountError>;
@@ -2053,7 +1974,7 @@ export type CustomerBulkDelete = {
 
 export type CustomerCreate = {
   __typename?: "CustomerCreate";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   errors: Array<AccountError>;
   user?: Maybe<User>;
@@ -2061,7 +1982,7 @@ export type CustomerCreate = {
 
 export type CustomerDelete = {
   __typename?: "CustomerDelete";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   errors: Array<AccountError>;
   user?: Maybe<User>;
@@ -2117,7 +2038,7 @@ export type CustomerInput = {
 
 export type CustomerUpdate = {
   __typename?: "CustomerUpdate";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   errors: Array<AccountError>;
   user?: Maybe<User>;
@@ -2135,7 +2056,7 @@ export type DateTimeRangeInput = {
 
 export type DeactivateAllUserTokens = {
   __typename?: "DeactivateAllUserTokens";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   errors: Array<AccountError>;
 };
@@ -2144,7 +2065,7 @@ export type DeleteMetadata = {
   __typename?: "DeleteMetadata";
   errors: Array<MetadataError>;
   item?: Maybe<ObjectWithMetadata>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   metadataErrors: Array<MetadataError>;
 };
 
@@ -2152,11 +2073,9 @@ export type DeletePrivateMetadata = {
   __typename?: "DeletePrivateMetadata";
   errors: Array<MetadataError>;
   item?: Maybe<ObjectWithMetadata>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   metadataErrors: Array<MetadataError>;
 };
-
-export type DeliveryMethod = ShippingMethod | Warehouse;
 
 export type DigitalContent = Node &
   ObjectWithMetadata & {
@@ -2190,7 +2109,7 @@ export type DigitalContentCreate = {
   __typename?: "DigitalContentCreate";
   content?: Maybe<DigitalContent>;
   errors: Array<ProductError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
   variant?: Maybe<ProductVariant>;
 };
@@ -2198,7 +2117,7 @@ export type DigitalContentCreate = {
 export type DigitalContentDelete = {
   __typename?: "DigitalContentDelete";
   errors: Array<ProductError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
   variant?: Maybe<ProductVariant>;
 };
@@ -2214,7 +2133,7 @@ export type DigitalContentUpdate = {
   __typename?: "DigitalContentUpdate";
   content?: Maybe<DigitalContent>;
   errors: Array<ProductError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
   variant?: Maybe<ProductVariant>;
 };
@@ -2241,7 +2160,7 @@ export type DigitalContentUrlCreate = {
   __typename?: "DigitalContentUrlCreate";
   digitalContentUrl?: Maybe<DigitalContentUrl>;
   errors: Array<ProductError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
 };
 
@@ -2300,7 +2219,7 @@ export type DraftOrderBulkDelete = {
   __typename?: "DraftOrderBulkDelete";
   count: Scalars["Int"];
   errors: Array<OrderError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
 };
 
@@ -2308,7 +2227,7 @@ export type DraftOrderComplete = {
   __typename?: "DraftOrderComplete";
   errors: Array<OrderError>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
 };
 
@@ -2316,7 +2235,7 @@ export type DraftOrderCreate = {
   __typename?: "DraftOrderCreate";
   errors: Array<OrderError>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
 };
 
@@ -2338,7 +2257,7 @@ export type DraftOrderDelete = {
   __typename?: "DraftOrderDelete";
   errors: Array<OrderError>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
 };
 
@@ -2359,7 +2278,7 @@ export type DraftOrderLinesBulkDelete = {
   __typename?: "DraftOrderLinesBulkDelete";
   count: Scalars["Int"];
   errors: Array<OrderError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
 };
 
@@ -2367,7 +2286,7 @@ export type DraftOrderUpdate = {
   __typename?: "DraftOrderUpdate";
   errors: Array<OrderError>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
 };
 
@@ -2460,7 +2379,7 @@ export type ExportInfoInput = {
 export type ExportProducts = {
   __typename?: "ExportProducts";
   errors: Array<ExportError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   exportErrors: Array<ExportError>;
   exportFile?: Maybe<ExportFile>;
 };
@@ -2487,7 +2406,7 @@ export type ExternalAuthentication = {
 
 export type ExternalAuthenticationUrl = {
   __typename?: "ExternalAuthenticationUrl";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   authenticationData?: Maybe<Scalars["JSONString"]>;
   errors: Array<AccountError>;
@@ -2495,40 +2414,15 @@ export type ExternalAuthenticationUrl = {
 
 export type ExternalLogout = {
   __typename?: "ExternalLogout";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   errors: Array<AccountError>;
   logoutData?: Maybe<Scalars["JSONString"]>;
 };
 
-export type ExternalNotificationError = {
-  __typename?: "ExternalNotificationError";
-  code: ExternalNotificationErrorCodes;
-  field?: Maybe<Scalars["String"]>;
-  message?: Maybe<Scalars["String"]>;
-};
-
-export enum ExternalNotificationErrorCodes {
-  ChannelInactive = "CHANNEL_INACTIVE",
-  InvalidModelType = "INVALID_MODEL_TYPE",
-  NotFound = "NOT_FOUND",
-  Required = "REQUIRED",
-}
-
-export type ExternalNotificationTrigger = {
-  __typename?: "ExternalNotificationTrigger";
-  errors: Array<ExternalNotificationError>;
-};
-
-export type ExternalNotificationTriggerInput = {
-  externalEventType: Scalars["String"];
-  extraPayload?: Maybe<Scalars["JSONString"]>;
-  ids: Array<Maybe<Scalars["ID"]>>;
-};
-
 export type ExternalObtainAccessTokens = {
   __typename?: "ExternalObtainAccessTokens";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   csrfToken?: Maybe<Scalars["String"]>;
   errors: Array<AccountError>;
@@ -2539,7 +2433,7 @@ export type ExternalObtainAccessTokens = {
 
 export type ExternalRefresh = {
   __typename?: "ExternalRefresh";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   csrfToken?: Maybe<Scalars["String"]>;
   errors: Array<AccountError>;
@@ -2550,7 +2444,7 @@ export type ExternalRefresh = {
 
 export type ExternalVerify = {
   __typename?: "ExternalVerify";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   errors: Array<AccountError>;
   isValid: Scalars["Boolean"];
@@ -2572,7 +2466,7 @@ export enum FileTypesEnum {
 export type FileUpload = {
   __typename?: "FileUpload";
   errors: Array<UploadError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   uploadErrors: Array<UploadError>;
   uploadedFile?: Maybe<File>;
 };
@@ -2592,26 +2486,17 @@ export type Fulfillment = Node &
     warehouse?: Maybe<Warehouse>;
   };
 
-export type FulfillmentApprove = {
-  __typename?: "FulfillmentApprove";
-  errors: Array<OrderError>;
-  fulfillment?: Maybe<Fulfillment>;
-  order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
-  orderErrors: Array<OrderError>;
-};
-
 export type FulfillmentCancel = {
   __typename?: "FulfillmentCancel";
   errors: Array<OrderError>;
   fulfillment?: Maybe<Fulfillment>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
 };
 
 export type FulfillmentCancelInput = {
-  warehouseId?: Maybe<Scalars["ID"]>;
+  warehouseId: Scalars["ID"];
 };
 
 export type FulfillmentLine = Node & {
@@ -2626,7 +2511,7 @@ export type FulfillmentRefundProducts = {
   errors: Array<OrderError>;
   fulfillment?: Maybe<Fulfillment>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
 };
 
@@ -2634,7 +2519,7 @@ export type FulfillmentReturnProducts = {
   __typename?: "FulfillmentReturnProducts";
   errors: Array<OrderError>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
   replaceFulfillment?: Maybe<Fulfillment>;
   replaceOrder?: Maybe<Order>;
@@ -2648,7 +2533,6 @@ export enum FulfillmentStatus {
   RefundedAndReturned = "REFUNDED_AND_RETURNED",
   Replaced = "REPLACED",
   Returned = "RETURNED",
-  WaitingForApproval = "WAITING_FOR_APPROVAL",
 }
 
 export type FulfillmentUpdateTracking = {
@@ -2656,7 +2540,7 @@ export type FulfillmentUpdateTracking = {
   errors: Array<OrderError>;
   fulfillment?: Maybe<Fulfillment>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
 };
 
@@ -2671,72 +2555,27 @@ export type GatewayConfigLine = {
   value?: Maybe<Scalars["String"]>;
 };
 
-export type GiftCard = Node &
-  ObjectWithMetadata & {
-    __typename?: "GiftCard";
-    app?: Maybe<App>;
-    boughtInChannel?: Maybe<Scalars["String"]>;
-    code: Scalars["String"];
-    created: Scalars["DateTime"];
-    createdBy?: Maybe<User>;
-    createdByEmail?: Maybe<Scalars["String"]>;
-    currentBalance?: Maybe<Money>;
-    displayCode: Scalars["String"];
-    /** @deprecated This field will be removed in Saleor 4.0. Use `expiryDate` field instead. */
-    endDate?: Maybe<Scalars["DateTime"]>;
-    events: Array<GiftCardEvent>;
-    expiryDate?: Maybe<Scalars["Date"]>;
-    id: Scalars["ID"];
-    initialBalance?: Maybe<Money>;
-    isActive: Scalars["Boolean"];
-    lastUsedOn?: Maybe<Scalars["DateTime"]>;
-    metadata: Array<Maybe<MetadataItem>>;
-    privateMetadata: Array<Maybe<MetadataItem>>;
-    product?: Maybe<Product>;
-    /** @deprecated This field will be removed in Saleor 4.0. */
-    startDate?: Maybe<Scalars["DateTime"]>;
-    tag?: Maybe<Scalars["String"]>;
-    usedBy?: Maybe<User>;
-    usedByEmail?: Maybe<Scalars["String"]>;
-    /** @deprecated This field will be removed in Saleor 4.0. Use `createdBy` field instead. */
-    user?: Maybe<User>;
-  };
+export type GiftCard = Node & {
+  __typename?: "GiftCard";
+  code?: Maybe<Scalars["String"]>;
+  created: Scalars["DateTime"];
+  currentBalance?: Maybe<Money>;
+  displayCode?: Maybe<Scalars["String"]>;
+  endDate?: Maybe<Scalars["Date"]>;
+  id: Scalars["ID"];
+  initialBalance?: Maybe<Money>;
+  isActive: Scalars["Boolean"];
+  lastUsedOn?: Maybe<Scalars["DateTime"]>;
+  startDate: Scalars["Date"];
+  user?: Maybe<User>;
+};
 
 export type GiftCardActivate = {
   __typename?: "GiftCardActivate";
   errors: Array<GiftCardError>;
   giftCard?: Maybe<GiftCard>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   giftCardErrors: Array<GiftCardError>;
-};
-
-export type GiftCardAddNote = {
-  __typename?: "GiftCardAddNote";
-  errors: Array<GiftCardError>;
-  event?: Maybe<GiftCardEvent>;
-  giftCard?: Maybe<GiftCard>;
-};
-
-export type GiftCardAddNoteInput = {
-  message: Scalars["String"];
-};
-
-export type GiftCardBulkActivate = {
-  __typename?: "GiftCardBulkActivate";
-  count: Scalars["Int"];
-  errors: Array<GiftCardError>;
-};
-
-export type GiftCardBulkDeactivate = {
-  __typename?: "GiftCardBulkDeactivate";
-  count: Scalars["Int"];
-  errors: Array<GiftCardError>;
-};
-
-export type GiftCardBulkDelete = {
-  __typename?: "GiftCardBulkDelete";
-  count: Scalars["Int"];
-  errors: Array<GiftCardError>;
 };
 
 export type GiftCardCountableConnection = {
@@ -2756,20 +2595,15 @@ export type GiftCardCreate = {
   __typename?: "GiftCardCreate";
   errors: Array<GiftCardError>;
   giftCard?: Maybe<GiftCard>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   giftCardErrors: Array<GiftCardError>;
 };
 
 export type GiftCardCreateInput = {
-  balance: PriceInput;
-  channel?: Maybe<Scalars["String"]>;
+  balance?: Maybe<Scalars["PositiveDecimal"]>;
   code?: Maybe<Scalars["String"]>;
   endDate?: Maybe<Scalars["Date"]>;
-  expiryDate?: Maybe<Scalars["Date"]>;
-  isActive: Scalars["Boolean"];
-  note?: Maybe<Scalars["String"]>;
   startDate?: Maybe<Scalars["Date"]>;
-  tag?: Maybe<Scalars["String"]>;
   userEmail?: Maybe<Scalars["String"]>;
 };
 
@@ -2777,15 +2611,7 @@ export type GiftCardDeactivate = {
   __typename?: "GiftCardDeactivate";
   errors: Array<GiftCardError>;
   giftCard?: Maybe<GiftCard>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
-  giftCardErrors: Array<GiftCardError>;
-};
-
-export type GiftCardDelete = {
-  __typename?: "GiftCardDelete";
-  errors: Array<GiftCardError>;
-  giftCard?: Maybe<GiftCard>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   giftCardErrors: Array<GiftCardError>;
 };
 
@@ -2805,131 +2631,19 @@ export enum GiftCardErrorCode {
   Unique = "UNIQUE",
 }
 
-export type GiftCardEvent = Node & {
-  __typename?: "GiftCardEvent";
-  app?: Maybe<App>;
-  balance?: Maybe<GiftCardEventBalance>;
-  date?: Maybe<Scalars["DateTime"]>;
-  email?: Maybe<Scalars["String"]>;
-  expiryDate?: Maybe<Scalars["Date"]>;
-  id: Scalars["ID"];
-  message?: Maybe<Scalars["String"]>;
-  oldExpiryDate?: Maybe<Scalars["Date"]>;
-  oldTag?: Maybe<Scalars["String"]>;
-  orderId?: Maybe<Scalars["ID"]>;
-  orderNumber?: Maybe<Scalars["String"]>;
-  tag?: Maybe<Scalars["String"]>;
-  type?: Maybe<GiftCardEventsEnum>;
-  user?: Maybe<User>;
-};
-
-export type GiftCardEventBalance = {
-  __typename?: "GiftCardEventBalance";
-  currentBalance: Money;
-  initialBalance?: Maybe<Money>;
-  oldCurrentBalance?: Maybe<Money>;
-  oldInitialBalance?: Maybe<Money>;
-};
-
-export enum GiftCardEventsEnum {
-  Activated = "ACTIVATED",
-  BalanceReset = "BALANCE_RESET",
-  Bought = "BOUGHT",
-  Deactivated = "DEACTIVATED",
-  ExpiryDateUpdated = "EXPIRY_DATE_UPDATED",
-  Issued = "ISSUED",
-  NoteAdded = "NOTE_ADDED",
-  Resent = "RESENT",
-  SentToCustomer = "SENT_TO_CUSTOMER",
-  TagUpdated = "TAG_UPDATED",
-  Updated = "UPDATED",
-  UsedInOrder = "USED_IN_ORDER",
-}
-
-export type GiftCardFilterInput = {
-  currency?: Maybe<Scalars["String"]>;
-  currentBalance?: Maybe<PriceRangeInput>;
-  initialBalance?: Maybe<PriceRangeInput>;
-  isActive?: Maybe<Scalars["Boolean"]>;
-  products?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  tag?: Maybe<Scalars["String"]>;
-  tags?: Maybe<Array<Maybe<Scalars["String"]>>>;
-  usedBy?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-};
-
-export type GiftCardResend = {
-  __typename?: "GiftCardResend";
-  errors: Array<GiftCardError>;
-  giftCard?: Maybe<GiftCard>;
-};
-
-export type GiftCardResendInput = {
-  channel: Scalars["String"];
-  email?: Maybe<Scalars["String"]>;
-  id: Scalars["ID"];
-};
-
-export type GiftCardSettings = {
-  __typename?: "GiftCardSettings";
-  expiryPeriod?: Maybe<TimePeriod>;
-  expiryType: GiftCardSettingsExpiryTypeEnum;
-};
-
-export type GiftCardSettingsError = {
-  __typename?: "GiftCardSettingsError";
-  code: GiftCardSettingsErrorCode;
-  field?: Maybe<Scalars["String"]>;
-  message?: Maybe<Scalars["String"]>;
-};
-
-export enum GiftCardSettingsErrorCode {
-  GraphqlError = "GRAPHQL_ERROR",
-  Invalid = "INVALID",
-  Required = "REQUIRED",
-}
-
-export enum GiftCardSettingsExpiryTypeEnum {
-  ExpiryPeriod = "EXPIRY_PERIOD",
-  NeverExpire = "NEVER_EXPIRE",
-}
-
-export type GiftCardSettingsUpdate = {
-  __typename?: "GiftCardSettingsUpdate";
-  errors: Array<GiftCardSettingsError>;
-  giftCardSettings?: Maybe<GiftCardSettings>;
-};
-
-export type GiftCardSettingsUpdateInput = {
-  expiryPeriod?: Maybe<TimePeriodInputType>;
-  expiryType?: Maybe<GiftCardSettingsExpiryTypeEnum>;
-};
-
-export enum GiftCardSortField {
-  CurrentBalance = "CURRENT_BALANCE",
-  Product = "PRODUCT",
-  Tag = "TAG",
-  UsedBy = "USED_BY",
-}
-
-export type GiftCardSortingInput = {
-  direction: OrderDirection;
-  field: GiftCardSortField;
-};
-
 export type GiftCardUpdate = {
   __typename?: "GiftCardUpdate";
   errors: Array<GiftCardError>;
   giftCard?: Maybe<GiftCard>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   giftCardErrors: Array<GiftCardError>;
 };
 
 export type GiftCardUpdateInput = {
-  balanceAmount?: Maybe<Scalars["PositiveDecimal"]>;
+  balance?: Maybe<Scalars["PositiveDecimal"]>;
   endDate?: Maybe<Scalars["Date"]>;
-  expiryDate?: Maybe<Scalars["Date"]>;
   startDate?: Maybe<Scalars["Date"]>;
-  tag?: Maybe<Scalars["String"]>;
+  userEmail?: Maybe<Scalars["String"]>;
 };
 
 export type Group = Node & {
@@ -2985,7 +2699,7 @@ export type InvoiceCreate = {
   __typename?: "InvoiceCreate";
   errors: Array<InvoiceError>;
   invoice?: Maybe<Invoice>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   invoiceErrors: Array<InvoiceError>;
 };
 
@@ -2998,7 +2712,7 @@ export type InvoiceDelete = {
   __typename?: "InvoiceDelete";
   errors: Array<InvoiceError>;
   invoice?: Maybe<Invoice>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   invoiceErrors: Array<InvoiceError>;
 };
 
@@ -3023,7 +2737,7 @@ export type InvoiceRequest = {
   __typename?: "InvoiceRequest";
   errors: Array<InvoiceError>;
   invoice?: Maybe<Invoice>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   invoiceErrors: Array<InvoiceError>;
   order?: Maybe<Order>;
 };
@@ -3032,7 +2746,7 @@ export type InvoiceRequestDelete = {
   __typename?: "InvoiceRequestDelete";
   errors: Array<InvoiceError>;
   invoice?: Maybe<Invoice>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   invoiceErrors: Array<InvoiceError>;
 };
 
@@ -3040,7 +2754,7 @@ export type InvoiceSendNotification = {
   __typename?: "InvoiceSendNotification";
   errors: Array<InvoiceError>;
   invoice?: Maybe<Invoice>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   invoiceErrors: Array<InvoiceError>;
 };
 
@@ -3048,7 +2762,7 @@ export type InvoiceUpdate = {
   __typename?: "InvoiceUpdate";
   errors: Array<InvoiceError>;
   invoice?: Maybe<Invoice>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   invoiceErrors: Array<InvoiceError>;
 };
 
@@ -3876,7 +3590,6 @@ export type Manifest = {
   configurationUrl?: Maybe<Scalars["String"]>;
   dataPrivacy?: Maybe<Scalars["String"]>;
   dataPrivacyUrl?: Maybe<Scalars["String"]>;
-  extensions: Array<AppManifestExtension>;
   homepageUrl?: Maybe<Scalars["String"]>;
   identifier: Scalars["String"];
   name: Scalars["String"];
@@ -3940,7 +3653,7 @@ export type MenuBulkDelete = {
   __typename?: "MenuBulkDelete";
   count: Scalars["Int"];
   errors: Array<MenuError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   menuErrors: Array<MenuError>;
 };
 
@@ -3961,7 +3674,7 @@ export type MenuCreate = {
   __typename?: "MenuCreate";
   errors: Array<MenuError>;
   menu?: Maybe<Menu>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   menuErrors: Array<MenuError>;
 };
 
@@ -3975,7 +3688,7 @@ export type MenuDelete = {
   __typename?: "MenuDelete";
   errors: Array<MenuError>;
   menu?: Maybe<Menu>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   menuErrors: Array<MenuError>;
 };
 
@@ -4035,7 +3748,7 @@ export type MenuItemBulkDelete = {
   __typename?: "MenuItemBulkDelete";
   count: Scalars["Int"];
   errors: Array<MenuError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   menuErrors: Array<MenuError>;
 };
 
@@ -4055,7 +3768,7 @@ export type MenuItemCountableEdge = {
 export type MenuItemCreate = {
   __typename?: "MenuItemCreate";
   errors: Array<MenuError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   menuErrors: Array<MenuError>;
   menuItem?: Maybe<MenuItem>;
 };
@@ -4073,7 +3786,7 @@ export type MenuItemCreateInput = {
 export type MenuItemDelete = {
   __typename?: "MenuItemDelete";
   errors: Array<MenuError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   menuErrors: Array<MenuError>;
   menuItem?: Maybe<MenuItem>;
 };
@@ -4095,7 +3808,7 @@ export type MenuItemMove = {
   __typename?: "MenuItemMove";
   errors: Array<MenuError>;
   menu?: Maybe<Menu>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   menuErrors: Array<MenuError>;
 };
 
@@ -4113,7 +3826,7 @@ export type MenuItemSortingInput = {
 export type MenuItemTranslatableContent = Node & {
   __typename?: "MenuItemTranslatableContent";
   id: Scalars["ID"];
-  /** @deprecated This field will be removed in Saleor 4.0. Get model fields from the root level queries. */
+  /** @deprecated Will be removed in Saleor 4.0. Get model fields from the root level. */
   menuItem?: Maybe<MenuItem>;
   name: Scalars["String"];
   translation?: Maybe<MenuItemTranslation>;
@@ -4127,7 +3840,7 @@ export type MenuItemTranslate = {
   __typename?: "MenuItemTranslate";
   errors: Array<TranslationError>;
   menuItem?: Maybe<MenuItem>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   translationErrors: Array<TranslationError>;
 };
 
@@ -4141,7 +3854,7 @@ export type MenuItemTranslation = Node & {
 export type MenuItemUpdate = {
   __typename?: "MenuItemUpdate";
   errors: Array<MenuError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   menuErrors: Array<MenuError>;
   menuItem?: Maybe<MenuItem>;
 };
@@ -4164,7 +3877,7 @@ export type MenuUpdate = {
   __typename?: "MenuUpdate";
   errors: Array<MenuError>;
   menu?: Maybe<Menu>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   menuErrors: Array<MenuError>;
 };
 
@@ -4270,7 +3983,6 @@ export type Mutation = {
   checkoutCreate?: Maybe<CheckoutCreate>;
   checkoutCustomerAttach?: Maybe<CheckoutCustomerAttach>;
   checkoutCustomerDetach?: Maybe<CheckoutCustomerDetach>;
-  checkoutDeliveryMethodUpdate?: Maybe<CheckoutDeliveryMethodUpdate>;
   checkoutEmailUpdate?: Maybe<CheckoutEmailUpdate>;
   checkoutLanguageCodeUpdate?: Maybe<CheckoutLanguageCodeUpdate>;
   checkoutLineDelete?: Maybe<CheckoutLineDelete>;
@@ -4279,7 +3991,6 @@ export type Mutation = {
   checkoutPaymentCreate?: Maybe<CheckoutPaymentCreate>;
   checkoutRemovePromoCode?: Maybe<CheckoutRemovePromoCode>;
   checkoutShippingAddressUpdate?: Maybe<CheckoutShippingAddressUpdate>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `checkoutDeliveryMethodUpdate` instead. */
   checkoutShippingMethodUpdate?: Maybe<CheckoutShippingMethodUpdate>;
   collectionAddProducts?: Maybe<CollectionAddProducts>;
   collectionBulkDelete?: Maybe<CollectionBulkDelete>;
@@ -4308,27 +4019,18 @@ export type Mutation = {
   draftOrderComplete?: Maybe<DraftOrderComplete>;
   draftOrderCreate?: Maybe<DraftOrderCreate>;
   draftOrderDelete?: Maybe<DraftOrderDelete>;
-  /** @deprecated This field will be removed in Saleor 4.0. */
   draftOrderLinesBulkDelete?: Maybe<DraftOrderLinesBulkDelete>;
   draftOrderUpdate?: Maybe<DraftOrderUpdate>;
   exportProducts?: Maybe<ExportProducts>;
   externalAuthenticationUrl?: Maybe<ExternalAuthenticationUrl>;
   externalLogout?: Maybe<ExternalLogout>;
-  externalNotificationTrigger?: Maybe<ExternalNotificationTrigger>;
   externalObtainAccessTokens?: Maybe<ExternalObtainAccessTokens>;
   externalRefresh?: Maybe<ExternalRefresh>;
   externalVerify?: Maybe<ExternalVerify>;
   fileUpload?: Maybe<FileUpload>;
   giftCardActivate?: Maybe<GiftCardActivate>;
-  giftCardAddNote?: Maybe<GiftCardAddNote>;
-  giftCardBulkActivate?: Maybe<GiftCardBulkActivate>;
-  giftCardBulkDeactivate?: Maybe<GiftCardBulkDeactivate>;
-  giftCardBulkDelete?: Maybe<GiftCardBulkDelete>;
   giftCardCreate?: Maybe<GiftCardCreate>;
   giftCardDeactivate?: Maybe<GiftCardDeactivate>;
-  giftCardDelete?: Maybe<GiftCardDelete>;
-  giftCardResend?: Maybe<GiftCardResend>;
-  giftCardSettingsUpdate?: Maybe<GiftCardSettingsUpdate>;
   giftCardUpdate?: Maybe<GiftCardUpdate>;
   invoiceCreate?: Maybe<InvoiceCreate>;
   invoiceDelete?: Maybe<InvoiceDelete>;
@@ -4355,7 +4057,6 @@ export type Mutation = {
   orderDiscountDelete?: Maybe<OrderDiscountDelete>;
   orderDiscountUpdate?: Maybe<OrderDiscountUpdate>;
   orderFulfill?: Maybe<OrderFulfill>;
-  orderFulfillmentApprove?: Maybe<FulfillmentApprove>;
   orderFulfillmentCancel?: Maybe<FulfillmentCancel>;
   orderFulfillmentRefundProducts?: Maybe<FulfillmentRefundProducts>;
   orderFulfillmentReturnProducts?: Maybe<FulfillmentReturnProducts>;
@@ -4652,7 +4353,7 @@ export type MutationAttributeValueTranslateArgs = {
 
 export type MutationAttributeValueUpdateArgs = {
   id: Scalars["ID"];
-  input: AttributeValueUpdateInput;
+  input: AttributeValueCreateInput;
 };
 
 export type MutationCategoryBulkDeleteArgs = {
@@ -4733,11 +4434,6 @@ export type MutationCheckoutCustomerAttachArgs = {
 
 export type MutationCheckoutCustomerDetachArgs = {
   checkoutId?: Maybe<Scalars["ID"]>;
-  token?: Maybe<Scalars["UUID"]>;
-};
-
-export type MutationCheckoutDeliveryMethodUpdateArgs = {
-  deliveryMethodId?: Maybe<Scalars["ID"]>;
   token?: Maybe<Scalars["UUID"]>;
 };
 
@@ -4940,12 +4636,6 @@ export type MutationExternalLogoutArgs = {
   pluginId: Scalars["String"];
 };
 
-export type MutationExternalNotificationTriggerArgs = {
-  channel: Scalars["String"];
-  input: ExternalNotificationTriggerInput;
-  pluginId?: Maybe<Scalars["String"]>;
-};
-
 export type MutationExternalObtainAccessTokensArgs = {
   input: Scalars["JSONString"];
   pluginId: Scalars["String"];
@@ -4969,41 +4659,12 @@ export type MutationGiftCardActivateArgs = {
   id: Scalars["ID"];
 };
 
-export type MutationGiftCardAddNoteArgs = {
-  id: Scalars["ID"];
-  input: GiftCardAddNoteInput;
-};
-
-export type MutationGiftCardBulkActivateArgs = {
-  ids: Array<Maybe<Scalars["ID"]>>;
-};
-
-export type MutationGiftCardBulkDeactivateArgs = {
-  ids: Array<Maybe<Scalars["ID"]>>;
-};
-
-export type MutationGiftCardBulkDeleteArgs = {
-  ids: Array<Maybe<Scalars["ID"]>>;
-};
-
 export type MutationGiftCardCreateArgs = {
   input: GiftCardCreateInput;
 };
 
 export type MutationGiftCardDeactivateArgs = {
   id: Scalars["ID"];
-};
-
-export type MutationGiftCardDeleteArgs = {
-  id: Scalars["ID"];
-};
-
-export type MutationGiftCardResendArgs = {
-  input: GiftCardResendInput;
-};
-
-export type MutationGiftCardSettingsUpdateArgs = {
-  input: GiftCardSettingsUpdateInput;
 };
 
 export type MutationGiftCardUpdateArgs = {
@@ -5124,14 +4785,9 @@ export type MutationOrderFulfillArgs = {
   order?: Maybe<Scalars["ID"]>;
 };
 
-export type MutationOrderFulfillmentApproveArgs = {
-  id: Scalars["ID"];
-  notifyCustomer: Scalars["Boolean"];
-};
-
 export type MutationOrderFulfillmentCancelArgs = {
   id: Scalars["ID"];
-  input?: Maybe<FulfillmentCancelInput>;
+  input: FulfillmentCancelInput;
 };
 
 export type MutationOrderFulfillmentRefundProductsArgs = {
@@ -5192,7 +4848,7 @@ export type MutationOrderUpdateArgs = {
 };
 
 export type MutationOrderUpdateShippingArgs = {
-  input: OrderUpdateShippingInput;
+  input?: Maybe<OrderUpdateShippingInput>;
   order: Scalars["ID"];
 };
 
@@ -5748,18 +5404,15 @@ export type Order = Node &
   ObjectWithMetadata & {
     __typename?: "Order";
     actions: Array<Maybe<OrderAction>>;
-    availableCollectionPoints: Array<Warehouse>;
     availableShippingMethods?: Maybe<Array<Maybe<ShippingMethod>>>;
     billingAddress?: Maybe<Address>;
     canFinalize: Scalars["Boolean"];
     channel: Channel;
-    collectionPointName?: Maybe<Scalars["String"]>;
     created: Scalars["DateTime"];
     customerNote: Scalars["String"];
-    deliveryMethod?: Maybe<DeliveryMethod>;
-    /** @deprecated This field will be removed in Saleor 4.0. Use discounts field. */
+    /** @deprecated Use discounts field. This field will be removed in Saleor 4.0. */
     discount?: Maybe<Money>;
-    /** @deprecated This field will be removed in Saleor 4.0. Use discounts field. */
+    /** @deprecated Use discounts field. This field will be removed in Saleor 4.0. */
     discountName?: Maybe<Scalars["String"]>;
     discounts?: Maybe<Array<OrderDiscount>>;
     displayGrossPrices: Scalars["Boolean"];
@@ -5771,7 +5424,7 @@ export type Order = Node &
     invoices?: Maybe<Array<Maybe<Invoice>>>;
     isPaid: Scalars["Boolean"];
     isShippingRequired: Scalars["Boolean"];
-    /** @deprecated This field will be removed in Saleor 4.0. Use the `languageCodeEnum` field to fetch the language code.  */
+    /** @deprecated Use the `languageCodeEnum` field to fetch the language code. This field will be removed in Saleor 4.0. */
     languageCode: Scalars["String"];
     languageCodeEnum: LanguageCodeEnum;
     lines: Array<Maybe<OrderLine>>;
@@ -5785,7 +5438,6 @@ export type Order = Node &
     privateMetadata: Array<Maybe<MetadataItem>>;
     redirectUrl?: Maybe<Scalars["String"]>;
     shippingAddress?: Maybe<Address>;
-    /** @deprecated This field will be removed in Saleor 4.0. Use `deliveryMethod` instead. */
     shippingMethod?: Maybe<ShippingMethod>;
     shippingMethodName?: Maybe<Scalars["String"]>;
     shippingPrice: TaxedMoney;
@@ -5799,7 +5451,7 @@ export type Order = Node &
     totalBalance: Money;
     totalCaptured: Money;
     trackingClientId: Scalars["String"];
-    /** @deprecated This field will be removed in Saleor 4.0. Use discounts field.  */
+    /** @deprecated Use discounts field. This field will be removed in Saleor 4.0. */
     translatedDiscountName?: Maybe<Scalars["String"]>;
     undiscountedTotal: TaxedMoney;
     user?: Maybe<User>;
@@ -5820,7 +5472,7 @@ export type OrderAddNote = {
   errors: Array<OrderError>;
   event?: Maybe<OrderEvent>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
 };
 
@@ -5832,7 +5484,7 @@ export type OrderBulkCancel = {
   __typename?: "OrderBulkCancel";
   count: Scalars["Int"];
   errors: Array<OrderError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
 };
 
@@ -5840,7 +5492,7 @@ export type OrderCancel = {
   __typename?: "OrderCancel";
   errors: Array<OrderError>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
 };
 
@@ -5848,7 +5500,7 @@ export type OrderCapture = {
   __typename?: "OrderCapture";
   errors: Array<OrderError>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
 };
 
@@ -5856,7 +5508,7 @@ export type OrderConfirm = {
   __typename?: "OrderConfirm";
   errors: Array<OrderError>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
 };
 
@@ -5894,7 +5546,7 @@ export type OrderDiscountAdd = {
   __typename?: "OrderDiscountAdd";
   errors: Array<OrderError>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
 };
 
@@ -5908,7 +5560,7 @@ export type OrderDiscountDelete = {
   __typename?: "OrderDiscountDelete";
   errors: Array<OrderError>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
 };
 
@@ -5921,7 +5573,7 @@ export type OrderDiscountUpdate = {
   __typename?: "OrderDiscountUpdate";
   errors: Array<OrderError>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
 };
 
@@ -5950,13 +5602,11 @@ export enum OrderErrorCode {
   CannotCancelOrder = "CANNOT_CANCEL_ORDER",
   CannotDelete = "CANNOT_DELETE",
   CannotDiscount = "CANNOT_DISCOUNT",
-  CannotFulfillUnpaidOrder = "CANNOT_FULFILL_UNPAID_ORDER",
   CannotRefund = "CANNOT_REFUND",
   CaptureInactivePayment = "CAPTURE_INACTIVE_PAYMENT",
   ChannelInactive = "CHANNEL_INACTIVE",
   DuplicatedInputItem = "DUPLICATED_INPUT_ITEM",
   FulfillOrderLine = "FULFILL_ORDER_LINE",
-  GiftCardLine = "GIFT_CARD_LINE",
   GraphqlError = "GRAPHQL_ERROR",
   InsufficientStock = "INSUFFICIENT_STOCK",
   Invalid = "INVALID",
@@ -6057,7 +5707,6 @@ export enum OrderEventsEnum {
   DraftCreatedFromReplace = "DRAFT_CREATED_FROM_REPLACE",
   EmailSent = "EMAIL_SENT",
   ExternalServiceNotification = "EXTERNAL_SERVICE_NOTIFICATION",
-  FulfillmentAwaitsApproval = "FULFILLMENT_AWAITS_APPROVAL",
   FulfillmentCanceled = "FULFILLMENT_CANCELED",
   FulfillmentFulfilledItems = "FULFILLMENT_FULFILLED_ITEMS",
   FulfillmentRefunded = "FULFILLMENT_REFUNDED",
@@ -6110,11 +5759,12 @@ export type OrderFulfill = {
   errors: Array<OrderError>;
   fulfillments?: Maybe<Array<Maybe<Fulfillment>>>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
 };
 
 export type OrderFulfillInput = {
+  allowStockToBeExceeded?: Maybe<Scalars["Boolean"]>;
   lines: Array<OrderFulfillLineInput>;
   notifyCustomer?: Maybe<Scalars["Boolean"]>;
 };
@@ -6139,7 +5789,6 @@ export type OrderLine = Node & {
   productSku: Scalars["String"];
   quantity: Scalars["Int"];
   quantityFulfilled: Scalars["Int"];
-  quantityToFulfill: Scalars["Int"];
   taxRate: Scalars["Float"];
   thumbnail?: Maybe<Image>;
   totalPrice: TaxedMoney;
@@ -6168,7 +5817,7 @@ export type OrderLineDelete = {
   __typename?: "OrderLineDelete";
   errors: Array<OrderError>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
   orderLine?: Maybe<OrderLine>;
 };
@@ -6177,7 +5826,7 @@ export type OrderLineDiscountRemove = {
   __typename?: "OrderLineDiscountRemove";
   errors: Array<OrderError>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
   orderLine?: Maybe<OrderLine>;
 };
@@ -6186,7 +5835,7 @@ export type OrderLineDiscountUpdate = {
   __typename?: "OrderLineDiscountUpdate";
   errors: Array<OrderError>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
   orderLine?: Maybe<OrderLine>;
 };
@@ -6199,7 +5848,7 @@ export type OrderLineUpdate = {
   __typename?: "OrderLineUpdate";
   errors: Array<OrderError>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
   orderLine?: Maybe<OrderLine>;
 };
@@ -6208,7 +5857,7 @@ export type OrderLinesCreate = {
   __typename?: "OrderLinesCreate";
   errors: Array<OrderError>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
   orderLines?: Maybe<Array<OrderLine>>;
 };
@@ -6217,7 +5866,7 @@ export type OrderMarkAsPaid = {
   __typename?: "OrderMarkAsPaid";
   errors: Array<OrderError>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
 };
 
@@ -6231,7 +5880,7 @@ export type OrderRefund = {
   __typename?: "OrderRefund";
   errors: Array<OrderError>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
 };
 
@@ -6275,7 +5924,6 @@ export type OrderReturnProductsInput = {
 export type OrderSettings = {
   __typename?: "OrderSettings";
   automaticallyConfirmAllNewOrders: Scalars["Boolean"];
-  automaticallyFulfillNonShippableGiftCard: Scalars["Boolean"];
 };
 
 export type OrderSettingsError = {
@@ -6293,13 +5941,12 @@ export type OrderSettingsUpdate = {
   __typename?: "OrderSettingsUpdate";
   errors: Array<OrderSettingsError>;
   orderSettings?: Maybe<OrderSettings>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderSettingsErrors: Array<OrderSettingsError>;
 };
 
 export type OrderSettingsUpdateInput = {
-  automaticallyConfirmAllNewOrders?: Maybe<Scalars["Boolean"]>;
-  automaticallyFulfillNonShippableGiftCard?: Maybe<Scalars["Boolean"]>;
+  automaticallyConfirmAllNewOrders: Scalars["Boolean"];
 };
 
 export enum OrderSortField {
@@ -6340,7 +5987,7 @@ export type OrderUpdate = {
   __typename?: "OrderUpdate";
   errors: Array<OrderError>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
 };
 
@@ -6354,7 +6001,7 @@ export type OrderUpdateShipping = {
   __typename?: "OrderUpdateShipping";
   errors: Array<OrderError>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
 };
 
@@ -6366,7 +6013,7 @@ export type OrderVoid = {
   __typename?: "OrderVoid";
   errors: Array<OrderError>;
   order?: Maybe<Order>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   orderErrors: Array<OrderError>;
 };
 
@@ -6375,7 +6022,7 @@ export type Page = Node &
     __typename?: "Page";
     attributes: Array<SelectedAttribute>;
     content?: Maybe<Scalars["JSONString"]>;
-    /** @deprecated This field will be removed in Saleor 4.0. Use the `content` field instead. */
+    /** @deprecated Will be removed in Saleor 4.0. Use the `content` field instead. */
     contentJson: Scalars["JSONString"];
     created: Scalars["DateTime"];
     id: Scalars["ID"];
@@ -6398,7 +6045,7 @@ export type PageTranslationArgs = {
 export type PageAttributeAssign = {
   __typename?: "PageAttributeAssign";
   errors: Array<PageError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   pageErrors: Array<PageError>;
   pageType?: Maybe<PageType>;
 };
@@ -6406,7 +6053,7 @@ export type PageAttributeAssign = {
 export type PageAttributeUnassign = {
   __typename?: "PageAttributeUnassign";
   errors: Array<PageError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   pageErrors: Array<PageError>;
   pageType?: Maybe<PageType>;
 };
@@ -6415,7 +6062,7 @@ export type PageBulkDelete = {
   __typename?: "PageBulkDelete";
   count: Scalars["Int"];
   errors: Array<PageError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   pageErrors: Array<PageError>;
 };
 
@@ -6423,7 +6070,7 @@ export type PageBulkPublish = {
   __typename?: "PageBulkPublish";
   count: Scalars["Int"];
   errors: Array<PageError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   pageErrors: Array<PageError>;
 };
 
@@ -6444,7 +6091,7 @@ export type PageCreate = {
   __typename?: "PageCreate";
   errors: Array<PageError>;
   page?: Maybe<Page>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   pageErrors: Array<PageError>;
 };
 
@@ -6463,7 +6110,7 @@ export type PageDelete = {
   __typename?: "PageDelete";
   errors: Array<PageError>;
   page?: Maybe<Page>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   pageErrors: Array<PageError>;
 };
 
@@ -6515,7 +6162,7 @@ export type PageReorderAttributeValues = {
   __typename?: "PageReorderAttributeValues";
   errors: Array<PageError>;
   page?: Maybe<Page>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   pageErrors: Array<PageError>;
 };
 
@@ -6536,10 +6183,10 @@ export type PageTranslatableContent = Node & {
   __typename?: "PageTranslatableContent";
   attributeValues: Array<AttributeValueTranslatableContent>;
   content?: Maybe<Scalars["JSONString"]>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use the `content` field instead. */
+  /** @deprecated Will be removed in Saleor 4.0. Use the `content` field instead. */
   contentJson?: Maybe<Scalars["JSONString"]>;
   id: Scalars["ID"];
-  /** @deprecated This field will be removed in Saleor 4.0. Get model fields from the root level queries. */
+  /** @deprecated Will be removed in Saleor 4.0. Get model fields from the root level. */
   page?: Maybe<Page>;
   seoDescription?: Maybe<Scalars["String"]>;
   seoTitle?: Maybe<Scalars["String"]>;
@@ -6555,14 +6202,14 @@ export type PageTranslate = {
   __typename?: "PageTranslate";
   errors: Array<TranslationError>;
   page?: Maybe<PageTranslatableContent>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   translationErrors: Array<TranslationError>;
 };
 
 export type PageTranslation = Node & {
   __typename?: "PageTranslation";
   content?: Maybe<Scalars["JSONString"]>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use the `content` field instead. */
+  /** @deprecated Will be removed in Saleor 4.0. Use the `content` field instead. */
   contentJson?: Maybe<Scalars["JSONString"]>;
   id: Scalars["ID"];
   language: LanguageDisplay;
@@ -6603,7 +6250,7 @@ export type PageTypeBulkDelete = {
   __typename?: "PageTypeBulkDelete";
   count: Scalars["Int"];
   errors: Array<PageError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   pageErrors: Array<PageError>;
 };
 
@@ -6623,7 +6270,7 @@ export type PageTypeCountableEdge = {
 export type PageTypeCreate = {
   __typename?: "PageTypeCreate";
   errors: Array<PageError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   pageErrors: Array<PageError>;
   pageType?: Maybe<PageType>;
 };
@@ -6637,7 +6284,7 @@ export type PageTypeCreateInput = {
 export type PageTypeDelete = {
   __typename?: "PageTypeDelete";
   errors: Array<PageError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   pageErrors: Array<PageError>;
   pageType?: Maybe<PageType>;
 };
@@ -6649,7 +6296,7 @@ export type PageTypeFilterInput = {
 export type PageTypeReorderAttributes = {
   __typename?: "PageTypeReorderAttributes";
   errors: Array<PageError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   pageErrors: Array<PageError>;
   pageType?: Maybe<PageType>;
 };
@@ -6667,7 +6314,7 @@ export type PageTypeSortingInput = {
 export type PageTypeUpdate = {
   __typename?: "PageTypeUpdate";
   errors: Array<PageError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   pageErrors: Array<PageError>;
   pageType?: Maybe<PageType>;
 };
@@ -6683,48 +6330,45 @@ export type PageUpdate = {
   __typename?: "PageUpdate";
   errors: Array<PageError>;
   page?: Maybe<Page>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   pageErrors: Array<PageError>;
 };
 
 export type PasswordChange = {
   __typename?: "PasswordChange";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   errors: Array<AccountError>;
   user?: Maybe<User>;
 };
 
-export type Payment = Node &
-  ObjectWithMetadata & {
-    __typename?: "Payment";
-    actions: Array<Maybe<OrderAction>>;
-    availableCaptureAmount?: Maybe<Money>;
-    availableRefundAmount?: Maybe<Money>;
-    capturedAmount?: Maybe<Money>;
-    chargeStatus: PaymentChargeStatusEnum;
-    checkout?: Maybe<Checkout>;
-    created: Scalars["DateTime"];
-    creditCard?: Maybe<CreditCard>;
-    customerIpAddress?: Maybe<Scalars["String"]>;
-    gateway: Scalars["String"];
-    id: Scalars["ID"];
-    isActive: Scalars["Boolean"];
-    metadata: Array<Maybe<MetadataItem>>;
-    modified: Scalars["DateTime"];
-    order?: Maybe<Order>;
-    paymentMethodType: Scalars["String"];
-    privateMetadata: Array<Maybe<MetadataItem>>;
-    token: Scalars["String"];
-    total?: Maybe<Money>;
-    transactions?: Maybe<Array<Maybe<Transaction>>>;
-  };
+export type Payment = Node & {
+  __typename?: "Payment";
+  actions: Array<Maybe<OrderAction>>;
+  availableCaptureAmount?: Maybe<Money>;
+  availableRefundAmount?: Maybe<Money>;
+  capturedAmount?: Maybe<Money>;
+  chargeStatus: PaymentChargeStatusEnum;
+  checkout?: Maybe<Checkout>;
+  created: Scalars["DateTime"];
+  creditCard?: Maybe<CreditCard>;
+  customerIpAddress?: Maybe<Scalars["String"]>;
+  gateway: Scalars["String"];
+  id: Scalars["ID"];
+  isActive: Scalars["Boolean"];
+  modified: Scalars["DateTime"];
+  order?: Maybe<Order>;
+  paymentMethodType: Scalars["String"];
+  token: Scalars["String"];
+  total?: Maybe<Money>;
+  transactions?: Maybe<Array<Maybe<Transaction>>>;
+};
 
 export type PaymentCapture = {
   __typename?: "PaymentCapture";
   errors: Array<PaymentError>;
   payment?: Maybe<Payment>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   paymentErrors: Array<PaymentError>;
 };
 
@@ -6791,7 +6435,7 @@ export type PaymentInitialize = {
   __typename?: "PaymentInitialize";
   errors: Array<PaymentError>;
   initializedPayment?: Maybe<PaymentInitialized>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   paymentErrors: Array<PaymentError>;
 };
 
@@ -6805,9 +6449,7 @@ export type PaymentInitialized = {
 export type PaymentInput = {
   amount?: Maybe<Scalars["PositiveDecimal"]>;
   gateway: Scalars["String"];
-  metadata?: Maybe<Array<MetadataInput>>;
   returnUrl?: Maybe<Scalars["String"]>;
-  storePaymentMethod?: Maybe<StorePaymentMethodEnum>;
   token?: Maybe<Scalars["String"]>;
 };
 
@@ -6815,7 +6457,7 @@ export type PaymentRefund = {
   __typename?: "PaymentRefund";
   errors: Array<PaymentError>;
   payment?: Maybe<Payment>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   paymentErrors: Array<PaymentError>;
 };
 
@@ -6823,7 +6465,6 @@ export type PaymentSource = {
   __typename?: "PaymentSource";
   creditCardInfo?: Maybe<CreditCard>;
   gateway: Scalars["String"];
-  metadata: Array<Maybe<MetadataItem>>;
   paymentMethodId?: Maybe<Scalars["String"]>;
 };
 
@@ -6831,7 +6472,7 @@ export type PaymentVoid = {
   __typename?: "PaymentVoid";
   errors: Array<PaymentError>;
   payment?: Maybe<Payment>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   paymentErrors: Array<PaymentError>;
 };
 
@@ -6867,7 +6508,7 @@ export type PermissionGroupCreate = {
   __typename?: "PermissionGroupCreate";
   errors: Array<PermissionGroupError>;
   group?: Maybe<Group>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   permissionGroupErrors: Array<PermissionGroupError>;
 };
 
@@ -6881,7 +6522,7 @@ export type PermissionGroupDelete = {
   __typename?: "PermissionGroupDelete";
   errors: Array<PermissionGroupError>;
   group?: Maybe<Group>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   permissionGroupErrors: Array<PermissionGroupError>;
 };
 
@@ -6922,7 +6563,7 @@ export type PermissionGroupUpdate = {
   __typename?: "PermissionGroupUpdate";
   errors: Array<PermissionGroupError>;
   group?: Maybe<Group>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   permissionGroupErrors: Array<PermissionGroupError>;
 };
 
@@ -7009,7 +6650,7 @@ export type PluginUpdate = {
   __typename?: "PluginUpdate";
   errors: Array<PluginError>;
   plugin?: Maybe<Plugin>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   pluginsErrors: Array<PluginError>;
 };
 
@@ -7022,11 +6663,6 @@ export enum PostalCodeRuleInclusionTypeEnum {
   Exclude = "EXCLUDE",
   Include = "INCLUDE",
 }
-
-export type PriceInput = {
-  amount: Scalars["PositiveDecimal"];
-  currency: Scalars["String"];
-};
 
 export type PriceRangeInput = {
   gte?: Maybe<Scalars["Float"]>;
@@ -7045,12 +6681,12 @@ export type Product = Node &
     collections?: Maybe<Array<Maybe<Collection>>>;
     defaultVariant?: Maybe<ProductVariant>;
     description?: Maybe<Scalars["JSONString"]>;
-    /** @deprecated This field will be removed in Saleor 4.0. Use the `description` field instead. */
+    /** @deprecated Will be removed in Saleor 4.0. Use the `description` field instead. */
     descriptionJson?: Maybe<Scalars["JSONString"]>;
     id: Scalars["ID"];
-    /** @deprecated This field will be removed in Saleor 4.0. Use the `mediaById` field instead. */
+    /** @deprecated Will be removed in Saleor 4.0. Use the `mediaById` field instead. */
     imageById?: Maybe<ProductImage>;
-    /** @deprecated This field will be removed in Saleor 4.0. Use the `media` field instead. */
+    /** @deprecated Will be removed in Saleor 4.0. Use the `media` field instead. */
     images?: Maybe<Array<Maybe<ProductImage>>>;
     isAvailable?: Maybe<Scalars["Boolean"]>;
     isAvailableForPurchase?: Maybe<Scalars["Boolean"]>;
@@ -7100,7 +6736,7 @@ export type ProductTranslationArgs = {
 export type ProductAttributeAssign = {
   __typename?: "ProductAttributeAssign";
   errors: Array<ProductError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
   productType?: Maybe<ProductType>;
 };
@@ -7118,7 +6754,7 @@ export enum ProductAttributeType {
 export type ProductAttributeUnassign = {
   __typename?: "ProductAttributeUnassign";
   errors: Array<ProductError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
   productType?: Maybe<ProductType>;
 };
@@ -7127,7 +6763,7 @@ export type ProductBulkDelete = {
   __typename?: "ProductBulkDelete";
   count: Scalars["Int"];
   errors: Array<ProductError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
 };
 
@@ -7176,7 +6812,7 @@ export type ProductChannelListingUpdate = {
   __typename?: "ProductChannelListingUpdate";
   errors: Array<ProductChannelListingError>;
   product?: Maybe<Product>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productChannelListingErrors: Array<ProductChannelListingError>;
 };
 
@@ -7202,7 +6838,7 @@ export type ProductCreate = {
   __typename?: "ProductCreate";
   errors: Array<ProductError>;
   product?: Maybe<Product>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
 };
 
@@ -7225,7 +6861,7 @@ export type ProductDelete = {
   __typename?: "ProductDelete";
   errors: Array<ProductError>;
   product?: Maybe<Product>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
 };
 
@@ -7277,7 +6913,6 @@ export type ProductFilterInput = {
   categories?: Maybe<Array<Maybe<Scalars["ID"]>>>;
   channel?: Maybe<Scalars["String"]>;
   collections?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  giftCard?: Maybe<Scalars["Boolean"]>;
   hasCategory?: Maybe<Scalars["Boolean"]>;
   ids?: Maybe<Array<Maybe<Scalars["ID"]>>>;
   isPublished?: Maybe<Scalars["Boolean"]>;
@@ -7334,7 +6969,7 @@ export type ProductMediaBulkDelete = {
   __typename?: "ProductMediaBulkDelete";
   count: Scalars["Int"];
   errors: Array<ProductError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
 };
 
@@ -7343,7 +6978,7 @@ export type ProductMediaCreate = {
   errors: Array<ProductError>;
   media?: Maybe<ProductMedia>;
   product?: Maybe<Product>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
 };
 
@@ -7359,7 +6994,7 @@ export type ProductMediaDelete = {
   errors: Array<ProductError>;
   media?: Maybe<ProductMedia>;
   product?: Maybe<Product>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
 };
 
@@ -7368,7 +7003,7 @@ export type ProductMediaReorder = {
   errors: Array<ProductError>;
   media?: Maybe<Array<ProductMedia>>;
   product?: Maybe<Product>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
 };
 
@@ -7382,7 +7017,7 @@ export type ProductMediaUpdate = {
   errors: Array<ProductError>;
   media?: Maybe<ProductMedia>;
   product?: Maybe<Product>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
 };
 
@@ -7424,7 +7059,7 @@ export type ProductReorderAttributeValues = {
   __typename?: "ProductReorderAttributeValues";
   errors: Array<ProductError>;
   product?: Maybe<Product>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
 };
 
@@ -7437,11 +7072,11 @@ export type ProductTranslatableContent = Node & {
   __typename?: "ProductTranslatableContent";
   attributeValues: Array<AttributeValueTranslatableContent>;
   description?: Maybe<Scalars["JSONString"]>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use the `description` field instead. */
+  /** @deprecated Will be removed in Saleor 4.0. Use the `description` field instead. */
   descriptionJson?: Maybe<Scalars["JSONString"]>;
   id: Scalars["ID"];
   name: Scalars["String"];
-  /** @deprecated This field will be removed in Saleor 4.0. Get model fields from the root level queries. */
+  /** @deprecated Will be removed in Saleor 4.0. Get model fields from the root level. */
   product?: Maybe<Product>;
   seoDescription?: Maybe<Scalars["String"]>;
   seoTitle?: Maybe<Scalars["String"]>;
@@ -7456,14 +7091,14 @@ export type ProductTranslate = {
   __typename?: "ProductTranslate";
   errors: Array<TranslationError>;
   product?: Maybe<Product>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   translationErrors: Array<TranslationError>;
 };
 
 export type ProductTranslation = Node & {
   __typename?: "ProductTranslation";
   description?: Maybe<Scalars["JSONString"]>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use the `description` field instead. */
+  /** @deprecated Will be removed in Saleor 4.0. Use the `description` field instead. */
   descriptionJson?: Maybe<Scalars["JSONString"]>;
   id: Scalars["ID"];
   language: LanguageDisplay;
@@ -7480,12 +7115,11 @@ export type ProductType = Node &
     id: Scalars["ID"];
     isDigital: Scalars["Boolean"];
     isShippingRequired: Scalars["Boolean"];
-    kind: ProductTypeKindEnum;
     metadata: Array<Maybe<MetadataItem>>;
     name: Scalars["String"];
     privateMetadata: Array<Maybe<MetadataItem>>;
     productAttributes?: Maybe<Array<Maybe<Attribute>>>;
-    /** @deprecated This field will be removed in Saleor 4.0. Use the top-level `products` query with the `productTypes` filter. */
+    /** @deprecated Will be removed in Saleor 4.0. Use the top-level `products` query with the `productTypes` filter. */
     products?: Maybe<ProductCountableConnection>;
     slug: Scalars["String"];
     taxType?: Maybe<TaxType>;
@@ -7517,7 +7151,7 @@ export type ProductTypeBulkDelete = {
   __typename?: "ProductTypeBulkDelete";
   count: Scalars["Int"];
   errors: Array<ProductError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
 };
 
@@ -7542,7 +7176,7 @@ export type ProductTypeCountableEdge = {
 export type ProductTypeCreate = {
   __typename?: "ProductTypeCreate";
   errors: Array<ProductError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
   productType?: Maybe<ProductType>;
 };
@@ -7550,7 +7184,7 @@ export type ProductTypeCreate = {
 export type ProductTypeDelete = {
   __typename?: "ProductTypeDelete";
   errors: Array<ProductError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
   productType?: Maybe<ProductType>;
 };
@@ -7563,7 +7197,6 @@ export enum ProductTypeEnum {
 export type ProductTypeFilterInput = {
   configurable?: Maybe<ProductTypeConfigurable>;
   ids?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  kind?: Maybe<ProductTypeKindEnum>;
   metadata?: Maybe<Array<Maybe<MetadataFilter>>>;
   productType?: Maybe<ProductTypeEnum>;
   search?: Maybe<Scalars["String"]>;
@@ -7573,7 +7206,6 @@ export type ProductTypeInput = {
   hasVariants?: Maybe<Scalars["Boolean"]>;
   isDigital?: Maybe<Scalars["Boolean"]>;
   isShippingRequired?: Maybe<Scalars["Boolean"]>;
-  kind?: Maybe<ProductTypeKindEnum>;
   name?: Maybe<Scalars["String"]>;
   productAttributes?: Maybe<Array<Maybe<Scalars["ID"]>>>;
   slug?: Maybe<Scalars["String"]>;
@@ -7582,15 +7214,10 @@ export type ProductTypeInput = {
   weight?: Maybe<Scalars["WeightScalar"]>;
 };
 
-export enum ProductTypeKindEnum {
-  GiftCard = "GIFT_CARD",
-  Normal = "NORMAL",
-}
-
 export type ProductTypeReorderAttributes = {
   __typename?: "ProductTypeReorderAttributes";
   errors: Array<ProductError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
   productType?: Maybe<ProductType>;
 };
@@ -7609,7 +7236,7 @@ export type ProductTypeSortingInput = {
 export type ProductTypeUpdate = {
   __typename?: "ProductTypeUpdate";
   errors: Array<ProductError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
   productType?: Maybe<ProductType>;
 };
@@ -7618,7 +7245,7 @@ export type ProductUpdate = {
   __typename?: "ProductUpdate";
   errors: Array<ProductError>;
   product?: Maybe<Product>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
 };
 
@@ -7630,7 +7257,7 @@ export type ProductVariant = Node &
     channelListings?: Maybe<Array<ProductVariantChannelListing>>;
     digitalContent?: Maybe<DigitalContent>;
     id: Scalars["ID"];
-    /** @deprecated This field will be removed in Saleor 4.0. Use the `media` field instead. */
+    /** @deprecated Will be removed in Saleor 4.0. Use the `media` instead. */
     images?: Maybe<Array<Maybe<ProductImage>>>;
     margin?: Maybe<Scalars["Int"]>;
     media?: Maybe<Array<ProductMedia>>;
@@ -7677,7 +7304,7 @@ export type ProductVariantTranslationArgs = {
 
 export type ProductVariantBulkCreate = {
   __typename?: "ProductVariantBulkCreate";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   bulkProductErrors: Array<BulkProductError>;
   count: Scalars["Int"];
   errors: Array<BulkProductError>;
@@ -7697,7 +7324,7 @@ export type ProductVariantBulkDelete = {
   __typename?: "ProductVariantBulkDelete";
   count: Scalars["Int"];
   errors: Array<ProductError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
 };
 
@@ -7719,7 +7346,7 @@ export type ProductVariantChannelListingAddInput = {
 export type ProductVariantChannelListingUpdate = {
   __typename?: "ProductVariantChannelListingUpdate";
   errors: Array<ProductChannelListingError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productChannelListingErrors: Array<ProductChannelListingError>;
   variant?: Maybe<ProductVariant>;
 };
@@ -7740,7 +7367,7 @@ export type ProductVariantCountableEdge = {
 export type ProductVariantCreate = {
   __typename?: "ProductVariantCreate";
   errors: Array<ProductError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
   productVariant?: Maybe<ProductVariant>;
 };
@@ -7757,7 +7384,7 @@ export type ProductVariantCreateInput = {
 export type ProductVariantDelete = {
   __typename?: "ProductVariantDelete";
   errors: Array<ProductError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
   productVariant?: Maybe<ProductVariant>;
 };
@@ -7779,14 +7406,14 @@ export type ProductVariantReorder = {
   __typename?: "ProductVariantReorder";
   errors: Array<ProductError>;
   product?: Maybe<Product>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
 };
 
 export type ProductVariantReorderAttributeValues = {
   __typename?: "ProductVariantReorderAttributeValues";
   errors: Array<ProductError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
   productVariant?: Maybe<ProductVariant>;
 };
@@ -7795,13 +7422,13 @@ export type ProductVariantSetDefault = {
   __typename?: "ProductVariantSetDefault";
   errors: Array<ProductError>;
   product?: Maybe<Product>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
 };
 
 export type ProductVariantStocksCreate = {
   __typename?: "ProductVariantStocksCreate";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   bulkStockErrors: Array<BulkStockError>;
   errors: Array<BulkStockError>;
   productVariant?: Maybe<ProductVariant>;
@@ -7811,13 +7438,13 @@ export type ProductVariantStocksDelete = {
   __typename?: "ProductVariantStocksDelete";
   errors: Array<StockError>;
   productVariant?: Maybe<ProductVariant>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   stockErrors: Array<StockError>;
 };
 
 export type ProductVariantStocksUpdate = {
   __typename?: "ProductVariantStocksUpdate";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   bulkStockErrors: Array<BulkStockError>;
   errors: Array<BulkStockError>;
   productVariant?: Maybe<ProductVariant>;
@@ -7828,7 +7455,7 @@ export type ProductVariantTranslatableContent = Node & {
   attributeValues: Array<AttributeValueTranslatableContent>;
   id: Scalars["ID"];
   name: Scalars["String"];
-  /** @deprecated This field will be removed in Saleor 4.0. Get model fields from the root level queries. */
+  /** @deprecated Will be removed in Saleor 4.0. Get model fields from the root level. */
   productVariant?: Maybe<ProductVariant>;
   translation?: Maybe<ProductVariantTranslation>;
 };
@@ -7841,7 +7468,7 @@ export type ProductVariantTranslate = {
   __typename?: "ProductVariantTranslate";
   errors: Array<TranslationError>;
   productVariant?: Maybe<ProductVariant>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   translationErrors: Array<TranslationError>;
 };
 
@@ -7855,7 +7482,7 @@ export type ProductVariantTranslation = Node & {
 export type ProductVariantUpdate = {
   __typename?: "ProductVariantUpdate";
   errors: Array<ProductError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
   productVariant?: Maybe<ProductVariant>;
 };
@@ -7873,8 +7500,6 @@ export type Query = {
   address?: Maybe<Address>;
   addressValidationRules?: Maybe<AddressValidationData>;
   app?: Maybe<App>;
-  appExtension?: Maybe<AppExtension>;
-  appExtensions?: Maybe<AppExtensionCountableConnection>;
   apps?: Maybe<AppCountableConnection>;
   appsInstallations: Array<AppInstallation>;
   attribute?: Maybe<Attribute>;
@@ -7895,7 +7520,6 @@ export type Query = {
   exportFile?: Maybe<ExportFile>;
   exportFiles?: Maybe<ExportFileCountableConnection>;
   giftCard?: Maybe<GiftCard>;
-  giftCardSettings: GiftCardSettings;
   giftCards?: Maybe<GiftCardCountableConnection>;
   homepageEvents?: Maybe<OrderEventCountableConnection>;
   me?: Maybe<User>;
@@ -7963,18 +7587,6 @@ export type QueryAddressValidationRulesArgs = {
 
 export type QueryAppArgs = {
   id?: Maybe<Scalars["ID"]>;
-};
-
-export type QueryAppExtensionArgs = {
-  id: Scalars["ID"];
-};
-
-export type QueryAppExtensionsArgs = {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  filter?: Maybe<AppExtensionFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
 };
 
 export type QueryAppsArgs = {
@@ -8104,10 +7716,8 @@ export type QueryGiftCardArgs = {
 export type QueryGiftCardsArgs = {
   after?: Maybe<Scalars["String"]>;
   before?: Maybe<Scalars["String"]>;
-  filter?: Maybe<GiftCardFilterInput>;
   first?: Maybe<Scalars["Int"]>;
   last?: Maybe<Scalars["Int"]>;
-  sortBy?: Maybe<GiftCardSortingInput>;
 };
 
 export type QueryHomepageEventsArgs = {
@@ -8405,7 +8015,7 @@ export type ReducedRate = {
 
 export type RefreshToken = {
   __typename?: "RefreshToken";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   errors: Array<AccountError>;
   token?: Maybe<Scalars["String"]>;
@@ -8424,7 +8034,7 @@ export enum ReportingPeriod {
 
 export type RequestEmailChange = {
   __typename?: "RequestEmailChange";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   errors: Array<AccountError>;
   user?: Maybe<User>;
@@ -8432,7 +8042,7 @@ export type RequestEmailChange = {
 
 export type RequestPasswordReset = {
   __typename?: "RequestPasswordReset";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   errors: Array<AccountError>;
 };
@@ -8483,7 +8093,7 @@ export type SaleTranslationArgs = {
 
 export type SaleAddCatalogues = {
   __typename?: "SaleAddCatalogues";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   discountErrors: Array<DiscountError>;
   errors: Array<DiscountError>;
   sale?: Maybe<Sale>;
@@ -8492,7 +8102,7 @@ export type SaleAddCatalogues = {
 export type SaleBulkDelete = {
   __typename?: "SaleBulkDelete";
   count: Scalars["Int"];
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   discountErrors: Array<DiscountError>;
   errors: Array<DiscountError>;
 };
@@ -8517,7 +8127,7 @@ export type SaleChannelListingInput = {
 
 export type SaleChannelListingUpdate = {
   __typename?: "SaleChannelListingUpdate";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   discountErrors: Array<DiscountError>;
   errors: Array<DiscountError>;
   sale?: Maybe<Sale>;
@@ -8538,7 +8148,7 @@ export type SaleCountableEdge = {
 
 export type SaleCreate = {
   __typename?: "SaleCreate";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   discountErrors: Array<DiscountError>;
   errors: Array<DiscountError>;
   sale?: Maybe<Sale>;
@@ -8546,7 +8156,7 @@ export type SaleCreate = {
 
 export type SaleDelete = {
   __typename?: "SaleDelete";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   discountErrors: Array<DiscountError>;
   errors: Array<DiscountError>;
   sale?: Maybe<Sale>;
@@ -8573,7 +8183,7 @@ export type SaleInput = {
 
 export type SaleRemoveCatalogues = {
   __typename?: "SaleRemoveCatalogues";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   discountErrors: Array<DiscountError>;
   errors: Array<DiscountError>;
   sale?: Maybe<Sale>;
@@ -8597,7 +8207,7 @@ export type SaleTranslatableContent = Node & {
   __typename?: "SaleTranslatableContent";
   id: Scalars["ID"];
   name: Scalars["String"];
-  /** @deprecated This field will be removed in Saleor 4.0. Get model fields from the root level queries. */
+  /** @deprecated Will be removed in Saleor 4.0. Get model fields from the root level. */
   sale?: Maybe<Sale>;
   translation?: Maybe<SaleTranslation>;
 };
@@ -8610,7 +8220,7 @@ export type SaleTranslate = {
   __typename?: "SaleTranslate";
   errors: Array<TranslationError>;
   sale?: Maybe<Sale>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   translationErrors: Array<TranslationError>;
 };
 
@@ -8628,7 +8238,7 @@ export enum SaleType {
 
 export type SaleUpdate = {
   __typename?: "SaleUpdate";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   discountErrors: Array<DiscountError>;
   errors: Array<DiscountError>;
   sale?: Maybe<Sale>;
@@ -8647,7 +8257,7 @@ export type SeoInput = {
 
 export type SetPassword = {
   __typename?: "SetPassword";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   csrfToken?: Maybe<Scalars["String"]>;
   errors: Array<AccountError>;
@@ -8733,7 +8343,7 @@ export type ShippingMethodChannelListingInput = {
 export type ShippingMethodChannelListingUpdate = {
   __typename?: "ShippingMethodChannelListingUpdate";
   errors: Array<ShippingError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   shippingErrors: Array<ShippingError>;
   shippingMethod?: Maybe<ShippingMethod>;
 };
@@ -8751,7 +8361,7 @@ export type ShippingMethodTranslatableContent = Node & {
   description?: Maybe<Scalars["JSONString"]>;
   id: Scalars["ID"];
   name: Scalars["String"];
-  /** @deprecated This field will be removed in Saleor 4.0. Get model fields from the root level queries. */
+  /** @deprecated Will be removed in Saleor 4.0. Get model fields from the root level. */
   shippingMethod?: Maybe<ShippingMethod>;
   translation?: Maybe<ShippingMethodTranslation>;
 };
@@ -8782,14 +8392,14 @@ export type ShippingPriceBulkDelete = {
   __typename?: "ShippingPriceBulkDelete";
   count: Scalars["Int"];
   errors: Array<ShippingError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   shippingErrors: Array<ShippingError>;
 };
 
 export type ShippingPriceCreate = {
   __typename?: "ShippingPriceCreate";
   errors: Array<ShippingError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   shippingErrors: Array<ShippingError>;
   shippingMethod?: Maybe<ShippingMethod>;
   shippingZone?: Maybe<ShippingZone>;
@@ -8798,7 +8408,7 @@ export type ShippingPriceCreate = {
 export type ShippingPriceDelete = {
   __typename?: "ShippingPriceDelete";
   errors: Array<ShippingError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   shippingErrors: Array<ShippingError>;
   shippingMethod?: Maybe<ShippingMethod>;
   shippingZone?: Maybe<ShippingZone>;
@@ -8807,7 +8417,7 @@ export type ShippingPriceDelete = {
 export type ShippingPriceExcludeProducts = {
   __typename?: "ShippingPriceExcludeProducts";
   errors: Array<ShippingError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   shippingErrors: Array<ShippingError>;
   shippingMethod?: Maybe<ShippingMethod>;
 };
@@ -8833,7 +8443,7 @@ export type ShippingPriceInput = {
 export type ShippingPriceRemoveProductFromExclude = {
   __typename?: "ShippingPriceRemoveProductFromExclude";
   errors: Array<ShippingError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   shippingErrors: Array<ShippingError>;
   shippingMethod?: Maybe<ShippingMethod>;
 };
@@ -8842,7 +8452,7 @@ export type ShippingPriceTranslate = {
   __typename?: "ShippingPriceTranslate";
   errors: Array<TranslationError>;
   shippingMethod?: Maybe<ShippingMethod>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   translationErrors: Array<TranslationError>;
 };
 
@@ -8854,7 +8464,7 @@ export type ShippingPriceTranslationInput = {
 export type ShippingPriceUpdate = {
   __typename?: "ShippingPriceUpdate";
   errors: Array<ShippingError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   shippingErrors: Array<ShippingError>;
   shippingMethod?: Maybe<ShippingMethod>;
   shippingZone?: Maybe<ShippingZone>;
@@ -8880,7 +8490,7 @@ export type ShippingZoneBulkDelete = {
   __typename?: "ShippingZoneBulkDelete";
   count: Scalars["Int"];
   errors: Array<ShippingError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   shippingErrors: Array<ShippingError>;
 };
 
@@ -8900,7 +8510,7 @@ export type ShippingZoneCountableEdge = {
 export type ShippingZoneCreate = {
   __typename?: "ShippingZoneCreate";
   errors: Array<ShippingError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   shippingErrors: Array<ShippingError>;
   shippingZone?: Maybe<ShippingZone>;
 };
@@ -8917,7 +8527,7 @@ export type ShippingZoneCreateInput = {
 export type ShippingZoneDelete = {
   __typename?: "ShippingZoneDelete";
   errors: Array<ShippingError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   shippingErrors: Array<ShippingError>;
   shippingZone?: Maybe<ShippingZone>;
 };
@@ -8930,7 +8540,7 @@ export type ShippingZoneFilterInput = {
 export type ShippingZoneUpdate = {
   __typename?: "ShippingZoneUpdate";
   errors: Array<ShippingError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   shippingErrors: Array<ShippingError>;
   shippingZone?: Maybe<ShippingZone>;
 };
@@ -8952,7 +8562,6 @@ export type Shop = {
   availableExternalAuthentications: Array<ExternalAuthentication>;
   availablePaymentGateways: Array<PaymentGateway>;
   availableShippingMethods?: Maybe<Array<Maybe<ShippingMethod>>>;
-  channelCurrencies: Array<Scalars["String"]>;
   chargeTaxesOnShipping: Scalars["Boolean"];
   companyAddress?: Maybe<Address>;
   countries: Array<CountryDisplay>;
@@ -8966,8 +8575,6 @@ export type Shop = {
   description?: Maybe<Scalars["String"]>;
   displayGrossPrices: Scalars["Boolean"];
   domain: Domain;
-  fulfillmentAllowUnpaid: Scalars["Boolean"];
-  fulfillmentAutoApprove: Scalars["Boolean"];
   headerText?: Maybe<Scalars["String"]>;
   includeTaxesInPrices: Scalars["Boolean"];
   languages: Array<Maybe<LanguageDisplay>>;
@@ -9003,7 +8610,7 @@ export type ShopAddressUpdate = {
   __typename?: "ShopAddressUpdate";
   errors: Array<ShopError>;
   shop?: Maybe<Shop>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   shopErrors: Array<ShopError>;
 };
 
@@ -9011,7 +8618,7 @@ export type ShopDomainUpdate = {
   __typename?: "ShopDomainUpdate";
   errors: Array<ShopError>;
   shop?: Maybe<Shop>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   shopErrors: Array<ShopError>;
 };
 
@@ -9036,7 +8643,7 @@ export type ShopFetchTaxRates = {
   __typename?: "ShopFetchTaxRates";
   errors: Array<ShopError>;
   shop?: Maybe<Shop>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   shopErrors: Array<ShopError>;
 };
 
@@ -9051,8 +8658,6 @@ export type ShopSettingsInput = {
   defaultWeightUnit?: Maybe<WeightUnitsEnum>;
   description?: Maybe<Scalars["String"]>;
   displayGrossPrices?: Maybe<Scalars["Boolean"]>;
-  fulfillmentAllowUnpaid?: Maybe<Scalars["Boolean"]>;
-  fulfillmentAutoApprove?: Maybe<Scalars["Boolean"]>;
   headerText?: Maybe<Scalars["String"]>;
   includeTaxesInPrices?: Maybe<Scalars["Boolean"]>;
   trackInventoryByDefault?: Maybe<Scalars["Boolean"]>;
@@ -9062,7 +8667,7 @@ export type ShopSettingsTranslate = {
   __typename?: "ShopSettingsTranslate";
   errors: Array<TranslationError>;
   shop?: Maybe<Shop>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   translationErrors: Array<TranslationError>;
 };
 
@@ -9075,7 +8680,7 @@ export type ShopSettingsUpdate = {
   __typename?: "ShopSettingsUpdate";
   errors: Array<ShopError>;
   shop?: Maybe<Shop>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   shopErrors: Array<ShopError>;
 };
 
@@ -9096,14 +8701,14 @@ export type StaffBulkDelete = {
   __typename?: "StaffBulkDelete";
   count: Scalars["Int"];
   errors: Array<StaffError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   staffErrors: Array<StaffError>;
 };
 
 export type StaffCreate = {
   __typename?: "StaffCreate";
   errors: Array<StaffError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   staffErrors: Array<StaffError>;
   user?: Maybe<User>;
 };
@@ -9121,7 +8726,7 @@ export type StaffCreateInput = {
 export type StaffDelete = {
   __typename?: "StaffDelete";
   errors: Array<StaffError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   staffErrors: Array<StaffError>;
   user?: Maybe<User>;
 };
@@ -9153,7 +8758,7 @@ export type StaffNotificationRecipient = Node & {
 export type StaffNotificationRecipientCreate = {
   __typename?: "StaffNotificationRecipientCreate";
   errors: Array<ShopError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   shopErrors: Array<ShopError>;
   staffNotificationRecipient?: Maybe<StaffNotificationRecipient>;
 };
@@ -9161,7 +8766,7 @@ export type StaffNotificationRecipientCreate = {
 export type StaffNotificationRecipientDelete = {
   __typename?: "StaffNotificationRecipientDelete";
   errors: Array<ShopError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   shopErrors: Array<ShopError>;
   staffNotificationRecipient?: Maybe<StaffNotificationRecipient>;
 };
@@ -9175,7 +8780,7 @@ export type StaffNotificationRecipientInput = {
 export type StaffNotificationRecipientUpdate = {
   __typename?: "StaffNotificationRecipientUpdate";
   errors: Array<ShopError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   shopErrors: Array<ShopError>;
   staffNotificationRecipient?: Maybe<StaffNotificationRecipient>;
 };
@@ -9183,7 +8788,7 @@ export type StaffNotificationRecipientUpdate = {
 export type StaffUpdate = {
   __typename?: "StaffUpdate";
   errors: Array<StaffError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   staffErrors: Array<StaffError>;
   user?: Maybe<User>;
 };
@@ -9256,12 +8861,6 @@ export type StockInput = {
   warehouse: Scalars["ID"];
 };
 
-export enum StorePaymentMethodEnum {
-  None = "NONE",
-  OffSession = "OFF_SESSION",
-  OnSession = "ON_SESSION",
-}
-
 export type TaxType = {
   __typename?: "TaxType";
   description?: Maybe<Scalars["String"]>;
@@ -9281,24 +8880,6 @@ export type TaxedMoneyRange = {
   start?: Maybe<TaxedMoney>;
   stop?: Maybe<TaxedMoney>;
 };
-
-export type TimePeriod = {
-  __typename?: "TimePeriod";
-  amount: Scalars["Int"];
-  type: TimePeriodTypeEnum;
-};
-
-export type TimePeriodInputType = {
-  amount: Scalars["Int"];
-  type: TimePeriodTypeEnum;
-};
-
-export enum TimePeriodTypeEnum {
-  Day = "DAY",
-  Month = "MONTH",
-  Week = "WEEK",
-  Year = "YEAR",
-}
 
 export type Transaction = Node & {
   __typename?: "Transaction";
@@ -9395,7 +8976,7 @@ export type UpdateMetadata = {
   __typename?: "UpdateMetadata";
   errors: Array<MetadataError>;
   item?: Maybe<ObjectWithMetadata>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   metadataErrors: Array<MetadataError>;
 };
 
@@ -9403,7 +8984,7 @@ export type UpdatePrivateMetadata = {
   __typename?: "UpdatePrivateMetadata";
   errors: Array<MetadataError>;
   item?: Maybe<ObjectWithMetadata>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   metadataErrors: Array<MetadataError>;
 };
 
@@ -9423,7 +9004,7 @@ export type User = Node &
     __typename?: "User";
     addresses?: Maybe<Array<Maybe<Address>>>;
     avatar?: Maybe<Image>;
-    /** @deprecated This field will be removed in Saleor 4.0. Use the `checkout_tokens` field to fetch the user checkouts. */
+    /** @deprecated Will be removed in Saleor 4.0. Use the `checkout_tokens` field to fetch the user checkouts. */
     checkout?: Maybe<Checkout>;
     checkoutTokens?: Maybe<Array<Scalars["UUID"]>>;
     dateJoined: Scalars["DateTime"];
@@ -9477,7 +9058,7 @@ export type UserStoredPaymentSourcesArgs = {
 
 export type UserAvatarDelete = {
   __typename?: "UserAvatarDelete";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   errors: Array<AccountError>;
   user?: Maybe<User>;
@@ -9485,7 +9066,7 @@ export type UserAvatarDelete = {
 
 export type UserAvatarUpdate = {
   __typename?: "UserAvatarUpdate";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   errors: Array<AccountError>;
   user?: Maybe<User>;
@@ -9493,7 +9074,7 @@ export type UserAvatarUpdate = {
 
 export type UserBulkSetActive = {
   __typename?: "UserBulkSetActive";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   count: Scalars["Int"];
   errors: Array<AccountError>;
@@ -9565,7 +9146,7 @@ export type VariantMediaAssign = {
   __typename?: "VariantMediaAssign";
   errors: Array<ProductError>;
   media?: Maybe<ProductMedia>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
   productVariant?: Maybe<ProductVariant>;
 };
@@ -9574,7 +9155,7 @@ export type VariantMediaUnassign = {
   __typename?: "VariantMediaUnassign";
   errors: Array<ProductError>;
   media?: Maybe<ProductMedia>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   productErrors: Array<ProductError>;
   productVariant?: Maybe<ProductVariant>;
 };
@@ -9591,7 +9172,7 @@ export type VariantPricingInfo = {
 
 export type VerifyToken = {
   __typename?: "VerifyToken";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   accountErrors: Array<AccountError>;
   errors: Array<AccountError>;
   isValid: Scalars["Boolean"];
@@ -9671,7 +9252,7 @@ export type VoucherTranslationArgs = {
 
 export type VoucherAddCatalogues = {
   __typename?: "VoucherAddCatalogues";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   discountErrors: Array<DiscountError>;
   errors: Array<DiscountError>;
   voucher?: Maybe<Voucher>;
@@ -9680,7 +9261,7 @@ export type VoucherAddCatalogues = {
 export type VoucherBulkDelete = {
   __typename?: "VoucherBulkDelete";
   count: Scalars["Int"];
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   discountErrors: Array<DiscountError>;
   errors: Array<DiscountError>;
 };
@@ -9707,7 +9288,7 @@ export type VoucherChannelListingInput = {
 
 export type VoucherChannelListingUpdate = {
   __typename?: "VoucherChannelListingUpdate";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   discountErrors: Array<DiscountError>;
   errors: Array<DiscountError>;
   voucher?: Maybe<Voucher>;
@@ -9728,7 +9309,7 @@ export type VoucherCountableEdge = {
 
 export type VoucherCreate = {
   __typename?: "VoucherCreate";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   discountErrors: Array<DiscountError>;
   errors: Array<DiscountError>;
   voucher?: Maybe<Voucher>;
@@ -9736,7 +9317,7 @@ export type VoucherCreate = {
 
 export type VoucherDelete = {
   __typename?: "VoucherDelete";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   discountErrors: Array<DiscountError>;
   errors: Array<DiscountError>;
   voucher?: Maybe<Voucher>;
@@ -9777,7 +9358,7 @@ export type VoucherInput = {
 
 export type VoucherRemoveCatalogues = {
   __typename?: "VoucherRemoveCatalogues";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   discountErrors: Array<DiscountError>;
   errors: Array<DiscountError>;
   voucher?: Maybe<Voucher>;
@@ -9804,7 +9385,7 @@ export type VoucherTranslatableContent = Node & {
   id: Scalars["ID"];
   name?: Maybe<Scalars["String"]>;
   translation?: Maybe<VoucherTranslation>;
-  /** @deprecated This field will be removed in Saleor 4.0. Get model fields from the root level queries. */
+  /** @deprecated Will be removed in Saleor 4.0. Get model fields from the root level. */
   voucher?: Maybe<Voucher>;
 };
 
@@ -9815,7 +9396,7 @@ export type VoucherTranslatableContentTranslationArgs = {
 export type VoucherTranslate = {
   __typename?: "VoucherTranslate";
   errors: Array<TranslationError>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   translationErrors: Array<TranslationError>;
   voucher?: Maybe<Voucher>;
 };
@@ -9835,7 +9416,7 @@ export enum VoucherTypeEnum {
 
 export type VoucherUpdate = {
   __typename?: "VoucherUpdate";
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   discountErrors: Array<DiscountError>;
   errors: Array<DiscountError>;
   voucher?: Maybe<Voucher>;
@@ -9845,12 +9426,10 @@ export type Warehouse = Node &
   ObjectWithMetadata & {
     __typename?: "Warehouse";
     address: Address;
-    clickAndCollectOption: WarehouseClickAndCollectOptionEnum;
-    /** @deprecated This field will be removed in Saleor 4.0. Use `Address.companyName` instead. */
+    /** @deprecated Use address.CompanyName. This field will be removed in Saleor 4.0. */
     companyName: Scalars["String"];
     email: Scalars["String"];
     id: Scalars["ID"];
-    isPrivate: Scalars["Boolean"];
     metadata: Array<Maybe<MetadataItem>>;
     name: Scalars["String"];
     privateMetadata: Array<Maybe<MetadataItem>>;
@@ -9864,12 +9443,6 @@ export type WarehouseShippingZonesArgs = {
   first?: Maybe<Scalars["Int"]>;
   last?: Maybe<Scalars["Int"]>;
 };
-
-export enum WarehouseClickAndCollectOptionEnum {
-  All = "ALL",
-  Disabled = "DISABLED",
-  Local = "LOCAL",
-}
 
 export type WarehouseCountableConnection = {
   __typename?: "WarehouseCountableConnection";
@@ -9888,7 +9461,7 @@ export type WarehouseCreate = {
   __typename?: "WarehouseCreate";
   errors: Array<WarehouseError>;
   warehouse?: Maybe<Warehouse>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   warehouseErrors: Array<WarehouseError>;
 };
 
@@ -9904,7 +9477,7 @@ export type WarehouseDelete = {
   __typename?: "WarehouseDelete";
   errors: Array<WarehouseError>;
   warehouse?: Maybe<Warehouse>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   warehouseErrors: Array<WarehouseError>;
 };
 
@@ -9925,9 +9498,7 @@ export enum WarehouseErrorCode {
 }
 
 export type WarehouseFilterInput = {
-  clickAndCollectOption?: Maybe<WarehouseClickAndCollectOptionEnum>;
   ids?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  isPrivate?: Maybe<Scalars["Boolean"]>;
   search?: Maybe<Scalars["String"]>;
 };
 
@@ -9935,7 +9506,7 @@ export type WarehouseShippingZoneAssign = {
   __typename?: "WarehouseShippingZoneAssign";
   errors: Array<WarehouseError>;
   warehouse?: Maybe<Warehouse>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   warehouseErrors: Array<WarehouseError>;
 };
 
@@ -9943,7 +9514,7 @@ export type WarehouseShippingZoneUnassign = {
   __typename?: "WarehouseShippingZoneUnassign";
   errors: Array<WarehouseError>;
   warehouse?: Maybe<Warehouse>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   warehouseErrors: Array<WarehouseError>;
 };
 
@@ -9960,15 +9531,13 @@ export type WarehouseUpdate = {
   __typename?: "WarehouseUpdate";
   errors: Array<WarehouseError>;
   warehouse?: Maybe<Warehouse>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   warehouseErrors: Array<WarehouseError>;
 };
 
 export type WarehouseUpdateInput = {
   address?: Maybe<AddressInput>;
-  clickAndCollectOption?: Maybe<WarehouseClickAndCollectOptionEnum>;
   email?: Maybe<Scalars["String"]>;
-  isPrivate?: Maybe<Scalars["Boolean"]>;
   name?: Maybe<Scalars["String"]>;
   slug?: Maybe<Scalars["String"]>;
 };
@@ -9988,7 +9557,7 @@ export type WebhookCreate = {
   __typename?: "WebhookCreate";
   errors: Array<WebhookError>;
   webhook?: Maybe<Webhook>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   webhookErrors: Array<WebhookError>;
 };
 
@@ -10005,7 +9574,7 @@ export type WebhookDelete = {
   __typename?: "WebhookDelete";
   errors: Array<WebhookError>;
   webhook?: Maybe<Webhook>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   webhookErrors: Array<WebhookError>;
 };
 
@@ -10036,7 +9605,9 @@ export enum WebhookEventTypeEnum {
   CheckoutUpdated = "CHECKOUT_UPDATED",
   CustomerCreated = "CUSTOMER_CREATED",
   CustomerUpdated = "CUSTOMER_UPDATED",
-  FulfillmentCanceled = "FULFILLMENT_CANCELED",
+  DraftOrderCreated = "DRAFT_ORDER_CREATED",
+  DraftOrderDeleted = "DRAFT_ORDER_DELETED",
+  DraftOrderUpdated = "DRAFT_ORDER_UPDATED",
   FulfillmentCreated = "FULFILLMENT_CREATED",
   InvoiceDeleted = "INVOICE_DELETED",
   InvoiceRequested = "INVOICE_REQUESTED",
@@ -10061,10 +9632,8 @@ export enum WebhookEventTypeEnum {
   ProductCreated = "PRODUCT_CREATED",
   ProductDeleted = "PRODUCT_DELETED",
   ProductUpdated = "PRODUCT_UPDATED",
-  ProductVariantBackInStock = "PRODUCT_VARIANT_BACK_IN_STOCK",
   ProductVariantCreated = "PRODUCT_VARIANT_CREATED",
   ProductVariantDeleted = "PRODUCT_VARIANT_DELETED",
-  ProductVariantOutOfStock = "PRODUCT_VARIANT_OUT_OF_STOCK",
   ProductVariantUpdated = "PRODUCT_VARIANT_UPDATED",
   TranslationCreated = "TRANSLATION_CREATED",
   TranslationUpdated = "TRANSLATION_UPDATED",
@@ -10075,7 +9644,9 @@ export enum WebhookSampleEventTypeEnum {
   CheckoutUpdated = "CHECKOUT_UPDATED",
   CustomerCreated = "CUSTOMER_CREATED",
   CustomerUpdated = "CUSTOMER_UPDATED",
-  FulfillmentCanceled = "FULFILLMENT_CANCELED",
+  DraftOrderCreated = "DRAFT_ORDER_CREATED",
+  DraftOrderDeleted = "DRAFT_ORDER_DELETED",
+  DraftOrderUpdated = "DRAFT_ORDER_UPDATED",
   FulfillmentCreated = "FULFILLMENT_CREATED",
   InvoiceDeleted = "INVOICE_DELETED",
   InvoiceRequested = "INVOICE_REQUESTED",
@@ -10100,10 +9671,8 @@ export enum WebhookSampleEventTypeEnum {
   ProductCreated = "PRODUCT_CREATED",
   ProductDeleted = "PRODUCT_DELETED",
   ProductUpdated = "PRODUCT_UPDATED",
-  ProductVariantBackInStock = "PRODUCT_VARIANT_BACK_IN_STOCK",
   ProductVariantCreated = "PRODUCT_VARIANT_CREATED",
   ProductVariantDeleted = "PRODUCT_VARIANT_DELETED",
-  ProductVariantOutOfStock = "PRODUCT_VARIANT_OUT_OF_STOCK",
   ProductVariantUpdated = "PRODUCT_VARIANT_UPDATED",
   TranslationCreated = "TRANSLATION_CREATED",
   TranslationUpdated = "TRANSLATION_UPDATED",
@@ -10113,7 +9682,7 @@ export type WebhookUpdate = {
   __typename?: "WebhookUpdate";
   errors: Array<WebhookError>;
   webhook?: Maybe<Webhook>;
-  /** @deprecated This field will be removed in Saleor 4.0. Use `errors` field instead. */
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   webhookErrors: Array<WebhookError>;
 };
 
