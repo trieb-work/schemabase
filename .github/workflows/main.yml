@@ -79,12 +79,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create the image-pull-secret in Kubernetes
-        run: |
-          kubectl create secret generic regcred \
-            --from-file=.dockerconfigjson=~/.docker/config.json \
-            --type=kubernetes.io/dockerconfigjson   
-            --namespace=eci-prod
+      # - name: Create the image-pull-secret in Kubernetes
+      #   run: |
+      #     kubectl create secret generic regcred \
+      #       --from-file=.dockerconfigjson=~/.docker/config.json \
+      #       --type=kubernetes.io/dockerconfigjson
+      #       --namespace=eci-prod
+      - run: ls -ll ~/.docker
 
       - name: Run helm deploy
         run: >
