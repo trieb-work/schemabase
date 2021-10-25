@@ -27,7 +27,9 @@ migrate-saleor:
 	--noinput
 
 # Build and seeds all required external services
+
 init: export COMPOSE_DOCKER_CLI_BUILD=1
+init: export DOCKER_BUILDKIT=1
 init: down build
 
 
@@ -44,10 +46,6 @@ init: down build
 
 	yarn prisma db push --schema=${prismaSchema} --skip-generate
 
-	@# Upload now so we can pull them later during development
-	docker-compose push saleor_api || true
-	docker-compose push saleor_dashboard || true
-
 build:
 	yarn install
 
@@ -60,26 +58,19 @@ build:
 test: build
 	yarn nx run-many --target=test --all
 
-reset: export COMPOSE_DOCKER_CLI_BUILD=1
-reset: export DOCKER_BUILDKIT=1
-reset: down
-	docker-compose build eci_worker
-	docker-compose build eci_webhooks
-
-	$(MAKE) init
 
 
-reset-webhooks: export COMPOSE_DOCKER_CLI_BUILD=1
-reset-webhooks: export DOCKER_BUILDKIT=1
-reset-webhooks: build db-migrate
+rebuild-webhooks: export COMPOSE_DOCKER_CLI_BUILD=1
+rebuild-webhooks: export DOCKER_BUILDKIT=1
+rebuild-webhooks: build db-migrate
 	docker-compose stop eci_webhooks
 	docker-compose up -d eci_db
 	docker-compose build eci_webhooks
 	docker-compose up -d eci_webhooks
 
-reset-worker: export COMPOSE_DOCKER_CLI_BUILD=1
-reset-worker: export DOCKER_BUILDKIT=1
-reset-worker:
+rebuild-worker: export COMPOSE_DOCKER_CLI_BUILD=1
+rebuild-worker: export DOCKER_BUILDKIT=1
+rebuild-worker:
 	docker-compose stop eci_worker
 	docker-compose up -d eci_db
 	docker-compose build eci_worker
