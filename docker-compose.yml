@@ -56,25 +56,24 @@ services:
       - eci_db
       - redis
 
-  # Saleor Graphql API
   saleor_api:
-    image: ghcr.io/saleor/saleor:3.0.0-b.27
+    image: registry.gitlab.com/trieb.work/saleor:3.0.0-b.13-triebwork1
     container_name: saleor.eci
-
     ports:
       - 8000:8000
     command: python manage.py runserver 0.0.0.0:8000
 
     environment:
       DATABASE_URL: postgres://saleor:saleor@saleor_db:5432/postgres
-      SECRET_KEY: adgkadgkajsdg
+      SECRET_KEY: de068091c088ad706703ed50cdec8994e596936cda803a7c0a9df98b454b4860
       STOREFRONT_URL: http://storefront.saleor.api:4000/
       DASHBOARD_URL: http://dashboard.saleor.api:9000/
       ALLOWED_CLIENT_HOSTS: localhost,webhooks.eci
       ALLOWED_HOSTS: saleor.eci,localhost
-      DEBUG: "True"
+      ELASTIC_APM_ENABLED: "False"
     depends_on:
       - saleor_db
+      - redis
 
   # Required by saleor
   saleor_db:
