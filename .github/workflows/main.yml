@@ -1,0 +1,108 @@
+name: "Production deployment"
+
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      docker_sha: ${{ steps.docker-build-push.outputs.digest }}
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}/worker
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: ghcr.io/${{ env.IMAGE_NAME }}
+      - name: Build image
+        id: docker-build-push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          file: ./apps/worker/Dockerfile
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: commit_sha=${{ github.sha }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  deploy-worker:
+    name: Deploy Worker
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}/worker
+
+    steps:
+      - name: Set Kubernetes Context
+        uses: azure/k8s-set-context@v1
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: cat ~/.docker/config.json
+
+      - name: Create the image-pull-secret in Kubernetes
+        run: >
+          kubectl create secret generic regcred
+            --from-file=.dockerconfigjson=~/.docker/config.json
+            --type=kubernetes.io/dockerconfigjson
+            --namespace=eci-prod
+
+      - name: Run helm deploy
+        run: >
+          helm upgrade eci-worker ./apps/worker/helm-chart
+            --install
+            --create-namespace 
+            --namespace=eci-prod
+            --set=imagePullSecrets="{regcred}"
+            --set=image.imageName="${{ env.REGISTRY }}/${{ github.repository }}/worker@${{ needs.build.outputs.docker_sha }}"
+            --set=eciEnv="production"
+            --set=databaseUrl="${{ secrets.DATABASE_URL }}"
+            --set=databaseUrlPool="${{ secrets.DATABASE_URL_POOL }}"
+            --set=signingKey="${{ secrets.SIGNING_KEY }}"
+            --set=redis.host="${{ secrets.REDIS_HOST }}"
+            --set=redis.port="${{ secrets.REDIS_PORT }}"
+            --set=redis.password="${{ secrets.REDIS_PASSWORD }}"
+            --set=elasticsearch.host="${{ secrets.ELASTIC_LOGGING_SERVER }}"
+            --set=elasticsearch.username="${{ secrets.ELASTIC_LOGGING_USERNAME }}"
+            --set=elasticsearch.password="${{ secrets.ELASTIC_LOGGING_PASSWORD }}"
