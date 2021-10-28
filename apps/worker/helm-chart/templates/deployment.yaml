@@ -14,9 +14,8 @@ spec:
         app: eci-worker
         tier: backend
     spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+      {{- if .Values.imagePullSecret }}
+      imagePullSecrets: {{ .Values.imagePullSecret }}
       {{- end }}
       containers:
         - name: eci-worker

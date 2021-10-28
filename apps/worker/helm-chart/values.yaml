@@ -8,8 +8,7 @@ databaseUrl: postgres://
 databaseUrlPool: postgres://
 signingKey: wrgkpw35ipo2i5p
 
-imagePullSecrets:
-  -
+imagePullSecret: regreced
 
 redis:
   host: redis.test.de
