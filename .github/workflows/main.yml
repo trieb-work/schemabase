@@ -81,18 +81,18 @@ jobs:
 
       - run: cat ~/.docker/config.json
 
-      - name: Create the image-pull-secret in Kubernetes
-        run: >
-          kubectl create secret generic regcred
-            --from-file=.dockerconfigjson=~/.docker/config.json
-            --type=kubernetes.io/dockerconfigjson
-            --namespace=eci-prod
+      # - name: Create the image-pull-secret in Kubernetes
+      #   run: >
+      #     kubectl create secret generic regcred
+      #       --from-file=.dockerconfigjson=~/.docker/config.json
+      #       --type=kubernetes.io/dockerconfigjson
+      #       --namespace=eci-prod
 
       - name: Run helm deploy
         run: >
           helm upgrade eci-worker ./apps/worker/helm-chart
             --install
-            --create-namespace 
+            --create-namespace
             --namespace=eci-prod
             --set=imagePullSecrets="{regcred}"
             --set=image.imageName="${{ env.REGISTRY }}/${{ github.repository }}/worker@${{ needs.build.outputs.docker_sha }}"
