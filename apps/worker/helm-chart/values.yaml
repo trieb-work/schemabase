@@ -4,19 +4,19 @@ eciEnv: development
 image:
   imageName: registry.gitlab.com/trieb.work/ecommerce-integrations/worker
 
-databaseUrl:
-databaseUrlPool:
-signingKey:
+databaseUrl: postgres://
+databaseUrlPool: postgres://
+signingKey: wrgkpw35ipo2i5p
 
 imagePullSecrets:
   -
 
 redis:
-  host:
-  port:
-  password:
+  host: redis.test.de
+  port: 3456
+  password: 24ß5f-2345f-245
 
 elasticsearch:
-  host:
-  username:
-  password:
+  host: elastic.test.com
+  username: elastic
+  password: elastic
