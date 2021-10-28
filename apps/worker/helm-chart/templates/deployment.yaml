@@ -15,7 +15,8 @@ spec:
         tier: backend
     spec:
       {{- if .Values.imagePullSecret }}
-      imagePullSecrets: {{ .Values.imagePullSecret }}
+      imagePullSecrets: 
+      - {{ .Values.imagePullSecret }}
       {{- end }}
       containers:
         - name: eci-worker
