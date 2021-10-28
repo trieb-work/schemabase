@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: eci-worker
+  name: {{ .Release.Name }}
 spec:
   selector:
     matchLabels:
@@ -16,7 +16,7 @@ spec:
     spec:
       {{- if .Values.imagePullSecret }}
       imagePullSecrets: 
-      - "{{ .Values.imagePullSecret }}"
+        - name: {{ .Values.imagePullSecret }}
       {{- end }}
       containers:
         - name: eci-worker

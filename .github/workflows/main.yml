@@ -94,11 +94,11 @@ jobs:
 
       - name: Run helm deploy
         run: >
-          helm upgrade eci-worker ./apps/worker/helm-chart
+          helm upgrade eci-worker-v2 ./apps/worker/helm-chart
           --install
           --create-namespace
           --namespace=eci-prod
-          --set=imagePullSecrets="regcred"
+          --set=imagePullSecret="regcred"
           --set=image.imageName="${{ env.REGISTRY }}/${{ github.repository }}/worker@${{ needs.build.outputs.docker_sha }}"
           --set=eciEnv="production"
           --set=databaseUrl="${{ secrets.DATABASE_URL }}"
