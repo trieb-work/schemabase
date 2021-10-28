@@ -16,7 +16,7 @@ spec:
     spec:
       {{- if .Values.imagePullSecret }}
       imagePullSecrets: 
-      - {{ .Values.imagePullSecret }}
+      - "{{ .Values.imagePullSecret }}"
       {{- end }}
       containers:
         - name: eci-worker
