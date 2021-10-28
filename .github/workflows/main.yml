@@ -66,6 +66,9 @@ jobs:
       IMAGE_NAME: ${{ github.repository }}/worker
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Set Kubernetes Context
         uses: azure/k8s-set-context@v1
         with:
