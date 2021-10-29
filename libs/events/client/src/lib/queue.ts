@@ -142,7 +142,7 @@ export class QueueManager<
       } catch (err) {
         this.logger.error("Error processing message", {
           messageId: message.header.id,
-          error: err.message,
+          err,
         });
       }
     };
