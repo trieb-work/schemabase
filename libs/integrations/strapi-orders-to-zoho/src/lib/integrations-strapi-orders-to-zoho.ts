@@ -16,7 +16,7 @@ export const addressValidation = z.object({
 });
 export const orderValidation = z.object({
   event: z.enum(["entry.create", "entry.update", "entry.delete"]),
-  model: z.enum(["bulkOrder"]),
+  model: z.enum(["bulkorder"]),
   entry: z.object({
     addresses: z.array(addressValidation),
     status: statusValidation,

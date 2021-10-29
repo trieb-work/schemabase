@@ -46,7 +46,7 @@ async function generateEvent(
   return {
     event,
     created_at: new Date().toISOString(),
-    model: "bulkOrder",
+    model: "bulkorder",
     entry: {
       id: 1,
       zohoCustomerId: contact_id,
