@@ -45,6 +45,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     traceId: ctx.trace.id,
     webhookId: webhook.id,
     webhookSecret: secret,
+    path: `/api/strapi/webhook/${webhook.id}`,
   });
 };
 
