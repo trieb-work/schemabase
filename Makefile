@@ -44,7 +44,7 @@ init: down build
 	docker-compose up -d
 
 
-	yarn prisma db push --schema=${prismaSchema} --skip-generate
+	yarn prisma db push --schema=${prismaSchema}
 
 build:
 	yarn install

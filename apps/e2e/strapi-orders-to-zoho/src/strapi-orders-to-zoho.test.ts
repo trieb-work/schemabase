@@ -315,7 +315,7 @@ describe("with valid webhook", () => {
             .searchFragment;
 
           await verifySyncedOrders(zoho, orderId, event);
-        });
+        }, 60_000);
       });
       it("replaces the modified order", async () => {
         const event = await generateEvent("entry.create", "Draft");
