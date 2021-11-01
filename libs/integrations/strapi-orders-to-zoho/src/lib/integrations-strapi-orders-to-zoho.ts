@@ -13,11 +13,14 @@ export const addressValidation = z.object({
   zip: z.string(),
   city: z.string(),
   country: z.string(),
+  street2: z.string().optional(),
 });
 export const orderValidation = z.object({
   event: z.enum(["entry.create", "entry.update", "entry.delete"]),
   model: z.enum(["bulkorder"]),
   entry: z.object({
+    id: z.number().int(),
+    prefix: z.string(),
     addresses: z.array(addressValidation),
     status: statusValidation,
     zohoCustomerId: z.string(),
@@ -143,9 +146,7 @@ export class StrapiOrdersToZoho {
         throw new Error(`Malformed event: ${err}`);
       });
 
-    const searchString = new PrefixedOrderId(event.entry.addresses[0].orderId)
-      .searchFragment;
-    this.logger.warn("SearchString", { searchString });
+    const searchString = [event.entry.prefix, event.entry.id].join("-");
 
     const existingOrders = await this.zoho
       .searchSalesOrdersWithScrolling(searchString)
@@ -237,12 +238,19 @@ export class StrapiOrdersToZoho {
         contact: zohoCustomerId,
       });
 
+      const fullName = `${address.name} ${address.surname}`;
+      const street2 = [fullName];
+      if (address.street2) {
+        street2.push(address.street2);
+      }
       const addressId = await this.zoho
         .addAddresstoContact(zohoCustomerId, {
+          attention: fullName,
           address: address.address,
           city: address.city,
           zip: address.zip.toString(),
           country: address.country,
+          street2: street2.join(" - "),
         })
         .catch((err: Error) => {
           throw new Error(`Unable to add address to contact: ${err}`);

@@ -3,7 +3,7 @@ import {
   OrderEvent,
 } from "@eci/integrations/strapi-orders-to-zoho";
 import { ZohoClientInstance } from "@trieb.work/zoho-ts";
-
+import { expect } from "@jest/globals";
 export async function verifySyncedOrders(
   zohoClient: ZohoClientInstance,
   orderId: string,
@@ -11,25 +11,12 @@ export async function verifySyncedOrders(
 ): Promise<void> {
   const zohoOrders = await zohoClient.searchSalesOrdersWithScrolling(orderId);
 
-  if (zohoOrders.length !== strapiEvent.entry.addresses.length) {
-    throw new Error(
-      `expected length ${strapiEvent.entry.addresses.length}, received: ${zohoOrders.length}`,
-    );
-  }
+  expect(zohoOrders.length).toBe(strapiEvent.entry.addresses.length);
   for (const zohoOrder of zohoOrders) {
     if (strapiEvent.entry.status === "Sending") {
-      if (zohoOrder.status !== "confirmed") {
-        throw new Error(
-          `expected status: ${strapiEvent.entry.status}, received: ${zohoOrder.status}`,
-        );
-      }
+      expect(zohoOrder.status).toEqual("confirmed");
     } else {
-      // @ts-expect-error The type is just wrong
-      if (zohoOrder.status !== "draft") {
-        throw new Error(
-          `expected status: ${strapiEvent.entry.status}, received: ${zohoOrder.status}`,
-        );
-      }
+      expect(zohoOrder.status).toEqual("draft");
     }
 
     const orderId = new PrefixedOrderId(zohoOrder.salesorder_number).toString(
@@ -39,7 +26,7 @@ export async function verifySyncedOrders(
       (addr) => addr.orderId === orderId,
     );
     if (!strapiAddress) {
-      throw new Error("No matching strapi address found");
+      throw new Error("strapiAddress is undefined");
     }
 
     const res = await zohoClient.getSalesorderById(zohoOrder.salesorder_id);
@@ -50,18 +37,21 @@ export async function verifySyncedOrders(
     }
     const zohoAddr = res.shipping_address;
 
-    if (
-      zohoAddr.address !== strapiAddress.address ||
-      zohoAddr.city !== strapiAddress.city ||
-      zohoAddr.zip !== strapiAddress.zip ||
-      zohoAddr.country !== strapiAddress.country
-    ) {
-      throw new Error(
-        `expected: ${JSON.stringify(
-          strapiAddress,
-          null,
-          2,
-        )}, received: ${JSON.stringify(zohoAddr, null, 2)}`,
+    expect(zohoAddr.address).toEqual(strapiAddress.address);
+    expect(zohoAddr.city).toEqual(strapiAddress.city);
+    expect(zohoAddr.zip).toEqual(strapiAddress.zip);
+    expect(zohoAddr.country).toEqual(strapiAddress.country);
+    expect(zohoAddr.attention).toEqual(
+      `${strapiAddress.name} ${strapiAddress.surname}`,
+    );
+
+    if (strapiAddress.street2) {
+      expect(zohoAddr.street2).toEqual(
+        `${strapiAddress.name} ${strapiAddress.surname} - ${strapiAddress.street2}`,
+      );
+    } else {
+      expect(zohoAddr.street2).toEqual(
+        `${strapiAddress.name} ${strapiAddress.surname}`,
       );
     }
   }
