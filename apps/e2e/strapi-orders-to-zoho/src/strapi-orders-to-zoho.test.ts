@@ -67,7 +67,7 @@ async function generateEvent(
              * This can fail if the item does not exist in zoho.
              * https://inventory.zoho.eu/app#/inventory/items/116240000000378951
              */
-            zohoId: "116240000000378951",
+            zohoId: "116240000000112128",
           },
         },
       ],
@@ -208,6 +208,35 @@ describe("with invalid webhook", () => {
 });
 describe("with valid webhook", () => {
   describe("entry.create", () => {
+    describe("with multiple products", () => {
+      describe("with different taxes", () => {
+        it("applies the highest tax to shipping costs", async () => {
+          const event = await generateEvent("entry.create", "Draft", 1);
+          event.entry.products.push({
+            product: {
+              zohoId: "116240000000677007",
+            },
+            quantity: 5,
+          });
+
+          await triggerWebhook(webhookId, webhookSecret, event);
+
+          /**
+           * Wait for requests to happen in the background
+           */
+          await new Promise((resolve) => setTimeout(resolve, 15_000));
+
+          const orderId = new PrefixedOrderId(event.entry.addresses[0].orderId)
+            .searchFragment;
+          const salesOrders = await verifySyncedOrders(zoho, orderId, event);
+
+          const createdOrder = await zoho.getSalesorder(
+            salesOrders[0].salesorder_number,
+          );
+          expect(createdOrder?.shipping_charges.tax_percentage).toBe(19);
+        }, 60_000);
+      });
+    });
     describe("with only required fields", () => {
       it(`syncs all orders correctly`, async () => {
         const event = await generateEvent("entry.create", "Draft");

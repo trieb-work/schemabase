@@ -1,7 +1,7 @@
 import { expect } from "@jest/globals";
 import { HttpClient } from "@eci/http";
 import faker from "faker";
-import { randomInt } from "crypto";
+import { createHash, randomInt } from "crypto";
 import { z } from "zod";
 import { addressValidation } from "@eci/integrations/strapi-orders-to-zoho";
 
@@ -12,6 +12,7 @@ export function generateAddress(
   orderId: number,
   rowId: number,
 ): z.infer<typeof addressValidation> {
+  const country = faker.address.country();
   return {
     orderId: [prefix, orderId, rowId].join("-"),
     name: faker.name.firstName(),
@@ -19,7 +20,11 @@ export function generateAddress(
     address: `${faker.address.streetAddress()} ${randomInt(1, 200)}`,
     zip: randomInt(1, 100_000).toString(),
     city: faker.address.cityName(),
-    country: faker.address.country(),
+    country,
+    shippingCosts: parseInt(
+      createHash("sha256").update(country).digest("hex").slice(0, 1),
+      16,
+    ),
   };
 }
 

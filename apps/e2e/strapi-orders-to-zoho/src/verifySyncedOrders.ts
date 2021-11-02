@@ -2,21 +2,31 @@ import {
   PrefixedOrderId,
   OrderEvent,
 } from "@eci/integrations/strapi-orders-to-zoho";
-import { ZohoClientInstance } from "@trieb.work/zoho-ts";
+import {
+  SalesOrderShortSearchOverview,
+  ZohoClientInstance,
+} from "@trieb.work/zoho-ts";
 import { expect } from "@jest/globals";
 export async function verifySyncedOrders(
   zohoClient: ZohoClientInstance,
   orderId: string,
   strapiEvent: OrderEvent,
-): Promise<void> {
+): Promise<SalesOrderShortSearchOverview[]> {
   const zohoOrders = await zohoClient.searchSalesOrdersWithScrolling(orderId);
 
   expect(zohoOrders.length).toBe(strapiEvent.entry.addresses.length);
   for (const zohoOrder of zohoOrders) {
-    if (strapiEvent.entry.status === "Sending") {
-      expect(zohoOrder.status).toEqual("confirmed");
-    } else {
-      expect(zohoOrder.status).toEqual("draft");
+    switch (strapiEvent.entry.status) {
+      case "Confirmed":
+        expect(zohoOrder.status).toEqual("confirmed");
+        break;
+      case "Sending":
+        expect(zohoOrder.status).toEqual("confirmed");
+        expect(zohoOrder.cf_ready_to_fulfill).toEqual("true");
+        break;
+      default:
+        expect(zohoOrder.status).toEqual("draft");
+        break;
     }
 
     const orderId = new PrefixedOrderId(zohoOrder.salesorder_number).toString(
@@ -55,4 +65,5 @@ export async function verifySyncedOrders(
       );
     }
   }
+  return zohoOrders;
 }

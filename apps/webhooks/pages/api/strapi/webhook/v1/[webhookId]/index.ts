@@ -71,7 +71,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   }
   const { strapiApp } = webhook;
   if (!strapiApp) {
-    throw new HttpError(400, "productDataFeedApp is not configured");
+    throw new HttpError(400, "strapi app is not configured");
   }
   const { integration } = strapiApp;
   if (!integration) {
@@ -82,7 +82,16 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
    */
   authorizeIntegration(integration);
 
-  ctx.logger.info("Received valid webhook from strapi");
+  if (req.body.model !== integration.strapiContentType) {
+    ctx.logger.info("Content type does not match, I'll do nothing", {
+      received: req.body.model,
+      expected: integration.strapiContentType,
+    });
+    return res.json({
+      status: "received",
+      traceId: ctx.trace.id,
+    });
+  }
 
   const queue = new strapi.Producer({
     logger: ctx.logger,

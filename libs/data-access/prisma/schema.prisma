@@ -163,6 +163,11 @@ model StrapiToZohoIntegration {
   payedUntil DateTime?
   enabled    Boolean   @default(true)
 
+  // The Content type of BulkOrders
+  strapiContentType String @default("bulkorder")
+
+
+
   subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
   subscriptionId String?       @unique
 
