@@ -86,6 +86,7 @@ Table StrapiToZohoIntegration {
   id String [pk]
   payedUntil DateTime
   enabled Boolean [not null, default: true]
+  strapiContentType String [not null, default: 'bulkorder']
   subscription Subscription
   subscriptionId String [unique]
   tenant Tenant [not null]

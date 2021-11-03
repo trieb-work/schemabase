@@ -14,6 +14,7 @@ export const addressValidation = z.object({
   city: z.string(),
   country: z.string(),
   street2: z.string().optional(),
+  shippingCosts: z.number(),
 });
 export const orderValidation = z.object({
   event: z.enum(["entry.create", "entry.update", "entry.delete"]),
@@ -76,6 +77,17 @@ export class StrapiOrdersToZoho {
   private readonly zoho: ZohoClientInstance;
   private readonly logger: ILogger;
 
+  /**
+   * Used to look up tax rates only once for every product
+   */
+  private products: Record<
+    string,
+    {
+      taxId: string;
+      taxPercentage: number;
+    }
+  > = {};
+
   private constructor(config: { zoho: ZohoClientInstance; logger: ILogger }) {
     this.zoho = config.zoho;
     this.logger = config.logger;
@@ -89,6 +101,21 @@ export class StrapiOrdersToZoho {
     await instance.zoho.authenticate();
 
     return instance;
+  }
+
+  private async getProductTax(productId: string): Promise<{
+    taxId: string;
+    taxPercentage: number;
+  }> {
+    if (!this.products[productId]) {
+      const item = await this.zoho.getItem({ product_id: productId });
+      this.products[productId] = {
+        taxId: item.tax_id,
+        taxPercentage: item.tax_percentage,
+      };
+    }
+    this.logger.info("item", this.products[productId]);
+    return this.products[productId];
   }
 
   /**
@@ -105,36 +132,52 @@ export class StrapiOrdersToZoho {
         throw new Error(`Malformed event: ${err}`);
       });
 
-    return event.entry.addresses.map((address) => {
-      const orderId = new PrefixedOrderId(address.orderId);
-      orderId.hash = createHash("sha256")
-        .update(
-          JSON.stringify({
-            /**
-             * The rowId should not affect the hash.
-             */
-            address: {
-              ...address,
-              orderId: undefined,
-            },
-            products: event.entry.products,
-          }),
-        )
-        .digest("hex")
-        .slice(0, 8);
+    return Promise.all(
+      event.entry.addresses.map(async (address) => {
+        const orderId = new PrefixedOrderId(address.orderId);
 
-      return {
-        order: {
-          customer_id: event.entry.zohoCustomerId,
-          salesorder_number: orderId.toString(true),
-          line_items: event.entry.products.map((p) => ({
-            item_id: p.product.zohoId,
-            quantity: p.quantity,
-          })),
-        },
-        address,
-      };
-    });
+        const productIds = rawEvent.entry.products.map((p) => p.product.zohoId);
+
+        const productTaxes = await Promise.all(
+          productIds.map((productId) => this.getProductTax(productId)),
+        );
+        const highestTax = productTaxes.reduce(
+          (acc: { taxId: string; taxPercentage: number }, tax) =>
+            (acc = acc.taxPercentage > tax.taxPercentage ? acc : tax),
+          { taxPercentage: 0, taxId: "" },
+        );
+
+        orderId.hash = createHash("sha256")
+          .update(
+            JSON.stringify({
+              /**
+               * The rowId should not affect the hash.
+               */
+              address: {
+                ...address,
+                orderId: undefined,
+              },
+              products: event.entry.products,
+            }),
+          )
+          .digest("hex")
+          .slice(0, 8);
+
+        return {
+          order: {
+            customer_id: event.entry.zohoCustomerId,
+            salesorder_number: orderId.toString(true),
+            line_items: event.entry.products.map((p) => ({
+              item_id: p.product.zohoId,
+              quantity: p.quantity,
+            })),
+            shipping_charge: address.shippingCosts,
+            shipping_charge_tax_id: highestTax.taxId.toString(),
+          },
+          address,
+        };
+      }),
+    );
   }
 
   public async updateBulkOrders(rawEvent: OrderEvent): Promise<void> {
@@ -202,19 +245,33 @@ export class StrapiOrdersToZoho {
       await this.addNewOrders(event.entry.zohoCustomerId, createOrders);
     }
 
+    const syncedOrders = await this.zoho
+      .searchSalesOrdersWithScrolling(searchString)
+      .catch((err: Error) => {
+        throw new Error(`Unable to fetch existing orders from zoho: ${err}`);
+      });
+    const syncedOrderIds = syncedOrders.map((o) => o.salesorder_id);
+
     /**
      * Set status for all synced orders
      */
-    if (event.entry.status === "Sending") {
-      const syncedOrders = await this.zoho
-        .searchSalesOrdersWithScrolling(searchString)
-        .catch((err: Error) => {
-          throw new Error(`Unable to fetch existing orders from zoho: ${err}`);
-        });
 
-      await this.zoho.salesordersConfirm(
-        syncedOrders.map((o) => o.salesorder_id),
-      );
+    switch (event.entry.status) {
+      case "Sending":
+        await this.zoho.salesordersConfirm(syncedOrderIds);
+        await this.zoho.bulkUpdateSalesOrderCustomField(
+          syncedOrderIds,
+          "cf_ready_to_fulfill",
+          true,
+          true,
+        );
+        break;
+      case "Confirmed":
+        await this.zoho.salesordersConfirm(syncedOrderIds);
+        break;
+
+      default:
+        break;
     }
   }
   /**
