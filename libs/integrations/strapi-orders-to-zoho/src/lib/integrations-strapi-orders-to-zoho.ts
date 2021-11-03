@@ -14,7 +14,7 @@ export const addressValidation = z.object({
   city: z.string(),
   country: z.string(),
   street2: z.string().optional(),
-  shippingCosts: z.number().positive(),
+  shippingCosts: z.number(),
 });
 export const orderValidation = z.object({
   event: z.enum(["entry.create", "entry.update", "entry.delete"]),

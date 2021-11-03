@@ -470,7 +470,9 @@ describe("with valid webhook", () => {
 
     describe("when one order changes, one is removed, one is created, and one stays the same", () => {
       it("syncs correctly", async () => {
-        const event = await generateEvent("entry.create", "Draft", 4);
+        const event = await generateEvent("entry.create", "Draft", 3);
+        const orderId = new PrefixedOrderId(event.entry.addresses[0].orderId)
+          .searchFragment;
 
         /**
          * Create first orders
@@ -483,19 +485,18 @@ describe("with valid webhook", () => {
          */
         event.event = "entry.update";
         event.entry.addresses[1].street2 = "new Street 2 info";
-        event.entry.addresses.pop();
-        event.entry.addresses.push(
-          generateAddress(prefix, event.entry.id, 2000),
+        event.entry.addresses[2] = generateAddress(
+          prefix,
+          event.entry.id,
+          2000,
         );
+
         await triggerWebhook(webhookId, webhookSecret, event);
 
         /**
          * Wait for requests to happen in the background
          */
         await new Promise((resolve) => setTimeout(resolve, 15_000));
-
-        const orderId = new PrefixedOrderId(event.entry.addresses[0].orderId)
-          .searchFragment;
 
         const zohoOrders = await zoho.searchSalesOrdersWithScrolling(orderId);
 

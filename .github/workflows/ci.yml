@@ -195,7 +195,7 @@ jobs:
         run: yarn nx build data-access-prisma
 
       - name: Test (e2e)
-        run: yarn nx run-many --target=e2e --all
+        run: yarn nx run-many --target=e2e --all -i
 
       - run: docker-compose logs
         if: always()
