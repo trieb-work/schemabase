@@ -55,7 +55,7 @@ async function main() {
                 zohoOrgId: zohoApp.orgId,
               });
               const strapiOrdersToZoho = await StrapiOrdersToZoho.new({
-                zoho,
+                zoho: zoho as ZohoClientInstance,
                 logger,
               });
 
@@ -82,7 +82,7 @@ async function main() {
                 zohoOrgId: zohoApp.orgId,
               });
               const strapiOrdersToZoho = await StrapiOrdersToZoho.new({
-                zoho,
+                zoho: zoho as ZohoClientInstance,
                 logger,
               });
 

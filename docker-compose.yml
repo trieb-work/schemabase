@@ -52,6 +52,8 @@ services:
       SIGNING_KEY: anything
       NODE_ENV: production
       ECI_ENV: development
+      ZOHO_TOKEN: ${ZOHO_TOKEN}
+      ZOHO_COOKIES: ${ZOHO_COOKIES}
     depends_on:
       - eci_db
       - redis
