@@ -64,7 +64,7 @@ async function generateEvent(
              * This can fail if the item does not exist in zoho.
              * https://inventory.zoho.eu/app#/inventory/items/116240000000378951
              */
-            zohoId: "217818000000043009",
+            zohoId: "116240000000112128",
           },
         },
       ],
@@ -155,13 +155,13 @@ afterAll(async () => {
   await prisma.$disconnect();
 
   /** Clean up created entries */
-  // const ordersInZoho = await zoho.searchSalesOrdersWithScrolling(`${prefix}-`);
-  // for (const order of ordersInZoho) {
-  // await zoho.deleteSalesorder(order.salesorder_id);
-  // }
-  // for (const contactId of createdContactIds) {
-  // await zoho.deleteContact(contactId);
-  // }
+  const ordersInZoho = await zoho.searchSalesOrdersWithScrolling(`${prefix}-`);
+  for (const order of ordersInZoho) {
+    await zoho.deleteSalesorder(order.salesorder_id);
+  }
+  for (const contactId of createdContactIds) {
+    await zoho.deleteContact(contactId);
+  }
 }, 60_000);
 
 describe("with invalid webhook", () => {
@@ -452,11 +452,6 @@ describe("with valid webhook", () => {
     describe("when one order changes, one is removed, one is created, and one stays the same", () => {
       it("syncs correctly", async () => {
         const event = await generateEvent("entry.create", "Draft", 3);
-        const orderId = event.entry.addresses[0].orderId
-          .split("-")
-          .slice(0, 2)
-          .join("-");
-
         /**
          * Create first orders
          */
@@ -481,7 +476,9 @@ describe("with valid webhook", () => {
          */
         await new Promise((resolve) => setTimeout(resolve, 15_000));
 
-        const zohoOrders = await zoho.searchSalesOrdersWithScrolling(orderId);
+        const zohoOrders = await zoho.searchSalesOrdersWithScrolling(
+          [event.entry.prefix, event.entry.id].join("-"),
+        );
 
         expect(zohoOrders.length).toBe(event.entry.addresses.length);
       }, 60_000);

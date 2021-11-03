@@ -35,7 +35,13 @@ export async function verifySyncedOrders(
       (addr) => addr.orderId === zohoOrder.salesorder_number,
     );
     if (!strapiAddress) {
-      throw new Error("strapiAddress is undefined");
+      throw new Error(
+        `strapiAddress is undefined: ${JSON.stringify(
+          { strapiEvent, zohoOrder },
+          null,
+          2,
+        )}`,
+      );
     }
 
     const res = await zohoClient.getSalesorderById(zohoOrder.salesorder_id);
@@ -56,12 +62,10 @@ export async function verifySyncedOrders(
 
     if (strapiAddress.street2) {
       expect(zohoAddr.street2).toEqual(
-        `${strapiAddress.name} ${strapiAddress.surname} - ${strapiAddress.street2}`,
+        `${strapiAddress.companyName} - ${strapiAddress.street2}`,
       );
     } else {
-      expect(zohoAddr.street2).toEqual(
-        `${strapiAddress.name} ${strapiAddress.surname}`,
-      );
+      expect(zohoAddr.street2).toEqual(strapiAddress.companyName);
     }
   }
   return zohoOrders;

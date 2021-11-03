@@ -109,56 +109,58 @@ export class StrapiOrdersToZoho {
         throw new Error(`Malformed event: ${err}`);
       });
 
-    return Promise.all(
-      event.entry.addresses.map(async (address) => {
-        const productIds = rawEvent.entry.products.map((p) => p.product.zohoId);
+    const transformedOrders = [];
+    for (const address of event.entry.addresses) {
+      const productIds = rawEvent.entry.products.map((p) => p.product.zohoId);
 
-        const productTaxes = await Promise.all(
-          productIds.map((productId) => this.getProductTax(productId)),
-        );
-        const highestTax = productTaxes.reduce(
-          (acc: { taxId: string; taxPercentage: number }, tax) =>
-            (acc = acc.taxPercentage > tax.taxPercentage ? acc : tax),
-          { taxPercentage: 0, taxId: "" },
-        );
+      const productTaxes = [];
+      for (const productId of productIds) {
+        productTaxes.push(await this.getProductTax(productId));
+      }
 
-        const orderHash = createHash("sha256")
-          .update(
-            JSON.stringify([
-              address.address,
-              address.city,
-              address.country,
-              address.name,
-              address.surname,
-              address.shippingCosts,
-              address.street2,
-              address.zip,
-              event.entry.products,
-            ]),
-          )
-          .digest("hex");
+      const highestTax = productTaxes.reduce(
+        (acc: { taxId: string; taxPercentage: number }, tax) =>
+          (acc = acc.taxPercentage > tax.taxPercentage ? acc : tax),
+        { taxPercentage: 0, taxId: "" },
+      );
 
-        return {
-          order: {
-            customer_id: event.entry.zohoCustomerId,
-            salesorder_number: address.orderId,
-            line_items: event.entry.products.map((p) => ({
-              item_id: p.product.zohoId,
-              quantity: p.quantity,
-            })),
-            shipping_charge: address.shippingCosts,
-            shipping_charge_tax_id: highestTax.taxId.toString(),
-            custom_fields: [
-              {
-                api_name: "cf_orderhash",
-                value: orderHash,
-              },
-            ],
-          },
-          address,
-        };
-      }),
-    );
+      const orderHash = createHash("sha256")
+        .update(
+          JSON.stringify([
+            address.address,
+            address.city,
+            address.country,
+            address.name,
+            address.surname,
+            address.shippingCosts,
+            address.street2,
+            address.zip,
+            event.entry.products,
+          ]),
+        )
+        .digest("hex");
+
+      transformedOrders.push({
+        order: {
+          customer_id: event.entry.zohoCustomerId,
+          salesorder_number: address.orderId,
+          line_items: event.entry.products.map((p) => ({
+            item_id: p.product.zohoId,
+            quantity: p.quantity,
+          })),
+          shipping_charge: address.shippingCosts,
+          shipping_charge_tax_id: highestTax.taxId.toString(),
+          custom_fields: [
+            {
+              api_name: "cf_orderhash",
+              value: orderHash,
+            },
+          ],
+        },
+        address,
+      });
+    }
+    return transformedOrders;
   }
 
   /**
