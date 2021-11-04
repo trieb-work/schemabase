@@ -153,7 +153,8 @@ export class StrapiOrdersToZoho {
             quantity: p.quantity,
           })),
           shipping_charge: address.shippingCosts,
-          shipping_charge_tax_id: highestTax.taxId.toString(),
+          shipping_charte_tax_id: highestTax.taxId,
+          // shipping_charge_tax_id: highestTax.taxId !== "" ? highestTax.taxId: undefined,
           custom_fields: [
             {
               api_name: "cf_orderhash",
