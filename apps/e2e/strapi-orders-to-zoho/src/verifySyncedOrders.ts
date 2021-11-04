@@ -1,7 +1,4 @@
-import {
-  PrefixedOrderId,
-  OrderEvent,
-} from "@eci/integrations/strapi-orders-to-zoho";
+import { OrderEvent } from "@eci/integrations/strapi-orders-to-zoho";
 import {
   SalesOrderShortSearchOverview,
   ZohoClientInstance,
@@ -9,10 +6,15 @@ import {
 import { expect } from "@jest/globals";
 export async function verifySyncedOrders(
   zohoClient: ZohoClientInstance,
-  orderId: string,
   strapiEvent: OrderEvent,
 ): Promise<SalesOrderShortSearchOverview[]> {
-  const zohoOrders = await zohoClient.searchSalesOrdersWithScrolling(orderId);
+  const bulkOrderId = [strapiEvent.entry.prefix, strapiEvent.entry.id].join(
+    "-",
+  );
+
+  const zohoOrders = await zohoClient.searchSalesOrdersWithScrolling(
+    bulkOrderId,
+  );
 
   expect(zohoOrders.length).toBe(strapiEvent.entry.addresses.length);
   for (const zohoOrder of zohoOrders) {
@@ -29,14 +31,17 @@ export async function verifySyncedOrders(
         break;
     }
 
-    const orderId = new PrefixedOrderId(zohoOrder.salesorder_number).toString(
-      false,
-    );
     const strapiAddress = strapiEvent.entry.addresses.find(
-      (addr) => addr.orderId === orderId,
+      (addr) => addr.orderId === zohoOrder.salesorder_number,
     );
     if (!strapiAddress) {
-      throw new Error("strapiAddress is undefined");
+      throw new Error(
+        `strapiAddress is undefined: ${JSON.stringify(
+          { strapiEvent, zohoOrder },
+          null,
+          2,
+        )}`,
+      );
     }
 
     const res = await zohoClient.getSalesorderById(zohoOrder.salesorder_id);
@@ -57,12 +62,10 @@ export async function verifySyncedOrders(
 
     if (strapiAddress.street2) {
       expect(zohoAddr.street2).toEqual(
-        `${strapiAddress.name} ${strapiAddress.surname} - ${strapiAddress.street2}`,
+        `${strapiAddress.companyName} - ${strapiAddress.street2}`,
       );
     } else {
-      expect(zohoAddr.street2).toEqual(
-        `${strapiAddress.name} ${strapiAddress.surname}`,
-      );
+      expect(zohoAddr.street2).toEqual(strapiAddress.companyName);
     }
   }
   return zohoOrders;

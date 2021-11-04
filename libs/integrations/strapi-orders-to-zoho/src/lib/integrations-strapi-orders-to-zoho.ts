@@ -1,6 +1,10 @@
 import { EntryEvent } from "@eci/events/strapi";
 import { z } from "zod";
-import { ZohoClientInstance, SalesOrder } from "@trieb.work/zoho-ts";
+import {
+  SalesOrderShortSearchOverview,
+  ZohoClientInstance,
+  SalesOrder,
+} from "@trieb.work/zoho-ts";
 import { createHash } from "crypto";
 import { ILogger } from "@eci/util/logger";
 const statusValidation = z.enum(["Draft", "Confirmed", "Sending", "Finished"]);
@@ -15,6 +19,7 @@ export const addressValidation = z.object({
   country: z.string(),
   street2: z.string().optional(),
   shippingCosts: z.number(),
+  companyName: z.string(),
 });
 export const orderValidation = z.object({
   event: z.enum(["entry.create", "entry.update", "entry.delete"]),
@@ -36,41 +41,13 @@ export const orderValidation = z.object({
   }),
 });
 
-export class PrefixedOrderId {
-  public prefix: string;
-  public orderId: string;
-  public rowId: string;
-  public hash: string | undefined;
-
-  /**
-   *
-   * @param id The id is separated by `-`
-   */
-  constructor(id: string) {
-    const split = id.split("-");
-
-    if (split.length !== 3 && split.length !== 4) {
-      throw new Error(`id is malformed: ${id}`);
-    }
-    [this.prefix, this.orderId, this.rowId, this.hash] = split;
-  }
-
-  public get searchFragment(): string {
-    return [this.prefix, this.orderId].join("-");
-  }
-  public toString(withHash?: boolean): string {
-    const arr = [this.prefix, this.orderId, this.rowId];
-    if (withHash && this.hash) {
-      arr.push(this.hash);
-    }
-    return arr.join("-");
-  }
-}
-
 export type OrderEvent = EntryEvent & z.infer<typeof orderValidation>;
 
 type CreateSalesOrder = Required<
-  Pick<SalesOrder, "customer_id" | "salesorder_number" | "line_items">
+  Pick<
+    SalesOrder,
+    "customer_id" | "salesorder_number" | "line_items" | "custom_fields"
+  >
 > &
   SalesOrder;
 export class StrapiOrdersToZoho {
@@ -132,52 +109,72 @@ export class StrapiOrdersToZoho {
         throw new Error(`Malformed event: ${err}`);
       });
 
-    return Promise.all(
-      event.entry.addresses.map(async (address) => {
-        const orderId = new PrefixedOrderId(address.orderId);
+    const transformedOrders = [];
+    for (const address of event.entry.addresses) {
+      const productIds = rawEvent.entry.products.map((p) => p.product.zohoId);
 
-        const productIds = rawEvent.entry.products.map((p) => p.product.zohoId);
+      const productTaxes = [];
+      for (const productId of productIds) {
+        productTaxes.push(await this.getProductTax(productId));
+        /**
+         * Looks like this is too fast for zoho and we need a small delay
+         */
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
 
-        const productTaxes = await Promise.all(
-          productIds.map((productId) => this.getProductTax(productId)),
-        );
-        const highestTax = productTaxes.reduce(
-          (acc: { taxId: string; taxPercentage: number }, tax) =>
-            (acc = acc.taxPercentage > tax.taxPercentage ? acc : tax),
-          { taxPercentage: 0, taxId: "" },
-        );
+      const highestTax = productTaxes.reduce(
+        (acc: { taxId: string; taxPercentage: number }, tax) =>
+          (acc = acc.taxPercentage > tax.taxPercentage ? acc : tax),
+        { taxPercentage: 0, taxId: "" },
+      );
 
-        orderId.hash = createHash("sha256")
-          .update(
-            JSON.stringify({
-              /**
-               * The rowId should not affect the hash.
-               */
-              address: {
-                ...address,
-                orderId: undefined,
-              },
-              products: event.entry.products,
-            }),
-          )
-          .digest("hex")
-          .slice(0, 8);
+      const orderHash = createHash("sha256")
+        .update(
+          JSON.stringify([
+            address.address,
+            address.city,
+            address.country,
+            address.name,
+            address.surname,
+            address.shippingCosts,
+            address.street2,
+            address.zip,
+            event.entry.products,
+          ]),
+        )
+        .digest("hex");
 
-        return {
-          order: {
-            customer_id: event.entry.zohoCustomerId,
-            salesorder_number: orderId.toString(true),
-            line_items: event.entry.products.map((p) => ({
-              item_id: p.product.zohoId,
-              quantity: p.quantity,
-            })),
-            shipping_charge: address.shippingCosts,
-            shipping_charge_tax_id: highestTax.taxId.toString(),
-          },
-          address,
-        };
-      }),
-    );
+      transformedOrders.push({
+        order: {
+          customer_id: event.entry.zohoCustomerId,
+          salesorder_number: address.orderId,
+          line_items: event.entry.products.map((p) => ({
+            item_id: p.product.zohoId,
+            quantity: p.quantity,
+          })),
+          shipping_charge: address.shippingCosts,
+          shipping_charge_tax_id: highestTax.taxId.toString(),
+          custom_fields: [
+            {
+              api_name: "cf_orderhash",
+              value: orderHash,
+            },
+          ],
+        },
+        address,
+      });
+    }
+    return transformedOrders;
+  }
+
+  /**
+   * Join the order_number with the address hash
+   */
+  private getUniqueOrderId(
+    salesorderNumber: string,
+    orderHash: string,
+  ): string {
+    return [salesorderNumber, orderHash].join("-");
   }
 
   public async updateBulkOrders(rawEvent: OrderEvent): Promise<void> {
@@ -191,11 +188,12 @@ export class StrapiOrdersToZoho {
 
     const searchString = [event.entry.prefix, event.entry.id].join("-");
 
-    const existingOrders = await this.zoho
+    const existingOrders = (await this.zoho
       .searchSalesOrdersWithScrolling(searchString)
       .catch((err: Error) => {
         throw new Error(`Unable to fetch existing orders from zoho: ${err}`);
-      });
+      })) as (SalesOrderShortSearchOverview & { cf_orderhash: string })[];
+
     this.logger.info("Existing orders", { searchString, existingOrders });
 
     const existingSalesorderNumbers = existingOrders.map(
@@ -204,16 +202,36 @@ export class StrapiOrdersToZoho {
 
     const strapiOrders = await this.transformStrapiEventToZohoOrders(rawEvent);
 
-    const deleteOrderNumbers = existingSalesorderNumbers.filter(
-      (o) => !strapiOrders.map((o) => o.order.salesorder_number).includes(o),
+    const existingOrderUIds = existingOrders.map((o) =>
+      this.getUniqueOrderId(o.salesorder_number, o.cf_orderhash),
+    );
+    this.logger.warn("strapiOrders", { strapiOrders });
+    const strapiOrderUIds = strapiOrders.map((o) =>
+      this.getUniqueOrderId(
+        o.order.salesorder_number,
+        o.order.custom_fields.find((cf) => cf.api_name === "cf_orderhash")!
+          .value! as string,
+      ),
     );
 
-    const createOrders = strapiOrders.filter((o) => {
+    const deleteOrderNumbers = existingOrders
+      .filter(
+        (existingOrder) =>
+          !strapiOrderUIds.includes(
+            this.getUniqueOrderId(
+              existingOrder.salesorder_number,
+              existingOrder.cf_orderhash,
+            ),
+          ),
+      )
+      .map((o) => o.salesorder_number);
+
+    const createOrders = strapiOrders.filter((o, i) => {
       this.logger.warn("Filtering create orders", {
         o: o.order.salesorder_number,
         existingSalesorderNumbers,
       });
-      return !existingSalesorderNumbers.includes(o.order.salesorder_number);
+      return !existingOrderUIds.includes(strapiOrderUIds[i]);
     });
 
     /**
@@ -296,7 +314,7 @@ export class StrapiOrdersToZoho {
       });
 
       const fullName = `${address.name} ${address.surname}`;
-      const street2 = [fullName];
+      const street2 = [address.companyName];
       if (address.street2) {
         street2.push(address.street2);
       }

@@ -21,6 +21,7 @@ export function generateAddress(
     zip: randomInt(1, 100_000).toString(),
     city: faker.address.cityName(),
     country,
+    companyName: faker.company.companyName(),
     shippingCosts: parseInt(
       createHash("sha256").update(country).digest("hex").slice(0, 1),
       16,

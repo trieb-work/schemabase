@@ -7,10 +7,7 @@ import { ZohoClientInstance } from "@trieb.work/zoho-ts";
 import { env } from "@chronark/env";
 import { randomInt } from "crypto";
 import { generateAddress, triggerWebhook } from "./util";
-import {
-  OrderEvent,
-  PrefixedOrderId,
-} from "@eci/integrations/strapi-orders-to-zoho";
+import { OrderEvent } from "@eci/integrations/strapi-orders-to-zoho";
 import { verifySyncedOrders } from "./verifySyncedOrders";
 
 const prisma = new PrismaClient();
@@ -226,9 +223,7 @@ describe("with valid webhook", () => {
            */
           await new Promise((resolve) => setTimeout(resolve, 15_000));
 
-          const orderId = new PrefixedOrderId(event.entry.addresses[0].orderId)
-            .searchFragment;
-          const salesOrders = await verifySyncedOrders(zoho, orderId, event);
+          const salesOrders = await verifySyncedOrders(zoho, event);
 
           const createdOrder = await zoho.getSalesorder(
             salesOrders[0].salesorder_number,
@@ -248,9 +243,7 @@ describe("with valid webhook", () => {
          */
         await new Promise((resolve) => setTimeout(resolve, 15_000));
 
-        const orderId = new PrefixedOrderId(event.entry.addresses[0].orderId)
-          .searchFragment;
-        await verifySyncedOrders(zoho, orderId, event);
+        await verifySyncedOrders(zoho, event);
       }, 60_000);
     });
 
@@ -269,9 +262,7 @@ describe("with valid webhook", () => {
          */
         await new Promise((resolve) => setTimeout(resolve, 15_000));
 
-        const orderId = new PrefixedOrderId(event.entry.addresses[0].orderId)
-          .searchFragment;
-        await verifySyncedOrders(zoho, orderId, event);
+        await verifySyncedOrders(zoho, event);
       }, 60_000);
     });
   });
@@ -309,10 +300,7 @@ describe("with valid webhook", () => {
          */
         await new Promise((resolve) => setTimeout(resolve, 15_000));
 
-        const orderId = new PrefixedOrderId(event.entry.addresses[0].orderId)
-          .searchFragment;
-
-        await verifySyncedOrders(zoho, orderId, event);
+        await verifySyncedOrders(zoho, event);
       }, 60_000);
     });
     describe("with a modified address", () => {
@@ -340,10 +328,7 @@ describe("with valid webhook", () => {
            */
           await new Promise((resolve) => setTimeout(resolve, 5_000));
 
-          const orderId = new PrefixedOrderId(event.entry.addresses[0].orderId)
-            .searchFragment;
-
-          await verifySyncedOrders(zoho, orderId, event);
+          await verifySyncedOrders(zoho, event);
         }, 60_000);
       });
       it("replaces the modified order", async () => {
@@ -369,10 +354,7 @@ describe("with valid webhook", () => {
          */
         await new Promise((resolve) => setTimeout(resolve, 5_000));
 
-        const orderId = new PrefixedOrderId(event.entry.addresses[0].orderId)
-          .searchFragment;
-
-        await verifySyncedOrders(zoho, orderId, event);
+        await verifySyncedOrders(zoho, event);
       }, 60_000);
     });
     describe("with a modified product", () => {
@@ -398,8 +380,7 @@ describe("with valid webhook", () => {
 
         const ordersInZohoAfterUpdate =
           await zoho.searchSalesOrdersWithScrolling(
-            new PrefixedOrderId(event.entry.addresses[0].orderId)
-              .searchFragment,
+            event.entry.addresses[0].orderId.split("-").slice(0, 2).join("-"),
           );
 
         expect(ordersInZohoAfterUpdate.length).toBe(
@@ -423,8 +404,6 @@ describe("with valid webhook", () => {
         await triggerWebhook(webhookId, webhookSecret, event);
         await new Promise((resolve) => setTimeout(resolve, 15_000));
 
-        const orderId = new PrefixedOrderId(event.entry.addresses[0].orderId)
-          .searchFragment;
         event.event = "entry.update";
         event.entry.addresses = [];
         await triggerWebhook(webhookId, webhookSecret, event);
@@ -434,7 +413,7 @@ describe("with valid webhook", () => {
          */
         await new Promise((resolve) => setTimeout(resolve, 15_000));
 
-        await verifySyncedOrders(zoho, orderId, event);
+        await verifySyncedOrders(zoho, event);
       }, 60_000);
     });
     describe("with shuffled addresses", () => {
@@ -459,8 +438,10 @@ describe("with valid webhook", () => {
          */
         await new Promise((resolve) => setTimeout(resolve, 15_000));
 
-        const orderId = new PrefixedOrderId(event.entry.addresses[0].orderId)
-          .searchFragment;
+        const orderId = event.entry.addresses[0].orderId
+          .split("-")
+          .slice(0, 2)
+          .join("-");
 
         const zohoOrders = await zoho.searchSalesOrdersWithScrolling(orderId);
 
@@ -471,9 +452,6 @@ describe("with valid webhook", () => {
     describe("when one order changes, one is removed, one is created, and one stays the same", () => {
       it("syncs correctly", async () => {
         const event = await generateEvent("entry.create", "Draft", 3);
-        const orderId = new PrefixedOrderId(event.entry.addresses[0].orderId)
-          .searchFragment;
-
         /**
          * Create first orders
          */
@@ -498,7 +476,9 @@ describe("with valid webhook", () => {
          */
         await new Promise((resolve) => setTimeout(resolve, 15_000));
 
-        const zohoOrders = await zoho.searchSalesOrdersWithScrolling(orderId);
+        const zohoOrders = await zoho.searchSalesOrdersWithScrolling(
+          [event.entry.prefix, event.entry.id].join("-"),
+        );
 
         expect(zohoOrders.length).toBe(event.entry.addresses.length);
       }, 60_000);

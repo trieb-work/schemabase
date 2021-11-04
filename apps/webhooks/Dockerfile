@@ -10,7 +10,8 @@ COPY package.json yarn.lock ./
 RUN --mount=type=cache,target=/root/.yarn yarn --frozen-lockfile
 
 COPY . .
-RUN --mount=type=cache,target=.nx yarn nx build webhooks --prod --skip-nx-cache
+RUN --mount=type=cache,target=.nx yarn nx build webhooks --prod
+RUN yarn prisma generate --schema=./libs/data-access/prisma/schema.prisma
 
 EXPOSE 3000
 
