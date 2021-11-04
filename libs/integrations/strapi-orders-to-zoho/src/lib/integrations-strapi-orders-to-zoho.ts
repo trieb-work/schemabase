@@ -90,8 +90,8 @@ export class StrapiOrdersToZoho {
         taxId: item.tax_id,
         taxPercentage: item.tax_percentage,
       };
+      this.logger.info("item", this.products[productId]);
     }
-    this.logger.info("item", this.products[productId]);
     return this.products[productId];
   }
 
@@ -319,14 +319,18 @@ export class StrapiOrdersToZoho {
         street2.push(address.street2);
       }
       const addressId = await this.zoho
-        .addAddresstoContact(zohoCustomerId, {
-          attention: fullName,
-          address: address.address,
-          city: address.city,
-          zip: address.zip.toString(),
-          country: address.country,
-          street2: street2.join(" - "),
-        })
+        .addAddresstoContact(
+          zohoCustomerId,
+          {
+            attention: fullName,
+            address: address.address,
+            city: address.city,
+            zip: address.zip.toString(),
+            country: address.country,
+            street2: street2.join(" - "),
+          },
+          3,
+        )
         .catch((err: Error) => {
           throw new Error(`Unable to add address to contact: ${err}`);
         });
