@@ -221,7 +221,7 @@ describe("with valid webhook", () => {
           /**
            * Wait for requests to happen in the background
            */
-          await new Promise((resolve) => setTimeout(resolve, 15_000));
+          await new Promise((resolve) => setTimeout(resolve, 30_000));
 
           const salesOrders = await verifySyncedOrders(zoho, event);
 
@@ -241,7 +241,7 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 15_000));
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
 
         await verifySyncedOrders(zoho, event);
       }, 100_000);
@@ -260,7 +260,7 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 15_000));
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
 
         await verifySyncedOrders(zoho, event);
       }, 100_000);
@@ -298,7 +298,7 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 15_000));
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
 
         await verifySyncedOrders(zoho, event);
       }, 100_000);
@@ -326,7 +326,7 @@ describe("with valid webhook", () => {
           /**
            * Wait for requests to happen in the background
            */
-          await new Promise((resolve) => setTimeout(resolve, 5_000));
+          await new Promise((resolve) => setTimeout(resolve, 30_000));
 
           await verifySyncedOrders(zoho, event);
         }, 100_000);
@@ -352,7 +352,7 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 5_000));
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
 
         await verifySyncedOrders(zoho, event);
       }, 100_000);
@@ -365,7 +365,7 @@ describe("with valid webhook", () => {
          * Create first orders
          */
         await triggerWebhook(webhookId, webhookSecret, event);
-        await new Promise((resolve) => setTimeout(resolve, 15_000));
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
         /**
          * Shuffle addresses aroujd
          */
@@ -376,7 +376,7 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 15_000));
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
 
         const ordersInZohoAfterUpdate =
           await zoho.searchSalesOrdersWithScrolling(
@@ -402,7 +402,7 @@ describe("with valid webhook", () => {
          * Create first orders
          */
         await triggerWebhook(webhookId, webhookSecret, event);
-        await new Promise((resolve) => setTimeout(resolve, 15_000));
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
 
         event.event = "entry.update";
         event.entry.addresses = [];
@@ -411,7 +411,7 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 15_000));
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
 
         await verifySyncedOrders(zoho, event);
       }, 100_000);
@@ -424,7 +424,7 @@ describe("with valid webhook", () => {
          * Create first orders
          */
         await triggerWebhook(webhookId, webhookSecret, event);
-        await new Promise((resolve) => setTimeout(resolve, 15_000));
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
 
         /**
          * Shuffle addresses around
@@ -436,7 +436,7 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 15_000));
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
 
         const orderId = event.entry.addresses[0].orderId
           .split("-")
@@ -456,7 +456,7 @@ describe("with valid webhook", () => {
          * Create first orders
          */
         await triggerWebhook(webhookId, webhookSecret, event);
-        await new Promise((resolve) => setTimeout(resolve, 15_000));
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
 
         /**
          * Shuffle addresses around
@@ -474,7 +474,7 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 15_000));
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
 
         const zohoOrders = await zoho.searchSalesOrdersWithScrolling(
           [event.entry.prefix, event.entry.id].join("-"),
