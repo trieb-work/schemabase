@@ -381,8 +381,22 @@ export class StrapiOrdersToZoho {
       event.entry.zohoCustomerId,
       orders,
     );
-    if (event.entry.status === "Sending") {
-      await this.zoho.salesordersConfirm(createdOrderIds);
+    switch (event.entry.status) {
+      case "Sending":
+        await this.zoho.salesordersConfirm(createdOrderIds);
+        await this.zoho.bulkUpdateSalesOrderCustomField(
+          createdOrderIds,
+          "cf_ready_to_fulfill",
+          true,
+          true,
+        );
+        break;
+      case "Confirmed":
+        await this.zoho.salesordersConfirm(createdOrderIds);
+        break;
+
+      default:
+        break;
     }
   }
 }
