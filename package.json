@@ -16,7 +16,7 @@
     "@prisma/client": "2.27.0",
     "@sendgrid/mail": "7.4.5",
     "@sentry/node": "6.11.0",
-    "@trieb.work/zoho-ts": "^0.2.23",
+    "@trieb.work/zoho-ts": "^0.2.25",
     "axios": "0.21.1",
     "braintree": "3.7.0",
     "bullmq": "^1.47.2",
