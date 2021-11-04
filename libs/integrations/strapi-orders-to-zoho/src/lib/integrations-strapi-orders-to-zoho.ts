@@ -116,6 +116,10 @@ export class StrapiOrdersToZoho {
       const productTaxes = [];
       for (const productId of productIds) {
         productTaxes.push(await this.getProductTax(productId));
+        /**
+         * Looks like this is too fast for zoho and we need a small delay
+         */
+        await new Promise((resolve) => setTimeout(resolve, 500));
       }
 
       const highestTax = productTaxes.reduce(
