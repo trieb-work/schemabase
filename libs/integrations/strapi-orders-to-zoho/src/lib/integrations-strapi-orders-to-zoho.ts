@@ -19,7 +19,7 @@ export const addressValidation = z.object({
   country: z.string(),
   street2: z.string().optional(),
   shippingCosts: z.number(),
-  companyName: z.string(),
+  companyName: z.string().optional(),
 });
 export const orderValidation = z.object({
   event: z.enum(["entry.create", "entry.update", "entry.delete"]),
