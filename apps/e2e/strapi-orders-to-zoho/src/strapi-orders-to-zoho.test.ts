@@ -141,7 +141,7 @@ beforeAll(async () => {
     data: {
       id: idGenerator.id("test"),
       tenantId: tenant.id,
-      payedUntil: new Date(Date.now() + 1000 * 60 * 5),
+      payedUntil: new Date(Date.now() + 1000 * 60 * 60),
       strapiToZohoIntegration: {
         connect: {
           id: integration.id,
@@ -162,7 +162,7 @@ afterAll(async () => {
   for (const contactId of createdContactIds) {
     await zoho.deleteContact(contactId);
   }
-}, 60_000);
+}, 100_000);
 
 describe("with invalid webhook", () => {
   describe("without authorization header", () => {
@@ -221,7 +221,7 @@ describe("with valid webhook", () => {
           /**
            * Wait for requests to happen in the background
            */
-          await new Promise((resolve) => setTimeout(resolve, 15_000));
+          await new Promise((resolve) => setTimeout(resolve, 30_000));
 
           const salesOrders = await verifySyncedOrders(zoho, event);
 
@@ -229,7 +229,7 @@ describe("with valid webhook", () => {
             salesOrders[0].salesorder_number,
           );
           expect(createdOrder?.shipping_charges.tax_percentage).toBe(19);
-        }, 60_000);
+        }, 100_000);
       });
     });
     describe("with only required fields", () => {
@@ -241,10 +241,10 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 15_000));
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
 
         await verifySyncedOrders(zoho, event);
-      }, 60_000);
+      }, 100_000);
     });
 
     describe("with street2", () => {
@@ -260,10 +260,10 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 15_000));
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
 
         await verifySyncedOrders(zoho, event);
-      }, 60_000);
+      }, 100_000);
     });
   });
 
@@ -298,10 +298,10 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 15_000));
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
 
         await verifySyncedOrders(zoho, event);
-      }, 60_000);
+      }, 100_000);
     });
     describe("with a modified address", () => {
       describe("with an optional key added", () => {
@@ -326,10 +326,10 @@ describe("with valid webhook", () => {
           /**
            * Wait for requests to happen in the background
            */
-          await new Promise((resolve) => setTimeout(resolve, 5_000));
+          await new Promise((resolve) => setTimeout(resolve, 30_000));
 
           await verifySyncedOrders(zoho, event);
-        }, 60_000);
+        }, 100_000);
       });
       it("replaces the modified order", async () => {
         const event = await generateEvent("entry.create", "Draft");
@@ -352,10 +352,10 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 5_000));
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
 
         await verifySyncedOrders(zoho, event);
-      }, 60_000);
+      }, 100_000);
     });
     describe("with a modified product", () => {
       it("replaces the modified order", async () => {
@@ -365,7 +365,7 @@ describe("with valid webhook", () => {
          * Create first orders
          */
         await triggerWebhook(webhookId, webhookSecret, event);
-        await new Promise((resolve) => setTimeout(resolve, 15_000));
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
         /**
          * Shuffle addresses aroujd
          */
@@ -376,7 +376,7 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 15_000));
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
 
         const ordersInZohoAfterUpdate =
           await zoho.searchSalesOrdersWithScrolling(
@@ -392,7 +392,7 @@ describe("with valid webhook", () => {
         for (const order of ordersInZohoAfterUpdate) {
           expect(order.status).toEqual("draft");
         }
-      }, 60_000);
+      }, 100_000);
     });
     describe("with an address deleted", () => {
       it("removes the deleted order", async () => {
@@ -402,7 +402,7 @@ describe("with valid webhook", () => {
          * Create first orders
          */
         await triggerWebhook(webhookId, webhookSecret, event);
-        await new Promise((resolve) => setTimeout(resolve, 15_000));
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
 
         event.event = "entry.update";
         event.entry.addresses = [];
@@ -411,10 +411,10 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 15_000));
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
 
         await verifySyncedOrders(zoho, event);
-      }, 60_000);
+      }, 100_000);
     });
     describe("with shuffled addresses", () => {
       it.skip("does not modify the zoho orders", async () => {
@@ -424,7 +424,7 @@ describe("with valid webhook", () => {
          * Create first orders
          */
         await triggerWebhook(webhookId, webhookSecret, event);
-        await new Promise((resolve) => setTimeout(resolve, 15_000));
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
 
         /**
          * Shuffle addresses around
@@ -436,7 +436,7 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 15_000));
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
 
         const orderId = event.entry.addresses[0].orderId
           .split("-")
@@ -446,7 +446,7 @@ describe("with valid webhook", () => {
         const zohoOrders = await zoho.searchSalesOrdersWithScrolling(orderId);
 
         expect(zohoOrders.length).toBe(event.entry.addresses.length);
-      }, 60_000);
+      }, 100_000);
     });
 
     describe("when one order changes, one is removed, one is created, and one stays the same", () => {
@@ -456,7 +456,7 @@ describe("with valid webhook", () => {
          * Create first orders
          */
         await triggerWebhook(webhookId, webhookSecret, event);
-        await new Promise((resolve) => setTimeout(resolve, 15_000));
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
 
         /**
          * Shuffle addresses around
@@ -474,14 +474,14 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 15_000));
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
 
         const zohoOrders = await zoho.searchSalesOrdersWithScrolling(
           [event.entry.prefix, event.entry.id].join("-"),
         );
 
         expect(zohoOrders.length).toBe(event.entry.addresses.length);
-      }, 60_000);
+      }, 100_000);
     });
   });
 });
