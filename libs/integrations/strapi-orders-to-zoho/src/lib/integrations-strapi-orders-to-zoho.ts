@@ -190,7 +190,7 @@ export class StrapiOrdersToZoho {
     const searchString = [event.entry.prefix, event.entry.id].join("-");
 
     const existingOrders = (await this.zoho
-      .searchSalesOrdersWithScrolling(searchString)
+      .searchSalesOrdersWithScrolling({ searchString })
       .catch((err: Error) => {
         throw new Error(`Unable to fetch existing orders from zoho: ${err}`);
       })) as (SalesOrderShortSearchOverview & { cf_orderhash: string })[];
@@ -265,7 +265,7 @@ export class StrapiOrdersToZoho {
     }
 
     const syncedOrders = await this.zoho
-      .searchSalesOrdersWithScrolling(searchString)
+      .searchSalesOrdersWithScrolling({ searchString })
       .catch((err: Error) => {
         throw new Error(`Unable to fetch existing orders from zoho: ${err}`);
       });
