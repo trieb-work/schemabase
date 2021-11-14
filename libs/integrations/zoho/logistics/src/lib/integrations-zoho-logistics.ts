@@ -19,7 +19,7 @@ export type Return = {
 };
 
 export interface ZohoLogisticsService {
-  getCurrentPackageStats: (storefrontProductUrl: string) => Promise<Return>;
+  getCurrentPackageStats: () => Promise<Return>;
 }
 
 type CustomFields = {
@@ -50,11 +50,13 @@ export class LogisticStats implements ZohoLogisticsService {
     logger: ILogger;
     customFields: CustomFields;
   }): Promise<LogisticStats> {
+    console.log(config);
     const instance = new LogisticStats(config);
     if (!config.customFields)
       config.logger.error("Custom fields config is missing!");
 
-    await instance.zoho.authenticate();
+    const header = await instance.zoho.authenticate();
+    console.log(header);
 
     return instance;
   }

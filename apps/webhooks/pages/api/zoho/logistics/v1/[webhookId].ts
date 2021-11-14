@@ -74,6 +74,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   if (!zohoApp) {
     throw new HttpError(400, "Zoho connection not enabled");
   }
+
   const zoho = new ZohoClientInstance({
     zohoClientId: zohoApp.clientId,
     zohoClientSecret: zohoApp.clientSecret,
