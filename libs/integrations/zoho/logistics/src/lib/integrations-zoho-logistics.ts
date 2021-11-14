@@ -50,7 +50,6 @@ export class LogisticStats implements ZohoLogisticsService {
     logger: ILogger;
     customFields: CustomFields;
   }): Promise<LogisticStats> {
-    console.log(config);
     const instance = new LogisticStats(config);
     if (!config.customFields)
       config.logger.error("Custom fields config is missing!");
