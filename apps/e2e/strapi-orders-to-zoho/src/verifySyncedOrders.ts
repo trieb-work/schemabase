@@ -12,9 +12,9 @@ export async function verifySyncedOrders(
     "-",
   );
 
-  const zohoOrders = await zohoClient.searchSalesOrdersWithScrolling(
-    bulkOrderId,
-  );
+  const zohoOrders = await zohoClient.searchSalesOrdersWithScrolling({
+    searchString: bulkOrderId,
+  });
 
   expect(zohoOrders.length).toBe(strapiEvent.entry.addresses.length);
   for (const zohoOrder of zohoOrders) {

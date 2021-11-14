@@ -88,6 +88,9 @@
     "integrations-strapi-orders-to-zoho": {
       "tags": []
     },
+    "integrations-zoho-logistics": {
+      "tags": []
+    },
     "util": {
       "tags": []
     },

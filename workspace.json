@@ -519,6 +519,39 @@
         }
       }
     },
+    "integrations-zoho-logistics": {
+      "root": "libs/integrations/zoho/logistics",
+      "sourceRoot": "libs/integrations/zoho/logistics/src",
+      "projectType": "library",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/node:package",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/libs/integrations/zoho/logistics",
+            "tsConfig": "libs/integrations/zoho/logistics/tsconfig.lib.json",
+            "packageJson": "libs/integrations/zoho/logistics/package.json",
+            "main": "libs/integrations/zoho/logistics/src/index.ts",
+            "assets": ["libs/integrations/zoho/logistics/*.md"]
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["libs/integrations/zoho/logistics/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/integrations/zoho/logistics"],
+          "options": {
+            "jestConfig": "libs/integrations/zoho/logistics/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
     "util": {
       "root": "libs/util",
       "sourceRoot": "libs/util/src",

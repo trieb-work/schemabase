@@ -39,6 +39,28 @@ model ProductDataFeedApp {
   integration ProductDataFeedIntegration?
 }
 
+model LogisticsApp {
+  id String @id
+
+  // Indicates if the integration is currently enabled.
+  // The user might chose to disable it.
+  enabled Boolean? @default(false)
+
+  // The custom view ID use to get all current orders
+  currentOrdersCustomViewId String
+
+  // The custom view ID to get all current bulk ordes
+  currentBulkOrdersCustomViewId String
+
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String @unique
+
+  webhooks               IncomingLogisticsWebhook[]
+  integration            LogisticsIntegration?      @relation(fields: [logisticsIntegrationId], references: [id])
+  logisticsIntegrationId String?
+}
+
 model ZohoApp {
   id String @id
 
@@ -48,6 +70,7 @@ model ZohoApp {
   tenant                  Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId                String                    @unique
   strapiToZohoIntegration StrapiToZohoIntegration[]
+  logisticsIntegration    LogisticsIntegration[]
 }
 
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor
@@ -117,6 +140,8 @@ model Tenant {
   strapiApps                 StrapiApp[]
   productDataFeedIntegration ProductDataFeedIntegration[]
   strapiToZohoIntegration    StrapiToZohoIntegration[]
+  LogisticsIntegration       LogisticsIntegration[]
+  LogisticsApp               LogisticsApp[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
@@ -131,6 +156,7 @@ model Subscription {
 
   productDataFeedIntegration ProductDataFeedIntegration?
   strapiToZohoIntegration    StrapiToZohoIntegration?
+  LogisticsIntegration       LogisticsIntegration[]
 }
 
 // ----------------------------------------------------------------------------
@@ -156,6 +182,25 @@ model ProductDataFeedIntegration {
   productDataFeedAppId String
   saleorApp            SaleorApp          @relation(fields: [saleorAppId], references: [id])
   saleorAppId          String
+}
+
+model LogisticsIntegration {
+  id String @id
+
+  // Allow the user to manually enabled or disable the integration
+  // Regardless of current subscription state.
+  enabled Boolean @default(true)
+
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  subscriptionId String?       @unique
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id])
+  zohoAppId String
+
+  LogisticsApp LogisticsApp[]
 }
 
 model StrapiToZohoIntegration {
@@ -246,6 +291,22 @@ model IncomingProductDataFeedWebhook {
   productDataFeedAppId String
 }
 
+model IncomingLogisticsWebhook {
+  id   String  @id
+  // Human readable name
+  name String?
+
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  secret   SecretKey @relation(fields: [secretId], references: [id])
+  secretId String
+
+  logisticsApp   LogisticsApp? @relation(fields: [logisticsAppId], references: [id], onDelete: Cascade)
+  logisticsAppId String?
+}
+
 // Until prisma allows for inheritance we are stuck createing different webhook modules
 // with duplicate code
 
@@ -284,4 +345,5 @@ model SecretKey {
   incomingSaleorWebhook          IncomingSaleorWebhook?
   IncomingStrapiWebhook          IncomingStrapiWebhook?
   IncomingProductDataFeedWebhook IncomingProductDataFeedWebhook?
+  IncomingLogisticsWebhook       IncomingLogisticsWebhook?
 }
