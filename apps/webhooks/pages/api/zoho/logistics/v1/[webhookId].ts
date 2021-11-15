@@ -2,7 +2,6 @@ import { z } from "zod";
 import { handleWebhook, Webhook } from "@eci/http";
 import { authorizeIntegration, extendContext, setupPrisma } from "@eci/context";
 import { HttpError } from "@eci/util/errors";
-import { createHash } from "crypto";
 import { LogisticStats } from "@eci/integrations/zoho/logistics";
 import { ZohoClientInstance } from "@trieb.work/zoho-ts";
 
@@ -21,7 +20,6 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   backgroundContext,
 }): Promise<void> => {
   const {
-    headers: { authorization },
     query: { webhookId },
   } = req;
 
@@ -50,12 +48,6 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     throw new HttpError(404, `Webhook not found: ${webhookId}`);
   }
 
-  if (
-    createHash("sha256").update(authorization).digest("hex") !==
-    webhook.secret.secret
-  ) {
-    throw new HttpError(403, "Authorization token invalid");
-  }
   const { logisticsApp } = webhook;
   if (!logisticsApp) {
     throw new HttpError(400, "strapi app is not configured");
