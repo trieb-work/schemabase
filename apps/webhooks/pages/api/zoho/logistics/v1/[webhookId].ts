@@ -98,7 +98,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
   res.setHeader(
     "Cache-Control",
-    `s-maxage=${cacheMaxAge}, stale-while-revalidate=3600`,
+    `s-maxage=${cacheMaxAge}, stale-while-revalidate`,
   );
   res.json(responseData);
 };
