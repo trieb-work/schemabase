@@ -15,6 +15,14 @@ const requestValidation = z.object({
   }),
 });
 
+const setCacheHeaders = () => {
+  const now = new Date().getHours();
+  if ([8, 9, 10, 11, 12, 13, 14, 15, 16, 17].includes(now)) {
+    return "s-maxage=600, stale-while-revalidate=600";
+  }
+  return "s-maxage=3600, stale-while-revalidate=3600";
+};
+
 const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   req,
   res,
@@ -95,7 +103,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
   const responseData = await handleRequest.getCurrentPackageStats();
 
-  res.setHeader("Cache-Control", "s-maxage=600, stale-while-revalidate=600");
+  res.setHeader("Cache-Control", setCacheHeaders());
   res.json(responseData);
 };
 
