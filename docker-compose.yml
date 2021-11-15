@@ -12,7 +12,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     volumes:
-      - eci_db:/var/lib/postgresql
+      - eci_db:/var/lib/postgresql/data
 
   # Nextjs Serverless application to receive webhooks from various services
   eci_webhooks:
