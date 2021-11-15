@@ -155,7 +155,9 @@ afterAll(async () => {
   await prisma.$disconnect();
 
   /** Clean up created entries */
-  const ordersInZoho = await zoho.searchSalesOrdersWithScrolling(`${prefix}-`);
+  const ordersInZoho = await zoho.searchSalesOrdersWithScrolling({
+    searchString: `${prefix}-`,
+  });
   for (const order of ordersInZoho) {
     await zoho.deleteSalesorder(order.salesorder_id);
   }
@@ -228,7 +230,8 @@ describe("with valid webhook", () => {
           const createdOrder = await zoho.getSalesorder(
             salesOrders[0].salesorder_number,
           );
-          expect(createdOrder?.shipping_charges.tax_percentage).toBe(19);
+
+          expect(createdOrder?.shipping_charge_tax_percentage).toBe(19);
         }, 100_000);
       });
     });
@@ -379,9 +382,12 @@ describe("with valid webhook", () => {
         await new Promise((resolve) => setTimeout(resolve, 30_000));
 
         const ordersInZohoAfterUpdate =
-          await zoho.searchSalesOrdersWithScrolling(
-            event.entry.addresses[0].orderId.split("-").slice(0, 2).join("-"),
-          );
+          await zoho.searchSalesOrdersWithScrolling({
+            searchString: event.entry.addresses[0].orderId
+              .split("-")
+              .slice(0, 2)
+              .join("-"),
+          });
 
         expect(ordersInZohoAfterUpdate.length).toBe(
           event.entry.addresses.length,
@@ -443,7 +449,9 @@ describe("with valid webhook", () => {
           .slice(0, 2)
           .join("-");
 
-        const zohoOrders = await zoho.searchSalesOrdersWithScrolling(orderId);
+        const zohoOrders = await zoho.searchSalesOrdersWithScrolling({
+          searchString: orderId,
+        });
 
         expect(zohoOrders.length).toBe(event.entry.addresses.length);
       }, 100_000);
@@ -476,9 +484,9 @@ describe("with valid webhook", () => {
          */
         await new Promise((resolve) => setTimeout(resolve, 30_000));
 
-        const zohoOrders = await zoho.searchSalesOrdersWithScrolling(
-          [event.entry.prefix, event.entry.id].join("-"),
-        );
+        const zohoOrders = await zoho.searchSalesOrdersWithScrolling({
+          searchString: [event.entry.prefix, event.entry.id].join("-"),
+        });
 
         expect(zohoOrders.length).toBe(event.entry.addresses.length);
       }, 100_000);

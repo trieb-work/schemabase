@@ -17,9 +17,9 @@ export const addressValidation = z.object({
   zip: z.string(),
   city: z.string(),
   country: z.string(),
-  street2: z.string().optional(),
+  street2: z.string().nullable().optional(),
   shippingCosts: z.number(),
-  companyName: z.string().optional(),
+  companyName: z.string().nullable().optional(),
 });
 export const orderValidation = z.object({
   event: z.enum(["entry.create", "entry.update", "entry.delete"]),
@@ -109,7 +109,10 @@ export class StrapiOrdersToZoho {
         throw new Error(`Malformed event: ${err}`);
       });
 
-    const transformedOrders = [];
+    const transformedOrders: {
+      order: CreateSalesOrder;
+      address: OrderEvent["entry"]["addresses"][0];
+    }[] = [];
     for (const address of event.entry.addresses) {
       const productIds = rawEvent.entry.products.map((p) => p.product.zohoId);
 
@@ -143,7 +146,6 @@ export class StrapiOrdersToZoho {
           ]),
         )
         .digest("hex");
-
       transformedOrders.push({
         order: {
           customer_id: event.entry.zohoCustomerId,
@@ -153,8 +155,8 @@ export class StrapiOrdersToZoho {
             quantity: p.quantity,
           })),
           shipping_charge: address.shippingCosts,
-          shipping_charte_tax_id: highestTax.taxId,
-          // shipping_charge_tax_id: highestTax.taxId !== "" ? highestTax.taxId: undefined,
+          shipping_charge_tax_id: highestTax.taxId,
+
           custom_fields: [
             {
               api_name: "cf_orderhash",
@@ -190,7 +192,7 @@ export class StrapiOrdersToZoho {
     const searchString = [event.entry.prefix, event.entry.id].join("-");
 
     const existingOrders = (await this.zoho
-      .searchSalesOrdersWithScrolling(searchString)
+      .searchSalesOrdersWithScrolling({ searchString })
       .catch((err: Error) => {
         throw new Error(`Unable to fetch existing orders from zoho: ${err}`);
       })) as (SalesOrderShortSearchOverview & { cf_orderhash: string })[];
@@ -265,7 +267,7 @@ export class StrapiOrdersToZoho {
     }
 
     const syncedOrders = await this.zoho
-      .searchSalesOrdersWithScrolling(searchString)
+      .searchSalesOrdersWithScrolling({ searchString })
       .catch((err: Error) => {
         throw new Error(`Unable to fetch existing orders from zoho: ${err}`);
       });
