@@ -22,10 +22,6 @@ generator dbml {
 model ProductDataFeedApp {
   id String @id
 
-  // Indicates if the integration is currently enabled.
-  // The user might chose to disable it.
-  enabled Boolean? @default(false)
-
   // Graphql endpoint of a saleor app
   productDetailStorefrontURL String
 
@@ -42,23 +38,18 @@ model ProductDataFeedApp {
 model LogisticsApp {
   id String @id
 
-  // Indicates if the integration is currently enabled.
-  // The user might chose to disable it.
-  enabled Boolean? @default(false)
-
   // The custom view ID use to get all current orders
   currentOrdersCustomViewId String
 
-  // The custom view ID to get all current bulk ordes
+  // The custom view ID to get all current bulk orders
   currentBulkOrdersCustomViewId String
 
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String @unique
 
-  webhooks               IncomingLogisticsWebhook[]
-  integration            LogisticsIntegration?      @relation(fields: [logisticsIntegrationId], references: [id])
-  logisticsIntegrationId String?
+  webhooks    IncomingLogisticsWebhook[]
+  integration LogisticsIntegration?
 }
 
 model ZohoApp {
@@ -200,7 +191,8 @@ model LogisticsIntegration {
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id])
   zohoAppId String
 
-  LogisticsApp LogisticsApp[]
+  logisticsApp   LogisticsApp @relation(fields: [logisticsAppId], references: [id])
+  logisticsAppId String
 }
 
 model StrapiToZohoIntegration {

@@ -42,7 +42,7 @@ export class LogisticStats implements ZohoLogisticsService {
     customFields: CustomFields;
   }) {
     this.zoho = config.zoho;
-    this.logger = config.logger;
+    this.logger = config.logger.with({ integration: "zoho-logistics" });
     this.customFields = config.customFields;
   }
 
@@ -52,13 +52,18 @@ export class LogisticStats implements ZohoLogisticsService {
     customFields: CustomFields;
   }): Promise<LogisticStats> {
     const instance = new LogisticStats(config);
-    if (
-      !(
-        config.customFields?.currentBulkOrders &&
-        config.customFields.currentOrdersReadyToFulfill
-      )
-    )
-      throw new HttpError(400, "Custom fields config is missing!");
+    if (!config.customFields.currentBulkOrders) {
+      throw new HttpError(
+        500,
+        "customFields.currentBulkOrders config is missing!",
+      );
+    }
+    if (!config.customFields.currentOrdersReadyToFulfill) {
+      throw new HttpError(
+        500,
+        "customFields.currentOrdersReadyToFulfill config is missing!",
+      );
+    }
 
     await instance.zoho.authenticate();
 
@@ -66,9 +71,7 @@ export class LogisticStats implements ZohoLogisticsService {
   }
 
   public async getCurrentPackageStats(): Promise<Return> {
-    this.logger.info(
-      "Logistics Integration: making upstream requests to Zoho now",
-    );
+    this.logger.info("fetching salesorders from Zoho");
     const currentOrdersReady = (
       await this.zoho.searchSalesOrdersWithScrolling({
         customViewID: this.customFields.currentOrdersReadyToFulfill,

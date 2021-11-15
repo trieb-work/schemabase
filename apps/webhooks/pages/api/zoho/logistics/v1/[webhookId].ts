@@ -15,14 +15,6 @@ const requestValidation = z.object({
   }),
 });
 
-const setCacheHeaders = () => {
-  const now = new Date().getHours();
-  if ([8, 9, 10, 11, 12, 13, 14, 15, 16, 17].includes(now)) {
-    return "s-maxage=600, stale-while-revalidate=600";
-  }
-  return "s-maxage=3600, stale-while-revalidate=3600";
-};
-
 const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   req,
   res,
@@ -89,11 +81,9 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     zohoOrgId: zohoApp.orgId,
   });
   const customFields = {
-    currentOrdersReadyToFulfill:
-      webhook.logisticsApp?.currentOrdersCustomViewId || "",
-    nextFiveDaysOrders: webhook.logisticsApp?.currentOrdersCustomViewId || "",
-    currentBulkOrders:
-      webhook.logisticsApp?.currentBulkOrdersCustomViewId || "",
+    currentOrdersReadyToFulfill: webhook.logisticsApp.currentOrdersCustomViewId,
+    nextFiveDaysOrders: webhook.logisticsApp.currentOrdersCustomViewId,
+    currentBulkOrders: webhook.logisticsApp.currentBulkOrdersCustomViewId,
   };
   const handleRequest = await LogisticStats.new({
     zoho,
@@ -103,7 +93,13 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
   const responseData = await handleRequest.getCurrentPackageStats();
 
-  res.setHeader("Cache-Control", setCacheHeaders());
+  const now = new Date().getHours();
+  const cacheMaxAge = now >= 8 && now <= 17 ? 600 : 3600;
+
+  res.setHeader(
+    "Cache-Control",
+    `s-maxage=${cacheMaxAge}, stale-while-revalidate=3600`,
+  );
   res.json(responseData);
 };
 
