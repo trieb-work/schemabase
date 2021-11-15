@@ -174,8 +174,8 @@ Table IncomingLogisticsWebhook {
   updatedAt DateTime [not null]
   secret SecretKey [not null]
   secretId String [not null]
-  logisticsApp LogisticsApp
-  logisticsAppId String
+  logisticsApp LogisticsApp [not null]
+  logisticsAppId String [not null]
 }
 
 Table SecretKey {

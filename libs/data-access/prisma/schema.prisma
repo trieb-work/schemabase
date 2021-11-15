@@ -303,8 +303,8 @@ model IncomingLogisticsWebhook {
   secret   SecretKey @relation(fields: [secretId], references: [id])
   secretId String
 
-  logisticsApp   LogisticsApp? @relation(fields: [logisticsAppId], references: [id], onDelete: Cascade)
-  logisticsAppId String?
+  logisticsApp   LogisticsApp @relation(fields: [logisticsAppId], references: [id], onDelete: Cascade)
+  logisticsAppId String
 }
 
 // Until prisma allows for inheritance we are stuck createing different webhook modules
