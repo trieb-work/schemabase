@@ -230,7 +230,8 @@ describe("with valid webhook", () => {
           const createdOrder = await zoho.getSalesorder(
             salesOrders[0].salesorder_number,
           );
-          expect(createdOrder?.shipping_charges.tax_percentage).toBe(19);
+
+          expect(createdOrder?.shipping_charge_tax_percentage).toBe(19);
         }, 100_000);
       });
     });

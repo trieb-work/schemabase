@@ -109,7 +109,10 @@ export class StrapiOrdersToZoho {
         throw new Error(`Malformed event: ${err}`);
       });
 
-    const transformedOrders = [];
+    const transformedOrders: {
+      order: CreateSalesOrder;
+      address: OrderEvent["entry"]["addresses"][0];
+    }[] = [];
     for (const address of event.entry.addresses) {
       const productIds = rawEvent.entry.products.map((p) => p.product.zohoId);
 
@@ -143,7 +146,6 @@ export class StrapiOrdersToZoho {
           ]),
         )
         .digest("hex");
-
       transformedOrders.push({
         order: {
           customer_id: event.entry.zohoCustomerId,
@@ -153,8 +155,8 @@ export class StrapiOrdersToZoho {
             quantity: p.quantity,
           })),
           shipping_charge: address.shippingCosts,
-          shipping_charte_tax_id: highestTax.taxId,
-          // shipping_charge_tax_id: highestTax.taxId !== "" ? highestTax.taxId: undefined,
+          shipping_charge_tax_id: highestTax.taxId,
+
           custom_fields: [
             {
               api_name: "cf_orderhash",
