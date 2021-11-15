@@ -1,5 +1,6 @@
 import { ZohoClientInstance } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/util/logger";
+import { HttpError } from "@eci/util/errors";
 
 export type Return = {
   orders: {
@@ -51,8 +52,13 @@ export class LogisticStats implements ZohoLogisticsService {
     customFields: CustomFields;
   }): Promise<LogisticStats> {
     const instance = new LogisticStats(config);
-    if (!config.customFields)
-      config.logger.error("Custom fields config is missing!");
+    if (
+      !(
+        config.customFields?.currentBulkOrders &&
+        config.customFields.currentOrdersReadyToFulfill
+      )
+    )
+      throw new HttpError(400, "Custom fields config is missing!");
 
     await instance.zoho.authenticate();
 
