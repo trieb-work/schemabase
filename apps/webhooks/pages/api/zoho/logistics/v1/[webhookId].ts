@@ -9,9 +9,6 @@ const requestValidation = z.object({
   query: z.object({
     webhookId: z.string(),
   }),
-  headers: z.object({
-    authorization: z.string().nonempty(),
-  }),
 });
 
 const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
@@ -30,7 +27,6 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
       id: webhookId,
     },
     include: {
-      secret: true,
       logisticsApp: {
         include: {
           integration: {

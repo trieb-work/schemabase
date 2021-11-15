@@ -3,6 +3,7 @@ import { ILogger } from "@eci/util/logger";
 import { HttpError } from "@eci/util/errors";
 
 export type Return = {
+  creation_time: string;
   orders: {
     ready_to_fulfill: {
       current: number;
@@ -72,6 +73,7 @@ export class LogisticStats implements ZohoLogisticsService {
 
   public async getCurrentPackageStats(): Promise<Return> {
     this.logger.info("fetching salesorders from Zoho");
+    const now = new Date().toUTCString();
     const currentOrdersReady = (
       await this.zoho.searchSalesOrdersWithScrolling({
         customViewID: this.customFields.currentOrdersReadyToFulfill,
@@ -98,6 +100,7 @@ export class LogisticStats implements ZohoLogisticsService {
           next_five_days: 0,
         },
       },
+      creation_time: now,
     };
   }
 }

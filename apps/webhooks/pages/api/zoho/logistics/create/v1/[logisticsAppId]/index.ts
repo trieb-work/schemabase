@@ -1,5 +1,4 @@
 import { setupPrisma, extendContext } from "@eci/context";
-import { createHash } from "crypto";
 import { z } from "zod";
 import { handleWebhook, Webhook } from "@eci/http";
 
@@ -22,19 +21,12 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
-  const secret = idGenerator.id("secretKey");
   const webhook = await ctx.prisma.incomingLogisticsWebhook.create({
     data: {
       id: idGenerator.id("publicKey"),
       logisticsApp: {
         connect: {
           id: logisticsAppId,
-        },
-      },
-      secret: {
-        create: {
-          id: idGenerator.id("publicKey"),
-          secret: createHash("sha256").update(secret).digest("hex"),
         },
       },
     },
@@ -44,7 +36,6 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     status: "received",
     traceId: ctx.trace.id,
     webhookId: webhook.id,
-    webhookSecret: secret,
     path: `/api/zoho/logistics/v1/${webhook.id}`,
   });
 };

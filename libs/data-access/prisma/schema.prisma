@@ -288,12 +288,8 @@ model IncomingLogisticsWebhook {
   // Human readable name
   name String?
 
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  secret   SecretKey @relation(fields: [secretId], references: [id])
-  secretId String
 
   logisticsApp   LogisticsApp @relation(fields: [logisticsAppId], references: [id], onDelete: Cascade)
   logisticsAppId String
@@ -337,5 +333,4 @@ model SecretKey {
   incomingSaleorWebhook          IncomingSaleorWebhook?
   IncomingStrapiWebhook          IncomingStrapiWebhook?
   IncomingProductDataFeedWebhook IncomingProductDataFeedWebhook?
-  IncomingLogisticsWebhook       IncomingLogisticsWebhook?
 }
