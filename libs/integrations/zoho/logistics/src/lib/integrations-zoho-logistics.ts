@@ -54,8 +54,7 @@ export class LogisticStats implements ZohoLogisticsService {
     if (!config.customFields)
       config.logger.error("Custom fields config is missing!");
 
-    const header = await instance.zoho.authenticate();
-    console.log(header);
+    await instance.zoho.authenticate();
 
     return instance;
   }
