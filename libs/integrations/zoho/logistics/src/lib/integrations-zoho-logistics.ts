@@ -42,7 +42,7 @@ export class LogisticStats implements ZohoLogisticsService {
     customFields: CustomFields;
   }) {
     this.zoho = config.zoho;
-    this.logger = config.logger;
+    this.logger = config.logger.with({ integration: "zoho-logistics" });
     this.customFields = config.customFields;
   }
 
@@ -66,9 +66,7 @@ export class LogisticStats implements ZohoLogisticsService {
   }
 
   public async getCurrentPackageStats(): Promise<Return> {
-    this.logger.info(
-      "Logistics Integration: making upstream requests to Zoho now",
-    );
+    this.logger.info("making upstream requests to Zoho now");
     const currentOrdersReady = (
       await this.zoho.searchSalesOrdersWithScrolling({
         customViewID: this.customFields.currentOrdersReadyToFulfill,
