@@ -9,6 +9,7 @@ const requestValidation = z.object({
   query: z.object({
     webhookId: z.string(),
   }),
+  method: z.string(),
 });
 
 const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
@@ -18,7 +19,15 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 }): Promise<void> => {
   const {
     query: { webhookId },
+    method,
   } = req;
+
+  // CORS headers
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+
+  // pre-flight requests get return
+  if (method.toUpperCase() === "OPTIONS") return res.end();
 
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
@@ -88,13 +97,14 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     "Cache-Control",
     `s-maxage=${cacheMaxAge}, stale-while-revalidate`,
   );
+
   res.json(responseData);
 };
 
 export default handleWebhook({
   webhook,
   validation: {
-    http: { allowedMethods: ["GET"] },
+    http: { allowedMethods: ["GET", "OPTIONS"] },
     request: requestValidation,
   },
 });
