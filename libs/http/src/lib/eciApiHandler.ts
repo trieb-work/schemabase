@@ -12,7 +12,7 @@ export type Webhook<TRequest> = (config: {
   res: NextApiResponse;
 }) => Promise<void>;
 
-export type HTTPMethod = "POST" | "GET" | "PUT" | "DELETE";
+export type HTTPMethod = "POST" | "GET" | "PUT" | "DELETE" | "OPTIONS";
 
 export type HandleWebhookConfig<TRequest> = {
   /**
