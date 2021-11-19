@@ -108,7 +108,7 @@ export class LogisticStats implements ZohoLogisticsService {
         },
         total: {
           current: currentBulkOrders + currentOrdersReady,
-          next_five_days: nextFiveDaysBulkOrders,
+          next_five_days: nextFiveDaysOrders + nextFiveDaysBulkOrders,
         },
       },
       creation_time: now,
