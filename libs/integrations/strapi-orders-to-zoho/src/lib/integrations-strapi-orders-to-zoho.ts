@@ -29,6 +29,7 @@ export const orderValidation = z.object({
     prefix: z.string(),
     addresses: z.array(addressValidation),
     status: statusValidation,
+    terminationDate: z.string().nullable().optional(),
     zohoCustomerId: z.string(),
     products: z.array(
       z.object({
@@ -143,6 +144,7 @@ export class StrapiOrdersToZoho {
             address.street2,
             address.zip,
             event.entry.products,
+            event.entry.terminationDate,
           ]),
         )
         .digest("hex");
@@ -150,6 +152,7 @@ export class StrapiOrdersToZoho {
         order: {
           customer_id: event.entry.zohoCustomerId,
           salesorder_number: address.orderId,
+          shipment_date: event.entry.terminationDate || "",
           line_items: event.entry.products.map((p) => ({
             item_id: p.product.zohoId,
             quantity: p.quantity,

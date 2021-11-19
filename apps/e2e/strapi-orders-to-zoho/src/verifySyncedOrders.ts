@@ -59,6 +59,7 @@ export async function verifySyncedOrders(
     expect(zohoAddr.attention).toEqual(
       `${strapiAddress.name} ${strapiAddress.surname}`,
     );
+    expect(res.shipment_date).toEqual(strapiEvent.entry.terminationDate || "");
 
     if (strapiAddress.street2) {
       expect(zohoAddr.street2).toEqual(
