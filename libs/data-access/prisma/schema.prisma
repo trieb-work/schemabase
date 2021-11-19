@@ -42,13 +42,13 @@ model LogisticsApp {
   currentOrdersCustomViewId String
 
   // Regular orders in the next fice days custom view
-  nextFiveDaysOrdersCustomViewId String
+  nextFiveDaysOrdersCustomViewId String?
 
   // The custom view ID to get all current bulk orders
   currentBulkOrdersCustomViewId String
 
   // custom view ID to get all bulk orders for the next days
-  nextFiveDaysBulkOrdersCustomViewId String
+  nextFiveDaysBulkOrdersCustomViewId String?
 
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)

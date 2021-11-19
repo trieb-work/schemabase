@@ -79,10 +79,11 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   });
   const customFields = {
     currentOrdersReadyToFulfill: webhook.logisticsApp.currentOrdersCustomViewId,
-    nextFiveDaysOrders: webhook.logisticsApp.nextFiveDaysBulkOrdersCustomViewId,
+    nextFiveDaysOrders:
+      webhook.logisticsApp.nextFiveDaysBulkOrdersCustomViewId || "",
     currentBulkOrders: webhook.logisticsApp.currentBulkOrdersCustomViewId,
     nextFiveDaysBulkOrders:
-      webhook.logisticsApp.nextFiveDaysBulkOrdersCustomViewId,
+      webhook.logisticsApp.nextFiveDaysBulkOrdersCustomViewId || "",
   };
   const handleRequest = await LogisticStats.new({
     zoho,
