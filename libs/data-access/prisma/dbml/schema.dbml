@@ -16,9 +16,9 @@ Table ProductDataFeedApp {
 Table LogisticsApp {
   id String [pk]
   currentOrdersCustomViewId String [not null]
-  nextFiveDaysOrdersCustomViewId String
+  nextFiveDaysOrdersCustomViewId String [not null]
   currentBulkOrdersCustomViewId String [not null]
-  nextFiveDaysBulkOrdersCustomViewId String
+  nextFiveDaysBulkOrdersCustomViewId String [not null]
   tenant Tenant [not null]
   tenantId String [unique, not null]
   webhooks IncomingLogisticsWebhook [not null]
