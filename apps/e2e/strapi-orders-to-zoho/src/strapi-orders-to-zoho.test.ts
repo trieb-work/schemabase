@@ -268,6 +268,22 @@ describe("with valid webhook", () => {
         await verifySyncedOrders(zoho, event);
       }, 100_000);
     });
+
+    describe("with terminationDate", () => {
+      it(`syncs all orders correctly`, async () => {
+        const event = await generateEvent("entry.create", "Draft");
+        event.entry.terminationDate = "2022-10-02";
+
+        await triggerWebhook(webhookId, webhookSecret, event);
+
+        /**
+         * Wait for requests to happen in the background
+         */
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
+
+        await verifySyncedOrders(zoho, event);
+      }, 100_000);
+    });
   });
 
   describe("entry.update", () => {
