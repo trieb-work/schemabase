@@ -28,6 +28,7 @@ type CustomFields = {
   currentOrdersReadyToFulfill: string;
   nextFiveDaysOrders: string;
   currentBulkOrders: string;
+  nextFiveDaysBulkOrders: string;
 };
 
 export class LogisticStats implements ZohoLogisticsService {
@@ -84,20 +85,30 @@ export class LogisticStats implements ZohoLogisticsService {
         customViewID: this.customFields.currentBulkOrders,
       })
     ).length;
+    const nextFiveDaysOrders = (
+      await this.zoho.searchSalesOrdersWithScrolling({
+        customViewID: this.customFields.nextFiveDaysOrders,
+      })
+    ).length;
+    const nextFiveDaysBulkOrders = (
+      await this.zoho.searchSalesOrdersWithScrolling({
+        customViewID: this.customFields.nextFiveDaysBulkOrders,
+      })
+    ).length;
 
     return {
       orders: {
         ready_to_fulfill: {
           current: currentOrdersReady,
-          next_five_days: 0,
+          next_five_days: nextFiveDaysOrders,
         },
         bulk_orders: {
           current: currentBulkOrders,
-          next_five_days: 0,
+          next_five_days: nextFiveDaysBulkOrders,
         },
         total: {
           current: currentBulkOrders + currentOrdersReady,
-          next_five_days: 0,
+          next_five_days: nextFiveDaysBulkOrders,
         },
       },
       creation_time: now,

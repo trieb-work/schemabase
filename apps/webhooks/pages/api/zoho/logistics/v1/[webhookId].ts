@@ -79,8 +79,10 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   });
   const customFields = {
     currentOrdersReadyToFulfill: webhook.logisticsApp.currentOrdersCustomViewId,
-    nextFiveDaysOrders: webhook.logisticsApp.currentOrdersCustomViewId,
+    nextFiveDaysOrders: webhook.logisticsApp.nextFiveDaysBulkOrdersCustomViewId,
     currentBulkOrders: webhook.logisticsApp.currentBulkOrdersCustomViewId,
+    nextFiveDaysBulkOrders:
+      webhook.logisticsApp.nextFiveDaysBulkOrdersCustomViewId,
   };
   const handleRequest = await LogisticStats.new({
     zoho,
@@ -91,7 +93,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   const responseData = await handleRequest.getCurrentPackageStats();
 
   const now = new Date().getHours();
-  const cacheMaxAge = now >= 8 && now <= 17 ? 600 : 3600;
+  const cacheMaxAge = now >= 8 && now <= 17 ? 900 : 3600;
 
   res.setHeader(
     "Cache-Control",
