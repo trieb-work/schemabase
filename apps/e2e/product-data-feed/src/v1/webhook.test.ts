@@ -1,6 +1,5 @@
 import { HttpClient } from "@eci/http";
 import { PrismaClient } from "@eci/data-access/prisma";
-import { createHash } from "crypto";
 import { idGenerator } from "@eci/util/ids";
 import { CountryCode, createSaleorClient } from "@eci/adapters/saleor/api";
 import { env } from "@chronark/env";
@@ -173,20 +172,12 @@ beforeAll(async () => {
     },
   });
 
-  const secret = idGenerator.id("test");
-  const secretHash = createHash("sha256").update(secret).digest("hex");
   await prisma.incomingProductDataFeedWebhook.create({
     data: {
       id: webhookId,
       productDataFeedApp: {
         connect: {
           id: productDataFeed.id,
-        },
-      },
-      secret: {
-        create: {
-          id: secret,
-          secret: secretHash,
         },
       },
     },

@@ -161,8 +161,6 @@ Table IncomingProductDataFeedWebhook {
   name String
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-  secret SecretKey
-  secretId String
   productDataFeedApp ProductDataFeedApp [not null]
   productDataFeedAppId String [not null]
 }
@@ -183,7 +181,6 @@ Table SecretKey {
   createdAt DateTime [default: `now()`, not null]
   incomingSaleorWebhook IncomingSaleorWebhook
   IncomingStrapiWebhook IncomingStrapiWebhook
-  IncomingProductDataFeedWebhook IncomingProductDataFeedWebhook
 }
 
 Ref: ProductDataFeedApp.saleorAppId > SaleorApp.id
@@ -233,8 +230,6 @@ Ref: IncomingSaleorWebhook.installedSaleorAppId > InstalledSaleorApp.id
 Ref: IncomingStrapiWebhook.secretId - SecretKey.id
 
 Ref: IncomingStrapiWebhook.strapiAppId > StrapiApp.id
-
-Ref: IncomingProductDataFeedWebhook.secretId - SecretKey.id
 
 Ref: IncomingProductDataFeedWebhook.productDataFeedAppId > ProductDataFeedApp.id
 
