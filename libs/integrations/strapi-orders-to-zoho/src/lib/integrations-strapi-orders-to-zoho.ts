@@ -5,7 +5,8 @@ import {
   ZohoClientInstance,
   SalesOrder,
 } from "@trieb.work/zoho-ts";
-import { createHash } from "crypto";
+import { sha256 } from "@eci/util";
+
 import { ILogger } from "@eci/util/logger";
 const statusValidation = z.enum(["Draft", "Confirmed", "Sending", "Finished"]);
 
@@ -132,22 +133,18 @@ export class StrapiOrdersToZoho {
         { taxPercentage: 0, taxId: "" },
       );
 
-      const orderHash = createHash("sha256")
-        .update(
-          JSON.stringify([
-            address.address,
-            address.city,
-            address.country,
-            address.name,
-            address.surname,
-            address.shippingCosts,
-            address.street2,
-            address.zip,
-            event.entry.products,
-            event.entry.terminationDate,
-          ]),
-        )
-        .digest("hex");
+      const orderHash = sha256([
+        address.address,
+        address.city,
+        address.country,
+        address.name,
+        address.surname,
+        address.shippingCosts,
+        address.street2,
+        address.zip,
+        event.entry.products,
+        event.entry.terminationDate,
+      ]);
       transformedOrders.push({
         order: {
           customer_id: event.entry.zohoCustomerId,
@@ -324,25 +321,51 @@ export class StrapiOrdersToZoho {
       if (address.street2) {
         street2.push(address.street2);
       }
-      const addressId = await this.zoho
-        .addAddresstoContact(
-          zohoCustomerId,
-          {
-            attention: fullName,
-            address: address.address,
-            city: address.city,
-            zip: address.zip.toString(),
-            country: address.country,
-            street2: street2.join(" - "),
-          },
-          3,
-        )
-        .catch((err: Error) => {
-          throw new Error(`Unable to add address to contact: ${err}`);
+      /**
+       * Check if an address is already added to the customer
+       */
+
+      const contact = await this.zoho.getContactWithFullAdresses(
+        zohoCustomerId,
+      );
+
+      this.logger.info("Addresses", { addresses: contact.addresses });
+      const existingAddresses = contact.addresses.map((a) => ({
+        id: a.address_id,
+        hash: sha256({
+          attention: a.attention,
+          address: a.address,
+          street2: a.street2,
+          city: a.city,
+          zip: a.zip,
+          country: a.country,
+        }),
+      }));
+
+      const createAddress = {
+        attention: fullName,
+        address: address.address,
+        street2: street2.join(" - "),
+        city: address.city,
+        zip: address.zip.toString(),
+        country: address.country,
+      };
+      const createAddressHash = sha256(createAddress);
+
+      let addressId = existingAddresses.find(
+        (a) => a.hash === createAddressHash,
+      )?.id;
+
+      if (!addressId) {
+        addressId = await this.zoho
+          .addAddresstoContact(zohoCustomerId, createAddress, 3)
+          .catch((err: Error) => {
+            throw new Error(`Unable to add address to contact: ${err}`);
+          });
+        this.logger.info("Adding new order", {
+          order,
         });
-      this.logger.info("Adding new order", {
-        order,
-      });
+      }
       const res = await this.zoho
         .createSalesorder({
           ...order,

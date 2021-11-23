@@ -1,3 +1,4 @@
+import { config } from "dotenv";
 import { PrismaClient } from "@eci/data-access/prisma";
 import faker from "faker";
 import { createHash } from "crypto";
@@ -9,6 +10,20 @@ import { randomInt } from "crypto";
 import { generateAddress, triggerWebhook } from "./util";
 import { OrderEvent } from "@eci/integrations/strapi-orders-to-zoho";
 import { verifySyncedOrders } from "./verifySyncedOrders";
+
+config({ path: ".env.local" });
+
+/**
+ * Delete contacts and orders after the test cases
+ */
+const CLEAN_UP = true;
+
+/**
+ * Wait for some time after sending a webhook until the message has propagated
+ * through our system and entities have been creted in zoho.
+ */
+const propagationDelay = async () =>
+  new Promise((resolve) => setTimeout(resolve, 30_000));
 
 const prisma = new PrismaClient();
 
@@ -153,16 +168,17 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await prisma.$disconnect();
-
-  /** Clean up created entries */
-  const ordersInZoho = await zoho.searchSalesOrdersWithScrolling({
-    searchString: `${prefix}-`,
-  });
-  for (const order of ordersInZoho) {
-    await zoho.deleteSalesorder(order.salesorder_id);
-  }
-  for (const contactId of createdContactIds) {
-    await zoho.deleteContact(contactId);
+  if (CLEAN_UP) {
+    /** Clean up created entries */
+    const ordersInZoho = await zoho.searchSalesOrdersWithScrolling({
+      searchString: `${prefix}-`,
+    });
+    for (const order of ordersInZoho) {
+      await zoho.deleteSalesorder(order.salesorder_id);
+    }
+    for (const contactId of createdContactIds) {
+      await zoho.deleteContact(contactId);
+    }
   }
 }, 100_000);
 
@@ -223,7 +239,7 @@ describe("with valid webhook", () => {
           /**
            * Wait for requests to happen in the background
            */
-          await new Promise((resolve) => setTimeout(resolve, 30_000));
+          await propagationDelay();
 
           const salesOrders = await verifySyncedOrders(zoho, event);
 
@@ -244,7 +260,7 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 30_000));
+        await propagationDelay();
 
         await verifySyncedOrders(zoho, event);
       }, 100_000);
@@ -263,7 +279,7 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 30_000));
+        await propagationDelay();
 
         await verifySyncedOrders(zoho, event);
       }, 100_000);
@@ -279,7 +295,7 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 30_000));
+        await propagationDelay();
 
         await verifySyncedOrders(zoho, event);
       }, 100_000);
@@ -317,7 +333,7 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 30_000));
+        await propagationDelay();
 
         await verifySyncedOrders(zoho, event);
       }, 100_000);
@@ -345,11 +361,12 @@ describe("with valid webhook", () => {
           /**
            * Wait for requests to happen in the background
            */
-          await new Promise((resolve) => setTimeout(resolve, 30_000));
+          await propagationDelay();
 
           await verifySyncedOrders(zoho, event);
         }, 100_000);
       });
+
       it("replaces the modified order", async () => {
         const event = await generateEvent("entry.create", "Draft");
 
@@ -371,7 +388,7 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 30_000));
+        await propagationDelay();
 
         await verifySyncedOrders(zoho, event);
       }, 100_000);
@@ -384,7 +401,7 @@ describe("with valid webhook", () => {
          * Create first orders
          */
         await triggerWebhook(webhookId, webhookSecret, event);
-        await new Promise((resolve) => setTimeout(resolve, 30_000));
+        await propagationDelay();
         /**
          * Shuffle addresses aroujd
          */
@@ -395,7 +412,56 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 30_000));
+        await propagationDelay();
+
+        const ordersInZohoAfterUpdate =
+          await zoho.searchSalesOrdersWithScrolling({
+            searchString: event.entry.addresses[0].orderId
+              .split("-")
+              .slice(0, 2)
+              .join("-"),
+          });
+
+        expect(ordersInZohoAfterUpdate.length).toBe(
+          event.entry.addresses.length,
+        );
+
+        expect(ordersInZohoAfterUpdate[0].quantity).toBe(999);
+
+        for (const order of ordersInZohoAfterUpdate) {
+          expect(order.status).toEqual("draft");
+        }
+      }, 100_000);
+      it("does not create duplicate addresses", async () => {
+        const n = 7;
+        const event = await generateEvent("entry.create", "Draft", n);
+
+        /**
+         * Create first orders
+         */
+        await triggerWebhook(webhookId, webhookSecret, event);
+        await propagationDelay();
+        /**
+         * Shuffle addresses aroujd
+         */
+        event.event = "entry.update";
+        event.entry.products[0].quantity = 999;
+        await triggerWebhook(webhookId, webhookSecret, event);
+
+        /**
+         * Wait for requests to happen in the background
+         */
+        await propagationDelay();
+
+        const contact = await zoho.getContactWithFullAdresses(
+          event.entry.zohoCustomerId,
+        );
+
+        /**
+         * Not sure why +2 but that's how it seems to work.
+         * Ideally we would only have +1 here but this is fine for now.
+         */
+        expect(contact.addresses.length).toBe(n + 2);
 
         const ordersInZohoAfterUpdate =
           await zoho.searchSalesOrdersWithScrolling({
@@ -424,7 +490,7 @@ describe("with valid webhook", () => {
          * Create first orders
          */
         await triggerWebhook(webhookId, webhookSecret, event);
-        await new Promise((resolve) => setTimeout(resolve, 30_000));
+        await propagationDelay();
 
         event.event = "entry.update";
         event.entry.addresses = [];
@@ -433,7 +499,7 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 30_000));
+        await propagationDelay();
 
         await verifySyncedOrders(zoho, event);
       }, 100_000);
@@ -446,7 +512,7 @@ describe("with valid webhook", () => {
          * Create first orders
          */
         await triggerWebhook(webhookId, webhookSecret, event);
-        await new Promise((resolve) => setTimeout(resolve, 30_000));
+        await propagationDelay();
 
         /**
          * Shuffle addresses around
@@ -458,7 +524,7 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 30_000));
+        await propagationDelay();
 
         const orderId = event.entry.addresses[0].orderId
           .split("-")
@@ -480,7 +546,7 @@ describe("with valid webhook", () => {
          * Create first orders
          */
         await triggerWebhook(webhookId, webhookSecret, event);
-        await new Promise((resolve) => setTimeout(resolve, 30_000));
+        await propagationDelay();
 
         /**
          * Shuffle addresses around
@@ -498,7 +564,7 @@ describe("with valid webhook", () => {
         /**
          * Wait for requests to happen in the background
          */
-        await new Promise((resolve) => setTimeout(resolve, 30_000));
+        await propagationDelay();
 
         const zohoOrders = await zoho.searchSalesOrdersWithScrolling({
           searchString: [event.entry.prefix, event.entry.id].join("-"),
