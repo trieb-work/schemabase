@@ -10,6 +10,13 @@ import { sha256 } from "@eci/util";
 import { ILogger } from "@eci/util/logger";
 const statusValidation = z.enum(["Draft", "Confirmed", "Sending", "Finished"]);
 
+export const productValidation = z.object({
+  product: z.object({
+    zohoId: z.string(),
+  }),
+  quantity: z.number().int().positive(),
+});
+
 export const addressValidation = z.object({
   orderId: z.string(),
   name: z.string(),
@@ -18,9 +25,10 @@ export const addressValidation = z.object({
   zip: z.string(),
   city: z.string(),
   country: z.string(),
-  street2: z.string().nullable().optional(),
+  street2: z.string().nullish(),
   shippingCosts: z.number(),
-  companyName: z.string().nullable().optional(),
+  companyName: z.string().nullish(),
+  products: z.array(productValidation).nullish(),
 });
 export const orderValidation = z.object({
   event: z.enum(["entry.create", "entry.update", "entry.delete"]),
@@ -30,16 +38,9 @@ export const orderValidation = z.object({
     prefix: z.string(),
     addresses: z.array(addressValidation),
     status: statusValidation,
-    terminationDate: z.string().nullable().optional(),
+    terminationDate: z.string().nullish(),
     zohoCustomerId: z.string(),
-    products: z.array(
-      z.object({
-        product: z.object({
-          zohoId: z.string(),
-        }),
-        quantity: z.number().int().positive(),
-      }),
-    ),
+    products: z.array(productValidation),
   }),
 });
 
@@ -116,7 +117,8 @@ export class StrapiOrdersToZoho {
       address: OrderEvent["entry"]["addresses"][0];
     }[] = [];
     for (const address of event.entry.addresses) {
-      const productIds = rawEvent.entry.products.map((p) => p.product.zohoId);
+      const products = address.products ?? rawEvent.entry.products;
+      const productIds = products.map((p) => p.product.zohoId);
 
       const productTaxes = [];
       for (const productId of productIds) {
@@ -142,7 +144,7 @@ export class StrapiOrdersToZoho {
         address.shippingCosts,
         address.street2,
         address.zip,
-        event.entry.products,
+        products,
         event.entry.terminationDate,
       ]);
       transformedOrders.push({
@@ -150,7 +152,7 @@ export class StrapiOrdersToZoho {
           customer_id: event.entry.zohoCustomerId,
           salesorder_number: address.orderId,
           shipment_date: event.entry.terminationDate || "",
-          line_items: event.entry.products.map((p) => ({
+          line_items: products.map((p) => ({
             item_id: p.product.zohoId,
             quantity: p.quantity,
           })),

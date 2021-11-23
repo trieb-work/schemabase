@@ -300,6 +300,33 @@ describe("with valid webhook", () => {
         await verifySyncedOrders(zoho, event);
       }, 100_000);
     });
+    describe("with different products for an address", () => {
+      it(`syncs all orders correctly`, async () => {
+        const event = await generateEvent("entry.create", "Draft");
+        event.entry.addresses[0].products = [
+          {
+            quantity: 2000,
+            product: {
+              /**
+               * Currently hardcoded.
+               * This can fail if the item does not exist in zoho.
+               * https://inventory.zoho.eu/app#/inventory/items/116240000000378951
+               */
+              zohoId: "116240000000112128",
+            },
+          },
+        ];
+
+        await triggerWebhook(webhookId, webhookSecret, event);
+
+        /**
+         * Wait for requests to happen in the background
+         */
+        await propagationDelay();
+
+        await verifySyncedOrders(zoho, event);
+      }, 100_000);
+    });
   });
 
   describe("entry.update", () => {
