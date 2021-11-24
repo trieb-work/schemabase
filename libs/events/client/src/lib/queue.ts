@@ -56,6 +56,7 @@ export class QueueManager<
     port: number;
     password?: string;
   };
+  private scheduler: { [topic: string]: QueueScheduler };
 
   private workers: {
     [topic: string]: Worker<SignedMessage<Message<TTopic, TPayload>>>;
@@ -80,6 +81,7 @@ export class QueueManager<
     this.workers = {};
     this.queues = {};
     this.signer = signer;
+    this.scheduler = {};
   }
 
   static queueId(topic: string): string {
@@ -88,12 +90,14 @@ export class QueueManager<
 
   public async close(): Promise<void> {
     await Promise.all(
-      [...Object.values(this.queues), ...Object.values(this.workers)].map(
-        async (q) => {
-          await q.close();
-          await q.disconnect();
-        },
-      ),
+      [
+        ...Object.values(this.queues),
+        ...Object.values(this.workers),
+        ...Object.values(this.scheduler),
+      ].map(async (q) => {
+        await q.close();
+        await q.disconnect();
+      }),
     );
   }
 
@@ -116,11 +120,12 @@ export class QueueManager<
         `A worker has already been assigned to handle ${topic} messages`,
       );
     }
-    new QueueScheduler(id);
 
     this.workers[topic] = new Worker(id, this.wrapReceiver(receiver), {
       connection: this.connection,
-      sharedConnection: false,
+    });
+    this.scheduler[topic] = new QueueScheduler(id, {
+      connection: this.connection,
     });
 
     /**
