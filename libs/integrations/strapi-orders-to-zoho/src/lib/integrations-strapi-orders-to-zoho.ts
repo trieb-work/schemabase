@@ -118,7 +118,10 @@ export class StrapiOrdersToZoho {
       address: OrderEvent["entry"]["addresses"][0];
     }[] = [];
     for (const address of event.entry.addresses) {
-      const products = address.products ?? rawEvent.entry.products;
+      const products =
+        address.products && address.products.length > 0
+          ? address.products
+          : rawEvent.entry.products;
       const productIds = products.map((p) => p.product.zohoId);
 
       const productTaxes = [];
