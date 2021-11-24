@@ -118,7 +118,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     default:
       throw new Error(`Invalid strapi event: ${body.event}`);
   }
-  await queue.produce({
+  const jobId = await queue.produce({
     payload: {
       ...req.body,
       zohoAppId: integration.zohoApp.id,
@@ -134,6 +134,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   res.json({
     status: "received",
     traceId: ctx.trace.id,
+    jobId,
   });
 };
 

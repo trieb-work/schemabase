@@ -1,9 +1,9 @@
 import { env } from "@chronark/env";
-import { Worker, Job, Queue } from "bullmq";
+import { Worker, Job, Queue, QueueScheduler } from "bullmq";
 import { SignedMessage, Message } from "./message";
-
 import { ISigner } from "./signature";
 import { ILogger } from "@eci/util/logger";
+import { createHash } from "crypto";
 
 export type QueueConfig = {
   signer: ISigner;
@@ -32,7 +32,7 @@ export interface IConsumer<TTopic, TMessage> {
 }
 
 export interface IProducer<TMessage> {
-  produce: (message: TMessage) => Promise<void>;
+  produce: (message: TMessage) => Promise<string>;
 }
 
 /**
@@ -82,7 +82,7 @@ export class QueueManager<
     this.signer = signer;
   }
 
-  private queueId(topic: TTopic): string {
+  static queueId(topic: string): string {
     return ["eci", env.require("ECI_ENV"), topic].join(":").toLowerCase();
   }
 
@@ -97,11 +97,15 @@ export class QueueManager<
     );
   }
 
+  public async getJob(topic: string, jobId: string) {
+    return this.queues[topic].getJob(jobId);
+  }
+
   public consume(
     topic: TTopic,
     receiver: (message: Message<TTopic, TPayload>) => Promise<void>,
   ): void {
-    const id = this.queueId(topic);
+    const id = QueueManager.queueId(topic);
     this.logger.info("Creating topic consumer", { topic: id });
     /**
      * Adding multiple workers to a single topic is probably a mistake
@@ -112,6 +116,8 @@ export class QueueManager<
         `A worker has already been assigned to handle ${topic} messages`,
       );
     }
+    new QueueScheduler(id);
+
     this.workers[topic] = new Worker(id, this.wrapReceiver(receiver), {
       connection: this.connection,
       sharedConnection: true,
@@ -152,7 +158,14 @@ export class QueueManager<
    * Send a message to the queue
    * a new traceId is generated if not provided
    */
-  public async produce(message: Message<TTopic, TPayload>): Promise<void> {
+  public async produce(message: Message<TTopic, TPayload>): Promise<string> {
+    /**
+     * By using a hash of the messsage we also deduplicate the message automatically
+     */
+    const jobId = createHash("sha256")
+      .update(JSON.stringify(message))
+      .digest("base64");
+
     const signedMessage = {
       message,
       signature: this.signer.sign(message),
@@ -162,18 +175,28 @@ export class QueueManager<
      * Create a new queue for this topic if necessary
      */
     if (!(topic in this.queues)) {
-      const id = this.queueId(topic);
+      const id = QueueManager.queueId(topic);
       this.logger.debug(`Creating new queue ${id}`);
       this.queues[topic] = new Queue(id, {
         connection: this.connection,
         sharedConnection: true,
+        defaultJobOptions: {
+          // Keep only the  last 1000 completed jobs in memory,
+          removeOnComplete: 1000,
+          attempts: 3,
+          backoff: {
+            type: "exponential",
+            delay: 1000,
+          },
+        },
       });
     }
     this.logger.debug("pushing message", { signedMessage });
     await this.queues[topic].add(topic, signedMessage, {
-      // Keep only 1000 the last completed jobs in memory,
-      removeOnComplete: 1000,
+      jobId,
     });
     this.logger.debug("Pushed message", { signedMessage });
+
+    return jobId;
   }
 }

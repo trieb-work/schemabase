@@ -12,8 +12,9 @@ export class Producer implements IProducer<Message<Topic, Payload>> {
 
   /**
    * Create a new message and add it to the queue.
+   * @return The job id
    */
-  public async produce(message: Message<Topic, Payload>): Promise<void> {
-    await this.queueManager.produce(message);
+  public async produce(message: Message<Topic, Payload>): Promise<string> {
+    return await this.queueManager.produce(message);
   }
 }

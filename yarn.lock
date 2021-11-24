@@ -1212,12 +1212,10 @@
   resolved "https://registry.yarnpkg.com/@chronark/env/-/env-0.0.2.tgz#a48b33b4b7da8ede396a2a2a7fb3fbd8220f59aa"
   integrity sha512-lG+teF4Xh2smwQatelPHhJ7Uj/pNLM64p7l5vj6EV5AREZKJDlUSJU8Ay9wdp//uLvjSncVc1VEk3ik7EyCUVg==
 
-"@chronark/prefixed-id@0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@chronark/prefixed-id/-/prefixed-id-0.0.1.tgz#a63264d51e278bc73698b96e5e10abcd7639aa8a"
-  integrity sha512-TachJ0rV3BDGmMU6cF2QdBDRtJzL8zZTnPq75UTSTEHyKIQCPyC3OWXVzobQKJgMKUsxwjrgVFdiAr7syk7lYQ==
-  dependencies:
-    uuid "^8.3.2"
+"@chronark/prefixed-id@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@chronark/prefixed-id/-/prefixed-id-0.1.0.tgz#6b7fe550b0b2415abbc6838ee66b2b9187a586d8"
+  integrity sha512-uq0wTKol4B0EneBMjc+7PA+z/uM9TBkAKMGgdxiYdDPYCGjGSgpWNCZXetJ7aFz4Fd/Y0D+qn8H4xeA7Qk/Itw==
 
 "@commitlint/cli@^13.1.0":
   version "13.2.1"
