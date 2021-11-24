@@ -129,7 +129,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
       topic,
     },
   });
-  ctx.logger.info("Queued new event", { body: req.body });
+  ctx.logger.info("Queued new event", { jobId, body: req.body });
 
   res.json({
     status: "received",

@@ -48,7 +48,6 @@ export async function triggerWebhook(
       authorization: webhookSecret,
     },
   });
-  console.warn({ url, res });
   expect(res.status).toBe(200);
   expect(res.data?.status).toEqual("received");
   expect(res.data?.traceId).toBeDefined();

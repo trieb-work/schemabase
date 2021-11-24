@@ -23,15 +23,15 @@ const CLEAN_UP = true;
  * through our system and entities have been created in zoho.
  */
 const waitForPropagation = async (topic: string, jobId: string) => {
+  const url = `http://localhost:3000/api/messages/${topic}/${jobId}`;
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    new Promise((resolve) => setTimeout(resolve, 1000));
     const job = await new HttpClient().call<{ isCompleted: boolean }>({
-      url: `http://localhost:3000/api/messages/${topic}/${jobId}`,
+      url,
       method: "GET",
     });
 
-    console.log({ job });
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     if (job.data?.isCompleted) {
       break;
     }
@@ -49,7 +49,7 @@ const zoho = new ZohoClientInstance({
 const createdContactIds: string[] = [];
 
 const webhookId = idGenerator.id("publicKey");
-const webhookSecret = idGenerator.secret("test");
+const webhookSecret = idGenerator.id("test");
 const prefix = "TEST";
 
 async function generateEvent(
@@ -238,7 +238,7 @@ describe("with valid webhook", () => {
   describe("entry.create", () => {
     describe("with multiple products", () => {
       describe("with different taxes", () => {
-        it.only("applies the highest tax to shipping costs", async () => {
+        it("applies the highest tax to shipping costs", async () => {
           const event = await generateEvent("entry.create", "Draft", 1);
           event.entry.products.push({
             product: {
@@ -248,10 +248,6 @@ describe("with valid webhook", () => {
           });
 
           const jobId = await triggerWebhook(webhookId, webhookSecret, event);
-          console.warn({ jobId });
-          /**
-           * Wait for requests to happen in the background
-           */
           await waitForPropagation(`strapi.${event.event}`, jobId);
 
           const salesOrders = await verifySyncedOrders(zoho, event);
@@ -268,12 +264,12 @@ describe("with valid webhook", () => {
       it(`syncs all orders correctly`, async () => {
         const event = await generateEvent("entry.create", "Draft");
 
-        await triggerWebhook(webhookId, webhookSecret, event);
+        const jobId = await triggerWebhook(webhookId, webhookSecret, event);
 
         /**
          * Wait for requests to happen in the background
          */
-        await waitForPropagation("", "");
+        await waitForPropagation(`strapi.${event.event}`, jobId);
 
         await verifySyncedOrders(zoho, event);
       }, 100_000);
@@ -287,12 +283,12 @@ describe("with valid webhook", () => {
           street2: "Imagine a street name here",
         }));
 
-        await triggerWebhook(webhookId, webhookSecret, event);
+        const jobId = await triggerWebhook(webhookId, webhookSecret, event);
 
         /**
          * Wait for requests to happen in the background
          */
-        await waitForPropagation("", "");
+        await waitForPropagation(`strapi.${event.event}`, jobId);
 
         await verifySyncedOrders(zoho, event);
       }, 100_000);
@@ -303,12 +299,12 @@ describe("with valid webhook", () => {
         const event = await generateEvent("entry.create", "Draft");
         event.entry.terminationDate = "2022-10-02";
 
-        await triggerWebhook(webhookId, webhookSecret, event);
+        const jobId = await triggerWebhook(webhookId, webhookSecret, event);
 
         /**
          * Wait for requests to happen in the background
          */
-        await waitForPropagation("", "");
+        await waitForPropagation(`strapi.${event.event}`, jobId);
 
         await verifySyncedOrders(zoho, event);
       }, 100_000);
@@ -323,7 +319,7 @@ describe("with valid webhook", () => {
         /**
          * Create first order
          */
-        await triggerWebhook(webhookId, webhookSecret, event);
+        let jobId = await triggerWebhook(webhookId, webhookSecret, event);
 
         /**
          * If we do not wait the search on zoho will not return the created
@@ -341,12 +337,8 @@ describe("with valid webhook", () => {
             event.entry.addresses.length + 1,
           ),
         );
-        await triggerWebhook(webhookId, webhookSecret, event);
-
-        /**
-         * Wait for requests to happen in the background
-         */
-        await waitForPropagation("", "");
+        jobId = await triggerWebhook(webhookId, webhookSecret, event);
+        await waitForPropagation(`strapi.${event.event}`, jobId);
 
         await verifySyncedOrders(zoho, event);
       }, 100_000);
@@ -359,7 +351,7 @@ describe("with valid webhook", () => {
           /**
            * Create first orders
            */
-          await triggerWebhook(webhookId, webhookSecret, event);
+          let jobId = await triggerWebhook(webhookId, webhookSecret, event);
 
           /**
            * If we do not wait the search on zoho will not return the created
@@ -369,12 +361,8 @@ describe("with valid webhook", () => {
 
           event.event = "entry.update";
           event.entry.addresses[0].street2 = "Additional street info";
-          await triggerWebhook(webhookId, webhookSecret, event);
-
-          /**
-           * Wait for requests to happen in the background
-           */
-          await waitForPropagation("", "");
+          jobId = await triggerWebhook(webhookId, webhookSecret, event);
+          await waitForPropagation(`strapi.${event.event}`, jobId);
 
           await verifySyncedOrders(zoho, event);
         }, 100_000);
@@ -386,7 +374,7 @@ describe("with valid webhook", () => {
         /**
          * Create first orders
          */
-        await triggerWebhook(webhookId, webhookSecret, event);
+        let jobId = await triggerWebhook(webhookId, webhookSecret, event);
 
         /**
          * If we do not wait the search on zoho will not return the created
@@ -396,12 +384,8 @@ describe("with valid webhook", () => {
 
         event.event = "entry.update";
         event.entry.addresses[0].address = "ChangedStreet 5";
-        await triggerWebhook(webhookId, webhookSecret, event);
-
-        /**
-         * Wait for requests to happen in the background
-         */
-        await waitForPropagation("", "");
+        jobId = await triggerWebhook(webhookId, webhookSecret, event);
+        await waitForPropagation(`strapi.${event.event}`, jobId);
 
         await verifySyncedOrders(zoho, event);
       }, 100_000);
@@ -413,19 +397,16 @@ describe("with valid webhook", () => {
         /**
          * Create first orders
          */
-        await triggerWebhook(webhookId, webhookSecret, event);
-        await waitForPropagation("", "");
+        let jobId = await triggerWebhook(webhookId, webhookSecret, event);
+        await waitForPropagation(`strapi.${event.event}`, jobId);
+
         /**
          * Shuffle addresses aroujd
          */
         event.event = "entry.update";
         event.entry.products[0].quantity = 999;
-        await triggerWebhook(webhookId, webhookSecret, event);
-
-        /**
-         * Wait for requests to happen in the background
-         */
-        await waitForPropagation("", "");
+        jobId = await triggerWebhook(webhookId, webhookSecret, event);
+        await waitForPropagation(`strapi.${event.event}`, jobId);
 
         const ordersInZohoAfterUpdate =
           await zoho.searchSalesOrdersWithScrolling({
@@ -452,19 +433,16 @@ describe("with valid webhook", () => {
         /**
          * Create first orders
          */
-        await triggerWebhook(webhookId, webhookSecret, event);
-        await waitForPropagation("", "");
+        let jobId = await triggerWebhook(webhookId, webhookSecret, event);
+        await waitForPropagation(`strapi.${event.event}`, jobId);
+
         /**
          * Shuffle addresses aroujd
          */
         event.event = "entry.update";
         event.entry.products[0].quantity = 999;
-        await triggerWebhook(webhookId, webhookSecret, event);
-
-        /**
-         * Wait for requests to happen in the background
-         */
-        await waitForPropagation("", "");
+        jobId = await triggerWebhook(webhookId, webhookSecret, event);
+        await waitForPropagation(`strapi.${event.event}`, jobId);
 
         const contact = await zoho.getContactWithFullAdresses(
           event.entry.zohoCustomerId,
@@ -502,17 +480,13 @@ describe("with valid webhook", () => {
         /**
          * Create first orders
          */
-        await triggerWebhook(webhookId, webhookSecret, event);
-        await waitForPropagation("", "");
+        let jobId = await triggerWebhook(webhookId, webhookSecret, event);
+        await waitForPropagation(`strapi.${event.event}`, jobId);
 
         event.event = "entry.update";
         event.entry.addresses = [];
-        await triggerWebhook(webhookId, webhookSecret, event);
-
-        /**
-         * Wait for requests to happen in the background
-         */
-        await waitForPropagation("", "");
+        jobId = await triggerWebhook(webhookId, webhookSecret, event);
+        await waitForPropagation(`strapi.${event.event}`, jobId);
 
         await verifySyncedOrders(zoho, event);
       }, 100_000);
@@ -524,20 +498,16 @@ describe("with valid webhook", () => {
         /**
          * Create first orders
          */
-        await triggerWebhook(webhookId, webhookSecret, event);
-        await waitForPropagation("", "");
+        let jobId = await triggerWebhook(webhookId, webhookSecret, event);
+        await waitForPropagation(`strapi.${event.event}`, jobId);
 
         /**
          * Shuffle addresses around
          */
         event.event = "entry.update";
         event.entry.addresses.reverse();
-        await triggerWebhook(webhookId, webhookSecret, event);
-
-        /**
-         * Wait for requests to happen in the background
-         */
-        await waitForPropagation("", "");
+        jobId = await triggerWebhook(webhookId, webhookSecret, event);
+        await waitForPropagation(`strapi.${event.event}`, jobId);
 
         const orderId = event.entry.addresses[0].orderId
           .split("-")
@@ -558,8 +528,8 @@ describe("with valid webhook", () => {
         /**
          * Create first orders
          */
-        await triggerWebhook(webhookId, webhookSecret, event);
-        await waitForPropagation("", "");
+        let jobId = await triggerWebhook(webhookId, webhookSecret, event);
+        await waitForPropagation(`strapi.${event.event}`, jobId);
 
         /**
          * Shuffle addresses around
@@ -572,12 +542,12 @@ describe("with valid webhook", () => {
           2000,
         );
 
-        await triggerWebhook(webhookId, webhookSecret, event);
+        jobId = await triggerWebhook(webhookId, webhookSecret, event);
 
         /**
          * Wait for requests to happen in the background
          */
-        await waitForPropagation("", "");
+        await waitForPropagation(`strapi.${event.event}`, jobId);
 
         const zohoOrders = await zoho.searchSalesOrdersWithScrolling({
           searchString: [event.entry.prefix, event.entry.id].join("-"),

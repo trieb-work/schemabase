@@ -61,7 +61,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
           secret: {
             create: {
               id: idGenerator.id("publicKey"),
-              secret: idGenerator.secret("secretKey"),
+              secret: idGenerator.id("secretKey"),
             },
           },
         },

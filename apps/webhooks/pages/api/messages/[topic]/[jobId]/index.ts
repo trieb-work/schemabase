@@ -31,9 +31,11 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   });
 
   const job = await queue.getJob(jobId);
+
+  const isCompleted = (await job?.isCompleted()) ?? false;
   await queue.close();
   res.json({
-    isCompleted: (await job?.isCompleted()) ?? false,
+    isCompleted,
   });
 };
 

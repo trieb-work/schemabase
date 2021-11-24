@@ -120,7 +120,7 @@ export class QueueManager<
 
     this.workers[topic] = new Worker(id, this.wrapReceiver(receiver), {
       connection: this.connection,
-      sharedConnection: true,
+      sharedConnection: false,
     });
 
     /**
@@ -137,7 +137,7 @@ export class QueueManager<
   private wrapReceiver(
     handler: (message: Message<TTopic, TPayload>) => Promise<void>,
   ): (
-    job: Job<SignedMessage<Message<TTopic, TPayload>>, void, TTopic>,
+    job: Job<SignedMessage<Message<TTopic, TPayload>>, void, string>,
   ) => Promise<void> {
     return async ({ data: { message, signature } }) => {
       try {
@@ -164,7 +164,7 @@ export class QueueManager<
      */
     const jobId = createHash("sha256")
       .update(JSON.stringify(message))
-      .digest("base64");
+      .digest("hex");
 
     const signedMessage = {
       message,
@@ -179,7 +179,7 @@ export class QueueManager<
       this.logger.debug(`Creating new queue ${id}`);
       this.queues[topic] = new Queue(id, {
         connection: this.connection,
-        sharedConnection: true,
+        sharedConnection: false,
         defaultJobOptions: {
           // Keep only the  last 1000 completed jobs in memory,
           removeOnComplete: 1000,
