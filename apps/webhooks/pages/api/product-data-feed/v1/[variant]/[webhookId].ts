@@ -36,7 +36,6 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
       id: webhookId,
     },
     include: {
-      secret: true,
       productDataFeedApp: {
         include: {
           integration: {
