@@ -282,9 +282,6 @@ model IncomingProductDataFeedWebhook {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  secret   SecretKey? @relation(fields: [secretId], references: [id])
-  secretId String?
-
   productDataFeedApp   ProductDataFeedApp @relation(fields: [productDataFeedAppId], references: [id], onDelete: Cascade)
   productDataFeedAppId String
 }
@@ -336,7 +333,6 @@ model SecretKey {
 
   // Connections ..
   // Required by prisma
-  incomingSaleorWebhook          IncomingSaleorWebhook?
-  IncomingStrapiWebhook          IncomingStrapiWebhook?
-  IncomingProductDataFeedWebhook IncomingProductDataFeedWebhook?
+  incomingSaleorWebhook IncomingSaleorWebhook?
+  IncomingStrapiWebhook IncomingStrapiWebhook?
 }
