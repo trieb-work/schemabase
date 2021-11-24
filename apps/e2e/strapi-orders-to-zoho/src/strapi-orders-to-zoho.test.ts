@@ -266,9 +266,6 @@ describe("with valid webhook", () => {
 
         const jobId = await triggerWebhook(webhookId, webhookSecret, event);
 
-        /**
-         * Wait for requests to happen in the background
-         */
         await waitForPropagation(`strapi.${event.event}`, jobId);
 
         await verifySyncedOrders(zoho, event);
@@ -285,9 +282,6 @@ describe("with valid webhook", () => {
 
         const jobId = await triggerWebhook(webhookId, webhookSecret, event);
 
-        /**
-         * Wait for requests to happen in the background
-         */
         await waitForPropagation(`strapi.${event.event}`, jobId);
 
         await verifySyncedOrders(zoho, event);
@@ -301,9 +295,30 @@ describe("with valid webhook", () => {
 
         const jobId = await triggerWebhook(webhookId, webhookSecret, event);
 
-        /**
-         * Wait for requests to happen in the background
-         */
+        await waitForPropagation(`strapi.${event.event}`, jobId);
+
+        await verifySyncedOrders(zoho, event);
+      }, 100_000);
+    });
+    describe("with different products for an address", () => {
+      it(`syncs all orders correctly`, async () => {
+        const event = await generateEvent("entry.create", "Draft");
+        event.entry.addresses[0].products = [
+          {
+            quantity: 2000,
+            product: {
+              /**
+               * Currently hardcoded.
+               * This can fail if the item does not exist in zoho.
+               * https://inventory.zoho.eu/app#/inventory/items/116240000000378951
+               */
+              zohoId: "116240000000112128",
+            },
+          },
+        ];
+
+        const jobId = await triggerWebhook(webhookId, webhookSecret, event);
+
         await waitForPropagation(`strapi.${event.event}`, jobId);
 
         await verifySyncedOrders(zoho, event);
@@ -320,7 +335,7 @@ describe("with valid webhook", () => {
          * Create first order
          */
         let jobId = await triggerWebhook(webhookId, webhookSecret, event);
-
+        await waitForPropagation(`strapi.${event.event}`, jobId);
         /**
          * If we do not wait the search on zoho will not return the created
          * order yet.
@@ -352,12 +367,7 @@ describe("with valid webhook", () => {
            * Create first orders
            */
           let jobId = await triggerWebhook(webhookId, webhookSecret, event);
-
-          /**
-           * If we do not wait the search on zoho will not return the created
-           * order yet.
-           */
-          await new Promise((resolve) => setTimeout(resolve, 5_000));
+          await waitForPropagation(`strapi.${event.event}`, jobId);
 
           event.event = "entry.update";
           event.entry.addresses[0].street2 = "Additional street info";
@@ -491,6 +501,34 @@ describe("with valid webhook", () => {
         await verifySyncedOrders(zoho, event);
       }, 100_000);
     });
+    describe("with an product price edited", () => {
+      it("syncs correctly", async () => {
+        const event = await generateEvent("entry.create", "Draft");
+
+        let jobId = await triggerWebhook(webhookId, webhookSecret, event);
+        await waitForPropagation(`strapi.${event.event}`, jobId);
+
+        event.event = "entry.update";
+        (event.entry.addresses[0].products = [
+          {
+            quantity: randomInt(1, 6),
+            price: 2000,
+            product: {
+              /**
+               * Currently hardcoded.
+               * This can fail if the item does not exist in zoho.
+               * https://inventory.zoho.eu/app#/inventory/items/116240000000378951
+               */
+              zohoId: "116240000000112128",
+            },
+          },
+        ]),
+          (jobId = await triggerWebhook(webhookId, webhookSecret, event));
+        await waitForPropagation(`strapi.${event.event}`, jobId);
+
+        await verifySyncedOrders(zoho, event);
+      }, 100_000);
+    });
     describe("with shuffled addresses", () => {
       it.skip("does not modify the zoho orders", async () => {
         const event = await generateEvent("entry.create", "Draft", 2);
@@ -544,9 +582,6 @@ describe("with valid webhook", () => {
 
         jobId = await triggerWebhook(webhookId, webhookSecret, event);
 
-        /**
-         * Wait for requests to happen in the background
-         */
         await waitForPropagation(`strapi.${event.event}`, jobId);
 
         const zohoOrders = await zoho.searchSalesOrdersWithScrolling({
