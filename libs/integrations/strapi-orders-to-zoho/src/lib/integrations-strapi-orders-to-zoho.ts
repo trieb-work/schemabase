@@ -15,6 +15,7 @@ export const productValidation = z.object({
     zohoId: z.string(),
   }),
   quantity: z.number().int().positive(),
+  price: z.number().nullish(),
 });
 
 export const addressValidation = z.object({
@@ -152,10 +153,16 @@ export class StrapiOrdersToZoho {
           customer_id: event.entry.zohoCustomerId,
           salesorder_number: address.orderId,
           shipment_date: event.entry.terminationDate || "",
-          line_items: products.map((p) => ({
-            item_id: p.product.zohoId,
-            quantity: p.quantity,
-          })),
+          line_items: products.map((p) => {
+            const item: { item_id: string; quantity: number; rate?: number } = {
+              item_id: p.product.zohoId,
+              quantity: p.quantity,
+            };
+            if (typeof p.price === "number") {
+              item.rate = p.price;
+            }
+            return item;
+          }),
           shipping_charge: address.shippingCosts,
           shipping_charge_tax_id: highestTax.taxId,
 
