@@ -33,12 +33,15 @@ export async function triggerWebhook(
   webhookId: string,
   webhookSecret: string,
   event: unknown,
-): Promise<void> {
+): Promise<string> {
+  const url = `http://localhost:3000/api/strapi/webhook/v1/${webhookId}`;
+
   const res = await new HttpClient().call<{
     status: string;
     traceId: string;
+    jobId: string;
   }>({
-    url: `http://localhost:3000/api/strapi/webhook/v1/${webhookId}`,
+    url,
     method: "POST",
     body: event,
     headers: {
@@ -48,4 +51,7 @@ export async function triggerWebhook(
   expect(res.status).toBe(200);
   expect(res.data?.status).toEqual("received");
   expect(res.data?.traceId).toBeDefined();
+  expect(res.data?.jobId).toBeDefined();
+
+  return res.data!.jobId;
 }
