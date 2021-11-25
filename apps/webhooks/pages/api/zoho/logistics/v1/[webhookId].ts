@@ -27,8 +27,9 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
 
   // pre-flight requests get return
-  if (method.toUpperCase() === "OPTIONS") return res.end();
-
+  if (method.toUpperCase() === "OPTIONS") {
+    return;
+  }
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
   const webhook = await ctx.prisma.incomingLogisticsWebhook.findUnique({
@@ -66,7 +67,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
    */
   authorizeIntegration(integration);
 
-  const zohoApp = webhook.logisticsApp?.integration?.zohoApp;
+  const { zohoApp } = integration;
 
   if (!zohoApp) {
     throw new HttpError(400, "Zoho connection not enabled");

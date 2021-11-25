@@ -70,8 +70,8 @@ Table Tenant {
   strapiApps StrapiApp [not null]
   productDataFeedIntegration ProductDataFeedIntegration [not null]
   strapiToZohoIntegration StrapiToZohoIntegration [not null]
-  LogisticsIntegration LogisticsIntegration [not null]
-  LogisticsApp LogisticsApp [not null]
+  logisticsIntegration LogisticsIntegration [not null]
+  logisticsApp LogisticsApp [not null]
 }
 
 Table Subscription {
@@ -81,7 +81,7 @@ Table Subscription {
   payedUntil DateTime
   productDataFeedIntegration ProductDataFeedIntegration
   strapiToZohoIntegration StrapiToZohoIntegration
-  LogisticsIntegration LogisticsIntegration [not null]
+  logisticsIntegration LogisticsIntegration
 }
 
 Table ProductDataFeedIntegration {
@@ -205,7 +205,7 @@ Ref: ProductDataFeedIntegration.productDataFeedAppId - ProductDataFeedApp.id
 
 Ref: ProductDataFeedIntegration.saleorAppId > SaleorApp.id
 
-Ref: LogisticsIntegration.subscriptionId > Subscription.id
+Ref: LogisticsIntegration.subscriptionId - Subscription.id
 
 Ref: LogisticsIntegration.tenantId > Tenant.id
 
