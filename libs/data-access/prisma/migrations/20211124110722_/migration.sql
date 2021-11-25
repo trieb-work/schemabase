@@ -6,8 +6,6 @@
   - Added the required column `nextFiveDaysOrdersCustomViewId` to the `LogisticsApp` table without a default value. This is not possible if the table is not empty.
 
 */
--- DropForeignKey
-ALTER TABLE "IncomingLogisticsWebhook" DROP CONSTRAINT "IncomingLogisticsWebhook_secretId_fkey";
 
 -- DropIndex
 DROP INDEX "IncomingLogisticsWebhook_secretId_unique";
