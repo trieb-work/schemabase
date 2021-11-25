@@ -7,12 +7,3 @@
 
 */
 
--- DropIndex
-DROP INDEX "IncomingLogisticsWebhook_secretId_unique";
-
--- AlterTable
-ALTER TABLE "IncomingLogisticsWebhook" DROP COLUMN "secretId";
-
--- AlterTable
-ALTER TABLE "LogisticsApp" ADD COLUMN     "nextFiveDaysBulkOrdersCustomViewId" TEXT NOT NULL,
-ADD COLUMN     "nextFiveDaysOrdersCustomViewId" TEXT NOT NULL;
