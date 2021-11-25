@@ -137,8 +137,8 @@ model Tenant {
   strapiApps                 StrapiApp[]
   productDataFeedIntegration ProductDataFeedIntegration[]
   strapiToZohoIntegration    StrapiToZohoIntegration[]
-  LogisticsIntegration       LogisticsIntegration[]
-  LogisticsApp               LogisticsApp[]
+  logisticsIntegration       LogisticsIntegration[]
+  logisticsApp               LogisticsApp[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
@@ -153,7 +153,7 @@ model Subscription {
 
   productDataFeedIntegration ProductDataFeedIntegration?
   strapiToZohoIntegration    StrapiToZohoIntegration?
-  LogisticsIntegration       LogisticsIntegration[]
+  logisticsIntegration       LogisticsIntegration?
 }
 
 // ----------------------------------------------------------------------------
