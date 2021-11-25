@@ -43,6 +43,8 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
+  ctx.logger.info("Incoming webhook from strapi");
+
   const webhook = await ctx.prisma.incomingStrapiWebhook.findUnique({
     where: { id: webhookId },
     include: {
