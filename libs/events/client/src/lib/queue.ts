@@ -3,7 +3,7 @@ import { Worker, Job, Queue, QueueScheduler } from "bullmq";
 import { SignedMessage, Message } from "./message";
 import { ISigner } from "./signature";
 import { ILogger } from "@eci/util/logger";
-import { createHash } from "crypto";
+import { idGenerator } from "@eci/util/ids";
 
 export type QueueConfig = {
   signer: ISigner;
@@ -31,8 +31,12 @@ export interface IConsumer<TTopic, TMessage> {
   close(): Promise<void>;
 }
 
-export interface IProducer<TMessage> {
-  produce: (message: TMessage) => Promise<string>;
+export interface IProducer<TTopic, TPayload> {
+  produce: (createMessage: {
+    topic: TTopic;
+    payload: TPayload;
+    traceId?: string;
+  }) => Promise<string>;
 }
 
 /**
@@ -43,7 +47,7 @@ export class QueueManager<
   TPayload = Record<string, never>,
 > implements
     IConsumer<TTopic, Message<TTopic, TPayload>>,
-    IProducer<Message<TTopic, TPayload>>
+    IProducer<TTopic, TPayload>
 {
   /**
    * Used to sign and verify messages
@@ -145,13 +149,14 @@ export class QueueManager<
     job: Job<SignedMessage<Message<TTopic, TPayload>>, void, string>,
   ) => Promise<void> {
     return async ({ data: { message, signature } }) => {
+      const logger = this.logger.with({ traceId: message.header.traceId });
       try {
-        this.logger.info("Received message", { messageId: message.header.id });
+        logger.info("Received message", { messageId: message.header.id });
         this.signer.verify(message, signature);
         await handler(message);
-        this.logger.info("Processed message", { messageId: message.header.id });
+        logger.info("Processed message", { messageId: message.header.id });
       } catch (err) {
-        this.logger.error("Error processing message", {
+        logger.error("Error processing message", {
           messageId: message.header.id,
           err,
         });
@@ -163,25 +168,38 @@ export class QueueManager<
    * Send a message to the queue
    * a new traceId is generated if not provided
    */
-  public async produce(message: Message<TTopic, TPayload>): Promise<string> {
+  public async produce(createMessage: {
+    topic: TTopic;
+    payload: TPayload;
+    traceId?: string;
+  }): Promise<string> {
+    const { topic, payload, traceId } = createMessage;
     /**
      * By using a hash of the messsage we also deduplicate the message automatically
      */
-    const jobId = createHash("sha256")
-      .update(JSON.stringify(message))
-      .digest("hex");
-
+    const message: Message<TTopic, TPayload> = {
+      header: {
+        topic,
+        traceId: traceId ?? idGenerator.id("trace"),
+        id: idGenerator.id("message"),
+      },
+      payload,
+    };
+    const logger = this.logger.with({
+      traceId: message.header.traceId,
+      messageId: message.header.id,
+    });
     const signedMessage = {
       message,
       signature: this.signer.sign(message),
     };
-    const topic = message.header.topic;
+
     /**
      * Create a new queue for this topic if necessary
      */
     if (!(topic in this.queues)) {
       const id = QueueManager.queueId(topic);
-      this.logger.debug(`Creating new queue ${id}`);
+      logger.info(`Creating new queue ${id}`);
       this.queues[topic] = new Queue(id, {
         connection: this.connection,
         sharedConnection: false,
@@ -196,12 +214,12 @@ export class QueueManager<
         },
       });
     }
-    this.logger.debug("pushing message", { signedMessage });
+    logger.info("pushing message", { signedMessage });
     await this.queues[topic].add(topic, signedMessage, {
-      jobId,
+      jobId: message.header.id,
     });
-    this.logger.debug("Pushed message", { signedMessage });
+    logger.info("Pushed message", { signedMessage });
 
-    return jobId;
+    return message.header.id;
   }
 }

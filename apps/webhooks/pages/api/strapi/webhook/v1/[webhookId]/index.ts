@@ -6,7 +6,6 @@ import { createHash } from "crypto";
 import * as strapi from "@eci/events/strapi";
 import { env } from "@chronark/env";
 import { Signer } from "@eci/events/client";
-import { idGenerator } from "@eci/util/ids";
 
 const requestValidation = z.object({
   query: z.object({
@@ -122,14 +121,10 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
       throw new Error(`Invalid strapi event: ${body.event}`);
   }
   const jobId = await queue.produce({
+    topic,
     payload: {
       ...req.body,
       zohoAppId: integration.zohoApp.id,
-    },
-    header: {
-      id: idGenerator.id("publicKey"),
-      traceId: idGenerator.id("trace"),
-      topic,
     },
   });
   ctx.logger.info("Queued new event", { jobId, body: req.body });

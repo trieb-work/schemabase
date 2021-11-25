@@ -27,12 +27,9 @@ describe("produce and consume over redis", () => {
     });
 
     await queue.produce({
+      topic,
       payload,
-      header: {
-        id: "id",
-        topic: "topic",
-        traceId: "traceId",
-      },
+      traceId: "traceId",
     });
   }, 20_000);
 });

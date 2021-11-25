@@ -1,7 +1,8 @@
 import { IdGenerator } from "@chronark/prefixed-id";
 
 const prefixes = {
-  job: "j",
+  message: "m",
+
   trace: "tr",
   secretKey: "sk",
   publicKey: "pk",
