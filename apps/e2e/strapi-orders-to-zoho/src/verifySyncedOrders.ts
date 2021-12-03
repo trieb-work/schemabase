@@ -18,17 +18,9 @@ export async function verifySyncedOrders(
 
   expect(zohoOrders.length).toBe(strapiEvent.entry.addresses.length);
   for (const zohoOrder of zohoOrders) {
-    switch (strapiEvent.entry.status) {
-      case "Confirmed":
-        expect(zohoOrder.status).toEqual("confirmed");
-        break;
-      case "Sending":
-        expect(zohoOrder.status).toEqual("confirmed");
-        expect(zohoOrder.cf_ready_to_fulfill).toEqual("true");
-        break;
-      default:
-        expect(zohoOrder.status).toEqual("draft");
-        break;
+    expect(zohoOrder.status).toEqual("confirmed");
+    if (strapiEvent.entry.status === "ReadyToFulfill") {
+      expect(zohoOrder.cf_ready_to_fulfill).toEqual("true");
     }
 
     const strapiAddress = strapiEvent.entry.addresses.find(

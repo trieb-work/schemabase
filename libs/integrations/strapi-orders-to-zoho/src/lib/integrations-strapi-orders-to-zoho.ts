@@ -8,7 +8,12 @@ import {
 import { sha256 } from "@eci/util";
 
 import { ILogger } from "@eci/util/logger";
-const statusValidation = z.enum(["Draft", "Confirmed", "Sending", "Finished"]);
+const statusValidation = z.enum([
+  "Draft",
+  "Confirmed",
+  "ReadyToFulfill",
+  "Finished",
+]);
 
 export const productValidation = z.object({
   product: z.object({
@@ -213,6 +218,25 @@ export class StrapiOrdersToZoho {
       (o) => o.salesorder_number,
     );
 
+    /**
+     * Draft events will trigger a deletion of all existing orders of that orderId
+     */
+    if (rawEvent.entry.status === "Draft") {
+      this.logger.debug("Draft mode: Orders must be deleted", {
+        orderId: rawEvent.entry.id,
+      });
+      for (const order of existingOrders) {
+        await this.zoho
+          .deleteSalesorder(order.salesorder_id)
+          .catch((err: Error) => {
+            throw new Error(
+              `Unable to delete order: ${order.salesorder_id}: ${err}`,
+            );
+          });
+      }
+      return;
+    }
+
     const strapiOrders = await this.transformStrapiEventToZohoOrders(rawEvent);
 
     const existingOrderUIds = existingOrders.map((o) =>
@@ -286,23 +310,14 @@ export class StrapiOrdersToZoho {
     /**
      * Set status for all synced orders
      */
-
-    switch (event.entry.status) {
-      case "Sending":
-        await this.zoho.salesordersConfirm(syncedOrderIds);
-        await this.zoho.bulkUpdateSalesOrderCustomField(
-          syncedOrderIds,
-          "cf_ready_to_fulfill",
-          true,
-          true,
-        );
-        break;
-      case "Confirmed":
-        await this.zoho.salesordersConfirm(syncedOrderIds);
-        break;
-
-      default:
-        break;
+    await this.zoho.salesordersConfirm(syncedOrderIds);
+    if (event.entry.status === "ReadyToFulfill") {
+      await this.zoho.bulkUpdateSalesOrderCustomField(
+        syncedOrderIds,
+        "cf_ready_to_fulfill",
+        true,
+        true,
+      );
     }
   }
   /**
@@ -412,6 +427,10 @@ export class StrapiOrdersToZoho {
       .catch((err: Error) => {
         throw new Error(`Malformed event: ${err}`);
       });
+    if (event.entry.status === "Draft") {
+      this.logger.debug("Draft detected: not creating orders");
+      return;
+    }
 
     const orders = await this.transformStrapiEventToZohoOrders(rawEvent);
 
@@ -419,22 +438,15 @@ export class StrapiOrdersToZoho {
       event.entry.zohoCustomerId,
       orders,
     );
-    switch (event.entry.status) {
-      case "Sending":
-        await this.zoho.salesordersConfirm(createdOrderIds);
-        await this.zoho.bulkUpdateSalesOrderCustomField(
-          createdOrderIds,
-          "cf_ready_to_fulfill",
-          true,
-          true,
-        );
-        break;
-      case "Confirmed":
-        await this.zoho.salesordersConfirm(createdOrderIds);
-        break;
 
-      default:
-        break;
+    await this.zoho.salesordersConfirm(createdOrderIds);
+    if (event.entry.status === "ReadyToFulfill") {
+      await this.zoho.bulkUpdateSalesOrderCustomField(
+        createdOrderIds,
+        "cf_ready_to_fulfill",
+        true,
+        true,
+      );
     }
   }
 }

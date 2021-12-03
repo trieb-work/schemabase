@@ -54,7 +54,6 @@ const prefix = "TEST";
 
 async function generateEvent(
   event: "entry.create" | "entry.update" | "entry.delete",
-  status: "Draft" | "Confirmed",
   addresses = 1,
 ): Promise<OrderEvent> {
   const companyName = idGenerator.id("test");
@@ -77,7 +76,7 @@ async function generateEvent(
       id: orderId,
       prefix,
       zohoCustomerId: contact_id,
-      status,
+      status: "Confirmed",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       addresses: [...Array(addresses)].map((_, rowId) =>
@@ -179,8 +178,7 @@ beforeAll(async () => {
   });
 });
 
-afterAll(async () => {
-  await prisma.$disconnect();
+afterEach(async () => {
   if (CLEAN_UP) {
     /** Clean up created entries */
     const ordersInZoho = await zoho.searchSalesOrdersWithScrolling({
@@ -189,11 +187,17 @@ afterAll(async () => {
     for (const order of ordersInZoho) {
       await zoho.deleteSalesorder(order.salesorder_id);
     }
+  }
+}, 100_000);
+
+afterAll(async () => {
+  await prisma.$disconnect();
+  if (CLEAN_UP) {
     for (const contactId of createdContactIds) {
       await zoho.deleteContact(contactId);
     }
   }
-}, 100_000);
+});
 
 describe("with invalid webhook", () => {
   describe("without authorization header", () => {
@@ -201,7 +205,7 @@ describe("with invalid webhook", () => {
       const res = await new HttpClient().call({
         url: `http://localhost:3000/api/strapi/webhook/v1/${webhookId}`,
         method: "POST",
-        body: await generateEvent("entry.create", "Draft"),
+        body: await generateEvent("entry.create"),
       });
       expect(res.status).toBe(400);
     });
@@ -212,7 +216,7 @@ describe("with invalid webhook", () => {
       const res = await new HttpClient().call({
         url: `http://localhost:3000/api/strapi/webhook/v1/not-a-valid-id`,
         method: "POST",
-        body: await generateEvent("entry.create", "Draft"),
+        body: await generateEvent("entry.create"),
         headers: {
           authorization: webhookSecret,
         },
@@ -225,7 +229,7 @@ describe("with invalid webhook", () => {
       const res = await new HttpClient().call({
         url: `http://localhost:3000/api/strapi/webhook/v1/${webhookId}`,
         method: "POST",
-        body: await generateEvent("entry.create", "Draft"),
+        body: await generateEvent("entry.create"),
         headers: {
           authorization: "hello",
         },
@@ -236,10 +240,27 @@ describe("with invalid webhook", () => {
 });
 describe("with valid webhook", () => {
   describe("entry.create", () => {
+    describe("with Draft event", () => {
+      it("does nothing", async () => {
+        const event = await generateEvent("entry.create", 1);
+        event.entry.status = "Draft";
+
+        const jobId = await triggerWebhook(webhookId, webhookSecret, event);
+        await waitForPropagation(`strapi.${event.event}`, jobId);
+
+        const bulkOrderId = [event.entry.prefix, event.entry.id].join("-");
+
+        const salesOrders = await zoho.searchSalesOrdersWithScrolling({
+          searchString: bulkOrderId,
+        });
+
+        expect(salesOrders.length).toBe(0);
+      }, 100_000);
+    });
     describe("with multiple products", () => {
       describe("with different taxes", () => {
         it("applies the highest tax to shipping costs", async () => {
-          const event = await generateEvent("entry.create", "Draft", 1);
+          const event = await generateEvent("entry.create", 1);
           event.entry.products.push({
             product: {
               zohoId: "116240000000677007",
@@ -262,7 +283,7 @@ describe("with valid webhook", () => {
     });
     describe("with only required fields", () => {
       it(`syncs all orders correctly`, async () => {
-        const event = await generateEvent("entry.create", "Draft");
+        const event = await generateEvent("entry.create");
 
         const jobId = await triggerWebhook(webhookId, webhookSecret, event);
 
@@ -274,7 +295,7 @@ describe("with valid webhook", () => {
 
     describe("with street2", () => {
       it(`syncs all orders correctly`, async () => {
-        const event = await generateEvent("entry.create", "Draft");
+        const event = await generateEvent("entry.create");
         event.entry.addresses = event.entry.addresses.map((a) => ({
           ...a,
           street2: "Imagine a street name here",
@@ -290,7 +311,7 @@ describe("with valid webhook", () => {
 
     describe("with terminationDate", () => {
       it(`syncs all orders correctly`, async () => {
-        const event = await generateEvent("entry.create", "Draft");
+        const event = await generateEvent("entry.create");
         event.entry.terminationDate = "2022-10-02";
 
         const jobId = await triggerWebhook(webhookId, webhookSecret, event);
@@ -302,7 +323,7 @@ describe("with valid webhook", () => {
     });
     describe("with different products for an address", () => {
       it(`syncs all orders correctly`, async () => {
-        const event = await generateEvent("entry.create", "Draft");
+        const event = await generateEvent("entry.create");
         event.entry.addresses[0].products = [
           {
             quantity: 2000,
@@ -329,7 +350,7 @@ describe("with valid webhook", () => {
   describe("entry.update", () => {
     describe("with a new address", () => {
       it("adds a new zoho order", async () => {
-        const event = await generateEvent("entry.create", "Draft");
+        const event = await generateEvent("entry.create");
 
         /**
          * Create first order
@@ -361,7 +382,7 @@ describe("with valid webhook", () => {
     describe("with a modified address", () => {
       describe("with an optional key added", () => {
         it("replaces the edited order", async () => {
-          const event = await generateEvent("entry.create", "Draft");
+          const event = await generateEvent("entry.create");
 
           /**
            * Create first orders
@@ -379,7 +400,7 @@ describe("with valid webhook", () => {
       });
 
       it("replaces the modified order", async () => {
-        const event = await generateEvent("entry.create", "Draft");
+        const event = await generateEvent("entry.create");
 
         /**
          * Create first orders
@@ -402,7 +423,7 @@ describe("with valid webhook", () => {
     });
     describe("with a modified product", () => {
       it("replaces the modified order", async () => {
-        const event = await generateEvent("entry.create", "Draft");
+        const event = await generateEvent("entry.create");
 
         /**
          * Create first orders
@@ -431,14 +452,10 @@ describe("with valid webhook", () => {
         );
 
         expect(ordersInZohoAfterUpdate[0].quantity).toBe(999);
-
-        for (const order of ordersInZohoAfterUpdate) {
-          expect(order.status).toEqual("draft");
-        }
       }, 100_000);
       it("does not create duplicate addresses", async () => {
         const n = 7;
-        const event = await generateEvent("entry.create", "Draft", n);
+        const event = await generateEvent("entry.create", n);
 
         /**
          * Create first orders
@@ -477,15 +494,11 @@ describe("with valid webhook", () => {
         );
 
         expect(ordersInZohoAfterUpdate[0].quantity).toBe(999);
-
-        for (const order of ordersInZohoAfterUpdate) {
-          expect(order.status).toEqual("draft");
-        }
       }, 100_000);
     });
     describe("with an address deleted", () => {
       it("removes the deleted order", async () => {
-        const event = await generateEvent("entry.create", "Draft");
+        const event = await generateEvent("entry.create");
 
         /**
          * Create first orders
@@ -503,7 +516,7 @@ describe("with valid webhook", () => {
     });
     describe("with an product price edited", () => {
       it("syncs correctly", async () => {
-        const event = await generateEvent("entry.create", "Draft");
+        const event = await generateEvent("entry.create");
 
         let jobId = await triggerWebhook(webhookId, webhookSecret, event);
         await waitForPropagation(`strapi.${event.event}`, jobId);
@@ -531,7 +544,7 @@ describe("with valid webhook", () => {
     });
     describe("with shuffled addresses", () => {
       it.skip("does not modify the zoho orders", async () => {
-        const event = await generateEvent("entry.create", "Draft", 2);
+        const event = await generateEvent("entry.create", 2);
 
         /**
          * Create first orders
@@ -562,7 +575,7 @@ describe("with valid webhook", () => {
 
     describe("when one order changes, one is removed, one is created, and one stays the same", () => {
       it("syncs correctly", async () => {
-        const event = await generateEvent("entry.create", "Draft", 3);
+        const event = await generateEvent("entry.create", 3);
         /**
          * Create first orders
          */
