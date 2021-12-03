@@ -73,7 +73,7 @@ export class LogisticStats implements ZohoLogisticsService {
   }
 
   public async getCurrentPackageStats(): Promise<Return> {
-    this.logger.info("fetching salesorders from Zoho");
+    this.logger.debug("fetching salesorders from Zoho");
     const now = new Date().toUTCString();
     const currentOrdersReady = (
       await this.zoho.searchSalesOrdersWithScrolling({

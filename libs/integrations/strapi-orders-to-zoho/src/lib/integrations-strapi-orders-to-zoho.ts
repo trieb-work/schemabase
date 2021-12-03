@@ -94,7 +94,6 @@ export class StrapiOrdersToZoho {
         taxId: item.tax_id,
         taxPercentage: item.tax_percentage,
       };
-      this.logger.info("item", this.products[productId]);
     }
     return this.products[productId];
   }
@@ -193,7 +192,6 @@ export class StrapiOrdersToZoho {
   }
 
   public async updateBulkOrders(rawEvent: OrderEvent): Promise<void> {
-    this.logger.info("Syncing orders between strapi and zoho");
     const event = await orderValidation
       .merge(z.object({ event: z.enum(["entry.update"]) }))
       .parseAsync(rawEvent)
@@ -209,7 +207,7 @@ export class StrapiOrdersToZoho {
         throw new Error(`Unable to fetch existing orders from zoho: ${err}`);
       })) as (SalesOrderShortSearchOverview & { cf_orderhash: string })[];
 
-    this.logger.info("Existing orders", { searchString, existingOrders });
+    this.logger.debug("Existing orders", { searchString, existingOrders });
 
     const existingSalesorderNumbers = existingOrders.map(
       (o) => o.salesorder_number,
@@ -254,7 +252,7 @@ export class StrapiOrdersToZoho {
      */
 
     if (deleteOrderNumbers.length > 0) {
-      this.logger.info("Orders must be deleted", { deleteOrderNumbers });
+      this.logger.debug("Orders must be deleted", { deleteOrderNumbers });
       for (const deletedOrderNumber of deleteOrderNumbers) {
         const bulkOrderId = existingOrders.find(
           (o) => o.salesorder_number === deletedOrderNumber,
@@ -274,7 +272,7 @@ export class StrapiOrdersToZoho {
      * Handle new orders
      */
     if (createOrders.length > 0) {
-      this.logger.info("New orders need to be created", { createOrders });
+      this.logger.debug("New orders need to be created", { createOrders });
       await this.addNewOrders(event.entry.zohoCustomerId, createOrders);
     }
 
@@ -323,7 +321,7 @@ export class StrapiOrdersToZoho {
     const bulkOrderIds: string[] = [];
 
     for (const { order, address } of orders) {
-      this.logger.info("Adding new address to contact", {
+      this.logger.debug("Adding new address to contact", {
         address,
         contact: zohoCustomerId,
       });
@@ -341,7 +339,7 @@ export class StrapiOrdersToZoho {
         zohoCustomerId,
       );
 
-      this.logger.info("Addresses", { addresses: contact.addresses });
+      this.logger.debug("Addresses", { addresses: contact.addresses });
       const existingAddresses = contact.addresses.map((a) => ({
         id: a.address_id,
         hash: sha256({
@@ -374,7 +372,7 @@ export class StrapiOrdersToZoho {
           .catch((err: Error) => {
             throw new Error(`Unable to add address to contact: ${err}`);
           });
-        this.logger.info("Adding new order", {
+        this.logger.debug("Adding new order", {
           order,
         });
       }
@@ -407,7 +405,7 @@ export class StrapiOrdersToZoho {
   }
 
   public async createNewBulkOrders(rawEvent: OrderEvent): Promise<void> {
-    this.logger.info("Syncing orders between strapi and zoho");
+    this.logger.debug("Syncing orders between strapi and zoho");
     const event = await orderValidation
       .merge(z.object({ event: z.enum(["entry.create"]) }))
       .parseAsync(rawEvent)

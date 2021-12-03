@@ -214,11 +214,9 @@ export class QueueManager<
         },
       });
     }
-    logger.info("pushing message", { signedMessage });
     await this.queues[topic].add(topic, signedMessage, {
       jobId: message.header.id,
     });
-    logger.info("Pushed message", { signedMessage });
 
     return message.header.id;
   }
