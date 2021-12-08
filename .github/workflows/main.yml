@@ -70,7 +70,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set Kubernetes Context
-        uses: azure/k8s-set-context@v1
+        uses: azure/k8s-set-context@v2
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
