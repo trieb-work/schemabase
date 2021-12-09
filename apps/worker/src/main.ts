@@ -7,7 +7,7 @@ import {
   OrderEvent,
   StrapiOrdersToZoho,
 } from "@eci/integrations/strapi-orders-to-zoho";
-import { ZohoClientInstance } from "@trieb.work/zoho-ts";
+import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
 import { PrismaClient } from "@eci/data-access/prisma";
 
 async function main() {
@@ -48,14 +48,24 @@ async function main() {
                   `No zoho app found: ${message.payload.zohoAppId}`,
                 );
               }
-
-              const zoho = new ZohoClientInstance({
-                zohoClientId: zohoApp.clientId,
-                zohoClientSecret: zohoApp.clientSecret,
-                zohoOrgId: zohoApp.orgId,
-              });
-              const strapiOrdersToZoho = await StrapiOrdersToZoho.new({
-                zoho: zoho as ZohoClientInstance,
+              const cookies = env.get("ZOHO_COOKIES");
+              const zoho = new Zoho(
+                cookies
+                  ? await ZohoApiClient.fromCookies({
+                      orgId: zohoApp.orgId,
+                      cookie: cookies,
+                      zsrfToken: env.require("ZOHO_ZCSRF_TOKEN"),
+                    })
+                  : await ZohoApiClient.fromOAuth({
+                      orgId: zohoApp.orgId,
+                      client: {
+                        id: zohoApp.clientId,
+                        secret: zohoApp.clientSecret,
+                      },
+                    }),
+              );
+              const strapiOrdersToZoho = new StrapiOrdersToZoho({
+                zoho,
                 logger,
               });
 
@@ -76,13 +86,24 @@ async function main() {
                 );
               }
 
-              const zoho = new ZohoClientInstance({
-                zohoClientId: zohoApp.clientId,
-                zohoClientSecret: zohoApp.clientSecret,
-                zohoOrgId: zohoApp.orgId,
-              });
-              const strapiOrdersToZoho = await StrapiOrdersToZoho.new({
-                zoho: zoho as ZohoClientInstance,
+              const cookies = env.get("ZOHO_COOKIES");
+              const zoho = new Zoho(
+                cookies
+                  ? await ZohoApiClient.fromCookies({
+                      orgId: zohoApp.orgId,
+                      cookie: cookies,
+                      zsrfToken: env.require("ZOHO_ZCSRF_TOKEN"),
+                    })
+                  : await ZohoApiClient.fromOAuth({
+                      orgId: zohoApp.orgId,
+                      client: {
+                        id: zohoApp.clientId,
+                        secret: zohoApp.clientSecret,
+                      },
+                    }),
+              );
+              const strapiOrdersToZoho = new StrapiOrdersToZoho({
+                zoho,
                 logger,
               });
 

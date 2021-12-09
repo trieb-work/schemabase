@@ -1,10 +1,6 @@
 import { EntryEvent } from "@eci/events/strapi";
 import { z } from "zod";
-import {
-  SalesOrderShortSearchOverview,
-  ZohoClientInstance,
-  SalesOrder,
-} from "@trieb.work/zoho-ts";
+import { Zoho, CreateSalesOrder } from "@trieb.work/zoho-ts/dist/v2";
 import { sha256 } from "@eci/util";
 
 import { ILogger } from "@eci/util/logger";
@@ -47,15 +43,8 @@ export const orderValidation = z.object({
 
 export type OrderEvent = EntryEvent & z.infer<typeof orderValidation>;
 
-type CreateSalesOrder = Required<
-  Pick<
-    SalesOrder,
-    "customer_id" | "salesorder_number" | "line_items" | "custom_fields"
-  >
-> &
-  SalesOrder;
 export class StrapiOrdersToZoho {
-  private readonly zoho: ZohoClientInstance;
+  private readonly zoho: Zoho;
   private readonly logger: ILogger;
 
   /**
@@ -69,19 +58,9 @@ export class StrapiOrdersToZoho {
     }
   > = {};
 
-  private constructor(config: { zoho: ZohoClientInstance; logger: ILogger }) {
+  constructor(config: { zoho: Zoho; logger: ILogger }) {
     this.zoho = config.zoho;
     this.logger = config.logger;
-  }
-
-  public static async new(config: {
-    zoho: ZohoClientInstance;
-    logger: ILogger;
-  }): Promise<StrapiOrdersToZoho> {
-    const instance = new StrapiOrdersToZoho(config);
-    await instance.zoho.authenticate();
-
-    return instance;
   }
 
   private async getProductTax(productId: string): Promise<{
@@ -89,7 +68,7 @@ export class StrapiOrdersToZoho {
     taxPercentage: number;
   }> {
     if (!this.products[productId]) {
-      const item = await this.zoho.getItem({ product_id: productId });
+      const item = await this.zoho.item.retrieve(productId);
       this.products[productId] = {
         taxId: item.tax_id,
         taxPercentage: item.tax_percentage,
@@ -201,11 +180,11 @@ export class StrapiOrdersToZoho {
 
     const searchString = [event.entry.prefix, event.entry.id].join("-");
 
-    const existingOrders = (await this.zoho
-      .searchSalesOrdersWithScrolling({ searchString })
+    const existingOrders = await this.zoho.salesOrder
+      .search(searchString)
       .catch((err: Error) => {
         throw new Error(`Unable to fetch existing orders from zoho: ${err}`);
-      })) as (SalesOrderShortSearchOverview & { cf_orderhash: string })[];
+      });
 
     this.logger.debug("Existing orders", { searchString, existingOrders });
 
@@ -216,14 +195,15 @@ export class StrapiOrdersToZoho {
     const strapiOrders = await this.transformStrapiEventToZohoOrders(rawEvent);
 
     const existingOrderUIds = existingOrders.map((o) =>
-      this.getUniqueOrderId(o.salesorder_number, o.cf_orderhash),
+      this.getUniqueOrderId(o.salesorder_number, o["cf_orderhash"] as string),
     );
-    this.logger.warn("strapiOrders", { strapiOrders });
+    this.logger.debug("strapiOrders", { strapiOrders });
     const strapiOrderUIds = strapiOrders.map((o) =>
       this.getUniqueOrderId(
         o.order.salesorder_number,
-        o.order.custom_fields.find((cf) => cf.api_name === "cf_orderhash")!
-          .value! as string,
+        (o.order.custom_fields ?? []).find(
+          (cf) => cf.api_name === "cf_orderhash",
+        )!.value! as string,
       ),
     );
 
@@ -233,14 +213,14 @@ export class StrapiOrdersToZoho {
           !strapiOrderUIds.includes(
             this.getUniqueOrderId(
               existingOrder.salesorder_number,
-              existingOrder.cf_orderhash,
+              existingOrder["cf_orderhash"] as string,
             ),
           ),
       )
       .map((o) => o.salesorder_number);
 
     const createOrders = strapiOrders.filter((o, i) => {
-      this.logger.warn("Filtering create orders", {
+      this.logger.debug("Filtering create orders", {
         o: o.order.salesorder_number,
         existingSalesorderNumbers,
       });
@@ -262,7 +242,7 @@ export class StrapiOrdersToZoho {
             `There is no existing order with number: ${deletedOrderNumber}`,
           );
         }
-        await this.zoho.deleteSalesorder(bulkOrderId).catch((err: Error) => {
+        await this.zoho.salesOrder.delete([bulkOrderId]).catch((err: Error) => {
           throw new Error(`Unable to delete order: ${bulkOrderId}: ${err}`);
         });
       }
@@ -276,8 +256,8 @@ export class StrapiOrdersToZoho {
       await this.addNewOrders(event.entry.zohoCustomerId, createOrders);
     }
 
-    const syncedOrders = await this.zoho
-      .searchSalesOrdersWithScrolling({ searchString })
+    const syncedOrders = await this.zoho.salesOrder
+      .search(searchString)
       .catch((err: Error) => {
         throw new Error(`Unable to fetch existing orders from zoho: ${err}`);
       });
@@ -289,16 +269,15 @@ export class StrapiOrdersToZoho {
 
     switch (event.entry.status) {
       case "Sending":
-        await this.zoho.salesordersConfirm(syncedOrderIds);
-        await this.zoho.bulkUpdateSalesOrderCustomField(
-          syncedOrderIds,
-          "cf_ready_to_fulfill",
-          true,
-          true,
-        );
+        await this.zoho.salesOrder.confirm(syncedOrderIds);
+        await this.zoho.salesOrder.setCustomFieldValue({
+          salesOrderIds: syncedOrderIds,
+          customFieldName: "cf_ready_to_fulfill",
+          value: true,
+        });
         break;
       case "Confirmed":
-        await this.zoho.salesordersConfirm(syncedOrderIds);
+        await this.zoho.salesOrder.confirm(syncedOrderIds);
         break;
 
       default:
@@ -335,9 +314,10 @@ export class StrapiOrdersToZoho {
        * Check if an address is already added to the customer
        */
 
-      const contact = await this.zoho.getContactWithFullAdresses(
-        zohoCustomerId,
-      );
+      const contact = await this.zoho.contact.retrieve(zohoCustomerId);
+      if (!contact) {
+        throw new Error(`Contact was not found: ${zohoCustomerId}`);
+      }
 
       this.logger.debug("Addresses", { addresses: contact.addresses });
       const existingAddresses = contact.addresses.map((a) => ({
@@ -367,8 +347,8 @@ export class StrapiOrdersToZoho {
       )?.id;
 
       if (!addressId) {
-        addressId = await this.zoho
-          .addAddresstoContact(zohoCustomerId, createAddress, 3)
+        addressId = await this.zoho.contact
+          .addAddress(zohoCustomerId, createAddress)
           .catch((err: Error) => {
             throw new Error(`Unable to add address to contact: ${err}`);
           });
@@ -376,15 +356,12 @@ export class StrapiOrdersToZoho {
           order,
         });
       }
-      const res = await this.zoho
-        .createSalesorder({
+      const res = await this.zoho.salesOrder
+        .create({
           ...order,
           shipping_address_id: addressId,
         })
         .catch((err: Error) => {
-          // if (err.message.includes("This sales order number already exists")) {
-          //   this.logger.warn(err.message);
-          // } else {
           throw new Error(
             `Unable to create sales order: ${JSON.stringify(
               {
@@ -421,16 +398,15 @@ export class StrapiOrdersToZoho {
     );
     switch (event.entry.status) {
       case "Sending":
-        await this.zoho.salesordersConfirm(createdOrderIds);
-        await this.zoho.bulkUpdateSalesOrderCustomField(
-          createdOrderIds,
-          "cf_ready_to_fulfill",
-          true,
-          true,
-        );
+        await this.zoho.salesOrder.confirm(createdOrderIds);
+        await this.zoho.salesOrder.setCustomFieldValue({
+          customFieldName: "cf_ready_to_fulfill",
+          salesOrderIds: createdOrderIds,
+          value: true,
+        });
         break;
       case "Confirmed":
-        await this.zoho.salesordersConfirm(createdOrderIds);
+        await this.zoho.salesOrder.confirm(createdOrderIds);
         break;
 
       default:

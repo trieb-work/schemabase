@@ -1,20 +1,15 @@
 import { OrderEvent } from "@eci/integrations/strapi-orders-to-zoho";
-import {
-  SalesOrderShortSearchOverview,
-  ZohoClientInstance,
-} from "@trieb.work/zoho-ts";
+import { Zoho, SalesOrder } from "@trieb.work/zoho-ts/dist/v2";
 import { expect } from "@jest/globals";
 export async function verifySyncedOrders(
-  zohoClient: ZohoClientInstance,
+  zoho: Zoho,
   strapiEvent: OrderEvent,
-): Promise<SalesOrderShortSearchOverview[]> {
+): Promise<SalesOrder[]> {
   const bulkOrderId = [strapiEvent.entry.prefix, strapiEvent.entry.id].join(
     "-",
   );
 
-  const zohoOrders = await zohoClient.searchSalesOrdersWithScrolling({
-    searchString: bulkOrderId,
-  });
+  const zohoOrders = await zoho.salesOrder.search(bulkOrderId);
 
   expect(zohoOrders.length).toBe(strapiEvent.entry.addresses.length);
   for (const zohoOrder of zohoOrders) {
@@ -24,7 +19,7 @@ export async function verifySyncedOrders(
         break;
       case "Sending":
         expect(zohoOrder.status).toEqual("confirmed");
-        expect(zohoOrder.cf_ready_to_fulfill).toEqual("true");
+        expect(zohoOrder["cf_ready_to_fulfill"]).toEqual("true");
         break;
       default:
         expect(zohoOrder.status).toEqual("draft");
@@ -44,7 +39,7 @@ export async function verifySyncedOrders(
       );
     }
 
-    const res = await zohoClient.getSalesorderById(zohoOrder.salesorder_id);
+    const res = await zoho.salesOrder.retrieve(zohoOrder.salesorder_id);
     if (!res || !res.shipping_address) {
       throw new Error(
         `Unable to load order from zoho: ${zohoOrder.salesorder_id}`,

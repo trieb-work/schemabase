@@ -25,7 +25,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   const queue = new Queue(QueueManager.queueId(topic), {
     connection: {
       host: env.require("REDIS_HOST"),
-      port: env.require("REDIS_PORT"),
+      port: Number.parseInt(env.require("REDIS_PORT")),
       password: env.get("REDIS_PASSWORD"),
     },
   });

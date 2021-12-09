@@ -5,3 +5,5 @@
 
 # Ignore helm charts
 **/helm-chart/**
+
+.nx

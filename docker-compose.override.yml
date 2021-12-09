@@ -24,3 +24,20 @@ services:
       - 8081:8081
     depends_on:
       - redis
+
+  queue-manager:
+    image: queue-manager
+    build:
+      context: .
+      dockerfile: ./apps/queue-manager/Dockerfile
+      args:
+        - commit_sha=development
+    ports:
+      - 19000:19000
+
+    environment:
+      PORT: 19000
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - redis

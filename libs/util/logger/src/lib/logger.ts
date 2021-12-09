@@ -4,6 +4,10 @@ import { env } from "@chronark/env";
 import APMAgent from "elastic-apm-node/start";
 import ecsFormat from "@elastic/ecs-winston-format";
 
+export interface LogDrain {
+  log: (message: string) => void;
+}
+
 export type Fields = Record<string, unknown>;
 
 export type LoggerConfig = {
@@ -16,6 +20,7 @@ export type LoggerConfig = {
 };
 
 export interface ILogger {
+  withLogDrain(logDrain: LogDrain): ILogger;
   with(additionalMeta: Fields): ILogger;
   debug(message: string, fields?: Fields): void;
   info(message: string, fields?: Fields): void;
@@ -29,6 +34,7 @@ export class Logger implements ILogger {
   private meta: Record<string, unknown>;
   private elasticSearchTransport?: ElasticsearchTransport;
   private apm?: typeof APMAgent;
+  private logDrains: LogDrain[] = [];
 
   public constructor(config?: LoggerConfig) {
     this.meta = {
@@ -75,6 +81,16 @@ export class Logger implements ILogger {
     }
   }
 
+  public withLogDrain(logDrain: LogDrain): ILogger {
+    const copy = Object.assign(
+      Object.create(Object.getPrototypeOf(this)),
+      this,
+    ) as Logger;
+
+    copy.logDrains.push(logDrain);
+    return copy;
+  }
+
   /**
    * Create a child logger with more metadata to be logged.
    * Existing metadata is carried over unless overwritten
@@ -96,6 +112,11 @@ export class Logger implements ILogger {
    */
   private log(level: string, message: string, fields: Fields): void {
     this.logger.log(level, message, { ...this.meta, ...fields });
+    for (const logDrain of this.logDrains) {
+      logDrain.log(
+        JSON.stringify({ level, message, ...this.meta, ...fields }, null, 2),
+      );
+    }
   }
 
   public debug(message: string, fields: Fields = {}): void {
