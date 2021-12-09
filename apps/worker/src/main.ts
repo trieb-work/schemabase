@@ -51,14 +51,17 @@ async function main() {
               const cookies = env.get("ZOHO_COOKIES");
               const zoho = new Zoho(
                 cookies
-                  ? await ZohoApiClient.fromBrowserCookies({
+                  ? await ZohoApiClient.fromCookies({
                       orgId: zohoApp.orgId,
                       cookie: cookies,
                       zsrfToken: env.require("ZOHO_ZCSRF_TOKEN"),
                     })
-                  : await ZohoApiClient.fromClientSecret(zohoApp.orgId, {
-                      id: zohoApp.clientId,
-                      secret: zohoApp.clientSecret,
+                  : await ZohoApiClient.fromOAuth({
+                      orgId: zohoApp.orgId,
+                      client: {
+                        id: zohoApp.clientId,
+                        secret: zohoApp.clientSecret,
+                      },
                     }),
               );
               const strapiOrdersToZoho = new StrapiOrdersToZoho({
@@ -86,14 +89,17 @@ async function main() {
               const cookies = env.get("ZOHO_COOKIES");
               const zoho = new Zoho(
                 cookies
-                  ? await ZohoApiClient.fromBrowserCookies({
+                  ? await ZohoApiClient.fromCookies({
                       orgId: zohoApp.orgId,
                       cookie: cookies,
                       zsrfToken: env.require("ZOHO_ZCSRF_TOKEN"),
                     })
-                  : await ZohoApiClient.fromClientSecret(zohoApp.orgId, {
-                      id: zohoApp.clientId,
-                      secret: zohoApp.clientSecret,
+                  : await ZohoApiClient.fromOAuth({
+                      orgId: zohoApp.orgId,
+                      client: {
+                        id: zohoApp.clientId,
+                        secret: zohoApp.clientSecret,
+                      },
                     }),
               );
               const strapiOrdersToZoho = new StrapiOrdersToZoho({

@@ -148,18 +148,29 @@ export class QueueManager<
   ): (
     job: Job<SignedMessage<Message<TTopic, TPayload>>, void, string>,
   ) => Promise<void> {
-    return async ({ data: { message, signature } }) => {
-      const logger = this.logger.with({ traceId: message.header.traceId });
+    return async (job) => {
+      const { message, signature } = job.data;
+      const logger = this.logger
+        .with({ traceId: message.header.traceId })
+        .withLogDrain({
+          log: (s: string) => {
+            job.log(s);
+          },
+        });
       try {
         logger.info("Received message", { messageId: message.header.id });
         this.signer.verify(message, signature);
         await handler(message);
         logger.info("Processed message", { messageId: message.header.id });
+        await job.updateProgress(100);
+        job.log("done");
       } catch (err) {
+        job.log(JSON.stringify(err, null, 2));
         logger.error("Error processing message", {
           messageId: message.header.id,
           err,
         });
+        throw err;
       }
     };
   }

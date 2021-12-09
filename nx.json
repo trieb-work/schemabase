@@ -91,6 +91,9 @@
     "integrations-zoho-logistics": {
       "tags": []
     },
+    "queue-manager": {
+      "tags": []
+    },
     "util": {
       "tags": []
     },

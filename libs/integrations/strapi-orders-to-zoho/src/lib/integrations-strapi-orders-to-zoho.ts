@@ -70,7 +70,7 @@ export class StrapiOrdersToZoho {
     if (!this.products[productId]) {
       const item = await this.zoho.item.retrieve(productId);
       this.products[productId] = {
-        taxId: item.tax_id.toString(),
+        taxId: item.tax_id,
         taxPercentage: item.tax_percentage,
       };
     }
@@ -197,7 +197,7 @@ export class StrapiOrdersToZoho {
     const existingOrderUIds = existingOrders.map((o) =>
       this.getUniqueOrderId(o.salesorder_number, o["cf_orderhash"] as string),
     );
-    this.logger.warn("strapiOrders", { strapiOrders });
+    this.logger.debug("strapiOrders", { strapiOrders });
     const strapiOrderUIds = strapiOrders.map((o) =>
       this.getUniqueOrderId(
         o.order.salesorder_number,
@@ -220,7 +220,7 @@ export class StrapiOrdersToZoho {
       .map((o) => o.salesorder_number);
 
     const createOrders = strapiOrders.filter((o, i) => {
-      this.logger.warn("Filtering create orders", {
+      this.logger.debug("Filtering create orders", {
         o: o.order.salesorder_number,
         existingSalesorderNumbers,
       });
@@ -362,9 +362,6 @@ export class StrapiOrdersToZoho {
           shipping_address_id: addressId,
         })
         .catch((err: Error) => {
-          // if (err.message.includes("This sales order number already exists")) {
-          //   this.logger.warn(err.message);
-          // } else {
           throw new Error(
             `Unable to create sales order: ${JSON.stringify(
               {

@@ -102,7 +102,7 @@ async function generateEvent(
 
 beforeAll(async () => {
   zoho = new Zoho(
-    await ZohoApiClient.fromBrowserCookies({
+    await ZohoApiClient.fromCookies({
       orgId: env.require("ZOHO_ORG_ID"),
       cookie: env.require("ZOHO_COOKIES"),
       zsrfToken: env.require("ZOHO_ZCSRF_TOKEN"),
@@ -189,9 +189,16 @@ afterAll(async () => {
   await prisma.$disconnect();
   if (CLEAN_UP) {
     /** Clean up created entries */
-    const ordersInZoho = await zoho.salesOrder.search(`${prefix}-`);
-    await zoho.salesOrder.delete(ordersInZoho.map((o) => o.salesorder_id));
-    await zoho.contact.delete(createdContactIds);
+    try {
+      const ordersInZoho = await zoho.salesOrder.search(`${prefix}-`);
+      await zoho.salesOrder.delete(ordersInZoho.map((o) => o.salesorder_id));
+      for (const id of createdContactIds) {
+        await zoho.contact.delete(id);
+      }
+    } catch (err) {
+      console.error("Unable to clean up", err);
+      throw err;
+    }
   }
 }, 100_000);
 
@@ -253,7 +260,7 @@ describe("with valid webhook", () => {
           const salesOrders = await verifySyncedOrders(zoho, event);
 
           const createdOrder = await zoho.salesOrder.retrieve(
-            salesOrders[0].salesorder_number,
+            salesOrders[0].salesorder_id,
           );
 
           expect(createdOrder?.shipping_charge_tax_percentage).toBe(19);
@@ -432,7 +439,7 @@ describe("with valid webhook", () => {
           expect(order.status).toEqual("draft");
         }
       }, 100_000);
-      it.skip("does not create duplicate addresses", async () => {
+      it("does not create duplicate addresses", async () => {
         const n = 7;
         const event = await generateEvent("entry.create", "Draft", n);
 
@@ -455,11 +462,7 @@ describe("with valid webhook", () => {
           throw new Error(`Contact not found: ${event.entry.zohoCustomerId}`);
         }
 
-        /**
-         * Not sure why +2 but that's how it seems to work.
-         * Ideally we would only have +1 here but this is fine for now.
-         */
-        expect(contact.addresses.length).toBe(n + 2);
+        expect(contact.addresses.length).toBe(n);
 
         const ordersInZohoAfterUpdate = await zoho.salesOrder.search(
           event.entry.addresses[0].orderId.split("-").slice(0, 2).join("-"),
@@ -523,7 +526,7 @@ describe("with valid webhook", () => {
       }, 100_000);
     });
     describe("with shuffled addresses", () => {
-      it.skip("does not modify the zoho orders", async () => {
+      it("does not modify the zoho orders", async () => {
         const event = await generateEvent("entry.create", "Draft", 2);
 
         /**
@@ -575,9 +578,12 @@ describe("with valid webhook", () => {
 
         await waitForPropagation(`strapi.${event.event}`, jobId);
 
-        const zohoOrders = await zoho.salesOrder.search(
-          [event.entry.prefix, event.entry.id].join("-"),
-        );
+        const zohoOrders = await zoho.salesOrder
+          .search([event.entry.prefix, event.entry.id].join("-"))
+          .catch((err) => {
+            console.error(err);
+            throw err;
+          });
 
         expect(zohoOrders.length).toBe(event.entry.addresses.length);
       }, 100_000);
