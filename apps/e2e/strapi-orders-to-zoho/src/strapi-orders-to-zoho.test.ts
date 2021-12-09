@@ -101,12 +101,21 @@ async function generateEvent(
 }
 
 beforeAll(async () => {
+  const cookies = env.get("ZOHO_COOKIES");
   zoho = new Zoho(
-    await ZohoApiClient.fromCookies({
-      orgId: env.require("ZOHO_ORG_ID"),
-      cookie: env.require("ZOHO_COOKIES"),
-      zsrfToken: env.require("ZOHO_ZCSRF_TOKEN"),
-    }),
+    cookies
+      ? await ZohoApiClient.fromCookies({
+          orgId: env.require("ZOHO_ORG_ID"),
+          cookie: cookies,
+          zsrfToken: env.require("ZOHO_ZCSRF_TOKEN"),
+        })
+      : await ZohoApiClient.fromOAuth({
+          orgId: env.require("ZOHO_ORG_ID"),
+          client: {
+            id: env.require("ZOHO_CLIENT_ID"),
+            secret: env.require("ZOHO_CLIENT_SECRET"),
+          },
+        }),
   );
 
   const tenant = await prisma.tenant.create({
