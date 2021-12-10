@@ -34,7 +34,7 @@ export type HandleWebhookConfig<TRequest> = {
      * Validation to ensure a certain task has all requried data from the request.
      * For instance specific headers or json payload.
      */
-    request: z.AnyZodObject;
+    request?: z.AnyZodObject;
   };
 };
 
@@ -97,9 +97,11 @@ export function handleWebhook<TRequest>({
       /**
        * Perform request validation
        */
-      await validation.request.parseAsync(req).catch((err: Error) => {
-        throw new HttpError(400, err.message);
-      });
+      if (validation.request) {
+        await validation.request.parseAsync(req).catch((err: Error) => {
+          throw new HttpError(400, err.message);
+        });
+      }
       /**
        * Run the actual webhook logic
        */
