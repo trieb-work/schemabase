@@ -1,22 +1,32 @@
 import { handleWebhook, Webhook } from "@eci/http";
+import { z } from "zod";
+
+const requestValidation = z.object({
+  query: z.object({
+    pushid: z.string().optional(),
+  }),
+});
 
 /**
  * The product data feed returns a google standard .csv file from products and their attributes in your shop.#
  */
-const webhook: Webhook<{ body: unknown; method: string }> = async ({
+const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   backgroundContext: ctx,
   req,
   res,
 }): Promise<void> => {
+  const {
+    query: { pushid },
+  } = req;
+
   ctx.logger.info("Incoming webhook from dpd", {
-    method: req.method,
-    body: req.body,
+    pushid,
   });
 
-  res.json({
-    status: "received",
-    traceId: ctx.trace.id,
-  });
+  if (pushid) {
+    res.setHeader("Content-Type", "application/xml");
+    res.send(`<push><pushid>${pushid}</pushid><status>OK</status></push>`);
+  }
 };
 
 export default handleWebhook({
