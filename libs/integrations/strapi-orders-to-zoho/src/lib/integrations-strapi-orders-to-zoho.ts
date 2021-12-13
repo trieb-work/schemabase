@@ -4,7 +4,12 @@ import { Zoho, CreateSalesOrder } from "@trieb.work/zoho-ts/dist/v2";
 import { sha256 } from "@eci/util";
 
 import { ILogger } from "@eci/util/logger";
-const statusValidation = z.enum(["Draft", "Confirmed", "Sending", "Finished"]);
+const statusValidation = z.enum([
+  "Draft",
+  "Confirmed",
+  "ReadyToFulfill",
+  "Finished",
+]);
 
 export const productValidation = z.object({
   product: z.object({
@@ -268,7 +273,7 @@ export class StrapiOrdersToZoho {
      */
 
     switch (event.entry.status) {
-      case "Sending":
+      case "ReadyToFulfill":
         await this.zoho.salesOrder.confirm(syncedOrderIds);
         await this.zoho.salesOrder.setCustomFieldValue({
           salesOrderIds: syncedOrderIds,
@@ -397,7 +402,7 @@ export class StrapiOrdersToZoho {
       orders,
     );
     switch (event.entry.status) {
-      case "Sending":
+      case "ReadyToFulfill":
         await this.zoho.salesOrder.confirm(createdOrderIds);
         await this.zoho.salesOrder.setCustomFieldValue({
           customFieldName: "cf_ready_to_fulfill",
