@@ -17,7 +17,7 @@ export async function verifySyncedOrders(
       case "Confirmed":
         expect(zohoOrder.status).toEqual("confirmed");
         break;
-      case "Sending":
+      case "ReadyToFulfill":
         expect(zohoOrder.status).toEqual("confirmed");
         expect(zohoOrder["cf_ready_to_fulfill"]).toEqual("true");
         break;
