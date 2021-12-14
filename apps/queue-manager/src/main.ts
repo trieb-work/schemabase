@@ -3,6 +3,7 @@ import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
 import { Queue, QueueScheduler } from "bullmq";
 import { createBullBoard } from "@bull-board/api";
 import { HapiAdapter } from "@bull-board/hapi";
+import Redis from "ioredis";
 import hapi from "@hapi/hapi";
 
 async function main() {
@@ -13,11 +14,9 @@ async function main() {
     password: env.get("REDIS_PASSWORD"),
   };
 
-  const queueNames = [
-    "eci:development:strapi.entry.create",
-    "eci:development:strapi.entry.update",
-    "eci:development:strapi.entry.delete",
-  ];
+  const redis = new Redis(connection);
+  const queueNames = [...new Set(await redis.keys("bull:*"))]
+  redis.disconnect()
 
   const scheduler = new QueueScheduler("queueScheduler", { connection });
   await scheduler.waitUntilReady();

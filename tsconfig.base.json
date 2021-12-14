@@ -48,6 +48,7 @@
       "@eci/data-access/prisma": ["libs/data-access/prisma/src/index.ts"],
       "@eci/events/client": ["libs/events/client/src/index.ts"],
       "@eci/events/strapi": ["libs/events/strapi/src/index.ts"],
+      "@eci/events/tracking": ["libs/events/tracking/src/index.ts"],
       "@eci/http": ["libs/http/src/index.ts"],
       "@eci/integrations/product-data-feed": [
         "libs/integrations/product-data-feed/src/index.ts"

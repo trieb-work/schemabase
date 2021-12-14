@@ -46,6 +46,19 @@ init: down build
 
 	yarn prisma db push --schema=${prismaSchema}
 
+
+# Build and seeds all required external services
+
+init-core: export COMPOSE_DOCKER_CLI_BUILD=1
+init-core: export DOCKER_BUILDKIT=1
+init-core: down build
+
+	docker-compose up -d eci_webhooks eci_worker queue-manager
+
+
+	yarn prisma db push --schema=${prismaSchema}
+
+
 build:
 	yarn install
 

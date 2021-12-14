@@ -19,20 +19,159 @@ generator dbml {
   provider = "prisma-dbml-generator"
 }
 
-model ProductDataFeedApp {
+model Order {
+  // internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orderId String @unique
+
+
+  email String
+
+
+  packages Package[]
+}
+
+enum PackageState {
+  // Initial state when the package is created
+  INIT
+
+  // The carrier has received the shipment info and is about to pick up the package.
+  INFORMATION_RECEIVED
+
+  // The shipment has been accepted and is in transit now.
+  IN_TRANSIT
+
+  // The carrier is on its way to deliver the shipment.
+  OUT_FOR_DELIVERY
+
+  // The carrier attemptet to deliver the shipment but failed. It ususlly leavesa notice and will try to deliver again.
+  FAILED_ATTEMPT
+
+  // The shipment has been delivered successfully.
+  DELIVERED
+
+  // The package has arrived at the nearest pickup point and is available for pickup.
+  AVAILABLE_FOR_PICKUP
+
+  // Held at customs, undelivered, returned to sender, or any other shipping exceptions.
+  EXCEPTION
+
+  // The shipment has expired as the carrier didn't return the tracking info for the lat 30 days.
+  EXPIRED
+
+  // The shipment is pending as the carrier didn't return the tracking info.
+  PENDING
+}
+
+enum Carrier {
+  DPD
+}
+
+model Package {
+  // internal id
+  id                 String         @id
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  carrier            Carrier
+  state             PackageState
+  // tracking id from the carrier
+  trackingId         String         @unique
+  // A link to the carriers tracking page
+  carrierTrackingUrl String         @unique
+  order              Order          @relation(fields: [orderId], references: [orderId], onDelete: Cascade)
+  orderId            String
+  events             PackageEvent[]
+}
+
+model PackageEvent {
   id String @id
 
-  // Graphql endpoint of a saleor app
-  productDetailStorefrontURL String
 
-  saleorApp   SaleorApp @relation(fields: [saleorAppId], references: [id])
-  saleorAppId String
+  // When the event happened
+  time DateTime
+
+  state PackageState
+
+  // What happened
+  // eg: "The shipment has cleared customs"
+  message String
+
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  packageId String
+
+  // `Nürnberg, Deutschland` for example
+  location  String
+  sentEmail TransactionalEmail?
+}
+
+model TransactionalEmail {
+  id    String   @id
+  time  DateTime
+  email String
+
+  // The related package event that caused this email to be sent
+  packageEvent   PackageEvent @relation(fields: [packageEventId], references: [id])
+  packageEventId String       @unique
+}
+
+model TrackingEmailApp {
+  id String @id
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String @unique
 
-  webhooks    IncomingProductDataFeedWebhook[]
-  integration ProductDataFeedIntegration?
+  SendgridTemplate SendgridTemplate[]
+
+  sender              String
+  replyTo             String
+  integration TrackingIntegration[]
+}
+
+model SendgridTemplate {
+  // internal id
+  id                 String           @id
+  // A human readable name provided by the user
+  // To use internationalized emails you should prefix the name with the language code
+  // for example: `en:delivered`
+  // Together with the trackingEmailAppId this can be used as primary key
+  name               String
+  // Localized subject for the email
+  subject            String
+  // The template id in sendgrid
+  templateId         String
+  trackingEmailApp   TrackingEmailApp @relation(fields: [trackingEmailAppId], references: [id], onDelete: Cascade)
+  trackingEmailAppId String
+
+  @@unique([trackingEmailAppId, name])
+}
+
+model DpdApp {
+  id String @id
+
+  name String?
+
+  tenant              Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId            String                @unique
+  integration TrackingIntegration?
+
+  webhooks   IncomingDPDWebhook[]
+
+}
+
+model ProductDataFeedApp {
+  // internal id
+  id                         String                           @id
+  // Graphql endpoint of a saleor app
+  productDetailStorefrontURL String
+  saleorApp                  SaleorApp                        @relation(fields: [saleorAppId], references: [id])
+  saleorAppId                String
+  tenant                     Tenant                           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId                   String                           @unique
+  webhooks                   IncomingProductDataFeedWebhook[]
+  integration                ProductDataFeedIntegration?
 }
 
 model LogisticsApp {
@@ -94,7 +233,7 @@ model SaleorApp {
 
   productDataFeedIntegration ProductDataFeedIntegration[]
 
-  ProductDataFeedApp ProductDataFeedApp[]
+  productDataFeedApp ProductDataFeedApp[]
   @@unique([domain, channelSlug])
 }
 
@@ -128,7 +267,7 @@ model Tenant {
   // Human readable identifier
   name String
 
-  Subscriptions Subscription[]
+  subscriptions Subscription[]
 
   // App configurations
   saleorApps                 SaleorApp[]
@@ -139,6 +278,9 @@ model Tenant {
   strapiToZohoIntegration    StrapiToZohoIntegration[]
   logisticsIntegration       LogisticsIntegration[]
   logisticsApp               LogisticsApp[]
+  trackingEmailApp           TrackingEmailApp[]
+  dpdApp                     DpdApp[]
+  trackingIntegration        TrackingIntegration[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
@@ -154,6 +296,7 @@ model Subscription {
   productDataFeedIntegration ProductDataFeedIntegration?
   strapiToZohoIntegration    StrapiToZohoIntegration?
   logisticsIntegration       LogisticsIntegration?
+  trackingIntegration        TrackingIntegration?
 }
 
 // ----------------------------------------------------------------------------
@@ -161,6 +304,27 @@ model Subscription {
 //
 // Every integration is a connection between application configurations and a tenant
 // ----------------------------------------------------------------------------
+
+model TrackingIntegration {
+  id String @id
+
+  // Allow the user to manually enabled or disable the integration
+  // Regardless of current subscription state.
+  enabled Boolean @default(true)
+
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  subscriptionId String?       @unique
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  dpdApp   DpdApp @relation(fields: [dpdAppId], references: [id])
+  dpdAppId String @unique
+
+  trackingEmailApp   TrackingEmailApp @relation(fields: [trackingEmailAppId], references: [id])
+  trackingEmailAppId String
+
+}
 
 model ProductDataFeedIntegration {
   id String @id
@@ -176,7 +340,7 @@ model ProductDataFeedIntegration {
   tenantId String
 
   productDataFeedApp   ProductDataFeedApp @relation(fields: [productDataFeedAppId], references: [id])
-  productDataFeedAppId String
+  productDataFeedAppId String             @unique
   saleorApp            SaleorApp          @relation(fields: [saleorAppId], references: [id])
   saleorAppId          String
 }
@@ -198,7 +362,7 @@ model LogisticsIntegration {
   zohoAppId String
 
   logisticsApp   LogisticsApp @relation(fields: [logisticsAppId], references: [id])
-  logisticsAppId String
+  logisticsAppId String       @unique
 }
 
 model StrapiToZohoIntegration {
@@ -217,7 +381,7 @@ model StrapiToZohoIntegration {
   tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId    String
   strapiApp   StrapiApp @relation(fields: [strapiAppId], references: [id])
-  strapiAppId String
+  strapiAppId String    @unique
   zohoApp     ZohoApp   @relation(fields: [zohoAppId], references: [id])
   zohoAppId   String
 
@@ -241,6 +405,21 @@ model StrapiApp {
 // Every Config/App can have multiple webhooks attached
 // ----------------------------------------------------------------------------
 
+
+
+model IncomingDPDWebhook {
+  id   String  @id
+  // Human readable name
+  name String?
+
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  dpdApp   DpdApp @relation(fields: [dpdAppId], references: [id], onDelete: Cascade)
+  dpdAppId String
+}
+
 model IncomingSaleorWebhook {
   id   String  @id
   // Human readable name
@@ -251,7 +430,7 @@ model IncomingSaleorWebhook {
   updatedAt DateTime @updatedAt
 
   secret   SecretKey @relation(fields: [secretId], references: [id])
-  secretId String
+  secretId String    @unique
 
   installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
   installedSaleorAppId String
@@ -267,7 +446,7 @@ model IncomingStrapiWebhook {
   updatedAt DateTime @updatedAt
 
   secret   SecretKey @relation(fields: [secretId], references: [id])
-  secretId String
+  secretId String    @unique
 
   strapiApp   StrapiApp @relation(fields: [strapiAppId], references: [id], onDelete: Cascade)
   strapiAppId String

@@ -2,6 +2,79 @@
 //// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 //// ------------------------------------------------------
 
+Table Order {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  orderId String [unique, not null]
+  email String [not null]
+  packages Package [not null]
+}
+
+Table Package {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  carrier Carrier [not null]
+  state PackageState [not null]
+  trackingId String [unique, not null]
+  carrierTrackingUrl String [unique, not null]
+  order Order [not null]
+  orderId String [not null]
+  events PackageEvent [not null]
+}
+
+Table PackageEvent {
+  id String [pk]
+  time DateTime [not null]
+  state PackageState [not null]
+  message String [not null]
+  package Package [not null]
+  packageId String [not null]
+  location String [not null]
+  sentEmail TransactionalEmail
+}
+
+Table TransactionalEmail {
+  id String [pk]
+  time DateTime [not null]
+  email String [not null]
+  packageEvent PackageEvent [not null]
+  packageEventId String [unique, not null]
+}
+
+Table TrackingEmailApp {
+  id String [pk]
+  tenant Tenant [not null]
+  tenantId String [unique, not null]
+  SendgridTemplate SendgridTemplate [not null]
+  sender String [not null]
+  replyTo String [not null]
+  integration TrackingIntegration [not null]
+}
+
+Table SendgridTemplate {
+  id String [pk]
+  name String [not null]
+  subject String [not null]
+  templateId String [not null]
+  trackingEmailApp TrackingEmailApp [not null]
+  trackingEmailAppId String [not null]
+
+  indexes {
+    (trackingEmailAppId, name) [unique]
+  }
+}
+
+Table DpdApp {
+  id String [pk]
+  name String
+  tenant Tenant [not null]
+  tenantId String [unique, not null]
+  integration TrackingIntegration
+  webhooks IncomingDPDWebhook [not null]
+}
+
 Table ProductDataFeedApp {
   id String [pk]
   productDetailStorefrontURL String [not null]
@@ -45,7 +118,7 @@ Table SaleorApp {
   tenant Tenant [not null]
   tenantId String [not null]
   productDataFeedIntegration ProductDataFeedIntegration [not null]
-  ProductDataFeedApp ProductDataFeedApp [not null]
+  productDataFeedApp ProductDataFeedApp [not null]
 
   indexes {
     (domain, channelSlug) [unique]
@@ -63,7 +136,7 @@ Table InstalledSaleorApp {
 Table Tenant {
   id String [pk]
   name String [not null]
-  Subscriptions Subscription [not null]
+  subscriptions Subscription [not null]
   saleorApps SaleorApp [not null]
   zohoApps ZohoApp [not null]
   productdatafeedApps ProductDataFeedApp [not null]
@@ -72,6 +145,9 @@ Table Tenant {
   strapiToZohoIntegration StrapiToZohoIntegration [not null]
   logisticsIntegration LogisticsIntegration [not null]
   logisticsApp LogisticsApp [not null]
+  trackingEmailApp TrackingEmailApp [not null]
+  dpdApp DpdApp [not null]
+  trackingIntegration TrackingIntegration [not null]
 }
 
 Table Subscription {
@@ -82,6 +158,20 @@ Table Subscription {
   productDataFeedIntegration ProductDataFeedIntegration
   strapiToZohoIntegration StrapiToZohoIntegration
   logisticsIntegration LogisticsIntegration
+  trackingIntegration TrackingIntegration
+}
+
+Table TrackingIntegration {
+  id String [pk]
+  enabled Boolean [not null, default: true]
+  subscription Subscription
+  subscriptionId String [unique]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  dpdApp DpdApp [not null]
+  dpdAppId String [unique, not null]
+  trackingEmailApp TrackingEmailApp [not null]
+  trackingEmailAppId String [not null]
 }
 
 Table ProductDataFeedIntegration {
@@ -92,7 +182,7 @@ Table ProductDataFeedIntegration {
   tenant Tenant [not null]
   tenantId String [not null]
   productDataFeedApp ProductDataFeedApp [not null]
-  productDataFeedAppId String [not null]
+  productDataFeedAppId String [unique, not null]
   saleorApp SaleorApp [not null]
   saleorAppId String [not null]
 }
@@ -107,7 +197,7 @@ Table LogisticsIntegration {
   zohoApp ZohoApp [not null]
   zohoAppId String [not null]
   logisticsApp LogisticsApp [not null]
-  logisticsAppId String [not null]
+  logisticsAppId String [unique, not null]
 }
 
 Table StrapiToZohoIntegration {
@@ -120,7 +210,7 @@ Table StrapiToZohoIntegration {
   tenant Tenant [not null]
   tenantId String [not null]
   strapiApp StrapiApp [not null]
-  strapiAppId String [not null]
+  strapiAppId String [unique, not null]
   zohoApp ZohoApp [not null]
   zohoAppId String [not null]
 }
@@ -134,13 +224,22 @@ Table StrapiApp {
   integration StrapiToZohoIntegration
 }
 
+Table IncomingDPDWebhook {
+  id String [pk]
+  name String
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  dpdApp DpdApp [not null]
+  dpdAppId String [not null]
+}
+
 Table IncomingSaleorWebhook {
   id String [pk]
   name String
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   secret SecretKey [not null]
-  secretId String [not null]
+  secretId String [unique, not null]
   installedSaleorApp InstalledSaleorApp [not null]
   installedSaleorAppId String [not null]
 }
@@ -151,7 +250,7 @@ Table IncomingStrapiWebhook {
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   secret SecretKey [not null]
-  secretId String [not null]
+  secretId String [unique, not null]
   strapiApp StrapiApp [not null]
   strapiAppId String [not null]
 }
@@ -183,6 +282,35 @@ Table SecretKey {
   IncomingStrapiWebhook IncomingStrapiWebhook
 }
 
+Enum PackageState {
+  INIT
+  INFORMATION_RECEIVED
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  FAILED_ATTEMPT
+  DELIVERED
+  AVAILABLE_FOR_PICKUP
+  EXCEPTION
+  EXPIRED
+  PENDING
+}
+
+Enum Carrier {
+  DPD
+}
+
+Ref: Package.orderId > Order.orderId
+
+Ref: PackageEvent.packageId > Package.id
+
+Ref: TransactionalEmail.packageEventId - PackageEvent.id
+
+Ref: TrackingEmailApp.tenantId > Tenant.id
+
+Ref: SendgridTemplate.trackingEmailAppId > TrackingEmailApp.id
+
+Ref: DpdApp.tenantId > Tenant.id
+
 Ref: ProductDataFeedApp.saleorAppId > SaleorApp.id
 
 Ref: ProductDataFeedApp.tenantId > Tenant.id
@@ -196,6 +324,14 @@ Ref: SaleorApp.tenantId > Tenant.id
 Ref: InstalledSaleorApp.saleorAppId - SaleorApp.id
 
 Ref: Subscription.tenantId > Tenant.id
+
+Ref: TrackingIntegration.subscriptionId - Subscription.id
+
+Ref: TrackingIntegration.tenantId > Tenant.id
+
+Ref: TrackingIntegration.dpdAppId - DpdApp.id
+
+Ref: TrackingIntegration.trackingEmailAppId > TrackingEmailApp.id
 
 Ref: ProductDataFeedIntegration.subscriptionId - Subscription.id
 
@@ -222,6 +358,8 @@ Ref: StrapiToZohoIntegration.strapiAppId - StrapiApp.id
 Ref: StrapiToZohoIntegration.zohoAppId > ZohoApp.id
 
 Ref: StrapiApp.tenantId > Tenant.id
+
+Ref: IncomingDPDWebhook.dpdAppId > DpdApp.id
 
 Ref: IncomingSaleorWebhook.secretId - SecretKey.id
 

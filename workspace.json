@@ -253,6 +253,28 @@
         }
       }
     },
+    "e2e-dpd-tracking-send-email": {
+      "root": "apps/e2e/saleor",
+      "sourceRoot": "apps/e2e/dpd-tracking-send-email/src",
+      "projectType": "application",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["apps/e2e/dpd-tracking-send-email/**/*.ts"]
+          },
+          "outputs": ["{options.outputFile}"]
+        },
+        "e2e": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/apps/e2e/dpd-tracking-send-email"],
+          "options": {
+            "jestConfig": "apps/e2e/dpd-tracking-send-email/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
     "e2e-product-data-feed": {
       "root": "apps/e2e/product-data-feed",
       "sourceRoot": "apps/e2e/product-data-feed/src",
@@ -402,6 +424,28 @@
           "outputs": ["coverage/libs/events/strapi"],
           "options": {
             "jestConfig": "libs/events/strapi/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "events-tracking": {
+      "root": "libs/events/tracking",
+      "sourceRoot": "libs/events/tracking/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["libs/events/tracking/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/events/tracking"],
+          "options": {
+            "jestConfig": "libs/events/tracking/jest.config.js",
             "passWithNoTests": true
           }
         }

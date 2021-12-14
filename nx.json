@@ -58,6 +58,9 @@
     "data-access-prisma": {
       "tags": []
     },
+    "e2e-dpd-tracking-send-email": {
+      "tags": []
+    },
     "e2e-product-data-feed": {
       "tags": []
     },
@@ -74,6 +77,9 @@
       "tags": []
     },
     "events-strapi": {
+      "tags": []
+    },
+    "events-tracking": {
       "tags": []
     },
     "http": {
