@@ -70,10 +70,7 @@
     "e2e-strapi-orders-to-zoho": {
       "tags": []
     },
-    "events-client": {
-      "tags": []
-    },
-    "events-strapi": {
+    "events": {
       "tags": []
     },
     "http": {

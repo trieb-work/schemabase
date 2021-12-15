@@ -51,6 +51,8 @@ build:
 
 	yarn nx run-many --target=build --all --with-deps
 
+	docker-compose build
+
 
 
 

@@ -1,8 +1,8 @@
 /**
  * Message extended with metadata
  */
-export type Message<TTopic, TPayload> = {
-  header: Header<TTopic>;
+export type Message<TPayload> = {
+  headers: Headers;
 
   /**
    * The content of the message.
@@ -14,7 +14,7 @@ export type Message<TTopic, TPayload> = {
 /**
  * Additional meta information about the message
  */
-type Header<TTopic> = {
+type Headers = {
   /**
    * Unique id for this messages
    */
@@ -23,18 +23,24 @@ type Header<TTopic> = {
   /**
    * The topic where this message is published
    */
-  topic: TTopic;
+  topic: string;
 
   /**
    * Used to uniquely identify a distributed trace through a system
    */
   traceId: string;
+
+  retry?: {
+    remaining: number;
+
+    notBefore: number;
+  };
 };
 
 /**
  * A signed message
  */
-export type SignedMessage<TMessage> = {
+export type Signed<TMessage> = {
   message: TMessage;
   /**
    * Siganture to verify the message comes from a trusted source
