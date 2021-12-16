@@ -61,9 +61,6 @@
     "e2e-product-data-feed": {
       "tags": []
     },
-    "e2e-queue": {
-      "tags": []
-    },
     "e2e-saleor": {
       "tags": []
     },

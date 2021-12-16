@@ -1,13 +1,13 @@
 import { env } from "@chronark/env";
 import { ISigner } from "@eci/events";
-import { idGenerator } from "@eci/util/ids";
 import { ILogger } from "@eci/util/logger";
 import * as kafka from "kafkajs";
-import { Signed, Message } from "./message";
+import { Message } from "./message";
 
 export interface EventProducer<TContent> {
   produce: (
-    createMessage: Message<TContent>,
+    topic: string,
+    message: Message<TContent>,
   ) => Promise<{ messageId: string; partition: number; offset?: string }>;
 
   /**
@@ -48,6 +48,7 @@ export class KafkaProducer<TContent> implements EventProducer<TContent> {
   }
 
   public async produce(
+    topic: string,
     message: Message<TContent>,
   ): Promise<{ messageId: string; partition: number; offset?: string }> {
     const serialized = message.serialize();
@@ -61,7 +62,7 @@ export class KafkaProducer<TContent> implements EventProducer<TContent> {
       },
     ];
     const res = await this.producer.send({
-      topic: message.headers.topic,
+      topic,
       messages,
     });
     return {
@@ -142,20 +143,28 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
         if (!payload.message.value) {
           throw new Error(`Kafka did not return a message value`);
         }
-        if (!payload.message.headers){
-          throw new Error(`Kafka did not return a message header`);
-        }
-        if (!payload.message.headers["signature"]) {
-          throw new Error(`Kafka did not return a signature header`)
-        }
-        
         const message = Message.deserialize<TContent>(payload.message.value);
 
-        
-        const signature =  typeof payload.message.headers["signature"] === "string"
-            ? payload.message.headers["signature"]
-            : payload.message.headers["signature"].toString()
-          
+        const { headers } = payload.message;
+
+        if (!headers || !headers["signature"]) {
+          this.logger.error("No signature in header", {
+            headers: message.headers,
+          });
+
+          message.headers.errors = [
+            ...(message.headers.errors ?? []),
+            "No signature in kafka headers",
+          ];
+
+          await this.errorProducer.produce(`${payload.topic}.dlq`, message);
+          return;
+        }
+
+        const signature =
+          typeof headers["signature"] === "string"
+            ? headers["signature"]
+            : headers["signature"].toString();
 
         this.signer.verify(message.serialize(), signature);
 
@@ -179,7 +188,7 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
             err.message,
           ];
 
-          await this.errorProducer.produce(message);
+          await this.errorProducer.produce(`${payload.topic}.error`, message);
         }
       },
     });

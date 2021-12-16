@@ -94,59 +94,24 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     });
   }
 
-  // const queue = new strapi.Producer({
-  //   logger: ctx.logger,
-  //   signer: new Signer({ signingKey: env.require("SIGNING_KEY") }),
-  //   connection: {
-  //     host: env.require("REDIS_HOST"),
-  //     port: env.require("REDIS_PORT"),
-  //     password: env.get("REDIS_PASSWORD"),
-  //   },
-  // });
-
-  // let topic: strapi.Topic;
-  // switch (body.event) {
-  //   case "entry.create":
-  //     topic = strapi.Topic.ENTRY_CREATE;
-  //     break;
-  //   case "entry.update":
-  //     topic = strapi.Topic.ENTRY_UPDATE;
-  //     break;
-  //   case "entry.delete":
-  //     topic = strapi.Topic.ENTRY_DELETE;
-  //     break;
-
-  //   default:
-  //     throw new Error(`Invalid strapi event: ${body.event}`);
-  // }
-  // const jobId = await queue.produce({
-  //   topic,
-  //   content: {
-  //     ...req.body,
-  //     zohoAppId: integration.zohoApp.id,
-  //   },
-  // });
-
   const kafka = await KafkaProducer.new({
     signer: new Signer({ signingKey: env.require("SIGNING_KEY") }),
   });
 
   const message = new Message({
     headers: {
-      topic: `strapi.${body.event}`,
       traceId: ctx.trace.id,
     },
-    content:{
+    content: {
       ...req.body,
       zohoAppId: integration.zohoApp.id,
-    }
-  }
-  })
-
-  const { messageId, partition, offset } = await kafka.produce({
-  
-    content: ,
+    },
   });
+
+  const { messageId, partition, offset } = await kafka.produce(
+    `strapi.${body.event}`,
+    message,
+  );
   ctx.logger.info("Queued new event", { messageId });
   await kafka.close();
 

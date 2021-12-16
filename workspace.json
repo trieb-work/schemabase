@@ -275,28 +275,6 @@
         }
       }
     },
-    "e2e-queue": {
-      "root": "apps/e2e/queue",
-      "sourceRoot": "apps/e2e/queue/src",
-      "projectType": "application",
-      "targets": {
-        "lint": {
-          "executor": "@nrwl/linter:eslint",
-          "options": {
-            "lintFilePatterns": ["apps/e2e/queue/**/*.ts"]
-          },
-          "outputs": ["{options.outputFile}"]
-        },
-        "e2e": {
-          "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/apps/e2e/queue"],
-          "options": {
-            "jestConfig": "apps/e2e/queue/jest.config.js",
-            "passWithNoTests": true
-          }
-        }
-      }
-    },
     "e2e-saleor": {
       "root": "apps/e2e/saleor",
       "sourceRoot": "apps/e2e/saleor/src",

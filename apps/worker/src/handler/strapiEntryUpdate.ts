@@ -46,13 +46,10 @@ export const strapiEntryUpdate =
       message.content as unknown as OrderEvent,
     );
 
-
     const producer = await KafkaProducer.new({
-      signer: new Signer({signingKey: env.require("SIGNING_KEY")}),
-    })
+      signer: new Signer({ signingKey: env.require("SIGNING_KEY") }),
+    });
 
-
-    message.headers.topic = `${message.headers.topic}-processed`;
-    await producer.produce(message)
-    await producer.close()
+    await producer.produce("strapi.entry.update.synced", message);
+    await producer.close();
   };

@@ -9,10 +9,6 @@ export type Headers = {
    */
   id: string;
   /**
-   * The topic where this message is published
-   */
-  topic: string;
-  /**
    * Used to uniquely identify a distributed trace through a system
    */
   traceId: string;
@@ -63,9 +59,7 @@ export class Message<TContent> {
     );
   }
 
-  static deserialize<TContent>(
-    buf: Buffer,
-  ): Message<TContent> {
+  static deserialize<TContent>(buf: Buffer): Message<TContent> {
     const message = JSON.parse(buf.toString()) as Message<TContent>;
 
     return new Message(message);
