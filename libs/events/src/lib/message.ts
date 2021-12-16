@@ -1,38 +1,27 @@
-/**
- * Message extended with metadata
- */
-export type Message<TPayload> = {
-  headers: Headers;
+import { idGenerator } from "@eci/util/ids";
 
-  /**
-   * The content of the message.
-   * This must be json serializable
-   */
-  payload: TPayload;
-};
-
-/**
- * Additional meta information about the message
- */
-type Headers = {
+// /**
+//  * Additional meta information about the message
+//  */
+export type Headers = {
   /**
    * Unique id for this messages
    */
   id: string;
-
   /**
    * The topic where this message is published
    */
   topic: string;
-
   /**
    * Used to uniquely identify a distributed trace through a system
    */
   traceId: string;
-
+  /**
+   * Attach errors to this message for tracing
+   */
+  errors?: string[];
   retry?: {
     remaining: number;
-
     notBefore: number;
   };
 };
@@ -47,3 +36,38 @@ export type Signed<TMessage> = {
    */
   signature: string;
 };
+
+type OptionalKey<T, O extends keyof T> = Omit<T, O> & Partial<Pick<T, O>>;
+
+export class Message<TContent> {
+  public readonly headers: Headers;
+  public readonly content: TContent;
+
+  constructor(message: {
+    headers: OptionalKey<Headers, "id">;
+    content: TContent;
+  }) {
+    this.headers = Object.freeze({
+      id: message.headers.id ?? idGenerator.id("message"),
+      ...message.headers,
+    });
+    this.content = Object.freeze(message.content);
+  }
+
+  public serialize(): Buffer {
+    return Buffer.from(
+      JSON.stringify({
+        headers: this.headers,
+        content: this.content,
+      }),
+    );
+  }
+
+  static deserialize<TContent>(
+    buf: Buffer,
+  ): Message<TContent> {
+    const message = JSON.parse(buf.toString()) as Message<TContent>;
+
+    return new Message(message);
+  }
+}

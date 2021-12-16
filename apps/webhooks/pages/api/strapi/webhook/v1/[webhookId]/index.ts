@@ -5,7 +5,7 @@ import { handleWebhook, Webhook } from "@eci/http";
 import { createHash } from "crypto";
 import { env } from "@chronark/env";
 import { Signer } from "@eci/events";
-import { KafkaProducer } from "@eci/events";
+import { KafkaProducer, Message } from "@eci/events";
 
 const requestValidation = z.object({
   query: z.object({
@@ -121,7 +121,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   // }
   // const jobId = await queue.produce({
   //   topic,
-  //   payload: {
+  //   content: {
   //     ...req.body,
   //     zohoAppId: integration.zohoApp.id,
   //   },
@@ -130,13 +130,22 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   const kafka = await KafkaProducer.new({
     signer: new Signer({ signingKey: env.require("SIGNING_KEY") }),
   });
-  const { messageId, partition, offset } = await kafka.produce({
-    topic: `strapi.${body.event}`,
-    payload: {
+
+  const message = new Message({
+    headers: {
+      topic: `strapi.${body.event}`,
+      traceId: ctx.trace.id,
+    },
+    content:{
       ...req.body,
       zohoAppId: integration.zohoApp.id,
-    },
-    traceId: ctx.trace.id,
+    }
+  }
+  })
+
+  const { messageId, partition, offset } = await kafka.produce({
+  
+    content: ,
   });
   ctx.logger.info("Queued new event", { messageId });
   await kafka.close();

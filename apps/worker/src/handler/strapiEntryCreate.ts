@@ -4,6 +4,7 @@ import {
   OrderEvent,
   StrapiOrdersToZoho,
 } from "@eci/integrations/strapi-orders-to-zoho";
+import { KafkaProducer, Signer } from "@eci/events";
 import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
 import { PrismaClient } from "@eci/data-access/prisma";
 import { ILogger } from "@eci/util/logger";
@@ -14,10 +15,10 @@ export const strapiEntryCreate =
     message: Message<EntryEvent & { zohoAppId: string }>,
   ): Promise<void> => {
     const zohoApp = await prisma.zohoApp.findUnique({
-      where: { id: message.payload.zohoAppId },
+      where: { id: message.content.zohoAppId },
     });
     if (!zohoApp) {
-      throw new Error(`No zoho app found: ${message.payload.zohoAppId}`);
+      throw new Error(`No zoho app found: ${message.content.zohoAppId}`);
     }
 
     const cookies = env.get("ZOHO_COOKIES");
@@ -42,6 +43,14 @@ export const strapiEntryCreate =
     });
 
     await strapiOrdersToZoho.createNewBulkOrders(
-      message.payload as unknown as OrderEvent,
+      message.content as unknown as OrderEvent,
     );
+    const producer = await KafkaProducer.new({
+      signer: new Signer({signingKey: env.require("SIGNING_KEY")}),
+    })
+
+
+    message.headers.topic = `${message.headers.topic}-processed`;
+    await producer.produce(message)
+    await producer.close()
   };

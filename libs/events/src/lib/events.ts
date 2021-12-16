@@ -5,29 +5,10 @@ import { ILogger } from "@eci/util/logger";
 import * as kafka from "kafkajs";
 import { Signed, Message } from "./message";
 
-// export interface Serializer {
-//   serialize: () => string;
-// }
-// export interface Deserializer<T> {
-//   deserialize: (s: string) => T;
-// }
-
-// export class Message<T> implements Serializer, Deserializer<T> {
-//   public serialize(): string {
-//     return "";
-//   }
-
-//   public deserialize(_s: string): T {
-//     return {} as T;
-//   }
-// }
-
-export interface EventProducer<TTopic, TPayload> {
-  produce: (createMessage: {
-    topic: TTopic;
-    payload: TPayload;
-    traceId: string;
-  }) => Promise<{ messageId: string; partition: number; offset?: string }>;
+export interface EventProducer<TContent> {
+  produce: (
+    createMessage: Message<TContent>,
+  ) => Promise<{ messageId: string; partition: number; offset?: string }>;
 
   /**
    * disconnect
@@ -39,18 +20,16 @@ const newKafkaClient = (): kafka.Kafka => {
   return new kafka.Kafka({
     brokers: [env.require("KAFKA_BROKER_URL")],
 
-    sasl: {
-      mechanism: "scram-sha-256",
-      username: env.require("KAFKA_USERNAME"),
-      password: env.require("KAFKA_PASSWORD"),
-    },
-    ssl: true,
+    // sasl: {
+    //   mechanism: "scram-sha-256",
+    //   username: env.require("KAFKA_USERNAME"),
+    //   password: env.require("KAFKA_PASSWORD"),
+    // },
+    // ssl: true,
   });
 };
 
-export class KafkaProducer<TTopic extends string, TPayload>
-  implements EventProducer<TTopic, TPayload>
-{
+export class KafkaProducer<TContent> implements EventProducer<TContent> {
   private producer: kafka.Producer;
   private signer: ISigner;
   private constructor(config: { producer: kafka.Producer; signer: ISigner }) {
@@ -58,9 +37,9 @@ export class KafkaProducer<TTopic extends string, TPayload>
     this.signer = config.signer;
   }
 
-  static async new<TTopic extends string, TPayload>(config: {
+  static async new<TContent>(config: {
     signer: ISigner;
-  }): Promise<KafkaProducer<TTopic, TPayload>> {
+  }): Promise<KafkaProducer<TContent>> {
     const k = newKafkaClient();
 
     const producer = k.producer();
@@ -68,35 +47,21 @@ export class KafkaProducer<TTopic extends string, TPayload>
     return new KafkaProducer({ producer, signer: config.signer });
   }
 
-  public async produce({
-    topic,
-    payload,
-    traceId,
-  }: {
-    topic: TTopic;
-    payload: TPayload;
-    traceId: string;
-  }): Promise<{ messageId: string; partition: number; offset?: string }> {
-    const message: Message<TPayload> = {
-      headers: {
-        id: idGenerator.id("message"),
-        traceId,
-        topic,
-      },
-      payload,
-    };
-
-    const signedMessage: Signed<Message<TPayload>> = {
-      message,
-      signature: this.signer.sign(message),
-    };
+  public async produce(
+    message: Message<TContent>,
+  ): Promise<{ messageId: string; partition: number; offset?: string }> {
+    const serialized = message.serialize();
+    const signature = this.signer.sign(serialized);
     const messages = [
       {
-        value: JSON.stringify(signedMessage),
+        headers: {
+          signature,
+        },
+        value: serialized,
       },
     ];
     const res = await this.producer.send({
-      topic,
+      topic: message.headers.topic,
       messages,
     });
     return {
@@ -110,8 +75,8 @@ export class KafkaProducer<TTopic extends string, TPayload>
   }
 }
 
-export interface EventSubscriber<TPayload> {
-  subscribe(process: (message: Message<TPayload>) => Promise<void>): void;
+export interface EventSubscriber<TContent> {
+  subscribe(process: (message: Message<TContent>) => Promise<void>): void;
   /**
    * Stop receiving new tasks.
    * The current task will still be finished.
@@ -119,12 +84,15 @@ export interface EventSubscriber<TPayload> {
   close(): Promise<void>;
 }
 
-export class KafkaSubscriber<TPayload> implements EventSubscriber<TPayload> {
+export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
   private consumer: kafka.Consumer;
   private signer: ISigner;
   private logger: ILogger;
 
+  private errorProducer: KafkaProducer<TContent>;
+
   private constructor(config: {
+    errorProducer: KafkaProducer<TContent>;
     consumer: kafka.Consumer;
     signer: ISigner;
     logger: ILogger;
@@ -132,14 +100,15 @@ export class KafkaSubscriber<TPayload> implements EventSubscriber<TPayload> {
     this.consumer = config.consumer;
     this.signer = config.signer;
     this.logger = config.logger;
+    this.errorProducer = config.errorProducer;
   }
 
-  static async new<TTopic extends string, TPayload>(config: {
+  static async new<TTopic extends string, TContent>(config: {
     topics: TTopic[];
     groupId: string;
     signer: ISigner;
     logger: ILogger;
-  }): Promise<KafkaSubscriber<TPayload>> {
+  }): Promise<KafkaSubscriber<TContent>> {
     const k = newKafkaClient();
     const consumer = k.consumer({
       groupId: config.groupId,
@@ -149,35 +118,70 @@ export class KafkaSubscriber<TPayload> implements EventSubscriber<TPayload> {
       await consumer.subscribe({ topic });
     }
 
+    const errorProducer = await KafkaProducer.new<TContent>({
+      signer: config.signer,
+    });
+
     return new KafkaSubscriber({
       consumer,
+      errorProducer,
       signer: config.signer,
       logger: config.logger,
     });
   }
 
-  public async subscribe(
-    process: (message: Message<TPayload>) => Promise<void>,
-  ): Promise<void> {
-    this.consumer.run({
-      eachMessage: async ({ message }) => {
-        this.logger.info("Incoming message", { time: message.timestamp });
-        const { value } = message;
-        if (!value) {
-          throw new Error(`Empty message`);
-        }
-
-        const signedMessage = JSON.parse(value.toString()) as Signed<
-          Message<TPayload>
-        >;
-
-        this.signer.verify(signedMessage.message, signedMessage.signature);
-        await process(signedMessage.message);
-      },
-    });
+  public async close(): Promise<void> {
+    await Promise.all([this.consumer.disconnect(), this.errorProducer.close()]);
   }
 
-  async close(): Promise<void> {
-    await this.consumer.disconnect();
+  public async subscribe(
+    process: (message: Message<TContent>) => Promise<void>,
+  ): Promise<void> {
+    this.consumer.run({
+      eachMessage: async (payload) => {
+        if (!payload.message.value) {
+          throw new Error(`Kafka did not return a message value`);
+        }
+        if (!payload.message.headers){
+          throw new Error(`Kafka did not return a message header`);
+        }
+        if (!payload.message.headers["signature"]) {
+          throw new Error(`Kafka did not return a signature header`)
+        }
+        
+        const message = Message.deserialize<TContent>(payload.message.value);
+
+        
+        const signature =  typeof payload.message.headers["signature"] === "string"
+            ? payload.message.headers["signature"]
+            : payload.message.headers["signature"].toString()
+          
+
+        this.signer.verify(message.serialize(), signature);
+
+        try {
+          this.logger.info("Incoming message", {
+            time: payload.message.timestamp,
+          });
+          if (!payload.message.value) {
+            throw new Error(`Kafka did not return a message value`);
+          }
+
+          await process(message);
+        } catch (err) {
+          this.logger.error("Unable to process message", {
+            headers: message.headers,
+            err: err.message,
+          });
+
+          message.headers.errors = [
+            ...(message.headers.errors ?? []),
+            err.message,
+          ];
+
+          await this.errorProducer.produce(message);
+        }
+      },
+    });
   }
 }

@@ -1,35 +1,40 @@
-import { QueueManager, Signer } from "@eci/events/client";
+import { KafkaProducer, KafkaSubscriber, Signer } from "@eci/events";
 import { NoopLogger } from "@eci/util/logger";
 import { idGenerator } from "@eci/util/ids";
+
 describe("produce and consume over redis", () => {
-  const logger = new NoopLogger();
-
-  const topic = idGenerator.id("test");
-  const queue = new QueueManager<string, { hello: string }>({
-    signer: new Signer({ signingKey: "test" }),
-    logger,
-    connection: {
-      host: "localhost",
-      port: "6379",
-    },
-  });
-
   it("can send a message and receive it", async () => {
-    const payload = { hello: "world" };
+    const topic = idGenerator.id("test");
+    const signer = new Signer({ signingKey: "test" });
+    const producer = await KafkaProducer.new({ signer });
+    const consumer = await KafkaSubscriber.new({
+      topics: [topic],
+      groupId: "test",
+      signer,
+      logger: new NoopLogger(),
+    });
 
-    queue.consume(topic, async (message) => {
-      expect(message.payload).toEqual(payload);
+    const content = { hello: "world" };
+
+    consumer.subscribe( async (message) => {
+      expect(message.content).toEqual(content);
 
       /**
        * This should allow the test to end
        */
-      await queue.close();
+      await consumer.close();
     });
 
-    await queue.produce({
-      topic,
-      payload,
-      traceId: "traceId",
+    await producer.produce({
+      headers: {
+        topic,
+        traceId: "traceId"
+      },
+      content: {
+        hello: "world",
+      },
     });
+
+    await producer.close();
   }, 20_000);
 });
