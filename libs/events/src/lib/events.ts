@@ -8,6 +8,7 @@ export interface EventProducer<TContent> {
   produce: (
     topic: string,
     message: Message<TContent>,
+    opts?: { key?: string; headers?: Record<string, string> },
   ) => Promise<{ messageId: string; partition: number; offset?: string }>;
 
   /**
@@ -50,12 +51,15 @@ export class KafkaProducer<TContent> implements EventProducer<TContent> {
   public async produce(
     topic: string,
     message: Message<TContent>,
+    opts?: { key?: string; headers?: Record<string, string> },
   ): Promise<{ messageId: string; partition: number; offset?: string }> {
     const serialized = message.serialize();
     const signature = this.signer.sign(serialized);
     const messages = [
       {
+        key: opts?.key,
         headers: {
+          ...opts?.headers,
           signature,
         },
         value: serialized,
@@ -183,12 +187,12 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
             err: err.message,
           });
 
-          message.headers.errors = [
-            ...(message.headers.errors ?? []),
-            err.message,
-          ];
-
-          await this.errorProducer.produce(`${payload.topic}.error`, message);
+          await this.errorProducer.produce("unhandled_exception", message, {
+            headers: {
+              error: err.message,
+            },
+            key: payload.message.key.toString(),
+          });
         }
       },
     });

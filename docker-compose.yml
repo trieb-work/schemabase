@@ -26,9 +26,7 @@ services:
     environment:
       DATABASE_URL: postgres://postgres:postgres@eci_db:5432/postgres
       DATABASE_URL_POOL: postgres://postgres:postgres@eci_db:5432/postgres
-      KAFKA_BROKER_URL: ${KAFKA_BROKER_URL}
-      KAFKA_USERNAME: ${KAFKA_USERNAME}
-      KAFKA_PASSWORD: ${KAFKA_PASSWORD}
+      KAFKA_BROKER_URL: kafka:9092
       SIGNING_KEY: anything
       NODE_ENV: production
       ECI_BASE_URL: http://webhooks.eci:3000
@@ -49,9 +47,7 @@ services:
       DATABASE_URL: postgres://postgres:postgres@eci_db:5432/postgres
       DATABASE_URL_POOL: postgres://postgres:postgres@eci_db:5432/postgres
 
-      KAFKA_BROKER_URL: ${KAFKA_BROKER_URL}
-      KAFKA_USERNAME: ${KAFKA_USERNAME}
-      KAFKA_PASSWORD: ${KAFKA_PASSWORD}
+      KAFKA_BROKER_URL: kafka:9092
       SIGNING_KEY: anything
       NODE_ENV: production
       ECI_ENV: development
@@ -96,7 +92,6 @@ services:
     image: redis
     ports:
       - 6379:6379
-
 
   zookeeper:
     image: docker.io/bitnami/zookeeper:3.7

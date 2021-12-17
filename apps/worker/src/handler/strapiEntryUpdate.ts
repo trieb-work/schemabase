@@ -50,6 +50,6 @@ export const strapiEntryUpdate =
       signer: new Signer({ signingKey: env.require("SIGNING_KEY") }),
     });
 
-    await producer.produce("strapi.entry.update.synced", message);
+    await producer.produce("bulkorder_synced", message);
     await producer.close();
   };
