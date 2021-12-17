@@ -59,7 +59,7 @@
     "@nrwl/next": "12.9.0",
     "@nrwl/node": "12.9.0",
     "@nrwl/react": "12.9.0",
-    "@nrwl/tao": "12.9.0",
+    "@nrwl/tao": "13.3.8",
     "@nrwl/web": "12.9.0",
     "@nrwl/workspace": "12.9.0",
     "@testing-library/react": "12.0.0",
