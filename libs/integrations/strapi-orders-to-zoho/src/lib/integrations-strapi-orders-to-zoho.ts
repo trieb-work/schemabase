@@ -1,4 +1,4 @@
-import { EntryEvent } from "@eci/events/strapi";
+import { EntryEvent } from "./types";
 import { z } from "zod";
 import { Zoho, CreateSalesOrder } from "@trieb.work/zoho-ts/dist/v2";
 import { sha256 } from "@eci/util";

@@ -61,19 +61,13 @@
     "e2e-product-data-feed": {
       "tags": []
     },
-    "e2e-queue": {
-      "tags": []
-    },
     "e2e-saleor": {
       "tags": []
     },
     "e2e-strapi-orders-to-zoho": {
       "tags": []
     },
-    "events-client": {
-      "tags": []
-    },
-    "events-strapi": {
+    "events": {
       "tags": []
     },
     "http": {

@@ -3,9 +3,9 @@ import { z } from "zod";
 import { HttpError } from "@eci/util/errors";
 import { handleWebhook, Webhook } from "@eci/http";
 import { createHash } from "crypto";
-import * as strapi from "@eci/events/strapi";
 import { env } from "@chronark/env";
-import { Signer } from "@eci/events/client";
+import { Signer } from "@eci/events";
+import { KafkaProducer, Message } from "@eci/events";
 
 const requestValidation = z.object({
   query: z.object({
@@ -94,44 +94,33 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     });
   }
 
-  const queue = new strapi.Producer({
-    logger: ctx.logger,
+  const kafka = await KafkaProducer.new({
     signer: new Signer({ signingKey: env.require("SIGNING_KEY") }),
-    connection: {
-      host: env.require("REDIS_HOST"),
-      port: env.require("REDIS_PORT"),
-      password: env.get("REDIS_PASSWORD"),
-    },
   });
 
-  let topic: strapi.Topic;
-  switch (body.event) {
-    case "entry.create":
-      topic = strapi.Topic.ENTRY_CREATE;
-      break;
-    case "entry.update":
-      topic = strapi.Topic.ENTRY_UPDATE;
-      break;
-    case "entry.delete":
-      topic = strapi.Topic.ENTRY_DELETE;
-      break;
-
-    default:
-      throw new Error(`Invalid strapi event: ${body.event}`);
-  }
-  const jobId = await queue.produce({
-    topic,
-    payload: {
+  const message = new Message({
+    headers: {
+      traceId: ctx.trace.id,
+    },
+    content: {
       ...req.body,
       zohoAppId: integration.zohoApp.id,
     },
   });
-  ctx.logger.info("Queued new event", { jobId });
+
+  const { messageId, partition, offset } = await kafka.produce(
+    `strapi.${body.event}`,
+    message,
+  );
+  ctx.logger.info("Queued new event", { messageId });
+  await kafka.close();
 
   res.json({
     status: "received",
     traceId: ctx.trace.id,
-    jobId,
+    messageId,
+    partition,
+    offset,
   });
 };
 

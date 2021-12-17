@@ -1,14 +1,10 @@
-import { Signer } from "@eci/events/client";
 import { Logger } from "@eci/util/logger";
-import { Worker } from "./service";
-import * as strapi from "@eci/events/strapi";
+import { Topic, EntryEvent } from "@eci/integrations/strapi-orders-to-zoho";
 import { env } from "@chronark/env";
-import {
-  OrderEvent,
-  StrapiOrdersToZoho,
-} from "@eci/integrations/strapi-orders-to-zoho";
-import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
+import { strapiEntryCreate } from "./handler/strapiEntryCreate";
+import { strapiEntryUpdate } from "./handler/strapiEntryUpdate";
 import { PrismaClient } from "@eci/data-access/prisma";
+import { Signer, KafkaSubscriber } from "@eci/events";
 
 async function main() {
   const logger = new Logger({
@@ -18,105 +14,30 @@ async function main() {
   });
 
   const signer = new Signer({ signingKey: env.require("SIGNING_KEY") });
-
-  const strapiConsumer = new strapi.Consumer({
-    signer,
-    logger,
-    connection: {
-      host: env.require("REDIS_HOST"),
-      port: env.require("REDIS_PORT"),
-      password: env.get("REDIS_PASSWORD"),
-    },
-  });
-
   const prisma = new PrismaClient();
 
-  const worker = new Worker({
+  const strapiEntryCreateConsumer = await KafkaSubscriber.new<
+    Topic,
+    EntryEvent & { zohoAppId: string }
+  >({
+    topics: [Topic.ENTRY_CREATE],
+    signer,
     logger,
-    sources: {
-      strapi: {
-        consumer: strapiConsumer,
-        handlers: [
-          {
-            topic: strapi.Topic.ENTRY_UPDATE,
-            handler: async (message) => {
-              const zohoApp = await prisma.zohoApp.findUnique({
-                where: { id: message.payload.zohoAppId },
-              });
-              if (!zohoApp) {
-                throw new Error(
-                  `No zoho app found: ${message.payload.zohoAppId}`,
-                );
-              }
-              const cookies = env.get("ZOHO_COOKIES");
-              const zoho = new Zoho(
-                cookies
-                  ? await ZohoApiClient.fromCookies({
-                      orgId: zohoApp.orgId,
-                      cookie: cookies,
-                      zsrfToken: env.require("ZOHO_ZCSRF_TOKEN"),
-                    })
-                  : await ZohoApiClient.fromOAuth({
-                      orgId: zohoApp.orgId,
-                      client: {
-                        id: zohoApp.clientId,
-                        secret: zohoApp.clientSecret,
-                      },
-                    }),
-              );
-              const strapiOrdersToZoho = new StrapiOrdersToZoho({
-                zoho,
-                logger,
-              });
-
-              await strapiOrdersToZoho.updateBulkOrders(
-                message.payload as unknown as OrderEvent,
-              );
-            },
-          },
-          {
-            topic: strapi.Topic.ENTRY_CREATE,
-            handler: async (message) => {
-              const zohoApp = await prisma.zohoApp.findUnique({
-                where: { id: message.payload.zohoAppId },
-              });
-              if (!zohoApp) {
-                throw new Error(
-                  `No zoho app found: ${message.payload.zohoAppId}`,
-                );
-              }
-
-              const cookies = env.get("ZOHO_COOKIES");
-              const zoho = new Zoho(
-                cookies
-                  ? await ZohoApiClient.fromCookies({
-                      orgId: zohoApp.orgId,
-                      cookie: cookies,
-                      zsrfToken: env.require("ZOHO_ZCSRF_TOKEN"),
-                    })
-                  : await ZohoApiClient.fromOAuth({
-                      orgId: zohoApp.orgId,
-                      client: {
-                        id: zohoApp.clientId,
-                        secret: zohoApp.clientSecret,
-                      },
-                    }),
-              );
-              const strapiOrdersToZoho = new StrapiOrdersToZoho({
-                zoho,
-                logger,
-              });
-
-              await strapiOrdersToZoho.createNewBulkOrders(
-                message.payload as unknown as OrderEvent,
-              );
-            },
-          },
-        ],
-      },
-    },
+    groupId: "strapiEntryCreateConsumer",
   });
-  worker.start();
+
+  strapiEntryCreateConsumer.subscribe(strapiEntryCreate({ prisma, logger }));
+
+  const strapiEntryUpdateConsumer = await KafkaSubscriber.new<
+    Topic,
+    EntryEvent & { zohoAppId: string }
+  >({
+    topics: [Topic.ENTRY_UPDATE],
+    signer,
+    logger,
+    groupId: "strapiEntryUpdateConsumer",
+  });
+  strapiEntryUpdateConsumer.subscribe(strapiEntryUpdate({ prisma, logger }));
 }
 
 main();

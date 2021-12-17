@@ -1,9 +1,9 @@
 module.exports = {
-  displayName: "queue",
-  preset: "../../../jest.preset.js",
+  displayName: "events",
+  preset: "../../jest.preset.js",
   globals: {
     "ts-jest": {
-      tsconfig: "<rootDir>/tsconfig.test.json",
+      tsconfig: "<rootDir>/tsconfig.spec.json",
     },
   },
   testEnvironment: "node",
@@ -11,5 +11,5 @@ module.exports = {
     "^.+\\.[tj]sx?$": "ts-jest",
   },
   moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
-  coverageDirectory: "../../../coverage/libs/events/client",
+  coverageDirectory: "../../coverage/libs/events",
 };

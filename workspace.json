@@ -275,28 +275,6 @@
         }
       }
     },
-    "e2e-queue": {
-      "root": "apps/e2e/queue",
-      "sourceRoot": "apps/e2e/queue/src",
-      "projectType": "application",
-      "targets": {
-        "lint": {
-          "executor": "@nrwl/linter:eslint",
-          "options": {
-            "lintFilePatterns": ["apps/e2e/queue/**/*.ts"]
-          },
-          "outputs": ["{options.outputFile}"]
-        },
-        "e2e": {
-          "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/apps/e2e/queue"],
-          "options": {
-            "jestConfig": "apps/e2e/queue/jest.config.js",
-            "passWithNoTests": true
-          }
-        }
-      }
-    },
     "e2e-saleor": {
       "root": "apps/e2e/saleor",
       "sourceRoot": "apps/e2e/saleor/src",
@@ -341,67 +319,34 @@
         }
       }
     },
-    "events-client": {
-      "root": "libs/events/client",
-      "sourceRoot": "libs/events/client/src",
+    "events": {
+      "root": "libs/events",
+      "sourceRoot": "libs/events/src",
       "projectType": "library",
       "targets": {
         "build": {
           "executor": "@nrwl/node:package",
           "outputs": ["{options.outputPath}"],
           "options": {
-            "outputPath": "dist/libs/events/client",
-            "tsConfig": "libs/events/client/tsconfig.lib.json",
-            "packageJson": "libs/events/client/package.json",
-            "main": "libs/events/client/src/index.ts",
-            "assets": ["libs/events/client/*.md"]
+            "outputPath": "dist/libs/events",
+            "tsConfig": "libs/events/tsconfig.lib.json",
+            "packageJson": "libs/events/package.json",
+            "main": "libs/events/src/index.ts",
+            "assets": ["libs/events/*.md"]
           }
         },
         "lint": {
           "executor": "@nrwl/linter:eslint",
           "outputs": ["{options.outputFile}"],
           "options": {
-            "lintFilePatterns": ["libs/events/client/**/*.ts"]
+            "lintFilePatterns": ["libs/events/**/*.ts"]
           }
         },
         "test": {
           "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/events/client"],
+          "outputs": ["coverage/libs/events"],
           "options": {
-            "jestConfig": "libs/events/client/jest.config.js",
-            "passWithNoTests": true
-          }
-        }
-      }
-    },
-    "events-strapi": {
-      "root": "libs/events/strapi",
-      "sourceRoot": "libs/events/strapi/src",
-      "projectType": "library",
-      "targets": {
-        "build": {
-          "executor": "@nrwl/node:package",
-          "outputs": ["{options.outputPath}"],
-          "options": {
-            "outputPath": "dist/libs/events/strapi",
-            "tsConfig": "libs/events/strapi/tsconfig.lib.json",
-            "packageJson": "libs/events/strapi/package.json",
-            "main": "libs/events/strapi/src/index.ts",
-            "assets": ["libs/events/strapi/*.md"]
-          }
-        },
-        "lint": {
-          "executor": "@nrwl/linter:eslint",
-          "outputs": ["{options.outputFile}"],
-          "options": {
-            "lintFilePatterns": ["libs/events/strapi/**/*.ts"]
-          }
-        },
-        "test": {
-          "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/events/strapi"],
-          "options": {
-            "jestConfig": "libs/events/strapi/jest.config.js",
+            "jestConfig": "libs/events/jest.config.js",
             "passWithNoTests": true
           }
         }

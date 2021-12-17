@@ -7,37 +7,21 @@ services:
   saleor_dashboard:
     container_name: dashboard.saleor.eci
     image: chronark/saleor-dashboard
-    build:
-      context: https://github.com/mirumee/saleor-dashboard.git
-      dockerfile: Dockerfile.dev
+    # build:
+    #   context: https://github.com/mirumee/saleor-dashboard.git
+    #   dockerfile: Dockerfile.dev
     ports:
       - 9000:9000
     command: npm start -- --host 0.0.0.0
     depends_on:
       - saleor_api
 
-  redis-commander:
-    image: rediscommander/redis-commander
-    environment:
-      - REDIS_HOSTS=local:redis:6379
+  
+  
+  kafka-ui:
+    image: provectuslabs/kafka-ui
     ports:
-      - 8081:8081
-    depends_on:
-      - redis
-
-  queue-manager:
-    image: queue-manager
-    build:
-      context: .
-      dockerfile: ./apps/queue-manager/Dockerfile
-      args:
-        - commit_sha=development
-    ports:
-      - 19000:19000
-
+      - "8080:8080"
     environment:
-      PORT: 19000
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-    depends_on:
-      - redis
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
