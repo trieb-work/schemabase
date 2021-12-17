@@ -94,10 +94,10 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
   private signer: ISigner;
   private logger: ILogger;
 
-  private errorProducer: KafkaProducer<TContent>;
+  private errorProducer: kafka.Producer;
 
   private constructor(config: {
-    errorProducer: KafkaProducer<TContent>;
+    errorProducer: kafka.Producer;
     consumer: kafka.Consumer;
     signer: ISigner;
     logger: ILogger;
@@ -123,9 +123,8 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
       await consumer.subscribe({ topic });
     }
 
-    const errorProducer = await KafkaProducer.new<TContent>({
-      signer: config.signer,
-    });
+    const errorProducer = k.producer();
+    await errorProducer.connect();
 
     return new KafkaSubscriber({
       consumer,
@@ -136,7 +135,10 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
   }
 
   public async close(): Promise<void> {
-    await Promise.all([this.consumer.disconnect(), this.errorProducer.close()]);
+    await Promise.all([
+      this.consumer.disconnect(),
+      this.errorProducer.disconnect(),
+    ]);
   }
 
   public async subscribe(
@@ -144,35 +146,24 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
   ): Promise<void> {
     this.consumer.run({
       eachMessage: async (payload) => {
-        if (!payload.message.value) {
-          throw new Error(`Kafka did not return a message value`);
-        }
-        const message = Message.deserialize<TContent>(payload.message.value);
-
-        const { headers } = payload.message;
-
-        if (!headers || !headers["signature"]) {
-          this.logger.error("No signature in header", {
-            headers: message.headers,
-          });
-
-          message.headers.errors = [
-            ...(message.headers.errors ?? []),
-            "No signature in kafka headers",
-          ];
-
-          await this.errorProducer.produce(`${payload.topic}.dlq`, message);
-          return;
-        }
-
-        const signature =
-          typeof headers["signature"] === "string"
-            ? headers["signature"]
-            : headers["signature"].toString();
-
-        this.signer.verify(message.serialize(), signature);
-
         try {
+          if (!payload.message.value) {
+            throw new Error(`Kafka did not return a message value`);
+          }
+          const message = Message.deserialize<TContent>(payload.message.value);
+          const { headers } = payload.message;
+
+          if (!headers || !headers["signature"]) {
+            throw new Error(`Kafka message does not have signature header`);
+          }
+
+          const signature =
+            typeof headers["signature"] === "string"
+              ? headers["signature"]
+              : headers["signature"].toString();
+
+          this.signer.verify(message.serialize(), signature);
+
           this.logger.info("Incoming message", {
             time: payload.message.timestamp,
           });
@@ -183,15 +174,14 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
           await process(message);
         } catch (err) {
           this.logger.error("Unable to process message", {
-            headers: message.headers,
             err: err.message,
           });
 
-          await this.errorProducer.produce("unhandled_exception", message, {
-            headers: {
-              error: err.message,
-            },
-            key: payload.message.key.toString(),
+          payload.message.headers ??= {};
+          payload.message.headers!["error"] = err.message;
+          await this.errorProducer.send({
+            topic: "UNHANDLED_EXCEPTION",
+            messages: [payload.message],
           });
         }
       },

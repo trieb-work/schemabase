@@ -235,7 +235,6 @@ export class StrapiOrdersToZoho {
     /**
      * Deleting orders that are no longer present in strpai
      */
-
     if (deleteOrderNumbers.length > 0) {
       this.logger.debug("Orders must be deleted", { deleteOrderNumbers });
       for (const deletedOrderNumber of deleteOrderNumbers) {

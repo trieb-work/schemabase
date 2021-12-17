@@ -16,8 +16,6 @@ services:
     depends_on:
       - saleor_api
 
-  
-  
   kafka-ui:
     image: provectuslabs/kafka-ui
     ports:

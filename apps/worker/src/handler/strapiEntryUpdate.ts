@@ -13,7 +13,6 @@ export const strapiEntryUpdate =
   async (
     message: Message<EntryEvent & { zohoAppId: string }>,
   ): Promise<void> => {
-    logger.info("Message", { message: JSON.stringify(message, null, 2) });
     const zohoApp = await prisma.zohoApp.findUnique({
       where: { id: message.content.zohoAppId },
     });
