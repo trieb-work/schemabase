@@ -1,108 +1,78 @@
-# Get started
+# Turborepo starter
 
-## Setup environment
+This is an official Yarn v1 starter turborepo.
 
-In order to get the required environment variables please run `make get-env`.
-If you are not logged into vercel, or don't want to pull them automatically you need to create and populate the following files:
+## What's inside?
+
+This turborepo uses [Yarn](https://classic.yarnpkg.com/lang/en/) as a package manager. It includes the following packages/apps:
+
+### Apps and Packages
+
+- `docs`: a [Next.js](https://nextjs.org) app
+- `web`: another [Next.js](https://nextjs.org) app
+- `ui`: a stub React component library shared by both `web` and `docs` applications
+- `config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
+- `tsconfig`: `tsconfig.json`s used throughout the monorepo
+
+Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+
+### Utilities
+
+This turborepo has some additional tools already setup for you:
+
+- [TypeScript](https://www.typescriptlang.org/) for static type checking
+- [ESLint](https://eslint.org/) for code linting
+- [Jest](https://jestjs.io) test runner for all things JavaScript
+- [Prettier](https://prettier.io) for code formatting
+
+## Setup
+
+This repository is used in the `npx create-turbo` command, and selected when choosing which package manager you wish to use with your monorepo (Yarn).
+
+### Build
+
+To build all apps and packages, run the following command:
 
 ```
-cp apps/webhooks/.env.example apps/webhooks/.env.local
-cp libs/data-access/prisma/.env.example libs/data-access/prisma/.env
+cd my-turborepo
+yarn run build
 ```
 
-The `VERCEL_...` variables can be left empty
+### Develop
 
-## Database
-
-You need a postgresql database for development. Either create one or run `make init` Which sets up a complete development stack including 3rd party services.
-
-Then run `make db-push` to apply the schema.
-
-## Code generation
-
-Run `make build` to run all code generations
-
-## Development
-
-Run `yarn nx serve webhooks --port=xxxx` to run the nextjs app in development mode.
-You might want to stop the webhooks container (created by `make init`) if the ports collide.
-
-# Get started
-
-## Setup environment
-
-In order to get the required environment variables please run `make get-env`.
-If you are not logged into vercel, or don't want to pull them automatically you need to create and populate the following files:
+To develop all apps and packages, run the following command:
 
 ```
-cp apps/webhooks/.env.example apps/webhooks/.env.local
-cp libs/data-access/prisma/.env.example libs/data-access/prisma/.env
+cd my-turborepo
+yarn run dev
 ```
 
-The `VERCEL_...` variables can be left empty
+### Remote Caching
 
-## Database
+Turborepo can use a technique known as [Remote Caching (Beta)](https://turborepo.org/docs/features/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
 
-You need a postgresql database for development. Either create one or run `make init` Which sets up a complete development stack including 3rd party services.
+By default, Turborepo will cache locally. To enable Remote Caching (Beta) you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
 
-Then run `make db-push` to apply the schema.
+```
+cd my-turborepo
+npx turbo login
+```
 
-## Code generation
+This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
 
-Run `make build` to run all code generations
+Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your turborepo:
 
-## Development
+```
+npx turbo link
+```
 
-Run `yarn nx serve webhooks --port=xxxx` to run the nextjs app in development mode.
-You might want to stop the webhooks container (created by `make init`) if the ports collide.
+## Useful Links
 
-## Prisma
+Learn more about the power of Turborepo:
 
-Run `make db-studio` to run prisma studio
-
-# Endpoints
-
-All endpoints are designated with a specific version. Versions vary per endpoint and are not global.
-
-# Worker
-
-The worker is a nodejs application running in k8s. Its job is to process batches for work
-that would take too long to handle in a single nextjs api route.
-
-## Deployment
-
-For every PR a new docker image is pushed to the github registry and removed after the pr is merged. There is an edge case where an image could remain in the registry when the branch is closed while a new image is currently being built and pushed.
-
-# System design
-
-## Entities
-
-### Tenant
-
-A tenant represents a single eci customer. A company that pays us money to use our integrations. (P&F would be a tenant)
-
-### Apps
-
-Apps are only configuration connections to our services. For instance the strapi instance from P&F will be a `StrapiApp`.
-Each app can have multiple incoming webhooks configured as well as required data about the app itself.
-
-### Integrations
-
-Integrations are the connection between tenants and apps.
-Example:
-A tenant has subscribed to the strapi->zoho integration. In this case the integration links 1 strapiApp with 1 zohoApp and 1 tenant.
-Integrations also carry information about current payment status and can be disabled manually by the user.
-
-### Webhooks
-
-Most integrations work by receiving webhooks. Each app can have multiple incoming webhooks to allow rerolling secrets without downtime.
-
-## Local development
-
-A complete development environment with all services can be started with docker-compose.
-Run `make init` to build and start all containers.
-
-The makefile also sets some required environment variables but not all.
-
-Run `make pull-env` to pull development environment variables from vercel after you
-you have authenticated youself with `npx vercel login`
+- [Pipelines](https://turborepo.org/docs/features/pipelines)
+- [Caching](https://turborepo.org/docs/features/caching)
+- [Remote Caching (Beta)](https://turborepo.org/docs/features/remote-caching)
+- [Scoped Tasks](https://turborepo.org/docs/features/scopes)
+- [Configuration Options](https://turborepo.org/docs/reference/configuration)
+- [CLI Usage](https://turborepo.org/docs/reference/command-line-reference)

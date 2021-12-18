@@ -1,0 +1,10 @@
+{
+  "name": "@eci/integration-bulkorders",
+  "version": "0.0.0",
+  "main": "index.ts",
+  "dependencies": {
+    "@eci/hash": "*",
+    "@trieb.work/zoho-ts": "^0.3.45",
+    "zod": "^3.11.6"
+  }
+}

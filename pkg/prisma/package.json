@@ -1,0 +1,15 @@
+{
+  "name": "@eci/prisma",
+  "version": "0.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "fmt": "yarn prisma format",
+    "build": "yarn prisma generate"
+  },
+  "dependencies": {
+    "@prisma/client": "^3.6.0"
+  },
+  "devDependencies": {
+    "prisma": "^3.6.0"
+  }
+}

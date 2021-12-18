@@ -1,0 +1,4 @@
+$ esbuild --bundle --platform=node --outfile=dist/main.js ./src/main.ts
+
+  dist/main.js  7.5mb ⚠️
+

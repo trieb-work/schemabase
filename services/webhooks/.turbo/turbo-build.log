@@ -1,0 +1,33 @@
+$ next build
+info  - Checking validity of types...
+info  - Creating an optimized production build...
+info  - Compiled successfully
+info  - Collecting page data...
+info  - Generating static pages (0/2)
+info  - Generating static pages (2/2)
+info  - Finalizing page optimization...
+
+Page                                                 Size     First Load JS
+┌   /_app                                            0 B            71.4 kB
+├ ○ /404                                             193 B          71.6 kB
+├ λ /api/management/tenant/create                    0 B            71.4 kB
+├ λ /api/product-data-feed/v1/[variant]/[webhookId]  0 B            71.4 kB
+├ λ /api/saleor/manifest                             0 B            71.4 kB
+├ λ /api/saleor/manifest/[tenantId]                  0 B            71.4 kB
+├ λ /api/saleor/register/[tenantId]                  0 B            71.4 kB
+├ λ /api/saleor/webhook/v1/[webhookId]               0 B            71.4 kB
+├ λ /api/strapi/webhook/create/v1/[strapiId]         0 B            71.4 kB
+├ λ /api/strapi/webhook/v1/[webhookId]               0 B            71.4 kB
+├ λ /api/tracking/dpd/v1                             0 B            71.4 kB
+├ λ /api/zoho/logistics/create/v1/[logisticsAppId]   0 B            71.4 kB
+└ λ /api/zoho/logistics/v1/[webhookId]               0 B            71.4 kB
++ First Load JS shared by all                        71.4 kB
+  ├ chunks/framework-71a68fe8ccf96ad8.js             42 kB
+  ├ chunks/main-a122f0795c409f78.js                  28.2 kB
+  ├ chunks/pages/_app-3f22dd1c54a2ecbd.js            483 B
+  └ chunks/webpack-c08a9bda966697c3.js               690 B
+
+λ  (Server)  server-side renders at runtime (uses getInitialProps or getServerSideProps)
+○  (Static)  automatically rendered as static HTML (uses no initial props)
+
+error - ESLint: Failed to load plugin '@nrwl/nx' declared in '../../.eslintrc.json#overrides[1]': Cannot find module '@nrwl/eslint-plugin-nx' Require stack: - /home/chronark/github/trieb-work/eci/.eslintrc.json Referenced from: /home/chronark/github/trieb-work/eci/.eslintrc.json

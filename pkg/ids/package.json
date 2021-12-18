@@ -1,0 +1,8 @@
+{
+  "name": "@eci/ids",
+  "version": "0.0.1",
+  "main": "index.ts",
+  "dependencies": {
+    "@chronark/prefixed-id": "^0.3.8"
+  }
+}

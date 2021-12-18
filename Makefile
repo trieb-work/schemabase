@@ -1,5 +1,5 @@
 # Location of prisma schema file
-prismaSchema := libs/data-access/prisma/schema.prisma
+prismaSchema := pkg/prisma/schema.prisma
 
 export COMPOSE_DOCKER_CLI_BUILD=1
 
@@ -57,12 +57,12 @@ init-core: down build
 build:
 	yarn install
 
-	yarn nx run-many --target=build --all --with-deps
+	yarn turbo run build
 
 
 # Run all unit tests
 test: build
-	yarn nx run-many --target=test --all
+	yarn turbo run test
 
 
 
@@ -87,12 +87,12 @@ rebuild-worker:
 #
 # Make sure you have called `make init` before to setup all required services
 # You just need to do this once, not for every new test run.
-test-e2e: export ECI_BASE_URL                 = http://localhost:3000
-test-e2e: export ECI_BASE_URL_FROM_CONTAINER  = http://webhooks.eci:3000
-test-e2e: export SALEOR_URL                   = http://localhost:8000/graphql/
-test-e2e: export SALEOR_URL_FROM_CONTAINER    = http://saleor.eci:8000/graphql/
-test-e2e:
-	yarn nx run-many --target=e2e --all --skip-nx-cache
+test: export ECI_BASE_URL                 = http://localhost:3000
+test: export ECI_BASE_URL_FROM_CONTAINER  = http://webhooks.eci:3000
+test: export SALEOR_URL                   = http://localhost:8000/graphql/
+test: export SALEOR_URL_FROM_CONTAINER    = http://saleor.eci:8000/graphql/
+test:
+	yarn turbo run test
 
 # DO NOT RUN THIS YOURSELF!
 #
@@ -101,19 +101,18 @@ test-e2e:
 #  Build Command: `make build-webhooks-prod`
 #  Output Directory: `dist/apps/webhooks/.next`
 build-webhooks-prod:
-	yarn nx build webhooks --prod
+	yarn turbo run build
 	yarn prisma migrate deploy --schema=${prismaSchema}
 
 
 tsc:
-	yarn tsc -p tsconfig.base.json --pretty
+	yarn tsc --pretty
 
 install:
 	yarn install
 
 lint:
-	yarn nx workspace-lint
-	yarn nx run-many --all --target=lint
+	yarn turbo run lint
 
 format:
 	yarn prettier --write --loglevel=warn .

@@ -1,0 +1,8 @@
+{
+  "name": "@eci/hash",
+  "version": "0.0.0",
+  "main": "index.ts",
+  "devDependencies": {
+    "typescript": "^4.5.4"
+  }
+}

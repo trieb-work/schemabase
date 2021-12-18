@@ -1,0 +1,12 @@
+mutation channelCreate($input: ChannelCreateInput!) {
+  channelCreate(input: $input) {
+    errors {
+      field
+      message
+    }
+    channel {
+      id
+      slug
+    }
+  }
+}

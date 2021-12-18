@@ -19,7 +19,7 @@ services:
     image: eci_webhooks
     build:
       context: .
-      dockerfile: ./apps/webhooks/Dockerfile
+      dockerfile: ./services/webhooks/Dockerfile
     container_name: webhooks.eci
     ports:
       - 3000:3000
@@ -40,7 +40,7 @@ services:
 
     build:
       context: .
-      dockerfile: ./apps/worker/Dockerfile
+      dockerfile: ./services/worker/Dockerfile
       args:
         - commit_sha=development
     environment:

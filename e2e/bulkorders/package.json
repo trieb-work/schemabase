@@ -1,0 +1,12 @@
+{
+  "name": "@eci/e2e-bulkorders",
+  "version": "0.0.0",
+  "devDependencies": {
+    "jest": "^27.4.5",
+    "ts-jest": "^27.1.2",
+    "@eci/http": "*",
+    "@eci/saleor": "*",
+    "@eci/prisma": "*",
+    "@eci/ids": "*"
+  }
+}

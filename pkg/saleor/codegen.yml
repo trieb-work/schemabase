@@ -1,0 +1,12 @@
+overwrite: true
+schema: "./pkg/saleor/src/api/lib/schema.gql"
+documents: "./pkg/saleor/src/api/lib/{mutations,queries}/**/*.gql"
+generates:
+  ./pkg/saleor/src/api/generated/graphql.ts:
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-generic-sdk
+hooks:
+  afterOneFileWrite:
+    - prettier --write

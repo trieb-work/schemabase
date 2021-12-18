@@ -1,0 +1,8 @@
+{
+  "name": "@eci/http",
+  "version": "0.0.0",
+  "main": "index.ts",
+  "dependencies": {
+    "zod": "^3.11.6"
+  }
+}

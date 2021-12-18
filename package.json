@@ -1,135 +1,54 @@
 {
-  "name": "@trieb-work/eci",
+  "name": "turborepo-basic-shared",
   "version": "0.0.0",
-  "scripts": {
-    "update": "nx migrate latest",
-    "dep-graph": "nx dep-graph",
-    "prepare": "husky install",
-    "cm": "cz"
-  },
   "private": true,
-  "dependencies": {
-    "@chronark/env": "0.0.2",
-    "@chronark/prefixed-id": "0.3.8",
-    "@easypost/api": "3.11.2",
-    "@elastic/ecs-winston-format": "1.3.1",
-    "@prisma/client": "2.27.0",
-    "@sendgrid/mail": "7.4.5",
-    "@sentry/node": "6.11.0",
-    "@trieb.work/zoho-ts": "^0.3.36",
-    "axios": "0.21.1",
-    "braintree": "3.7.0",
-    "bullmq": "^1.47.2",
-    "csvtojson": "^2.0.10",
-    "document-register-element": "1.14.10",
-    "editorjs-html": "3.4.0",
-    "elastic-apm-node": "3.19.0",
-    "form-data": "4.0.0",
-    "html-to-text": "8.0.0",
-    "js-base64": "3.6.1",
-    "kafkajs": "^1.15.0",
-    "mailchimp-api-v3": "1.15.0",
-    "md5": "2.3.0",
-    "moment-business-days": "1.2.0",
-    "next": "11.0.1",
-    "objects-to-csv": "1.3.6",
-    "prisma": "2.27.0",
-    "react": "17.0.2",
-    "react-dom": "17.0.2",
-    "tslib": "2.3.0",
-    "winston": "3.3.0",
-    "winston-elasticsearch": "0.15.8",
-    "zod": "3.7.1"
+  "workspaces": [
+    "services/*",
+    "pkg/*",
+    "e2e:*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "test": "jest -i"
   },
   "devDependencies": {
-    "@babel/core": "7.15.0",
-    "@babel/preset-env": "7.15.0",
-    "@babel/preset-react": "7.14.5",
-    "@babel/preset-typescript": "7.15.0",
-    "@bull-board/hapi": "^3.7.0",
-    "@commitlint/config-conventional": "13.1.0",
-    "@graphql-codegen/cli": "2.0.1",
-    "@graphql-codegen/typescript": "2.0.0",
-    "@graphql-codegen/typescript-generic-sdk": "2.1.1",
-    "@graphql-codegen/typescript-operations": "2.0.1",
-    "@hapi/hapi": "^20.2.1",
-    "@nrwl/cli": "12.9.0",
-    "@nrwl/eslint-plugin-nx": "12.6.3",
-    "@nrwl/jest": "12.9.0",
-    "@nrwl/linter": "12.9.0",
-    "@nrwl/next": "12.9.0",
-    "@nrwl/node": "12.9.0",
-    "@nrwl/react": "12.9.0",
-    "@nrwl/tao": "12.9.0",
-    "@nrwl/web": "12.9.0",
-    "@nrwl/workspace": "12.9.0",
-    "@testing-library/react": "12.0.0",
-    "@trieb.work/prettier-base": "0.1.0-alpha.2",
-    "@types/braintree": "2.22.14",
-    "@types/faker": "^5.5.8",
-    "@types/form-data": "2.5.0",
-    "@types/hapi__hapi": "^20.0.9",
-    "@types/html-to-text": "8.0.1",
-    "@types/ioredis": "^4.28.2",
-    "@types/jest": "26.0.24",
-    "@types/md5": "2.3.1",
-    "@types/node": "16.4.13",
-    "@types/objects-to-csv": "1.3.1",
-    "@types/react": "17.0.16",
-    "@types/react-dom": "17.0.9",
-    "@types/simple-oauth2": "4.1.1",
-    "@typescript-eslint/eslint-plugin": "4.33.0",
-    "@typescript-eslint/parser": "4.29.1",
-    "babel-jest": "27.0.6",
-    "commitizen": "^4.2.4",
-    "commitlint": "13.1.0",
-    "core-js": "3.16.1",
-    "cz-conventional-changelog": "^3.3.0",
-    "dayjs": "1.10.6",
-    "dotenv": "^10.0.0",
-    "esbuild": "^0.14.2",
-    "eslint": "7.32.0",
-    "eslint-config-next": "11.0.1",
-    "eslint-config-prettier": "8.3.0",
-    "eslint-plugin-import": "2.24.0",
-    "eslint-plugin-jsx-a11y": "6.4.1",
-    "eslint-plugin-react": "7.24.0",
-    "eslint-plugin-react-hooks": "4.2.0",
-    "faker": "^5.5.3",
-    "git-cz": "^4.7.6",
-    "graphql": "15.5.1",
-    "husky": "7.0.1",
-    "ioredis": "^4.28.2",
-    "jest": "27.0.6",
-    "lint-staged": "11.1.2",
-    "nx": "12.6.3",
-    "prettier": "2.3.2",
-    "prisma-dbml-generator": "^0.7.0",
-    "regenerator-runtime": "0.13.9",
-    "ts-jest": "27.0.4",
-    "ts-node": "10.2.0",
-    "type-graphql": "1.1.1",
-    "typegraphql-prisma": "0.14.7",
-    "typescript": "4.3.5"
+    "@types/jest": "^27.0.3",
+    "jest": "^27.4.5",
+    "prettier": "^2.5.1",
+    "ts-jest": "^27.1.2",
+    "turbo": "latest"
   },
-  "lint-staged": {
-    "*.{ts,tsx,js,html}": [
-      "eslint -c=./.eslintrc.json --fix --ext .js,.ts,.tsx",
-      "prettier --write"
+  "turbo": {
+    "globalDepencencies":[
+      "./env*",
+      "tsconfig.json",
+      "package.json",
+      "jest.config.ts"
     ],
-    "*.{yml,yaml,css,json}": [
-      "prettier --write"
-    ]
-  },
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-conventional"
-    ]
-  },
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog",
-      "disableEmoji": true
+    "pipeline": {
+      "build": {
+        "dependsOn": [
+          "^build"
+        ],
+        "outputs": [
+          "dist/**",
+          ".next/**"
+        ]
+      },
+      "lint": {
+        "outputs": []
+      },
+      "dev": {
+        "cache": false
+      },
+      "test": {
+        "dependsOn": [
+          "build"
+        ]
+      }
     }
   }
 }
