@@ -1,7 +1,6 @@
 import winston from "winston";
 import { ElasticsearchTransport } from "winston-elasticsearch";
 import { env } from "@chronark/env";
-import APMAgent from "elastic-apm-node/start";
 import ecsFormat from "@elastic/ecs-winston-format";
 
 export interface LogDrain {
@@ -33,7 +32,6 @@ export class Logger implements ILogger {
   private logger: winston.Logger;
   private meta: Record<string, unknown>;
   private elasticSearchTransport?: ElasticsearchTransport;
-  private apm?: typeof APMAgent;
   private logDrains: LogDrain[] = [];
 
   public constructor(config?: LoggerConfig) {
@@ -67,7 +65,6 @@ export class Logger implements ILogger {
        */
       this.elasticSearchTransport = new ElasticsearchTransport({
         level: "info", // log info and above, not debug
-        apm: this.apm,
         dataStream: true,
         clientOpts: {
           node: env.require("ELASTIC_LOGGING_SERVER"),
@@ -136,9 +133,6 @@ export class Logger implements ILogger {
   }
 
   public async flush(): Promise<void> {
-    await Promise.all([
-      this.elasticSearchTransport?.flush(),
-      this.apm?.flush(),
-    ]);
+    await Promise.all([this.elasticSearchTransport?.flush()]);
   }
 }

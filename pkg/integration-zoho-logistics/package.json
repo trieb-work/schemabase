@@ -1,5 +1,10 @@
 {
   "name": "@eci/integration-zoho-logistics",
   "version": "0.0.0",
-  "main": "index.ts"
+  "main": "index.ts",
+  "dependencies": {
+    "@eci/errors": "*",
+    "@eci/logger": "*",
+    "@trieb.work/zoho-ts": "^0.3.45"
+  }
 }

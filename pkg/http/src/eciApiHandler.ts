@@ -1,4 +1,4 @@
-import { NextApiHandler, NextApiResponse, NextApiRequest } from "next";
+import type { NextApiHandler, NextApiResponse, NextApiRequest } from "next";
 import { ILogger, Logger } from "@eci/logger";
 import { id } from "@eci/ids";
 import { HttpError } from "@eci/errors";

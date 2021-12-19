@@ -1,6 +1,4 @@
-
-
-import {beforeEach, describe, it, jest, expect} from "@jest/globals"
+import { beforeEach, describe, it, jest, expect } from "@jest/globals";
 import { ProductDataFeedGenerator } from "./service";
 import { SaleorClient, WeightUnitsEnum } from "@eci/saleor";
 import { FeedVariant } from "./types";

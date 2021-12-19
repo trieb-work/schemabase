@@ -3,13 +3,20 @@
   "version": "0.0.0",
   "main": "index.ts",
   "scripts": {
-    "fmt": "yarn prisma format",
-    "build": "yarn prisma generate"
+    "fmt": "prisma format",
+    "build": "prisma generate",
+    "push": "prisma db push",
+    "migrate": "prisma migrate dev",
+    "studio": "prisma db studio"
   },
   "dependencies": {
+    "@chronark/env": "^0.1.2",
     "@prisma/client": "^3.6.0"
   },
   "devDependencies": {
     "prisma": "^3.6.0"
+  },
+  "prisma": {
+    "schema": "./schema.prisma"
   }
 }

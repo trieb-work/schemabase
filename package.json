@@ -2,27 +2,23 @@
   "name": "turborepo-basic-shared",
   "version": "0.0.0",
   "private": true,
-  "workspaces": [
-    "services/*",
-    "pkg/*",
-    "e2e:*"
-  ],
   "scripts": {
+    "clear": "rm -rf ./**/node_modules ./**/dist ./**/.next ./**/.turbo",
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "test": "jest -i"
   },
   "devDependencies": {
+    "@swc/core": "^1.2.120",
+    "@swc/jest": "^0.2.15",
+    "@trieb.work/prettier-base": "^0.1.2",
     "@types/jest": "^27.0.3",
     "jest": "^27.4.5",
-    "prettier": "^2.5.1",
-    "ts-jest": "^27.1.2",
     "turbo": "latest"
   },
   "turbo": {
-    "globalDepencencies":[
+    "globalDepencencies": [
       "./env*",
       "tsconfig.json",
       "package.json",

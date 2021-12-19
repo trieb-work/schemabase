@@ -4,6 +4,7 @@
   "main": "index.ts",
   "types": "./editorjs-html.d.ts",
   "dependencies": {
+    "@eci/logger": "*",
     "@eci/saleor": "*",
     "@editorjs/editorjs": "^2.22.2",
     "editorjs-html": "^3.4.2",

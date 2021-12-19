@@ -3,31 +3,27 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "build:docker": "",
-    "start": "next start",
-    "lint": "next lint"
+    "build": "find ./api -wholename '**/*.ts' -exec esbuild --outdir=dist/api {} +"
   },
   "dependencies": {
+    "@chronark/env": "^0.1.2",
+    "@eci/constants": "*",
     "@eci/errors": "*",
     "@eci/events": "*",
+    "@eci/http": "*",
     "@eci/ids": "*",
     "@eci/integration-saleor-product-data-feed": "*",
     "@eci/integration-zoho-logistics": "*",
+    "@eci/logger": "*",
     "@eci/saleor": "*",
     "@eci/webhook-context": "*",
     "@trieb.work/zoho-ts": "^0.3.45",
-    "next": "12.0.7",
-    "react": "17.0.2",
-    "react-dom": "17.0.2"
+    "zod": "^3.11.6"
   },
   "devDependencies": {
     "@types/node": "17.0.0",
-    "@types/react": "17.0.37",
-    "eslint": "8.4.1",
-    "eslint-config-next": "12.0.7",
-    "next-transpile-modules": "^9.0.0",
-    "typescript": "^4.5.4"
+    "esbuild": "^0.14.5",
+    "typescript": "^4.5.4",
+    "vercel": "^23.1.2"
   }
 }

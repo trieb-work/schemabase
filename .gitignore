@@ -30,7 +30,7 @@
 /coverage
 /libpeerconnection.log
 npm-debug.log
-yarn-error.log
+pnpm-error.log
 testem.log
 /typings
 
@@ -46,3 +46,6 @@ Thumbs.db
 **/node_modules/
 .nx-cache/
 .nx/
+.turbo
+
+dist/

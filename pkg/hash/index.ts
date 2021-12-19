@@ -1,1 +1,1 @@
-export * from "./src/sha256"
+export * from "./src/sha256";

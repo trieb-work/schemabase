@@ -1,4 +1,4 @@
-import { expect,beforeAll, describe, it} from "@jest/globals"
+import { expect, beforeAll, describe, it } from "@jest/globals";
 import { HttpClient } from "@eci/http";
 import { PrismaClient } from "@eci/prisma";
 import { id } from "@eci/ids";

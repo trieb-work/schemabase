@@ -3,4 +3,4 @@
 
 make tsc
 make test
-yarn lint-staged
+pnpm lint-staged

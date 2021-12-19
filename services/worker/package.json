@@ -8,9 +8,12 @@
     "start": "node ./dist/main.js"
   },
   "dependencies": {
+    "@chronark/env": "^0.1.2",
     "@eci/errors": "*",
     "@eci/events": "*",
-    "@eci/prisma":"*",
+    "@eci/integration-bulkorders": "*",
+    "@eci/logger": "*",
+    "@eci/prisma": "*",
     "@trieb.work/zoho-ts": "^0.3.45"
   },
   "devDependencies": {

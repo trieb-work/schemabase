@@ -3,6 +3,8 @@
   "version": "0.0.0",
   "main": "index.ts",
   "dependencies": {
+    "@chronark/env": "^0.1.2",
+    "@eci/constants": "*",
     "graphql": "^16.2.0",
     "graphql-request": "^3.7.0",
     "graphql-tag": "^2.12.6"

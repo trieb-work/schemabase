@@ -1,4 +1,4 @@
-import {beforeAll,afterAll, expect, describe,it} from "@jest/globals"
+import { beforeAll, afterAll, expect, describe, it } from "@jest/globals";
 import { config } from "dotenv";
 import { PrismaClient } from "@eci/prisma";
 import faker from "faker";

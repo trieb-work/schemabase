@@ -21,10 +21,10 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: "**/node_modules"
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm.lock') }}
 
       - name: Install
-        run: yarn install --frozen-lockfile --non-interactive
+        run: pnpm install --frozen-lockfile --non-interactive
 
       - name: Build
         run: make build
@@ -173,10 +173,10 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: "**/node_modules"
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm.lock') }}
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
+        run: pnpm install --frozen-lockfile --non-interactive
 
         # Necesarry to test against the predefined saleor versions
       - name: Use docker-compose ci config
@@ -189,13 +189,13 @@ jobs:
         run: make migrate-saleor
 
       - name: Migrate eci schema
-        run: yarn prisma migrate deploy --schema=./libs/data-access/prisma/schema.prisma
+        run: pnpm prisma migrate deploy --schema=./libs/data-access/prisma/schema.prisma
 
       - name: Generate prisma client
-        run: yarn nx build data-access-prisma
+        run: pnpm nx build data-access-prisma
 
       - name: Test (e2e)
-        run: yarn nx run-many --target=e2e --all -i
+        run: pnpm nx run-many --target=e2e --all -i
 
       - run: docker-compose logs
         if: always()

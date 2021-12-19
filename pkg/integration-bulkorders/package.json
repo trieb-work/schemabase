@@ -4,6 +4,8 @@
   "main": "index.ts",
   "dependencies": {
     "@eci/hash": "*",
+    "@eci/logger": "*",
+    "@eci/ids": "*",
     "@trieb.work/zoho-ts": "^0.3.45",
     "zod": "^3.11.6"
   }

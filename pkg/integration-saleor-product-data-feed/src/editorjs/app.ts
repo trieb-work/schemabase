@@ -28,15 +28,16 @@ const parser = (plugins = {}): parser => {
     parseStrict: ({ blocks }) => {
       const parserFreeBlocks = parser(parsers).validate({ blocks });
 
-      if (parserFreeBlocks.length){
-        throw new Error(`Parser Functions missing for blocks: ${parserFreeBlocks.toString()}`);
+      if (parserFreeBlocks.length) {
+        throw new Error(
+          `Parser Functions missing for blocks: ${parserFreeBlocks.toString()}`,
+        );
       }
 
       const parsed = [];
 
       for (let i = 0; i < blocks.length; i++) {
-        if (!parsers[blocks[i].type])
-          throw ParseFunctionError(blocks[i].type);
+        if (!parsers[blocks[i].type]) throw ParseFunctionError(blocks[i].type);
 
         parsed.push(parsers[blocks[i].type](blocks[i]));
       }
@@ -49,7 +50,7 @@ const parser = (plugins = {}): parser => {
         .map((item: block) => item.type)
         .filter(
           (item: string, index: number, blocksArr: Array<string>) =>
-            blocksArr.indexOf(item) === index
+            blocksArr.indexOf(item) === index,
         );
 
       const parser_keys = Object.keys(parsers);
@@ -61,10 +62,7 @@ const parser = (plugins = {}): parser => {
 
 export default parser;
 
-
-
-
-export function ParseFunctionError(type: string){
+export function ParseFunctionError(type: string) {
   return new Error(`\x1b[31m The Parser function of type "${type}" is not defined. \n
   Define your custom parser functions as: \x1b[34mhttps://github.com/pavittarx/editorjs-html#extend-for-custom-blocks \x1b[0m`);
 }
@@ -134,7 +132,7 @@ const transforms: transforms = {
         if (item.items) list = recursor(item.items, listStyle);
         if (item.content) return `<li> ${item.content} </li>` + list;
 
-        return list
+        return list;
       });
 
       return `<${listStyle}>${list.join("")}</${listStyle}>`;
@@ -166,9 +164,8 @@ const transforms: transforms = {
         return `<iframe width="${data.width}" height="${data.height}" src="${data.embed}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
       default:
         throw new Error(
-          "Only Youtube and Vime Embeds are supported right now."
+          "Only Youtube and Vime Embeds are supported right now.",
         );
     }
   },
 };
-

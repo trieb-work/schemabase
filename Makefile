@@ -1,5 +1,3 @@
-# Location of prisma schema file
-prismaSchema := pkg/prisma/schema.prisma
 
 export COMPOSE_DOCKER_CLI_BUILD=1
 
@@ -13,9 +11,7 @@ destroy: down
 # Pull development environment variables from vercel
 # Copy over database connections for prisma
 pull-env:
-	cd apps/webhooks && npx vercel env pull && mv .env .env.local
-	cp apps/webhooks/.env.local .env.local
-
+	npx vercel env pull && mv .env .env.local
 
 migrate-saleor:
 	docker-compose exec -T saleor_api python manage.py migrate
@@ -44,25 +40,20 @@ init: down build
 	docker-compose up -d
 
 
-	yarn prisma db push --schema=${prismaSchema}
-
-
-
 init-core: export COMPOSE_DOCKER_CLI_BUILD=1
 init-core: export DOCKER_BUILDKIT=1
 init-core: down build
 	docker-compose up -d eci_webhooks eci_worker kafka kafka-ui
-	yarn prisma db push --schema=${prismaSchema}
 
 build:
-	yarn install
+	pnpm install
 
-	yarn turbo run build
+	pnpm turbo run build
 
 
 # Run all unit tests
 test: build
-	yarn turbo run test
+	pnpm turbo run test
 
 
 
@@ -91,8 +82,8 @@ test: export ECI_BASE_URL                 = http://localhost:3000
 test: export ECI_BASE_URL_FROM_CONTAINER  = http://webhooks.eci:3000
 test: export SALEOR_URL                   = http://localhost:8000/graphql/
 test: export SALEOR_URL_FROM_CONTAINER    = http://saleor.eci:8000/graphql/
-test:
-	yarn turbo run test
+test: build
+	pnpm turbo run test
 
 # DO NOT RUN THIS YOURSELF!
 #
@@ -101,34 +92,32 @@ test:
 #  Build Command: `make build-webhooks-prod`
 #  Output Directory: `dist/apps/webhooks/.next`
 build-webhooks-prod:
-	yarn turbo run build
-	yarn prisma migrate deploy --schema=${prismaSchema}
+	pnpm turbo run build
+	pnpm prisma migrate deploy --schema=${prismaSchema}
 
 
 tsc:
-	yarn tsc --pretty
+	pnpm turbo run tsc --pretty
 
 install:
-	yarn install
+	pnpm install
 
 lint:
-	yarn turbo run lint
+	pnpm turbo run lint
 
 format:
-	yarn prettier --write --loglevel=warn .
-	yarn prisma format --schema=${prismaSchema}
+	pnpm prettier --write --loglevel=warn .
+	pnpm --dir=pkg/prisma prisma db push --schema=${prismaSchema}
 
 
 fmt: lint format
 
 
-db-seed:
-	yarn prisma db seed --preview-feature --schema=${prismaSchema}
 db-migrate:
-	yarn prisma migrate dev --schema=${prismaSchema}
+	npx prisma migrate dev --schema=pkg/prisma/schema.prisma
 db-studio:
-	yarn prisma studio --schema=${prismaSchema}
+	npx prisma db studio --schema=pkg/prisma/schema.prisma
 db-push:
-	yarn prisma db push --schema=${prismaSchema} --skip-generate
+	npx prisma db push --schema=pkg/prisma/schema.prisma
 
 

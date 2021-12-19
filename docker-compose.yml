@@ -20,10 +20,12 @@ services:
     build:
       context: .
       dockerfile: ./services/webhooks/Dockerfile
+
     container_name: webhooks.eci
     ports:
       - 3000:3000
     environment:
+      VERCEL_TOKEN: ${VERCEL_TOKEN}
       DATABASE_URL: postgres://postgres:postgres@eci_db:5432/postgres
       DATABASE_URL_POOL: postgres://postgres:postgres@eci_db:5432/postgres
       KAFKA_BROKER_URL: kafka:9092
