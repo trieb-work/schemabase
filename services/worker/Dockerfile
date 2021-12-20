@@ -9,7 +9,7 @@ ENV GIT_COMMIT_SHA=$commit_sha
 COPY package.json pnpm-lock.yaml ./
 
 
-RUN pnpm install
+RUN pnpm install -r
 COPY . .
 
 
