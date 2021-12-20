@@ -2,16 +2,7 @@
 > @eci/svc-worker@0.0.0 build /home/chronark/github/trieb-work/eci/services/worker
 > esbuild --bundle --platform=node --outfile=dist/main.js ./src/main.ts
 
-▲ [WARNING] Comparison with -0 using the "===" operator will also match 0
-
-    ../../pkg/prisma/generated/client/runtime/index.js:13073:29:
-      13073 │             } else if (x === -0) {
-            ╵                              ~~
-
-  Floating-point equality is defined such that 0 and -0 are equal, so "x === -0" returns true for both 0 and -0. You need to use "Object.is(x, -0)" instead to test for -0.
-
-1 warning
 
   dist/main.js  7.6mb ⚠️
 
-⚡ Done in 1241ms
+⚡ Done in 1842ms
