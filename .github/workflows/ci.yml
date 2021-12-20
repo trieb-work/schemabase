@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        app: [webhooks, worker]
+        service: [webhooks, worker]
 
     steps:
       - name: Checkout
@@ -66,10 +66,10 @@ jobs:
         with:
           context: .
           push: false
-          file: ./apps/${{ matrix.app }}/Dockerfile
-          tags: eci_${{ matrix.app }}:latest
+          file: ./services/${{ matrix.service }}/Dockerfile
+          tags: eci_${{ matrix.service }}:latest
           build-args: commit_sha=${{ github.sha }}
-          outputs: type=docker,dest=/tmp/${{ matrix.app }}.tar
+          outputs: type=docker,dest=/tmp/${{ matrix.service }}.tar
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 
@@ -79,11 +79,11 @@ jobs:
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       # export docker images to be used in next jobs below
-      - name: Upload image ${{ matrix.app }} as artifact
+      - name: Upload image ${{ matrix.service }} as artifact
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.app }}
-          path: /tmp/${{ matrix.app }}.tar
+          name: ${{ matrix.service }}
+          path: /tmp/${{ matrix.service }}.tar
           retention-days: 1
 
   release-worker:
@@ -150,6 +150,7 @@ jobs:
       ZOHO_ORG_ID: ${{ secrets.ZOHO_ORG_ID }}
       ECI_ENV: ci
       KAFKA_BROKER_URL: kafka:9092
+      VERCEL_TOKEN: ${{secrets.VERCEL_TOKEN}}
 
     steps:
       - name: Checkout code
