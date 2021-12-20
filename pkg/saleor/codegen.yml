@@ -9,4 +9,4 @@ generates:
       - typescript-generic-sdk
 hooks:
   afterOneFileWrite:
-    - prettier --ignore-path .gitignore --write
+    - prettier  --write

@@ -53,10 +53,10 @@
   },
   "lint-staged": {
     "*.{ts,tsx,js,html}": [
-      "prettier --ignore-path .gitignore --write"
+      "prettier  --write"
     ],
     "*.{yml,yaml,css,json}": [
-      "prettier --ignore-path .gitignore --write"
+      "prettier  --write"
     ]
   },
   "commitlint": {
