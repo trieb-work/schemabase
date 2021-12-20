@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "main": "index.ts",
   "dependencies": {
-    "@eci/errors": "*",
-    "@eci/logger": "*",
+    "@eci/errors": "workspace:*",
+    "@eci/logger": "workspace:*",
     "@trieb.work/zoho-ts": "^0.3.45"
   }
 }

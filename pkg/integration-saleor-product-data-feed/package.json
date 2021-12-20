@@ -4,8 +4,8 @@
   "main": "index.ts",
   "types": "./editorjs-html.d.ts",
   "dependencies": {
-    "@eci/logger": "*",
-    "@eci/saleor": "*",
+    "@eci/logger": "workspace:*",
+    "@eci/saleor": "workspace:*",
     "@editorjs/editorjs": "^2.22.2",
     "editorjs-html": "^3.4.2",
     "html-to-text": "^8.1.0",

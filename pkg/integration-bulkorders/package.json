@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "main": "index.ts",
   "dependencies": {
-    "@eci/hash": "*",
-    "@eci/logger": "*",
-    "@eci/ids": "*",
+    "@eci/hash": "workspace:*",
+    "@eci/logger": "workspace:*",
+    "@eci/ids": "workspace:*",
     "@trieb.work/zoho-ts": "^0.3.45",
     "zod": "^3.11.6"
   }

@@ -4,9 +4,9 @@
   "main": "index.ts",
   "dependencies": {
     "@chronark/env": "^0.1.2",
-    "@eci/errors": "*",
-    "@eci/ids": "*",
-    "@eci/logger": "*",
+    "@eci/errors": "workspace:*",
+    "@eci/ids": "workspace:*",
+    "@eci/logger": "workspace:*",
     "kafkajs": "^1.15.0"
   },
   "devDependencies": {

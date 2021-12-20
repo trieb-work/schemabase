@@ -9,11 +9,11 @@
   },
   "dependencies": {
     "@chronark/env": "^0.1.2",
-    "@eci/errors": "*",
-    "@eci/events": "*",
-    "@eci/integration-bulkorders": "*",
-    "@eci/logger": "*",
-    "@eci/prisma": "*",
+    "@eci/errors": "workspace:*",
+    "@eci/events": "workspace:*",
+    "@eci/integration-bulkorders": "workspace:*",
+    "@eci/logger": "workspace:*",
+    "@eci/prisma": "workspace:*",
     "@trieb.work/zoho-ts": "^0.3.45"
   },
   "devDependencies": {

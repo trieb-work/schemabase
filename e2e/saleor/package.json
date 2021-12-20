@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "devDependencies": {
     "@chronark/env": "^0.1.2",
-    "@eci/ids": "*",
-    "@eci/prisma": "*",
-    "@eci/saleor": "*",
+    "@eci/ids": "workspace:*",
+    "@eci/prisma": "workspace:*",
+    "@eci/saleor": "workspace:*",
     "jest": "^27.4.5",
     "ts-jest": "^27.1.2"
   }
