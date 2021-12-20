@@ -24,7 +24,7 @@ jobs:
           key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm.lock') }}
 
       - name: Install
-        run: pnpm install --frozen-lockfile --non-interactive
+        run: pnpm install
 
       - name: Build
         run: make build
