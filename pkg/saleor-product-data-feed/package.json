@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@chronark/env": "^0.1.2"
+  }
+}

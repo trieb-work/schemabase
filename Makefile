@@ -46,7 +46,7 @@ init-core: down build
 	docker-compose up -d eci_webhooks eci_worker kafka kafka-ui
 
 build:
-	pnpm install
+	pnpm install -r
 
 	pnpm turbo run build
 
@@ -97,17 +97,7 @@ build-webhooks-prod:
 
 
 install:
-	pnpm install
-
-lint:
-	pnpm turbo run lint
-
-format:
-	pnpm prettier --write --loglevel=warn .
-	pnpm --dir=pkg/prisma prisma db push --schema=${prismaSchema}
-
-
-fmt: lint format
+	pnpm install -r
 
 
 db-migrate:

@@ -12,6 +12,7 @@
     "objects-to-csv": "^1.3.6"
   },
   "devDependencies": {
+    "@jest/globals": "^27.4.4",
     "@types/html-to-text": "^8.0.1",
     "@types/objects-to-csv": "^1.3.1"
   }

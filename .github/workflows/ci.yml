@@ -33,7 +33,7 @@ jobs:
           version: latest
 
       - name: Install
-        run: pnpm install
+        run: pnpm install -r
 
       - name: Build
         run: make build
@@ -43,6 +43,9 @@ jobs:
 
       - name: Check types
         run: pnpm tsc --pretty
+
+      - name: Format
+        run: pnpm prettier --check .
 
       - name: Test (unit)
         run: make test
@@ -186,7 +189,7 @@ jobs:
           key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm.lock') }}
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --non-interactive
+        run: pnpm install -r --frozen-lockfile --non-interactive
 
         # Necesarry to test against the predefined saleor versions
       - name: Use docker-compose ci config

@@ -5,11 +5,12 @@
   "dependencies": {
     "@chronark/env": "^0.1.2",
     "@eci/errors": "*",
-    "@eci/logger": "*",
     "@eci/ids": "*",
+    "@eci/logger": "*",
     "kafkajs": "^1.15.0"
   },
   "devDependencies": {
+    "@jest/globals": "^27.4.4",
     "@types/node": "^17.0.0",
     "typescript": "^4.5.4"
   }

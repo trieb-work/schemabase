@@ -27,19 +27,32 @@ importers:
 
   e2e/bulkorders:
     specifiers:
-      "@eci/http": "*"
-      "@eci/ids": "*"
-      "@eci/prisma": "*"
-      "@eci/saleor": "*"
+      "@chronark/env": ^0.1.2
+      "@eci/http": workspace:*
+      "@eci/ids": workspace:*
+      "@eci/integration-bulkorders": workspace:*
+      "@eci/prisma": workspace:*
+      "@eci/saleor": workspace:*
+      "@jest/globals": ^27.4.4
+      "@trieb.work/zoho-ts": ^0.3.45
+      "@types/faker": ^5.5.9
       dotenv: ^10.0.0
       faker: ^5.5.3
       jest: ^27.4.5
       ts-jest: ^27.1.2
+      zod: ^3.11.6
+    dependencies:
+      "@chronark/env": 0.1.2
+      "@eci/integration-bulkorders": link:../../pkg/integration-bulkorders
+      "@trieb.work/zoho-ts": 0.3.45
+      "@types/faker": 5.5.9
+      zod: 3.11.6
     devDependencies:
       "@eci/http": link:../../pkg/http
       "@eci/ids": link:../../pkg/ids
       "@eci/prisma": link:../../pkg/prisma
       "@eci/saleor": link:../../pkg/saleor
+      "@jest/globals": 27.4.4
       dotenv: 10.0.0
       faker: 5.5.3
       jest: 27.4.5
@@ -63,12 +76,17 @@ importers:
 
   e2e/saleor-product-data-feed:
     specifiers:
+      "@chronark/env": ^0.1.2
       "@eci/http": "*"
       "@eci/ids": "*"
       "@eci/prisma": "*"
       "@eci/saleor": "*"
+      "@jest/globals": ^27.4.4
       jest: ^27.4.5
       ts-jest: ^27.1.2
+    dependencies:
+      "@chronark/env": 0.1.2
+      "@jest/globals": 27.4.4
     devDependencies:
       "@eci/http": link:../../pkg/http
       "@eci/ids": link:../../pkg/ids
@@ -94,6 +112,7 @@ importers:
       "@eci/errors": "*"
       "@eci/ids": "*"
       "@eci/logger": "*"
+      "@jest/globals": ^27.4.4
       "@types/node": ^17.0.0
       kafkajs: ^1.15.0
       typescript: ^4.5.4
@@ -104,6 +123,7 @@ importers:
       "@eci/logger": link:../logger
       kafkajs: 1.15.0
     devDependencies:
+      "@jest/globals": 27.4.4
       "@types/node": 17.0.0
       typescript: 4.5.4
 
@@ -158,6 +178,7 @@ importers:
       "@eci/logger": "*"
       "@eci/saleor": "*"
       "@editorjs/editorjs": ^2.22.2
+      "@jest/globals": ^27.4.4
       "@types/html-to-text": ^8.0.1
       "@types/objects-to-csv": ^1.3.1
       editorjs-html: ^3.4.2
@@ -171,6 +192,7 @@ importers:
       html-to-text: 8.1.0
       objects-to-csv: 1.3.6
     devDependencies:
+      "@jest/globals": 27.4.4
       "@types/html-to-text": 8.0.1
       "@types/objects-to-csv": 1.3.1
 
@@ -214,12 +236,20 @@ importers:
       graphql: ^16.2.0
       graphql-request: ^3.7.0
       graphql-tag: ^2.12.6
+      zod: ^3.11.6
     dependencies:
       "@chronark/env": 0.1.2
       "@eci/constants": link:../constants
       graphql: 16.2.0
       graphql-request: 3.7.0_graphql@16.2.0
       graphql-tag: 2.12.6_graphql@16.2.0
+      zod: 3.11.6
+
+  pkg/saleor-product-data-feed:
+    specifiers:
+      "@chronark/env": ^0.1.2
+    dependencies:
+      "@chronark/env": 0.1.2
 
   pkg/webhook-context:
     specifiers:
@@ -1230,7 +1260,6 @@ packages:
       "@jest/types": 27.4.2
       "@types/node": 17.0.0
       jest-mock: 27.4.2
-    dev: true
 
   /@jest/fake-timers/27.4.2:
     resolution:
@@ -1245,7 +1274,6 @@ packages:
       jest-message-util: 27.4.2
       jest-mock: 27.4.2
       jest-util: 27.4.2
-    dev: true
 
   /@jest/globals/27.4.4:
     resolution:
@@ -1257,7 +1285,6 @@ packages:
       "@jest/environment": 27.4.4
       "@jest/types": 27.4.2
       expect: 27.4.2
-    dev: true
 
   /@jest/reporters/27.4.5:
     resolution:
@@ -1378,7 +1405,6 @@ packages:
       "@types/node": 17.0.0
       "@types/yargs": 16.0.4
       chalk: 4.1.2
-    dev: true
 
   /@napi-rs/triples/1.0.3:
     resolution:
@@ -1670,7 +1696,6 @@ packages:
       }
     dependencies:
       type-detect: 4.0.8
-    dev: true
 
   /@sinonjs/fake-timers/8.1.0:
     resolution:
@@ -1679,7 +1704,6 @@ packages:
       }
     dependencies:
       "@sinonjs/commons": 1.8.3
-    dev: true
 
   /@swc/core-android-arm64/1.2.121:
     resolution:
@@ -1950,6 +1974,13 @@ packages:
       "@babel/types": 7.16.0
     dev: true
 
+  /@types/faker/5.5.9:
+    resolution:
+      {
+        integrity: sha512-uCx6mP3UY5SIO14XlspxsGjgaemrxpssJI0Ol+GfhxtcKpv9pgRZYsS4eeKeHVLje6Qtc8lGszuBI461+gVZBA==,
+      }
+    dev: false
+
   /@types/graceful-fs/4.1.5:
     resolution:
       {
@@ -1971,7 +2002,6 @@ packages:
       {
         integrity: sha512-sz7iLqvVUg1gIedBOvlkxPlc8/uVzyS5OwGz1cKjXzkl3FpL3al0crU8YGU1WoHkxn0Wxbw5tyi6hvzJKNzFsw==,
       }
-    dev: true
 
   /@types/istanbul-lib-report/3.0.0:
     resolution:
@@ -1980,7 +2010,6 @@ packages:
       }
     dependencies:
       "@types/istanbul-lib-coverage": 2.0.3
-    dev: true
 
   /@types/istanbul-reports/3.0.1:
     resolution:
@@ -1989,7 +2018,6 @@ packages:
       }
     dependencies:
       "@types/istanbul-lib-report": 3.0.0
-    dev: true
 
   /@types/jest/27.0.3:
     resolution:
@@ -2046,14 +2074,12 @@ packages:
       {
         integrity: sha512-Hl219/BT5fLAaz6NDkSuhzasy49dwQS/DSdu4MdggFB8zcXv7vflBI3xp7FEmkmdDkBUI2bPUNeMttp2knYdxw==,
       }
-    dev: true
 
   /@types/yargs-parser/20.2.1:
     resolution:
       {
         integrity: sha512-7tFImggNeNBVMsn0vLrpn1H1uPrUBdnARPTpZoitY37ZrdJREzf7I16tMrlK3hen349gr1NYh8CmZQa7CTG6Aw==,
       }
-    dev: true
 
   /@types/yargs/16.0.4:
     resolution:
@@ -2062,7 +2088,6 @@ packages:
       }
     dependencies:
       "@types/yargs-parser": 20.2.1
-    dev: true
 
   /@vercel/build-utils/2.12.2:
     resolution:
@@ -2271,7 +2296,6 @@ packages:
         integrity: sha512-Cxwpt2SfTzTtXcfOlzGEee8O+c+MmUgGrNiBcXnuWxuFJHe6a5Hz7qwhwe5OgaSYI0IJvkLqWX1ASG+cJOkEiA==,
       }
     engines: { node: ">=10" }
-    dev: true
 
   /ansi-styles/6.1.0:
     resolution:
@@ -2940,7 +2964,6 @@ packages:
     dependencies:
       ansi-styles: 4.3.0
       supports-color: 7.2.0
-    dev: true
 
   /char-regex/1.0.2:
     resolution:
@@ -2980,7 +3003,6 @@ packages:
       {
         integrity: sha512-riT/3vI5YpVH6/qomlDnJow6TBee2PBKSEpx3O32EGPYbWGIRsIlGRms3Sm74wYE1JMo8RnO04Hb12+v1J5ICw==,
       }
-    dev: true
 
   /cipher-base/1.0.4:
     resolution:
@@ -3720,7 +3742,6 @@ packages:
         integrity: sha512-YqiQzkrsmHMH5uuh8OdQFU9/ZpADnwzml8z0O5HvRNda+5UZsaX/xN+AAxfR2hWq1Y7HZnAzO9J5lJXOuDz2Ww==,
       }
     engines: { node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0 }
-    dev: true
 
   /diff/4.0.2:
     resolution:
@@ -4289,7 +4310,6 @@ packages:
         integrity: sha512-UpzcLCXolUWcNu5HtVMHYdXJjArjsF9C0aNnquZYY4uW/Vu0miy5YoWvbV345HauVvcAUnpRuhMMcqTcGOY2+w==,
       }
     engines: { node: ">=8" }
-    dev: true
 
   /escape-string-regexp/4.0.0:
     resolution:
@@ -4400,7 +4420,6 @@ packages:
       jest-matcher-utils: 27.4.2
       jest-message-util: 27.4.2
       jest-regex-util: 27.4.0
-    dev: true
 
   /extract-files/9.0.0:
     resolution:
@@ -5751,7 +5770,6 @@ packages:
       diff-sequences: 27.4.0
       jest-get-type: 27.4.0
       pretty-format: 27.4.2
-    dev: true
 
   /jest-docblock/27.4.0:
     resolution:
@@ -5819,7 +5837,6 @@ packages:
         integrity: sha512-tk9o+ld5TWq41DkK14L4wox4s2D9MtTpKaAVzXfr5CUKm5ZK2ExcaFE0qls2W71zE/6R2TxxrK9w2r6svAFDBQ==,
       }
     engines: { node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0 }
-    dev: true
 
   /jest-haste-map/27.4.5:
     resolution:
@@ -5895,7 +5912,6 @@ packages:
       jest-diff: 27.4.2
       jest-get-type: 27.4.0
       pretty-format: 27.4.2
-    dev: true
 
   /jest-message-util/27.4.2:
     resolution:
@@ -5913,7 +5929,6 @@ packages:
       pretty-format: 27.4.2
       slash: 3.0.0
       stack-utils: 2.0.5
-    dev: true
 
   /jest-mock/27.4.2:
     resolution:
@@ -5924,7 +5939,6 @@ packages:
     dependencies:
       "@jest/types": 27.4.2
       "@types/node": 17.0.0
-    dev: true
 
   /jest-pnp-resolver/1.2.2_jest-resolve@27.4.5:
     resolution:
@@ -5947,7 +5961,6 @@ packages:
         integrity: sha512-WeCpMpNnqJYMQoOjm1nTtsgbR4XHAk1u00qDoNBQoykM280+/TmgA5Qh5giC1ecy6a5d4hbSsHzpBtu5yvlbEg==,
       }
     engines: { node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0 }
-    dev: true
 
   /jest-resolve-dependencies/27.4.5:
     resolution:
@@ -6114,7 +6127,6 @@ packages:
       ci-info: 3.3.0
       graceful-fs: 4.2.8
       picomatch: 2.3.0
-    dev: true
 
   /jest-validate/27.4.2:
     resolution:
@@ -6709,7 +6721,6 @@ packages:
     dependencies:
       braces: 3.0.2
       picomatch: 2.3.0
-    dev: true
 
   /miller-rabin/4.0.1:
     resolution:
@@ -7492,7 +7503,6 @@ packages:
       ansi-regex: 5.0.1
       ansi-styles: 5.2.0
       react-is: 17.0.2
-    dev: true
 
   /prisma/3.6.0:
     resolution:
@@ -8138,7 +8148,6 @@ packages:
         integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==,
       }
     engines: { node: ">=8" }
-    dev: true
 
   /slice-ansi/3.0.0:
     resolution:
@@ -8288,7 +8297,6 @@ packages:
     engines: { node: ">=10" }
     dependencies:
       escape-string-regexp: 2.0.0
-    dev: true
 
   /stackframe/1.2.0:
     resolution:
@@ -8891,7 +8899,6 @@ packages:
         integrity: sha512-0fr/mIH1dlO+x7TlcMy+bIDqKPsw/70tVyeHW787goQjhmqaZe10uwLujubK9q9Lg6Fiho1KUKDYz0Z7k7g5/g==,
       }
     engines: { node: ">=4" }
-    dev: true
 
   /type-fest/0.18.1:
     resolution:

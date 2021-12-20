@@ -2,13 +2,21 @@
   "name": "@eci/e2e-bulkorders",
   "version": "0.0.0",
   "devDependencies": {
-    "@eci/http": "*",
-    "@eci/ids": "*",
-    "@eci/prisma": "*",
-    "@eci/saleor": "*",
+    "@eci/http": "workspace:*",
+    "@eci/ids": "workspace:*",
+    "@eci/prisma": "workspace:*",
+    "@eci/saleor": "workspace:*",
+    "@jest/globals": "^27.4.4",
     "dotenv": "^10.0.0",
     "faker": "^5.5.3",
     "jest": "^27.4.5",
     "ts-jest": "^27.1.2"
+  },
+  "dependencies": {
+    "@chronark/env": "^0.1.2",
+    "@trieb.work/zoho-ts": "^0.3.45",
+    "@types/faker": "^5.5.9",
+    "zod": "^3.11.6",
+    "@eci/integration-bulkorders": "workspace:*"
   }
 }

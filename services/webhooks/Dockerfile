@@ -4,7 +4,7 @@ WORKDIR /eci
 RUN npm i -g pnpm
 COPY package.json pnpm-lock.yaml ./
 
-RUN pnpm install
+RUN pnpm install -r
 
 COPY . .
 RUN pnpm turbo run build --scope=@eci/svc-webhooks
