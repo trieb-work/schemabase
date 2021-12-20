@@ -96,9 +96,6 @@ build-webhooks-prod:
 	pnpm prisma migrate deploy --schema=${prismaSchema}
 
 
-tsc:
-	pnpm turbo run tsc --pretty
-
 install:
 	pnpm install
 

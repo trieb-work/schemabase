@@ -56,13 +56,8 @@ const path = require("path");
 const { findSync } = require("./runtime");
 
 const dirname =
-  findSync(
-    process.cwd(),
-    ["pkg/prisma/generated/client", "prisma/generated/client"],
-    ["d"],
-    ["d"],
-    1,
-  )[0] || __dirname;
+  findSync(process.cwd(), ["generated/client", "client"], ["d"], ["d"], 1)[0] ||
+  __dirname;
 /**
  * Enums
  */
@@ -254,7 +249,6 @@ const config = {
   },
   relativeEnvPaths: {
     rootEnvPath: null,
-    schemaEnvPath: "../../../../.env",
   },
   relativePath: "../..",
   clientVersion: "3.6.0",
@@ -282,7 +276,7 @@ Object.assign(exports, Prisma);
 path.join(__dirname, "libquery_engine-debian-openssl-1.1.x.so.node");
 path.join(
   process.cwd(),
-  "./pkg/prisma/generated/client/libquery_engine-debian-openssl-1.1.x.so.node",
+  "./generated/client/libquery_engine-debian-openssl-1.1.x.so.node",
 );
 path.join(__dirname, "schema.prisma");
-path.join(process.cwd(), "./pkg/prisma/generated/client/schema.prisma");
+path.join(process.cwd(), "./generated/client/schema.prisma");

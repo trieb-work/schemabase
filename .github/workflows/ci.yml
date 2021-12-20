@@ -33,7 +33,7 @@ jobs:
         run: make fmt
 
       - name: Check types
-        run: make tsc
+        run: pnpm tsc --pretty
 
       - name: Test (unit)
         run: make test

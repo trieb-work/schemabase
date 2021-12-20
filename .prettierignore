@@ -2,8 +2,6 @@
 
 /dist
 /coverage
-
+**/.next
 # Ignore helm charts
 **/helm-chart/**
-
-.nx

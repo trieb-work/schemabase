@@ -2,6 +2,23 @@
 > @eci/svc-worker@0.0.0 build /home/chronark/github/trieb-work/eci/services/worker
 > esbuild --bundle --platform=node --outfile=dist/main.js ./src/main.ts
 
+ ELIFECYCLE  Command failed with exit code 1.
+✘ [ERROR] Could not resolve "tslib"
+
+    ../../node_modules/.pnpm/@chronark+prefixed-id@0.3.8/node_modules/@chronark/prefixed-id/src/index.js:3:24:
+      3 │ const tslib_1 = require("tslib");
+        ╵                         ~~~~~~~
+
+  You can mark the path "tslib" as external to exclude it from the bundle, which will remove this error. You can also surround this "require" call with a try/catch block to handle this failure at run-time instead of bundle-time.
+
+✘ [ERROR] Could not resolve "tslib"
+
+    ../../node_modules/.pnpm/@chronark+prefixed-id@0.3.8/node_modules/@chronark/prefixed-id/src/lib/encoding.js:4:24:
+      4 │ const tslib_1 = require("tslib");
+        ╵                         ~~~~~~~
+
+  You can mark the path "tslib" as external to exclude it from the bundle, which will remove this error. You can also surround this "require" call with a try/catch block to handle this failure at run-time instead of bundle-time.
+
 ▲ [WARNING] Comparison with -0 using the "===" operator will also match 0
 
     ../../pkg/prisma/generated/client/runtime/index.js:13073:29:
@@ -10,8 +27,4 @@
 
   Floating-point equality is defined such that 0 and -0 are equal, so "x === -0" returns true for both 0 and -0. You need to use "Object.is(x, -0)" instead to test for -0.
 
-1 warning
-
-  dist/main.js  7.6mb ⚠️
-
-⚡ Done in 315ms
+1 warning and 2 errors

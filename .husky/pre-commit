@@ -1,6 +1,6 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-make tsc
-make test
+pnpm tsc --pretty
 pnpm lint-staged
+# pnpm turbo run test
