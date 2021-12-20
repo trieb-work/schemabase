@@ -45,7 +45,7 @@ jobs:
         run: pnpm tsc --pretty
 
       - name: Format
-        run: pnpm prettier --check .
+        run: pnpm prettier --ignore-path .gitignore --check .
 
       - name: Test (unit)
         run: make test
