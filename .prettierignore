@@ -44,8 +44,6 @@ Thumbs.db
 
 
 **/node_modules/
-.nx-cache/
-.nx/
 .turbo
 
 dist/
