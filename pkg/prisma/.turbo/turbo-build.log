@@ -4,7 +4,7 @@
 
 Prisma schema loaded from schema.prisma
 
-✔ Generated Prisma Client (3.6.0 | library) to ./../../node_modules/.pnpm/@prisma+client@3.6.0_prisma@3.6.0/node_modules/@prisma/client in 798ms
+✔ Generated Prisma Client (3.6.0 | library) to ./../../node_modules/.pnpm/@prisma+client@3.6.0_prisma@3.6.0/node_modules/@prisma/client in 1.20s
 You can now start using Prisma Client in your code. Reference: https://pris.ly/d/client
 ```
 import { PrismaClient } from '@prisma/client'

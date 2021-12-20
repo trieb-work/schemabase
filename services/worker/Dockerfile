@@ -5,6 +5,7 @@ RUN npm i -g pnpm
 
 ARG commit_sha
 ENV GIT_COMMIT_SHA=$commit_sha
+ENV NODE_ENV "development"
 
 COPY package.json pnpm-lock.yaml ./
 
@@ -15,6 +16,7 @@ COPY . .
 
 RUN pnpm turbo run build --scope=@eci/svc-worker
 # RUN pnpm --dir=pkg/prisma prisma generate --schema=./pkg/prisma/schema.prisma
+
 
 
 CMD ["node", "services/worker/dist/main.js"]
