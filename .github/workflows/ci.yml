@@ -39,7 +39,7 @@ jobs:
         run: make build
 
       - name: Lint
-        run: make fmt
+        run: pnpm lint
 
       - name: Check types
         run: pnpm tsc --pretty
