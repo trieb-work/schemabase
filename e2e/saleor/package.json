@@ -6,6 +6,8 @@
     "@eci/ids": "workspace:*",
     "@eci/prisma": "workspace:*",
     "@eci/saleor": "workspace:*",
+    "@jest/globals": "^27.4.4",
+    "@swc/jest": "^0.2.15",
     "jest": "^27.4.5",
     "ts-jest": "^27.1.2"
   }

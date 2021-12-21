@@ -47,6 +47,6 @@ Thumbs.db
 
 
 **/node_modules/
-.turbo
 
 dist/
+.next/

@@ -46,20 +46,20 @@ init-core: down build
 	docker-compose up -d eci_webhooks eci_worker kafka kafka-ui
 
 build:
-	pnpm install -r
+	pnpm install
 
-	pnpm turbo run build
+	pnpm build
 
 
 # Run all unit tests
 test: build
-	pnpm turbo run test
+	pnpm test
 
 
 
 rebuild-webhooks: export COMPOSE_DOCKER_CLI_BUILD=1
 rebuild-webhooks: export DOCKER_BUILDKIT=1
-rebuild-webhooks: build db-migrate
+rebuild-webhooks:
 	docker-compose stop eci_webhooks
 	docker-compose up -d eci_db
 	docker-compose build eci_webhooks
@@ -82,8 +82,8 @@ test: export ECI_BASE_URL                 = http://localhost:3000
 test: export ECI_BASE_URL_FROM_CONTAINER  = http://webhooks.eci:3000
 test: export SALEOR_URL                   = http://localhost:8000/graphql/
 test: export SALEOR_URL_FROM_CONTAINER    = http://saleor.eci:8000/graphql/
-test: build
-	pnpm turbo run test
+test: build db-push
+	pnpm test
 
 # DO NOT RUN THIS YOURSELF!
 #
@@ -92,12 +92,12 @@ test: build
 #  Build Command: `make build-webhooks-prod`
 #  Output Directory: `dist/apps/webhooks/.next`
 build-webhooks-prod:
-	pnpm turbo run build
+	pnpm build
 	pnpm prisma migrate deploy --schema=${prismaSchema}
 
 
 install:
-	pnpm install -r
+	pnpm install
 
 
 db-migrate:

@@ -1,28 +1,21 @@
-FROM node:16 as builder
-WORKDIR /eci/worker
+FROM node:16-alpine as build
+WORKDIR /eci
 RUN npm i -g pnpm
 
-ENV NODE_ENV "development"
-
-COPY package.json pnpm-lock.yaml ./
-
-
-RUN pnpm install -r
 COPY . .
+RUN pnpm install -r
 
+RUN pnpm build --filter "@eci/svc-worker..."
 
-RUN pnpm turbo run build --scope=@eci/svc-worker
-
+WORKDIR /eci/services/worker/dist
+RUN cp /eci/pkg/prisma/schema.prisma .
+RUN cp /eci/node_modules/.prisma/client/*.so.node .
 
 
 FROM node:16-alpine
-WORKDIR /eci/worker
-
-
+WORKDIR /eci
 ARG commit_sha
 ENV GIT_COMMIT_SHA=$commit_sha
 
-
-COPY --from=builder /eci/worker/dist/main.js ./main.js
-
-CMD ["node", "./main.js"]
+COPY --from=build /eci/services/worker/dist/* ./
+CMD [ "node", "./main.js" ]

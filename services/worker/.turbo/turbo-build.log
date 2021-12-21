@@ -1,8 +1,0 @@
-
-> @eci/svc-worker@0.0.0 build /home/chronark/github/trieb-work/eci/services/worker
-> esbuild --bundle --platform=node --outfile=dist/main.js ./src/main.ts
-
-
-  dist/main.js  7.6mb ⚠️
-
-⚡ Done in 1754ms

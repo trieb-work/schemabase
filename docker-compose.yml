@@ -25,7 +25,6 @@ services:
     ports:
       - 3000:3000
     environment:
-      VERCEL_TOKEN: ${VERCEL_TOKEN}
       DATABASE_URL: postgres://postgres:postgres@eci_db:5432/postgres
       DATABASE_URL_POOL: postgres://postgres:postgres@eci_db:5432/postgres
       KAFKA_BROKER_URL: kafka:9092
@@ -35,7 +34,7 @@ services:
       ECI_ENV: development
     depends_on:
       - eci_db
-      - redis
+      - kafka
 
   eci_worker:
     image: eci_worker
@@ -58,7 +57,7 @@ services:
 
     depends_on:
       - eci_db
-      - redis
+      - kafka
 
   saleor_api:
     image: registry.gitlab.com/trieb.work/saleor:3.0.0-b.13-triebwork1
@@ -77,7 +76,6 @@ services:
       ELASTIC_APM_ENABLED: "False"
     depends_on:
       - saleor_db
-      - redis
 
   # Required by saleor
   saleor_db:
@@ -89,11 +87,6 @@ services:
       - 15432:5432
     volumes:
       - saleor_db:/var/lib/postgresql
-
-  redis:
-    image: redis
-    ports:
-      - 6379:6379
 
   zookeeper:
     image: docker.io/bitnami/zookeeper:3.7

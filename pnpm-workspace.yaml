@@ -1,4 +1,4 @@
-packages:
-  - "services/*"
-  - "pkg/*"
-  - "e2e/*"
+workspaces:
+  - pkg/*
+  - services/*
+  - e2e/*

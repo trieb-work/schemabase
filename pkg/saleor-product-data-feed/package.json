@@ -1,4 +1,6 @@
 {
+  "name": "@eci/saleor-product-data-feed",
+  "version": "0.0.0",
   "dependencies": {
     "@chronark/env": "^0.1.2"
   }

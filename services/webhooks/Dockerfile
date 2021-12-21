@@ -1,16 +1,19 @@
-
-FROM node:16
+FROM node:16-alpine as build
 WORKDIR /eci
 RUN npm i -g pnpm
-COPY package.json pnpm-lock.yaml ./
-
-RUN pnpm install -r
 
 COPY . .
-RUN pnpm turbo run build --scope=@eci/svc-webhooks
+RUN pnpm install -r
 
+
+
+RUN pnpm build --filter "@eci/svc-webhooks..."
 
 WORKDIR /eci/services/webhooks
-ENV VERCEL_TOKEN ""
-EXPOSE 3000
-CMD pnpm vercel dev --listen=3000 --token=${VERCEL_TOKEN}
+# RUN cp /eci/pkg/prisma/schema.prisma ./dist
+# RUN cp -r /eci/services/webhooks/.vercel ./dist/
+# RUN cp /eci/node_modules/.prisma/client/*.so.node .
+
+
+
+CMD ["pnpm", "start"]

@@ -1,9 +1,10 @@
 {
   "name": "@eci/svc-webhooks",
   "version": "0.0.0",
-  "private": true,
   "scripts": {
-    "build": "find ./api -wholename '**/*.ts' -exec esbuild --outdir=dist/api {} +"
+    "dev": "next",
+    "build": "next build",
+    "start": "next start"
   },
   "dependencies": {
     "@chronark/env": "^0.1.2",
@@ -18,12 +19,17 @@
     "@eci/saleor": "workspace:*",
     "@eci/webhook-context": "workspace:*",
     "@trieb.work/zoho-ts": "^0.3.45",
+    "next": "12.0.7",
+    "next-transpile-modules": "^9.0.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
     "zod": "^3.11.6"
   },
   "devDependencies": {
     "@types/node": "17.0.0",
+    "@types/react": "^17.0.37",
+    "@types/react-dom": "^17.0.11",
     "esbuild": "^0.14.5",
-    "typescript": "^4.5.4",
-    "vercel": "^23.1.2"
+    "typescript": "^4.5.4"
   }
 }

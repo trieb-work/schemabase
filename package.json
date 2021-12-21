@@ -1,56 +1,26 @@
 {
-  "name": "turborepo-basic-shared",
+  "name": "eci",
   "version": "0.0.0",
-  "private": true,
+  "engines": {
+    "node": ">=16",
+    "pnpm": ">=6"
+  },
   "scripts": {
-    "clear": "rm -rf ./**/node_modules ./**/dist ./**/.next ./**/.turbo",
-    "build": "turbo run build",
-    "dev": "turbo run dev --parallel",
-    "lint": "turbo run lint",
-    "test": "jest -i"
+    "build": "pnpm -r build",
+    "test": "jest ./pkg/**/*.test.ts",
+    "test:e2e": "jest ./e2e/**/*.test.ts"
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^15.0.0",
-    "@swc/core": "^1.2.120",
-    "@swc/jest": "^0.2.15",
+    "@prisma/client": "^3.6.0",
+    "@swc/core": "^1.2.121",
     "@trieb.work/prettier-base": "^0.1.2",
     "@types/jest": "^27.0.3",
     "commitlint": "^15.0.0",
-    "esbuild": "^0.14.5",
     "jest": "^27.4.5",
     "lint-staged": "^12.1.3",
     "prettier": "^2.5.1",
-    "turbo": "latest"
-  },
-  "turbo": {
-    "globalDepencencies": [
-      "./env*",
-      "tsconfig.json",
-      "package.json",
-      "jest.config.ts"
-    ],
-    "pipeline": {
-      "build": {
-        "dependsOn": [
-          "^build"
-        ],
-        "outputs": [
-          "dist/**",
-          ".next/**"
-        ]
-      },
-      "lint": {
-        "outputs": []
-      },
-      "dev": {
-        "cache": false
-      },
-      "test": {
-        "dependsOn": [
-          "build"
-        ]
-      }
-    }
+    "prisma": "^3.6.0"
   },
   "lint-staged": {
     "*.{ts,tsx,js,html}": [

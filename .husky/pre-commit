@@ -3,4 +3,4 @@
 
 pnpm tsc --pretty
 pnpm lint-staged
-# pnpm turbo run test
+
