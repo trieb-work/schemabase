@@ -1,6 +1,9 @@
 {
   "name": "@eci/e2e-bulkorders",
   "version": "0.0.0",
+  "scripts": {
+    "test:e2e": "jest"
+  },
   "devDependencies": {
     "@eci/http": "workspace:*",
     "@eci/ids": "workspace:*",
