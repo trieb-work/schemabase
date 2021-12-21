@@ -35,7 +35,6 @@ importers:
       '@eci/prisma': workspace:*
       '@eci/saleor': workspace:*
       '@jest/globals': ^27.4.4
-      '@swc/jest': ^0.2.15
       '@trieb.work/zoho-ts': ^0.3.45
       '@types/faker': ^5.5.9
       dotenv: ^10.0.0
@@ -55,7 +54,6 @@ importers:
       '@eci/prisma': link:../../pkg/prisma
       '@eci/saleor': link:../../pkg/saleor
       '@jest/globals': 27.4.4
-      '@swc/jest': 0.2.15_@swc+core@1.2.121
       dotenv: 10.0.0
       faker: 5.5.3
       jest: 27.4.5
@@ -68,8 +66,6 @@ importers:
       '@eci/prisma': workspace:*
       '@eci/saleor': workspace:*
       '@jest/globals': ^27.4.4
-      '@swc/jest': ^0.2.15
-      jest: ^27.4.5
       ts-jest: ^27.1.2
     devDependencies:
       '@chronark/env': 0.1.2
@@ -77,8 +73,6 @@ importers:
       '@eci/prisma': link:../../pkg/prisma
       '@eci/saleor': link:../../pkg/saleor
       '@jest/globals': 27.4.4
-      '@swc/jest': 0.2.15_@swc+core@1.2.121
-      jest: 27.4.5
       ts-jest: 27.1.2_@types+jest@27.0.3+jest@27.4.5
 
   e2e/saleor-product-data-feed:

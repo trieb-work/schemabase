@@ -6,6 +6,7 @@
     "@eci/ids": "workspace:*",
     "@eci/prisma": "workspace:*",
     "@eci/saleor": "workspace:*",
+    "@jest/globals": "^27.4.4",
     "dotenv": "^10.0.0",
     "faker": "^5.5.3",
     "jest": "^27.4.5",
