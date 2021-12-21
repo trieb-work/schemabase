@@ -47,8 +47,8 @@ jobs:
       - name: Format
         run: pnpm prettier --check .
 
-      - name: Test (unit)
-        run: pnpm test:unit
+      # - name: Test (unit)
+      #   run: pnpm test:unit
 
   build:
     name: Build
