@@ -171,6 +171,17 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 16
+      - name: Cache pnpm modules
+        uses: actions/cache@v2
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-
+
+      - uses: pnpm/action-setup@v2.0.1
+        with:
+          version: latest
 
       # load docker images from build jobs
       - name: Load images from artifacts
@@ -189,7 +200,7 @@ jobs:
           key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm.lock') }}
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --non-interactive
+        run: pnpm install
 
         # Necesarry to test against the predefined saleor versions
       - name: Use docker-compose ci config
