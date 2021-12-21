@@ -202,13 +202,13 @@ jobs:
         run: make migrate-saleor
 
       - name: Migrate eci schema
-        run: pnpm prisma migrate deploy --schema=./libs/data-access/prisma/schema.prisma
+        run: pnpm prisma migrate deploy --schema=./pkg/prisma/schema.prisma
 
       - name: Generate prisma client
-        run: pnpm nx build data-access-prisma
+        run: pnpm build --filter "@eci/prisma..."
 
       - name: Test (e2e)
-        run: pnpm nx run-many --target=e2e --all -i
+        run: pnpm test:e2e
 
       - run: docker-compose logs
         if: always()
