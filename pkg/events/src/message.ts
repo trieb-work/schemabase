@@ -1,4 +1,4 @@
-import { id } from "@eci/ids";
+import { id } from "@eci/pkg/ids";
 
 // /**
 //  * Additional meta information about the message

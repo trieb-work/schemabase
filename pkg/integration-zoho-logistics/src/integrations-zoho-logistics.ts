@@ -1,6 +1,6 @@
 import { ZohoClientInstance } from "@trieb.work/zoho-ts";
-import { ILogger } from "@eci/logger";
-import { HttpError } from "@eci/errors";
+import { ILogger } from "@eci/pkg/logger";
+import { HttpError } from "@eci/pkg/errors";
 
 export type Return = {
   creation_time: string;

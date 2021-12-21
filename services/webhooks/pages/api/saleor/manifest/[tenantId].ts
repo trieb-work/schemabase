@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { env } from "@chronark/env";
-import { handleWebhook, Webhook } from "@eci/http";
+import { handleWebhook, Webhook } from "@eci/pkg/http";
 const requestValidation = z.object({
   query: z.object({
     tenantId: z.string(),

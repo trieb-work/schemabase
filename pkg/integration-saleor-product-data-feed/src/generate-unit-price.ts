@@ -1,4 +1,4 @@
-import { Weight } from "@eci/saleor";
+import { Weight } from "@eci/pkg/saleor";
 
 export const generateUnitPrice = (
   variantWeight: Weight,

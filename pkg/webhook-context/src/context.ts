@@ -1,5 +1,5 @@
-import { PrismaClient } from "@eci/prisma";
-import { ILogger } from "@eci/logger";
+import { PrismaClient } from "@eci/pkg/prisma";
+import { ILogger } from "@eci/pkg/logger";
 
 export type Context = {
   trace: {

@@ -3,12 +3,12 @@ import {
   extendContext,
   newSaleorClient,
   authorizeIntegration,
-} from "@eci/webhook-context";
-import { ProductDataFeedGenerator } from "@eci/integration-saleor-product-data-feed";
+} from "@eci/pkg/webhook-context";
+import { ProductDataFeedGenerator } from "@eci/pkg/integration-saleor-product-data-feed";
 import { createHash } from "crypto";
 import { z } from "zod";
-import { HttpError } from "@eci/errors";
-import { handleWebhook, Webhook } from "@eci/http";
+import { HttpError } from "@eci/pkg/errors";
+import { handleWebhook, Webhook } from "@eci/pkg/http";
 
 const requestValidation = z.object({
   query: z.object({

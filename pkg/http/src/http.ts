@@ -1,6 +1,6 @@
 // eslint-disable-next-line no-restricted-imports
 import axios, { AxiosError } from "axios";
-import { ECI_TRACE_HEADER } from "@eci/constants";
+import { ECI_TRACE_HEADER } from "@eci/pkg/constants";
 
 export type Request = {
   method: "GET" | "POST" | "PUT" | "DELETE";

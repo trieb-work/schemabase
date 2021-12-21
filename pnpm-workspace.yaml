@@ -1,4 +1,0 @@
-workspaces:
-  - pkg/*
-  - services/*
-  - e2e/*

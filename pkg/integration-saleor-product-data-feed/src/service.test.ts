@@ -1,8 +1,8 @@
 import { beforeEach, describe, it, jest, expect } from "@jest/globals";
 import { ProductDataFeedGenerator } from "./service";
-import { SaleorClient, WeightUnitsEnum } from "@eci/saleor";
+import { SaleorClient, WeightUnitsEnum } from "@eci/pkg/saleor";
 import { FeedVariant } from "./types";
-import { NoopLogger } from "@eci/logger";
+import { NoopLogger } from "@eci/pkg/logger";
 
 beforeEach(() => {
   jest.clearAllMocks();

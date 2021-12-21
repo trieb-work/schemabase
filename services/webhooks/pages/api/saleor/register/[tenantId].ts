@@ -2,13 +2,13 @@ import {
   extendContext,
   newSaleorClient,
   setupPrisma,
-} from "@eci/webhook-context";
+} from "@eci/pkg/webhook-context";
 import { z } from "zod";
-import { id } from "@eci/ids";
+import { id } from "@eci/pkg/ids";
 import { env } from "@chronark/env";
-import { handleWebhook, Webhook } from "@eci/http";
-import { HttpError } from "@eci/errors";
-import { WebhookEventTypeEnum } from "@eci/saleor";
+import { handleWebhook, Webhook } from "@eci/pkg/http";
+import { HttpError } from "@eci/pkg/errors";
+import { WebhookEventTypeEnum } from "@eci/pkg/saleor";
 
 const requestValidation = z.object({
   query: z.object({

@@ -1,12 +1,12 @@
 import { z } from "zod";
-import { handleWebhook, Webhook } from "@eci/http";
+import { handleWebhook, Webhook } from "@eci/pkg/http";
 import {
   authorizeIntegration,
   extendContext,
   setupPrisma,
-} from "@eci/webhook-context";
-import { HttpError } from "@eci/errors";
-import { LogisticStats } from "@eci/integration-zoho-logistics";
+} from "@eci/pkg/webhook-context";
+import { HttpError } from "@eci/pkg/errors";
+import { LogisticStats } from "@eci/pkg/integration-zoho-logistics";
 import { ZohoClientInstance } from "@trieb.work/zoho-ts";
 
 const requestValidation = z.object({

@@ -1,352 +1,90 @@
 lockfileVersion: 5.3
 
-importers:
+specifiers:
+  '@chronark/env': ^0.1.2
+  '@chronark/prefixed-id': ^0.3.8
+  '@commitlint/config-conventional': ^15.0.0
+  '@editorjs/editorjs': ^2.22.2
+  '@elastic/ecs-winston-format': ^1.3.1
+  '@jest/globals': ^27.4.4
+  '@prisma/client': ^3.7.0
+  '@swc/core': ^1.2.121
+  '@swc/jest': ^0.2.15
+  '@trieb.work/prettier-base': ^0.1.2
+  '@trieb.work/zoho-ts': ^0.3.45
+  '@types/faker': ^5.5.9
+  '@types/html-to-text': ^8.0.1
+  '@types/jest': ^27.0.3
+  '@types/node': ^17.0.2
+  '@types/objects-to-csv': ^1.3.1
+  '@types/react': ^17.0.37
+  '@types/react-dom': ^17.0.11
+  axios: ^0.24.0
+  commitlint: ^15.0.0
+  dotenv: ^10.0.0
+  esbuild: ^0.14.7
+  faker: ^5.5.3
+  graphql: ^16.2.0
+  graphql-request: ^3.7.0
+  graphql-tag: ^2.12.6
+  html-to-text: ^8.1.0
+  jest: ^27.4.5
+  kafkajs: ^1.15.0
+  lint-staged: ^12.1.3
+  next: ^12.0.7
+  objects-to-csv: ^1.3.6
+  prettier: ^2.5.1
+  prisma: ^3.7.0
+  react: ^17.0.2
+  react-dom: ^17.0.2
+  ts-jest: ^27.1.2
+  winston: ^3.3.3
+  winston-elasticsearch: ^0.16.0
+  zod: ^3.11.6
 
-  .:
-    specifiers:
-      '@commitlint/config-conventional': ^15.0.0
-      '@prisma/client': ^3.7.0
-      '@swc/core': ^1.2.121
-      '@trieb.work/prettier-base': ^0.1.2
-      '@types/jest': ^27.0.3
-      commitlint: ^15.0.0
-      jest: ^27.4.5
-      lint-staged: ^12.1.3
-      prettier: ^2.5.1
-      prisma: ^3.7.0
-    devDependencies:
-      '@commitlint/config-conventional': 15.0.0
-      '@prisma/client': 3.7.0_prisma@3.7.0
-      '@swc/core': 1.2.121
-      '@trieb.work/prettier-base': 0.1.2
-      '@types/jest': 27.0.3
-      commitlint: 15.0.0
-      jest: 27.4.5
-      lint-staged: 12.1.3
-      prettier: 2.5.1
-      prisma: 3.7.0
+dependencies:
+  '@chronark/env': 0.1.2
+  '@chronark/prefixed-id': 0.3.8
+  '@editorjs/editorjs': 2.22.2
+  '@elastic/ecs-winston-format': 1.3.1
+  '@trieb.work/zoho-ts': 0.3.45
+  axios: 0.24.0
+  graphql: 16.2.0
+  graphql-request: 3.7.0_graphql@16.2.0
+  graphql-tag: 2.12.6_graphql@16.2.0
+  html-to-text: 8.1.0
+  kafkajs: 1.15.0
+  next: 12.0.7_react-dom@17.0.2+react@17.0.2
+  objects-to-csv: 1.3.6
+  react: 17.0.2
+  react-dom: 17.0.2_react@17.0.2
+  winston: 3.3.3
+  winston-elasticsearch: 0.16.0
+  zod: 3.11.6
 
-  e2e/bulkorders:
-    specifiers:
-      '@chronark/env': ^0.1.2
-      '@eci/http': workspace:*
-      '@eci/ids': workspace:*
-      '@eci/integration-bulkorders': workspace:*
-      '@eci/prisma': workspace:*
-      '@eci/saleor': workspace:*
-      '@jest/globals': ^27.4.4
-      '@trieb.work/zoho-ts': ^0.3.45
-      '@types/faker': ^5.5.9
-      dotenv: ^10.0.0
-      faker: ^5.5.3
-      jest: ^27.4.5
-      typescript: ^4.5.4
-      zod: ^3.11.6
-    dependencies:
-      '@chronark/env': 0.1.2
-      '@eci/integration-bulkorders': link:../../pkg/integration-bulkorders
-      '@trieb.work/zoho-ts': 0.3.45
-      '@types/faker': 5.5.9
-      zod: 3.11.6
-    devDependencies:
-      '@eci/http': link:../../pkg/http
-      '@eci/ids': link:../../pkg/ids
-      '@eci/prisma': link:../../pkg/prisma
-      '@eci/saleor': link:../../pkg/saleor
-      '@jest/globals': 27.4.4
-      dotenv: 10.0.0
-      faker: 5.5.3
-      jest: 27.4.5
-      typescript: 4.5.4
-
-  e2e/saleor:
-    specifiers:
-      '@chronark/env': ^0.1.2
-      '@eci/ids': workspace:*
-      '@eci/prisma': workspace:*
-      '@eci/saleor': workspace:*
-      '@jest/globals': ^27.4.4
-      ts-jest: ^27.1.2
-    devDependencies:
-      '@chronark/env': 0.1.2
-      '@eci/ids': link:../../pkg/ids
-      '@eci/prisma': link:../../pkg/prisma
-      '@eci/saleor': link:../../pkg/saleor
-      '@jest/globals': 27.4.4
-      ts-jest: 27.1.2_@types+jest@27.0.3+jest@27.4.5
-
-  e2e/saleor-product-data-feed:
-    specifiers:
-      '@chronark/env': ^0.1.2
-      '@eci/http': workspace:*
-      '@eci/ids': workspace:*
-      '@eci/prisma': workspace:*
-      '@eci/saleor': workspace:*
-      '@jest/globals': ^27.4.4
-      '@swc/jest': ^0.2.15
-      jest: ^27.4.5
-      ts-jest: ^27.1.2
-    dependencies:
-      '@chronark/env': 0.1.2
-    devDependencies:
-      '@eci/http': link:../../pkg/http
-      '@eci/ids': link:../../pkg/ids
-      '@eci/prisma': link:../../pkg/prisma
-      '@eci/saleor': link:../../pkg/saleor
-      '@jest/globals': 27.4.4
-      '@swc/jest': 0.2.15_@swc+core@1.2.121
-      jest: 27.4.5
-      ts-jest: 27.1.2_@types+jest@27.0.3+jest@27.4.5
-
-  pkg/constants:
-    specifiers: {}
-
-  pkg/errors:
-    specifiers:
-      '@types/node': ^17.0.0
-      typescript: ^4.5.4
-    devDependencies:
-      '@types/node': 17.0.2
-      typescript: 4.5.4
-
-  pkg/events:
-    specifiers:
-      '@chronark/env': ^0.1.2
-      '@eci/errors': workspace:*
-      '@eci/ids': workspace:*
-      '@eci/logger': workspace:*
-      '@jest/globals': ^27.4.4
-      '@types/node': ^17.0.0
-      jest: ^27.4.5
-      kafkajs: ^1.15.0
-      typescript: ^4.5.4
-    dependencies:
-      '@chronark/env': 0.1.2
-      '@eci/errors': link:../errors
-      '@eci/ids': link:../ids
-      '@eci/logger': link:../logger
-      kafkajs: 1.15.0
-    devDependencies:
-      '@jest/globals': 27.4.4
-      '@types/node': 17.0.2
-      jest: 27.4.5
-      typescript: 4.5.4
-
-  pkg/hash:
-    specifiers:
-      typescript: ^4.5.4
-    devDependencies:
-      typescript: 4.5.4
-
-  pkg/http:
-    specifiers:
-      '@eci/constants': workspace:*
-      '@eci/errors': workspace:*
-      '@eci/ids': workspace:*
-      '@eci/logger': workspace:*
-      '@eci/webhook-context': workspace:*
-      axios: ^0.24.0
-      next: 12.0.7
-      zod: ^3.11.6
-    dependencies:
-      '@eci/constants': link:../constants
-      '@eci/errors': link:../errors
-      '@eci/ids': link:../ids
-      '@eci/logger': link:../logger
-      '@eci/webhook-context': link:../webhook-context
-      axios: 0.24.0
-      next: 12.0.7
-      zod: 3.11.6
-
-  pkg/ids:
-    specifiers:
-      '@chronark/prefixed-id': ^0.3.8
-    dependencies:
-      '@chronark/prefixed-id': 0.3.8
-
-  pkg/integration-bulkorders:
-    specifiers:
-      '@eci/hash': workspace:*
-      '@eci/ids': workspace:*
-      '@eci/logger': workspace:*
-      '@trieb.work/zoho-ts': ^0.3.45
-      zod: ^3.11.6
-    dependencies:
-      '@eci/hash': link:../hash
-      '@eci/ids': link:../ids
-      '@eci/logger': link:../logger
-      '@trieb.work/zoho-ts': 0.3.45
-      zod: 3.11.6
-
-  pkg/integration-saleor-product-data-feed:
-    specifiers:
-      '@eci/logger': workspace:*
-      '@eci/saleor': workspace:*
-      '@editorjs/editorjs': ^2.22.2
-      '@jest/globals': ^27.4.4
-      '@types/html-to-text': ^8.0.1
-      '@types/objects-to-csv': ^1.3.1
-      editorjs-html: ^3.4.2
-      html-to-text: ^8.1.0
-      objects-to-csv: ^1.3.6
-    dependencies:
-      '@eci/logger': link:../logger
-      '@eci/saleor': link:../saleor
-      '@editorjs/editorjs': 2.22.2
-      editorjs-html: 3.4.2
-      html-to-text: 8.1.0
-      objects-to-csv: 1.3.6
-    devDependencies:
-      '@jest/globals': 27.4.4
-      '@types/html-to-text': 8.0.1
-      '@types/objects-to-csv': 1.3.1
-
-  pkg/integration-zoho-logistics:
-    specifiers:
-      '@eci/errors': workspace:*
-      '@eci/logger': workspace:*
-      '@trieb.work/zoho-ts': ^0.3.45
-    dependencies:
-      '@eci/errors': link:../errors
-      '@eci/logger': link:../logger
-      '@trieb.work/zoho-ts': 0.3.45
-
-  pkg/logger:
-    specifiers:
-      '@chronark/env': ^0.1.2
-      '@elastic/ecs-winston-format': ^1.3.1
-      winston: ^3.3.3
-      winston-elasticsearch: ^0.16.0
-    dependencies:
-      '@chronark/env': 0.1.2
-      '@elastic/ecs-winston-format': 1.3.1
-      winston: 3.3.3
-      winston-elasticsearch: 0.16.0
-
-  pkg/prisma:
-    specifiers:
-      '@chronark/env': ^0.1.2
-      '@prisma/client': ^3.6.0
-      prisma: ^3.6.0
-    dependencies:
-      '@chronark/env': 0.1.2
-      '@prisma/client': 3.7.0_prisma@3.7.0
-    devDependencies:
-      prisma: 3.7.0
-
-  pkg/saleor:
-    specifiers:
-      '@chronark/env': ^0.1.2
-      '@eci/constants': workspace:*
-      graphql: ^16.2.0
-      graphql-request: ^3.7.0
-      graphql-tag: ^2.12.6
-      zod: ^3.11.6
-    dependencies:
-      '@chronark/env': 0.1.2
-      '@eci/constants': link:../constants
-      graphql: 16.2.0
-      graphql-request: 3.7.0_graphql@16.2.0
-      graphql-tag: 2.12.6_graphql@16.2.0
-      zod: 3.11.6
-
-  pkg/saleor-product-data-feed:
-    specifiers:
-      '@chronark/env': ^0.1.2
-    dependencies:
-      '@chronark/env': 0.1.2
-
-  pkg/webhook-context:
-    specifiers:
-      '@chronark/env': ^0.1.2
-      '@eci/errors': workspace:*
-      '@eci/logger': workspace:*
-      '@eci/prisma': workspace:*
-      '@eci/saleor': workspace:*
-    dependencies:
-      '@chronark/env': 0.1.2
-      '@eci/errors': link:../errors
-      '@eci/logger': link:../logger
-      '@eci/prisma': link:../prisma
-      '@eci/saleor': link:../saleor
-
-  services/webhooks:
-    specifiers:
-      '@chronark/env': ^0.1.2
-      '@eci/constants': workspace:*
-      '@eci/errors': workspace:*
-      '@eci/events': workspace:*
-      '@eci/http': workspace:*
-      '@eci/ids': workspace:*
-      '@eci/integration-saleor-product-data-feed': workspace:*
-      '@eci/integration-zoho-logistics': workspace:*
-      '@eci/logger': workspace:*
-      '@eci/saleor': workspace:*
-      '@eci/webhook-context': workspace:*
-      '@trieb.work/zoho-ts': ^0.3.45
-      '@types/node': 17.0.0
-      '@types/react': ^17.0.37
-      '@types/react-dom': ^17.0.11
-      esbuild: ^0.14.5
-      next: 12.0.7
-      next-transpile-modules: ^9.0.0
-      react: ^17.0.2
-      react-dom: ^17.0.2
-      typescript: ^4.5.4
-      zod: ^3.11.6
-    dependencies:
-      '@chronark/env': 0.1.2
-      '@eci/constants': link:../../pkg/constants
-      '@eci/errors': link:../../pkg/errors
-      '@eci/events': link:../../pkg/events
-      '@eci/http': link:../../pkg/http
-      '@eci/ids': link:../../pkg/ids
-      '@eci/integration-saleor-product-data-feed': link:../../pkg/integration-saleor-product-data-feed
-      '@eci/integration-zoho-logistics': link:../../pkg/integration-zoho-logistics
-      '@eci/logger': link:../../pkg/logger
-      '@eci/saleor': link:../../pkg/saleor
-      '@eci/webhook-context': link:../../pkg/webhook-context
-      '@trieb.work/zoho-ts': 0.3.45
-      next: 12.0.7_react-dom@17.0.2+react@17.0.2
-      next-transpile-modules: 9.0.0
-      react: 17.0.2
-      react-dom: 17.0.2_react@17.0.2
-      zod: 3.11.6
-    devDependencies:
-      '@types/node': 17.0.0
-      '@types/react': 17.0.37
-      '@types/react-dom': 17.0.11
-      esbuild: 0.14.6
-      typescript: 4.5.4
-
-  services/worker:
-    specifiers:
-      '@chronark/env': ^0.1.2
-      '@eci/errors': workspace:*
-      '@eci/events': workspace:*
-      '@eci/integration-bulkorders': workspace:*
-      '@eci/logger': workspace:*
-      '@eci/prisma': workspace:*
-      '@prisma/client': ^3.6.0
-      '@trieb.work/zoho-ts': ^0.3.45
-      '@types/node': 17.0.0
-      esbuild: ^0.14.6
-      prisma: ^3.6.0
-      typescript: ^4.5.4
-    dependencies:
-      '@chronark/env': 0.1.2
-      '@eci/errors': link:../../pkg/errors
-      '@eci/events': link:../../pkg/events
-      '@eci/integration-bulkorders': link:../../pkg/integration-bulkorders
-      '@eci/logger': link:../../pkg/logger
-      '@eci/prisma': link:../../pkg/prisma
-      '@prisma/client': 3.7.0_prisma@3.7.0
-      '@trieb.work/zoho-ts': 0.3.45
-      prisma: 3.7.0
-    devDependencies:
-      '@types/node': 17.0.0
-      esbuild: 0.14.6
-      typescript: 4.5.4
+devDependencies:
+  '@commitlint/config-conventional': 15.0.0
+  '@jest/globals': 27.4.4
+  '@prisma/client': 3.7.0_prisma@3.7.0
+  '@swc/core': 1.2.121
+  '@swc/jest': 0.2.15_@swc+core@1.2.121
+  '@trieb.work/prettier-base': 0.1.2
+  '@types/faker': 5.5.9
+  '@types/html-to-text': 8.0.1
+  '@types/jest': 27.0.3
+  '@types/node': 17.0.2
+  '@types/objects-to-csv': 1.3.1
+  '@types/react': 17.0.37
+  '@types/react-dom': 17.0.11
+  commitlint: 15.0.0
+  dotenv: 10.0.0
+  esbuild: 0.14.7
+  faker: 5.5.3
+  jest: 27.4.5
+  lint-staged: 12.1.3
+  prettier: 2.5.1
+  prisma: 3.7.0
+  ts-jest: 27.1.2_7b26b756366d6344eb2b257922b0ebbe
 
 packages:
 
@@ -649,7 +387,7 @@ packages:
     resolution: {integrity: sha512-99catp6bHCaxr4sJ/DbTGgHS4+Rs2RVd2g7iOap6SLGPDknRK9ztKNsE/Fg6QhSeh1FGE5f6gHGQmvvn3I3xhw==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      regenerator-runtime: 0.13.4
+      regenerator-runtime: 0.13.9
     dev: false
 
   /@babel/runtime/7.16.5:
@@ -710,6 +448,7 @@ packages:
     resolution: {integrity: sha512-FjOKefTLRmP/ibopZixbL/W8VbaXBUF3CMoq7fK6ls9v9VBpMYvE9gVAg6Sb5QhGE3eEIYtxViXm/V7e6VCt8A==}
     dependencies:
       deno.ns: 0.7.3
+    dev: false
 
   /@chronark/prefixed-id/0.3.8:
     resolution: {integrity: sha512-2OFlFLzDdZ6zVDgBT04F9V0xJylgbYbjqOBKgmXCpdb5+um3b3r4ze14Jlsw4SOVEEIRhYIwjEnDzb7FqCKASQ==}
@@ -1188,29 +927,6 @@ packages:
     resolution: {integrity: sha512-sA8LAMMlmcspIZw/jeQuJTyA3uGrqOhTBaQE+G9u6DPohqrBFRkaz7RzzJeqXkUXw600occsIBknSjyVd1R67A==}
     dev: false
 
-  /@next/react-dev-overlay/12.0.7:
-    resolution: {integrity: sha512-dSQLgpZ5uzyittFtIHlJCLAbc0LlMFbRBSYuGsIlrtGyjYN+WMcnz8lK48VLxNPFGuB/hEzkWV4TW5Zu75+Fzg==}
-    peerDependencies:
-      react: ^17.0.2
-      react-dom: ^17.0.2
-      webpack: ^4 || ^5
-    peerDependenciesMeta:
-      webpack:
-        optional: true
-    dependencies:
-      '@babel/code-frame': 7.12.11
-      anser: 1.4.9
-      chalk: 4.0.0
-      classnames: 2.2.6
-      css.escape: 1.5.1
-      data-uri-to-buffer: 3.0.1
-      platform: 1.3.6
-      shell-quote: 1.7.3
-      source-map: 0.8.0-beta.0
-      stacktrace-parser: 0.1.10
-      strip-ansi: 6.0.1
-    dev: false
-
   /@next/react-dev-overlay/12.0.7_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-dSQLgpZ5uzyittFtIHlJCLAbc0LlMFbRBSYuGsIlrtGyjYN+WMcnz8lK48VLxNPFGuB/hEzkWV4TW5Zu75+Fzg==}
     peerDependencies:
@@ -1365,13 +1081,16 @@ packages:
     dependencies:
       '@prisma/engines-version': 3.7.0-31.8746e055198f517658c08a0c426c7eec87f5a85f
       prisma: 3.7.0
+    dev: true
 
   /@prisma/engines-version/3.7.0-31.8746e055198f517658c08a0c426c7eec87f5a85f:
     resolution: {integrity: sha512-+qx2b+HK7BKF4VCa0LZ/t1QCXsu6SmvhUQyJkOD2aPpmOzket4fEnSKQZSB0i5tl7rwCDsvAiSeK8o7rf+yvwg==}
+    dev: true
 
   /@prisma/engines/3.7.0-31.8746e055198f517658c08a0c426c7eec87f5a85f:
     resolution: {integrity: sha512-W549ub5NlgexNhR8EFstA/UwAWq3Zq0w9aNkraqsozVCt2CsX+lK4TK7IW5OZVSnxHwRjrgEAt3r9yPy8nZQRg==}
     requiresBuild: true
+    dev: true
 
   /@selderee/plugin-htmlparser2/0.6.0:
     resolution: {integrity: sha512-J3jpy002TyBjd4N/p6s+s90eX42H2eRhK3SbsZuvTDv977/E8p2U3zikdiehyJja66do7FlxLomZLPlvl2/xaA==}
@@ -1604,7 +1323,7 @@ packages:
 
   /@types/faker/5.5.9:
     resolution: {integrity: sha512-uCx6mP3UY5SIO14XlspxsGjgaemrxpssJI0Ol+GfhxtcKpv9pgRZYsS4eeKeHVLje6Qtc8lGszuBI461+gVZBA==}
-    dev: false
+    dev: true
 
   /@types/graceful-fs/4.1.5:
     resolution: {integrity: sha512-anKkLmZZ+xm4p8JWBf4hElkM4XR+EZeA2M9BAkkTldmcyDY4mbdIJnRghDJH3Ov5ooY7/UAoENtmdMSkaAd7Cw==}
@@ -1641,10 +1360,6 @@ packages:
 
   /@types/minimist/1.2.2:
     resolution: {integrity: sha512-jhuKLIRrhvCPLqwPcx6INqmKeiA5EWrsCOPhrlFSrbrmU4ZMPjj5Ul/oLCMDO98XRUIwVm78xICz4EPCektzeQ==}
-    dev: true
-
-  /@types/node/17.0.0:
-    resolution: {integrity: sha512-eMhwJXc931Ihh4tkU+Y7GiLzT/y/DBNpNtr4yU9O2w3SYBsr9NaOPhQlLKRmoWtI54uNwuo0IOUFQjVOTZYRvw==}
     dev: true
 
   /@types/node/17.0.2:
@@ -2151,9 +1866,9 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001291
+      caniuse-lite: 1.0.30001292
       colorette: 1.4.0
-      electron-to-chromium: 1.4.25
+      electron-to-chromium: 1.4.26
       escalade: 3.1.1
       node-releases: 1.1.77
     dev: false
@@ -2163,8 +1878,8 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001291
-      electron-to-chromium: 1.4.25
+      caniuse-lite: 1.0.30001292
+      electron-to-chromium: 1.4.26
       escalade: 3.1.1
       node-releases: 2.0.1
       picocolors: 1.0.0
@@ -2238,8 +1953,8 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  /caniuse-lite/1.0.30001291:
-    resolution: {integrity: sha512-roMV5V0HNGgJ88s42eE70sstqGW/gwFndosYrikHthw98N5tLnOTxFqMLQjZVRxTWFlJ4rn+MsgXrR7MDPY4jA==}
+  /caniuse-lite/1.0.30001292:
+    resolution: {integrity: sha512-jnT4Tq0Q4ma+6nncYQVe7d73kmDmE9C3OGTx3MvW7lBM/eY1S1DZTMBON7dqV481RhNiS5OxD7k9JQvmDOTirw==}
 
   /chalk/2.4.2:
     resolution: {integrity: sha512-Mti+f9lpJNcwF4tWV8/OrTTtF1gZi+f8FqlyAdouralcFWFQWF2+NgCHShjkCb+IFBLq9buZwE1xckQU4peSuQ==}
@@ -2597,7 +2312,7 @@ packages:
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      caniuse-lite: 1.0.30001291
+      caniuse-lite: 1.0.30001292
       postcss: 8.2.15
     dev: false
 
@@ -2753,6 +2468,7 @@ packages:
     dependencies:
       undici: 4.12.0
       which: 2.0.2
+    dev: false
 
   /depd/1.1.2:
     resolution: {integrity: sha1-m81S4UwJd2PnSbJ0xDRu0uVgtak=}
@@ -2844,10 +2560,6 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  /editorjs-html/3.4.2:
-    resolution: {integrity: sha512-Gy8FV4oHMvnPDXLsdpZYW0Dgjaagff9bPd28/WW9aFdy87FvktJxQz8H+NKpxiGcGoNY27MmjFffurK2yhXjEg==}
-    dev: false
-
   /elastic-apm-http-client/10.3.0:
     resolution: {integrity: sha512-BAqB7k5JA/x09L8BVj04WRoknRptmW2rLAoHQVrPvPhUm/IgNz63wPfiBuhWVE//Hl7xEpURO5pMV6az0UArkA==}
     engines: {node: ^8.6.0 || 10 || >=12}
@@ -2906,8 +2618,8 @@ packages:
     dev: false
     optional: true
 
-  /electron-to-chromium/1.4.25:
-    resolution: {integrity: sha512-bTwub9Y/76EiNmfaiJih+hAy6xn7Ns95S4KvI2NuKNOz8TEEKKQUu44xuy0PYMudjM9zdjKRS1bitsUvHTfuUg==}
+  /electron-to-chromium/1.4.26:
+    resolution: {integrity: sha512-cA1YwlRzO6TGp7yd3+KAqh9Tt6Z4CuuKqsAJP6uF/H5MQryjAGDhMhnY5cEXo8MaRCczpzSBhMPdqRIodkbZYw==}
 
   /elliptic/6.5.4:
     resolution: {integrity: sha512-iLhC6ULemrljPZb+QutR5TQGB+pdW6KGD5RSegS+8sorOZT+rdQFbsQFJgvN3eRqNALqJer4oQ16YvJHlU8hzQ==}
@@ -2959,14 +2671,6 @@ packages:
       once: 1.4.0
     dev: false
     optional: true
-
-  /enhanced-resolve/5.8.3:
-    resolution: {integrity: sha512-EGAbGvH7j7Xt2nc0E7D99La1OiEs8LnyimkRgwExpUMScN6O+3x9tIWs7PLQZVNx4YD+00skHXPXi1yQHpAmZA==}
-    engines: {node: '>=10.13.0'}
-    dependencies:
-      graceful-fs: 4.2.8
-      tapable: 2.2.1
-    dev: false
 
   /entities/2.2.0:
     resolution: {integrity: sha512-p92if5Nz619I0w+akJrLZH0MX0Pb5DX39XOwQTtXSdQQOaYH03S1uIQp4mhOZtAXrxq4ViO67YTiLBo2638o9A==}
@@ -3029,164 +2733,164 @@ packages:
     resolution: {integrity: sha1-wsNYJlYkfDnqEHyx5mUrb58kUjw=}
     dev: false
 
-  /esbuild-android-arm64/0.14.6:
-    resolution: {integrity: sha512-s38gxoqFnr42VHDoN5jkvUFJpqOHf2IEki3FKeu/AZzU+FSw6yngUjNBtmkCmBfHvfCEGBCkuqciJTwfwE+YhA==}
+  /esbuild-android-arm64/0.14.7:
+    resolution: {integrity: sha512-9/Q1NC4JErvsXzJKti0NHt+vzKjZOgPIjX/e6kkuCzgfT/GcO3FVBcGIv4HeJG7oMznE6KyKhvLrFgt7CdU2/w==}
     cpu: [arm64]
     os: [android]
     requiresBuild: true
     dev: true
     optional: true
 
-  /esbuild-darwin-64/0.14.6:
-    resolution: {integrity: sha512-tm9Q5usB6NjbKXUbrGAdW2OKfaHmgda2jmQeqarJkVPcVnz0XEWrn3hO6PGcD9pJr/5qwizBaUH3TzvsIhRlng==}
+  /esbuild-darwin-64/0.14.7:
+    resolution: {integrity: sha512-Z9X+3TT/Xj+JiZTVlwHj2P+8GoiSmUnGVz0YZTSt8WTbW3UKw5Pw2ucuJ8VzbD2FPy0jbIKJkko/6CMTQchShQ==}
     cpu: [x64]
     os: [darwin]
     requiresBuild: true
     dev: true
     optional: true
 
-  /esbuild-darwin-arm64/0.14.6:
-    resolution: {integrity: sha512-W1Ytsa4EY5qlx433E2ffWnhT0plPHEWbRg+IhtkNnzQP1jaRaCNRPILUpufmmO78PY8oFx5qAT/vPf73H96R7g==}
+  /esbuild-darwin-arm64/0.14.7:
+    resolution: {integrity: sha512-68e7COhmwIiLXBEyxUxZSSU0akgv8t3e50e2QOtKdBUE0F6KIRISzFntLe2rYlNqSsjGWsIO6CCc9tQxijjSkw==}
     cpu: [arm64]
     os: [darwin]
     requiresBuild: true
     dev: true
     optional: true
 
-  /esbuild-freebsd-64/0.14.6:
-    resolution: {integrity: sha512-Lb9raMwL12FZ4omr6vLlWjIhI+RdXoWEaghv0bAGEo9x1MkfEly83KiEIeJle7VFpGrHsR4OTYyJ4sztcPc+0A==}
+  /esbuild-freebsd-64/0.14.7:
+    resolution: {integrity: sha512-76zy5jAjPiXX/S3UvRgG85Bb0wy0zv/J2lel3KtHi4V7GUTBfhNUPt0E5bpSXJ6yMT7iThhnA5rOn+IJiUcslQ==}
     cpu: [x64]
     os: [freebsd]
     requiresBuild: true
     dev: true
     optional: true
 
-  /esbuild-freebsd-arm64/0.14.6:
-    resolution: {integrity: sha512-0xpvXhfu+Qc8uZXTvahuBfOAEIkyUa2XIEzLGV10t66svfZ9mC0ZH+kqiNLr7ETLz+P0PTExv3xtt5YoRD4DeA==}
+  /esbuild-freebsd-arm64/0.14.7:
+    resolution: {integrity: sha512-lSlYNLiqyzd7qCN5CEOmLxn7MhnGHPcu5KuUYOG1i+t5A6q7LgBmfYC9ZHJBoYyow3u4CNu79AWHbvVLpE/VQQ==}
     cpu: [arm64]
     os: [freebsd]
     requiresBuild: true
     dev: true
     optional: true
 
-  /esbuild-linux-32/0.14.6:
-    resolution: {integrity: sha512-zm7NwLrnckBqckAL41JW1Z1ddn6HRGo3e4D3aZG+NrlDDu60J2Pv/wVTTc8tEvb2MChAU0kok8InKmoPv0dp6g==}
+  /esbuild-linux-32/0.14.7:
+    resolution: {integrity: sha512-Vk28u409wVOXqTaT6ek0TnfQG4Ty1aWWfiysIaIRERkNLhzLhUf4i+qJBN8mMuGTYOkE40F0Wkbp6m+IidOp2A==}
     cpu: [ia32]
     os: [linux]
     requiresBuild: true
     dev: true
     optional: true
 
-  /esbuild-linux-64/0.14.6:
-    resolution: {integrity: sha512-pYRXlQmgd7kDlkAV3AJHI5u+CpQ40HKVlY2SYuxRKb18BaCLgjhihDn87QYFTcCTYQpoo12LLea6ka4HpDKi0Q==}
+  /esbuild-linux-64/0.14.7:
+    resolution: {integrity: sha512-+Lvz6x+8OkRk3K2RtZwO+0a92jy9si9cUea5Zoru4yJ/6EQm9ENX5seZE0X9DTwk1dxJbjmLsJsd3IoowyzgVg==}
     cpu: [x64]
     os: [linux]
     requiresBuild: true
     dev: true
     optional: true
 
-  /esbuild-linux-arm/0.14.6:
-    resolution: {integrity: sha512-V2H7diFlZdHy2GUrOw6V2gJMTBSu5FrbkkIp2uwe76Z+BoqCiX+1Qs3lC7Ng0lcx4KoTmzyEW1gRm3RE6Qi83A==}
+  /esbuild-linux-arm/0.14.7:
+    resolution: {integrity: sha512-OzpXEBogbYdcBqE4uKynuSn5YSetCvK03Qv1HcOY1VN6HmReuatjJ21dCH+YPHSpMEF0afVCnNfffvsGEkxGJQ==}
     cpu: [arm]
     os: [linux]
     requiresBuild: true
     dev: true
     optional: true
 
-  /esbuild-linux-arm64/0.14.6:
-    resolution: {integrity: sha512-T4pL9ABEbL5NKFWkEXpIttXiCWdqvHxtkRMSGKStfk3FmI7W9qtn8cKmCxHUzg1DJ87c+FSWWOS+BmND5nSVwg==}
+  /esbuild-linux-arm64/0.14.7:
+    resolution: {integrity: sha512-kJd5beWSqteSAW086qzCEsH6uwpi7QRIpzYWHzEYwKKu9DiG1TwIBegQJmLpPsLp4v5RAFjea0JAmAtpGtRpqg==}
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
     dev: true
     optional: true
 
-  /esbuild-linux-mips64le/0.14.6:
-    resolution: {integrity: sha512-ZOMFyAKxOEy5zAY1dA+5XKbNzj6Olq86Pu6aDBOE7pIN7PtYeVQUw4AmQMC3JNUrT8OjiTi1/bL0HPqLJQ06Yg==}
+  /esbuild-linux-mips64le/0.14.7:
+    resolution: {integrity: sha512-mFWpnDhZJmj/h7pxqn1GGDsKwRfqtV7fx6kTF5pr4PfXe8pIaTERpwcKkoCwZUkWAOmUEjMIUAvFM72A6hMZnA==}
     cpu: [mips64el]
     os: [linux]
     requiresBuild: true
     dev: true
     optional: true
 
-  /esbuild-linux-ppc64le/0.14.6:
-    resolution: {integrity: sha512-vl+fAVdV2R19InpZEyLj3pSUNMHUDEp6dX5Apn9MMpIYPn+LhLoTeIVKnS+eMxoOWCH3qGLoHJ8p/9n1USinLQ==}
+  /esbuild-linux-ppc64le/0.14.7:
+    resolution: {integrity: sha512-wM7f4M0bsQXfDL4JbbYD0wsr8cC8KaQ3RPWc/fV27KdErPW7YsqshZZSjDV0kbhzwpNNdhLItfbaRT8OE8OaKA==}
     cpu: [ppc64]
     os: [linux]
     requiresBuild: true
     dev: true
     optional: true
 
-  /esbuild-netbsd-64/0.14.6:
-    resolution: {integrity: sha512-RGbrgvtUzYmTcnOKo97LMaTA8WnGae/mDGSiRY/9196IIxTbtY/kWnVtZp5ro0OOo2/v6tyvtKVOTljTnbXoIA==}
+  /esbuild-netbsd-64/0.14.7:
+    resolution: {integrity: sha512-J/afS7woKyzGgAL5FlgvMyqgt5wQ597lgsT+xc2yJ9/7BIyezeXutXqfh05vszy2k3kSvhLesugsxIA71WsqBw==}
     cpu: [x64]
     os: [netbsd]
     requiresBuild: true
     dev: true
     optional: true
 
-  /esbuild-openbsd-64/0.14.6:
-    resolution: {integrity: sha512-31qrrCThwRf1yFe/bz7K7Edi2YP46nRgyil7ssJv9dHNdagmy5Tk/WbN/CecVQiS9+ZyrddqdyqERg+Q8xYPNg==}
+  /esbuild-openbsd-64/0.14.7:
+    resolution: {integrity: sha512-7CcxgdlCD+zAPyveKoznbgr3i0Wnh0L8BDGRCjE/5UGkm5P/NQko51tuIDaYof8zbmXjjl0OIt9lSo4W7I8mrw==}
     cpu: [x64]
     os: [openbsd]
     requiresBuild: true
     dev: true
     optional: true
 
-  /esbuild-sunos-64/0.14.6:
-    resolution: {integrity: sha512-Hp2iiouX+5yi4ZGT78o15TavNFcIjv9PvZfib/Nx6i5oAcq30eIdHXZvJXse1J4IMy2UTfUwRPp4IbFuq4t8tA==}
+  /esbuild-sunos-64/0.14.7:
+    resolution: {integrity: sha512-GKCafP2j/KUljVC3nesw1wLFSZktb2FGCmoT1+730zIF5O6hNroo0bSEofm6ZK5mNPnLiSaiLyRB9YFgtkd5Xg==}
     cpu: [x64]
     os: [sunos]
     requiresBuild: true
     dev: true
     optional: true
 
-  /esbuild-windows-32/0.14.6:
-    resolution: {integrity: sha512-dAA64fXfwLCDTwUU3bK1RJhj/NhY/yKWrAr2lSWSqsbonAQmCf5ltO0/jKAZDv58KgOposN+pcN+QXsXsOxofA==}
+  /esbuild-windows-32/0.14.7:
+    resolution: {integrity: sha512-5I1GeL/gZoUUdTPA0ws54bpYdtyeA2t6MNISalsHpY269zK8Jia/AXB3ta/KcDHv2SvNwabpImeIPXC/k0YW6A==}
     cpu: [ia32]
     os: [win32]
     requiresBuild: true
     dev: true
     optional: true
 
-  /esbuild-windows-64/0.14.6:
-    resolution: {integrity: sha512-LONuzbp2LRC6PEt3BnRvIP9XiqLY+1UMz55rFqSRcx1hKvgwmiMVF7ZOV7Kqi5r/ejIKDmIosOhh3qy6WKqNRA==}
+  /esbuild-windows-64/0.14.7:
+    resolution: {integrity: sha512-CIGKCFpQOSlYsLMbxt8JjxxvVw9MlF1Rz2ABLVfFyHUF5OeqHD5fPhGrCVNaVrhO8Xrm+yFmtjcZudUGr5/WYQ==}
     cpu: [x64]
     os: [win32]
     requiresBuild: true
     dev: true
     optional: true
 
-  /esbuild-windows-arm64/0.14.6:
-    resolution: {integrity: sha512-3ntwiIv3EF4jJran1D6FdQLPQyxXq8+j/xtdZj/eWRxYDO8LWlm1ULEx/capZB2JS/GjKkQkmRaaMjWcRJ01wQ==}
+  /esbuild-windows-arm64/0.14.7:
+    resolution: {integrity: sha512-eOs1eSivOqN7cFiRIukEruWhaCf75V0N8P0zP7dh44LIhLl8y6/z++vv9qQVbkBm5/D7M7LfCfCTmt1f1wHOCw==}
     cpu: [arm64]
     os: [win32]
     requiresBuild: true
     dev: true
     optional: true
 
-  /esbuild/0.14.6:
-    resolution: {integrity: sha512-IbaeG3srFXK2p/WPhBctu9AGcJ1O0ksBbHTYgLwLAAmbonO49p8E06R4P+4B5gVvquNDU1QUa/0wHY6sT4VDmA==}
+  /esbuild/0.14.7:
+    resolution: {integrity: sha512-+u/msd6iu+HvfysUPkZ9VHm83LImmSNnecYPfFI01pQ7TTcsFR+V0BkybZX7mPtIaI7LCrse6YRj+v3eraJSgw==}
     hasBin: true
     requiresBuild: true
     optionalDependencies:
-      esbuild-android-arm64: 0.14.6
-      esbuild-darwin-64: 0.14.6
-      esbuild-darwin-arm64: 0.14.6
-      esbuild-freebsd-64: 0.14.6
-      esbuild-freebsd-arm64: 0.14.6
-      esbuild-linux-32: 0.14.6
-      esbuild-linux-64: 0.14.6
-      esbuild-linux-arm: 0.14.6
-      esbuild-linux-arm64: 0.14.6
-      esbuild-linux-mips64le: 0.14.6
-      esbuild-linux-ppc64le: 0.14.6
-      esbuild-netbsd-64: 0.14.6
-      esbuild-openbsd-64: 0.14.6
-      esbuild-sunos-64: 0.14.6
-      esbuild-windows-32: 0.14.6
-      esbuild-windows-64: 0.14.6
-      esbuild-windows-arm64: 0.14.6
+      esbuild-android-arm64: 0.14.7
+      esbuild-darwin-64: 0.14.7
+      esbuild-darwin-arm64: 0.14.7
+      esbuild-freebsd-64: 0.14.7
+      esbuild-freebsd-arm64: 0.14.7
+      esbuild-linux-32: 0.14.7
+      esbuild-linux-64: 0.14.7
+      esbuild-linux-arm: 0.14.7
+      esbuild-linux-arm64: 0.14.7
+      esbuild-linux-mips64le: 0.14.7
+      esbuild-linux-ppc64le: 0.14.7
+      esbuild-netbsd-64: 0.14.7
+      esbuild-openbsd-64: 0.14.7
+      esbuild-sunos-64: 0.14.7
+      esbuild-windows-32: 0.14.7
+      esbuild-windows-64: 0.14.7
+      esbuild-windows-arm64: 0.14.7
     dev: true
 
   /escalade/3.1.1:
@@ -4807,7 +4511,7 @@ packages:
     dependencies:
       colors: 1.4.0
       fecha: 4.2.1
-      ms: 2.1.3
+      ms: 2.1.2
       safe-stable-stringify: 1.1.1
       triple-beam: 1.3.0
     dev: false
@@ -5029,97 +4733,6 @@ packages:
     dev: false
     optional: true
 
-  /next-transpile-modules/9.0.0:
-    resolution: {integrity: sha512-VCNFOazIAnXn1hvgYYSTYMnoWgKgwlYh4lm1pKbSfiB3kj5ZYLcKVhfh3jkPOg1cnd9DP+pte9yCUocdPEUBTQ==}
-    dependencies:
-      enhanced-resolve: 5.8.3
-      escalade: 3.1.1
-    dev: false
-
-  /next/12.0.7:
-    resolution: {integrity: sha512-sKO8GJJYfuk9c+q+zHSNumvff+wP7ufmOlwT6BuzwiYfFJ61VTTkfTcDLSJ+95ErQJiC54uS4Yg5JEE8H6jXRA==}
-    engines: {node: '>=12.22.0'}
-    hasBin: true
-    peerDependencies:
-      fibers: '>= 3.1.0'
-      node-sass: ^4.0.0 || ^5.0.0 || ^6.0.0
-      react: ^17.0.2 || ^18.0.0-0
-      react-dom: ^17.0.2 || ^18.0.0-0
-      sass: ^1.3.0
-    peerDependenciesMeta:
-      fibers:
-        optional: true
-      node-sass:
-        optional: true
-      sass:
-        optional: true
-    dependencies:
-      '@babel/runtime': 7.15.4
-      '@hapi/accept': 5.0.2
-      '@napi-rs/triples': 1.0.3
-      '@next/env': 12.0.7
-      '@next/polyfill-module': 12.0.7
-      '@next/react-dev-overlay': 12.0.7
-      '@next/react-refresh-utils': 12.0.7_react-refresh@0.8.3
-      acorn: 8.5.0
-      assert: 2.0.0
-      browserify-zlib: 0.2.0
-      browserslist: 4.16.6
-      buffer: 5.6.0
-      caniuse-lite: 1.0.30001291
-      chalk: 2.4.2
-      chokidar: 3.5.1
-      constants-browserify: 1.0.0
-      crypto-browserify: 3.12.0
-      cssnano-simple: 3.0.0_postcss@8.2.15
-      domain-browser: 4.19.0
-      encoding: 0.1.13
-      etag: 1.8.1
-      events: 3.3.0
-      find-cache-dir: 3.3.1
-      get-orientation: 1.1.2
-      https-browserify: 1.0.0
-      image-size: 1.0.0
-      jest-worker: 27.0.0-next.5
-      node-fetch: 2.6.1
-      node-html-parser: 1.4.9
-      os-browserify: 0.3.0
-      p-limit: 3.1.0
-      path-browserify: 1.0.1
-      postcss: 8.2.15
-      process: 0.11.10
-      querystring-es3: 0.2.1
-      raw-body: 2.4.1
-      react-is: 17.0.2
-      react-refresh: 0.8.3
-      regenerator-runtime: 0.13.4
-      stream-browserify: 3.0.0
-      stream-http: 3.1.1
-      string_decoder: 1.3.0
-      styled-jsx: 5.0.0-beta.3
-      timers-browserify: 2.0.12
-      tty-browserify: 0.0.1
-      use-subscription: 1.5.1
-      util: 0.12.4
-      vm-browserify: 1.1.2
-      watchpack: 2.3.0
-    optionalDependencies:
-      '@next/swc-android-arm64': 12.0.7
-      '@next/swc-darwin-arm64': 12.0.7
-      '@next/swc-darwin-x64': 12.0.7
-      '@next/swc-linux-arm-gnueabihf': 12.0.7
-      '@next/swc-linux-arm64-gnu': 12.0.7
-      '@next/swc-linux-arm64-musl': 12.0.7
-      '@next/swc-linux-x64-gnu': 12.0.7
-      '@next/swc-linux-x64-musl': 12.0.7
-      '@next/swc-win32-arm64-msvc': 12.0.7
-      '@next/swc-win32-ia32-msvc': 12.0.7
-      '@next/swc-win32-x64-msvc': 12.0.7
-    transitivePeerDependencies:
-      - '@babel/core'
-      - webpack
-    dev: false
-
   /next/12.0.7_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-sKO8GJJYfuk9c+q+zHSNumvff+wP7ufmOlwT6BuzwiYfFJ61VTTkfTcDLSJ+95ErQJiC54uS4Yg5JEE8H6jXRA==}
     engines: {node: '>=12.22.0'}
@@ -5150,7 +4763,7 @@ packages:
       browserify-zlib: 0.2.0
       browserslist: 4.16.6
       buffer: 5.6.0
-      caniuse-lite: 1.0.30001291
+      caniuse-lite: 1.0.30001292
       chalk: 2.4.2
       chokidar: 3.5.1
       constants-browserify: 1.0.0
@@ -5560,6 +5173,7 @@ packages:
     requiresBuild: true
     dependencies:
       '@prisma/engines': 3.7.0-31.8746e055198f517658c08a0c426c7eec87f5a85f
+    dev: true
 
   /process/0.11.10:
     resolution: {integrity: sha1-czIwDoQBYb2j5podHZGn1LwW8YI=}
@@ -6226,26 +5840,6 @@ packages:
       min-indent: 1.0.1
     dev: true
 
-  /styled-jsx/5.0.0-beta.3:
-    resolution: {integrity: sha512-HtDDGSFPvmjHIqWf9n8Oo54tAoY/DTplvlyOH2+YOtD80Sp31Ap8ffSmxhgk5EkUoJ7xepdXMGT650mSffWuRA==}
-    engines: {node: '>= 12.0.0'}
-    peerDependencies:
-      '@babel/core': '*'
-      react: '>= 16.8.0 || 17.x.x || 18.x.x'
-    peerDependenciesMeta:
-      '@babel/core':
-        optional: true
-    dependencies:
-      '@babel/plugin-syntax-jsx': 7.14.5
-      '@babel/types': 7.15.0
-      convert-source-map: 1.7.0
-      loader-utils: 1.2.3
-      source-map: 0.7.3
-      string-hash: 1.1.3
-      stylis: 3.5.4
-      stylis-rule-sheet: 0.0.10_stylis@3.5.4
-    dev: false
-
   /styled-jsx/5.0.0-beta.3_react@17.0.2:
     resolution: {integrity: sha512-HtDDGSFPvmjHIqWf9n8Oo54tAoY/DTplvlyOH2+YOtD80Sp31Ap8ffSmxhgk5EkUoJ7xepdXMGT650mSffWuRA==}
     engines: {node: '>= 12.0.0'}
@@ -6313,11 +5907,6 @@ packages:
   /symbol-tree/3.2.4:
     resolution: {integrity: sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==}
     dev: true
-
-  /tapable/2.2.1:
-    resolution: {integrity: sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==}
-    engines: {node: '>=6'}
-    dev: false
 
   /terminal-link/2.1.1:
     resolution: {integrity: sha512-un0FmiRUQNr5PJqy9kP7c40F5BOfpGlYTrxonDChEZB7pzZxRNp/bt+ymiy9/npwXya9KH99nJ/GXFIiUkYGFQ==}
@@ -6435,7 +6024,7 @@ packages:
     resolution: {integrity: sha512-XrHUvV5HpdLmIj4uVMxHggLbFSZYIn7HEWsqePZcI50pco+MPqJ50wMGY794X7AOOhxOBAjbkqfAbEe/QMp2Lw==}
     dev: false
 
-  /ts-jest/27.1.2_@types+jest@27.0.3+jest@27.4.5:
+  /ts-jest/27.1.2_7b26b756366d6344eb2b257922b0ebbe:
     resolution: {integrity: sha512-eSOiJOWq6Hhs6Khzk5wKC5sgWIXgXqOCiIl1+3lfnearu58Hj4QpE5tUhQcA3xtZrELbcvAGCsd6HB8OsaVaTA==}
     engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     hasBin: true
@@ -6458,6 +6047,7 @@ packages:
     dependencies:
       '@types/jest': 27.0.3
       bs-logger: 0.2.6
+      esbuild: 0.14.7
       fast-json-stable-stringify: 2.1.0
       jest: 27.4.5
       jest-util: 27.4.2
@@ -6558,6 +6148,7 @@ packages:
   /undici/4.12.0:
     resolution: {integrity: sha512-sJ4CyO3ZPaoxWpLQTJpH/gWD+tCIra2OJ9UPvrX1siyJkgh8NOAybRejJ/g2xHyOdAuoSE0lPRJwRl8AZSXYJQ==}
     engines: {node: '>=12.18'}
+    dev: false
 
   /unicode-byte-truncate/1.0.0:
     resolution: {integrity: sha1-qm8PNHUZP+IMMgrJIT425i6HZKc=}
@@ -6591,14 +6182,6 @@ packages:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
     dependencies:
       punycode: 2.1.1
-    dev: false
-
-  /use-subscription/1.5.1:
-    resolution: {integrity: sha512-Xv2a1P/yReAjAbhylMfFplFKj9GssgTwN7RlcTxBujFQcloStWNDQdc4g4NRWH9xS4i/FDk04vQBptAXoF3VcA==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0
-    dependencies:
-      object-assign: 4.1.1
     dev: false
 
   /use-subscription/1.5.1_react@17.0.2:

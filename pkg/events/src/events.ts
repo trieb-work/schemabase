@@ -1,6 +1,6 @@
 import { env } from "@chronark/env";
 import { ISigner } from "./signature";
-import { ILogger } from "@eci/logger";
+import { ILogger } from "@eci/pkg/logger";
 import * as kafka from "kafkajs";
 import { Message } from "./message";
 
@@ -17,7 +17,7 @@ export interface EventProducer<TContent> {
   close(): Promise<void>;
 }
 
-const newKafkaClient = (): kafka.Kafka => {
+export const newKafkaClient = (): kafka.Kafka => {
   return new kafka.Kafka({
     brokers: [env.require("KAFKA_BROKER_URL")],
 

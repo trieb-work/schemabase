@@ -213,13 +213,13 @@ jobs:
         run: make migrate-saleor
 
       - name: Migrate eci schema
-        run: pnpm prisma migrate deploy --schema=./pkg/prisma/schema.prisma
+        run: make db-push
 
-      - name: Generate prisma client
-        run: pnpm build --filter "@eci/prisma..."
+      - name: Generate code
+        run: make build
 
       - name: Test
-        run: pnpm test
+        run: pnpm jest
 
       - run: docker-compose logs
         if: always()

@@ -1,4 +1,4 @@
-import { HttpError } from "@eci/errors";
+import { HttpError } from "@eci/pkg/errors";
 
 export function authorizeIntegration(integration: {
   enabled: boolean;

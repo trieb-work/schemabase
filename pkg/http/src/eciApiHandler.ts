@@ -1,9 +1,9 @@
 import type { NextApiHandler, NextApiResponse, NextApiRequest } from "next";
-import { ILogger, Logger } from "@eci/logger";
-import { id } from "@eci/ids";
-import { HttpError } from "@eci/errors";
-import { Context } from "@eci/webhook-context";
-import { ECI_TRACE_HEADER } from "@eci/constants";
+import { ILogger, Logger } from "@eci/pkg/logger";
+import { id } from "@eci/pkg/ids";
+import { HttpError } from "@eci/pkg/errors";
+import { Context } from "@eci/pkg/webhook-context";
+import { ECI_TRACE_HEADER } from "@eci/pkg/constants";
 import { z } from "zod";
 
 export type Webhook<TRequest> = (config: {

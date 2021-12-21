@@ -1,8 +1,8 @@
 import { expect, beforeAll, describe, it } from "@jest/globals";
-import { HttpClient } from "@eci/http";
-import { PrismaClient } from "@eci/prisma";
-import { id } from "@eci/ids";
-import { CountryCode, createSaleorClient } from "@eci/saleor";
+import { HttpClient } from "@eci/pkg/http";
+import { PrismaClient } from "@eci/pkg/prisma";
+import { id } from "@eci/pkg/ids";
+import { CountryCode, createSaleorClient } from "@eci/pkg/saleor";
 import { env } from "@chronark/env";
 
 const webhookId = id.id("test");

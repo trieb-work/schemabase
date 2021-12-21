@@ -1,9 +1,9 @@
 import { EntryEvent } from "./types";
 import { z } from "zod";
 import { Zoho, CreateSalesOrder } from "@trieb.work/zoho-ts/dist/v2";
-import { sha256 } from "@eci/hash";
+import { sha256 } from "@eci/pkg/hash";
 
-import { ILogger } from "@eci/logger";
+import { ILogger } from "@eci/pkg/logger";
 const statusValidation = z.enum([
   "Draft",
   "Confirmed",

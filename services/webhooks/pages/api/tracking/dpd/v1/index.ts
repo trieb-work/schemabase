@@ -1,4 +1,4 @@
-import { handleWebhook, Webhook } from "@eci/http";
+import { handleWebhook, Webhook } from "@eci/pkg/http";
 import { z } from "zod";
 
 const requestValidation = z.object({

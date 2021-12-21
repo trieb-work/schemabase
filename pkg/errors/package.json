@@ -1,9 +1,0 @@
-{
-  "name": "@eci/errors",
-  "version": "0.0.1",
-  "main": "index.ts",
-  "devDependencies": {
-    "@types/node": "^17.0.0",
-    "typescript": "^4.5.4"
-  }
-}

@@ -1,8 +1,8 @@
-import { createSaleorClient } from "@eci/saleor";
+import { createSaleorClient } from "@eci/pkg/saleor";
 import { env } from "@chronark/env";
 import { afterAll, describe, it, expect } from "@jest/globals";
-import { PrismaClient } from "@eci/prisma";
-import { id } from "@eci/ids";
+import { PrismaClient } from "@eci/pkg/prisma";
+import { id } from "@eci/pkg/ids";
 /**
  * The saleor endpoint reachable from outside of the cluster
  * For example: "http://localhost:8000/graphql/";

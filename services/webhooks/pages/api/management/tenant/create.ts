@@ -1,7 +1,7 @@
-import { extendContext, setupPrisma } from "@eci/webhook-context";
+import { extendContext, setupPrisma } from "@eci/pkg/webhook-context";
 import { z } from "zod";
-import { id } from "@eci/ids";
-import { handleWebhook, Webhook } from "@eci/http";
+import { id } from "@eci/pkg/ids";
+import { handleWebhook, Webhook } from "@eci/pkg/http";
 
 const requestValidation = z.object({
   query: z.object({

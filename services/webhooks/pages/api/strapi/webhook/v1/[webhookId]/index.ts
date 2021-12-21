@@ -2,13 +2,13 @@ import {
   setupPrisma,
   extendContext,
   authorizeIntegration,
-} from "@eci/webhook-context";
+} from "@eci/pkg/webhook-context";
 import { z } from "zod";
-import { HttpError } from "@eci/errors";
-import { handleWebhook, Webhook } from "@eci/http";
+import { HttpError } from "@eci/pkg/errors";
+import { handleWebhook, Webhook } from "@eci/pkg/http";
 import { createHash } from "crypto";
 import { env } from "@chronark/env";
-import { KafkaProducer, Message, Signer } from "@eci/events";
+import { KafkaProducer, Message, Signer } from "@eci/pkg/events";
 
 const requestValidation = z.object({
   query: z.object({

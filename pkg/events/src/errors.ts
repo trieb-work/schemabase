@@ -1,4 +1,4 @@
-import { GenericError } from "@eci/errors";
+import { GenericError } from "@eci/pkg/errors";
 
 export class SignatureError extends GenericError {
   constructor(got: string, expected: string) {

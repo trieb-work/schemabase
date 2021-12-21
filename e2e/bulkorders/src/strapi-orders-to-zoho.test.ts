@@ -1,15 +1,15 @@
 import { beforeAll, afterAll, expect, describe, it } from "@jest/globals";
 import { config } from "dotenv";
-import { PrismaClient } from "@eci/prisma";
+import { PrismaClient } from "@eci/pkg/prisma";
 import faker from "faker";
 import { createHash } from "crypto";
-import { HttpClient } from "@eci/http";
-import { id } from "@eci/ids";
+import { HttpClient } from "@eci/pkg/http";
+import { id } from "@eci/pkg/ids";
 import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
 import { env } from "@chronark/env";
 import { randomInt } from "crypto";
 import { generateAddress, triggerWebhook } from "./util";
-import { OrderEvent } from "@eci/integration-bulkorders";
+import { OrderEvent } from "@eci/pkg/integration-bulkorders";
 import { verifySyncedOrders } from "./verifySyncedOrders";
 
 config({ path: ".env.local" });

@@ -1,9 +1,9 @@
 import { expect } from "@jest/globals";
-import { HttpClient } from "@eci/http";
+import { HttpClient } from "@eci/pkg/http";
 import faker from "faker";
 import { createHash, randomInt } from "crypto";
 import { z } from "zod";
-import { addressValidation } from "@eci/integration-bulkorders";
+import { addressValidation } from "@eci/pkg/integration-bulkorders";
 
 faker.setLocale("de");
 

@@ -1,13 +1,13 @@
-import { Message } from "@eci/events";
+import { Message } from "@eci/pkg/events";
 import {
   EntryEvent,
   OrderEvent,
   StrapiOrdersToZoho,
-} from "@eci/integration-bulkorders";
-import { KafkaProducer, Signer } from "@eci/events";
+} from "@eci/pkg/integration-bulkorders";
+import { KafkaProducer, Signer } from "@eci/pkg/events";
 import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
-import { PrismaClient } from "@eci/prisma";
-import { ILogger } from "@eci/logger";
+import { PrismaClient } from "@eci/pkg/prisma";
+import { ILogger } from "@eci/pkg/logger";
 import { env } from "@chronark/env";
 export const strapiEntryCreate =
   ({ prisma, logger }: { prisma: PrismaClient; logger: ILogger }) =>

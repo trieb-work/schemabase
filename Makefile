@@ -1,5 +1,6 @@
 
 export COMPOSE_DOCKER_CLI_BUILD=1
+export COMPOSE_DOCKER_BUILDKIT=1
 
 
 down:
@@ -24,14 +25,8 @@ migrate-saleor:
 
 # Build and seeds all required external services
 
-init: export COMPOSE_DOCKER_CLI_BUILD=1
-init: export DOCKER_BUILDKIT=1
+
 init: down build
-
-
-
-	docker-compose pull
-
 	@# Migrating saleor is expensiev and should be done
 	@# before all memory is used for the other services
 	docker-compose up -d saleor_api
@@ -39,17 +34,20 @@ init: down build
 
 	docker-compose up -d
 
+	$(MAKE) db-push
 
-init-core: export COMPOSE_DOCKER_CLI_BUILD=1
-init-core: export DOCKER_BUILDKIT=1
+
 init-core: down build
 	docker-compose up -d eci_webhooks eci_worker kafka kafka-ui
 
-build:
-	pnpm install
+build: install
+	pnpm prisma generate
 
-	pnpm build
+build-webhooks: build
+	pnpm next build ./services/webhooks
 
+build-worker: build
+	pnpm esbuild --platform=node --bundle --outfile=services/worker/dist/main.js services/worker/src/main.ts
 
 # Run all unit tests
 test: build
@@ -57,8 +55,7 @@ test: build
 
 
 
-rebuild-webhooks: export COMPOSE_DOCKER_CLI_BUILD=1
-rebuild-webhooks: export DOCKER_BUILDKIT=1
+
 rebuild-webhooks:
 	docker-compose stop eci_webhooks
 	docker-compose up -d eci_db
