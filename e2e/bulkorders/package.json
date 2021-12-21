@@ -1,16 +1,11 @@
 {
   "name": "@eci/e2e-bulkorders",
   "version": "0.0.0",
-  "scripts": {
-    "test:e2e": "jest"
-  },
   "devDependencies": {
     "@eci/http": "workspace:*",
     "@eci/ids": "workspace:*",
     "@eci/prisma": "workspace:*",
     "@eci/saleor": "workspace:*",
-    "@jest/globals": "^27.4.4",
-    "@swc/jest": "^0.2.15",
     "dotenv": "^10.0.0",
     "faker": "^5.5.3",
     "jest": "^27.4.5",
