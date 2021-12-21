@@ -48,7 +48,7 @@ jobs:
         run: pnpm prettier --check .
 
       - name: Test (unit)
-        run: pnpm test --filter "...[origin/main]"
+        run: pnpm test:unit
 
   build:
     name: Build
