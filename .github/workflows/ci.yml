@@ -38,8 +38,8 @@ jobs:
       - name: Build
         run: make build
 
-      - name: Lint
-        run: pnpm lint
+      # - name: Lint
+      #   run: pnpm lint
 
       - name: Check types
         run: pnpm tsc --pretty
