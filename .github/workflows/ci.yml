@@ -218,8 +218,8 @@ jobs:
       - name: Generate prisma client
         run: pnpm build --filter "@eci/prisma..."
 
-      - name: Test (e2e)
-        run: pnpm test:e2e
+      - name: Test
+        run: pnpm test
 
       - run: docker-compose logs
         if: always()
