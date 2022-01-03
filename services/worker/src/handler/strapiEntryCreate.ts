@@ -1,10 +1,9 @@
-import { Message } from "@eci/pkg/events";
+import { Message, KafkaProducer, Signer } from "@eci/pkg/events";
 import {
   EntryEvent,
   OrderEvent,
   StrapiOrdersToZoho,
 } from "@eci/pkg/integration-bulkorders";
-import { KafkaProducer, Signer } from "@eci/pkg/events";
 import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { ILogger } from "@eci/pkg/logger";
@@ -49,6 +48,6 @@ export const strapiEntryCreate =
       signer: new Signer({ signingKey: env.require("SIGNING_KEY") }),
     });
 
-    await producer.produce("bulkorder_synced", message);
+    await producer.produce("bulkorder.synced", message);
     await producer.close();
   };

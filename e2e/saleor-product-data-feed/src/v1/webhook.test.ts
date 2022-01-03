@@ -20,7 +20,7 @@ beforeAll(async () => {
     password: "admin",
   });
   if (!setup?.tokenCreate?.token) {
-    throw new Error(`Unable to get saleor token`);
+    throw new Error("Unable to get saleor token");
   }
 
   saleorClient = createSaleorClient({

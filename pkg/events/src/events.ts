@@ -18,21 +18,25 @@ export interface EventProducer<TContent> {
 }
 
 export const newKafkaClient = (): kafka.Kafka => {
-  return new kafka.Kafka({
+  const config: kafka.KafkaConfig = {
     brokers: [env.require("KAFKA_BROKER_URL")],
-
-    // sasl: {
-    //   mechanism: "scram-sha-256",
-    //   username: env.require("KAFKA_USERNAME"),
-    //   password: env.require("KAFKA_PASSWORD"),
-    // },
-    // ssl: true,
-  });
+  };
+  if (env.get("KAFKA_SASL_MECHANISM")?.toLowerCase() === "scram-sha-256") {
+    config.sasl = {
+      mechanism: "scram-sha-256",
+      username: env.require("KAFKA_USERNAME"),
+      password: env.require("KAFKA_PASSWORD"),
+    };
+    config.ssl = true;
+  }
+  return new kafka.Kafka(config);
 };
 
 export class KafkaProducer<TContent> implements EventProducer<TContent> {
   private producer: kafka.Producer;
+
   private signer: ISigner;
+
   private constructor(config: { producer: kafka.Producer; signer: ISigner }) {
     this.producer = config.producer;
     this.signer = config.signer;
@@ -75,6 +79,7 @@ export class KafkaProducer<TContent> implements EventProducer<TContent> {
       offset: res[0].offset,
     };
   }
+
   public async close(): Promise<void> {
     this.producer.disconnect();
   }
@@ -91,7 +96,9 @@ export interface EventSubscriber<TContent> {
 
 export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
   private consumer: kafka.Consumer;
+
   private signer: ISigner;
+
   private logger: ILogger;
 
   private errorProducer: kafka.Producer;
@@ -148,19 +155,19 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
       eachMessage: async (payload) => {
         try {
           if (!payload.message.value) {
-            throw new Error(`Kafka did not return a message value`);
+            throw new Error("Kafka did not return a message value");
           }
           const message = Message.deserialize<TContent>(payload.message.value);
           const { headers } = payload.message;
 
-          if (!headers || !headers["signature"]) {
-            throw new Error(`Kafka message does not have signature header`);
+          if (!headers || !headers.signature) {
+            throw new Error("Kafka message does not have signature header");
           }
 
           const signature =
-            typeof headers["signature"] === "string"
-              ? headers["signature"]
-              : headers["signature"].toString();
+            typeof headers.signature === "string"
+              ? headers.signature
+              : headers.signature.toString();
 
           this.signer.verify(message.serialize(), signature);
 
@@ -168,7 +175,7 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
             time: payload.message.timestamp,
           });
           if (!payload.message.value) {
-            throw new Error(`Kafka did not return a message value`);
+            throw new Error("Kafka did not return a message value");
           }
 
           await process(message);
@@ -179,7 +186,7 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
           });
 
           payload.message.headers ??= {};
-          payload.message.headers!["error"] = err.message;
+          payload.message.headers!.error = err.message;
           await this.errorProducer.send({
             topic: "UNHANDLED_EXCEPTION",
             messages: [payload.message],

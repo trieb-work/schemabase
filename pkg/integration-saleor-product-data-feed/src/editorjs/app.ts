@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import { OutputData } from "@editorjs/editorjs";
 
 type parser = {
@@ -142,7 +144,7 @@ const transforms: transforms = {
   },
 
   image: ({ data }) => {
-    let caption = data.caption ? data.caption : "Image";
+    const caption = data.caption ? data.caption : "Image";
     return `<img src="${
       data.file && data.file.url ? data.file.url : data.url
     }" alt="${caption}" />`;

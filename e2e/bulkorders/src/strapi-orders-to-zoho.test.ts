@@ -1,13 +1,19 @@
-import { beforeAll, afterAll, expect, describe, it } from "@jest/globals";
+import {
+  beforeAll,
+  afterAll,
+  expect,
+  describe,
+  it,
+  afterEach,
+} from "@jest/globals";
 import { config } from "dotenv";
 import { PrismaClient } from "@eci/pkg/prisma";
 import faker from "faker";
-import { createHash } from "crypto";
+import { createHash, randomInt } from "crypto";
 import { HttpClient } from "@eci/pkg/http";
 import { id } from "@eci/pkg/ids";
 import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
 import { env } from "@chronark/env";
-import { randomInt } from "crypto";
 import { generateAddress, triggerWebhook } from "./util";
 import { OrderEvent } from "@eci/pkg/integration-bulkorders";
 import { verifySyncedOrders } from "./verifySyncedOrders";
@@ -183,13 +189,23 @@ beforeAll(async () => {
   });
 });
 
+afterEach(async () => {
+  if (CLEAN_UP) {
+    try {
+      const ordersInZoho = await zoho.salesOrder.search(`${prefix}-`);
+      await zoho.salesOrder.delete(ordersInZoho.map((o) => o.salesorder_id));
+    } catch (err) {
+      console.error("Unable to clean up", err);
+      throw err;
+    }
+  }
+}, 30_000);
+
 afterAll(async () => {
   await prisma.$disconnect();
   if (CLEAN_UP) {
     /** Clean up created entries */
     try {
-      const ordersInZoho = await zoho.salesOrder.search(`${prefix}-`);
-      await zoho.salesOrder.delete(ordersInZoho.map((o) => o.salesorder_id));
       for (const id of createdContactIds) {
         await zoho.contact.delete(id);
       }
@@ -215,7 +231,7 @@ describe("with invalid webhook", () => {
   describe("with wrong webhook id", () => {
     it("fails with status 404", async () => {
       const res = await new HttpClient().call({
-        url: `http://localhost:3000/api/strapi/webhook/v1/not-a-valid-id`,
+        url: "http://localhost:3000/api/strapi/webhook/v1/not-a-valid-id",
         method: "POST",
         body: await generateEvent("entry.create", "Draft"),
         headers: {
@@ -266,7 +282,7 @@ describe("with valid webhook", () => {
       });
     });
     describe("with only required fields", () => {
-      it(`syncs all orders correctly`, async () => {
+      it("syncs all orders correctly", async () => {
         const event = await generateEvent("entry.create", "Draft");
 
         await triggerWebhook(webhookId, webhookSecret, event);
@@ -278,7 +294,7 @@ describe("with valid webhook", () => {
     });
 
     describe("with street2", () => {
-      it(`syncs all orders correctly`, async () => {
+      it("syncs all orders correctly", async () => {
         const event = await generateEvent("entry.create", "Draft");
         event.entry.addresses = event.entry.addresses.map((a) => ({
           ...a,
@@ -294,7 +310,7 @@ describe("with valid webhook", () => {
     });
 
     describe("with terminationDate", () => {
-      it(`syncs all orders correctly`, async () => {
+      it("syncs all orders correctly", async () => {
         const event = await generateEvent("entry.create", "Draft");
         event.entry.terminationDate = "2022-10-02";
 
@@ -306,7 +322,7 @@ describe("with valid webhook", () => {
       }, 100_000);
     });
     describe("with different products for an address", () => {
-      it(`syncs all orders correctly`, async () => {
+      it("syncs all orders correctly", async () => {
         const event = await generateEvent("entry.create", "Draft");
         event.entry.addresses[0].products = [
           {

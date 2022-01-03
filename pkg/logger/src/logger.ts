@@ -30,8 +30,11 @@ export interface ILogger {
 
 export class Logger implements ILogger {
   private logger: winston.Logger;
+
   private meta: Record<string, unknown>;
+
   private elasticSearchTransport?: ElasticsearchTransport;
+
   private logDrains: LogDrain[] = [];
 
   public constructor(config?: LoggerConfig) {
@@ -48,7 +51,7 @@ export class Logger implements ILogger {
       }),
     });
 
-    if (this.meta["env"] === "production") {
+    if (this.meta.env === "production") {
       this.debug("Enabling elastic transport");
       // this.apm ??= APMAgent.start({ serviceName: "eci-v2" });
 

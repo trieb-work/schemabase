@@ -49,7 +49,7 @@ describe("Saleor app installation", () => {
       password: "admin",
     });
     if (!setup?.tokenCreate?.token) {
-      throw new Error(`Unable to get saleor token`);
+      throw new Error("Unable to get saleor token");
     }
     const client = createSaleorClient({
       traceId: "test",

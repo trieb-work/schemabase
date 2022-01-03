@@ -60,7 +60,7 @@ describe("verify()", () => {
       expect(() =>
         signer.verify("hello", "wrongSignature"),
       ).toThrowErrorMatchingInlineSnapshot(
-        `"Signature is invalid, got: 6ae6caf33c4be33bbf6c699b171bd8c2b85b56778c99a425d0f41461f08fe222, expected: wrongSignature"`,
+        '"Signature is invalid, got: 6ae6caf33c4be33bbf6c699b171bd8c2b85b56778c99a425d0f41461f08fe222, expected: wrongSignature"',
       );
     });
   });

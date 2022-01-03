@@ -47,8 +47,6 @@ jobs:
       - name: Format
         run: pnpm prettier --check .
 
-      # - name: Test (unit)
-      #   run: pnpm test:unit
 
   build:
     name: Build
@@ -161,8 +159,11 @@ jobs:
       ZOHO_CLIENT_ID: ${{ secrets.ZOHO_CLIENT_ID }}
       ZOHO_ORG_ID: ${{ secrets.ZOHO_ORG_ID }}
       ECI_ENV: ci
-      KAFKA_BROKER_URL: kafka:9092
       VERCEL_TOKEN: ${{secrets.VERCEL_TOKEN}}
+      KAFKA_BROKER_URL: ${{ secrets.KAFKA_BROKER_URL }}
+      KAFKA_SASL_MECHANISM: ${{ secrets.KAFKA_SASL_MECHANISM }}
+      KAFKA_USERNAME: ${{ secrets.KAFKA_USERNAME }}
+      KAFKA_PASSWORD: ${{ secrets.KAFKA_PASSWORD }}
 
     steps:
       - name: Checkout code

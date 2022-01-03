@@ -36,7 +36,7 @@ export class HttpClient implements HttpApi {
   }
 
   public async call<Data>(req: Request): Promise<Response<Data>> {
-    return await axios({
+    return axios({
       method: req.method,
       url: req.url,
       params: req.params,

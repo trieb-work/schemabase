@@ -28,7 +28,7 @@ async function main() {
     await new Promise((resolve) => setTimeout(resolve, 1000 * timeout));
   }
   if (!kafkaConnected) {
-    throw new Error(`Unable to connect to kafka`);
+    throw new Error("Unable to connect to kafka");
   }
   await kafka.disconnect();
 

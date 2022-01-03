@@ -38,7 +38,8 @@ init: down build
 
 
 init-core: down build
-	docker-compose up -d eci_webhooks eci_worker kafka kafka-ui
+	docker-compose up -d eci_webhooks eci_worker kafka-ui
+	$(MAKE) db-push
 
 build: install
 	pnpm prisma generate
@@ -48,10 +49,6 @@ build-webhooks: build
 
 build-worker: build
 	pnpm esbuild --platform=node --bundle --outfile=services/worker/dist/main.js services/worker/src/main.ts
-
-# Run all unit tests
-test: build
-	pnpm test
 
 
 
@@ -99,8 +96,7 @@ install:
 
 db-migrate:
 	npx prisma migrate dev --schema=pkg/prisma/schema.prisma
-db-studio:
-	npx prisma db studio --schema=pkg/prisma/schema.prisma
+
 db-push:
 	npx prisma db push --schema=pkg/prisma/schema.prisma
 

@@ -6,8 +6,11 @@
     "pnpm": ">=6"
   },
   "scripts": {
-    "test": "jest -i",
-    "build": "prisma generate"
+    "test": "jest",
+    "build": "prisma generate",
+    "fmt": "pnpm lint && pnpm format",
+    "lint": "eslint --ext .js,.ts --fix .",
+    "format": "prettier --write ."
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^15.0.0",
@@ -23,15 +26,24 @@
     "@types/objects-to-csv": "^1.3.1",
     "@types/react": "^17.0.37",
     "@types/react-dom": "^17.0.11",
+    "@typescript-eslint/eslint-plugin": "^5.9.0",
+    "@typescript-eslint/parser": "^5.9.0",
     "commitlint": "^15.0.0",
     "dotenv": "^10.0.0",
     "esbuild": "^0.14.7",
+    "eslint": "^8.6.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-airbnb-typescript": "^16.1.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-prettier": "^4.0.0",
     "faker": "^5.5.3",
     "jest": "^27.4.5",
     "lint-staged": "^12.1.3",
     "prettier": "^2.5.1",
     "prisma": "^3.7.0",
-    "ts-jest": "^27.1.2"
+    "ts-jest": "^27.1.2",
+    "typescript": "^4.5.4"
   },
   "lint-staged": {
     "*.{ts,tsx,js,html}": [

@@ -37,7 +37,9 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
       channel: string;
     }) => Promise<ProductsQuery>;
   };
+
   public readonly channelSlug: string;
+
   private readonly logger: ILogger;
 
   public constructor(config: ProductDataFeedServiceConfig) {
@@ -52,7 +54,7 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
   ): Promise<string> {
     const products = await this.generate(storefrontProductUrl, feedVariant);
     const csv = new ObjectsToCsv(products);
-    return await csv.toString();
+    return csv.toString();
   }
 
   private async generate(

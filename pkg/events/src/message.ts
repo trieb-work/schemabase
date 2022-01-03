@@ -37,6 +37,7 @@ type OptionalKey<T, O extends keyof T> = Omit<T, O> & Partial<Pick<T, O>>;
 
 export class Message<TContent> {
   public readonly headers: Headers;
+
   public readonly content: TContent;
 
   constructor(message: {

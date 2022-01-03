@@ -3,6 +3,7 @@ version: "3.9"
 services:
   # Our own database where we store tenants and config
   eci_db:
+    container_name: db.eci
     image: postgres
     ports:
       # Must be exposed on the host for prisma to migrate and seed
@@ -11,8 +12,6 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-    volumes:
-      - eci_db:/var/lib/postgresql/data
 
   # Nextjs Serverless application to receive webhooks from various services
   eci_webhooks:
@@ -25,9 +24,12 @@ services:
     ports:
       - 3000:3000
     environment:
-      DATABASE_URL: postgres://postgres:postgres@eci_db:5432/postgres
-      DATABASE_URL_POOL: postgres://postgres:postgres@eci_db:5432/postgres
-      KAFKA_BROKER_URL: kafka:9092
+      DATABASE_URL: postgres://postgres:postgres@db.eci:5432/postgres
+      DATABASE_URL_POOL: postgres://postgres:postgres@db.eci:5432/postgres
+
+      KAFKA_BROKER_URL: ${KAFKA_BROKER_URL}
+      KAFKA_USERNAME: ${KAFKA_USERNAME}
+      KAFKA_PASSWORD: ${KAFKA_PASSWORD}
       SIGNING_KEY: anything
       NODE_ENV: production
       ECI_BASE_URL: http://webhooks.eci:3000
@@ -38,6 +40,7 @@ services:
 
   eci_worker:
     image: eci_worker
+    container_name: worker.eci
 
     build:
       context: .
@@ -45,10 +48,12 @@ services:
       args:
         - commit_sha=development
     environment:
-      DATABASE_URL: postgres://postgres:postgres@eci_db:5432/postgres
-      DATABASE_URL_POOL: postgres://postgres:postgres@eci_db:5432/postgres
+      DATABASE_URL: postgres://postgres:postgres@db.eci:5432/postgres
+      DATABASE_URL_POOL: postgres://postgres:postgres@db.eci:5432/postgres
 
-      KAFKA_BROKER_URL: kafka:9092
+      KAFKA_BROKER_URL: ${KAFKA_BROKER_URL}
+      KAFKA_USERNAME: ${KAFKA_USERNAME}
+      KAFKA_PASSWORD: ${KAFKA_PASSWORD}
       SIGNING_KEY: anything
       NODE_ENV: production
       ECI_ENV: development
@@ -85,8 +90,6 @@ services:
       - POSTGRES_PASSWORD=saleor
     ports:
       - 15432:5432
-    volumes:
-      - saleor_db:/var/lib/postgresql
 
   zookeeper:
     image: docker.io/bitnami/zookeeper:3.7
@@ -103,6 +106,3 @@ services:
       ALLOW_PLAINTEXT_LISTENER: "yes"
     depends_on:
       - zookeeper
-volumes:
-  eci_db:
-  saleor_db:
