@@ -74,7 +74,7 @@ export class KafkaProducer<TContent> implements EventProducer<TContent> {
       messages,
     });
     return {
-      messageId: message.headers.id,
+      messageId: message.header.id,
       partition: res[0].partition,
       offset: res[0].offset,
     };

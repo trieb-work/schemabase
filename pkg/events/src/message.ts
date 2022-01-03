@@ -3,7 +3,7 @@ import { id } from "@eci/pkg/ids";
 // /**
 //  * Additional meta information about the message
 //  */
-export type Headers = {
+export type Header = {
   /**
    * Unique id for this messages
    */
@@ -36,17 +36,17 @@ export type Signed<TMessage> = {
 type OptionalKey<T, O extends keyof T> = Omit<T, O> & Partial<Pick<T, O>>;
 
 export class Message<TContent> {
-  public readonly headers: Headers;
+  public readonly header: Header;
 
   public readonly content: TContent;
 
   constructor(message: {
-    headers: OptionalKey<Headers, "id">;
+    header: OptionalKey<Header, "id">;
     content: TContent;
   }) {
-    this.headers = Object.freeze({
-      id: message.headers.id ?? id.id("message"),
-      ...message.headers,
+    this.header = Object.freeze({
+      id: message.header.id ?? id.id("message"),
+      ...message.header,
     });
     this.content = Object.freeze(message.content);
   }
@@ -54,7 +54,7 @@ export class Message<TContent> {
   public serialize(): Buffer {
     return Buffer.from(
       JSON.stringify({
-        headers: this.headers,
+        headers: this.header,
         content: this.content,
       }),
     );

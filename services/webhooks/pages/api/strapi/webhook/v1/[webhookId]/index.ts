@@ -102,7 +102,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   });
 
   const message = new Message({
-    headers: {
+    header: {
       traceId: ctx.trace.id,
     },
     content: {
