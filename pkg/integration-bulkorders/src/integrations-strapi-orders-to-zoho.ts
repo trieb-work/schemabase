@@ -201,7 +201,7 @@ export class StrapiOrdersToZoho {
     const strapiOrders = await this.transformStrapiEventToZohoOrders(rawEvent);
 
     const existingOrderUIds = existingOrders.map((o) =>
-      this.getUniqueOrderId(o.salesorder_number, o.cf_orderhash as string),
+      this.getUniqueOrderId(o.salesorder_number, o["cf_orderhash"] as string),
     );
     this.logger.debug("strapiOrders", { strapiOrders });
     const strapiOrderUIds = strapiOrders.map((o) =>
@@ -219,7 +219,7 @@ export class StrapiOrdersToZoho {
           !strapiOrderUIds.includes(
             this.getUniqueOrderId(
               existingOrder.salesorder_number,
-              existingOrder.cf_orderhash as string,
+              existingOrder["cf_orderhash"] as string,
             ),
           ),
       )

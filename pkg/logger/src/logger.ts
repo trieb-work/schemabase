@@ -51,7 +51,7 @@ export class Logger implements ILogger {
       }),
     });
 
-    if (this.meta.env === "production") {
+    if (this.meta["env"] === "production") {
       this.debug("Enabling elastic transport");
       // this.apm ??= APMAgent.start({ serviceName: "eci-v2" });
 

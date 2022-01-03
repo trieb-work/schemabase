@@ -160,14 +160,14 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
           const message = Message.deserialize<TContent>(payload.message.value);
           const { headers } = payload.message;
 
-          if (!headers || !headers.signature) {
+          if (!headers || !headers["signature"]) {
             throw new Error("Kafka message does not have signature header");
           }
 
           const signature =
-            typeof headers.signature === "string"
-              ? headers.signature
-              : headers.signature.toString();
+            typeof headers["signature"] === "string"
+              ? headers["signature"]
+              : headers["signature"].toString();
 
           this.signer.verify(message.serialize(), signature);
 
@@ -186,7 +186,7 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
           });
 
           payload.message.headers ??= {};
-          payload.message.headers!.error = err.message;
+          payload.message.headers["error"] = err.message;
           await this.errorProducer.send({
             topic: "UNHANDLED_EXCEPTION",
             messages: [payload.message],
