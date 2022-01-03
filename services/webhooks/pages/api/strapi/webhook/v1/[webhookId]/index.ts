@@ -116,7 +116,6 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     message,
   );
   ctx.logger.info("Queued new event", { messageId });
-  await kafka.close();
 
   res.json({
     status: "received",
