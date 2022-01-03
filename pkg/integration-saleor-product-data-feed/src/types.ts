@@ -30,7 +30,8 @@ export type Product = {
    * Your product’s description
    *
    * @example
-   * Made from 100% organic cotton, this classic red men’s polo has a slim fit and signature logo embroidered on the left chest. Machine wash cold; imported.
+   * Made from 100% organic cotton, this classic red men’s polo has a slim fit and
+   * signature logo embroidered on the left chest. Machine wash cold; imported.
    *
    * Syntax
    * Max 5000 characters
@@ -145,7 +146,8 @@ export type Product = {
    * JAN (in Japan / GTIN-13)
    * 8 or 13-digit number like 49123456 or 4901234567894
    * ISBN (for books)
-   * 10 or 13-digit number like 1455582344 or 978-1455582341. If you have both, only include the 13-digit number. ISBN-10 are deprecated and should be converted to ISBN-13
+   * 10 or 13-digit number like 1455582344 or 978-1455582341. If you have both, only include the
+   * 13-digit number. ISBN-10 are deprecated and should be converted to ISBN-13
    * ITF-14 (for multipacks / GTIN-14)
    * 14-digit number like 10856435001702
    *

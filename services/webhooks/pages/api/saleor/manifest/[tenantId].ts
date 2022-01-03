@@ -27,9 +27,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     id: "triebwork.eci",
     version: "1.0.0",
     name: "eCommerce Integrations for Saleor",
-    // eslint-disable-next-line max-len
-    about:
-      "The trieb.work ECI for saleor is a powerful App used for several services like data synchronisation to Zoho Inventory, Mailchimp, an advanced product data feed etc.. ",
+    about: "ECI is cool",
     permissions: [
       "MANAGE_APPS",
       "MANAGE_SHIPPING",
