@@ -24,10 +24,11 @@ services:
     ports:
       - 3000:3000
     environment:
-      DATABASE_URL: postgres://postgres:postgres@db.eci:5432/postgres
-      DATABASE_URL_POOL: postgres://postgres:postgres@db.eci:5432/postgres
+      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL_POOL: ${DATABASE_URL_POOL}
 
       KAFKA_BROKER_URL: ${KAFKA_BROKER_URL}
+      KAFKA_SASL_MECHANISM: ${KAFKA_SASL_MECHANISM}
       KAFKA_USERNAME: ${KAFKA_USERNAME}
       KAFKA_PASSWORD: ${KAFKA_PASSWORD}
       SIGNING_KEY: anything
@@ -48,10 +49,11 @@ services:
       args:
         - commit_sha=development
     environment:
-      DATABASE_URL: postgres://postgres:postgres@db.eci:5432/postgres
-      DATABASE_URL_POOL: postgres://postgres:postgres@db.eci:5432/postgres
+      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL_POOL: ${DATABASE_URL}
 
       KAFKA_BROKER_URL: ${KAFKA_BROKER_URL}
+      KAFKA_SASL_MECHANISM: ${KAFKA_SASL_MECHANISM}
       KAFKA_USERNAME: ${KAFKA_USERNAME}
       KAFKA_PASSWORD: ${KAFKA_PASSWORD}
       SIGNING_KEY: anything
@@ -98,6 +100,7 @@ services:
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
   kafka:
+    container_name: kafka
     image: docker.io/bitnami/kafka:3
     ports:
       - "9092:9092"

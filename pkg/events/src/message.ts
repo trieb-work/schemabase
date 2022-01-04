@@ -54,7 +54,7 @@ export class Message<TContent> {
   public serialize(): Buffer {
     return Buffer.from(
       JSON.stringify({
-        headers: this.header,
+        header: this.header,
         content: this.content,
       }),
     );

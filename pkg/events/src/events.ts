@@ -20,6 +20,7 @@ export interface EventProducer<TContent> {
 export const newKafkaClient = (): kafka.Kafka => {
   const config: kafka.KafkaConfig = {
     brokers: [env.require("KAFKA_BROKER_URL")],
+    logLevel: 1,
   };
   if (env.get("KAFKA_SASL_MECHANISM")?.toLowerCase() === "scram-sha-256") {
     config.sasl = {
@@ -29,6 +30,7 @@ export const newKafkaClient = (): kafka.Kafka => {
     };
     config.ssl = true;
   }
+
   return new kafka.Kafka(config);
 };
 
@@ -182,7 +184,7 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
         } catch (error) {
           const err = error as Error;
           this.logger.error("Unable to process message", {
-            err: err.message,
+            err: err,
           });
 
           payload.message.headers ??= {};
