@@ -147,7 +147,6 @@ jobs:
             "registry.gitlab.com/trieb.work/saleor:3.0.0-b.13-triebwork1", #v3 custom
             "ghcr.io/saleor/saleor:3.0.0-b.27",
           ]
-    
 
     steps:
       - name: Checkout code
@@ -223,7 +222,6 @@ jobs:
         run: pnpm jest
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
-
 
       - run: docker-compose logs
         if: always()
