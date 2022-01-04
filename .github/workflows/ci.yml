@@ -147,20 +147,7 @@ jobs:
             "registry.gitlab.com/trieb.work/saleor:3.0.0-b.13-triebwork1", #v3 custom
             "ghcr.io/saleor/saleor:3.0.0-b.27",
           ]
-    env:
-      SALEOR_IMAGE: ${{ matrix.saleor }}
-      DATABASE_URL: postgres://postgres:postgres@db.eci:5432/postgres
-      DATABASE_URL_POOL: postgres://postgres:postgres@db.eci:5432/postgres
-      ECI_BASE_URL: http://localhost:3000
-      ECI_BASE_URL_FROM_CONTAINER: http://webhooks.eci:3000
-      SALEOR_URL: http://localhost:8000/graphql/
-      SALEOR_URL_FROM_CONTAINER: http://saleor.eci:8000/graphql/
-      ZOHO_CLIENT_SECRET: ${{ secrets.ZOHO_CLIENT_SECRET }}
-      ZOHO_CLIENT_ID: ${{ secrets.ZOHO_CLIENT_ID }}
-      ZOHO_ORG_ID: ${{ secrets.ZOHO_ORG_ID }}
-      ECI_ENV: ci
-      VERCEL_TOKEN: ${{secrets.VERCEL_TOKEN}}
-      KAFKA_BROKER_URL: "kafka:9092"
+    
 
     steps:
       - name: Checkout code
@@ -206,6 +193,20 @@ jobs:
 
       - name: Start services
         run: docker-compose up -d
+        env:
+          SALEOR_IMAGE: ${{ matrix.saleor }}
+          DATABASE_URL: postgres://postgres:postgres@db.eci:5432/postgres
+          DATABASE_URL_POOL: postgres://postgres:postgres@db.eci:5432/postgres
+          ECI_BASE_URL: http://localhost:3000
+          ECI_BASE_URL_FROM_CONTAINER: http://webhooks.eci:3000
+          SALEOR_URL: http://localhost:8000/graphql/
+          SALEOR_URL_FROM_CONTAINER: http://saleor.eci:8000/graphql/
+          ZOHO_CLIENT_SECRET: ${{ secrets.ZOHO_CLIENT_SECRET }}
+          ZOHO_CLIENT_ID: ${{ secrets.ZOHO_CLIENT_ID }}
+          ZOHO_ORG_ID: ${{ secrets.ZOHO_ORG_ID }}
+          ECI_ENV: ci
+          VERCEL_TOKEN: ${{secrets.VERCEL_TOKEN}}
+          KAFKA_BROKER_URL: "kafka:9092"
 
       - name: Migrate saleor schema
         run: make migrate-saleor
@@ -220,6 +221,9 @@ jobs:
 
       - name: Test
         run: pnpm jest
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+
 
       - run: docker-compose logs
         if: always()
