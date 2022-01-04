@@ -198,7 +198,6 @@ jobs:
           DATABASE_URL_POOL: postgres://postgres:postgres@db.eci:5432/postgres
           ECI_BASE_URL: http://localhost:3000
           ECI_BASE_URL_FROM_CONTAINER: http://webhooks.eci:3000
-          SALEOR_URL: http://localhost:8000/graphql/
           SALEOR_URL_FROM_CONTAINER: http://saleor.eci:8000/graphql/
 
           ECI_ENV: ci
@@ -219,6 +218,8 @@ jobs:
       - name: Test
         run: pnpm jest
         env:
+          SALEOR_URL: http://localhost:8000/graphql/
+          ECI_BASE_URL: http://localhost:3000
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
           ZOHO_CLIENT_SECRET: ${{ secrets.ZOHO_CLIENT_SECRET }}
           ZOHO_CLIENT_ID: ${{ secrets.ZOHO_CLIENT_ID }}
