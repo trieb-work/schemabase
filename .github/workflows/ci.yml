@@ -150,7 +150,7 @@ jobs:
     env:
       SALEOR_IMAGE: ${{ matrix.saleor }}
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
-      DATABASE_URL_POOL: postgres://postgres:postgres@localhost:5432/postgres
+      DATABASE_URL_POOL: postgres://postgres:postgres@db.eci:5432/postgres
       ECI_BASE_URL: http://localhost:3000
       ECI_BASE_URL_FROM_CONTAINER: http://webhooks.eci:3000
       SALEOR_URL: http://localhost:8000/graphql/
