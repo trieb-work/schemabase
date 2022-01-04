@@ -19,3 +19,9 @@ elasticsearch:
   host: elastic.test.com
   username: elastic
   password: elastic
+
+kafka:
+  brokerUrl: kafka:9092
+  saslMechanism: scram-sha-256
+  username: kafka
+  password: kafka

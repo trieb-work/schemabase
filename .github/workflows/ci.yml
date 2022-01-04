@@ -150,6 +150,7 @@ jobs:
     env:
       SALEOR_IMAGE: ${{ matrix.saleor }}
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+      DATABASE_URL_POOL: postgres://postgres:postgres@localhost:5432/postgres
       ECI_BASE_URL: http://localhost:3000
       ECI_BASE_URL_FROM_CONTAINER: http://webhooks.eci:3000
       SALEOR_URL: http://localhost:8000/graphql/
@@ -159,10 +160,7 @@ jobs:
       ZOHO_ORG_ID: ${{ secrets.ZOHO_ORG_ID }}
       ECI_ENV: ci
       VERCEL_TOKEN: ${{secrets.VERCEL_TOKEN}}
-      KAFKA_BROKER_URL: ${{ secrets.KAFKA_BROKER_URL }}
-      KAFKA_SASL_MECHANISM: ${{ secrets.KAFKA_SASL_MECHANISM }}
-      KAFKA_USERNAME: ${{ secrets.KAFKA_USERNAME }}
-      KAFKA_PASSWORD: ${{ secrets.KAFKA_PASSWORD }}
+      KAFKA_BROKER_URL: "kafka:9092"
 
     steps:
       - name: Checkout code
