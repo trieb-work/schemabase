@@ -200,9 +200,7 @@ jobs:
           ECI_BASE_URL_FROM_CONTAINER: http://webhooks.eci:3000
           SALEOR_URL: http://localhost:8000/graphql/
           SALEOR_URL_FROM_CONTAINER: http://saleor.eci:8000/graphql/
-          ZOHO_CLIENT_SECRET: ${{ secrets.ZOHO_CLIENT_SECRET }}
-          ZOHO_CLIENT_ID: ${{ secrets.ZOHO_CLIENT_ID }}
-          ZOHO_ORG_ID: ${{ secrets.ZOHO_ORG_ID }}
+
           ECI_ENV: ci
           VERCEL_TOKEN: ${{secrets.VERCEL_TOKEN}}
           KAFKA_BROKER_URL: "kafka:9092"
@@ -222,6 +220,9 @@ jobs:
         run: pnpm jest
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+          ZOHO_CLIENT_SECRET: ${{ secrets.ZOHO_CLIENT_SECRET }}
+          ZOHO_CLIENT_ID: ${{ secrets.ZOHO_CLIENT_ID }}
+          ZOHO_ORG_ID: ${{ secrets.ZOHO_ORG_ID }}
 
       - run: docker-compose logs
         if: always()
