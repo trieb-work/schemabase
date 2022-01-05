@@ -6,6 +6,10 @@ const prefixes = {
   trace: "tr",
   secretKey: "sk",
   publicKey: "pk",
+  event: "evt",
+  package: "p",
+  email: "em",
+  order: "o",
   /**
    * Only used in automatic tests
    */
