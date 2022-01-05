@@ -2,7 +2,7 @@
   "name": "eci",
   "version": "0.0.0",
   "engines": {
-    "node": ">=16",
+    "node": ">=14",
     "pnpm": ">=6"
   },
   "scripts": {

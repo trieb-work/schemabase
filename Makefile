@@ -93,7 +93,6 @@ build-webhooks-prod:
 install:
 	pnpm install
 
-
 db-migrate:
 	npx prisma migrate dev --schema=pkg/prisma/schema.prisma
 
