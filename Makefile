@@ -86,7 +86,8 @@ test: build db-push
 #  Build Command: `make build-webhooks-prod`
 #  Output Directory: `dist/apps/webhooks/.next`
 build-webhooks-prod:
-	pnpm build
+	pnpm build:prisma
+	pnpm build:api
 	pnpm prisma migrate deploy --schema=${prismaSchema}
 
 
