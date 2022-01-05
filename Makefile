@@ -1,7 +1,6 @@
-# Location of prisma schema file
-prismaSchema := libs/data-access/prisma/schema.prisma
 
 export COMPOSE_DOCKER_CLI_BUILD=1
+export COMPOSE_DOCKER_BUILDKIT=1
 
 
 down:
@@ -13,9 +12,7 @@ destroy: down
 # Pull development environment variables from vercel
 # Copy over database connections for prisma
 pull-env:
-	cd apps/webhooks && npx vercel env pull && mv .env .env.local
-	cp apps/webhooks/.env.local .env.local
-
+	npx vercel env pull && mv .env .env.local
 
 migrate-saleor:
 	docker-compose exec -T saleor_api python manage.py migrate
@@ -28,14 +25,8 @@ migrate-saleor:
 
 # Build and seeds all required external services
 
-init: export COMPOSE_DOCKER_CLI_BUILD=1
-init: export DOCKER_BUILDKIT=1
+
 init: down build
-
-
-
-	docker-compose pull
-
 	@# Migrating saleor is expensiev and should be done
 	@# before all memory is used for the other services
 	docker-compose up -d saleor_api
@@ -43,26 +34,26 @@ init: down build
 
 	docker-compose up -d
 
-
-	yarn prisma db push --schema=${prismaSchema}
-
-build:
-	yarn install
-
-	yarn nx run-many --target=build --all --with-deps
+	$(MAKE) db-push
 
 
+init-core: down build
+	docker-compose up -d eci_webhooks eci_worker kafka-ui
+	$(MAKE) db-push
+
+build: install
+	pnpm prisma generate
+
+build-webhooks: build
+	pnpm next build ./services/webhooks
+
+build-worker: build
+	pnpm esbuild --platform=node --bundle --outfile=services/worker/dist/main.js services/worker/src/main.ts
 
 
-# Run all unit tests
-test: build
-	yarn nx run-many --target=test --all
 
 
-
-rebuild-webhooks: export COMPOSE_DOCKER_CLI_BUILD=1
-rebuild-webhooks: export DOCKER_BUILDKIT=1
-rebuild-webhooks: build db-migrate
+rebuild-webhooks:
 	docker-compose stop eci_webhooks
 	docker-compose up -d eci_db
 	docker-compose build eci_webhooks
@@ -81,12 +72,12 @@ rebuild-worker:
 #
 # Make sure you have called `make init` before to setup all required services
 # You just need to do this once, not for every new test run.
-test-e2e: export ECI_BASE_URL                 = http://localhost:3000
-test-e2e: export ECI_BASE_URL_FROM_CONTAINER  = http://webhooks.eci:3000
-test-e2e: export SALEOR_URL                   = http://localhost:8000/graphql/
-test-e2e: export SALEOR_URL_FROM_CONTAINER    = http://saleor.eci:8000/graphql/
-test-e2e:
-	yarn nx run-many --target=e2e --all --skip-nx-cache
+test: export ECI_BASE_URL                 = http://localhost:3000
+test: export ECI_BASE_URL_FROM_CONTAINER  = http://webhooks.eci:3000
+test: export SALEOR_URL                   = http://localhost:8000/graphql/
+test: export SALEOR_URL_FROM_CONTAINER    = http://saleor.eci:8000/graphql/
+test: build db-push
+	pnpm test
 
 # DO NOT RUN THIS YOURSELF!
 #
@@ -95,35 +86,18 @@ test-e2e:
 #  Build Command: `make build-webhooks-prod`
 #  Output Directory: `dist/apps/webhooks/.next`
 build-webhooks-prod:
-	yarn nx build webhooks --prod
-	yarn prisma migrate deploy --schema=${prismaSchema}
+	pnpm build
+	pnpm prisma migrate deploy --schema=${prismaSchema}
 
-
-tsc:
-	yarn tsc -p tsconfig.base.json --pretty
 
 install:
-	yarn install
-
-lint:
-	yarn nx workspace-lint
-	yarn nx run-many --all --target=lint
-
-format:
-	yarn prettier --write --loglevel=warn .
-	yarn prisma format --schema=${prismaSchema}
+	pnpm install
 
 
-fmt: lint format
-
-
-db-seed:
-	yarn prisma db seed --preview-feature --schema=${prismaSchema}
 db-migrate:
-	yarn prisma migrate dev --schema=${prismaSchema}
-db-studio:
-	yarn prisma studio --schema=${prismaSchema}
+	npx prisma migrate dev --schema=pkg/prisma/schema.prisma
+
 db-push:
-	yarn prisma db push --schema=${prismaSchema} --skip-generate
+	npx prisma db push --schema=pkg/prisma/schema.prisma
 
 

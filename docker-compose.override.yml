@@ -7,37 +7,25 @@ services:
   saleor_dashboard:
     container_name: dashboard.saleor.eci
     image: chronark/saleor-dashboard
-    build:
-      context: https://github.com/mirumee/saleor-dashboard.git
-      dockerfile: Dockerfile.dev
+    # build:
+    #   context: https://github.com/mirumee/saleor-dashboard.git
+    #   dockerfile: Dockerfile.dev
     ports:
       - 9000:9000
     command: npm start -- --host 0.0.0.0
     depends_on:
       - saleor_api
 
-  redis-commander:
-    image: rediscommander/redis-commander
-    environment:
-      - REDIS_HOSTS=local:redis:6379
-    ports:
-      - 8081:8081
-    depends_on:
-      - redis
+  kafka-ui:
+    image: provectuslabs/kafka-ui
+    container_name: kafka-ui
 
-  queue-manager:
-    image: queue-manager
-    build:
-      context: .
-      dockerfile: ./apps/queue-manager/Dockerfile
-      args:
-        - commit_sha=development
     ports:
-      - 19000:19000
-
+      - "8080:8080"
     environment:
-      PORT: 19000
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-    depends_on:
-      - redis
+      - KAFKA_CLUSTERS_0_NAME=eci
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=${KAFKA_BROKER_URL}
+      - KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL=SASL_SSL
+      - KAFKA_CLUSTERS_0_PROPERTIES_SASL_MECHANISM=SCRAM-SHA-256
+      - KAFKA_CLUSTERS_0_PROPERTIES_SASL_JAAS_CONFIG=org.apache.kafka.common.security.scram.ScramLoginModule required username="${KAFKA_USERNAME}" password="${KAFKA_PASSWORD}";
+      - KAFKA_CLUSTERS_0_PROPERTIES_PROTOCOL=SASL

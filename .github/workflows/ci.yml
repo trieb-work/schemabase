@@ -15,35 +15,44 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
       - uses: actions/setup-node@v2
         with:
           node-version: "16"
-      - uses: actions/cache@v2
+
+      - name: Cache pnpm modules
+        uses: actions/cache@v2
         with:
-          path: "**/node_modules"
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-
+
+      - uses: pnpm/action-setup@v2.0.1
+        with:
+          version: latest
 
       - name: Install
-        run: yarn install --frozen-lockfile --non-interactive
+        run: pnpm install
 
       - name: Build
         run: make build
 
-      - name: Lint
-        run: make fmt
+      # - name: Lint
+      #   run: pnpm lint
 
       - name: Check types
-        run: make tsc
+        run: pnpm tsc --pretty
 
-      - name: Test (unit)
-        run: make test
+      - name: Format
+        run: pnpm prettier --check .
 
   build:
     name: Build
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        app: [webhooks, worker]
+        service: [webhooks, worker]
 
     steps:
       - name: Checkout
@@ -66,10 +75,10 @@ jobs:
         with:
           context: .
           push: false
-          file: ./apps/${{ matrix.app }}/Dockerfile
-          tags: eci_${{ matrix.app }}:latest
+          file: ./services/${{ matrix.service }}/Dockerfile
+          tags: eci_${{ matrix.service }}:latest
           build-args: commit_sha=${{ github.sha }}
-          outputs: type=docker,dest=/tmp/${{ matrix.app }}.tar
+          outputs: type=docker,dest=/tmp/${{ matrix.service }}.tar
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 
@@ -79,11 +88,11 @@ jobs:
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       # export docker images to be used in next jobs below
-      - name: Upload image ${{ matrix.app }} as artifact
+      - name: Upload image ${{ matrix.service }} as artifact
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.app }}
-          path: /tmp/${{ matrix.app }}.tar
+          name: ${{ matrix.service }}
+          path: /tmp/${{ matrix.service }}.tar
           retention-days: 1
 
   release-worker:
@@ -138,19 +147,6 @@ jobs:
             "registry.gitlab.com/trieb.work/saleor:3.0.0-b.13-triebwork1", #v3 custom
             "ghcr.io/saleor/saleor:3.0.0-b.27",
           ]
-    env:
-      SALEOR_IMAGE: ${{ matrix.saleor }}
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
-      ECI_BASE_URL: http://localhost:3000
-      ECI_BASE_URL_FROM_CONTAINER: http://webhooks.eci:3000
-      SALEOR_URL: http://localhost:8000/graphql/
-      SALEOR_URL_FROM_CONTAINER: http://saleor.eci:8000/graphql/
-      ZOHO_CLIENT_SECRET: ${{ secrets.ZOHO_CLIENT_SECRET }}
-      ZOHO_CLIENT_ID: ${{ secrets.ZOHO_CLIENT_ID }}
-      ZOHO_ORG_ID: ${{ secrets.ZOHO_ORG_ID }}
-      ECI_ENV: ci
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
 
     steps:
       - name: Checkout code
@@ -159,6 +155,17 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 16
+      - name: Cache pnpm modules
+        uses: actions/cache@v2
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-
+
+      - uses: pnpm/action-setup@v2.0.1
+        with:
+          version: latest
 
       # load docker images from build jobs
       - name: Load images from artifacts
@@ -174,10 +181,10 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: "**/node_modules"
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm.lock') }}
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
+        run: pnpm install
 
         # Necesarry to test against the predefined saleor versions
       - name: Use docker-compose ci config
@@ -185,18 +192,38 @@ jobs:
 
       - name: Start services
         run: docker-compose up -d
+        env:
+          SALEOR_IMAGE: ${{ matrix.saleor }}
+          DATABASE_URL: postgres://postgres:postgres@db.eci:5432/postgres
+          DATABASE_URL_POOL: postgres://postgres:postgres@db.eci:5432/postgres
+          ECI_BASE_URL: http://localhost:3000
+          ECI_BASE_URL_FROM_CONTAINER: http://webhooks.eci:3000
+          SALEOR_URL_FROM_CONTAINER: http://saleor.eci:8000/graphql/
+
+          ECI_ENV: ci
+          VERCEL_TOKEN: ${{secrets.VERCEL_TOKEN}}
+          KAFKA_BROKER_URL: "kafka:9092"
 
       - name: Migrate saleor schema
         run: make migrate-saleor
 
       - name: Migrate eci schema
-        run: yarn prisma migrate deploy --schema=./libs/data-access/prisma/schema.prisma
+        run: make db-push
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
 
-      - name: Generate prisma client
-        run: yarn nx build data-access-prisma
+      - name: Generate code
+        run: make build
 
-      - name: Test (e2e)
-        run: yarn nx run-many --target=e2e --all -i
+      - name: Test
+        run: pnpm jest
+        env:
+          SALEOR_URL: http://localhost:8000/graphql/
+          ECI_BASE_URL: http://localhost:3000
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+          ZOHO_CLIENT_SECRET: ${{ secrets.ZOHO_CLIENT_SECRET }}
+          ZOHO_CLIENT_ID: ${{ secrets.ZOHO_CLIENT_ID }}
+          ZOHO_ORG_ID: ${{ secrets.ZOHO_ORG_ID }}
 
       - run: docker-compose logs
         if: always()

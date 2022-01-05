@@ -1,0 +1,27 @@
+# The Environment, where the Worker should register to
+eciEnv: development
+
+image:
+  imageName: registry.gitlab.com/trieb.work/ecommerce-integrations/worker
+
+databaseUrl: postgres://
+databaseUrlPool: postgres://
+signingKey: wrgkpw35ipo2i5p
+
+imagePullSecret: regreced
+
+redis:
+  host: redis.test.de
+  port: 3456
+  password: 24ß5f-2345f-245
+
+elasticsearch:
+  host: elastic.test.com
+  username: elastic
+  password: elastic
+
+kafka:
+  brokerUrl: kafka:9092
+  saslMechanism: scram-sha-256
+  username: kafka
+  password: kafka
