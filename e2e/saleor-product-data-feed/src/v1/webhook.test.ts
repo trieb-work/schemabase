@@ -206,7 +206,7 @@ beforeAll(async () => {
     },
   });
   await prisma.$disconnect();
-});
+}, 20_000);
 
 describe("productdatafeed", () => {
   const variants = ["facebookcommerce", "googlemerchant"];

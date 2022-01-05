@@ -1,8 +1,8 @@
 import ObjectsToCsv from "objects-to-csv";
 import { htmlToText } from "html-to-text";
 import { ProductsQuery } from "@eci/pkg/saleor";
-
-import edjsHTML from "./editorjs/app";
+// @ts-expect-error it doesn't detec types for some reason
+import edjsHTML from "editorjs-html";
 import { generateUnitPrice } from "./generate-unit-price";
 import { FeedVariant, Product } from "./types";
 import { ILogger } from "@eci/pkg/logger";
