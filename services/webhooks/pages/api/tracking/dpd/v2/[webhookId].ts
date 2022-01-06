@@ -188,6 +188,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     time: time.getTime() / 1000,
     location: depot,
     state,
+    trackingIntegrationId: integration.id,
   };
 
   const kafka = await KafkaProducer.new({

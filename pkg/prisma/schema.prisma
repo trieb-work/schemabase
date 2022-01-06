@@ -1,7 +1,7 @@
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  }
+}
 
 generator client {
   provider = "prisma-client-js"
@@ -54,7 +54,7 @@ model Package {
   // tracking id from the carrier
   trackingId         String         @unique
   // A link to the carriers tracking page
-  carrierTrackingUrl String         
+  carrierTrackingUrl String
   order              Order          @relation(fields: [orderId], references: [orderId], onDelete: Cascade)
   orderId            String
   events             PackageEvent[]

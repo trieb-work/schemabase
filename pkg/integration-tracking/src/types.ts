@@ -1,12 +1,14 @@
-import type { PackageState } from "@eci/pkg/prisma";
+import { PackageState } from "@prisma/client";
+
 export enum Topic {
   PACKAGE_UPDATE = "tracking.package.update",
-  PACKAGE_UPDATE_DONE = "tracking.package.update.success",
+  PACKAGE_STATE_TRANSITION = "tracking.package.state.transition",
 }
 
-export type PackageUpdateDoneEvent = {
+export type PackageStateTransitionEvent = {
   packageId: string;
-  shouldSendEmail: boolean;
+  oldState: PackageState;
+  newState: PackageState;
 };
 
 export type PackageEvent = {
@@ -15,4 +17,5 @@ export type PackageEvent = {
   time: number;
   state: PackageState;
   message?: string;
+  trackingIntegrationId: string;
 };
