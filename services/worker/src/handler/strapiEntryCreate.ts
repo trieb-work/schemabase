@@ -7,7 +7,7 @@ import {
 import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { ILogger } from "@eci/pkg/logger";
-import { env } from "@chronark/env";
+import { env } from "@eci/pkg/env";
 export const strapiEntryCreate =
   ({ prisma, logger }: { prisma: PrismaClient; logger: ILogger }) =>
   async (

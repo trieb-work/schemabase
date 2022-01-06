@@ -1,4 +1,4 @@
-import { PrismaClient, Carrier, PackageState } from "@eci/pkg/prisma";
+import { PrismaClient, Carrier, PackageState, Language } from "@eci/pkg/prisma";
 import { HttpClient } from "@eci/pkg/http";
 import { id } from "@eci/pkg/ids";
 import faker from "faker";
@@ -59,6 +59,23 @@ beforeAll(async () => {
       replyTo: "noreply@test.com",
     },
   });
+  for (const state of Object.values(PackageState)) {
+    await prisma.sendgridTemplate.create({
+      data: {
+        id: id.id("test"),
+        name: id.id("test"),
+        templateId: "d-22ba8412d0c149108bdd8f1b4fd3b8b0",
+        language: Language.EN,
+        packageState: state,
+        subject: "Hello from jest",
+        trackingEmailApp: {
+          connect: {
+            id: trackingApp.id,
+          },
+        },
+      },
+    });
+  }
   const integration = await prisma.trackingIntegration.create({
     data: {
       id: id.id("test"),
@@ -142,8 +159,8 @@ describe("with invalid webhook", () => {
         await prisma.order.create({
           data: {
             id: id.id("order"),
-            orderId: randomUUID(),
-            email: "test@test.com",
+            externalOrderId: randomUUID(),
+            email: "f34429ba91-8e1d95@inbox.mailtrap.io",
             packages: {
               create: {
                 id: packageId,

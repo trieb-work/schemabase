@@ -61,6 +61,7 @@ services:
       ECI_ENV: development
       ZOHO_ZCSRF_TOKEN: ${ZOHO_ZCSRF_TOKEN}
       ZOHO_COOKIES: ${ZOHO_COOKIES}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
 
     depends_on:
       - eci_db

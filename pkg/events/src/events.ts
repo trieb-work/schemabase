@@ -1,4 +1,4 @@
-import { env } from "@chronark/env";
+import { env } from "@eci/pkg/env";
 import { ISigner } from "./signature";
 import { ILogger } from "@eci/pkg/logger";
 import * as kafka from "kafkajs";
@@ -153,7 +153,7 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
   public async subscribe(
     process: (message: Message<TContent>) => Promise<void>,
   ): Promise<void> {
-    this.consumer.run({
+    return this.consumer.run({
       eachMessage: async (payload) => {
         try {
           if (!payload.message.value) {

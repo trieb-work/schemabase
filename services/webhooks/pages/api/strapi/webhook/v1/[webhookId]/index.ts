@@ -7,7 +7,7 @@ import { z } from "zod";
 import { HttpError } from "@eci/pkg/errors";
 import { handleWebhook, Webhook } from "@eci/pkg/http";
 import { createHash } from "crypto";
-import { env } from "@chronark/env";
+import { env } from "@eci/pkg/env";
 import { KafkaProducer, Message, Signer } from "@eci/pkg/events";
 
 const requestValidation = z.object({
