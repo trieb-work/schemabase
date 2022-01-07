@@ -1,12 +1,13 @@
 lockfileVersion: 5.3
 
 specifiers:
-  '@chronark/env': ^0.1.2
   '@chronark/prefixed-id': ^0.3.8
   '@commitlint/config-conventional': ^15.0.0
   '@elastic/ecs-winston-format': ^1.3.1
   '@jest/globals': ^27.4.4
   '@prisma/client': ^3.7.0
+  '@sendgrid/client': ^7.6.0
+  '@sendgrid/mail': ^7.6.0
   '@swc/core': ^1.2.121
   '@swc/jest': ^0.2.15
   '@trieb.work/prettier-base': ^0.1.2
@@ -52,9 +53,10 @@ specifiers:
   zod: ^3.11.6
 
 dependencies:
-  '@chronark/env': 0.1.2
   '@chronark/prefixed-id': 0.3.8
   '@elastic/ecs-winston-format': 1.3.1
+  '@sendgrid/client': 7.6.0
+  '@sendgrid/mail': 7.6.0
   '@trieb.work/zoho-ts': 0.3.45
   axios: 0.24.0
   editorjs-html: 3.4.2
@@ -461,12 +463,6 @@ packages:
   /@bcoe/v8-coverage/0.2.3:
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
     dev: true
-
-  /@chronark/env/0.1.2:
-    resolution: {integrity: sha512-FjOKefTLRmP/ibopZixbL/W8VbaXBUF3CMoq7fK6ls9v9VBpMYvE9gVAg6Sb5QhGE3eEIYtxViXm/V7e6VCt8A==}
-    dependencies:
-      deno.ns: 0.7.3
-    dev: false
 
   /@chronark/prefixed-id/0.3.8:
     resolution: {integrity: sha512-2OFlFLzDdZ6zVDgBT04F9V0xJylgbYbjqOBKgmXCpdb5+um3b3r4ze14Jlsw4SOVEEIRhYIwjEnDzb7FqCKASQ==}
@@ -1160,6 +1156,33 @@ packages:
     dependencies:
       domhandler: 4.3.0
       selderee: 0.6.0
+    dev: false
+
+  /@sendgrid/client/7.6.0:
+    resolution: {integrity: sha512-cpBVZKLlMTO+vpE18krTixubYmZa98oTbLkqBDuTiA3zRkW+urrxg7pDR24TkI35Mid0Zru8jDHwnOiqrXu0TA==}
+    engines: {node: 6.* || 8.* || >=10.*}
+    dependencies:
+      '@sendgrid/helpers': 7.6.0
+      axios: 0.21.4
+    transitivePeerDependencies:
+      - debug
+    dev: false
+
+  /@sendgrid/helpers/7.6.0:
+    resolution: {integrity: sha512-0uWD+HSXLl4Z/X3cN+UMQC20RE7xwAACgppnfjDyvKG0KvJcUgDGz7HDdQkiMUdcVWfmyk6zKSg7XKfKzBjTwA==}
+    engines: {node: '>= 6.0.0'}
+    dependencies:
+      deepmerge: 4.2.2
+    dev: false
+
+  /@sendgrid/mail/7.6.0:
+    resolution: {integrity: sha512-0KdaSZzflJD/vUAZjB3ALBIuaVGoLq22hrb2fvQXZHRepU/yhRNlEOqrr05MfKBnKskzq1blnD1J0fHxiwaolw==}
+    engines: {node: 6.* || 8.* || >=10.*}
+    dependencies:
+      '@sendgrid/client': 7.6.0
+      '@sendgrid/helpers': 7.6.0
+    transitivePeerDependencies:
+      - debug
     dev: false
 
   /@sideway/address/4.1.3:
@@ -2704,14 +2727,6 @@ packages:
   /delayed-stream/1.0.0:
     resolution: {integrity: sha1-3zrhmayt+31ECqrgsp4icrJOxhk=}
     engines: {node: '>=0.4.0'}
-
-  /deno.ns/0.7.3:
-    resolution: {integrity: sha512-GjwLGIKgmJ+xzQ5e4TcnlplGm1CWJ5H1jQn6oxZwRUHhnkTpqidRiwCt12ioN+ewRctA38dmkB957KP7yWxamA==}
-    engines: {node: '>=16.7.0'}
-    dependencies:
-      undici: 4.12.0
-      which: 2.0.2
-    dev: false
 
   /depd/1.1.2:
     resolution: {integrity: sha1-m81S4UwJd2PnSbJ0xDRu0uVgtak=}
@@ -4274,6 +4289,7 @@ packages:
 
   /isexe/2.0.0:
     resolution: {integrity: sha1-6PvzdNxVb/iUehDcsFctYz8s+hA=}
+    dev: true
 
   /istanbul-lib-coverage/3.2.0:
     resolution: {integrity: sha512-eOeJ5BHCmHYvQK7xt9GkdHuzuCGS1Y6g9Gvnx3Ym33fz/HpLRYxiS0wHNr+m/MBC8B647Xt608vCDEvhl9c6Mw==}
@@ -6858,11 +6874,6 @@ packages:
       has-symbols: 1.0.2
       which-boxed-primitive: 1.0.2
 
-  /undici/4.12.0:
-    resolution: {integrity: sha512-sJ4CyO3ZPaoxWpLQTJpH/gWD+tCIra2OJ9UPvrX1siyJkgh8NOAybRejJ/g2xHyOdAuoSE0lPRJwRl8AZSXYJQ==}
-    engines: {node: '>=12.18'}
-    dev: false
-
   /unicode-byte-truncate/1.0.0:
     resolution: {integrity: sha1-qm8PNHUZP+IMMgrJIT425i6HZKc=}
     dependencies:
@@ -7037,6 +7048,7 @@ packages:
     hasBin: true
     dependencies:
       isexe: 2.0.0
+    dev: true
 
   /winston-elasticsearch/0.16.0:
     resolution: {integrity: sha512-OYpw/dCnt7s50HTJIDa7Nyz+7rchHaS77Jz3uMixahF++G5Xejrq4ZLJ4N/vMAY6tAdnwWmAqnOCJ+/GDnWktA==}

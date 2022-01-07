@@ -1,6 +1,6 @@
 import winston from "winston";
 import { ElasticsearchTransport } from "winston-elasticsearch";
-import { env } from "@chronark/env";
+import { env } from "@eci/pkg/env";
 import ecsFormat from "@elastic/ecs-winston-format";
 
 export interface LogDrain {

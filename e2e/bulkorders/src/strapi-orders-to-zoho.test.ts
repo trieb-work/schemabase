@@ -13,7 +13,7 @@ import { createHash, randomInt } from "crypto";
 import { HttpClient } from "@eci/pkg/http";
 import { id } from "@eci/pkg/ids";
 import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
-import { env } from "@chronark/env";
+import { env } from "@eci/pkg/env";
 import { generateAddress, triggerWebhook } from "./util";
 import { OrderEvent } from "@eci/pkg/integration-bulkorders";
 import { verifySyncedOrders } from "./verifySyncedOrders";

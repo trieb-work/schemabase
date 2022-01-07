@@ -1,7 +1,7 @@
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  }
+}
 
 generator client {
   provider = "prisma-client-js"
@@ -9,12 +9,12 @@ generator client {
 
 model Order {
   // internal id
-  id        String    @id
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  orderId   String    @unique
-  email     String
-  packages  Package[]
+  id              String    @id
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  externalOrderId String    @unique
+  email           String
+  packages        Package[]
 }
 
 enum PackageState {
@@ -54,8 +54,8 @@ model Package {
   // tracking id from the carrier
   trackingId         String         @unique
   // A link to the carriers tracking page
-  carrierTrackingUrl String         
-  order              Order          @relation(fields: [orderId], references: [orderId], onDelete: Cascade)
+  carrierTrackingUrl String
+  order              Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId            String
   events             PackageEvent[]
 }
@@ -87,11 +87,16 @@ model TransactionalEmail {
 model TrackingEmailApp {
   id               String                @id
   tenant           Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId         String                @unique
-  SendgridTemplate SendgridTemplate[]
+  tenantId         String                
+  sendgridTemplates SendgridTemplate[] 
   sender           String
   replyTo          String
   integration      TrackingIntegration[]
+}
+
+enum Language {
+  DE
+  EN
 }
 
 model SendgridTemplate {
@@ -99,9 +104,9 @@ model SendgridTemplate {
   id                 String           @id
   // A human readable name provided by the user
   // To use internationalized emails you should prefix the name with the language code
-  // for example: `en:delivered`
-  // Together with the trackingEmailAppId this can be used as primary key
   name               String
+  packageState       PackageState
+  language           Language
   // Localized subject for the email
   subject            String
   // The template id in sendgrid
@@ -109,7 +114,7 @@ model SendgridTemplate {
   trackingEmailApp   TrackingEmailApp @relation(fields: [trackingEmailAppId], references: [id], onDelete: Cascade)
   trackingEmailAppId String
 
-  @@unique([trackingEmailAppId, name])
+  @@unique([trackingEmailAppId, language, packageState])
 }
 
 model DpdApp {

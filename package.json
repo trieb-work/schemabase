@@ -68,9 +68,10 @@
     "schema": "./pkg/prisma/schema.prisma"
   },
   "dependencies": {
-    "@chronark/env": "^0.1.2",
     "@chronark/prefixed-id": "^0.3.8",
     "@elastic/ecs-winston-format": "^1.3.1",
+    "@sendgrid/client": "^7.6.0",
+    "@sendgrid/mail": "^7.6.0",
     "@trieb.work/zoho-ts": "^0.3.45",
     "axios": "^0.24.0",
     "editorjs-html": "^3.4.2",

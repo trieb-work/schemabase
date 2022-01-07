@@ -5,7 +5,7 @@ import {
 } from "@eci/pkg/webhook-context";
 import { z } from "zod";
 import { id } from "@eci/pkg/ids";
-import { env } from "@chronark/env";
+import { env } from "@eci/pkg/env";
 import { handleWebhook, Webhook } from "@eci/pkg/http";
 import { HttpError } from "@eci/pkg/errors";
 import { WebhookEventTypeEnum } from "@eci/pkg/saleor";

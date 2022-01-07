@@ -6,9 +6,14 @@ import {
 import { z } from "zod";
 import { HttpError } from "@eci/pkg/errors";
 import { handleWebhook, Webhook } from "@eci/pkg/http";
-import { env } from "@chronark/env";
-import * as tracking from "@eci/pkg/integration-tracking";
-import { Signer, KafkaProducer, Message } from "@eci/pkg/events";
+import { env } from "@eci/pkg/env";
+import {
+  Signer,
+  KafkaProducer,
+  Message,
+  EventSchemaRegistry,
+  Topic,
+} from "@eci/pkg/events";
 import { PackageState } from "@eci/pkg/prisma";
 
 const parseState = (state: string): PackageState | null => {
@@ -183,14 +188,17 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     );
   }
   ctx.logger.info("Time", { time });
-  const packageEvent: tracking.PackageEvent = {
+  const packageEvent: EventSchemaRegistry.PackageUpdate["message"] = {
     trackingId,
     time: time.getTime() / 1000,
     location: depot,
     state,
+    trackingIntegrationId: integration.id,
   };
 
-  const kafka = await KafkaProducer.new({
+  const kafka = await KafkaProducer.new<
+    EventSchemaRegistry.PackageUpdate["message"]
+  >({
     signer: new Signer({ signingKey: env.require("SIGNING_KEY") }),
   });
 
@@ -201,10 +209,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     content: packageEvent,
   });
 
-  const { messageId } = await kafka.produce(
-    tracking.Topic.PACKAGE_UPDATE,
-    message,
-  );
+  const { messageId } = await kafka.produce(Topic.PACKAGE_UPDATE, message);
 
   ctx.logger.info("Queued new event", { messageId });
 

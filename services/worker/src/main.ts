@@ -1,6 +1,6 @@
 import { Logger } from "@eci/pkg/logger";
 import * as bulkorder from "@eci/pkg/integration-bulkorders";
-import { env } from "@chronark/env";
+import { env } from "@eci/pkg/env";
 import { strapiEntryCreate } from "./handler/strapiEntryCreate";
 import { strapiEntryUpdate } from "./handler/strapiEntryUpdate";
 import { PrismaClient } from "@eci/pkg/prisma";
@@ -9,9 +9,12 @@ import {
   KafkaSubscriber,
   newKafkaClient,
   KafkaProducer,
+  Message,
+  Topic,
 } from "@eci/pkg/events";
 import * as tracking from "@eci/pkg/integration-tracking";
-
+import { Sendgrid } from "@eci/pkg/email/src/emailSender";
+import { EventSchemaRegistry } from "@eci/pkg/events";
 async function main() {
   const logger = new Logger({
     meta: {
@@ -67,29 +70,75 @@ async function main() {
   });
   strapiEntryUpdateConsumer.subscribe(strapiEntryUpdate({ prisma, logger }));
 
+  const producer = await KafkaProducer.new({ signer });
+
+  logger.info("Starting tracking service");
   /**
    * Tracking
    */
-  const trackingIntegration = new tracking.Tracking({
+  const packageEventHandler = new tracking.PackageEventHandler({
     db: prisma,
-    eventProducer: await KafkaProducer.new({
-      signer: new Signer({ signingKey: env.require("SIGNING_KEY") }),
-    }),
+    onSuccess: async (ctx, res) => {
+      await producer.produce(
+        Topic.PACKAGE_STATE_TRANSITION,
+        new Message({
+          header: {
+            traceId: ctx.traceId,
+          },
+          content: res,
+        }),
+      );
+    },
     logger,
   });
 
-  const trackingConsumer = await KafkaSubscriber.new<
-    tracking.Topic,
-    tracking.PackageEvent
+  const packageEventConsumer = await KafkaSubscriber.new<
+    string,
+    EventSchemaRegistry.PackageUpdate["message"]
   >({
-    topics: [tracking.Topic.PACKAGE_UPDATE],
+    topics: ["tracking.package.update"],
     signer,
     logger,
     groupId: "trackingHandler",
   });
 
-  trackingConsumer.subscribe(async (message) => {
-    await trackingIntegration.handlePackageEvent(
+  packageEventConsumer.subscribe(async (message) => {
+    logger.info("New incoming update even", { message });
+    await packageEventHandler.handleEvent(
+      { traceId: message.header.traceId },
+      message.content,
+    );
+  });
+
+  const customerNotifier = new tracking.CustomerNotifier({
+    db: prisma,
+    onSuccess: async (ctx, res) => {
+      await producer.produce(
+        Topic.NOTIFICATION_EMAIL_SENT,
+        new Message({
+          header: {
+            traceId: ctx.traceId,
+          },
+          content: res,
+        }),
+      );
+    },
+    logger,
+    emailTemplateSender: new Sendgrid(env.require("SENDGRID_API_KEY")),
+  });
+
+  const customerNotifierSubscriber = await KafkaSubscriber.new<
+    EventSchemaRegistry.PackageStateTransition["topic"],
+    EventSchemaRegistry.PackageStateTransition["message"]
+  >({
+    topics: [Topic.PACKAGE_STATE_TRANSITION],
+    signer,
+    logger,
+    groupId: "trackingHandler",
+  });
+
+  customerNotifierSubscriber.subscribe(async (message) => {
+    await customerNotifier.handleEvent(
       { traceId: message.header.traceId },
       message.content,
     );

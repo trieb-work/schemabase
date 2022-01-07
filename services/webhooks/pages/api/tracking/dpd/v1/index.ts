@@ -5,7 +5,7 @@ const requestValidation = z.object({
   query: z.object({
     pushid: z.string().optional(),
   }),
-  header: z.object({
+  headers: z.object({
     "x-real-ip": z.string().optional(),
   }),
 });
@@ -23,7 +23,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   } = req;
 
   ctx.logger.info("Incoming webhook from dpd", {
-    ip: req.header["x-real-ip"],
+    ip: req.headers["x-real-ip"],
     pushid,
   });
 

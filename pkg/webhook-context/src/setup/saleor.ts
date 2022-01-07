@@ -1,7 +1,7 @@
 import { ContextMissingFieldError } from "@eci/pkg/errors";
 import { SaleorClient, createSaleorClient } from "@eci/pkg/saleor";
 import { Context } from "../context";
-import { env } from "@chronark/env";
+import { env } from "@eci/pkg/env";
 
 /**
  * Create a new saleor client for the given domain

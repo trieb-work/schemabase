@@ -3,7 +3,7 @@ import { HttpClient } from "@eci/pkg/http";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
 import { CountryCode, createSaleorClient } from "@eci/pkg/saleor";
-import { env } from "@chronark/env";
+import { env } from "@eci/pkg/env";
 
 const webhookId = id.id("test");
 

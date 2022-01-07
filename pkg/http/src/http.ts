@@ -11,6 +11,7 @@ export type Request = {
 };
 
 export type Response<Data> = {
+  ok: boolean;
   headers: Record<string, string | number>;
   status: number;
   data: Data | null;
@@ -44,6 +45,7 @@ export class HttpClient implements HttpApi {
       data: req.body,
     })
       .then((res) => ({
+        ok: res.status >= 200 && res.status < 300,
         status: res.status,
         data: res.data ?? null,
         headers: res.headers,
@@ -53,6 +55,7 @@ export class HttpClient implements HttpApi {
           throw err;
         }
         return {
+          ok: false,
           status: err.response.status,
           data: err.response.data,
           headers: err.response.headers,
