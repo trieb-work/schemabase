@@ -154,7 +154,6 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
   public async subscribe(handler: EventHandler<TContent>): Promise<void> {
     this.consumer.run({
       eachMessage: async (payload) => {
-        this.logger.info("New Message", { payload });
         try {
           if (!payload.message.value) {
             throw new Error("Kafka did not return a message value");

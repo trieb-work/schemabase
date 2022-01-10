@@ -81,7 +81,6 @@ async function main() {
     new StrapiEntryUpdate({ prisma, logger }),
   );
 
-  logger.info("Starting tracking service");
   /**
    * Store package updates
    */

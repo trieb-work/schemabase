@@ -33,7 +33,6 @@ export class PackageEventHandler {
     ctx: Context,
     event: EventSchemaRegistry.PackageUpdate["message"],
   ): Promise<void> {
-    this.logger.info("New event", { event });
     const storedPackage = await this.db.package.findUnique({
       where: {
         trackingId: event.trackingId,
