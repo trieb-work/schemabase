@@ -2,37 +2,36 @@ import { id } from "@eci/pkg/ids";
 import { PrismaClient } from "@prisma/client";
 import { Context } from "@eci/pkg/context";
 import { ILogger } from "@eci/pkg/logger";
-import { EventSchemaRegistry } from "@eci/pkg/events";
+import { EventHandler, OnSuccess, EventSchemaRegistry } from "@eci/pkg/events";
 
 export type PackageEventHandlerConfig = {
   db: PrismaClient;
-  onSuccess: (
-    ctx: Context,
-    res: EventSchemaRegistry.PackageStateTransition["message"],
-  ) => Promise<void>;
   logger: ILogger;
+  onSuccess: OnSuccess<EventSchemaRegistry.PackageStateTransition["message"]>;
 };
 
-export class PackageEventHandler {
+export class PackageEventHandler
+  implements EventHandler<EventSchemaRegistry.PackageUpdate["message"]>
+{
   private db: PrismaClient;
 
-  private onSuccess: (
-    ctx: Context,
-    res: EventSchemaRegistry.PackageStateTransition["message"],
-  ) => Promise<void>;
+  private onSuccess: OnSuccess<
+    EventSchemaRegistry.PackageStateTransition["message"]
+  >;
 
   private logger: ILogger;
 
   constructor(config: PackageEventHandlerConfig) {
     this.db = config.db;
-    this.onSuccess = config.onSuccess;
     this.logger = config.logger;
+    this.onSuccess = config.onSuccess;
   }
 
   public async handleEvent(
     ctx: Context,
     event: EventSchemaRegistry.PackageUpdate["message"],
   ): Promise<void> {
+    this.logger.info("New event", { event });
     const storedPackage = await this.db.package.findUnique({
       where: {
         trackingId: event.trackingId,

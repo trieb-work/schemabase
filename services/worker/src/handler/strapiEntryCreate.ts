@@ -1,6 +1,5 @@
-import { Message, KafkaProducer, Signer } from "@eci/pkg/events";
+import { EventHandler, EventSchemaRegistry, OnSuccess } from "@eci/pkg/events";
 import {
-  EntryEvent,
   OrderEvent,
   StrapiOrdersToZoho,
 } from "@eci/pkg/integration-bulkorders";
@@ -8,16 +7,32 @@ import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { ILogger } from "@eci/pkg/logger";
 import { env } from "@eci/pkg/env";
-export const strapiEntryCreate =
-  ({ prisma, logger }: { prisma: PrismaClient; logger: ILogger }) =>
-  async (
-    message: Message<EntryEvent & { zohoAppId: string }>,
-  ): Promise<void> => {
-    const zohoApp = await prisma.zohoApp.findUnique({
-      where: { id: message.content.zohoAppId },
+import { Context } from "@eci/pkg/context";
+
+export class StrapiEntryCreate
+  implements EventHandler<EventSchemaRegistry.StrapiEntryCreate["message"]>
+{
+  private prisma: PrismaClient;
+  private logger: ILogger;
+  private onSuccess: OnSuccess<EventSchemaRegistry.BulkorderSynced["message"]>;
+  constructor(config: {
+    prisma: PrismaClient;
+    logger: ILogger;
+    onSuccess: OnSuccess<EventSchemaRegistry.BulkorderSynced["message"]>;
+  }) {
+    this.prisma = config.prisma;
+    this.logger = config.logger;
+    this.onSuccess = config.onSuccess;
+  }
+  public async handleEvent(
+    ctx: Context,
+    message: EventSchemaRegistry.StrapiEntryCreate["message"],
+  ) {
+    const zohoApp = await this.prisma.zohoApp.findUnique({
+      where: { id: message.zohoAppId },
     });
     if (!zohoApp) {
-      throw new Error(`No zoho app found: ${message.content.zohoAppId}`);
+      throw new Error(`No zoho app found: ${message.zohoAppId}`);
     }
 
     const cookies = env.get("ZOHO_COOKIES");
@@ -38,16 +53,13 @@ export const strapiEntryCreate =
     );
     const strapiOrdersToZoho = new StrapiOrdersToZoho({
       zoho,
-      logger,
+      logger: this.logger,
     });
 
     await strapiOrdersToZoho.createNewBulkOrders(
-      message.content as unknown as OrderEvent,
+      message as unknown as OrderEvent,
     );
-    const producer = await KafkaProducer.new({
-      signer: new Signer({ signingKey: env.require("SIGNING_KEY") }),
-    });
 
-    await producer.produce("bulkorder.synced", message);
-    await producer.close();
-  };
+    await this.onSuccess(ctx, { orderId: message.entry.id.toString() });
+  }
+}

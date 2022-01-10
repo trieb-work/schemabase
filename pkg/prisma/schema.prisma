@@ -13,7 +13,10 @@ model Order {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   externalOrderId String    @unique
+
+  // The end customers email where we send transactional emails to
   email           String
+  language        Language
   packages        Package[]
 }
 
@@ -85,13 +88,13 @@ model TransactionalEmail {
 }
 
 model TrackingEmailApp {
-  id               String                @id
-  tenant           Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId         String                
-  sendgridTemplates SendgridTemplate[] 
-  sender           String
-  replyTo          String
-  integration      TrackingIntegration[]
+  id                String                @id
+  tenant            Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId          String
+  sendgridTemplates SendgridTemplate[]
+  sender            String
+  replyTo           String
+  integration       TrackingIntegration[]
 }
 
 enum Language {

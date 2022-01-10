@@ -8,24 +8,6 @@ const prisma = new PrismaClient();
 
 const webhookId = id.id("publicKey");
 
-// async function triggerWebhook(opts: {
-//   pushid: string;
-//   pnr: string;
-//   status: string;
-//   statusdate: string;
-// }): Promise<void> {
-//   const params = Object.entries(opts)
-//     .map((kv) => kv.join("="))
-//     .join("&");
-
-//   const res = await new HttpClient().call({
-//     url: `http://localhost:3000/api/tracking/dpd/v2/${webhookId}?${params}`,
-//     method: "POST",
-//   });
-//   expect(res.status).toBe(200);
-//   expect(res.data).toBe("");
-// }
-
 beforeAll(async () => {
   const tenant = await prisma.tenant.create({
     data: {
@@ -34,9 +16,6 @@ beforeAll(async () => {
     },
   });
 
-  /**
-   * Upserting because there is a unique constraint on the domain
-   */
   const dpdApp = await prisma.dpdApp.create({
     data: {
       id: id.id("test"),
@@ -55,8 +34,8 @@ beforeAll(async () => {
     data: {
       id: id.id("test"),
       tenantId: tenant.id,
-      sender: faker.internet.email(),
-      replyTo: "noreply@test.com",
+      sender: "servus@pfefferundfrost.de",
+      replyTo: "servus@pfefferundfrost.de",
     },
   });
   for (const state of Object.values(PackageState)) {
@@ -160,7 +139,8 @@ describe("with invalid webhook", () => {
           data: {
             id: id.id("order"),
             externalOrderId: randomUUID(),
-            email: "f34429ba91-8e1d95@inbox.mailtrap.io",
+            email: "andreas@trieb.work",
+            language: Language.DE,
             packages: {
               create: {
                 id: packageId,

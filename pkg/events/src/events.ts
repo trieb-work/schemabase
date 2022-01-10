@@ -3,6 +3,8 @@ import { ISigner } from "./signature";
 import { ILogger } from "@eci/pkg/logger";
 import * as kafka from "kafkajs";
 import { Message } from "./message";
+import { Topic } from "./registry";
+import { EventHandler } from "./handler";
 
 export interface EventProducer<TContent> {
   produce: (
@@ -88,7 +90,7 @@ export class KafkaProducer<TContent> implements EventProducer<TContent> {
 }
 
 export interface EventSubscriber<TContent> {
-  subscribe(process: (message: Message<TContent>) => Promise<void>): void;
+  subscribe: (handler: EventHandler<TContent>) => Promise<void>;
   /**
    * Stop receiving new tasks.
    * The current task will still be finished.
@@ -117,8 +119,8 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
     this.errorProducer = config.errorProducer;
   }
 
-  static async new<TTopic extends string, TContent>(config: {
-    topics: TTopic[];
+  static async new<TContent>(config: {
+    topic: Topic;
     groupId: string;
     signer: ISigner;
     logger: ILogger;
@@ -128,9 +130,8 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
       groupId: config.groupId,
     });
     await consumer.connect();
-    for (const topic of config.topics) {
-      await consumer.subscribe({ topic });
-    }
+
+    await consumer.subscribe({ topic: config.topic });
 
     const errorProducer = k.producer();
     await errorProducer.connect();
@@ -150,10 +151,8 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
     ]);
   }
 
-  public async subscribe(
-    process: (message: Message<TContent>) => Promise<void>,
-  ): Promise<void> {
-    return this.consumer.run({
+  public async subscribe(handler: EventHandler<TContent>): Promise<void> {
+    this.consumer.run({
       eachMessage: async (payload) => {
         try {
           if (!payload.message.value) {
@@ -180,7 +179,10 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
             throw new Error("Kafka did not return a message value");
           }
 
-          await process(message);
+          await handler.handleEvent(
+            { traceId: message.header.traceId },
+            message.content,
+          );
         } catch (error) {
           const err = error as Error;
           this.logger.error("Unable to process message", {

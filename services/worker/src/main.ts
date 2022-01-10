@@ -1,16 +1,17 @@
 import { Logger } from "@eci/pkg/logger";
 import * as bulkorder from "@eci/pkg/integration-bulkorders";
 import { env } from "@eci/pkg/env";
-import { strapiEntryCreate } from "./handler/strapiEntryCreate";
-import { strapiEntryUpdate } from "./handler/strapiEntryUpdate";
+import { StrapiEntryUpdate } from "./handler/strapiEntryUpdate";
+import { StrapiEntryCreate } from "./handler/strapiEntryCreate";
+import { PackageEventHandler } from "./handler/packageUpdate";
 import { PrismaClient } from "@eci/pkg/prisma";
 import {
   Signer,
   KafkaSubscriber,
   newKafkaClient,
   KafkaProducer,
-  Message,
   Topic,
+  onSuccess,
 } from "@eci/pkg/events";
 import * as tracking from "@eci/pkg/integration-tracking";
 import { Sendgrid } from "@eci/pkg/email/src/emailSender";
@@ -41,108 +42,87 @@ async function main() {
   if (!kafkaConnected) {
     throw new Error("Unable to connect to kafka");
   }
+  logger.info("Connected to kafka");
   await kafka.disconnect();
 
   const signer = new Signer({ signingKey: env.require("SIGNING_KEY") });
-  await kafka.disconnect();
   const prisma = new PrismaClient();
+  const producer = await KafkaProducer.new({ signer });
 
+  /**
+   *  Strapi
+   */
   const strapiEntryCreateConsumer = await KafkaSubscriber.new<
-    bulkorder.Topic,
     bulkorder.EntryEvent & { zohoAppId: string }
   >({
-    topics: [bulkorder.Topic.ENTRY_CREATE],
+    topic: Topic.STRAPI_ENTRY_CREATE,
     signer,
     logger,
     groupId: "strapiEntryCreateConsumer",
   });
 
-  strapiEntryCreateConsumer.subscribe(strapiEntryCreate({ prisma, logger }));
+  strapiEntryCreateConsumer.subscribe(
+    new StrapiEntryCreate({
+      prisma,
+      logger,
+      onSuccess: onSuccess(producer, Topic.BULKORDER_SYNCED),
+    }),
+  );
 
   const strapiEntryUpdateConsumer = await KafkaSubscriber.new<
-    bulkorder.Topic,
     bulkorder.EntryEvent & { zohoAppId: string }
   >({
-    topics: [bulkorder.Topic.ENTRY_UPDATE],
+    topic: Topic.STRAPI_ENTRY_UPDATE,
     signer,
     logger,
     groupId: "strapiEntryUpdateConsumer",
   });
-  strapiEntryUpdateConsumer.subscribe(strapiEntryUpdate({ prisma, logger }));
+  strapiEntryUpdateConsumer.subscribe(
+    new StrapiEntryUpdate({ prisma, logger }),
+  );
 
-  const producer = await KafkaProducer.new({ signer });
-
-  logger.info("Starting tracking service");
   /**
-   * Tracking
+   * Store package updates
    */
-  const packageEventHandler = new tracking.PackageEventHandler({
+
+  const packageEventHandler = new PackageEventHandler({
     db: prisma,
-    onSuccess: async (ctx, res) => {
-      await producer.produce(
-        Topic.PACKAGE_STATE_TRANSITION,
-        new Message({
-          header: {
-            traceId: ctx.traceId,
-          },
-          content: res,
-        }),
-      );
-    },
+    onSuccess: onSuccess(producer, Topic.PACKAGE_STATE_TRANSITION),
     logger,
   });
 
   const packageEventConsumer = await KafkaSubscriber.new<
-    string,
     EventSchemaRegistry.PackageUpdate["message"]
   >({
-    topics: ["tracking.package.update"],
+    topic: Topic.PACKAGE_UPDATE,
     signer,
     logger,
-    groupId: "trackingHandler",
+    groupId: "packageEventHandler",
   });
 
-  packageEventConsumer.subscribe(async (message) => {
-    logger.info("New incoming update even", { message });
-    await packageEventHandler.handleEvent(
-      { traceId: message.header.traceId },
-      message.content,
-    );
-  });
+  packageEventConsumer.subscribe(packageEventHandler);
 
-  const customerNotifier = new tracking.CustomerNotifier({
-    db: prisma,
-    onSuccess: async (ctx, res) => {
-      await producer.produce(
-        Topic.NOTIFICATION_EMAIL_SENT,
-        new Message({
-          header: {
-            traceId: ctx.traceId,
-          },
-          content: res,
-        }),
-      );
-    },
-    logger,
-    emailTemplateSender: new Sendgrid(env.require("SENDGRID_API_KEY")),
-  });
+  /**
+   * Send emails when packages update
+   */
 
   const customerNotifierSubscriber = await KafkaSubscriber.new<
-    EventSchemaRegistry.PackageStateTransition["topic"],
     EventSchemaRegistry.PackageStateTransition["message"]
   >({
-    topics: [Topic.PACKAGE_STATE_TRANSITION],
+    topic: Topic.PACKAGE_STATE_TRANSITION,
     signer,
     logger,
-    groupId: "trackingHandler",
+    groupId: "customerNotifierSubscriber",
   });
 
-  customerNotifierSubscriber.subscribe(async (message) => {
-    await customerNotifier.handleEvent(
-      { traceId: message.header.traceId },
-      message.content,
-    );
-  });
+  customerNotifierSubscriber.subscribe(
+    new tracking.CustomerNotifier({
+      db: prisma,
+      onSuccess: onSuccess(producer, Topic.NOTIFICATION_EMAIL_SENT),
+      logger,
+      emailTemplateSender: new Sendgrid(env.require("SENDGRID_API_KEY")),
+    }),
+  );
 }
 
 main();

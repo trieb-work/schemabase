@@ -36,7 +36,6 @@ export class Sendgrid implements EmailTemplateSender {
         ],
       }),
     });
-    console.log(JSON.stringify({ res }, null, 2));
-    return { id: "1" };
+    return { id: res.headers["x-message-id"].toString() ?? "" };
   }
 }

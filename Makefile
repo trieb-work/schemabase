@@ -38,7 +38,7 @@ init: down build
 
 
 init-core: down build
-	docker-compose up -d eci_webhooks eci_worker kafka-ui
+	docker-compose up -d --build eci_webhooks eci_worker kafka-ui kafka zookeeper
 	$(MAKE) db-push
 
 build: install
@@ -88,16 +88,16 @@ test: build db-push
 build-webhooks-prod:
 	pnpm build:prisma
 	pnpm build:api
-	pnpm prisma migrate deploy --schema=${prismaSchema}
+	pnpm prisma migrate deploy
 
 
 install:
 	pnpm install
 
 db-migrate:
-	npx prisma migrate dev --schema=pkg/prisma/schema.prisma
+	npx prisma migrate dev
 
 db-push:
-	npx prisma db push --schema=pkg/prisma/schema.prisma
+	npx prisma db push
 
 

@@ -3,19 +3,22 @@ import { Context } from "@eci/pkg/context";
 import { ILogger } from "@eci/pkg/logger";
 import { shouldNotify } from "./eventSorting";
 import { EmailTemplateSender } from "@eci/pkg/email/src/emailSender";
-import { EventSchemaRegistry } from "@eci/pkg/events/src/registry";
+import { EventSchemaRegistry, EventHandler, OnSuccess } from "@eci/pkg/events";
 
 export type CustomerNotifierConfig = {
   db: PrismaClient;
-  onSuccess: (ctx: Context, res: { emailId: string }) => Promise<void>;
+  onSuccess: OnSuccess<{ emailId: string }>;
   logger: ILogger;
   emailTemplateSender: EmailTemplateSender;
 };
 
-export class CustomerNotifier {
+export class CustomerNotifier
+  implements
+    EventHandler<EventSchemaRegistry.PackageStateTransition["message"]>
+{
   private db: PrismaClient;
 
-  private onSuccess: (ctx: Context, res: { emailId: string }) => Promise<void>;
+  private onSuccess: OnSuccess<{ emailId: string }>;
 
   private logger: ILogger;
 
