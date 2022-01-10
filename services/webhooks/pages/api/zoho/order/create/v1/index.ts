@@ -1,29 +1,9 @@
-import { handleWebhook, Webhook } from "@eci/pkg/http";
-import { z } from "zod";
+import { Logger } from "@eci/pkg/logger";
+import type { NextApiRequest, NextApiResponse } from "next";
+export default (req: NextApiRequest, res: NextApiResponse) => {
+  const logger = new Logger();
 
-const requestValidation = z.any();
+  logger.info("req", { req: req.body });
 
-/**
- * The product data feed returns a google standard .csv file from products and their attributes in your shop.#
- */
-const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
-  backgroundContext: ctx,
-  req,
-  res,
-}): Promise<void> => {
-  ctx.logger.info("Incoming webhook from zoho", {
-    req,
-  });
-
-  res.json({
-    status: "received",
-    traceId: ctx.trace.id,
-  });
+  res.json({ ok: true });
 };
-
-export default handleWebhook({
-  webhook,
-  validation: {
-    http: { allowedMethods: ["POST"] },
-  },
-});
