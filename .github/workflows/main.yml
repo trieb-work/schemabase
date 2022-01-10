@@ -45,7 +45,7 @@ jobs:
         with:
           context: .
           push: true
-          file: ./apps/worker/Dockerfile
+          file: ./services/worker/Dockerfile
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: commit_sha=${{ github.sha }}
@@ -94,7 +94,7 @@ jobs:
 
       - name: Run helm deploy
         run: >
-          helm upgrade eci-worker-v2 ./apps/worker/helm-chart
+          helm upgrade eci-worker-v2 ./services/worker/helm-chart
           --install
           --create-namespace
           --namespace=eci-prod
