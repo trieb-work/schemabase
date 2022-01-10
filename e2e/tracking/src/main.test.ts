@@ -135,11 +135,12 @@ describe("with invalid webhook", () => {
       it("creates a new packageEvent in prisma", async () => {
         const packageId = id.id("package");
         const trackingId = randomUUID();
+        const email = "andreas@trieb.work";
         await prisma.order.create({
           data: {
             id: id.id("order"),
             externalOrderId: randomUUID(),
-            email: "andreas@trieb.work",
+            email,
             language: Language.DE,
             packages: {
               create: {
@@ -164,7 +165,7 @@ describe("with invalid webhook", () => {
           where: {
             id: packageId,
           },
-          include: { events: true },
+          include: { events: { include: { sentEmail: true } } },
         });
 
         expect(storedPackage).toBeDefined();
@@ -172,6 +173,7 @@ describe("with invalid webhook", () => {
         expect(storedPackage!.events[0].state).toEqual(
           PackageState.FAILED_ATTEMPT,
         );
+        expect(storedPackage!.events[0].sentEmail?.email).toEqual(email);
       });
     });
   });

@@ -114,3 +114,4 @@ jobs:
           --set=kafka.saslMechanism="scram-sha-256"
           --set=kafka.username="${{ secrets.PROD_KAFKA_USERNAME }}"
           --set=kafka.password="${{ secrets.PROD_KAFKA_PASSWORD }}"
+          --set=sendgridApiKey=${{ secrets.SENDGRID_API_KEY }}

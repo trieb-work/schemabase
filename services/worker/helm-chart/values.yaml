@@ -25,3 +25,5 @@ kafka:
   saslMechanism: scram-sha-256
   username: kafka
   password: kafka
+
+sendgridApiKey: abc
