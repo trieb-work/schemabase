@@ -81,8 +81,6 @@ async function main() {
     new StrapiEntryUpdate({ prisma, logger }),
   );
 
-  const producer = await KafkaProducer.new({ signer });
-
   logger.info("Starting tracking service");
   /**
    * Store package updates
@@ -92,7 +90,6 @@ async function main() {
     db: prisma,
     onSuccess: onSuccess(producer, Topic.PACKAGE_STATE_TRANSITION),
     logger,
-    emailTemplateSender: new Sendgrid(env.require("SENDGRID_API_KEY")),
   });
 
   const packageEventConsumer = await KafkaSubscriber.new<
