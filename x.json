@@ -1,46 +1,36 @@
 {
-  "@timestamp": "2022-01-10T14:55:35.348Z",
+  "@timestamp": "2022-01-10T15:33:54.949Z",
   "log.level": "info",
-  "message": "Incoming webhook from zoho",
+  "message": "req",
   "ecs": { "version": "1.6.0" },
-  "http": {
-    "version": "1.1",
-    "request": {
-      "method": "POST",
-      "headers": {
-        "host": "eci-v2.vercel.app",
-        "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
-        "req-mi-chain": "-1062694317:8080",
-        "connection": "close",
-        "x-vercel-deployment-url": "eci-v2-1t10nhle0-triebwork.vercel.app",
-        "cache-control": "no-cache",
-        "x-vercel-forwarded-for": "31.186.243.98",
-        "x-vercel-id": "fra1::b69zg-1641826535320-43b1250050d9",
-        "x-real-ip": "31.186.243.98",
-        "x-matched-path": "/api/zoho/order/create/v1",
-        "x-forwarded-host": "eci-v2.vercel.app",
-        "accept": "text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2",
-        "x-forwarded-for": "31.186.243.98",
-        "x-forwarded-proto": "https",
-        "x-vercel-ip-country": "GB",
-        "x-zoho-skip-webhook-trigger": "true",
-        "pragma": "no-cache",
-        "user-agent": "ZohoBooks-Agent",
-        "x-com-zoho-organizationid": "20070434578",
-        "authorization": "123",
-        "content-length": "10386"
-      },
-      "body": { "bytes": 10386 }
-    }
-  },
-  "url": {
-    "path": "/api/zoho/order/create/v1",
-    "full": "http://eci-v2.vercel.app/api/zoho/order/create/v1"
-  },
-  "client": { "address": "127.0.0.1", "ip": "127.0.0.1", "port": 40410 },
-  "user_agent": { "original": "ZohoBooks-Agent" },
   "env": "production",
-  "commit": "3a90232b544d5a0f28e86d839ca5123b05bcad27",
-  "traceId": "tr_PR2rwJyv8c1KzJMsEHSZD8",
-  "endpoint": "/api/zoho/order/create/v1"
+  "commit": "88e7c25da363b62ed42ddde8fd68d5a1977a44f4",
+  "headers": {
+    "host": "eci-v2.vercel.app",
+    "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
+    "req-mi-chain": "-1062694317:8080",
+    "connection": "close",
+    "x-vercel-deployment-url": "eci-v2-nu5ph9zif-triebwork.vercel.app",
+    "cache-control": "no-cache",
+    "x-vercel-forwarded-for": "31.186.243.98",
+    "x-vercel-id": "fra1::mn5p7-1641828834821-2270af5674de",
+    "x-real-ip": "31.186.243.98",
+    "x-matched-path": "/api/zoho/order/create/v1",
+    "x-forwarded-host": "eci-v2.vercel.app",
+    "accept": "text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2",
+    "x-forwarded-for": "31.186.243.98",
+    "x-forwarded-proto": "https",
+    "x-vercel-ip-country": "GB",
+    "x-zoho-skip-webhook-trigger": "true",
+    "pragma": "no-cache",
+    "user-agent": "ZohoBooks-Agent",
+    "x-com-zoho-organizationid": "20070434578",
+    "authorization": "123",
+    "content-length": "56"
+  },
+  "body": {
+    "salesorderId": "116240000001232763",
+    "packageStatus": "Not Packed"
+  },
+  "query": {}
 }

@@ -28,5 +28,6 @@ RUN cp /eci/node_modules/.prisma/client/* .
  ENV GIT_COMMIT_SHA=$commit_sha
 
  COPY --from=build /eci/services/worker/dist/* .
+ COPY --from=build /eci/node_modules/winston-elasticsearch/index-template-mapping.json .
 
  CMD [ "node", "main.js" ]
