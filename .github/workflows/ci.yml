@@ -2,7 +2,7 @@ name: CI
 
 # All required 3rd party services are hosted in docker containers.
 #
-# The webhooks service is started inside a docker container as well and all
+# The api service is started inside a docker container as well and all
 # integration tests are being run with a fresh database seed
 
 on:
@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [webhooks, worker]
+        service: [api, worker]
 
     steps:
       - name: Checkout
@@ -175,7 +175,7 @@ jobs:
 
       - name: Load docker images
         run: |
-          docker load -i images/webhooks/webhooks.tar
+          docker load -i images/api/api.tar
           docker load -i images/worker/worker.tar
 
       - uses: actions/cache@v2
@@ -197,7 +197,7 @@ jobs:
           DATABASE_URL: postgres://postgres:postgres@db.eci:5432/postgres
           DATABASE_URL_POOL: postgres://postgres:postgres@db.eci:5432/postgres
           ECI_BASE_URL: http://localhost:3000
-          ECI_BASE_URL_FROM_CONTAINER: http://webhooks.eci:3000
+          ECI_BASE_URL_FROM_CONTAINER: http://api.eci:3000
           SALEOR_URL_FROM_CONTAINER: http://saleor.eci:8000/graphql/
 
           ECI_ENV: ci
@@ -224,7 +224,7 @@ jobs:
           ZOHO_CLIENT_SECRET: ${{ secrets.ZOHO_CLIENT_SECRET }}
           ZOHO_CLIENT_ID: ${{ secrets.ZOHO_CLIENT_ID }}
           ZOHO_ORG_ID: ${{ secrets.ZOHO_ORG_ID }}
-          ECI_BASE_URL_FROM_CONTAINER: http://webhooks.eci:3000
+          ECI_BASE_URL_FROM_CONTAINER: http://api.eci:3000
 
       - run: docker-compose logs
         if: always()

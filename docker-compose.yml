@@ -13,14 +13,14 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
 
-  # Nextjs Serverless application to receive webhooks from various services
-  eci_webhooks:
-    image: eci_webhooks
+  # Nextjs Serverless application to receive api from various services
+  eci_api:
+    image: eci_api
     build:
       context: .
-      dockerfile: ./services/webhooks/Dockerfile
+      dockerfile: ./services/api/Dockerfile
 
-    container_name: webhooks.eci
+    container_name: api.eci
     ports:
       - 3000:3000
     environment:
@@ -33,7 +33,7 @@ services:
       KAFKA_PASSWORD: ${KAFKA_PASSWORD}
       SIGNING_KEY: anything
       NODE_ENV: production
-      ECI_BASE_URL: http://webhooks.eci:3000
+      ECI_BASE_URL: http://api.eci:3000
       ECI_ENV: development
     depends_on:
       - eci_db
@@ -79,7 +79,7 @@ services:
       SECRET_KEY: de068091c088ad706703ed50cdec8994e596936cda803a7c0a9df98b454b4860
       STOREFRONT_URL: http://storefront.saleor.api:4000/
       DASHBOARD_URL: http://dashboard.saleor.api:9000/
-      ALLOWED_CLIENT_HOSTS: localhost,webhooks.eci
+      ALLOWED_CLIENT_HOSTS: localhost,api.eci
       ALLOWED_HOSTS: saleor.eci,localhost
       ELASTIC_APM_ENABLED: "False"
     depends_on:

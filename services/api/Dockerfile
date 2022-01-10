@@ -8,6 +8,6 @@ COPY . .
 
 
 
-RUN make build-webhooks
+RUN make build-api
 
-CMD ["pnpm","next","start","--port=3000","./services/webhooks"]
+CMD ["pnpm","next","start","--port=3000","./services/api"]

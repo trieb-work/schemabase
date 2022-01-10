@@ -38,14 +38,14 @@ init: down build
 
 
 init-core: down build
-	docker-compose up -d --build eci_webhooks eci_worker kafka-ui kafka zookeeper
+	docker-compose up -d --build eci_api eci_worker kafka-ui kafka zookeeper
 	$(MAKE) db-push
 
 build: install
 	pnpm prisma generate
 
-build-webhooks: build
-	pnpm next build ./services/webhooks
+build-api: build
+	pnpm next build ./services/api
 
 build-worker: build
 	pnpm esbuild --platform=node --bundle --outfile=services/worker/dist/main.js services/worker/src/main.ts
@@ -53,11 +53,11 @@ build-worker: build
 
 
 
-rebuild-webhooks:
-	docker-compose stop eci_webhooks
+rebuild-api:
+	docker-compose stop eci_api
 	docker-compose up -d eci_db
-	docker-compose build eci_webhooks
-	docker-compose up -d eci_webhooks
+	docker-compose build eci_api
+	docker-compose up -d eci_api
 
 rebuild-worker: export COMPOSE_DOCKER_CLI_BUILD=1
 rebuild-worker: export DOCKER_BUILDKIT=1
@@ -73,7 +73,7 @@ rebuild-worker:
 # Make sure you have called `make init` before to setup all required services
 # You just need to do this once, not for every new test run.
 test: export ECI_BASE_URL                 = http://localhost:3000
-test: export ECI_BASE_URL_FROM_CONTAINER  = http://webhooks.eci:3000
+test: export ECI_BASE_URL_FROM_CONTAINER  = http://api.eci:3000
 test: export SALEOR_URL                   = http://localhost:8000/graphql/
 test: export SALEOR_URL_FROM_CONTAINER    = http://saleor.eci:8000/graphql/
 test: build db-push
@@ -81,11 +81,11 @@ test: build db-push
 
 # DO NOT RUN THIS YOURSELF!
 #
-# Build the webhooks application on vercel
+# Build the api application on vercel
 # Setup on vercel:
-#  Build Command: `make build-webhooks-prod`
-#  Output Directory: `dist/apps/webhooks/.next`
-build-webhooks-prod:
+#  Build Command: `make build-api-prod`
+#  Output Directory: `dist/apps/api/.next`
+build-api-prod:
 	pnpm build:prisma
 	pnpm build:api
 	pnpm prisma migrate deploy

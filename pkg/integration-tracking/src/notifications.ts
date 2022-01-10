@@ -4,6 +4,7 @@ import { ILogger } from "@eci/pkg/logger";
 import { shouldNotify } from "./eventSorting";
 import { EmailTemplateSender } from "@eci/pkg/email/src/emailSender";
 import { EventSchemaRegistry, EventHandler, OnSuccess } from "@eci/pkg/events";
+import { id } from "@eci/pkg/ids";
 
 export type CustomerNotifierConfig = {
   db: PrismaClient;
@@ -80,7 +81,7 @@ export class CustomerNotifier
       if (!template) {
         throw new Error(`No matching template found for event: ${event}`);
       }
-      const { id } = await this.emailTemplateSender.sendTemplate(
+      const res = await this.emailTemplateSender.sendTemplate(
         template.templateId,
         packageEvent.package.order.email,
         {
@@ -91,7 +92,16 @@ export class CustomerNotifier
         },
       );
       this.logger.info("Email id", { id });
-      await this.onSuccess(ctx, { emailId: id });
+
+      await this.db.transactionalEmail.create({
+        data: {
+          id: id.id("email"),
+          time: new Date(),
+          email: packageEvent.package.order.email,
+          packageEventId: event.packageEventId,
+        },
+      });
+      await this.onSuccess(ctx, { emailId: res.id });
     }
   }
 }
