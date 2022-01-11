@@ -5,19 +5,21 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
+
 }
+
 
 model Order {
   // internal id
-  id              String    @id
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  externalOrderId String    @unique
+  id              String   @id
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  externalOrderId String   @unique
 
   // The end customers email where we send transactional emails to
-  email           String
-  language        Language
-  packages        Package[]
+  email    String
+  language Language
+  packages Package[]
 }
 
 enum PackageState {

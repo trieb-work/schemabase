@@ -43,7 +43,8 @@ init-core: down build
 
 build: install
 	pnpm prisma generate
-
+	pnpm graphql-codegen
+	
 build-api: build
 	pnpm next build ./services/api
 

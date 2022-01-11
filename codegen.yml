@@ -1,0 +1,27 @@
+overwrite: true
+schema: "./pkg/api/modules/**/schema.gql.ts"
+generates:
+  ./pkg/api/modules/:
+    preset: graphql-modules
+    plugins:
+      - typescript
+      - typescript-resolvers
+    presetConfig:
+      baseTypesPath: ../generated/schema-types.ts
+      filename: generated/module-types.ts
+    config:
+      contextType: "GraphQLModules.Context"
+      mappers:
+        Order: "@eci/pkg/prisma#OrderModel"
+        Package: "@eci/pkg/prisma#PackageModel"
+        PackageEvent: "@eci/pkg/prisma#PackageEventModel"
+        TransactionalEmail: "@eci/pkg/prisma#TransactionalEmailModel"
+
+      # Required for apollo server
+      # see https://www.graphql-code-generator.com/docs/plugins/typescript-resolvers#integration-with-apollo-server
+      useIndexSignature: true
+      showUnusedMappers: true
+      maybeValue: T | null | undefined
+hooks:
+  afterOneFileWrite:
+    - prettier --write

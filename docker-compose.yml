@@ -35,6 +35,7 @@ services:
       NODE_ENV: production
       ECI_BASE_URL: http://api.eci:3000
       ECI_ENV: development
+      JWT_SIGNING_KEY: ${JWT_SIGNING_KEY}
     depends_on:
       - eci_db
       - kafka
