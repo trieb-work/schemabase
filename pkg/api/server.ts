@@ -4,7 +4,7 @@ import { ApolloServer } from "apollo-server-micro";
 import { application } from "./application";
 import { context } from "./context";
 import { dataSources } from "./datasources";
-
+import { ApolloServerPluginLandingPageLocalDefault } from "apollo-server-core";
 export type ServerConfig = {
   logger?: ILogger;
 };
@@ -16,5 +16,6 @@ export const server = (config?: ServerConfig): ApolloServer => {
     dataSources,
     logger: config?.logger,
     introspection: true,
+    plugins: [ApolloServerPluginLandingPageLocalDefault()],
   });
 };
