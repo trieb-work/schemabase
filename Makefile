@@ -86,7 +86,7 @@ test: build db-push
 # Setup on vercel:
 #  Build Command: `make build-api-prod`
 #  Output Directory: `dist/apps/api/.next`
-build-api-prod:
+build-api-prod: build
 	pnpm build:prisma
 	pnpm build:api
 	pnpm prisma migrate deploy
