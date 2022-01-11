@@ -6,7 +6,6 @@
   },
   "scripts": {
     "test": "jest",
-    "build:prisma": "prisma generate",
     "build:api": "next build ./services/api",
     "fmt": "pnpm lint && pnpm format",
     "lint": "eslint --ext .js,.ts --fix .",

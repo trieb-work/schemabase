@@ -87,8 +87,7 @@ test: build db-push
 #  Build Command: `make build-api-prod`
 #  Output Directory: `dist/apps/api/.next`
 build-api-prod: build
-	pnpm build:prisma
-	pnpm build:api
+	pnpm next build ./services/api
 	pnpm prisma migrate deploy
 
 
