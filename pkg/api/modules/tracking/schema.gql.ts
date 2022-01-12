@@ -57,7 +57,7 @@ export default gql`
     message: String!
     package: Package!
     location: String!
-    sentEmail: TransactionalEmail!
+    sentEmail: TransactionalEmail
   }
   type TransactionalEmail {
     id: ID!
@@ -67,7 +67,6 @@ export default gql`
     packageEvent: PackageEvent!
   }
   extend type Query {
-    orderById(orderId: ID!): Order
     packageByTrackingId(trackingId: ID!): Package
   }
 `;

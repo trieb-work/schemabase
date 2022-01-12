@@ -63,7 +63,7 @@ export type PackageEvent = {
   location: Scalars["String"];
   message: Scalars["String"];
   package: Package;
-  sentEmail: TransactionalEmail;
+  sentEmail?: Maybe<TransactionalEmail>;
   state: PackageState;
   time: Scalars["Int"];
 };
@@ -83,12 +83,7 @@ export type PackageState =
 export type Query = {
   __typename?: "Query";
   healthCheck: Scalars["Boolean"];
-  orderById?: Maybe<Order>;
   packageByTrackingId?: Maybe<Package>;
-};
-
-export type QueryOrderByIdArgs = {
-  orderId: Scalars["ID"];
 };
 
 export type QueryPackageByTrackingIdArgs = {
@@ -296,7 +291,7 @@ export type PackageEventResolvers<
   message?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   package?: Resolver<ResolversTypes["Package"], ParentType, ContextType>;
   sentEmail?: Resolver<
-    ResolversTypes["TransactionalEmail"],
+    Maybe<ResolversTypes["TransactionalEmail"]>,
     ParentType,
     ContextType
   >;
@@ -310,12 +305,6 @@ export type QueryResolvers<
   ParentType extends ResolversParentTypes["Query"] = ResolversParentTypes["Query"],
 > = ResolversObject<{
   healthCheck?: Resolver<ResolversTypes["Boolean"], ParentType, ContextType>;
-  orderById?: Resolver<
-    Maybe<ResolversTypes["Order"]>,
-    ParentType,
-    ContextType,
-    RequireFields<QueryOrderByIdArgs, "orderId">
-  >;
   packageByTrackingId?: Resolver<
     Maybe<ResolversTypes["Package"]>,
     ParentType,

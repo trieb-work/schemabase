@@ -6,7 +6,7 @@
   },
   "scripts": {
     "test": "jest",
-    "generate": "graphql-codegen",
+    "generate": "graphql-codegen -c ./pkg/api/codegen.yml",
     "build:prisma": "prisma generate",
     "build:api": "next build ./services/api",
     "fmt": "pnpm lint && pnpm format",

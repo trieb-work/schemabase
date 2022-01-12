@@ -20,7 +20,7 @@ export namespace TrackingModule {
       | "location"
       | "sentEmail";
     TransactionalEmail: "id" | "time" | "email" | "packageEvent";
-    Query: "orderById" | "packageByTrackingId";
+    Query: "packageByTrackingId";
   }
 
   interface DefinedEnumValues {
@@ -124,7 +124,6 @@ export namespace TrackingModule {
     };
     Query?: {
       "*"?: gm.Middleware[];
-      orderById?: gm.Middleware[];
       packageByTrackingId?: gm.Middleware[];
     };
   }
