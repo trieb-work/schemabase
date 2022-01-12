@@ -3,7 +3,7 @@ import { Context } from "@eci/pkg/context";
 import { ILogger } from "@eci/pkg/logger";
 import { shouldNotify } from "./eventSorting";
 import { EmailTemplateSender } from "@eci/pkg/email/src/emailSender";
-import { EventSchemaRegistry, EventHandler, OnSuccess } from "@eci/pkg/events";
+import { EventHandler, EventSchemaRegistry, OnSuccess } from "@eci/pkg/events";
 import { id } from "@eci/pkg/ids";
 
 export type CustomerNotifierConfig = {

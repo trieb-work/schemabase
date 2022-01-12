@@ -1,8 +1,8 @@
 import {
-  setupPrisma,
+  authorizeIntegration,
   extendContext,
   newSaleorClient,
-  authorizeIntegration,
+  setupPrisma,
 } from "@eci/pkg/webhook-context";
 import { ProductDataFeedGenerator } from "@eci/pkg/integration-saleor-product-data-feed";
 import { createHash } from "crypto";

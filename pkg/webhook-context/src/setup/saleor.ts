@@ -1,5 +1,5 @@
 import { ContextMissingFieldError } from "@eci/pkg/errors";
-import { SaleorClient, createSaleorClient } from "@eci/pkg/saleor";
+import { createSaleorClient, SaleorClient } from "@eci/pkg/saleor";
 import { Context } from "../context";
 import { env } from "@eci/pkg/env";
 

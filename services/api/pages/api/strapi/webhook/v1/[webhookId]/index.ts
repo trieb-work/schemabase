@@ -1,7 +1,7 @@
 import {
-  setupPrisma,
-  extendContext,
   authorizeIntegration,
+  extendContext,
+  setupPrisma,
 } from "@eci/pkg/webhook-context";
 import { z } from "zod";
 import { HttpError } from "@eci/pkg/errors";

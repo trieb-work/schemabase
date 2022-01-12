@@ -6,12 +6,12 @@ import { StrapiEntryCreate } from "./handler/strapiEntryCreate";
 import { PackageEventHandler } from "./handler/packageUpdate";
 import { PrismaClient } from "@eci/pkg/prisma";
 import {
-  Signer,
+  KafkaProducer,
   KafkaSubscriber,
   newKafkaClient,
-  KafkaProducer,
-  Topic,
   onSuccess,
+  Signer,
+  Topic,
 } from "@eci/pkg/events";
 import * as tracking from "@eci/pkg/integration-tracking";
 import { Sendgrid } from "@eci/pkg/email/src/emailSender";

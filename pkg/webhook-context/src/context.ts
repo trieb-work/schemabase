@@ -26,7 +26,6 @@ export type ExtendedContext<Keys extends keyof Context> = Context &
  *    return Object.assign(ctx, { newField: "abc" })
  * }
  * ```
- *
  */
 export type ExtendContextFn<K extends keyof Context> = (
   ctx: Context,

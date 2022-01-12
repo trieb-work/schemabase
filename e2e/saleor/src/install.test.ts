@@ -1,6 +1,6 @@
 import { createSaleorClient } from "@eci/pkg/saleor";
 import { env } from "@eci/pkg/env";
-import { afterAll, describe, it, expect } from "@jest/globals";
+import { afterAll, describe, expect, it } from "@jest/globals";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
 /**

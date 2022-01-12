@@ -1,4 +1,4 @@
-import { Sdk, getSdk } from "./generated/graphql";
+import { getSdk, Sdk } from "./generated/graphql";
 import { DocumentNode } from "graphql";
 import { GraphQLClient } from "graphql-request";
 import { ECI_TRACE_HEADER } from "@eci/pkg/constants";

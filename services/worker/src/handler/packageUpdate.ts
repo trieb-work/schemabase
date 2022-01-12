@@ -2,7 +2,7 @@ import { id } from "@eci/pkg/ids";
 import { PrismaClient } from "@prisma/client";
 import { Context } from "@eci/pkg/context";
 import { ILogger } from "@eci/pkg/logger";
-import { EventHandler, OnSuccess, EventSchemaRegistry } from "@eci/pkg/events";
+import { EventHandler, EventSchemaRegistry, OnSuccess } from "@eci/pkg/events";
 
 export type PackageEventHandlerConfig = {
   db: PrismaClient;
