@@ -1,4 +1,4 @@
-import { describe, it, expect } from "@jest/globals";
+import { describe, expect, it } from "@jest/globals";
 import { Signer } from "./signature";
 
 const testCases: { name: string; message: unknown; signature: string }[] = [

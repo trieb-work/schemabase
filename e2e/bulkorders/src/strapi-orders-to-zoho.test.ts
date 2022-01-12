@@ -1,10 +1,10 @@
 import {
-  beforeAll,
   afterAll,
-  expect,
-  describe,
-  it,
   afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
 } from "@jest/globals";
 import { config } from "dotenv";
 import { PrismaClient } from "@eci/pkg/prisma";

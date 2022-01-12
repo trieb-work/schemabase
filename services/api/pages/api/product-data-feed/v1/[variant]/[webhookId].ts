@@ -1,8 +1,8 @@
 import {
-  setupPrisma,
+  authorizeIntegration,
   extendContext,
   newSaleorClient,
-  authorizeIntegration,
+  setupPrisma,
 } from "@eci/pkg/webhook-context";
 import { ProductDataFeedGenerator } from "@eci/pkg/integration-saleor-product-data-feed";
 import { createHash } from "crypto";
@@ -31,7 +31,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
-  const webhook = await ctx.prisma.incomingProductDataFeedWebhook.findUnique({
+  const webhook = await ctx.prisma.incomingWebhook.findUnique({
     where: {
       id: webhookId,
     },

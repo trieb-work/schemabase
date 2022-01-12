@@ -123,7 +123,6 @@ export type Product = {
    * Professionally restored to working order, comes with a warranty, may or may not have the original packaging
    * Used [used]
    * Previously used, original packaging opened or missing
-   *
    */
   condition: "new" | "refurbished" | "used";
 
@@ -150,7 +149,6 @@ export type Product = {
    * 13-digit number. ISBN-10 are deprecated and should be converted to ISBN-13
    * ITF-14 (for multipacks / GTIN-14)
    * 14-digit number like 10856435001702
-   *
    */
   gtin?: string;
 
@@ -159,7 +157,6 @@ export type Product = {
    *
    * @example
    * Google
-   *
    *
    * Syntax
    * Max 70 characters

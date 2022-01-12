@@ -43,7 +43,7 @@ init-core: down build
 
 build: install
 	pnpm prisma generate
-	pnpm graphql-codegen
+	pnpm graphql-codegen -c pkg/api/codegen.yml
 	
 build-api: build
 	pnpm next build ./services/api
@@ -102,3 +102,10 @@ db-push:
 	npx prisma db push
 
 
+tsc: 
+	pnpm tsc --pretty
+
+format:
+	pnpm prettier --write .
+
+check: build tsc format

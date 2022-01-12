@@ -1,4 +1,4 @@
-import { setupPrisma, extendContext } from "@eci/pkg/webhook-context";
+import { extendContext, setupPrisma } from "@eci/pkg/webhook-context";
 import { z } from "zod";
 import { HttpError } from "@eci/pkg/errors";
 import { handleWebhook, Webhook } from "@eci/pkg/http";
@@ -24,7 +24,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
   ctx.logger.info(`Incoming saleor webhook: ${webhookId}`);
-  const webhook = await ctx.prisma.incomingSaleorWebhook.findUnique({
+  const webhook = await ctx.prisma.incomingWebhook.findUnique({
     where: {
       id: webhookId,
     },

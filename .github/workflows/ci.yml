@@ -199,6 +199,7 @@ jobs:
           ECI_BASE_URL: http://localhost:3000
           ECI_BASE_URL_FROM_CONTAINER: http://api.eci:3000
           SALEOR_URL_FROM_CONTAINER: http://saleor.eci:8000/graphql/
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
 
           ECI_ENV: ci
           VERCEL_TOKEN: ${{secrets.VERCEL_TOKEN}}

@@ -1,4 +1,4 @@
-import { requireEnv, getEnv } from "./src/env";
+import { getEnv, requireEnv } from "./src/env";
 export { EnvironmentVariableNotFoundError } from "./src/env";
 
 export const env = {

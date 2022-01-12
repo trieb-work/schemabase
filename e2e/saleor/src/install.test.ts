@@ -1,6 +1,6 @@
 import { createSaleorClient } from "@eci/pkg/saleor";
 import { env } from "@eci/pkg/env";
-import { afterAll, describe, it, expect } from "@jest/globals";
+import { afterAll, describe, expect, it } from "@jest/globals";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
 /**
@@ -134,7 +134,8 @@ describe("Saleor app installation", () => {
     const webhook = appAtSaleor.webhooks[0];
     expect(webhook.isActive).toBe(true);
     expect(webhook.secretKey).toBeDefined();
-    expect(webhook.secretKey).toEqual(appInDatabase.webhooks[0].secret.secret);
+    expect(appInDatabase.webhooks[0].secret).toBeDefined();
+    expect(webhook.secretKey).toEqual(appInDatabase.webhooks[0].secret!.secret);
     expect(webhook.targetUrl).toEqual(
       `${env.require("ECI_BASE_URL_FROM_CONTAINER")}/api/saleor/webhook/v1/${
         appInDatabase.webhooks[0].id

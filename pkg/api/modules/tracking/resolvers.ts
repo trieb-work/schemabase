@@ -3,12 +3,6 @@ import { Resolvers } from "../../generated/schema-types";
 
 export const resolvers: Resolvers<Context> = {
   Query: {
-    orderById: async (_parent, { orderId }, ctx) => {
-      await ctx.authorizeUser(["read:order"]);
-      return await ctx.dataSources.db.client.order.findUnique({
-        where: { id: orderId },
-      });
-    },
     packageByTrackingId: async (_parent, { trackingId }, ctx) => {
       await ctx.authorizeUser(["read:package"]);
 
@@ -24,10 +18,6 @@ export const resolvers: Resolvers<Context> = {
       return await ctx.dataSources.db.client.package.findMany({
         where: {
           orderId: order.id,
-        },
-        include: {
-          events: true,
-          order: true,
         },
       });
     },
@@ -55,6 +45,16 @@ export const resolvers: Resolvers<Context> = {
         throw new Error("Package does not exist");
       }
       return found.order;
+    },
+  },
+  PackageEvent: {
+    sentEmail: async (packageEvent, _args, ctx) => {
+      await ctx.authorizeUser(["read:transactionalEmail"]);
+      return await ctx.dataSources.db.client.transactionalEmail.findUnique({
+        where: {
+          packageEventId: packageEvent.id,
+        },
+      });
     },
   },
 };

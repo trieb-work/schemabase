@@ -24,8 +24,4 @@ export function onSuccess<TEvent>(
   };
 }
 
-export type OnSuccess<TEvent> = (
-  ctx: Context,
-
-  event: TEvent,
-) => Promise<void>;
+export type OnSuccess<TEvent> = (ctx: Context, event: TEvent) => Promise<void>;

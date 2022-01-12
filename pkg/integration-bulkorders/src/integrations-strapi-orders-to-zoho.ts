@@ -1,6 +1,6 @@
 import { EntryEvent } from "./types";
 import { z } from "zod";
-import { Zoho, CreateSalesOrder } from "@trieb.work/zoho-ts/dist/v2";
+import { CreateSalesOrder, Zoho } from "@trieb.work/zoho-ts/dist/v2";
 import { sha256 } from "@eci/pkg/hash";
 
 import { ILogger } from "@eci/pkg/logger";
@@ -291,7 +291,6 @@ export class StrapiOrdersToZoho {
   }
 
   /**
-   *
    * @param zohoCustomerId
    * @param orders
    * @returns The order_ids of the newly created orders
