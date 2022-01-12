@@ -36,7 +36,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   }
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
-  const webhook = await ctx.prisma.incomingLogisticsWebhook.findUnique({
+  const webhook = await ctx.prisma.incomingWebhook.findUnique({
     where: {
       id: webhookId,
     },
@@ -82,12 +82,12 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     zohoClientSecret: zohoApp.clientSecret,
     zohoOrgId: zohoApp.orgId,
   });
+
   const customFields = {
-    currentOrdersReadyToFulfill: webhook.logisticsApp.currentOrdersCustomViewId,
-    nextFiveDaysOrders: webhook.logisticsApp.nextFiveDaysOrdersCustomViewId,
-    currentBulkOrders: webhook.logisticsApp.currentBulkOrdersCustomViewId,
-    nextFiveDaysBulkOrders:
-      webhook.logisticsApp.nextFiveDaysBulkOrdersCustomViewId,
+    currentOrdersReadyToFulfill: logisticsApp.currentOrdersCustomViewId,
+    nextFiveDaysOrders: logisticsApp.nextFiveDaysOrdersCustomViewId,
+    currentBulkOrders: logisticsApp.currentBulkOrdersCustomViewId,
+    nextFiveDaysBulkOrders: logisticsApp.nextFiveDaysBulkOrdersCustomViewId,
   };
   const handleRequest = await LogisticStats.new({
     zoho,

@@ -47,7 +47,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
   ctx.logger.info("Incoming webhook from strapi");
 
-  const webhook = await ctx.prisma.incomingStrapiWebhook.findUnique({
+  const webhook = await ctx.prisma.incomingWebhook.findUnique({
     where: { id: webhookId },
     include: {
       secret: true,
@@ -65,6 +65,9 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   });
   if (!webhook) {
     throw new HttpError(404, `Webhook not found: ${webhookId}`);
+  }
+  if (!webhook.secret) {
+    throw new HttpError(500, "This webhook should have a secret but doesn't");
   }
 
   if (

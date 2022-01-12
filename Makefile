@@ -102,3 +102,10 @@ db-push:
 	npx prisma db push
 
 
+tsc: 
+	pnpm tsc --pretty
+
+format:
+	pnpm prettier --write .
+
+check: build tsc format

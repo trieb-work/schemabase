@@ -24,7 +24,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
   ctx.logger.info(`Incoming saleor webhook: ${webhookId}`);
-  const webhook = await ctx.prisma.incomingSaleorWebhook.findUnique({
+  const webhook = await ctx.prisma.incomingWebhook.findUnique({
     where: {
       id: webhookId,
     },

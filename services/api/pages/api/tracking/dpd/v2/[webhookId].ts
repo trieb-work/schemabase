@@ -130,7 +130,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     }
   }
 
-  const webhook = await ctx.prisma.incomingDPDWebhook.findUnique({
+  const webhook = await ctx.prisma.incomingWebhook.findUnique({
     where: { id: webhookId },
     include: {
       dpdApp: {

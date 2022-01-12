@@ -167,13 +167,10 @@ beforeAll(async () => {
         },
       },
       productDetailStorefrontURL: "www.storefront.com",
-      saleorApp: {
-        connect: { id: saleorApp.id },
-      },
     },
   });
 
-  await prisma.incomingProductDataFeedWebhook.create({
+  await prisma.incomingWebhook.create({
     data: {
       id: webhookId,
       productDataFeedApp: {

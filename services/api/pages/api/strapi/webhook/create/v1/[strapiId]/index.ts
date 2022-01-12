@@ -23,7 +23,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
   const secret = id.id("secretKey");
-  const webhook = await ctx.prisma.incomingStrapiWebhook.create({
+  const webhook = await ctx.prisma.incomingWebhook.create({
     data: {
       id: id.id("publicKey"),
       strapiApp: {

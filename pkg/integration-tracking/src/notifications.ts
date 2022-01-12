@@ -99,6 +99,7 @@ export class CustomerNotifier
           time: new Date(),
           email: packageEvent.package.order.email,
           packageEventId: event.packageEventId,
+          sentEmailId: res.id,
         },
       });
       await this.onSuccess(ctx, { emailId: res.id });

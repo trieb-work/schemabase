@@ -1,6 +1,6 @@
 datasource db {
-  provider          = "postgresql"
-  url               = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -83,6 +83,8 @@ model TransactionalEmail {
   id             String       @id
   time           DateTime
   email          String
+  // Sendgrid returns a unique id for each email
+  sentEmailId    String
   // The related package event that caused this email to be sent
   packageEvent   PackageEvent @relation(fields: [packageEventId], references: [id])
   packageEventId String       @unique
@@ -127,7 +129,7 @@ model DpdApp {
   tenant      Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId    String               @unique
   integration TrackingIntegration?
-  webhooks    IncomingDPDWebhook[]
+  webhooks    IncomingWebhook[]
 }
 
 model ProductDataFeedApp {
@@ -136,13 +138,12 @@ model ProductDataFeedApp {
   // Graphql endpoint of a saleor app
   productDetailStorefrontURL String
 
-  saleorApp   SaleorApp @relation(fields: [saleorAppId], references: [id])
-  saleorAppId String
+  
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String @unique
 
-  webhooks    IncomingProductDataFeedWebhook[]
+  webhooks    IncomingWebhook[]
   integration ProductDataFeedIntegration?
 }
 
@@ -165,20 +166,23 @@ model LogisticsApp {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String @unique
 
-  webhooks    IncomingLogisticsWebhook[]
+  webhooks    IncomingWebhook[]
   integration LogisticsIntegration?
 }
 
 model ZohoApp {
   id String @id
 
-  orgId                   String
-  clientId                String
-  clientSecret            String
-  tenant                  Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId                String                    @unique
-  strapiToZohoIntegration StrapiToZohoIntegration[]
-  logisticsIntegration    LogisticsIntegration[]
+  orgId                    String
+  clientId                 String
+  clientSecret             String
+  tenant                   Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId                 String                    @unique
+  strapiToZohoIntegrations StrapiToZohoIntegration[]
+  logisticsIntegrations    LogisticsIntegration[]
+  trackingIntegrations     TrackingIntegration[]
+
+  webhooks IncomingWebhook[]
 }
 
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor
@@ -205,7 +209,6 @@ model SaleorApp {
 
   productDataFeedIntegration ProductDataFeedIntegration[]
 
-  productDataFeedApp ProductDataFeedApp[]
   @@unique([domain, channelSlug])
 }
 
@@ -218,7 +221,7 @@ model InstalledSaleorApp {
   // Every SaleorApp can have multiple webhooks configured.
   // This is not really necessary because a webhook can fire on multiple events
   // but let's be on the safe side.
-  webhooks IncomingSaleorWebhook[]
+  webhooks IncomingWebhook[]
 
   // Unlike regular users, Saleor Apps use a bearer token. The token is
   // assigned at App installation time and needs to be stored in a secure manner.
@@ -242,17 +245,17 @@ model Tenant {
   Subscriptions Subscription[]
 
   // App configurations
-  saleorApps                 SaleorApp[]
-  zohoApps                   ZohoApp[]
-  productdatafeedApps        ProductDataFeedApp[]
-  strapiApps                 StrapiApp[]
-  productDataFeedIntegration ProductDataFeedIntegration[]
-  strapiToZohoIntegration    StrapiToZohoIntegration[]
-  logisticsIntegration       LogisticsIntegration[]
-  logisticsApp               LogisticsApp[]
-  trackingEmailApp           TrackingEmailApp[]
-  dpdApp                     DpdApp[]
-  trackingIntegration        TrackingIntegration[]
+  saleorApps                  SaleorApp[]
+  zohoApps                    ZohoApp[]
+  productdatafeedApps         ProductDataFeedApp[]
+  strapiApps                  StrapiApp[]
+  productDataFeedIntegrations ProductDataFeedIntegration[]
+  strapiToZohoIntegrations    StrapiToZohoIntegration[]
+  logisticsIntegrations       LogisticsIntegration[]
+  logisticsApps               LogisticsApp[]
+  trackingEmailApps           TrackingEmailApp[]
+  dpdApps                     DpdApp[]
+  trackingIntegrations        TrackingIntegration[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
@@ -290,6 +293,8 @@ model TrackingIntegration {
   dpdAppId           String           @unique
   trackingEmailApp   TrackingEmailApp @relation(fields: [trackingEmailAppId], references: [id])
   trackingEmailAppId String
+  zohoApp            ZohoApp?         @relation(fields: [zohoAppId], references: [id])
+  zohoAppId          String?
 }
 
 model ProductDataFeedIntegration {
@@ -358,7 +363,7 @@ model StrapiApp {
   id String @id
 
   name     String
-  webhooks IncomingStrapiWebhook[]
+  webhooks IncomingWebhook[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -371,99 +376,32 @@ model StrapiApp {
 // Every Config/App can have multiple webhooks attached
 // ----------------------------------------------------------------------------
 
-model IncomingSaleorWebhook {
-  id   String  @id
-  // Human readable name
-  name String?
-
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  secret   SecretKey @relation(fields: [secretId], references: [id])
-  secretId String    @unique
-
-  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
-  installedSaleorAppId String
-}
-
-model IncomingStrapiWebhook {
-  id   String  @id
-  // Human readable name
-  name String?
-
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  secret   SecretKey @relation(fields: [secretId], references: [id])
-  secretId String    @unique
-
-  strapiApp   StrapiApp @relation(fields: [strapiAppId], references: [id], onDelete: Cascade)
-  strapiAppId String
-}
-
-model IncomingProductDataFeedWebhook {
-  id   String  @id
-  // Human readable name
-  name String?
-
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  productDataFeedApp   ProductDataFeedApp @relation(fields: [productDataFeedAppId], references: [id], onDelete: Cascade)
-  productDataFeedAppId String
-}
-
-model IncomingLogisticsWebhook {
-  id   String  @id
-  // Human readable name
-  name String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  logisticsApp   LogisticsApp @relation(fields: [logisticsAppId], references: [id], onDelete: Cascade)
-  logisticsAppId String
-}
-
-model IncomingDPDWebhook {
-  id        String   @id
+model IncomingWebhook {
+  id        String     @id
   // Human readable name
   name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  dpdApp    DpdApp   @relation(fields: [dpdAppId], references: [id], onDelete: Cascade)
-  dpdAppId  String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  secret    SecretKey?
+
+
+  // Webhook Connections
+  dpdApp               DpdApp?             @relation(fields: [dpdAppId], references: [id], onDelete: Cascade)
+  dpdAppId             String?
+  logisticsApp         LogisticsApp?       @relation(fields: [logisticsAppId], references: [id], onDelete: Cascade)
+  logisticsAppId       String?
+  productDataFeedApp   ProductDataFeedApp? @relation(fields: [productDataFeedAppId], references: [id], onDelete: Cascade)
+  productDataFeedAppId String?
+  zohoApp              ZohoApp?            @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId            String?
+  strapiApp            StrapiApp?          @relation(fields: [strapiAppId], references: [id], onDelete: Cascade)
+  strapiAppId          String?
+  installedSaleorApp   InstalledSaleorApp? @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String?
 }
 
-// Until prisma allows for inheritance we are stuck createing different webhook modules
-// with duplicate code
-
-// model IncomingWebhook {
-//   id String @id
-
-//   // Human readable name
-//   name String?
-
-//   createdAt DateTime  @default(now())
-//   updatedAt DateTime  @updatedAt
-//
-
-//   secret   SecretKey @relation(fields: [secretId], references: [id])
-//   secretId String
-
-//   // Webhook connections
-//   productDataFeed   ProductDataFeedApp? @relation(fields: [productDataFeedId], references: [id], onDelete: Cascade)
-//   productDataFeedId String?
-//   saleorApp         SaleorApp?          @relation(fields: [saleorAppId], references: [id], onDelete: Cascade)
-//   saleorAppId       String?
-//   strapi            StrapiApp?          @relation(fields: [strapiAppId], references: [id], onDelete: Cascade)
-//   strapiAppId       String?
-// }
 model SecretKey {
-  id String @id @default(uuid())
+  id String @id
 
   // Human readable name
   name      String?
@@ -471,8 +409,6 @@ model SecretKey {
   createdAt DateTime @default(now())
 
 
-  // Connections ..
-  // Required by prisma
-  incomingSaleorWebhook IncomingSaleorWebhook?
-  IncomingStrapiWebhook IncomingStrapiWebhook?
+  incomingWebhook   IncomingWebhook @relation(fields: [incomingWebhookId], references: [id], onDelete: Cascade)
+  incomingWebhookId String          @unique
 }

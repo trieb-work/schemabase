@@ -95,7 +95,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
         app.webhooks[0].id
       }`,
       events: [WebhookEventTypeEnum.AnyEvents],
-      secretKey: app.webhooks[0].secret.secret,
+      secretKey: app.webhooks[0].secret!.secret,
       isActive: true,
       name: app.webhooks[0].name,
       app: app.id,

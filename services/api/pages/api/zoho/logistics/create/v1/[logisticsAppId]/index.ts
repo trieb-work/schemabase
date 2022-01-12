@@ -21,7 +21,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
-  const webhook = await ctx.prisma.incomingLogisticsWebhook.create({
+  const webhook = await ctx.prisma.incomingWebhook.create({
     data: {
       id: id.id("publicKey"),
       logisticsApp: {

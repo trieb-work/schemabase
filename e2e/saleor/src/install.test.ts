@@ -134,7 +134,8 @@ describe("Saleor app installation", () => {
     const webhook = appAtSaleor.webhooks[0];
     expect(webhook.isActive).toBe(true);
     expect(webhook.secretKey).toBeDefined();
-    expect(webhook.secretKey).toEqual(appInDatabase.webhooks[0].secret.secret);
+    expect(appInDatabase.webhooks[0].secret).toBeDefined();
+    expect(webhook.secretKey).toEqual(appInDatabase.webhooks[0].secret!.secret);
     expect(webhook.targetUrl).toEqual(
       `${env.require("ECI_BASE_URL_FROM_CONTAINER")}/api/saleor/webhook/v1/${
         appInDatabase.webhooks[0].id
