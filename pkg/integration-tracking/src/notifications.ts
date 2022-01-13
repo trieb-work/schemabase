@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { Context } from "@eci/pkg/context";
 import { ILogger } from "@eci/pkg/logger";
-import { shouldNotify } from "./eventSorting";
+import { isValidTransition } from "./eventSorting";
 import { EmailTemplateSender } from "@eci/pkg/email/src/emailSender";
 import { EventHandler, EventSchemaRegistry, OnSuccess } from "@eci/pkg/events";
 import { id } from "@eci/pkg/ids";
@@ -28,7 +28,7 @@ export class CustomerNotifier
   constructor(config: CustomerNotifierConfig) {
     this.db = config.db;
     this.onSuccess = config.onSuccess;
-    this.logger = config.logger;
+    this.logger = config.logger.with({ handler: "customernotifier" });
     this.emailTemplateSender = config.emailTemplateSender;
   }
 
@@ -36,6 +36,7 @@ export class CustomerNotifier
     ctx: Context,
     event: EventSchemaRegistry.PackageStateTransition["message"],
   ): Promise<void> {
+    this.logger.debug("New event", { event });
     const packageEvent = await this.db.packageEvent.findUnique({
       where: {
         id: event.packageEventId,
@@ -55,8 +56,12 @@ export class CustomerNotifier
 
     if (
       !packageEvent.sentEmail &&
-      shouldNotify(event.previousState, packageEvent.state)
+      isValidTransition(event.previousState, packageEvent.state)
     ) {
+      this.logger.info("Sending transactional email", {
+        packageEventId: packageEvent.id,
+        state: packageEvent.state,
+      });
       const integration = await this.db.trackingIntegration.findUnique({
         where: {
           id: event.integrationId,
@@ -91,7 +96,6 @@ export class CustomerNotifier
           location: packageEvent.location,
         },
       );
-      this.logger.info("Email id", { id });
 
       await this.db.transactionalEmail.create({
         data: {

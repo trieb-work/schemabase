@@ -3,7 +3,7 @@ import * as bulkorder from "@eci/pkg/integration-bulkorders";
 import { env } from "@eci/pkg/env";
 import { StrapiEntryUpdate } from "./handler/strapiEntryUpdate";
 import { StrapiEntryCreate } from "./handler/strapiEntryCreate";
-import { PackageEventHandler } from "./handler/packageUpdate";
+import { PackageEventHandler } from "@eci/pkg/integration-tracking";
 import { PrismaClient } from "@eci/pkg/prisma";
 import {
   KafkaProducer,

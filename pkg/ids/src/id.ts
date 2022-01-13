@@ -14,6 +14,8 @@ const prefixes = {
    * Only used in automatic tests
    */
   test: "test",
+  webhook: "wh",
+  webhookSecret: "wh_sec",
 };
 
 export const id = new IdGenerator(prefixes);

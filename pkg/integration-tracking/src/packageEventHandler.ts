@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { Context } from "@eci/pkg/context";
 import { ILogger } from "@eci/pkg/logger";
 import { EventSchemaRegistry } from "@eci/pkg/events";
+import { isValidTransition } from "./eventSorting";
 
 export type PackageEventHandlerConfig = {
   db: PrismaClient;
@@ -45,16 +46,26 @@ export class PackageEventHandler {
     if (!storedPackage) {
       throw new Error(`No package found with tracking id: ${event.trackingId}`);
     }
-    this.logger.info("Found matching package", { storedPackage });
     const currentState = storedPackage.state;
 
     const eventId = id.id("event");
+
+    const shouldUpdateState = isValidTransition(currentState, event.state);
+
+    this.logger.info("decition", {
+      currentState,
+      nextState: event.state,
+      shouldUpdateState,
+    });
+
     await this.db.package.update({
       where: {
         id: storedPackage.id,
       },
       data: {
-        state: event.state,
+        state: isValidTransition(currentState, event.state)
+          ? event.state
+          : undefined,
         events: {
           create: {
             id: eventId,

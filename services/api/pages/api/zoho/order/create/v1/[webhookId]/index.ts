@@ -25,7 +25,7 @@ const requestValidation = z.object({
   query: z.object({
     webhookId: z.string(),
   }),
-  body: z.string(),
+  body: z.record(z.string()),
 });
 
 const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
@@ -38,11 +38,19 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     body,
   } = req;
 
-  const payload = payloadValidation.parse(
-    JSON.parse(decodeURIComponent(body.replace(/^JSONString=/, ""))),
-  );
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
-
+  ctx.logger.info("Incoming zoho webhook", {
+    webhookId,
+    body: body,
+  });
+  ctx.logger.info("body", { body: JSON.stringify(req.body, null, 2) });
+  const rawPayload = Object.keys(body)[0];
+  ctx.logger.info("rawPayload", {
+    rawPayload,
+  });
+  const payload = payloadValidation.parse(
+    JSON.parse(decodeURIComponent(rawPayload.replace(/^JSONString: /, ""))),
+  );
   const webhook = await ctx.prisma.incomingWebhook.findUnique({
     where: {
       id: webhookId,
@@ -63,7 +71,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   if (!webhook) {
     throw new HttpError(404, `Webhook not found: ${webhookId}`);
   }
-
+  ctx.logger.info("webhook", { webhook: JSON.stringify(webhook, null, 2) });
   const { zohoApp } = webhook;
   if (!zohoApp) {
     throw new HttpError(400, "zoho app is not configured");
@@ -79,7 +87,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
      */
     authorizeIntegration(integration);
 
-    await ctx.prisma.order.upsert({
+    const order = await ctx.prisma.order.upsert({
       where: {
         externalOrderId: payload.salesorder.salesorder_id,
       },
@@ -89,25 +97,29 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
         externalOrderId: payload.salesorder.salesorder_id,
         email: "andreas@trieb.work",
         language: Language.DE,
-        packages: {
-          connectOrCreate: payload.salesorder.packages.map((p) => {
-            return {
-              where: {
-                trackingId: p.tracking_number,
-              },
-              create: {
-                id: id.id("package"),
-                trackingId: p.tracking_number,
-                carrier: Carrier.DPD,
-                state: PackageState.INIT,
-                carrierTrackingUrl: "",
-                events: [],
-              },
-            };
-          }),
-        },
       },
     });
+
+    for (const p of payload.salesorder.packages) {
+      await ctx.prisma.package.upsert({
+        where: {
+          trackingId: p.tracking_number,
+        },
+        update: {},
+        create: {
+          id: id.id("package"),
+          trackingId: p.tracking_number,
+          carrier: Carrier.DPD,
+          state: PackageState.INIT,
+          carrierTrackingUrl: "",
+          order: {
+            connect: {
+              id: order.id,
+            },
+          },
+        },
+      });
+    }
   }
   res.json({
     status: "received",
@@ -118,7 +130,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 export default handleWebhook({
   webhook,
   validation: {
-    http: { allowedMethods: ["GET", "OPTIONS"] },
+    http: { allowedMethods: ["POST"] },
     request: requestValidation,
   },
 });
