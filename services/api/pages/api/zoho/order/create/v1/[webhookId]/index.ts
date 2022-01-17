@@ -12,14 +12,30 @@ import { Carrier, Language, PackageState } from "@prisma/client";
 const payloadValidation = z.object({
   salesorder: z.object({
     salesorder_id: z.string(),
+    contact_person_details: z
+      .array(
+        z.object({
+          email: z.string().email(),
+        }),
+      )
+      .nonempty(),
     packages: z.array(
       z.object({
-        tracking_number: z.string(),
-        carrier: z.string(),
+        shipment_order: z.object({
+          tracking_number: z.string(),
+          carrier: z.string(),
+        }),
       }),
     ),
   }),
 });
+
+function parseCarrier(carrier: string): Carrier {
+  if (carrier.toLowerCase() === "dpd") {
+    return Carrier.DPD;
+  }
+  throw new HttpError(400, `Only DPD is supported, received: ${carrier}`);
+}
 
 const requestValidation = z.object({
   query: z.object({
@@ -95,7 +111,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
       create: {
         id: id.id("order"),
         externalOrderId: payload.salesorder.salesorder_id,
-        email: "andreas@trieb.work",
+        emails: payload.salesorder.contact_person_details.map((c) => c.email),
         language: Language.DE,
       },
     });
@@ -103,13 +119,13 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     for (const p of payload.salesorder.packages) {
       await ctx.prisma.package.upsert({
         where: {
-          trackingId: p.tracking_number,
+          trackingId: p.shipment_order.tracking_number,
         },
         update: {},
         create: {
           id: id.id("package"),
-          trackingId: p.tracking_number,
-          carrier: Carrier.DPD,
+          trackingId: p.shipment_order.tracking_number,
+          carrier: parseCarrier(p.shipment_order.carrier),
           state: PackageState.INIT,
           carrierTrackingUrl: "",
           order: {

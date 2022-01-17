@@ -37,6 +37,7 @@ beforeAll(async () => {
     data: {
       id: id.id("test"),
       tenantId: tenant.id,
+      defaultLanguage: Language.EN,
       sender: "servus@pfefferundfrost.de",
       replyTo: "servus@pfefferundfrost.de",
     },
@@ -169,7 +170,7 @@ describe("with invalid webhook", () => {
           data: {
             id: id.id("order"),
             externalOrderId: randomUUID(),
-            email,
+            emails: [email],
             language: Language.DE,
             packages: {
               create: {
@@ -209,8 +210,26 @@ describe("with invalid webhook", () => {
   });
   describe("from zoho webhook", () => {
     it("creates a new order in the db", async () => {
-      const salesorderId = randomUUID();
       const trackingId = randomUUID();
+      const payload = {
+        salesorder: {
+          salesorder_id: randomUUID(),
+          contact_person_details: [
+            {
+              email: "andreas@trieb.work",
+            },
+          ],
+          packages: [
+            {
+              shipment_order: {
+                tracking_number: trackingId,
+                carrier: "DPD",
+              },
+            },
+          ],
+        },
+      };
+
       const res = await new HttpClient().call({
         url: `http://localhost:3000/api/zoho/order/create/v1/${zohoWebhookId}`,
         method: "POST",
@@ -218,7 +237,7 @@ describe("with invalid webhook", () => {
           "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
         },
         // eslint-disable-next-line max-len
-        body: `JSONString: %7B%22salesorder%22%3A%7B%22salesorder_id%22%3A%22${salesorderId}%22%2C%22packages%22%3A%5B%7B%22tracking_number%22%3A%22${trackingId}%22%2C%22carrier%22%3A%22DPD%22%7D%5D%7D%7D`,
+        body: `JSONString: ${encodeURIComponent(JSON.stringify(payload))}`,
       });
       expect(res.ok).toBe(true);
       const storedPackage = await prisma.package.findUnique({
@@ -243,7 +262,7 @@ describe("with invalid webhook", () => {
         data: {
           id: id.id("order"),
           externalOrderId: randomUUID(),
-          email,
+          emails: [email],
           language: Language.DE,
           packages: {
             create: {
@@ -293,7 +312,7 @@ describe("with invalid webhook", () => {
         expect(event.sentEmail).not.toBeNull();
         expect(event.sentEmail!.email).toEqual(email);
       }
-    });
+    }, 60000);
   });
   describe("Multiple events in wrong order", () => {
     it("Sends all required emails ", async () => {
@@ -304,7 +323,7 @@ describe("with invalid webhook", () => {
         data: {
           id: id.id("order"),
           externalOrderId: randomUUID(),
-          email,
+          emails: [email],
           language: Language.DE,
           packages: {
             create: {

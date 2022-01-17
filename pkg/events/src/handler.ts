@@ -7,7 +7,7 @@ export interface EventHandler<TEvent> {
   handleEvent: (ctx: Context, event: TEvent) => Promise<void>;
 }
 
-export function onSuccess<TEvent>(
+export function publishSuccess<TEvent>(
   producer: KafkaProducer<TEvent>,
   topic: Topic,
 ): OnSuccess<TEvent> {

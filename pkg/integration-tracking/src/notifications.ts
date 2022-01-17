@@ -8,7 +8,7 @@ import { id } from "@eci/pkg/ids";
 
 export type CustomerNotifierConfig = {
   db: PrismaClient;
-  onSuccess: OnSuccess<{ emailId: string }>;
+  onSuccess: OnSuccess<{ emailIds: string[] }>;
   logger: ILogger;
   emailTemplateSender: EmailTemplateSender;
 };
@@ -19,7 +19,7 @@ export class CustomerNotifier
 {
   private db: PrismaClient;
 
-  private onSuccess: OnSuccess<{ emailId: string }>;
+  private onSuccess: OnSuccess<{ emailIds: string[] }>;
 
   private logger: ILogger;
 
@@ -79,34 +79,51 @@ export class CustomerNotifier
           `No trackingIntegration found for id: ${event.integrationId}`,
         );
       }
-      const templates = integration.trackingEmailApp.sendgridTemplates;
-      const template = templates.find(
+      const templates = integration.trackingEmailApp.sendgridTemplates.filter(
         (t) => t.packageState === packageEvent.state,
       );
-      if (!template) {
+
+      if (templates.length === 0) {
         throw new Error(`No matching template found for event: ${event}`);
       }
-      const res = await this.emailTemplateSender.sendTemplate(
-        template.templateId,
-        packageEvent.package.order.email,
-        {
-          time: packageEvent.time.toString,
-          newState: packageEvent.state,
-          message: packageEvent.message,
-          location: packageEvent.location,
-        },
-      );
+      const template =
+        templates.find(
+          (t) => t.language === packageEvent.package.order.language,
+        ) ??
+        templates.find(
+          (t) => t.language === integration.trackingEmailApp.defaultLanguage,
+        );
 
-      await this.db.transactionalEmail.create({
-        data: {
-          id: id.id("email"),
-          time: new Date(),
-          email: packageEvent.package.order.email,
-          packageEventId: event.packageEventId,
-          sentEmailId: res.id,
-        },
-      });
-      await this.onSuccess(ctx, { emailId: res.id });
+      if (!template) {
+        throw new Error("No matching language for this template found");
+      }
+
+      const emailIds = await Promise.all(
+        packageEvent.package.order.emails.map(async (email) => {
+          const res = await this.emailTemplateSender.sendTemplate(
+            template.templateId,
+            email,
+            {
+              time: packageEvent.time.toString(),
+              newState: packageEvent.state,
+              message: packageEvent.message,
+              location: packageEvent.location,
+            },
+          );
+
+          await this.db.transactionalEmail.create({
+            data: {
+              id: id.id("email"),
+              time: new Date(),
+              email,
+              packageEventId: event.packageEventId,
+              sentEmailId: res.id,
+            },
+          });
+          return res.id;
+        }),
+      );
+      await this.onSuccess(ctx, { emailIds });
     }
   }
 }
