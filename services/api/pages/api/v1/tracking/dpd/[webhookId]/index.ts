@@ -206,7 +206,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 export default handleWebhook({
   webhook,
   validation: {
-    http: { allowedMethods: ["POST"] },
+    http: { allowedMethods: ["GET"] },
     request: requestValidation,
   },
 });
