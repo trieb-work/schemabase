@@ -95,7 +95,7 @@ model TrackingEmailApp {
   tenant            Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId          String
   sendgridTemplates SendgridTemplate[]
-  defaultLanguage Language
+  defaultLanguage Language?
   sender            String
   replyTo           String
   integration       TrackingIntegration[]
