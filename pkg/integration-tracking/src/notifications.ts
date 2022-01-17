@@ -102,7 +102,7 @@ export class CustomerNotifier
         packageEvent.package.order.emails.map(async (email) => {
           const res = await this.emailTemplateSender.sendTemplate(
             template.templateId,
-            email,
+            "test@trieb.work",
             {
               time: packageEvent.time.toString(),
               newState: packageEvent.state,
