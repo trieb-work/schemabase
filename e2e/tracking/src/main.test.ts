@@ -154,8 +154,8 @@ describe("with invalid webhook", () => {
   describe("without pushid", () => {
     it("does nothing", async () => {
       const res = await new HttpClient().call({
-        url: `http://localhost:3000/api/tracking/dpd/v2/${dpdWebhookId}?pnr=1&pushid=456&status=start_order&statusdate=05012022100200&depot=1`,
-        method: "POST",
+        url: `http://localhost:3000/api/v1/tracking/dpd/${dpdWebhookId}?pnr=1&pushid=456&status=start_order&statusdate=05012022100200&depot=1`,
+        method: "GET",
       });
       expect(res.status).toBe(200);
       expect(res.data).toBe(
@@ -167,8 +167,8 @@ describe("with invalid webhook", () => {
   describe("with wrong webhook id", () => {
     it("fails with status 404", async () => {
       const res = await new HttpClient().call({
-        url: "http://localhost:3000/api/tracking/dpd/v2/not-a-valid-id?pnr=1&pushid=123&status=start_order&statusdate=05012022100200&depot=1",
-        method: "POST",
+        url: "http://localhost:3000/api/v1/tracking/dpd/not-a-valid-id?pnr=1&pushid=123&status=start_order&statusdate=05012022100200&depot=1",
+        method: "GET",
       });
       expect(res.status).toBe(404);
     });
@@ -177,8 +177,8 @@ describe("with invalid webhook", () => {
   describe("with valid webhook", () => {
     it("returns the required xml", async () => {
       const res = await new HttpClient().call({
-        url: `http://localhost:3000/api/tracking/dpd/v2/${dpdWebhookId}?statusdate=05012022100200&receiver=&ref=&pnr=01906000683796&status=start_order&pod=0&weight=0&pushid=92056930&depot=0998&scaninfo=&services=`,
-        method: "POST",
+        url: `http://localhost:3000/api/v1/tracking/dpd/${dpdWebhookId}?statusdate=05012022100200&receiver=&ref=&pnr=01906000683796&status=start_order&pod=0&weight=0&pushid=92056930&depot=0998&scaninfo=&services=`,
+        method: "GET",
       });
       expect(res.status).toBe(200);
       expect(res.data).toEqual(
@@ -211,8 +211,8 @@ describe("with invalid webhook", () => {
         });
 
         await new HttpClient().call({
-          url: `http://localhost:3000/api/tracking/dpd/v2/${dpdWebhookId}?statusdate=05012022100200&&pnr=${trackingId}&status=delivery_nab&pushid=1&depot=1`,
-          method: "POST",
+          url: `http://localhost:3000/api/v1/tracking/dpd/${dpdWebhookId}?statusdate=05012022100200&&pnr=${trackingId}&status=delivery_nab&pushid=1&depot=1`,
+          method: "GET",
         });
 
         await new Promise((res) => setTimeout(res, 10_000));
@@ -310,22 +310,22 @@ describe("with invalid webhook", () => {
       });
 
       await new HttpClient().call({
-        url: `http://localhost:3000/api/tracking/dpd/v2/${dpdWebhookId}?statusdate=05012022100200&&pnr=${trackingId}&status=pickup_depot&pushid=1&depot=1`,
-        method: "POST",
+        url: `http://localhost:3000/api/v1/tracking/dpd/${dpdWebhookId}?statusdate=05012022100200&&pnr=${trackingId}&status=pickup_depot&pushid=1&depot=1`,
+        method: "GET",
       });
 
       await new Promise((res) => setTimeout(res, 2000));
 
       await new HttpClient().call({
-        url: `http://localhost:3000/api/tracking/dpd/v2/${dpdWebhookId}?statusdate=05012022100200&&pnr=${trackingId}&status=delivery_nab&pushid=1&depot=1`,
-        method: "POST",
+        url: `http://localhost:3000/api/v1/tracking/dpd/${dpdWebhookId}?statusdate=05012022100200&&pnr=${trackingId}&status=delivery_nab&pushid=1&depot=1`,
+        method: "GET",
       });
 
       await new Promise((res) => setTimeout(res, 2000));
 
       await new HttpClient().call({
-        url: `http://localhost:3000/api/tracking/dpd/v2/${dpdWebhookId}?statusdate=05012022100200&&pnr=${trackingId}&status=delivery_customer&pushid=1&depot=1`,
-        method: "POST",
+        url: `http://localhost:3000/api/v1/tracking/dpd/${dpdWebhookId}?statusdate=05012022100200&&pnr=${trackingId}&status=delivery_customer&pushid=1&depot=1`,
+        method: "GET",
       });
 
       await new Promise((res) => setTimeout(res, 2000));
@@ -371,20 +371,20 @@ describe("with invalid webhook", () => {
       });
 
       await new HttpClient().call({
-        url: `http://localhost:3000/api/tracking/dpd/v2/${dpdWebhookId}?statusdate=05012022100200&&pnr=${trackingId}&status=pickup_depot&pushid=1&depot=1`,
-        method: "POST",
+        url: `http://localhost:3000/api/v1/tracking/dpd/${dpdWebhookId}?statusdate=05012022100200&&pnr=${trackingId}&status=pickup_depot&pushid=1&depot=1`,
+        method: "GET",
       });
 
       await new Promise((res) => setTimeout(res, 2000));
 
       await new HttpClient().call({
-        url: `http://localhost:3000/api/tracking/dpd/v2/${dpdWebhookId}?statusdate=05012022100200&&pnr=${trackingId}&status=delivery_customer&pushid=1&depot=1`,
-        method: "POST",
+        url: `http://localhost:3000/api/v1/tracking/dpd/${dpdWebhookId}?statusdate=05012022100200&&pnr=${trackingId}&status=delivery_customer&pushid=1&depot=1`,
+        method: "GET",
       });
       await new Promise((res) => setTimeout(res, 2000));
       await new HttpClient().call({
-        url: `http://localhost:3000/api/tracking/dpd/v2/${dpdWebhookId}?statusdate=05012022100200&&pnr=${trackingId}&status=delivery_nab&pushid=1&depot=1`,
-        method: "POST",
+        url: `http://localhost:3000/api/v1/tracking/dpd/${dpdWebhookId}?statusdate=05012022100200&&pnr=${trackingId}&status=delivery_nab&pushid=1&depot=1`,
+        method: "GET",
       });
 
       await new Promise((res) => setTimeout(res, 2000));

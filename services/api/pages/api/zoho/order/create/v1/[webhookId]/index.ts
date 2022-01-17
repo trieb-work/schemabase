@@ -101,7 +101,6 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   if (!webhook) {
     throw new HttpError(404, `Webhook not found: ${webhookId}`);
   }
-  ctx.logger.info("webhook", { webhook: JSON.stringify(webhook, null, 2) });
   const { zohoApp } = webhook;
   if (!zohoApp) {
     throw new HttpError(400, "zoho app is not configured");
