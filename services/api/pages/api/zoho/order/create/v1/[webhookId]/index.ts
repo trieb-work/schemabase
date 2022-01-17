@@ -9,7 +9,7 @@ import { HttpError } from "@eci/pkg/errors";
 import { id } from "@eci/pkg/ids";
 import { Carrier, Language, PackageState } from "@prisma/client";
 import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
-
+import { generateTrackingPortalURL } from "@eci/pkg/integration-tracking";
 const payloadValidation = z.object({
   salesorder: z.object({
     salesorder_number: z.string(),
@@ -147,6 +147,8 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     });
 
     for (const p of payload.salesorder.packages) {
+      const carrier = parseCarrier(p.shipment_order.carrier);
+
       await ctx.prisma.package.upsert({
         where: {
           trackingId: p.shipment_order.tracking_number,
@@ -155,9 +157,13 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
         create: {
           id: id.id("package"),
           trackingId: p.shipment_order.tracking_number,
-          carrier: parseCarrier(p.shipment_order.carrier),
+          carrier,
           state: PackageState.INIT,
-          carrierTrackingUrl: "",
+          carrierTrackingUrl: generateTrackingPortalURL(
+            carrier,
+            "DE",
+            p.shipment_order.tracking_number,
+          ),
           order: {
             connect: {
               id: order.id,
