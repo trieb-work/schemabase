@@ -8,10 +8,12 @@ import {
 import { HttpError } from "@eci/pkg/errors";
 import { id } from "@eci/pkg/ids";
 import { Carrier, Language, PackageState } from "@prisma/client";
+import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
 
 const payloadValidation = z.object({
   salesorder: z.object({
-    salesorder_id: z.string(),
+    salesorder_number: z.string(),
+    customer_id: z.string(),
     contact_person_details: z
       .array(
         z.object({
@@ -35,6 +37,17 @@ function parseCarrier(carrier: string): Carrier {
     return Carrier.DPD;
   }
   throw new HttpError(400, `Only DPD is supported, received: ${carrier}`);
+}
+
+function parseLanguage(language: string): Language {
+  switch (language.toLowerCase()) {
+    case "en":
+      return Language.EN;
+    case "de":
+      return Language.DE;
+    default:
+      throw new HttpError(400, `Language not supported: ${language}`);
+  }
 }
 
 const requestValidation = z.object({
@@ -67,6 +80,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   const payload = payloadValidation.parse(
     JSON.parse(decodeURIComponent(rawPayload.replace(/^JSONString: /, ""))),
   );
+  ctx.logger.info("payload", { payload });
   const webhook = await ctx.prisma.incomingWebhook.findUnique({
     where: {
       id: webhookId,
@@ -96,6 +110,23 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   if (!trackingIntegrations) {
     throw new HttpError(400, "Integration is not configured");
   }
+  const zohoClient = await ZohoApiClient.fromOAuth({
+    orgId: zohoApp.orgId,
+    client: {
+      id: zohoApp.clientId,
+      secret: zohoApp.clientSecret,
+    },
+  }).catch((err) => {
+    throw new Error(`Unable to authenticate with zoho: ${err}`);
+  });
+  const zoho = new Zoho(zohoClient);
+
+  const contact = await zoho.contact.retrieve(payload.salesorder.customer_id);
+  if (!contact) {
+    throw new Error(
+      `Unable to find zoho contact: ${payload.salesorder.customer_id}`,
+    );
+  }
 
   for (const integration of trackingIntegrations) {
     /**
@@ -105,14 +136,14 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
     const order = await ctx.prisma.order.upsert({
       where: {
-        externalOrderId: payload.salesorder.salesorder_id,
+        externalOrderId: payload.salesorder.salesorder_number,
       },
       update: {},
       create: {
         id: id.id("order"),
-        externalOrderId: payload.salesorder.salesorder_id,
+        externalOrderId: payload.salesorder.salesorder_number,
         emails: payload.salesorder.contact_person_details.map((c) => c.email),
-        language: Language.DE,
+        language: parseLanguage(contact.language_code),
       },
     });
 

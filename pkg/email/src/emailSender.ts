@@ -28,7 +28,7 @@ export class Sendgrid implements EmailTemplateSender {
       },
       body: JSON.stringify({
         template_id: templateId,
-        from: { email: "servus@pfefferundfrost.de" },
+        from: { email: "noreply@triebwork.com" },
         personalizations: [
           {
             to: [{ email: receiver }],

@@ -6,12 +6,37 @@ import { afterAll, beforeAll, describe, expect, it } from "@jest/globals";
 import { randomUUID } from "crypto";
 import { sha256 } from "@eci/pkg/hash";
 const prisma = new PrismaClient();
-
+import { env } from "@eci/pkg/env";
+import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
 const dpdWebhookId = id.id("webhook");
 const zohoWebhookId = id.id("webhook");
 const zohoWebhookSecret = id.id("webhookSecret");
-
+let customerId: string;
+let zoho: Zoho;
 beforeAll(async () => {
+  const cookies = env.get("ZOHO_COOKIES");
+  zoho = new Zoho(
+    cookies
+      ? await ZohoApiClient.fromCookies({
+          orgId: env.require("ZOHO_ORG_ID"),
+          cookie: cookies,
+          zsrfToken: env.require("ZOHO_ZCSRF_TOKEN"),
+        })
+      : await ZohoApiClient.fromOAuth({
+          orgId: env.require("ZOHO_ORG_ID"),
+          client: {
+            id: env.require("ZOHO_CLIENT_ID"),
+            secret: env.require("ZOHO_CLIENT_SECRET"),
+          },
+        }),
+  );
+
+  const customer = await zoho.contact.create({
+    contact_name: id.id("test"),
+    language_code: "en",
+  });
+  customerId = customer.contact_id;
+
   const tenant = await prisma.tenant.create({
     data: {
       id: id.id("test"),
@@ -38,8 +63,8 @@ beforeAll(async () => {
       id: id.id("test"),
       tenantId: tenant.id,
       defaultLanguage: Language.EN,
-      sender: "servus@pfefferundfrost.de",
-      replyTo: "servus@pfefferundfrost.de",
+      sender: "noreply@triebwork.com",
+      replyTo: "noreply@triebwork.com",
     },
   });
   for (const state of Object.values(PackageState)) {
@@ -63,9 +88,9 @@ beforeAll(async () => {
   const zohoApp = await prisma.zohoApp.create({
     data: {
       id: id.id("test"),
-      orgId: "",
-      clientId: "",
-      clientSecret: "",
+      orgId: env.require("ZOHO_ORG_ID"),
+      clientId: env.require("ZOHO_CLIENT_ID"),
+      clientSecret: env.require("ZOHO_CLIENT_SECRET"),
       tenant: { connect: { id: tenant.id } },
       webhooks: {
         create: {
@@ -122,6 +147,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await prisma.$disconnect();
+  await zoho.contact.delete(customerId);
 }, 100_000);
 
 describe("with invalid webhook", () => {
@@ -165,7 +191,7 @@ describe("with invalid webhook", () => {
       it("creates a new packageEvent in prisma", async () => {
         const packageId = id.id("package");
         const trackingId = randomUUID();
-        const email = "andreas@trieb.work";
+        const email = "test@trieb.work";
         await prisma.order.create({
           data: {
             id: id.id("order"),
@@ -213,10 +239,11 @@ describe("with invalid webhook", () => {
       const trackingId = randomUUID();
       const payload = {
         salesorder: {
-          salesorder_id: randomUUID(),
+          salesorder_number: randomUUID(),
+          customer_id: customerId,
           contact_person_details: [
             {
-              email: "andreas@trieb.work",
+              email: "test@trieb.work",
             },
           ],
           packages: [
@@ -236,10 +263,9 @@ describe("with invalid webhook", () => {
         headers: {
           "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
         },
-        // eslint-disable-next-line max-len
         body: `JSONString: ${encodeURIComponent(JSON.stringify(payload))}`,
       });
-      expect(res.ok).toBe(true);
+      expect(res.status).toBe(200);
       const storedPackage = await prisma.package.findUnique({
         where: {
           trackingId,
@@ -248,6 +274,13 @@ describe("with invalid webhook", () => {
       });
       expect(storedPackage).toBeDefined();
       expect(storedPackage!.order).toBeDefined();
+      expect(storedPackage!.order.externalOrderId).toEqual(
+        payload.salesorder.salesorder_number,
+      );
+      expect(storedPackage!.order.emails).toEqual(
+        payload.salesorder.contact_person_details.map((c) => c.email),
+      );
+      expect(storedPackage!.order.language).toBe(Language.EN);
       expect(storedPackage!.events.length).toBe(0);
       expect(storedPackage!.state).toEqual(PackageState.INIT);
     });
@@ -257,7 +290,7 @@ describe("with invalid webhook", () => {
     it("Sends all required emails ", async () => {
       const packageId = id.id("package");
       const trackingId = randomUUID();
-      const email = "andreas@trieb.work";
+      const email = "test@trieb.work";
       await prisma.order.create({
         data: {
           id: id.id("order"),
@@ -318,7 +351,7 @@ describe("with invalid webhook", () => {
     it("Sends all required emails ", async () => {
       const packageId = id.id("package");
       const trackingId = randomUUID();
-      const email = "andreas@trieb.work";
+      const email = "test@trieb.work";
       await prisma.order.create({
         data: {
           id: id.id("order"),
