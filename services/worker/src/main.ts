@@ -3,13 +3,13 @@ import * as bulkorder from "@eci/pkg/integration-bulkorders";
 import { env } from "@eci/pkg/env";
 import { StrapiEntryUpdate } from "./handler/strapiEntryUpdate";
 import { StrapiEntryCreate } from "./handler/strapiEntryCreate";
-import { PackageEventHandler } from "./handler/packageUpdate";
+import { PackageEventHandler } from "@eci/pkg/integration-tracking";
 import { PrismaClient } from "@eci/pkg/prisma";
 import {
   KafkaProducer,
   KafkaSubscriber,
   newKafkaClient,
-  onSuccess,
+  publishSuccess,
   Signer,
   Topic,
 } from "@eci/pkg/events";
@@ -65,7 +65,7 @@ async function main() {
     new StrapiEntryCreate({
       prisma,
       logger,
-      onSuccess: onSuccess(producer, Topic.BULKORDER_SYNCED),
+      onSuccess: publishSuccess(producer, Topic.BULKORDER_SYNCED),
     }),
   );
 
@@ -87,7 +87,7 @@ async function main() {
 
   const packageEventHandler = new PackageEventHandler({
     db: prisma,
-    onSuccess: onSuccess(producer, Topic.PACKAGE_STATE_TRANSITION),
+    onSuccess: publishSuccess(producer, Topic.PACKAGE_STATE_TRANSITION),
     logger,
   });
 
@@ -118,7 +118,7 @@ async function main() {
   customerNotifierSubscriber.subscribe(
     new tracking.CustomerNotifier({
       db: prisma,
-      onSuccess: onSuccess(producer, Topic.NOTIFICATION_EMAIL_SENT),
+      onSuccess: publishSuccess(producer, Topic.NOTIFICATION_EMAIL_SENT),
       logger,
       emailTemplateSender: new Sendgrid(env.require("SENDGRID_API_KEY")),
     }),

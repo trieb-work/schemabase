@@ -9,6 +9,7 @@ export interface EmailTemplateSender {
 }
 export class Sendgrid implements EmailTemplateSender {
   private client: HttpClient;
+
   constructor(apiKey: string) {
     this.client = new HttpClient();
     this.client.setHeader("Authorization", `Bearer ${apiKey}`);
@@ -27,7 +28,7 @@ export class Sendgrid implements EmailTemplateSender {
       },
       body: JSON.stringify({
         template_id: templateId,
-        from: { email: "servus@pfefferundfrost.de" },
+        from: { email: "noreply@triebwork.com" },
         personalizations: [
           {
             to: [{ email: receiver }],
@@ -36,6 +37,10 @@ export class Sendgrid implements EmailTemplateSender {
         ],
       }),
     });
-    return { id: res.headers["x-message-id"].toString() ?? "" };
+    if (!res.ok) {
+      throw new Error(`Unable to send email: ${res.status}: ${res.data}`);
+    }
+    const messageId = res.headers["x-message-id"] ?? "";
+    return { id: messageId.toString() };
   }
 }

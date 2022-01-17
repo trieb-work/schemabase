@@ -15,8 +15,8 @@ model Order {
   updatedAt       DateTime @updatedAt
   externalOrderId String   @unique
 
-  // The end customers email where we send transactional emails to
-  email    String
+  // The end customers emails where we send transactional emails to
+  emails   String[]
   language Language
   packages Package[]
 }
@@ -95,6 +95,7 @@ model TrackingEmailApp {
   tenant            Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId          String
   sendgridTemplates SendgridTemplate[]
+  defaultLanguage Language
   sender            String
   replyTo           String
   integration       TrackingIntegration[]
@@ -138,7 +139,7 @@ model ProductDataFeedApp {
   // Graphql endpoint of a saleor app
   productDetailStorefrontURL String
 
-  
+
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String @unique
