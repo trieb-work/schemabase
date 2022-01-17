@@ -14,7 +14,7 @@ module.exports = {
     return [
       {
         source: "/api/tracking/dpd/v1",
-        destination: "/api/v1/tracking/dpd/wh_dd171ebc5a1d778ec3574f2333708fcd",
+        destination: "/api/v1/tracking/dpd/wh_7ab4ba9b85b44f6fbdfa066e85e9f159",
       },
     ];
   },
