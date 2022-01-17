@@ -52,16 +52,11 @@ const parseState = (state: string): PackageState | null => {
       return PackageState.EXCEPTION;
 
     default:
-      throw new Error(`Unexpected state: ${state}`);
+      return null;
   }
 };
 
 const requestValidation = z.object({
-  connection: z
-    .object({
-      remoteAddress: z.string().optional(),
-    })
-    .optional(),
   query: z.object({
     webhookId: z.string(),
     pushid: z.string().optional(),
@@ -122,14 +117,6 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     return;
   }
 
-  if (env.require("ECI_ENV") === "production") {
-    if (req.connection?.remoteAddress !== "213.95.42.108") {
-      throw new Error(
-        `DPD webhooks must come from ip "213.95.42.108", got ${req.connection?.remoteAddress} instead`,
-      );
-    }
-  }
-
   const webhook = await ctx.prisma.incomingWebhook.findUnique({
     where: { id: webhookId },
     include: {
@@ -187,7 +174,6 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
       `<push><pushid>${pushId}</pushid><status>OK</status></push>`,
     );
   }
-  ctx.logger.info("Time", { time });
   const packageEvent: EventSchemaRegistry.PackageUpdate["message"] = {
     trackingId,
     time: time.getTime() / 1000,
@@ -220,7 +206,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 export default handleWebhook({
   webhook,
   validation: {
-    http: { allowedMethods: ["POST"] },
+    http: { allowedMethods: ["GET"] },
     request: requestValidation,
   },
 });

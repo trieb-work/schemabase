@@ -3,7 +3,7 @@ import { PackageState } from "@prisma/client";
 /**
  * Transitions from one state (the key) to its possible next states (the array)
  */
-const newsWorthyTransitions: Record<PackageState, PackageState[]> = {
+const packageTransitions: Record<PackageState, PackageState[]> = {
   // Initial state when the package is created
   INIT: [
     PackageState.INFORMATION_RECEIVED,
@@ -74,9 +74,9 @@ const newsWorthyTransitions: Record<PackageState, PackageState[]> = {
 /**
  * Decide if the next event should trigger a notification for the user.
  */
-export function shouldNotify(
+export function isValidTransition(
   current: PackageState,
   next: PackageState,
 ): boolean {
-  return newsWorthyTransitions[current].includes(next);
+  return packageTransitions[current].includes(next);
 }

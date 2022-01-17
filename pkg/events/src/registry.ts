@@ -50,6 +50,6 @@ export namespace EventSchemaRegistry {
 
   export type NotificationEmailSent = EventSchema<
     Topic.NOTIFICATION_EMAIL_SENT,
-    { emailId: string }
+    { emailIds: string[] }
   >;
 }

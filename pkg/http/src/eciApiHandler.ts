@@ -80,6 +80,7 @@ export function handleWebhook<TRequest>({
       trace: { id: traceId },
       logger,
     };
+
     try {
       /**
        * Perform http validation

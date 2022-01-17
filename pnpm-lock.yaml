@@ -15,7 +15,7 @@ specifiers:
   '@swc/core': ^1.2.127
   '@swc/jest': ^0.2.15
   '@trieb.work/prettier-base': ^0.1.2
-  '@trieb.work/zoho-ts': ^0.3.45
+  '@trieb.work/zoho-ts': ^0.3.46
   '@types/faker': ^5.5.9
   '@types/html-to-text': ^8.0.1
   '@types/jest': ^27.4.0
@@ -65,7 +65,7 @@ specifiers:
 dependencies:
   '@chronark/prefixed-id': 0.3.8
   '@elastic/ecs-winston-format': 1.3.1
-  '@trieb.work/zoho-ts': 0.3.45
+  '@trieb.work/zoho-ts': 0.3.46
   apollo-datasource: 3.3.0
   apollo-server: 3.6.1_graphql@15.8.0
   apollo-server-core: 3.6.1_graphql@15.8.0
@@ -2279,8 +2279,8 @@ packages:
     resolution: {integrity: sha512-+gg3TpWZ7Eb7/uO1JMVATNWhJHqafozITLFQRTDiHLehc0bZd0LMyAFd99lhMl5a1zpHAyGRBi2WIt1GtJ4QHg==}
     dev: true
 
-  /@trieb.work/zoho-ts/0.3.45:
-    resolution: {integrity: sha512-tTC4qhEbfds6FP9YE+1YAZR3qg+arsYHsc3eMafnp1kZzuMQuxBTQVK7QTXgnUP71B9XayNDlE+HnYAp7Zib6w==}
+  /@trieb.work/zoho-ts/0.3.46:
+    resolution: {integrity: sha512-nupS/qNUmM4/GzsvQIFw5BxkoMN8tT+DJBNgNNnAhr6a5/Eg+qm7TkWI2IEHtwasDPYhdILtg9juOd8psw/GqQ==}
     dependencies:
       async-retry: 1.3.3
       await-timeout: 1.1.1

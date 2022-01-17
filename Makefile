@@ -38,7 +38,7 @@ init: down build
 
 
 init-core: down build
-	docker-compose up -d --build eci_api eci_worker kafka-ui kafka zookeeper
+	docker-compose up -d --build eci_api eci_worker
 	$(MAKE) db-push
 
 build: install
@@ -50,10 +50,7 @@ build-api: build
 
 build-worker: build
 	pnpm esbuild --platform=node --bundle --outfile=services/worker/dist/main.js services/worker/src/main.ts
-
-
-
-
+	
 rebuild-api:
 	docker-compose stop eci_api
 	docker-compose up -d eci_db
@@ -106,6 +103,6 @@ tsc:
 	pnpm tsc --pretty
 
 format:
+	deno fmt --ignore=node_modules
 	pnpm prettier --write .
-
 check: build tsc format

@@ -10,6 +10,14 @@ module.exports = {
 
     return config;
   },
+  async rewrites() {
+    return [
+      {
+        source: "/api/tracking/dpd/v1",
+        destination: "/api/v1/tracking/dpd/wh_7ab4ba9b85b44f6fbdfa066e85e9f159",
+      },
+    ];
+  },
   async headers() {
     return [
       {
