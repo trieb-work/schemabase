@@ -87,6 +87,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     });
     elasticLogger.log("info", "Hello from logdrain");
     await elasticTransport.flush();
+    res.send("ok");
   }
 };
 
