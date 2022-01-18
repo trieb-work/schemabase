@@ -40,6 +40,6 @@ module.exports = {
   },
   globals: {
     fetch: "readonly",
-    console: "readonly"
+    console: "readonly",
   },
 };

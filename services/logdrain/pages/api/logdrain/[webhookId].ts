@@ -9,15 +9,77 @@ import {
   setupPrisma,
 } from "@eci/pkg/webhook-context";
 import { HttpError } from "@eci/pkg/errors";
+import { ElasticCluster } from "@prisma/client";
+import { env } from "@eci/pkg/env";
+const requestValidation = z.object({
+  query: z.object({
+    webhookId: z.string(),
+  }),
+  body: z.array(
+    z
+      .object({
+        id: z.string(),
+        message: z.string().optional(),
+        timestamp: z.number().int(),
+        requestId: z.string(),
+        statusCode: z.number().int(),
+        source: z.enum(["build", "static", "external", "lambda"]),
+        projectId: z.string(),
+        host: z.string(),
+        // path: z.string(),
+        /**
+         * Don't care at this point
+         */
+        // proxy: z.object({
+        //   timestamp: z.number().int(),
+        //   method: z.string(),
+        //   scheme: z.string(),
+        //   host: z.string(),
+        //   path: z.string(),
+        //   userAgent: z.array(z.string()),
+        //   referer: z.string(),
+        //   statusCode: z.number().int(),
+        //   clientIp: z.string(),
+        //   region: z.string(),
+        //   cacheId: z.string(),
+        // }),
+      })
+      .passthrough(),
+  ),
+});
+class ClusterCache {
+  private cache: {
+    [webhookId: string]: {
+      clusters: ElasticCluster[];
+      exp: number;
+    };
+  };
+  constructor() {
+    this.cache = {};
+  }
 
-const requestValidation = z
-  .object({
-    query: z.object({
-      webhookId: z.string(),
-    }),
-    body: z.any(),
-  })
-  .passthrough();
+  get(webhookId: string): ElasticCluster[] | null {
+    const cached = this.cache[webhookId];
+
+    if (!cached) {
+      return null;
+    }
+    if (cached.exp > Date.now()) {
+      delete this.cache[webhookId];
+      return null;
+    }
+    return cached.clusters;
+  }
+
+  set(webhookId: string, clusters: ElasticCluster[]): void {
+    this.cache[webhookId] = {
+      clusters,
+      exp: Date.now() + 5 * 60 * 1000,
+    };
+  }
+}
+
+const cache = new ClusterCache();
 
 const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   req,
@@ -31,64 +93,82 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
-  const webhook = await ctx.prisma.incomingWebhook.findUnique({
-    where: {
-      id: webhookId,
-    },
-    include: {
-      vercelLogDrainApp: {
-        include: {
-          elasticLogDrainIntegrations: {
-            include: {
-              subscription: true,
-              elasticCluster: true,
+  let clusters = cache.get(webhookId);
+  if (!clusters || clusters.length === 0) {
+    const webhook = await ctx.prisma.incomingWebhook.findUnique({
+      where: {
+        id: webhookId,
+      },
+      include: {
+        vercelLogDrainApp: {
+          include: {
+            elasticLogDrainIntegrations: {
+              include: {
+                subscription: true,
+                elasticCluster: true,
+              },
             },
           },
         },
       },
-    },
-  });
+    });
 
-  if (!webhook) {
-    throw new HttpError(404, `Webhook not found: ${webhookId}`);
-  }
-
-  const { vercelLogDrainApp } = webhook;
-  if (!vercelLogDrainApp) {
-    throw new HttpError(400, "strapi app is not configured");
-  }
-  const { elasticLogDrainIntegrations } = vercelLogDrainApp;
-  if (!elasticLogDrainIntegrations) {
-    throw new HttpError(400, "Integration is not configured");
-  }
-  for (const integration of elasticLogDrainIntegrations) {
-    /**
-     * Ensure the elasticLogDrainIntegrations is enabled and payed for
-     */
-    authorizeIntegration(integration);
-
-    const { elasticCluster } = integration;
-
-    if (!elasticCluster) {
-      throw new HttpError(400, "Elastic connection not found");
+    if (!webhook) {
+      throw new HttpError(404, `Webhook not found: ${webhookId}`);
     }
+
+    const { vercelLogDrainApp } = webhook;
+    if (!vercelLogDrainApp) {
+      throw new HttpError(400, "vercel log drain is not configured");
+    }
+    const { elasticLogDrainIntegrations } = vercelLogDrainApp;
+    if (!elasticLogDrainIntegrations) {
+      throw new HttpError(400, "Integration is not configured");
+    }
+
+    clusters = elasticLogDrainIntegrations.map((integration) => {
+      /**
+       * Ensure the elasticLogDrainIntegrations is enabled and payed for
+       */
+      authorizeIntegration(integration);
+
+      const { elasticCluster } = integration;
+
+      if (!elasticCluster) {
+        throw new HttpError(400, "Elastic connection not found");
+      }
+      return elasticCluster;
+    });
+    cache.set(webhookId, clusters);
+  }
+
+  for (const cluster of clusters) {
     const elasticTransport = new ElasticsearchTransport({
       level: "info", // log info and above, not debug
       dataStream: true,
-      index: elasticCluster.index ?? "vercel_logdrain",
+      index: cluster.index ?? "logs-vercel-logdrain",
       clientOpts: {
-        node: elasticCluster.endpoint,
+        node: cluster.endpoint,
         auth: {
-          username: elasticCluster.username,
-          password: elasticCluster.password,
+          username: cluster.username,
+          password: cluster.password,
         },
       },
     });
     const elasticLogger = winston.createLogger({
-      transports: [new winston.transports.Console(), elasticTransport],
+      transports: [elasticTransport],
       format: ecsFormat(),
     });
-    elasticLogger.log("info", { body: JSON.stringify(body, null, 2) });
+
+    /**
+     * Logging my own messages causes an infinite loop of nested messages.
+     */
+    const vercelUrl = env.require("VERCEL_URL");
+    for (const message of body) {
+      if (message.host !== vercelUrl) {
+        elasticLogger.log("info", JSON.stringify(message));
+      }
+    }
     await elasticTransport.flush();
     res.send("ok");
   }

@@ -57,6 +57,7 @@ model ElasticCluster {
   username String
   password String
 
+  // Send logs to a specific index
   index String?
 
 
