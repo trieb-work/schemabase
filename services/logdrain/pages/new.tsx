@@ -63,47 +63,46 @@ const NewPage: NextPage = () => {
             <Input
               value={url}
               onChange={(e: React.FormEvent<HTMLInputElement>) =>
-                setUrl(e.currentTarget.value)
-              }
+                setUrl(e.currentTarget.value)}
             >
               Url
             </Input>
 
-            {url.length === 0 ? (
-              <Dot type="error">Url must not be empty</Dot>
-            ) : null}
+            {url.length === 0
+              ? <Dot type="error">Url must not be empty</Dot>
+              : null}
           </Grid>
           <Grid>
             <Input
               value={username}
               onChange={(e: React.FormEvent<HTMLInputElement>) =>
-                setUsername(e.currentTarget.value)
-              }
+                setUsername(e.currentTarget.value)}
             >
               Username
             </Input>
-            {username.length === 0 ? (
-              <Dot type="error">Username must not be empty</Dot>
-            ) : null}
+            {username.length === 0
+              ? <Dot type="error">Username must not be empty</Dot>
+              : null}
           </Grid>
           <Grid>
             <Input.Password
               value={password}
               onChange={(e: React.FormEvent<HTMLInputElement>) =>
-                setPassword(e.currentTarget.value)
-              }
+                setPassword(e.currentTarget.value)}
             >
               Password
             </Input.Password>
-            {password.length === 0 ? (
-              <Dot type="error">Password must not be empty</Dot>
-            ) : null}
+            {password.length === 0
+              ? <Dot type="error">Password must not be empty</Dot>
+              : null}
           </Grid>
-          {error ? (
-            <Grid>
-              <Dot type="error">{error}</Dot>
-            </Grid>
-          ) : null}
+          {error
+            ? (
+              <Grid>
+                <Dot type="error">{error}</Dot>
+              </Grid>
+            )
+            : null}
           <Grid>
             <Button
               loading={loading}

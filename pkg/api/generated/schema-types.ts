@@ -10,15 +10,21 @@ export type InputMaybe<T> = T | null | undefined;
 export type Exact<T extends { [key: string]: unknown }> = {
   [K in keyof T]: T[K];
 };
-export type MakeOptional<T, K extends keyof T> = Omit<T, K> & {
-  [SubKey in K]?: Maybe<T[SubKey]>;
-};
-export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & {
-  [SubKey in K]: Maybe<T[SubKey]>;
-};
-export type RequireFields<T, K extends keyof T> = {
-  [X in Exclude<keyof T, K>]?: T[X];
-} & { [P in K]-?: NonNullable<T[P]> };
+export type MakeOptional<T, K extends keyof T> =
+  & Omit<T, K>
+  & {
+    [SubKey in K]?: Maybe<T[SubKey]>;
+  };
+export type MakeMaybe<T, K extends keyof T> =
+  & Omit<T, K>
+  & {
+    [SubKey in K]: Maybe<T[SubKey]>;
+  };
+export type RequireFields<T, K extends keyof T> =
+  & {
+    [X in Exclude<keyof T, K>]?: T[X];
+  }
+  & { [P in K]-?: NonNullable<T[P]> };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string;
@@ -175,8 +181,8 @@ export type SubscriptionResolver<
   TArgs = {},
 > =
   | ((
-      ...args: any[]
-    ) => SubscriptionObject<TResult, TKey, TParent, TContext, TArgs>)
+    ...args: any[]
+  ) => SubscriptionObject<TResult, TKey, TParent, TContext, TArgs>)
   | SubscriptionObject<TResult, TKey, TParent, TContext, TArgs>;
 
 export type TypeResolveFn<TTypes, TParent = {}, TContext = {}> = (
@@ -239,14 +245,16 @@ export type ResolversParentTypes = ResolversObject<{
 
 export type MutationResolvers<
   ContextType = GraphQLModules.Context,
-  ParentType extends ResolversParentTypes["Mutation"] = ResolversParentTypes["Mutation"],
+  ParentType extends ResolversParentTypes["Mutation"] =
+    ResolversParentTypes["Mutation"],
 > = ResolversObject<{
   _empty?: Resolver<Maybe<ResolversTypes["Boolean"]>, ParentType, ContextType>;
 }>;
 
 export type OrderResolvers<
   ContextType = GraphQLModules.Context,
-  ParentType extends ResolversParentTypes["Order"] = ResolversParentTypes["Order"],
+  ParentType extends ResolversParentTypes["Order"] =
+    ResolversParentTypes["Order"],
 > = ResolversObject<{
   email?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   externalOrderId?: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
@@ -262,7 +270,8 @@ export type OrderResolvers<
 
 export type PackageResolvers<
   ContextType = GraphQLModules.Context,
-  ParentType extends ResolversParentTypes["Package"] = ResolversParentTypes["Package"],
+  ParentType extends ResolversParentTypes["Package"] =
+    ResolversParentTypes["Package"],
 > = ResolversObject<{
   carrier?: Resolver<ResolversTypes["Carrier"], ParentType, ContextType>;
   carrierTrackingUrl?: Resolver<
@@ -284,7 +293,8 @@ export type PackageResolvers<
 
 export type PackageEventResolvers<
   ContextType = GraphQLModules.Context,
-  ParentType extends ResolversParentTypes["PackageEvent"] = ResolversParentTypes["PackageEvent"],
+  ParentType extends ResolversParentTypes["PackageEvent"] =
+    ResolversParentTypes["PackageEvent"],
 > = ResolversObject<{
   id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
   location?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
@@ -302,7 +312,8 @@ export type PackageEventResolvers<
 
 export type QueryResolvers<
   ContextType = GraphQLModules.Context,
-  ParentType extends ResolversParentTypes["Query"] = ResolversParentTypes["Query"],
+  ParentType extends ResolversParentTypes["Query"] =
+    ResolversParentTypes["Query"],
 > = ResolversObject<{
   healthCheck?: Resolver<ResolversTypes["Boolean"], ParentType, ContextType>;
   packageByTrackingId?: Resolver<
@@ -315,7 +326,8 @@ export type QueryResolvers<
 
 export type TransactionalEmailResolvers<
   ContextType = GraphQLModules.Context,
-  ParentType extends ResolversParentTypes["TransactionalEmail"] = ResolversParentTypes["TransactionalEmail"],
+  ParentType extends ResolversParentTypes["TransactionalEmail"] =
+    ResolversParentTypes["TransactionalEmail"],
 > = ResolversObject<{
   email?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>;

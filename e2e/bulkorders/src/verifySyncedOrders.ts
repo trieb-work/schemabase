@@ -31,11 +31,13 @@ export async function verifySyncedOrders(
     );
     if (!strapiAddress) {
       throw new Error(
-        `strapiAddress is undefined: ${JSON.stringify(
-          { strapiEvent, zohoOrder },
-          null,
-          2,
-        )}`,
+        `strapiAddress is undefined: ${
+          JSON.stringify(
+            { strapiEvent, zohoOrder },
+            null,
+            2,
+          )
+        }`,
       );
     }
 

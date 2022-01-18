@@ -150,13 +150,17 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   authorizeIntegration(integration);
 
   const time = new Date(
-    `${statusdate.slice(4, 8)}-${statusdate.slice(2, 4)}-${statusdate.slice(
-      0,
-      2,
-    )}T${statusdate.slice(8, 10)}:${statusdate.slice(
-      10,
-      12,
-    )}:${statusdate.slice(12, 14)}.000+01:00`,
+    `${statusdate.slice(4, 8)}-${statusdate.slice(2, 4)}-${
+      statusdate.slice(
+        0,
+        2,
+      )
+    }T${statusdate.slice(8, 10)}:${
+      statusdate.slice(
+        10,
+        12,
+      )
+    }:${statusdate.slice(12, 14)}.000+01:00`,
   );
 
   ctx.logger.info("package update", {

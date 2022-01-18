@@ -10,8 +10,7 @@ import { env } from "@eci/pkg/env";
 import { Context } from "@eci/pkg/context";
 
 export class StrapiEntryCreate
-  implements EventHandler<EventSchemaRegistry.StrapiEntryCreate["message"]>
-{
+  implements EventHandler<EventSchemaRegistry.StrapiEntryCreate["message"]> {
   private prisma: PrismaClient;
   private logger: ILogger;
   private onSuccess: OnSuccess<EventSchemaRegistry.BulkorderSynced["message"]>;
@@ -39,17 +38,17 @@ export class StrapiEntryCreate
     const zoho = new Zoho(
       cookies
         ? await ZohoApiClient.fromCookies({
-            orgId: zohoApp.orgId,
-            cookie: cookies,
-            zsrfToken: env.require("ZOHO_ZCSRF_TOKEN"),
-          })
+          orgId: zohoApp.orgId,
+          cookie: cookies,
+          zsrfToken: env.require("ZOHO_ZCSRF_TOKEN"),
+        })
         : await ZohoApiClient.fromOAuth({
-            orgId: zohoApp.orgId,
-            client: {
-              id: zohoApp.clientId,
-              secret: zohoApp.clientSecret,
-            },
-          }),
+          orgId: zohoApp.orgId,
+          client: {
+            id: zohoApp.clientId,
+            secret: zohoApp.clientSecret,
+          },
+        }),
     );
     const strapiOrdersToZoho = new StrapiOrdersToZoho({
       zoho,

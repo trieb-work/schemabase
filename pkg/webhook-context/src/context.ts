@@ -12,8 +12,9 @@ export type Context = {
 /**
  * The basic Context where some additional keys are set as required
  */
-export type ExtendedContext<Keys extends keyof Context> = Context &
-  Required<Pick<Context, Keys>>;
+export type ExtendedContext<Keys extends keyof Context> =
+  & Context
+  & Required<Pick<Context, Keys>>;
 
 /**
  * A function that initializes an integration or otherwise inserts something into the context.
