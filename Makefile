@@ -48,6 +48,9 @@ build: install
 build-api: build
 	pnpm next build ./services/api
 
+build-logdrain: build
+	pnpm next build ./services/logdrain
+
 build-worker: build
 	pnpm esbuild --platform=node --bundle --outfile=services/worker/dist/main.js services/worker/src/main.ts
 	
@@ -88,6 +91,10 @@ build-api-prod:
 	pnpm generate
 	pnpm build:api
 	pnpm prisma migrate deploy
+
+build-logdrain-prod:
+	pnpm build:prisma
+	pnpm build:logdrain
 
 install:
 	pnpm install

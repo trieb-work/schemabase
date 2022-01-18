@@ -48,6 +48,52 @@ enum Carrier {
   DPD
 }
 
+model ElasticCluster {
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  endpoint String
+  username String
+  password String
+
+
+  elasticLogDrainIntegrations ElasticLogDrainIntegration[]
+}
+
+model VercelLogDrainApp {
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+
+  configurationId String  @unique
+  installationId  String  @unique
+  projectId       String?  @unique
+  teamId          String?
+  userId          String
+
+  webhooks IncomingWebhook[]
+
+  elasticLogDrainIntegrations ElasticLogDrainIntegration[]
+}
+
+model ElasticLogDrainIntegration {
+  id               String            @id
+  // Allow the user to manually enabled or disable the integration
+  // Regardless of current subscription state.
+  enabled          Boolean           @default(true)
+  subscription     Subscription?     @relation(fields: [subscriptionId], references: [id])
+  subscriptionId   String?           @unique
+  tenant           Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId         String
+  logDrainApp      VercelLogDrainApp @relation(fields: [logDrainAppId], references: [id])
+  logDrainAppId    String            @unique
+  elasticCluster   ElasticCluster    @relation(fields: [elasticClusterId], references: [id])
+  elasticClusterId String            @unique
+
+}
+
 model Package {
   // internal id
   id                 String         @id
@@ -95,7 +141,7 @@ model TrackingEmailApp {
   tenant            Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId          String
   sendgridTemplates SendgridTemplate[]
-  defaultLanguage Language?
+  defaultLanguage   Language?
   sender            String
   replyTo           String
   integration       TrackingIntegration[]
@@ -257,6 +303,7 @@ model Tenant {
   trackingEmailApps           TrackingEmailApp[]
   dpdApps                     DpdApp[]
   trackingIntegrations        TrackingIntegration[]
+  ElasticLogDrainIntegration  ElasticLogDrainIntegration[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
@@ -273,6 +320,7 @@ model Subscription {
   strapiToZohoIntegration    StrapiToZohoIntegration?
   logisticsIntegration       LogisticsIntegration?
   trackingIntegration        TrackingIntegration?
+  ElasticLogDrainIntegration ElasticLogDrainIntegration[]
 }
 
 // ----------------------------------------------------------------------------
@@ -399,6 +447,9 @@ model IncomingWebhook {
   strapiAppId          String?
   installedSaleorApp   InstalledSaleorApp? @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
   installedSaleorAppId String?
+  vercelLogDrainApp          VercelLogDrainApp?  @relation(fields: [vercelLogDrainAppId], references: [id], onDelete: Cascade)
+  vercelLogDrainAppId        String?
+
 }
 
 model SecretKey {

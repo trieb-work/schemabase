@@ -2,13 +2,14 @@
   "name": "eci",
   "version": "0.0.0",
   "engines": {
-    "node": "^14.x"
+    "node": "14"
   },
   "scripts": {
     "test": "jest",
     "generate": "graphql-codegen -c ./pkg/api/codegen.yml",
     "build:prisma": "prisma generate",
     "build:api": "next build ./services/api",
+    "build:logdrain": "next build ./services/logdrain",
     "fmt": "pnpm lint && pnpm format",
     "lint": "eslint --ext .js,.ts --fix .",
     "format": "prettier --write ."
@@ -22,7 +23,7 @@
     "@graphql-codegen/typescript-graphql-files-modules": "^2.1.1",
     "@graphql-codegen/typescript-resolvers": "^2.4.3",
     "@jest/globals": "^27.4.6",
-    "@prisma/client": "^3.7.0",
+    "@prisma/client": "^3.8.0",
     "@swc/core": "^1.2.127",
     "@swc/jest": "^0.2.15",
     "@trieb.work/prettier-base": "^0.1.2",
@@ -77,6 +78,7 @@
   "dependencies": {
     "@chronark/prefixed-id": "^0.3.8",
     "@elastic/ecs-winston-format": "^1.3.1",
+    "@geist-ui/react": "^2.2.2",
     "@trieb.work/zoho-ts": "^0.3.46",
     "apollo-datasource": "^3.3.0",
     "apollo-server": "^3.6.1",
