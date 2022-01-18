@@ -26,9 +26,8 @@ export const newSaleorClient = (
    */
   if (!host.startsWith("http")) {
     const eciEnv = env.require("ECI_ENV");
-    const protocol = eciEnv === "production" || eciEnv === "preview"
-      ? "https"
-      : "http";
+    const protocol =
+      eciEnv === "production" || eciEnv === "preview" ? "https" : "http";
     host = `${protocol}://${host}`;
   }
   return createSaleorClient({

@@ -111,4 +111,5 @@ tsc:
 
 format:
 	deno fmt --ignore=node_modules
+	pnpm prettier --write .
 check: build tsc format

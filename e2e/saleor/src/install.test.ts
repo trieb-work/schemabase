@@ -63,11 +63,9 @@ describe("Saleor app installation", () => {
       input: {
         activateAfterInstallation: true,
         appName: id.id("test"),
-        manifestUrl: `${
-          env.require(
-            "ECI_BASE_URL_FROM_CONTAINER",
-          )
-        }/api/saleor/manifest/${tenant.id}`,
+        manifestUrl: `${env.require(
+          "ECI_BASE_URL_FROM_CONTAINER",
+        )}/api/saleor/manifest/${tenant.id}`,
       },
     });
     /**

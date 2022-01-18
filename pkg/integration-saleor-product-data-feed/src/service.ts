@@ -121,9 +121,10 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
         const gtin = hasVariants
           ? variant.metadata?.find((x) => x?.key === "EAN")?.value
           : rawProduct.metadata?.find((x) => x?.key === "EAN")?.value;
-        const unit_pricing_measure = variant.weight && rawProduct.weight
-          ? generateUnitPrice(variant.weight, rawProduct.weight)
-          : undefined;
+        const unit_pricing_measure =
+          variant.weight && rawProduct.weight
+            ? generateUnitPrice(variant.weight, rawProduct.weight)
+            : undefined;
         const product: Product = {
           id: variant.sku,
           title: hasVariants ? `${title} (${variant.name})` : title,
@@ -142,12 +143,8 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
           link: `${storefrontProductUrl}${
             storefrontProductUrl.endsWith("/") ? "" : "/"
           }${rawProduct.slug}`,
-          price: `${variant?.pricing?.priceUndiscounted?.gross.amount} ${
-            variant?.pricing?.priceUndiscounted?.gross.currency
-          }`,
-          sale_price: `${variant?.pricing?.price?.gross.amount} ${
-            variant.pricing?.price?.gross.currency
-          }`,
+          price: `${variant?.pricing?.priceUndiscounted?.gross.amount} ${variant?.pricing?.priceUndiscounted?.gross.currency}`,
+          sale_price: `${variant?.pricing?.price?.gross.amount} ${variant.pricing?.price?.gross.currency}`,
           condition: "new",
           gtin,
           brand: brand ?? "undefined",

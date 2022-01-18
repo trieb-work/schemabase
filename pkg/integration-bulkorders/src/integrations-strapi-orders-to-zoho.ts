@@ -102,9 +102,10 @@ export class StrapiOrdersToZoho {
       address: OrderEvent["entry"]["addresses"][0];
     }[] = [];
     for (const address of event.entry.addresses) {
-      const products = address.products && address.products.length > 0
-        ? address.products
-        : rawEvent.entry.products;
+      const products =
+        address.products && address.products.length > 0
+          ? address.products
+          : rawEvent.entry.products;
       const productIds = products.map((p) => p.product.zohoId);
 
       const productTaxes = [];
@@ -117,10 +118,8 @@ export class StrapiOrdersToZoho {
       }
 
       const highestTax = productTaxes.reduce(
-        (
-          acc: { taxId: string; taxPercentage: number },
-          tax,
-        ) => (acc = acc.taxPercentage > tax.taxPercentage ? acc : tax),
+        (acc: { taxId: string; taxPercentage: number }, tax) =>
+          (acc = acc.taxPercentage > tax.taxPercentage ? acc : tax),
         { taxPercentage: 0, taxId: "" },
       );
 
@@ -202,7 +201,7 @@ export class StrapiOrdersToZoho {
     const strapiOrders = await this.transformStrapiEventToZohoOrders(rawEvent);
 
     const existingOrderUIds = existingOrders.map((o) =>
-      this.getUniqueOrderId(o.salesorder_number, o["cf_orderhash"] as string)
+      this.getUniqueOrderId(o.salesorder_number, o["cf_orderhash"] as string),
     );
     this.logger.debug("strapiOrders", { strapiOrders });
     const strapiOrderUIds = strapiOrders.map((o) =>
@@ -211,7 +210,7 @@ export class StrapiOrdersToZoho {
         (o.order.custom_fields ?? []).find(
           (cf) => cf.api_name === "cf_orderhash",
         )!.value! as string,
-      )
+      ),
     );
 
     const deleteOrderNumbers = existingOrders
@@ -369,16 +368,14 @@ export class StrapiOrdersToZoho {
         })
         .catch((err: Error) => {
           throw new Error(
-            `Unable to create sales order: ${
-              JSON.stringify(
-                {
-                  ...order,
-                  shipping_address_id: addressId,
-                },
-                null,
-                2,
-              )
-            }, Error: ${err}`,
+            `Unable to create sales order: ${JSON.stringify(
+              {
+                ...order,
+                shipping_address_id: addressId,
+              },
+              null,
+              2,
+            )}, Error: ${err}`,
           );
           // }
         });

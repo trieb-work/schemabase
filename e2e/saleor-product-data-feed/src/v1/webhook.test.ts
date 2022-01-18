@@ -72,13 +72,11 @@ beforeAll(async () => {
   const productType = productTypeResponse?.productTypeCreate?.productType?.id;
   if (!productType) {
     throw new Error(
-      `Unable to create productType: ${
-        JSON.stringify(
-          productTypeResponse,
-          null,
-          2,
-        )
-      }`,
+      `Unable to create productType: ${JSON.stringify(
+        productTypeResponse,
+        null,
+        2,
+      )}`,
     );
   }
 
@@ -106,8 +104,8 @@ beforeAll(async () => {
       trackInventory: true,
     },
   });
-  const productVariant = productVariantResponse?.productVariantCreate
-    ?.productVariant;
+  const productVariant =
+    productVariantResponse?.productVariantCreate?.productVariant;
   if (!productVariant) {
     throw new Error(
       "no productVariant " + JSON.stringify(productVariantResponse, null, 2),
@@ -215,8 +213,7 @@ describe("productdatafeed", () => {
     it(`generates a feed for ${variant}`, async () => {
       const res = await http.call<string>({
         method: "GET",
-        url:
-          `http://localhost:3000/api/product-data-feed/v1/${variant}/${webhookId}`,
+        url: `http://localhost:3000/api/product-data-feed/v1/${variant}/${webhookId}`,
       });
       expect(res.status).toBe(200);
       expect(res.headers["content-type"]).toEqual("text/csv");

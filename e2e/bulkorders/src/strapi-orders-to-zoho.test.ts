@@ -76,7 +76,7 @@ async function generateEvent(
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       addresses: [...Array(addresses)].map((_, rowId) =>
-        generateAddress(prefix, orderId, rowId)
+        generateAddress(prefix, orderId, rowId),
       ),
       products: [
         {
@@ -100,17 +100,17 @@ beforeAll(async () => {
   zoho = new Zoho(
     cookies
       ? await ZohoApiClient.fromCookies({
-        orgId: env.require("ZOHO_ORG_ID"),
-        cookie: cookies,
-        zsrfToken: env.require("ZOHO_ZCSRF_TOKEN"),
-      })
+          orgId: env.require("ZOHO_ORG_ID"),
+          cookie: cookies,
+          zsrfToken: env.require("ZOHO_ZCSRF_TOKEN"),
+        })
       : await ZohoApiClient.fromOAuth({
-        orgId: env.require("ZOHO_ORG_ID"),
-        client: {
-          id: env.require("ZOHO_CLIENT_ID"),
-          secret: env.require("ZOHO_CLIENT_SECRET"),
-        },
-      }),
+          orgId: env.require("ZOHO_ORG_ID"),
+          client: {
+            id: env.require("ZOHO_CLIENT_ID"),
+            secret: env.require("ZOHO_CLIENT_SECRET"),
+          },
+        }),
   );
 
   const tenant = await prisma.tenant.create({
@@ -532,7 +532,8 @@ describe("with valid webhook", () => {
               zohoId: "116240000000112128",
             },
           },
-        ]), await triggerWebhook(webhookId, webhookSecret, event);
+        ]),
+          await triggerWebhook(webhookId, webhookSecret, event);
         await waitForPropagation();
 
         await verifySyncedOrders(zoho, event);

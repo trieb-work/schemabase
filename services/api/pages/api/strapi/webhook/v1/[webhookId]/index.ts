@@ -72,7 +72,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
   if (
     createHash("sha256").update(authorization).digest("hex") !==
-      webhook.secret.secret
+    webhook.secret.secret
   ) {
     throw new HttpError(403, "Authorization token invalid");
   }

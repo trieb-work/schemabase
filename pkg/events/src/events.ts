@@ -165,9 +165,10 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
             throw new Error("Kafka message does not have signature header");
           }
 
-          const signature = typeof headers["signature"] === "string"
-            ? headers["signature"]
-            : headers["signature"].toString();
+          const signature =
+            typeof headers["signature"] === "string"
+              ? headers["signature"]
+              : headers["signature"].toString();
 
           this.signer.verify(message.serialize(), signature);
 

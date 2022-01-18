@@ -15,7 +15,8 @@ export type CustomerNotifierConfig = {
 
 export class CustomerNotifier
   implements
-    EventHandler<EventSchemaRegistry.PackageStateTransition["message"]> {
+    EventHandler<EventSchemaRegistry.PackageStateTransition["message"]>
+{
   private db: PrismaClient;
 
   private onSuccess: OnSuccess<{ emailIds: string[] }>;
@@ -85,9 +86,10 @@ export class CustomerNotifier
       if (templates.length === 0) {
         throw new Error(`No matching template found for event: ${event}`);
       }
-      const template = templates.find(
-        (t) => t.language === packageEvent.package.order.language,
-      ) ??
+      const template =
+        templates.find(
+          (t) => t.language === packageEvent.package.order.language,
+        ) ??
         templates.find(
           (t) => t.language === integration.trackingEmailApp.defaultLanguage,
         );

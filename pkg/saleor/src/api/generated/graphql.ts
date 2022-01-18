@@ -4,16 +4,12 @@ export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
   [K in keyof T]: T[K];
 };
-export type MakeOptional<T, K extends keyof T> =
-  & Omit<T, K>
-  & {
-    [SubKey in K]?: Maybe<T[SubKey]>;
-  };
-export type MakeMaybe<T, K extends keyof T> =
-  & Omit<T, K>
-  & {
-    [SubKey in K]: Maybe<T[SubKey]>;
-  };
+export type MakeOptional<T, K extends keyof T> = Omit<T, K> & {
+  [SubKey in K]?: Maybe<T[SubKey]>;
+};
+export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & {
+  [SubKey in K]: Maybe<T[SubKey]>;
+};
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string;
@@ -260,10 +256,8 @@ export type Allocation = Node & {
   warehouse: Warehouse;
 };
 
-export type App =
-  & Node
-  & ObjectWithMetadata
-  & {
+export type App = Node &
+  ObjectWithMetadata & {
     __typename?: "App";
     aboutApp?: Maybe<Scalars["String"]>;
     accessToken?: Maybe<Scalars["String"]>;
@@ -398,10 +392,8 @@ export type AppInstallInput = {
   permissions?: Maybe<Array<Maybe<PermissionEnum>>>;
 };
 
-export type AppInstallation =
-  & Job
-  & Node
-  & {
+export type AppInstallation = Job &
+  Node & {
     __typename?: "AppInstallation";
     appName: Scalars["String"];
     createdAt: Scalars["DateTime"];
@@ -497,10 +489,8 @@ export type AssignNavigation = {
   menuErrors: Array<MenuError>;
 };
 
-export type Attribute =
-  & Node
-  & ObjectWithMetadata
-  & {
+export type Attribute = Node &
+  ObjectWithMetadata & {
     __typename?: "Attribute";
     availableInGrid: Scalars["Boolean"];
     choices?: Maybe<AttributeValueCountableConnection>;
@@ -913,10 +903,8 @@ export type CatalogueInput = {
   products?: Maybe<Array<Maybe<Scalars["ID"]>>>;
 };
 
-export type Category =
-  & Node
-  & ObjectWithMetadata
-  & {
+export type Category = Node &
+  ObjectWithMetadata & {
     __typename?: "Category";
     ancestors?: Maybe<CategoryCountableConnection>;
     backgroundImage?: Maybe<Image>;
@@ -1170,10 +1158,8 @@ export type ChannelUpdateInput = {
   slug?: Maybe<Scalars["String"]>;
 };
 
-export type Checkout =
-  & Node
-  & ObjectWithMetadata
-  & {
+export type Checkout = Node &
+  ObjectWithMetadata & {
     __typename?: "Checkout";
     availablePaymentGateways: Array<PaymentGateway>;
     availableShippingMethods: Array<Maybe<ShippingMethod>>;
@@ -1418,10 +1404,8 @@ export type ChoiceValue = {
   verbose?: Maybe<Scalars["String"]>;
 };
 
-export type Collection =
-  & Node
-  & ObjectWithMetadata
-  & {
+export type Collection = Node &
+  ObjectWithMetadata & {
     __typename?: "Collection";
     backgroundImage?: Maybe<Image>;
     channel?: Maybe<Scalars["String"]>;
@@ -2095,10 +2079,8 @@ export type DeletePrivateMetadata = {
   metadataErrors: Array<MetadataError>;
 };
 
-export type DigitalContent =
-  & Node
-  & ObjectWithMetadata
-  & {
+export type DigitalContent = Node &
+  ObjectWithMetadata & {
     __typename?: "DigitalContent";
     automaticFulfillment: Scalars["Boolean"];
     contentFile: Scalars["String"];
@@ -2343,10 +2325,8 @@ export enum ExportEventsEnum {
   ExportSuccess = "EXPORT_SUCCESS",
 }
 
-export type ExportFile =
-  & Job
-  & Node
-  & {
+export type ExportFile = Job &
+  Node & {
     __typename?: "ExportFile";
     app?: Maybe<App>;
     createdAt: Scalars["DateTime"];
@@ -2493,10 +2473,8 @@ export type FileUpload = {
   uploadedFile?: Maybe<File>;
 };
 
-export type Fulfillment =
-  & Node
-  & ObjectWithMetadata
-  & {
+export type Fulfillment = Node &
+  ObjectWithMetadata & {
     __typename?: "Fulfillment";
     created: Scalars["DateTime"];
     fulfillmentOrder: Scalars["Int"];
@@ -2703,11 +2681,9 @@ export type IntRangeInput = {
   lte?: Maybe<Scalars["Int"]>;
 };
 
-export type Invoice =
-  & Job
-  & Node
-  & ObjectWithMetadata
-  & {
+export type Invoice = Job &
+  Node &
+  ObjectWithMetadata & {
     __typename?: "Invoice";
     createdAt: Scalars["DateTime"];
     externalUrl?: Maybe<Scalars["String"]>;
@@ -3664,10 +3640,8 @@ export enum MeasurementUnitsEnum {
   Yd = "YD",
 }
 
-export type Menu =
-  & Node
-  & ObjectWithMetadata
-  & {
+export type Menu = Node &
+  ObjectWithMetadata & {
     __typename?: "Menu";
     id: Scalars["ID"];
     items?: Maybe<Array<Maybe<MenuItem>>>;
@@ -3750,10 +3724,8 @@ export type MenuInput = {
   slug?: Maybe<Scalars["String"]>;
 };
 
-export type MenuItem =
-  & Node
-  & ObjectWithMetadata
-  & {
+export type MenuItem = Node &
+  ObjectWithMetadata & {
     __typename?: "MenuItem";
     category?: Maybe<Category>;
     children?: Maybe<Array<Maybe<MenuItem>>>;
@@ -4146,15 +4118,11 @@ export type Mutation = {
   productUpdate?: Maybe<ProductUpdate>;
   productVariantBulkCreate?: Maybe<ProductVariantBulkCreate>;
   productVariantBulkDelete?: Maybe<ProductVariantBulkDelete>;
-  productVariantChannelListingUpdate?: Maybe<
-    ProductVariantChannelListingUpdate
-  >;
+  productVariantChannelListingUpdate?: Maybe<ProductVariantChannelListingUpdate>;
   productVariantCreate?: Maybe<ProductVariantCreate>;
   productVariantDelete?: Maybe<ProductVariantDelete>;
   productVariantReorder?: Maybe<ProductVariantReorder>;
-  productVariantReorderAttributeValues?: Maybe<
-    ProductVariantReorderAttributeValues
-  >;
+  productVariantReorderAttributeValues?: Maybe<ProductVariantReorderAttributeValues>;
   productVariantSetDefault?: Maybe<ProductVariantSetDefault>;
   productVariantStocksCreate?: Maybe<ProductVariantStocksCreate>;
   productVariantStocksDelete?: Maybe<ProductVariantStocksDelete>;
@@ -4172,16 +4140,12 @@ export type Mutation = {
   saleTranslate?: Maybe<SaleTranslate>;
   saleUpdate?: Maybe<SaleUpdate>;
   setPassword?: Maybe<SetPassword>;
-  shippingMethodChannelListingUpdate?: Maybe<
-    ShippingMethodChannelListingUpdate
-  >;
+  shippingMethodChannelListingUpdate?: Maybe<ShippingMethodChannelListingUpdate>;
   shippingPriceBulkDelete?: Maybe<ShippingPriceBulkDelete>;
   shippingPriceCreate?: Maybe<ShippingPriceCreate>;
   shippingPriceDelete?: Maybe<ShippingPriceDelete>;
   shippingPriceExcludeProducts?: Maybe<ShippingPriceExcludeProducts>;
-  shippingPriceRemoveProductFromExclude?: Maybe<
-    ShippingPriceRemoveProductFromExclude
-  >;
+  shippingPriceRemoveProductFromExclude?: Maybe<ShippingPriceRemoveProductFromExclude>;
   shippingPriceTranslate?: Maybe<ShippingPriceTranslate>;
   shippingPriceUpdate?: Maybe<ShippingPriceUpdate>;
   shippingZoneBulkDelete?: Maybe<ShippingZoneBulkDelete>;
@@ -5438,10 +5402,8 @@ export type ObjectWithMetadata = {
   privateMetadata: Array<Maybe<MetadataItem>>;
 };
 
-export type Order =
-  & Node
-  & ObjectWithMetadata
-  & {
+export type Order = Node &
+  ObjectWithMetadata & {
     __typename?: "Order";
     actions: Array<Maybe<OrderAction>>;
     availableShippingMethods?: Maybe<Array<Maybe<ShippingMethod>>>;
@@ -6057,10 +6019,8 @@ export type OrderVoid = {
   orderErrors: Array<OrderError>;
 };
 
-export type Page =
-  & Node
-  & ObjectWithMetadata
-  & {
+export type Page = Node &
+  ObjectWithMetadata & {
     __typename?: "Page";
     attributes: Array<SelectedAttribute>;
     content?: Maybe<Scalars["JSONString"]>;
@@ -6267,10 +6227,8 @@ export type PageTranslationInput = {
   title?: Maybe<Scalars["String"]>;
 };
 
-export type PageType =
-  & Node
-  & ObjectWithMetadata
-  & {
+export type PageType = Node &
+  ObjectWithMetadata & {
     __typename?: "PageType";
     attributes?: Maybe<Array<Maybe<Attribute>>>;
     availableAttributes?: Maybe<AttributeCountableConnection>;
@@ -6713,10 +6671,8 @@ export type PriceRangeInput = {
   lte?: Maybe<Scalars["Float"]>;
 };
 
-export type Product =
-  & Node
-  & ObjectWithMetadata
-  & {
+export type Product = Node &
+  ObjectWithMetadata & {
     __typename?: "Product";
     attributes: Array<SelectedAttribute>;
     availableForPurchase?: Maybe<Scalars["Date"]>;
@@ -7153,10 +7109,8 @@ export type ProductTranslation = Node & {
   seoTitle?: Maybe<Scalars["String"]>;
 };
 
-export type ProductType =
-  & Node
-  & ObjectWithMetadata
-  & {
+export type ProductType = Node &
+  ObjectWithMetadata & {
     __typename?: "ProductType";
     availableAttributes?: Maybe<AttributeCountableConnection>;
     hasVariants: Scalars["Boolean"];
@@ -7297,10 +7251,8 @@ export type ProductUpdate = {
   productErrors: Array<ProductError>;
 };
 
-export type ProductVariant =
-  & Node
-  & ObjectWithMetadata
-  & {
+export type ProductVariant = Node &
+  ObjectWithMetadata & {
     __typename?: "ProductVariant";
     attributes: Array<SelectedAttribute>;
     channel?: Maybe<Scalars["String"]>;
@@ -8097,10 +8049,8 @@ export type RequestPasswordReset = {
   errors: Array<AccountError>;
 };
 
-export type Sale =
-  & Node
-  & ObjectWithMetadata
-  & {
+export type Sale = Node &
+  ObjectWithMetadata & {
     __typename?: "Sale";
     categories?: Maybe<CategoryCountableConnection>;
     channelListings?: Maybe<Array<SaleChannelListing>>;
@@ -8338,10 +8288,8 @@ export enum ShippingErrorCode {
   Unique = "UNIQUE",
 }
 
-export type ShippingMethod =
-  & Node
-  & ObjectWithMetadata
-  & {
+export type ShippingMethod = Node &
+  ObjectWithMetadata & {
     __typename?: "ShippingMethod";
     channelListings?: Maybe<Array<ShippingMethodChannelListing>>;
     description?: Maybe<Scalars["JSONString"]>;
@@ -8524,10 +8472,8 @@ export type ShippingPriceUpdate = {
   shippingZone?: Maybe<ShippingZone>;
 };
 
-export type ShippingZone =
-  & Node
-  & ObjectWithMetadata
-  & {
+export type ShippingZone = Node &
+  ObjectWithMetadata & {
     __typename?: "ShippingZone";
     channels: Array<Channel>;
     countries?: Maybe<Array<Maybe<CountryDisplay>>>;
@@ -9055,10 +9001,8 @@ export enum UploadErrorCode {
   GraphqlError = "GRAPHQL_ERROR",
 }
 
-export type User =
-  & Node
-  & ObjectWithMetadata
-  & {
+export type User = Node &
+  ObjectWithMetadata & {
     __typename?: "User";
     addresses?: Maybe<Array<Maybe<Address>>>;
     avatar?: Maybe<Image>;
@@ -9254,10 +9198,8 @@ export enum VolumeUnitsEnum {
   Qt = "QT",
 }
 
-export type Voucher =
-  & Node
-  & ObjectWithMetadata
-  & {
+export type Voucher = Node &
+  ObjectWithMetadata & {
     __typename?: "Voucher";
     applyOncePerCustomer: Scalars["Boolean"];
     applyOncePerOrder: Scalars["Boolean"];
@@ -9482,10 +9424,8 @@ export type VoucherUpdate = {
   voucher?: Maybe<Voucher>;
 };
 
-export type Warehouse =
-  & Node
-  & ObjectWithMetadata
-  & {
+export type Warehouse = Node &
+  ObjectWithMetadata & {
     __typename?: "Warehouse";
     address: Address;
     /** @deprecated Use address.CompanyName. This field will be removed in Saleor 4.0. */

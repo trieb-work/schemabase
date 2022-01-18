@@ -91,11 +91,9 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   res.setHeader("Content-Type", "text/csv");
   res.setHeader(
     "Content-Disposition",
-    `attachment; filename=productdatafeed-${
-      createHash("md5")
-        .update(products)
-        .digest("hex")
-    }.csv`,
+    `attachment; filename=productdatafeed-${createHash("md5")
+      .update(products)
+      .digest("hex")}.csv`,
   );
   res.setHeader("Cache-Control", "s-maxage=1, stale-while-revalidate");
   res.send(products);
