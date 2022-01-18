@@ -38,4 +38,7 @@ module.exports = {
      */
     "no-nested-ternary": "off",
   },
+  globals: {
+    fetch: "readonly",
+  },
 };
