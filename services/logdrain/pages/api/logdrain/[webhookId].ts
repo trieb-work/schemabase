@@ -10,12 +10,14 @@ import {
 } from "@eci/pkg/webhook-context";
 import { HttpError } from "@eci/pkg/errors";
 
-const requestValidation = z.object({
-  query: z.object({
-    webhookId: z.string(),
-  }),
-  body: z.any(),
-});
+const requestValidation = z
+  .object({
+    query: z.object({
+      webhookId: z.string(),
+    }),
+    body: z.any(),
+  })
+  .passthrough();
 
 const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   req,
@@ -28,7 +30,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   } = req;
 
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
-  ctx.logger.info("Raw body", { body });
+
   const webhook = await ctx.prisma.incomingWebhook.findUnique({
     where: {
       id: webhookId,
@@ -73,6 +75,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     const elasticTransport = new ElasticsearchTransport({
       level: "info", // log info and above, not debug
       dataStream: true,
+      index: elasticCluster.index ?? "vercel_logdrain",
       clientOpts: {
         node: elasticCluster.endpoint,
         auth: {
@@ -85,7 +88,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
       transports: [new winston.transports.Console(), elasticTransport],
       format: ecsFormat(),
     });
-    elasticLogger.log("info", "Hello from logdrain");
+    elasticLogger.log("info", { body: JSON.stringify(body, null, 2) });
     await elasticTransport.flush();
     res.send("ok");
   }
