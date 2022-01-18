@@ -2,7 +2,6 @@ import { z } from "zod";
 import { handleWebhook, Webhook } from "@eci/pkg/http";
 import winston from "winston";
 import { ElasticsearchTransport } from "winston-elasticsearch";
-import { env } from "@eci/pkg/env";
 import ecsFormat from "@elastic/ecs-winston-format";
 import {
   authorizeIntegration,

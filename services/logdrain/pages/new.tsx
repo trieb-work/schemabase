@@ -1,7 +1,7 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { Button, Dot, Grid, Input, Page } from "@geist-ui/react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { CreateRequest } from "./api/create";
 
 const NewPage: NextPage = () => {
@@ -60,7 +60,12 @@ const NewPage: NextPage = () => {
         <h2>Add your elastic cluster here</h2>
         <Grid.Container gap={2} direction="column">
           <Grid>
-            <Input value={url} onChange={(e) => setUrl(e.currentTarget.value)}>
+            <Input
+              value={url}
+              onChange={(e: React.FormEvent<HTMLInputElement>) =>
+                setUrl(e.currentTarget.value)
+              }
+            >
               Url
             </Input>
 
@@ -71,7 +76,9 @@ const NewPage: NextPage = () => {
           <Grid>
             <Input
               value={username}
-              onChange={(e) => setUsername(e.currentTarget.value)}
+              onChange={(e: React.FormEvent<HTMLInputElement>) =>
+                setUsername(e.currentTarget.value)
+              }
             >
               Username
             </Input>
@@ -82,7 +89,9 @@ const NewPage: NextPage = () => {
           <Grid>
             <Input.Password
               value={password}
-              onChange={(e) => setPassword(e.currentTarget.value)}
+              onChange={(e: React.FormEvent<HTMLInputElement>) =>
+                setPassword(e.currentTarget.value)
+              }
             >
               Password
             </Input.Password>
