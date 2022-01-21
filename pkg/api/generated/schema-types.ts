@@ -1,8 +1,8 @@
 import { GraphQLResolveInfo } from "graphql";
 import {
   OrderModel,
-  PackageEventModel,
   PackageModel,
+  PackageEventModel,
   TransactionalEmailModel,
 } from "@eci/pkg/prisma";
 export type Maybe<T> = T | null | undefined;

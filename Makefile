@@ -38,7 +38,7 @@ init: down build
 
 
 init-core: down build
-	docker-compose up -d --build eci_api eci_worker
+	docker-compose up -d --build eci_api eci_worker logdrain
 	$(MAKE) db-push
 
 build: install
@@ -59,6 +59,9 @@ rebuild-api:
 	docker-compose up -d eci_db
 	docker-compose build eci_api
 	docker-compose up -d eci_api
+
+
+
 
 rebuild-worker: export COMPOSE_DOCKER_CLI_BUILD=1
 rebuild-worker: export DOCKER_BUILDKIT=1
@@ -109,7 +112,7 @@ db-push:
 tsc: 
 	pnpm tsc --pretty
 
-format:
+fmt:
 	deno fmt --ignore=node_modules
 	pnpm prettier --write .
-check: build tsc format
+check: build tsc fmt

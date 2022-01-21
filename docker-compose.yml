@@ -39,6 +39,25 @@ services:
     depends_on:
       - eci_db
 
+  logdrain:
+    image: logdrain
+    build:
+      context: .
+      dockerfile: ./services/logdrain/Dockerfile
+
+    container_name: logdrain.eci
+    ports:
+      - 4000:3000
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL_POOL: ${DATABASE_URL_POOL}
+
+      NODE_ENV: production
+      ECI_ENV: dev"
+
+    depends_on:
+      - eci_db
+
   eci_worker:
     image: eci_worker
     container_name: worker.eci
