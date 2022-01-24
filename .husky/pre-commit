@@ -9,7 +9,6 @@ if [[ "$BRANCH" =~ ^(master|main|testing)$ ]]; then
   exit 1
 fi
 
-yarn tsc
-yarn test
-yarn lint-staged
-yarn prettier --check .
+pnpm tsc
+pnpm lint-staged
+pnpm prettier --check .
