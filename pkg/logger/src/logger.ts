@@ -1,32 +1,27 @@
-import * as tslog from "tslog";
-
+import winston from "winston";
 import { env } from "@eci/pkg/env";
-
-export interface LogDrain {
-  log: (message: string) => void;
-}
 
 export type Fields = Record<string, unknown>;
 
-export interface LoggerConfig {
+export type LoggerConfig = {
   meta?: {
     /**
      * Unique id for every trace.
      */
     traceId?: string;
   } & Fields;
-}
+};
 
 export interface ILogger {
-  with: (additionalMeta: Fields) => ILogger;
-  debug: (message: string, fields?: Fields) => void;
-  info: (message: string, fields?: Fields) => void;
-  warn: (message: string, fields?: Fields) => void;
-  error: (message: string, fields?: Fields) => void;
+  with(additionalMeta: Fields): ILogger;
+  debug(message: string, fields?: Fields): void;
+  info(message: string, fields?: Fields): void;
+  warn(message: string, fields?: Fields): void;
+  error(message: string, fields?: Fields): void;
 }
 
 export class Logger implements ILogger {
-  private readonly logger: tslog.Logger;
+  private logger: winston.Logger;
 
   private meta: Record<string, unknown>;
 
@@ -36,9 +31,12 @@ export class Logger implements ILogger {
       commit: env.get("GIT_COMMIT_SHA", env.get("VERCEL_GIT_COMMIT_SHA")),
       ...config?.meta,
     };
-    this.logger = new tslog.Logger({
-      type: this.meta.env === "production" ? "json" : "pretty",
-      minLevel: env.get("NODE_ENV") === "production" ? "info" : undefined,
+    this.logger = winston.createLogger({
+      transports: [new winston.transports.Console()],
+      format: winston.format.prettyPrint({
+        colorize: true,
+        depth: 10,
+      }),
     });
   }
 
@@ -56,35 +54,28 @@ export class Logger implements ILogger {
     return copy;
   }
 
+  /**
+   * Serialize the message
+   *
+   * The fields will overwrite the default metadata if keys overlap.
+   */
+  private log(level: string, message: string, fields: Fields): void {
+    this.logger.log(level, message, { ...this.meta, ...fields });
+  }
+
   public debug(message: string, fields: Fields = {}): void {
-    this.logger.debug(message, {
-      log: { level: "debug" },
-      ...this.meta,
-      ...fields,
-    });
+    return this.log("debug", message, fields);
   }
 
   public info(message: string, fields: Fields = {}): void {
-    this.logger.info(message, {
-      log: { level: "info" },
-      ...this.meta,
-      ...fields,
-    });
+    return this.log("info", message, fields);
   }
 
   public warn(message: string, fields: Fields = {}): void {
-    this.logger.warn(message, {
-      log: { level: "warn" },
-      ...this.meta,
-      ...fields,
-    });
+    return this.log("warn", message, fields);
   }
 
   public error(message: string, fields: Fields = {}): void {
-    this.logger.error(message, {
-      log: { level: "error" },
-      ...this.meta,
-      ...fields,
-    });
+    return this.log("error", message, fields);
   }
 }

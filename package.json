@@ -69,10 +69,10 @@
     "schema": "./pkg/prisma/schema.prisma"
   },
   "dependencies": {
-    "@prisma/client": "^3.8.0",
-    "prisma": "^3.7.0",
     "@chronark/prefixed-id": "^0.3.8",
     "@elastic/elasticsearch": "^7.16.0",
+    "@geist-ui/react": "^2.2.2",
+    "@prisma/client": "^3.8.0",
     "@trieb.work/zoho-ts": "^0.3.46",
     "apollo-datasource": "^3.3.0",
     "apollo-server": "^3.6.1",
@@ -84,15 +84,16 @@
     "graphql-modules": "^2.0.0",
     "graphql-request": "^3.7.0",
     "graphql-tag": "^2.12.6",
-    "@geist-ui/react": "^2.2.2",
     "html-to-text": "^8.1.0",
     "kafkajs": "^1.15.0",
     "micro": "^9.3.4",
     "next": "^12.0.7",
     "objects-to-csv": "^1.3.6",
+    "prisma": "^3.7.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "tslog": "^3.3.1",
+    "winston": "^3.4.0",
     "zod": "^3.11.6"
   }
 }
