@@ -112,7 +112,7 @@ type Log = Metadata & {
   level?: string;
   message?: string;
 };
-function formatLog(raw: string): Log {
+function formatLogs(raw: string): Log[] {
   const lines = raw
     .split("\n")
     .filter(
@@ -121,44 +121,49 @@ function formatLog(raw: string): Log {
         !line.startsWith("END") &&
         !line.startsWith("REPORT"),
     );
-  // const report = split.find((line) => line.startsWith("REPORT")) ?? "";
+  const reportLine =
+    raw.split("\n").find((line) => line.startsWith("REPORT")) ?? "";
+  const reportRegex =
+    // eslint-disable-next-line max-len
+    /REPORT RequestId: ([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:\t|\\t)Duration: (\d+\.\d+) ms(?:\t|\\t)Billed Duration: (\d+) ms(?:\t|\\t)Memory Size: (\d+) MB(?:\t|\\t)Max Memory Used: (\d+) MB/;
+  const reportMatch = reportRegex.exec(reportLine);
 
-  const { requestId, duration, billedDuration, memorySize, maxMemoryUsed } = {
-    requestId: undefined,
-    duration: undefined,
-    billedDuration: undefined,
-    memorySize: undefined,
-    maxMemoryUsed: undefined,
-  };
+  const report: {
+    requestId?: string;
+    duration?: number;
+    billedDuration?: number;
+    memorySize?: number;
+    maxMemoryUsed?: number;
+  } = {};
+  if (reportMatch) {
+    report.requestId = reportMatch[1];
+    report.duration = parseFloat(reportMatch[2]);
+    report.billedDuration = parseInt(reportMatch[3]);
+    report.memorySize = parseInt(reportMatch[4]);
+    report.maxMemoryUsed = parseInt(reportMatch[5]);
+  }
+
   const lineRegex =
     // eslint-disable-next-line max-len, no-control-regex
     /[\d]{4}-[\d]{2}-[\d]{2}T[\d]{2}:[\d]{2}:[\d]{2}.[\d]+Z(?:\t|\\t)[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?:\t|\\t)(\w+)(?:\t|\\t)(.*)/gim;
   const logs: {
-    level: string;
-    message: string;
-  }[] = lines.map((line) => {
-    const match = lineRegex.exec(line);
-    if (!match) {
-      throw new Error(`Log does not match regex: ${line}`);
-    }
-    return { level: match[1].toLowerCase(), message: match[2] };
-  });
-
-  return {
-    requestId,
-    level: logs.length > 0 ? logs[0].level : "info",
-    duration: duration ? parseFloat(duration) : undefined,
-    billedDuration: billedDuration ? parseFloat(billedDuration) : undefined,
-    memorySize: memorySize ? parseInt(memorySize) : undefined,
-    maxMemoryUsed: maxMemoryUsed ? parseInt(maxMemoryUsed) : undefined,
-    message:
-      logs && logs.length > 0
-        ? logs
-            .map(({ message }) => message)
-            .filter((message) => !!message && message.length > 0)
-            .join("\n")
-        : undefined,
-  };
+    level?: string;
+    message?: string;
+  }[] =
+    lines.length > 0
+      ? lines.map((line) => {
+          const match = lineRegex.exec(line);
+          if (match) {
+            return { level: match[1].toLowerCase(), message: match[2] };
+          }
+          return { message: line };
+        })
+      : [{ message: undefined }];
+  return logs.map((log) => ({
+    ...report,
+    level: log.level ?? "info",
+    message: log.message,
+  }));
 }
 
 export default async function (
@@ -171,6 +176,8 @@ export default async function (
       body,
       headers: { "x-vercel-signature": signature },
     } = requestValidation.parse(req);
+
+    console.log({ entrypoints: body.map((b) => b.entrypoint) });
     const prisma = new PrismaClient();
 
     let clusters = cache.get(webhookId);
@@ -242,22 +249,25 @@ export default async function (
       const bulkBody = body
         .filter((event) => event.host !== vercelUrl && event.source !== "build")
         .flatMap((event) => {
-          const log = event.message ? formatLog(event.message) : null;
+          const logs = event.message ? formatLogs(event.message) : [];
 
-          return [
+          return logs.map((log) => [
             {
               create: {
                 _index: index,
               },
             },
             {
-              message: log?.message ?? `TODO: ${event.path}`,
+              message: log?.message ?? `No message (request log)`,
               log: {
                 level: log?.level ?? "info",
               },
               "@timestamp": event.timestamp,
               trace: {
                 id: log?.requestId,
+              },
+              event: {
+                duration: log.duration,
               },
               cloud: {
                 project: {
@@ -288,11 +298,8 @@ export default async function (
               user_agent: {
                 original: event.proxy?.userAgent,
               },
-              event: {
-                duration: log?.duration,
-              },
             },
-          ];
+          ]);
         });
       if (bulkBody.length !== 0) {
         await elastic.bulk({
