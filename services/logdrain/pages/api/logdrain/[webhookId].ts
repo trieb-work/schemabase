@@ -42,6 +42,7 @@ const requestValidation = z.object({
         projectId: z.string(),
         host: z.string(),
         path: z.string().optional(),
+        entrypoint: z.string().optional(),
 
         proxy: z
           .object({
@@ -170,7 +171,7 @@ export default async function (
       body,
       headers: { "x-vercel-signature": signature },
     } = requestValidation.parse(req);
-
+    console.log(JSON.stringify({ body }, null, 2));
     const prisma = new PrismaClient();
 
     let clusters = cache.get(webhookId);
@@ -271,6 +272,9 @@ export default async function (
               },
               url: {
                 path: event.path,
+              },
+              host: {
+                hostname: event.host,
               },
               http: {
                 request: {
