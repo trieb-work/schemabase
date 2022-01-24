@@ -6,6 +6,7 @@ export async function createLogDrain(req: {
   name: string;
   type: "json" | "ndjson" | "syslog";
   url: string;
+  secret: string;
 }): Promise<void> {
   let url = "https://api.vercel.com/v1/integrations/log-drains";
   if (req.teamId) {
@@ -21,6 +22,7 @@ export async function createLogDrain(req: {
       name: req.name,
       type: req.type,
       url: req.url,
+      secret: req.secret,
     }),
   });
   if (!res.ok) {

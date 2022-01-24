@@ -6,14 +6,29 @@ import { env } from "@eci/pkg/env";
 import { NextApiRequest, NextApiResponse } from "next";
 import { Client as ElasticClient } from "@elastic/elasticsearch";
 import { HttpError } from "@eci/pkg/errors";
+import { createHmac } from "crypto";
 
 // const vercelReportLogPattern =
 // eslint-disable-next-line max-len
 //   "REPORT RequestId: %{UUID:requestId}\\tDuration: %{NUMBER:duration} ms\\tBilled Duration: %{NUMBER:billedDuration} ms\\tMemory Size: %{NUMBER:memorySize} MB\\tMax Memory Used: %{NUMBER:maxMemoryUsed} MB";
 
+const verify = (
+  body: z.infer<typeof requestValidation>["body"],
+  signingKey: string,
+  signature: string,
+): boolean => {
+  return (
+    signature ===
+    createHmac("sha1", signingKey).update(JSON.stringify(body)).digest("hex")
+  );
+};
+
 const requestValidation = z.object({
   query: z.object({
     webhookId: z.string(),
+  }),
+  headers: z.object({
+    "x-vercel-signature": z.string(),
   }),
   body: z.array(
     z
@@ -143,6 +158,7 @@ export default async function (
     const {
       query: { webhookId },
       body,
+      headers: { "x-vercel-signature": signature },
     } = requestValidation.parse(req);
 
     const prisma = new PrismaClient();
@@ -154,6 +170,7 @@ export default async function (
           id: webhookId,
         },
         include: {
+          secret: true,
           vercelLogDrainApp: {
             include: {
               elasticLogDrainIntegrations: {
@@ -168,6 +185,12 @@ export default async function (
       });
       if (!webhook) {
         throw new HttpError(404, `Webhook not found: ${webhookId}`);
+      }
+      if (!webhook.secret) {
+        throw new HttpError(400, "secret is not configured");
+      }
+      if (!verify(req.body, webhook.secret.secret, signature)) {
+        throw new HttpError(403, "Signature does not match");
       }
       const { vercelLogDrainApp } = webhook;
       if (!vercelLogDrainApp) {
