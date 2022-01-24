@@ -245,7 +245,6 @@ export default async function (
        */
       const vercelUrl = env.require("VERCEL_URL");
 
-      const index = cluster.index ?? "logs-vercel-logdrain";
       const bulkBody = body
         .filter((event) => event.host !== vercelUrl && event.source !== "build")
         .flatMap((event) => {
@@ -254,7 +253,8 @@ export default async function (
           return logs.map((log) => [
             {
               create: {
-                _index: index,
+                _index:
+                  cluster.index ?? `logs-vercel-logdrain-${event.projectId}`,
               },
             },
             {
