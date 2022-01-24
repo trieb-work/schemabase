@@ -113,6 +113,6 @@ tsc:
 	pnpm tsc --pretty
 
 fmt:
-	pnpm eslint --ext .js,.ts --fix .
+	pnpm eslint --ext .js,.ts,.tsx --fix .
 	pnpm prettier --write .
 check: build tsc fmt

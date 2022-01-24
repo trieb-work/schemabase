@@ -1,7 +1,7 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { Button, Dot, Grid, Input, Page } from "@geist-ui/react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { CreateRequest } from "./api/create";
 
 const NewPage: NextPage = () => {
