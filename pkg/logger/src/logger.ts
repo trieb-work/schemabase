@@ -38,6 +38,7 @@ export class Logger implements ILogger {
     };
     this.logger = new tslog.Logger({
       type: this.meta.env === "production" ? "json" : "pretty",
+      minLevel: env.get("NODE_ENV") === "production" ? "info" : undefined,
     });
   }
 
