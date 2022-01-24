@@ -55,7 +55,7 @@ const requestValidation = z.object({
             scheme: z.string(),
             host: z.string(),
             path: z.string(),
-            userAgent: z.array(z.string()),
+            userAgent: z.array(z.string()).optional(),
             referer: z.string().optional(),
             statusCode: z.number().int(),
             clientIp: z.string(),
@@ -154,14 +154,11 @@ function formatLogs(raw: string): Log[] {
     message: string | unknown | null;
     timestamp?: number;
   }[] = [];
-  logger.info("lines", { lines });
-  if (lines.length > 0) {
+  if (lines.length === 0) {
     logs.push({ message: null });
   } else {
     try {
-      console.log("lines", { lines: lines.join("\n") });
       const message = JSON.parse(lines.join("\n"));
-      console.log("222message", { message });
       logs.push(message);
     } catch {
       logs = lines.map((line) => {
@@ -279,7 +276,7 @@ export default async function (
             },
           };
           return logs.flatMap((log) => {
-            logger.info("message", { message: log.message });
+            logger.info("log", { log });
             let payload = {
               message:
                 typeof log?.message === "string" && log.message.length > 0
