@@ -40,6 +40,7 @@ const requestValidation = z.object({
         statusCode: z.number().int().optional(),
         source: z.enum(["build", "static", "external", "lambda"]),
         projectId: z.string(),
+        deploymentId: z.string(),
         host: z.string(),
         path: z.string().optional(),
         entrypoint: z.string().optional(),
@@ -110,7 +111,8 @@ interface Metadata {
 }
 type Log = Metadata & {
   level?: string;
-  message?: string | unknown;
+  message: string | unknown | null;
+  timestamp?: number;
 };
 function formatLogs(raw: string): Log[] {
   const lines = raw
@@ -143,32 +145,40 @@ function formatLogs(raw: string): Log[] {
     report.maxMemoryUsed = parseInt(reportMatch[5]);
   }
 
-  const lineRegex =
-    // eslint-disable-next-line max-len, no-control-regex
-    /[\d]{4}-[\d]{2}-[\d]{2}T[\d]{2}:[\d]{2}:[\d]{2}.[\d]+Z(?:\t|\\t)[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?:\t|\\t)(\w+)(?:\t|\\t)(.*)/gim;
   const logs: {
     level?: string;
-    message?: string | unknown;
+    message: string | unknown | null;
+    timestamp?: number;
   }[] =
     lines.length > 0
       ? lines.map((line) => {
-          const match = lineRegex.exec(line);
-          if (match) {
-            return { level: match[1].toLowerCase(), message: match[2] };
+          if (line === "") {
+            return { message: null };
           }
           try {
-            return { message: JSON.parse(line) };
+            const split = line.split("\t");
+            if (split.length === 4) {
+              return {
+                timestamp: new Date(split[0]).getTime(),
+                level: split[2].toLowerCase(),
+                message: split[3],
+              };
+            } else {
+              return { message: JSON.parse(line) };
+            }
           } catch {
             return { message: line };
           }
         })
-      : [{ message: undefined }];
+      : [{ message: null }];
   return logs.map((log) => ({
     ...report,
-    level: log.level ?? "info",
+    level: log.level,
     message: log.message,
+    timestamp: log.timestamp,
   }));
 }
+const prisma = new PrismaClient();
 
 export default async function (
   req: NextApiRequest,
@@ -180,8 +190,6 @@ export default async function (
       body,
       headers: { "x-vercel-signature": signature },
     } = requestValidation.parse(req);
-
-    const prisma = new PrismaClient();
 
     let clusters = cache.get(webhookId);
     if (clusters.length === 0) {
@@ -260,15 +268,16 @@ export default async function (
           };
 
           return logs.flatMap((log) => {
+            // console.log({ log });
             let payload = {
               message:
-                typeof log?.message === "string"
+                typeof log?.message === "string" && log.message.length > 0
                   ? log.message
                   : `No message (request log)`,
               log: {
-                level: log?.level ?? "info",
+                level: log?.level,
               },
-              "@timestamp": event.timestamp,
+              "@timestamp": log.timestamp ?? event.timestamp,
               trace: {
                 id: log?.requestId,
               },
@@ -276,6 +285,9 @@ export default async function (
                 duration: log.duration,
               },
               cloud: {
+                instance: {
+                  id: event.deploymentId,
+                },
                 project: {
                   id: event.projectId,
                   // name
@@ -288,6 +300,7 @@ export default async function (
               },
               url: {
                 path: event.path,
+                original: event.proxy?.path,
               },
               host: {
                 hostname: event.host,
@@ -315,8 +328,7 @@ export default async function (
             return [index, payload];
           });
         });
-      console.log(JSON.stringify(bulkBody));
-      if (bulkBody.length !== 0) {
+      if (bulkBody.length > 0) {
         await elastic.bulk({
           body: bulkBody,
         });
