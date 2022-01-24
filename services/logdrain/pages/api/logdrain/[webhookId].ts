@@ -173,9 +173,7 @@ function formatLogs(raw: string): Log[] {
       : [{ message: null }];
   return logs.map((log) => ({
     ...report,
-    level: log.level,
-    message: log.message,
-    timestamp: log.timestamp,
+    ...log,
   }));
 }
 const prisma = new PrismaClient();
