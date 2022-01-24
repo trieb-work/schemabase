@@ -110,7 +110,7 @@ interface Metadata {
 }
 type Log = Metadata & {
   level?: string;
-  message?: string;
+  message?: string | unknown;
 };
 function formatLogs(raw: string): Log[] {
   const lines = raw
@@ -148,7 +148,7 @@ function formatLogs(raw: string): Log[] {
     /[\d]{4}-[\d]{2}-[\d]{2}T[\d]{2}:[\d]{2}:[\d]{2}.[\d]+Z(?:\t|\\t)[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?:\t|\\t)(\w+)(?:\t|\\t)(.*)/gim;
   const logs: {
     level?: string;
-    message?: string;
+    message?: string | unknown;
   }[] =
     lines.length > 0
       ? lines.map((line) => {
@@ -156,7 +156,11 @@ function formatLogs(raw: string): Log[] {
           if (match) {
             return { level: match[1].toLowerCase(), message: match[2] };
           }
-          return { message: line };
+          try {
+            return { message: JSON.parse(line) };
+          } catch {
+            return { message: line };
+          }
         })
       : [{ message: undefined }];
   return logs.map((log) => ({
@@ -249,15 +253,18 @@ export default async function (
         .flatMap((event) => {
           const logs = event.message ? formatLogs(event.message) : [];
 
-          return logs.flatMap((log) => [
-            {
-              create: {
-                _index:
-                  cluster.index ?? `logs-vercel-logdrain-${event.projectId}`,
-              },
+          const index = {
+            create: {
+              _index: cluster.index ?? "logs-vercel-logdrain",
             },
-            {
-              message: log?.message ?? `No message (request log)`,
+          };
+
+          return logs.flatMap((log) => {
+            let payload = {
+              message:
+                typeof log?.message === "string"
+                  ? log.message
+                  : `No message (request log)`,
               log: {
                 level: log?.level ?? "info",
               },
@@ -297,8 +304,16 @@ export default async function (
               user_agent: {
                 original: event.proxy?.userAgent,
               },
-            },
-          ]);
+            };
+            if (typeof log?.message === "object") {
+              payload = {
+                ...payload,
+                ...log.message,
+              };
+            }
+
+            return [index, payload];
+          });
         });
       console.log(JSON.stringify(bulkBody));
       if (bulkBody.length !== 0) {
