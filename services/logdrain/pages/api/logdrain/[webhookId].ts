@@ -131,8 +131,8 @@ function formatLog(raw: string): Log {
     maxMemoryUsed: undefined,
   };
   const lineRegex =
-    // eslint-disable-next-line max-len
-    /[\d]{4}-[\d]{2}-[\d]{2}T[\d]{2}:[\d]{2}:[\d]{2}.[\d]+Z\\t[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\t(\w+)\\t(.*)/im;
+    // eslint-disable-next-line max-len, no-control-regex
+    /[\d]{4}-[\d]{2}-[\d]{2}T[\d]{2}:[\d]{2}:[\d]{2}.[\d]+Z[\\t|	][0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}[\\t|	](\w+)[\\t|	](.*)/i;
   const logs: {
     level: string;
     message: string;
@@ -171,7 +171,6 @@ export default async function (
       body,
       headers: { "x-vercel-signature": signature },
     } = requestValidation.parse(req);
-    console.log(JSON.stringify({ body }, null, 2));
     const prisma = new PrismaClient();
 
     let clusters = cache.get(webhookId);
@@ -269,6 +268,7 @@ export default async function (
                 service: {
                   name: event.source,
                 },
+                region: event.proxy?.region,
               },
               url: {
                 path: event.path,
@@ -279,6 +279,7 @@ export default async function (
               http: {
                 request: {
                   method: event.proxy?.method,
+                  referrer: event.proxy?.referer,
                 },
                 response: {
                   status_code: event.statusCode,
