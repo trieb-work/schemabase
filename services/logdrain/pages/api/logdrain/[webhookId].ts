@@ -132,7 +132,7 @@ function formatLog(raw: string): Log {
   };
   const lineRegex =
     // eslint-disable-next-line max-len, no-control-regex
-    /[\d]{4}-[\d]{2}-[\d]{2}T[\d]{2}:[\d]{2}:[\d]{2}.[\d]+Z[\\t|	][0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}[\\t|	](\w+)[\\t|	](.*)/i;
+    /[\d]{4}-[\d]{2}-[\d]{2}T[\d]{2}:[\d]{2}:[\d]{2}.[\d]+Z(?:\t|\\t)[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?:\t|\\t)(\w+)(?:\t|\\t)(.*)/gim;
   const logs: {
     level: string;
     message: string;

@@ -4,16 +4,6 @@
   "engines": {
     "node": "14"
   },
-  "scripts": {
-    "test": "jest",
-    "generate": "graphql-codegen -c ./pkg/api/codegen.yml",
-    "build:prisma": "prisma generate",
-    "build:api": "next build ./services/api",
-    "build:logdrain": "next build ./services/logdrain",
-    "fmt": "pnpm lint && pnpm format",
-    "lint": "eslint --ext .js,.ts --fix .",
-    "format": "prettier --write ."
-  },
   "devDependencies": {
     "@commitlint/config-conventional": "^15.0.0",
     "@graphql-codegen/cli": "^2.3.1",
