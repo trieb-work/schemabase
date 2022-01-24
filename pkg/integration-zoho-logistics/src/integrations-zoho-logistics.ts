@@ -2,7 +2,8 @@ import { ZohoClientInstance } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { HttpError } from "@eci/pkg/errors";
 
-export type Return = {
+export interface Return {
+  /* eslint-disable camelcase */
   creation_time: string;
   orders: {
     ready_to_fulfill: {
@@ -18,18 +19,19 @@ export type Return = {
       next_five_days: number;
     };
   };
-};
+  /* eslint-enable camelcase */
+}
 
 export interface ZohoLogisticsService {
   getCurrentPackageStats: () => Promise<Return>;
 }
 
-type CustomFields = {
+interface CustomFields {
   currentOrdersReadyToFulfill: string;
   nextFiveDaysOrders: string;
   currentBulkOrders: string;
   nextFiveDaysBulkOrders: string;
-};
+}
 
 export class LogisticStats implements ZohoLogisticsService {
   private readonly zoho: ZohoClientInstance;

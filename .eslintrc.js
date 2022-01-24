@@ -1,21 +1,15 @@
 module.exports = {
-  root: true,
+  env: {
+    browser: true,
+    es2021: true,
+  },
+  extends: ["standard", "plugin:prettier/recommended"],
   parser: "@typescript-eslint/parser",
   parserOptions: {
-    project: "./tsconfig.json",
+    ecmaVersion: 13,
+    sourceType: "module",
   },
-  plugins: ["@typescript-eslint", "prettier", "import"],
-  extends: [
-    /*
-     * Always a good idea to start with sane defaults
-     */
-    "eslint:recommended",
-
-    /*
-     * Required to integrate prettier into eslint
-     */
-    "plugin:prettier/recommended",
-  ],
+  plugins: ["@typescript-eslint", "prettier"],
   rules: {
     /*
      * This reads all definitions from a local prettier config file and applies the correct
@@ -28,18 +22,22 @@ module.exports = {
      */
     "import/prefer-default-export": "off",
 
-    "object-curly-newline": "off",
-    "max-len": [2, { code: 154, ignoreUrls: true }],
-
-    "no-unused-vars": "off",
+    "max-len": [2, { code: 100, ignoreUrls: true }],
 
     /**
      * We find them quite useful actually.
      */
     "no-nested-ternary": "off",
+    "object-curly-newline": "off",
+    /**
+     * See https://github.com/typescript-eslint/typescript-eslint/issues/2621#issuecomment-701970389
+     */
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "error",
+
+    // note you must disable the base rule as it can report incorrect errors
+    "no-use-before-define": "off",
+    "@typescript-eslint/no-use-before-define": ["error"],
   },
-  globals: {
-    fetch: "readonly",
-    console: "readonly",
-  },
+  ignorePatterns: ["**/generated/**/*.ts"],
 };

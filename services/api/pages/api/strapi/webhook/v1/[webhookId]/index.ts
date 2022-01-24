@@ -30,7 +30,8 @@ const requestValidation = z.object({
 });
 
 /**
- * The product data feed returns a google standard .csv file from products and their attributes in your shop.#
+ * The product data feed returns a google standard .csv file from products and
+ * their attributes in your shop.#
  */
 const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   backgroundContext,
@@ -63,10 +64,10 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
       },
     },
   });
-  if (!webhook) {
+  if (webhook == null) {
     throw new HttpError(404, `Webhook not found: ${webhookId}`);
   }
-  if (!webhook.secret) {
+  if (webhook.secret == null) {
     throw new HttpError(500, "This webhook should have a secret but doesn't");
   }
 
@@ -77,11 +78,11 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     throw new HttpError(403, "Authorization token invalid");
   }
   const { strapiApp } = webhook;
-  if (!strapiApp) {
+  if (strapiApp == null) {
     throw new HttpError(400, "strapi app is not configured");
   }
   const { integration } = strapiApp;
-  if (!integration) {
+  if (integration == null) {
     throw new HttpError(400, "Integration is not configured");
   }
   /**

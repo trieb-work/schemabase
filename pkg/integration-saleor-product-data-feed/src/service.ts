@@ -15,7 +15,7 @@ export interface ProductDataFeedService {
   ) => Promise<string>;
 }
 
-export type ProductDataFeedServiceConfig = {
+export interface ProductDataFeedServiceConfig {
   saleorClient: {
     products: (variables: {
       first: number;
@@ -24,7 +24,7 @@ export type ProductDataFeedServiceConfig = {
   };
   channelSlug: string;
   logger: ILogger;
-};
+}
 
 /**
  * Generate product data as .csv
@@ -54,7 +54,7 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
   ): Promise<string> {
     const products = await this.generate(storefrontProductUrl, feedVariant);
     const csv = new ObjectsToCsv(products);
-    return csv.toString();
+    return await csv.toString();
   }
 
   private async generate(
@@ -91,7 +91,8 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
       try {
         /**
          * `description` looks like this:
-         * -> "{\"time\": 1633343031152, \"blocks\": [{\"data\": {\"text\": \"Hello world\"}, \"type\": \"paragraph\"}], \"version\": \"2.20.0\"}"
+         * -> "{\"time\": 1633343031152, \"blocks\": [{\"data\": {\"text\": \"Hello world\"},
+         *     \"type\": \"paragraph\"}], \"version\": \"2.20.0\"}"
          *
          * `edjsHTML().parse(JSON.parse(description))` will return an array
          * -> [ "<p>Hello World</p>" ]
@@ -109,20 +110,20 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
 
       const { hasVariants } = rawProduct.productType;
 
-      if (!rawProduct.variants) {
+      if (rawProduct.variants == null) {
         continue;
       }
 
       for (const variant of rawProduct.variants) {
-        if (!variant) {
+        if (variant == null) {
           continue;
         }
 
         const gtin = hasVariants
           ? variant.metadata?.find((x) => x?.key === "EAN")?.value
           : rawProduct.metadata?.find((x) => x?.key === "EAN")?.value;
-        const unit_pricing_measure =
-          variant.weight && rawProduct.weight
+        const unitPriceMeasure =
+          variant.weight != null && rawProduct.weight != null
             ? generateUnitPrice(variant.weight, rawProduct.weight)
             : undefined;
         const product: Product = {
@@ -131,10 +132,10 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
           description: htmlToText(description),
 
           image_link: hasVariants
-            ? variant.images && variant.images.length > 0
+            ? variant.images != null && variant.images.length > 0
               ? variant.images[0]?.url
               : ""
-            : rawProduct.images && rawProduct.images.length > 0
+            : rawProduct.images != null && rawProduct.images.length > 0
             ? rawProduct.images[1]?.url
             : "",
           additional_image_link: hasVariants
@@ -143,12 +144,14 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
           link: `${storefrontProductUrl}${
             storefrontProductUrl.endsWith("/") ? "" : "/"
           }${rawProduct.slug}`,
+          // eslint-disable-next-line max-len
           price: `${variant?.pricing?.priceUndiscounted?.gross.amount} ${variant?.pricing?.priceUndiscounted?.gross.currency}`,
+          // eslint-disable-next-line max-len
           sale_price: `${variant?.pricing?.price?.gross.amount} ${variant.pricing?.price?.gross.currency}`,
           condition: "new",
           gtin,
           brand: brand ?? "undefined",
-          unit_pricing_measure,
+          unit_pricing_measure: unitPriceMeasure,
           availability:
             variant.quantityAvailable < 1 || !rawProduct.isAvailableForPurchase
               ? "out of stock"

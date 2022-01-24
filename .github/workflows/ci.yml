@@ -25,8 +25,7 @@ jobs:
         with:
           path: ~/.pnpm-store
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-
+          restore-keys: ${{ runner.os }}-
 
       - uses: pnpm/action-setup@v2.0.1
         with:
@@ -66,8 +65,7 @@ jobs:
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
+          restore-keys: ${{ runner.os }}-buildx-
 
       - name: Build image
         id: docker_build
@@ -222,6 +220,7 @@ jobs:
           SALEOR_URL: http://localhost:8000/graphql/
           ECI_BASE_URL: http://localhost:3000
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+          DATABASE_URL_POOL: postgres://postgres:postgres@db.eci:5432/postgres
           ZOHO_CLIENT_SECRET: ${{ secrets.ZOHO_CLIENT_SECRET }}
           ZOHO_CLIENT_ID: ${{ secrets.ZOHO_CLIENT_ID }}
           ZOHO_ORG_ID: ${{ secrets.ZOHO_ORG_ID }}

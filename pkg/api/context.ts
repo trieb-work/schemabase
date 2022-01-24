@@ -6,7 +6,7 @@ import { z } from "zod";
 import { Permission, permissionsValidation, RBAC } from "../auth";
 import { DataSources } from "./datasources";
 
-export type Context = {
+export interface Context {
   dataSources: DataSources;
   authenticateUser: () => Promise<Claims>;
   authorizeUser: (
@@ -14,7 +14,7 @@ export type Context = {
     authorizer?: (claims: Claims) => void | Promise<void>,
   ) => Promise<Claims>;
   logger: ILogger;
-};
+}
 
 export const context = (ctx: { req: IncomingMessage }) => {
   const logger = new Logger();
@@ -48,7 +48,7 @@ export const context = (ctx: { req: IncomingMessage }) => {
         );
       }
     }
-    if (authorize) {
+    if (authorize != null) {
       try {
         await authorize(claims);
       } catch (err) {

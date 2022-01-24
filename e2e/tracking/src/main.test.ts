@@ -1,18 +1,24 @@
-import { Carrier, Language, PackageState, PrismaClient } from "@eci/pkg/prisma";
+import { Carrier, Language, PackageState } from "@eci/pkg/prisma";
+import { PrismaClient } from "@prisma/client";
+
 import { HttpClient } from "@eci/pkg/http";
 import { id } from "@eci/pkg/ids";
 import faker from "faker";
 import { afterAll, beforeAll, describe, expect, it } from "@jest/globals";
 import { randomUUID } from "crypto";
 import { sha256 } from "@eci/pkg/hash";
-const prisma = new PrismaClient();
 import { env } from "@eci/pkg/env";
 import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
+const prisma = new PrismaClient();
 const dpdWebhookId = id.id("webhook");
 const zohoWebhookId = id.id("webhook");
 const zohoWebhookSecret = id.id("webhookSecret");
 let customerId: string;
 let zoho: Zoho;
+
+const sleep = async (ms: number) =>
+  await new Promise((resolve) => setTimeout(resolve, ms));
+
 beforeAll(async () => {
   const cookies = env.get("ZOHO_COOKIES");
   zoho = new Zoho(
@@ -215,7 +221,7 @@ describe("with invalid webhook", () => {
           method: "GET",
         });
 
-        await new Promise((res) => setTimeout(res, 10_000));
+        await sleep(10_000);
 
         const storedPackage = await prisma.package.findUnique({
           where: {
@@ -314,21 +320,21 @@ describe("with invalid webhook", () => {
         method: "GET",
       });
 
-      await new Promise((res) => setTimeout(res, 2000));
+      await sleep(2000);
 
       await new HttpClient().call({
         url: `http://localhost:3000/api/v1/tracking/dpd/${dpdWebhookId}?statusdate=05012022100200&&pnr=${trackingId}&status=delivery_nab&pushid=1&depot=1`,
         method: "GET",
       });
 
-      await new Promise((res) => setTimeout(res, 2000));
+      await sleep(2000);
 
       await new HttpClient().call({
         url: `http://localhost:3000/api/v1/tracking/dpd/${dpdWebhookId}?statusdate=05012022100200&&pnr=${trackingId}&status=delivery_customer&pushid=1&depot=1`,
         method: "GET",
       });
 
-      await new Promise((res) => setTimeout(res, 2000));
+      await sleep(2000);
 
       const storedPackage = await prisma.package.findUnique({
         where: {
@@ -375,19 +381,19 @@ describe("with invalid webhook", () => {
         method: "GET",
       });
 
-      await new Promise((res) => setTimeout(res, 2000));
+      await sleep(2000);
 
       await new HttpClient().call({
         url: `http://localhost:3000/api/v1/tracking/dpd/${dpdWebhookId}?statusdate=05012022100200&&pnr=${trackingId}&status=delivery_customer&pushid=1&depot=1`,
         method: "GET",
       });
-      await new Promise((res) => setTimeout(res, 2000));
+      await sleep(2000);
       await new HttpClient().call({
         url: `http://localhost:3000/api/v1/tracking/dpd/${dpdWebhookId}?statusdate=05012022100200&&pnr=${trackingId}&status=delivery_nab&pushid=1&depot=1`,
         method: "GET",
       });
 
-      await new Promise((res) => setTimeout(res, 2000));
+      await sleep(2000);
 
       const storedPackage = await prisma.package.findUnique({
         where: {

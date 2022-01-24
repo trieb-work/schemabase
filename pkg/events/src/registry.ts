@@ -9,10 +9,10 @@ export enum Topic {
   NOTIFICATION_EMAIL_SENT = "tracking.package.notification.email.sent",
 }
 
-export type EventSchema<TTopic, TMessage> = {
+export interface EventSchema<TTopic, TMessage> {
   topic: TTopic;
   message: TMessage;
-};
+}
 
 export namespace EventSchemaRegistry {
   export type BulkorderSynced = EventSchema<

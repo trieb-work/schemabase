@@ -6,6 +6,7 @@ import { StrapiEntryCreate } from "./handler/strapiEntryCreate";
 import { PackageEventHandler } from "@eci/pkg/integration-tracking";
 import { PrismaClient } from "@eci/pkg/prisma";
 import {
+  EventSchemaRegistry,
   KafkaProducer,
   KafkaSubscriber,
   newKafkaClient,
@@ -15,7 +16,6 @@ import {
 } from "@eci/pkg/events";
 import * as tracking from "@eci/pkg/integration-tracking";
 import { Sendgrid } from "@eci/pkg/email/src/emailSender";
-import { EventSchemaRegistry } from "@eci/pkg/events";
 async function main() {
   const logger = new Logger({
     meta: {

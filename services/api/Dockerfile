@@ -1,5 +1,6 @@
 FROM node:14
 WORKDIR /eci
+
 RUN npm i -g pnpm
 
 COPY package.json pnpm-lock.yaml ./

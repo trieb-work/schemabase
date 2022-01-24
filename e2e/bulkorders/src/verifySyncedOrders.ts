@@ -19,7 +19,7 @@ export async function verifySyncedOrders(
         break;
       case "ReadyToFulfill":
         expect(zohoOrder.status).toEqual("confirmed");
-        expect(zohoOrder["cf_ready_to_fulfill"]).toEqual("true");
+        expect(zohoOrder.cf_ready_to_fulfill).toEqual("true");
         break;
       default:
         expect(zohoOrder.status).toEqual("draft");
@@ -29,7 +29,7 @@ export async function verifySyncedOrders(
     const strapiAddress = strapiEvent.entry.addresses.find(
       (addr) => addr.orderId === zohoOrder.salesorder_number,
     );
-    if (!strapiAddress) {
+    if (strapiAddress == null) {
       throw new Error(
         `strapiAddress is undefined: ${JSON.stringify(
           { strapiEvent, zohoOrder },

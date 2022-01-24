@@ -41,7 +41,7 @@ export const resolvers: Resolvers<Context> = {
           order: true,
         },
       });
-      if (!found) {
+      if (found == null) {
         throw new Error("Package does not exist");
       }
       return found.order;

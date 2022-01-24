@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from "@jest/globals";
 import { HttpClient } from "@eci/pkg/http";
-import { PrismaClient } from "@eci/pkg/prisma";
+import { PrismaClient } from "@prisma/client";
 import { id } from "@eci/pkg/ids";
 import { CountryCode, createSaleorClient } from "@eci/pkg/saleor";
 import { env } from "@eci/pkg/env";
@@ -36,7 +36,7 @@ beforeAll(async () => {
   });
   const category = categoryResponse?.categoryCreate?.category;
 
-  if (!category) {
+  if (category == null) {
     throw new Error(
       `Unable to create category: ${JSON.stringify(categoryResponse, null, 2)}`,
     );
@@ -53,7 +53,7 @@ beforeAll(async () => {
   });
   const channel = channelResponse?.channelCreate?.channel;
 
-  if (!channel) {
+  if (channel == null) {
     throw new Error(
       `Unable to create channel: ${JSON.stringify(channelResponse, null, 2)}`,
     );
@@ -86,6 +86,7 @@ beforeAll(async () => {
       slug: "slug",
       category: category.id,
       description:
+        // eslint-disable-next-line max-len
         '{"time": 1633343031152, "blocks": [{"data": {"text": "Hello world"}, "type": "paragraph"}], "version": "2.20.0"}',
 
       // weight: 2,
@@ -93,7 +94,7 @@ beforeAll(async () => {
     },
   });
   const product = productResponse?.productCreate?.product;
-  if (!product) {
+  if (product == null) {
     throw new Error("no product " + JSON.stringify(productResponse, null, 2));
   }
   const productVariantResponse = await saleorClient.productVariantCreate({
@@ -106,7 +107,7 @@ beforeAll(async () => {
   });
   const productVariant =
     productVariantResponse?.productVariantCreate?.productVariant;
-  if (!productVariant) {
+  if (productVariant == null) {
     throw new Error(
       "no productVariant " + JSON.stringify(productVariantResponse, null, 2),
     );

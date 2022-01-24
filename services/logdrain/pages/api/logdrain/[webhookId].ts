@@ -1,19 +1,34 @@
 import { z } from "zod";
-import { handleWebhook, Webhook } from "@eci/pkg/http";
-import winston from "winston";
-import { ElasticsearchTransport } from "winston-elasticsearch";
-import ecsFormat from "@elastic/ecs-winston-format";
-import {
-  authorizeIntegration,
-  extendContext,
-  setupPrisma,
-} from "@eci/pkg/webhook-context";
-import { HttpError } from "@eci/pkg/errors";
-import { ElasticCluster } from "@prisma/client";
+import { authorizeIntegration } from "@eci/pkg/webhook-context";
+import { ElasticCluster, PrismaClient } from "@eci/pkg/prisma";
 import { env } from "@eci/pkg/env";
+// import grok from "node-grok-v2";
+import { NextApiRequest, NextApiResponse } from "next";
+import { Client as ElasticClient } from "@elastic/elasticsearch";
+import { HttpError } from "@eci/pkg/errors";
+import { createHmac } from "crypto";
+
+// const vercelReportLogPattern =
+// eslint-disable-next-line max-len
+//   "REPORT RequestId: %{UUID:requestId}\\tDuration: %{NUMBER:duration} ms\\tBilled Duration: %{NUMBER:billedDuration} ms\\tMemory Size: %{NUMBER:memorySize} MB\\tMax Memory Used: %{NUMBER:maxMemoryUsed} MB";
+
+const verify = (
+  body: z.infer<typeof requestValidation>["body"],
+  signingKey: string,
+  signature: string,
+): boolean => {
+  return (
+    signature ===
+    createHmac("sha1", signingKey).update(JSON.stringify(body)).digest("hex")
+  );
+};
+
 const requestValidation = z.object({
   query: z.object({
     webhookId: z.string(),
+  }),
+  headers: z.object({
+    "x-vercel-signature": z.string(),
   }),
   body: z.array(
     z
@@ -21,28 +36,29 @@ const requestValidation = z.object({
         id: z.string(),
         message: z.string().optional(),
         timestamp: z.number().int(),
-        requestId: z.string(),
-        statusCode: z.number().int(),
+        requestId: z.string().optional(),
+        statusCode: z.number().int().optional(),
         source: z.enum(["build", "static", "external", "lambda"]),
         projectId: z.string(),
         host: z.string(),
-        // path: z.string(),
-        /**
-         * Don't care at this point
-         */
-        // proxy: z.object({
-        //   timestamp: z.number().int(),
-        //   method: z.string(),
-        //   scheme: z.string(),
-        //   host: z.string(),
-        //   path: z.string(),
-        //   userAgent: z.array(z.string()),
-        //   referer: z.string(),
-        //   statusCode: z.number().int(),
-        //   clientIp: z.string(),
-        //   region: z.string(),
-        //   cacheId: z.string(),
-        // }),
+        path: z.string().optional(),
+        entrypoint: z.string().optional(),
+
+        proxy: z
+          .object({
+            timestamp: z.number().int(),
+            method: z.string(),
+            scheme: z.string(),
+            host: z.string(),
+            path: z.string(),
+            userAgent: z.array(z.string()),
+            referer: z.string().optional(),
+            statusCode: z.number().int(),
+            clientIp: z.string(),
+            region: z.string(),
+            cacheId: z.string().optional(),
+          })
+          .optional(),
       })
       .passthrough(),
   ),
@@ -54,19 +70,20 @@ class ClusterCache {
       exp: number;
     };
   };
+
   constructor() {
     this.cache = {};
   }
 
-  get(webhookId: string): ElasticCluster[] | null {
+  get(webhookId: string): ElasticCluster[] {
     const cached = this.cache[webhookId];
 
     if (!cached) {
-      return null;
+      return [];
     }
     if (cached.exp > Date.now()) {
       delete this.cache[webhookId];
-      return null;
+      return [];
     }
     return cached.clusters;
   }
@@ -81,102 +98,214 @@ class ClusterCache {
 
 const cache = new ClusterCache();
 
-const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
-  req,
-  res,
-  backgroundContext,
-}): Promise<void> => {
-  const {
-    query: { webhookId },
-    body,
-  } = req;
+interface Metadata {
+  requestId?: string;
+  // milliseconds
+  duration?: number;
+  billedDuration?: number;
 
-  const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
+  // Megabytes
+  memorySize?: number;
+  maxMemoryUsed?: number;
+}
+type Log = Metadata & {
+  level?: string;
+  message?: string;
+};
+function formatLog(raw: string): Log {
+  const lines = raw
+    .split("\n")
+    .filter(
+      (line) =>
+        !line.startsWith("START") &&
+        !line.startsWith("END") &&
+        !line.startsWith("REPORT"),
+    );
+  // const report = split.find((line) => line.startsWith("REPORT")) ?? "";
 
-  let clusters = cache.get(webhookId);
-  if (!clusters || clusters.length === 0) {
-    const webhook = await ctx.prisma.incomingWebhook.findUnique({
-      where: {
-        id: webhookId,
-      },
-      include: {
-        vercelLogDrainApp: {
-          include: {
-            elasticLogDrainIntegrations: {
-              include: {
-                subscription: true,
-                elasticCluster: true,
+  const { requestId, duration, billedDuration, memorySize, maxMemoryUsed } = {
+    requestId: undefined,
+    duration: undefined,
+    billedDuration: undefined,
+    memorySize: undefined,
+    maxMemoryUsed: undefined,
+  };
+  const lineRegex =
+    // eslint-disable-next-line max-len
+    /[\d]{4}-[\d]{2}-[\d]{2}T[\d]{2}:[\d]{2}:[\d]{2}.[\d]+Z\\t[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\t(\w+)\\t(.*)/im;
+  const logs: {
+    level: string;
+    message: string;
+  }[] = lines.map((line) => {
+    const match = lineRegex.exec(line);
+    if (!match) {
+      throw new Error(`Log does not match regex: ${line}`);
+    }
+    return { level: match[1].toLowerCase(), message: match[2] };
+  });
+
+  return {
+    requestId,
+    level: logs.length > 0 ? logs[0].level : "info",
+    duration: duration ? parseFloat(duration) : undefined,
+    billedDuration: billedDuration ? parseFloat(billedDuration) : undefined,
+    memorySize: memorySize ? parseInt(memorySize) : undefined,
+    maxMemoryUsed: maxMemoryUsed ? parseInt(maxMemoryUsed) : undefined,
+    message:
+      logs && logs.length > 0
+        ? logs
+            .map(({ message }) => message)
+            .filter((message) => !!message && message.length > 0)
+            .join("\n")
+        : undefined,
+  };
+}
+
+export default async function (
+  req: NextApiRequest,
+  res: NextApiResponse,
+): Promise<void> {
+  try {
+    const {
+      query: { webhookId },
+      body,
+      headers: { "x-vercel-signature": signature },
+    } = requestValidation.parse(req);
+    console.log(JSON.stringify({ body }, null, 2));
+    const prisma = new PrismaClient();
+
+    let clusters = cache.get(webhookId);
+    if (clusters.length === 0) {
+      const webhook = await prisma.incomingWebhook.findUnique({
+        where: {
+          id: webhookId,
+        },
+        include: {
+          secret: true,
+          vercelLogDrainApp: {
+            include: {
+              elasticLogDrainIntegrations: {
+                include: {
+                  subscription: true,
+                  elasticCluster: true,
+                },
               },
             },
           },
         },
-      },
-    });
-
-    if (!webhook) {
-      throw new HttpError(404, `Webhook not found: ${webhookId}`);
-    }
-
-    const { vercelLogDrainApp } = webhook;
-    if (!vercelLogDrainApp) {
-      throw new HttpError(400, "vercel log drain is not configured");
-    }
-    const { elasticLogDrainIntegrations } = vercelLogDrainApp;
-    if (!elasticLogDrainIntegrations) {
-      throw new HttpError(400, "Integration is not configured");
-    }
-
-    clusters = elasticLogDrainIntegrations.map((integration) => {
-      /**
-       * Ensure the elasticLogDrainIntegrations is enabled and payed for
-       */
-      authorizeIntegration(integration);
-
-      const { elasticCluster } = integration;
-
-      if (!elasticCluster) {
-        throw new HttpError(400, "Elastic connection not found");
+      });
+      if (webhook == null) {
+        throw new HttpError(404, `Webhook not found: ${webhookId}`);
       }
-      return elasticCluster;
-    });
-    cache.set(webhookId, clusters);
-  }
+      if (webhook.secret == null) {
+        throw new HttpError(400, "secret is not configured");
+      }
+      if (!verify(req.body, webhook.secret.secret, signature)) {
+        throw new HttpError(403, "Signature does not match");
+      }
+      const { vercelLogDrainApp } = webhook;
+      if (vercelLogDrainApp == null) {
+        throw new HttpError(400, "vercel log drain is not configured");
+      }
+      const { elasticLogDrainIntegrations } = vercelLogDrainApp;
+      if (!elasticLogDrainIntegrations) {
+        throw new HttpError(400, "Integration is not configured");
+      }
+      clusters = elasticLogDrainIntegrations.map((integration) => {
+        /**
+         * Ensure the elasticLogDrainIntegrations is enabled and payed for
+         */
+        authorizeIntegration(integration);
+        const { elasticCluster } = integration;
+        if (!elasticCluster) {
+          throw new HttpError(400, "Elastic connection not found");
+        }
+        return elasticCluster;
+      });
+      cache.set(webhookId, clusters);
+    }
 
-  for (const cluster of clusters) {
-    const elasticTransport = new ElasticsearchTransport({
-      level: "info", // log info and above, not debug
-      dataStream: true,
-      index: cluster.index ?? "logs-vercel-logdrain",
-      clientOpts: {
+    for (const cluster of clusters) {
+      const elastic = new ElasticClient({
         node: cluster.endpoint,
         auth: {
           username: cluster.username,
           password: cluster.password,
         },
-      },
-    });
-    const elasticLogger = winston.createLogger({
-      transports: [elasticTransport],
-      format: ecsFormat(),
-    });
+      });
 
-    /**
-     * Logging my own messages causes an infinite loop of nested messages.
-     */
-    const vercelUrl = env.require("VERCEL_URL");
-    for (const message of body) {
-      if (message.host !== vercelUrl) {
-        elasticLogger.log("info", JSON.stringify(message));
+      /**
+       * Logging my own messages causes an infinite loop of nested messages.
+       */
+      const vercelUrl = env.require("VERCEL_URL");
+
+      const index = cluster.index ?? "logs-vercel-logdrain";
+      const bulkBody = body
+        .filter((event) => event.host !== vercelUrl && event.source !== "build")
+        .flatMap((event) => {
+          const log = event.message ? formatLog(event.message) : null;
+
+          return [
+            {
+              create: {
+                _index: index,
+              },
+            },
+            {
+              message: log?.message ?? `TODO: ${event.path}`,
+              log: {
+                level: log?.level ?? "info",
+              },
+              "@timestamp": event.timestamp,
+              trace: {
+                id: log?.requestId,
+              },
+              cloud: {
+                project: {
+                  id: event.projectId,
+                  // name
+                },
+                provider: "vercel",
+                service: {
+                  name: event.source,
+                },
+              },
+              url: {
+                path: event.path,
+              },
+              host: {
+                hostname: event.host,
+              },
+              http: {
+                request: {
+                  method: event.proxy?.method,
+                },
+                response: {
+                  status_code: event.statusCode,
+                },
+              },
+              user_agent: {
+                original: event.proxy?.userAgent,
+              },
+              event: {
+                duration: log?.duration,
+              },
+            },
+          ];
+        });
+      if (bulkBody.length !== 0) {
+        await elastic.bulk({
+          body: bulkBody,
+        });
       }
-    }
-    await elasticTransport.flush();
-    res.send("ok");
-  }
-};
 
-export default handleWebhook({
-  webhook,
-  validation: {
-    request: requestValidation,
-  },
-});
+      res.send("ok");
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(err instanceof HttpError ? err.statusCode : 500);
+    res.send((err as Error).message);
+  } finally {
+    res.end();
+  }
+}

@@ -7,6 +7,7 @@ export class ContextMissingFieldError extends GenericError {
   constructor(missingField: string) {
     super(
       "ContextMissingFieldError",
+      // eslint-disable-next-line max-len
       `The context is missing a required field: ${missingField}. Is the context set up in the correct order?`,
     );
   }

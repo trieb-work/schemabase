@@ -3,7 +3,9 @@ import { PrismaClient } from "@eci/pkg/prisma";
 import { authenticate } from "@eci/services/logdrain/pkg/authenticate";
 import { createLogDrain } from "@eci/services/logdrain/pkg/logDrain";
 import { NextApiRequest, NextApiResponse } from "next";
+
 import { z } from "zod";
+import { randomBytes } from "crypto";
 
 const requestValidation = z.object({
   elastic: z.object({
@@ -93,7 +95,7 @@ export default async function (
         },
       },
     });
-
+    const secret = randomBytes(16).toString("base64url");
     const webhook = await prisma.incomingWebhook.create({
       data: {
         id: id.id("webhook"),
@@ -102,17 +104,23 @@ export default async function (
             id: logdrain.id,
           },
         },
+        secret: {
+          create: {
+            id: id.id("secretKey"),
+            secret,
+          },
+        },
       },
     });
     const host = req.headers.host ?? "https://logdrain-triebwork.vercel.app";
 
-    console.log({ host });
     await createLogDrain({
       token,
       teamId: vercel.teamId,
       name: "elastic",
       type: "json",
       url: `https://${host}/api/logdrain/${webhook.id}`,
+      secret,
     }).catch((err) => {
       console.error("Unable to create logdrain", err);
       throw err;

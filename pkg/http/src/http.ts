@@ -2,25 +2,25 @@
 import axios, { AxiosError } from "axios";
 import { ECI_TRACE_HEADER } from "@eci/pkg/constants";
 
-export type Request = {
+export interface Request {
   method: "GET" | "POST" | "PUT" | "DELETE";
   url: string;
   body?: unknown;
   headers?: Record<string, string>;
   params?: Record<string, string | number>;
-};
+}
 
-export type Response<Data> = {
+export interface Response<Data> {
   ok: boolean;
   headers: Record<string, string | number>;
   status: number;
   data: Data | null;
-};
+}
 
-export type HttpApi = {
+export interface HttpApi {
   call: <Data>(req: Request) => Promise<Response<Data>>;
-  setHeader(name: string, value: string | number): void;
-};
+  setHeader: (name: string, value: string | number) => void;
+}
 
 export class HttpClient implements HttpApi {
   public headers: Record<string, string>;
@@ -32,12 +32,12 @@ export class HttpClient implements HttpApi {
     }
   }
 
-  public setHeader(name: string, value: string): void {
-    this.headers[name] = value;
+  public setHeader(name: string, value: string | number): void {
+    this.headers[name] = value.toString();
   }
 
   public async call<Data>(req: Request): Promise<Response<Data>> {
-    return axios({
+    return await axios({
       method: req.method,
       url: req.url,
       params: req.params,
@@ -51,7 +51,7 @@ export class HttpClient implements HttpApi {
         headers: res.headers,
       }))
       .catch((err: AxiosError) => {
-        if (!err.response) {
+        if (err.response == null) {
           throw err;
         }
         return {

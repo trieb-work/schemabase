@@ -11,7 +11,7 @@ export function authorizeIntegration(integration: {
   }
   const { subscription } = integration;
   if (
-    !subscription?.payedUntil ||
+    subscription?.payedUntil == null ||
     subscription.payedUntil.getTime() < Date.now()
   ) {
     throw new HttpError(403, "Active subcription required");

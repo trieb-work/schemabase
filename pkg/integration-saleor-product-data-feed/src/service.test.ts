@@ -11,7 +11,7 @@ beforeEach(() => {
 describe("generate", () => {
   const mockedSaleorClient = {
     products: async (variables: { first: number; channel: string }) =>
-      Promise.resolve({
+      await Promise.resolve({
         products: {
           edges: [
             {
@@ -21,6 +21,7 @@ describe("generate", () => {
                 slug: "slug",
                 seoDescription: "SeoDescription",
                 description:
+                  // eslint-disable-next-line max-len
                   '{"time": 1633343031152, "blocks": [{"data": {"text": "Hello world"}, "type": "paragraph"}], "version": "2.20.0"}',
 
                 productType: {

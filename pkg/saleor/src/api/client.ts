@@ -3,7 +3,7 @@ import { DocumentNode } from "graphql";
 import { GraphQLClient } from "graphql-request";
 import { ECI_TRACE_HEADER } from "@eci/pkg/constants";
 
-export type SaleorServiceConfig = {
+export interface SaleorServiceConfig {
   /**
    * Unique id to trace requests across systems
    */
@@ -18,7 +18,7 @@ export type SaleorServiceConfig = {
    * Optionally set a bearer token which will be sent via the Authorization header
    */
   token?: string;
-};
+}
 
 export type SaleorClient = Sdk;
 

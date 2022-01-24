@@ -98,11 +98,11 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     },
   });
 
-  if (!webhook) {
+  if (webhook == null) {
     throw new HttpError(404, `Webhook not found: ${webhookId}`);
   }
   const { zohoApp } = webhook;
-  if (!zohoApp) {
+  if (zohoApp == null) {
     throw new HttpError(400, "zoho app is not configured");
   }
   const { trackingIntegrations } = zohoApp;
@@ -121,7 +121,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   const zoho = new Zoho(zohoClient);
 
   const contact = await zoho.contact.retrieve(payload.salesorder.customer_id);
-  if (!contact) {
+  if (contact == null) {
     throw new Error(
       `Unable to find zoho contact: ${payload.salesorder.customer_id}`,
     );

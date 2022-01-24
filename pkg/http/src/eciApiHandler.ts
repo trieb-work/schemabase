@@ -14,7 +14,7 @@ export type Webhook<TRequest> = (config: {
 
 export type HTTPMethod = "POST" | "GET" | "PUT" | "DELETE" | "OPTIONS";
 
-export type HandleWebhookConfig<TRequest> = {
+export interface HandleWebhookConfig<TRequest> {
   /**
    * The actual request handling logic.
    */
@@ -36,7 +36,7 @@ export type HandleWebhookConfig<TRequest> = {
      */
     request?: z.AnyZodObject;
   };
-};
+}
 
 /**
  * Provides the webhook with a logger and handles thrown errors gracefully.
@@ -85,7 +85,7 @@ export function handleWebhook<TRequest>({
       /**
        * Perform http validation
        */
-      if (validation.http) {
+      if (validation.http != null) {
         if (
           !validation.http.allowedMethods.includes(req.method as HTTPMethod)
         ) {
@@ -97,7 +97,7 @@ export function handleWebhook<TRequest>({
       /**
        * Perform request validation
        */
-      if (validation.request) {
+      if (validation.request != null) {
         await validation.request.parseAsync(req).catch((err: Error) => {
           throw new HttpError(400, err.message);
         });
@@ -124,7 +124,6 @@ export function handleWebhook<TRequest>({
         traceId,
       });
     } finally {
-      await logger.flush();
       res.end();
     }
   };
