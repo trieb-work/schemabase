@@ -32,8 +32,8 @@ export class HttpClient implements HttpApi {
     }
   }
 
-  public setHeader(name: string, value: string): void {
-    this.headers[name] = value;
+  public setHeader(name: string, value: string | number): void {
+    this.headers[name] = value.toString();
   }
 
   public async call<Data>(req: Request): Promise<Response<Data>> {

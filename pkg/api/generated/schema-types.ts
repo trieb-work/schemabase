@@ -20,44 +20,44 @@ export type RequireFields<T, K extends keyof T> = {
   [X in Exclude<keyof T, K>]?: T[X];
 } & { [P in K]-?: NonNullable<T[P]> };
 /** All built-in and custom scalars, mapped to their actual values */
-export interface Scalars {
+export type Scalars = {
   ID: string;
   String: string;
   Boolean: boolean;
   Int: number;
   Float: number;
-}
+};
 
 export type Carrier = "DPD";
 
 export type Language = "DE" | "EN";
 
-export interface Mutation {
+export type Mutation = {
   __typename?: "Mutation";
   _empty?: Maybe<Scalars["Boolean"]>;
-}
+};
 
-export interface Order {
+export type Order = {
   __typename?: "Order";
   email: Scalars["String"];
   externalOrderId: Scalars["ID"];
   id: Scalars["ID"];
   language: Language;
-  packages: Package[];
-}
+  packages: Array<Package>;
+};
 
-export interface Package {
+export type Package = {
   __typename?: "Package";
   carrier: Carrier;
   carrierTrackingUrl: Scalars["String"];
-  events: PackageEvent[];
+  events: Array<PackageEvent>;
   id: Scalars["ID"];
   order: Order;
   state: PackageState;
   trackingId: Scalars["ID"];
-}
+};
 
-export interface PackageEvent {
+export type PackageEvent = {
   __typename?: "PackageEvent";
   id: Scalars["ID"];
   location: Scalars["String"];
@@ -66,7 +66,7 @@ export interface PackageEvent {
   sentEmail?: Maybe<TransactionalEmail>;
   state: PackageState;
   time: Scalars["Int"];
-}
+};
 
 export type PackageState =
   | "AVAILABLE_FOR_PICKUP"
@@ -80,32 +80,32 @@ export type PackageState =
   | "OUT_FOR_DELIVERY"
   | "PENDING";
 
-export interface Query {
+export type Query = {
   __typename?: "Query";
   healthCheck: Scalars["Boolean"];
   packageByTrackingId?: Maybe<Package>;
-}
+};
 
-export interface QueryPackageByTrackingIdArgs {
+export type QueryPackageByTrackingIdArgs = {
   trackingId: Scalars["ID"];
-}
+};
 
-export interface TransactionalEmail {
+export type TransactionalEmail = {
   __typename?: "TransactionalEmail";
   email: Scalars["String"];
   id: Scalars["ID"];
   packageEvent: PackageEvent;
   time: Scalars["Int"];
-}
+};
 
 export type WithIndex<TObject> = TObject & Record<string, any>;
 export type ResolversObject<TObject> = WithIndex<TObject>;
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
 
-export interface ResolverWithResolve<TResult, TParent, TContext, TArgs> {
+export type ResolverWithResolve<TResult, TParent, TContext, TArgs> = {
   resolve: ResolverFn<TResult, TParent, TContext, TArgs>;
-}
+};
 export type Resolver<TResult, TParent = {}, TContext = {}, TArgs = {}> =
   | ResolverFn<TResult, TParent, TContext, TArgs>
   | ResolverWithResolve<TResult, TParent, TContext, TArgs>;

@@ -28,7 +28,7 @@ module.exports = {
      * We find them quite useful actually.
      */
     "no-nested-ternary": "off",
-
+    "object-curly-newline": "off",
     /**
      * See https://github.com/typescript-eslint/typescript-eslint/issues/2621#issuecomment-701970389
      */

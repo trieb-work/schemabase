@@ -124,7 +124,6 @@ export function handleWebhook<TRequest>({
         traceId,
       });
     } finally {
-      await logger.flush();
       res.end();
     }
   };

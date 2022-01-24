@@ -19,13 +19,11 @@ export interface LoggerConfig {
 }
 
 export interface ILogger {
-  withLogDrain: (logDrain: LogDrain) => ILogger;
   with: (additionalMeta: Fields) => ILogger;
   debug: (message: string, fields?: Fields) => void;
   info: (message: string, fields?: Fields) => void;
   warn: (message: string, fields?: Fields) => void;
   error: (message: string, fields?: Fields) => void;
-  flush: () => Promise<void>;
 }
 
 export class Logger implements ILogger {

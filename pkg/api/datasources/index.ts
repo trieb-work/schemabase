@@ -1,11 +1,5 @@
 import { DB } from "./db";
-
-export interface DataSources {
+export * from "./db";
+export type DataSources = {
   db: DB;
-}
-
-export const dataSources = (): DataSources => {
-  return {
-    db: new DB(),
-  };
 };
