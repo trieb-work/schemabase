@@ -113,6 +113,6 @@ tsc:
 	pnpm tsc --pretty
 
 fmt:
-	deno fmt --ignore=node_modules
+	pnpm eslint --ext .js,.ts --fix .
 	pnpm prettier --write .
 check: build tsc fmt

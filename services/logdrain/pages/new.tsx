@@ -1,16 +1,16 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { Button, Dot, Grid, Input, Page } from "@geist-ui/react";
-import React, { useState } from "react";
+import { useState } from "react";
 import { CreateRequest } from "./api/create";
 
 const NewPage: NextPage = () => {
   const router = useRouter();
-  const code = router.query["code"] as string;
-  const configurationId = router.query["configurationId"] as string;
-  const projectId = router.query["currentProjectId"] as string;
-  const teamId = router.query["teamId"] as string;
-  const next = router.query["next"] as string;
+  const code = router.query.code as string;
+  const configurationId = router.query.configurationId as string;
+  const projectId = router.query.currentProjectId as string;
+  const teamId = router.query.teamId as string;
+  const next = router.query.next as string;
 
   const [url, setUrl] = useState("https://github.com");
   const [username, setUsername] = useState("");
