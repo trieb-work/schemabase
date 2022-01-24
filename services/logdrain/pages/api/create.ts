@@ -112,7 +112,7 @@ export default async function (
         },
       },
     });
-    const host = req.headers.host ?? "https://logdrain-triebwork.vercel.app";
+    const host = req.headers.host ?? "logdrain-triebwork.vercel.app";
 
     await createLogDrain({
       token,
