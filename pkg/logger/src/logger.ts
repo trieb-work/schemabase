@@ -33,10 +33,13 @@ export class Logger implements ILogger {
     };
     this.logger = winston.createLogger({
       transports: [new winston.transports.Console()],
-      format: winston.format.prettyPrint({
-        colorize: true,
-        depth: 10,
-      }),
+      format:
+        env.get("NODE_ENV") === "production"
+          ? winston.format.json()
+          : winston.format.prettyPrint({
+              colorize: true,
+              depth: 10,
+            }),
     });
   }
 

@@ -161,7 +161,7 @@ function formatLogs(raw: string): Log[] {
     try {
       console.log("lines", { lines: lines.join("\n") });
       const message = JSON.parse(lines.join("\n"));
-      console.log("message", { message });
+      console.log("222message", { message });
       logs.push(message);
     } catch {
       logs = lines.map((line) => {
@@ -278,8 +278,8 @@ export default async function (
               _index: cluster.index ?? "logs-vercel-logdrain",
             },
           };
-
           return logs.flatMap((log) => {
+            logger.info("message", { message: log.message });
             let payload = {
               message:
                 typeof log?.message === "string" && log.message.length > 0
@@ -343,6 +343,7 @@ export default async function (
                 ...log.message,
               };
             }
+            logger.info("payload", { payload });
 
             return [index, payload];
           });
