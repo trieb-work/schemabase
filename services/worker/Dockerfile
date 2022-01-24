@@ -18,7 +18,7 @@ RUN pnpm prisma generate
 CMD ["ls", "-al", "node_modules"]
 
 
- WORKDIR /eci/services/worker/dist
+WORKDIR /eci/services/worker/dist
 RUN cp /eci/node_modules/.prisma/client/* .
 
 
@@ -28,6 +28,5 @@ RUN cp /eci/node_modules/.prisma/client/* .
  ENV GIT_COMMIT_SHA=$commit_sha
 
  COPY --from=build /eci/services/worker/dist/* .
- COPY --from=build /eci/node_modules/winston-elasticsearch/index-template-mapping.json .
 
  CMD [ "node", "main.js" ]
