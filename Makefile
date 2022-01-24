@@ -96,7 +96,7 @@ build-api-prod: build
 build-logdrain-prod: build
 	pnpm next build ./services/logdrain
 
-
+install: NODE_ENV=development
 install:
 	pnpm install
 
