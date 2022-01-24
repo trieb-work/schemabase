@@ -94,7 +94,6 @@ build-api-prod: build
 	pnpm prisma migrate deploy
 
 build-logdrain-prod: build
-	pnpm generate
 	pnpm next build ./services/logdrain
 
 
