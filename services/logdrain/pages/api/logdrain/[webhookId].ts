@@ -7,6 +7,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { Client as ElasticClient } from "@elastic/elasticsearch";
 import { HttpError } from "@eci/pkg/errors";
 import { createHmac } from "crypto";
+import { sha256 } from "@eci/pkg/hash";
 
 // const vercelReportLogPattern =
 // eslint-disable-next-line max-len
@@ -188,7 +189,6 @@ export default async function (
       body,
       headers: { "x-vercel-signature": signature },
     } = requestValidation.parse(req);
-
     let clusters = cache.get(webhookId);
     if (clusters.length === 0) {
       const webhook = await prisma.incomingWebhook.findUnique({
@@ -266,7 +266,6 @@ export default async function (
           };
 
           return logs.flatMap((log) => {
-            // console.log({ log });
             let payload = {
               message:
                 typeof log?.message === "string" && log.message.length > 0
@@ -314,6 +313,14 @@ export default async function (
               },
               user_agent: {
                 original: event.proxy?.userAgent,
+              },
+              client: {
+                address: event.proxy?.clientIp
+                  ? sha256(event.proxy?.clientIp)
+                  : undefined,
+              },
+              cache: {
+                id: event.proxy?.cacheId,
               },
             };
             if (typeof log?.message === "object") {
