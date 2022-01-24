@@ -176,6 +176,8 @@ export default async function (
       body,
       headers: { "x-vercel-signature": signature },
     } = requestValidation.parse(req);
+
+    console.log({ entrypoints: body.map((b) => b.entrypoint) });
     const prisma = new PrismaClient();
 
     let clusters = cache.get(webhookId);
