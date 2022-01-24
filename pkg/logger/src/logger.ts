@@ -56,18 +56,34 @@ export class Logger implements ILogger {
   }
 
   public debug(message: string, fields: Fields = {}): void {
-    this.logger.debug(message, { ...this.meta, ...fields });
+    this.logger.debug(message, {
+      log: { level: "debug" },
+      ...this.meta,
+      ...fields,
+    });
   }
 
   public info(message: string, fields: Fields = {}): void {
-    this.logger.info(message, { ...this.meta, ...fields });
+    this.logger.info(message, {
+      log: { level: "info" },
+      ...this.meta,
+      ...fields,
+    });
   }
 
   public warn(message: string, fields: Fields = {}): void {
-    this.logger.warn(message, { ...this.meta, ...fields });
+    this.logger.warn(message, {
+      log: { level: "warn" },
+      ...this.meta,
+      ...fields,
+    });
   }
 
   public error(message: string, fields: Fields = {}): void {
-    this.logger.error(message, { ...this.meta, ...fields });
+    this.logger.error(message, {
+      log: { level: "error" },
+      ...this.meta,
+      ...fields,
+    });
   }
 }
