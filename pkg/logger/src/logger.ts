@@ -34,7 +34,7 @@ export class Logger implements ILogger {
     this.logger = winston.createLogger({
       transports: [new winston.transports.Console()],
       format:
-        env.get("NODE_ENV") === "production"
+        env.get("VERCEL") === "1"
           ? winston.format.json()
           : winston.format.prettyPrint({
               colorize: true,
