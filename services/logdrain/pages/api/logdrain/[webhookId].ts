@@ -160,7 +160,7 @@ function formatLogs(raw: string): Log[] {
             if (split.length === 4) {
               return {
                 timestamp: new Date(split[0]).getTime(),
-                level: split[2],
+                level: split[2].toLowerCase(),
                 message: split[3],
               };
             } else {
