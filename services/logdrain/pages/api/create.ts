@@ -112,8 +112,7 @@ export default async function (
         },
       },
     });
-    const host = "ecc8-2003-ee-f703-ff00-4d6d-beb5-a11b-921f.ngrok.io";
-    // req.headers.host ?? "logdrain-triebwork.vercel.app";
+    const host = req.headers.host ?? "logdrain-triebwork.vercel.app";
 
     await createLogDrain({
       token,
