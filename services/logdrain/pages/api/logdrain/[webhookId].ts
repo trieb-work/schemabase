@@ -256,7 +256,7 @@ export default async function (
               },
             },
             {
-              message: log?.message ?? `TODO: ${event.path}`,
+              message: log?.message ?? `No message (request log)`,
               log: {
                 level: log?.level ?? "info",
               },
