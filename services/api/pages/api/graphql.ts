@@ -19,7 +19,6 @@ export default async function (
    */
   const handler = srv.createHandler({ path: "/api/graphql" });
   await handler(req, res);
-  return;
 }
 
 /**

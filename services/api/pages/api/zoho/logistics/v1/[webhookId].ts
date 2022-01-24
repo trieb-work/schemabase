@@ -54,16 +54,16 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     },
   });
 
-  if (!webhook) {
+  if (webhook == null) {
     throw new HttpError(404, `Webhook not found: ${webhookId}`);
   }
 
   const { logisticsApp } = webhook;
-  if (!logisticsApp) {
+  if (logisticsApp == null) {
     throw new HttpError(400, "strapi app is not configured");
   }
   const { integration } = logisticsApp;
-  if (!integration) {
+  if (integration == null) {
     throw new HttpError(400, "Integration is not configured");
   }
   /**

@@ -31,9 +31,10 @@ afterAll(async () => {
 });
 
 /**
- * Trigger a new app installation on saleor via graphql.
- * Saleor should then call our manifest endpoint and retrieve the necessary data.
- * Afterwards the webhooks should be setup in our database as well as in saleor and be connected properly.
+ * Trigger a new app installation on saleor via graphql. Saleor should then call
+ * our manifest endpoint and retrieve the necessary data. Afterwards the
+ * webhooks should be setup in our database as well as in saleor and be
+ * connected properly.
  */
 describe("Saleor app installation", () => {
   it("should create a new saleor app using the manifest route", async () => {
@@ -98,8 +99,8 @@ describe("Saleor app installation", () => {
      * Assert data in our db
      */
     const appInDatabase = savedTenant?.saleorApps[0].installedSaleorApp;
-    if (!appInDatabase) {
-      fail();
+    if (appInDatabase == null) {
+      throw new Error("Error during setup");
     }
 
     /**
@@ -108,8 +109,8 @@ describe("Saleor app installation", () => {
     const appAtSaleor = await client
       .app({ id: appInDatabase.id })
       .then((res) => res.app);
-    if (!appAtSaleor) {
-      fail();
+    if (appAtSaleor == null) {
+      throw new Error("Error during setup");
     }
 
     /**
@@ -120,16 +121,16 @@ describe("Saleor app installation", () => {
         token: appInDatabase.token,
       })
       .then((res) => res.appTokenVerify);
-    if (!appTokenVerify) {
-      fail();
+    if (appTokenVerify == null) {
+      throw new Error("Error during setup");
     }
     expect(appTokenVerify.valid).toBe(true);
 
     /**
      * Assert everything is setup correctly on saleors side
      */
-    if (!appAtSaleor.webhooks || !appAtSaleor.webhooks[0]) {
-      fail();
+    if (appAtSaleor.webhooks == null || appAtSaleor.webhooks[0] == null) {
+      throw new Error("Error during setup");
     }
     const webhook = appAtSaleor.webhooks[0];
     expect(webhook.isActive).toBe(true);

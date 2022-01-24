@@ -1,8 +1,8 @@
 import { DB } from "./db";
 
-export type DataSources = {
+export interface DataSources {
   db: DB;
-};
+}
 
 export const dataSources = (): DataSources => {
   return {

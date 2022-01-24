@@ -86,10 +86,11 @@ export class StrapiOrdersToZoho {
   /**
    * Transform a strapi event into a zoho sales order type
    */
-  private async transformStrapiEventToZohoOrders(
-    rawEvent: OrderEvent,
-  ): Promise<
-    { order: CreateSalesOrder; address: z.infer<typeof addressValidation> }[]
+  private async transformStrapiEventToZohoOrders(rawEvent: OrderEvent): Promise<
+    Array<{
+      order: CreateSalesOrder;
+      address: z.infer<typeof addressValidation>;
+    }>
   > {
     const event = await orderValidation
       .parseAsync(rawEvent)
@@ -97,13 +98,13 @@ export class StrapiOrdersToZoho {
         throw new Error(`Malformed event: ${err}`);
       });
 
-    const transformedOrders: {
+    const transformedOrders: Array<{
       order: CreateSalesOrder;
       address: OrderEvent["entry"]["addresses"][0];
-    }[] = [];
+    }> = [];
     for (const address of event.entry.addresses) {
       const products =
-        address.products && address.products.length > 0
+        address.products != null && address.products.length > 0
           ? address.products
           : rawEvent.entry.products;
       const productIds = products.map((p) => p.product.zohoId);
@@ -141,6 +142,7 @@ export class StrapiOrdersToZoho {
           salesorder_number: address.orderId,
           shipment_date: event.entry.terminationDate || "",
           line_items: products.map((p) => {
+            // eslint-disable-next-line camelcase
             const item: { item_id: string; quantity: number; rate?: number } = {
               item_id: p.product.zohoId,
               quantity: p.quantity,
@@ -201,7 +203,7 @@ export class StrapiOrdersToZoho {
     const strapiOrders = await this.transformStrapiEventToZohoOrders(rawEvent);
 
     const existingOrderUIds = existingOrders.map((o) =>
-      this.getUniqueOrderId(o.salesorder_number, o["cf_orderhash"] as string),
+      this.getUniqueOrderId(o.salesorder_number, o.cf_orderhash as string),
     );
     this.logger.debug("strapiOrders", { strapiOrders });
     const strapiOrderUIds = strapiOrders.map((o) =>
@@ -219,7 +221,7 @@ export class StrapiOrdersToZoho {
           !strapiOrderUIds.includes(
             this.getUniqueOrderId(
               existingOrder.salesorder_number,
-              existingOrder["cf_orderhash"] as string,
+              existingOrder.cf_orderhash as string,
             ),
           ),
       )
@@ -297,10 +299,10 @@ export class StrapiOrdersToZoho {
    */
   private async addNewOrders(
     zohoCustomerId: string,
-    orders: {
+    orders: Array<{
       order: CreateSalesOrder;
       address: z.infer<typeof addressValidation>;
-    }[],
+    }>,
   ): Promise<string[]> {
     const bulkOrderIds: string[] = [];
 
@@ -320,7 +322,7 @@ export class StrapiOrdersToZoho {
        */
 
       const contact = await this.zoho.contact.retrieve(zohoCustomerId);
-      if (!contact) {
+      if (contact == null) {
         throw new Error(`Contact was not found: ${zohoCustomerId}`);
       }
 

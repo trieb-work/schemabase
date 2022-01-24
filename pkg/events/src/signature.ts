@@ -2,13 +2,13 @@ import { createHmac } from "crypto";
 import { SignatureError } from "./errors";
 
 export interface ISigner {
-  sign(data: unknown): string;
-  verify(data: unknown, signature: string): void;
+  sign: (data: unknown) => string;
+  verify: (data: unknown, signature: string) => void;
 }
 
-export type SignerConfig = {
+export interface SignerConfig {
   signingKey: string;
-};
+}
 
 /**
  * Sign and verify json objects

@@ -6,24 +6,24 @@ import { EmailTemplateSender } from "@eci/pkg/email/src/emailSender";
 import { EventHandler, EventSchemaRegistry, OnSuccess } from "@eci/pkg/events";
 import { id } from "@eci/pkg/ids";
 
-export type CustomerNotifierConfig = {
+export interface CustomerNotifierConfig {
   db: PrismaClient;
   onSuccess: OnSuccess<{ emailIds: string[] }>;
   logger: ILogger;
   emailTemplateSender: EmailTemplateSender;
-};
+}
 
 export class CustomerNotifier
   implements
     EventHandler<EventSchemaRegistry.PackageStateTransition["message"]>
 {
-  private db: PrismaClient;
+  private readonly db: PrismaClient;
 
-  private onSuccess: OnSuccess<{ emailIds: string[] }>;
+  private readonly onSuccess: OnSuccess<{ emailIds: string[] }>;
 
-  private logger: ILogger;
+  private readonly logger: ILogger;
 
-  private emailTemplateSender: EmailTemplateSender;
+  private readonly emailTemplateSender: EmailTemplateSender;
 
   constructor(config: CustomerNotifierConfig) {
     this.db = config.db;
@@ -48,14 +48,14 @@ export class CustomerNotifier
         },
       },
     });
-    if (!packageEvent) {
+    if (packageEvent == null) {
       throw new Error(
         `No package event found with id: ${event.packageEventId}`,
       );
     }
 
     if (
-      !packageEvent.sentEmail &&
+      packageEvent.sentEmail == null &&
       isValidTransition(event.previousState, packageEvent.state)
     ) {
       this.logger.info("Sending transactional email", {
@@ -74,7 +74,7 @@ export class CustomerNotifier
           },
         },
       });
-      if (!integration) {
+      if (integration == null) {
         throw new Error(
           `No trackingIntegration found for id: ${event.integrationId}`,
         );
@@ -94,7 +94,7 @@ export class CustomerNotifier
           (t) => t.language === integration.trackingEmailApp.defaultLanguage,
         );
 
-      if (!template) {
+      if (template == null) {
         throw new Error("No matching language for this template found");
       }
 

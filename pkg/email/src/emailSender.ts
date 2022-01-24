@@ -8,7 +8,7 @@ export interface EmailTemplateSender {
   ) => Promise<{ id: string }>;
 }
 export class Sendgrid implements EmailTemplateSender {
-  private client: HttpClient;
+  private readonly client: HttpClient;
 
   constructor(apiKey: string) {
     this.client = new HttpClient();

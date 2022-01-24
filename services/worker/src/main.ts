@@ -12,10 +12,10 @@ import {
   publishSuccess,
   Signer,
   Topic,
+  EventSchemaRegistry,
 } from "@eci/pkg/events";
 import * as tracking from "@eci/pkg/integration-tracking";
 import { Sendgrid } from "@eci/pkg/email/src/emailSender";
-import { EventSchemaRegistry } from "@eci/pkg/events";
 async function main() {
   const logger = new Logger({
     meta: {

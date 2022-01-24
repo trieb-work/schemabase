@@ -5,9 +5,9 @@ import { application } from "./application";
 import { context } from "./context";
 import { dataSources } from "./datasources";
 import { ApolloServerPluginLandingPageLocalDefault } from "apollo-server-core";
-export type ServerConfig = {
+export interface ServerConfig {
   logger?: ILogger;
-};
+}
 
 export const server = (config?: ServerConfig): ApolloServer => {
   return new ApolloServer({

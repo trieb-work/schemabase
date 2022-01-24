@@ -9,33 +9,33 @@ export interface LogDrain {
 
 export type Fields = Record<string, unknown>;
 
-export type LoggerConfig = {
+export interface LoggerConfig {
   meta?: {
     /**
      * Unique id for every trace.
      */
     traceId?: string;
   } & Fields;
-};
+}
 
 export interface ILogger {
-  withLogDrain(logDrain: LogDrain): ILogger;
-  with(additionalMeta: Fields): ILogger;
-  debug(message: string, fields?: Fields): void;
-  info(message: string, fields?: Fields): void;
-  warn(message: string, fields?: Fields): void;
-  error(message: string, fields?: Fields): void;
-  flush(): Promise<void>;
+  withLogDrain: (logDrain: LogDrain) => ILogger;
+  with: (additionalMeta: Fields) => ILogger;
+  debug: (message: string, fields?: Fields) => void;
+  info: (message: string, fields?: Fields) => void;
+  warn: (message: string, fields?: Fields) => void;
+  error: (message: string, fields?: Fields) => void;
+  flush: () => Promise<void>;
 }
 
 export class Logger implements ILogger {
-  private logger: winston.Logger;
+  private readonly logger: winston.Logger;
 
   private meta: Record<string, unknown>;
 
-  private elasticSearchTransport?: ElasticsearchTransport;
+  private readonly elasticSearchTransport?: ElasticsearchTransport;
 
-  private logDrains: LogDrain[] = [];
+  private readonly logDrains: LogDrain[] = [];
 
   public constructor(config?: LoggerConfig) {
     this.meta = {
@@ -51,7 +51,7 @@ export class Logger implements ILogger {
       }),
     });
 
-    if (this.meta["env"] === "production") {
+    if (this.meta.env === "production") {
       this.debug("Enabling elastic transport");
       // this.apm ??= APMAgent.start({ serviceName: "eci-v2" });
 

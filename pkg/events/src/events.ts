@@ -16,7 +16,7 @@ export interface EventProducer<TContent> {
   /**
    * disconnect
    */
-  close(): Promise<void>;
+  close: () => Promise<void>;
 }
 
 export const newKafkaClient = (): kafka.Kafka => {
@@ -37,9 +37,9 @@ export const newKafkaClient = (): kafka.Kafka => {
 };
 
 export class KafkaProducer<TContent> implements EventProducer<TContent> {
-  private producer: kafka.Producer;
+  private readonly producer: kafka.Producer;
 
-  private signer: ISigner;
+  private readonly signer: ISigner;
 
   private constructor(config: { producer: kafka.Producer; signer: ISigner }) {
     this.producer = config.producer;
@@ -95,17 +95,17 @@ export interface EventSubscriber<TContent> {
    * Stop receiving new tasks.
    * The current task will still be finished.
    */
-  close(): Promise<void>;
+  close: () => Promise<void>;
 }
 
 export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
-  private consumer: kafka.Consumer;
+  private readonly consumer: kafka.Consumer;
 
-  private signer: ISigner;
+  private readonly signer: ISigner;
 
-  private logger: ILogger;
+  private readonly logger: ILogger;
 
-  private errorProducer: kafka.Producer;
+  private readonly errorProducer: kafka.Producer;
 
   private constructor(config: {
     errorProducer: kafka.Producer;
@@ -155,20 +155,20 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
     this.consumer.run({
       eachMessage: async (payload) => {
         try {
-          if (!payload.message.value) {
+          if (payload.message.value == null) {
             throw new Error("Kafka did not return a message value");
           }
           const message = Message.deserialize<TContent>(payload.message.value);
           const { headers } = payload.message;
 
-          if (!headers || !headers["signature"]) {
+          if (headers == null || !headers.signature) {
             throw new Error("Kafka message does not have signature header");
           }
 
           const signature =
-            typeof headers["signature"] === "string"
-              ? headers["signature"]
-              : headers["signature"].toString();
+            typeof headers.signature === "string"
+              ? headers.signature
+              : headers.signature.toString();
 
           this.signer.verify(message.serialize(), signature);
 
@@ -190,7 +190,7 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
           });
 
           payload.message.headers ??= {};
-          payload.message.headers["error"] = err.message;
+          payload.message.headers.error = err.message;
           await this.errorProducer.send({
             topic: "UNHANDLED_EXCEPTION",
             messages: [payload.message],

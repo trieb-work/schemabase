@@ -10,7 +10,8 @@ const requestValidation = z.object({
 });
 
 /**
- * The product data feed returns a google standard .csv file from products and their attributes in your shop.#
+ * The product data feed returns a google standard .csv file from products and
+ * their attributes in your shop.#
  */
 const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   backgroundContext,

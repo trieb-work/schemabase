@@ -15,7 +15,9 @@ export const payload = z.object({
 export type Claims = z.infer<typeof payload>;
 export class JWT {
   private static readonly issuer = "https://auth.permolto.com";
+
   private static readonly audience = "https://api.permolto.com";
+
   private static readonly algorithm = "HS256";
 
   public static sign(subject: string, opts: { roles: Role[] }): string {
@@ -47,6 +49,7 @@ export class JWT {
 
     return payload.parse(decoded);
   }
+
   public static isValid(token: string): boolean {
     try {
       JWT.verify(token);
@@ -66,6 +69,7 @@ export class JWT {
     }
     return payload.parse(claims);
   }
+
   /**
    * Return in how many seconds the jwt will expire.
    *

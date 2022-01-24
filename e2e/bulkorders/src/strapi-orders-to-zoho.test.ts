@@ -54,11 +54,13 @@ async function generateEvent(
 ): Promise<OrderEvent> {
   const companyName = id.id("test");
 
+  // eslint-disable-next-line camelcase
   const { contact_id } = await zoho.contact.create({
     company_name: companyName,
     contact_name: companyName,
     // contact_type: "customer",
   });
+  // eslint-disable-next-line camelcase
   if (!contact_id || contact_id === "") {
     throw new Error("Unable to setup testing contact");
   }
@@ -472,7 +474,7 @@ describe("with valid webhook", () => {
         await waitForPropagation();
 
         const contact = await zoho.contact.retrieve(event.entry.zohoCustomerId);
-        if (!contact) {
+        if (contact == null) {
           throw new Error(`Contact not found: ${event.entry.zohoCustomerId}`);
         }
 
@@ -519,7 +521,7 @@ describe("with valid webhook", () => {
         await waitForPropagation();
 
         event.event = "entry.update";
-        (event.entry.addresses[0].products = [
+        event.entry.addresses[0].products = [
           {
             quantity: randomInt(1, 6),
             price: 2000,
@@ -532,8 +534,8 @@ describe("with valid webhook", () => {
               zohoId: "116240000000112128",
             },
           },
-        ]),
-          await triggerWebhook(webhookId, webhookSecret, event);
+        ];
+        await triggerWebhook(webhookId, webhookSecret, event);
         await waitForPropagation();
 
         await verifySyncedOrders(zoho, event);
@@ -568,7 +570,7 @@ describe("with valid webhook", () => {
       }, 100_000);
     });
 
-    describe("when one order changes, one is removed, one is created, and one stays the same", () => {
+    describe("when one changes, one is removed, one is created, and one stays the same", () => {
       it("syncs correctly", async () => {
         const event = await generateEvent("entry.create", "Draft", 3);
         /**

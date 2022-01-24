@@ -91,7 +91,8 @@ const requestValidation = z.object({
 });
 
 /**
- * The product data feed returns a google standard .csv file from products and their attributes in your shop.#
+ * The product data feed returns a google standard .csv file from products and
+ * their attributes in your shop.#
  */
 const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   backgroundContext,
@@ -132,16 +133,16 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
       },
     },
   });
-  if (!webhook) {
+  if (webhook == null) {
     throw new HttpError(404, `Webhook not found: ${webhookId}`);
   }
 
   const { dpdApp } = webhook;
-  if (!dpdApp) {
+  if (dpdApp == null) {
     throw new HttpError(400, "dpd app is not configured");
   }
   const { integration } = dpdApp;
-  if (!integration) {
+  if (integration == null) {
     throw new HttpError(400, "Integration is not configured");
   }
   /**

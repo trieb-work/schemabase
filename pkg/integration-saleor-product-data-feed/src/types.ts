@@ -1,9 +1,10 @@
+/* eslint-disable camelcase */
 /**
  * Specs according to https://support.google.com/merchants/answer/7052112?hl=en
  *
  * And for facebook: https://developers.facebook.com/docs/commerce-platform/catalog/fields/
  */
-export type Product = {
+export interface Product {
   /**
    * Your product’s unique identifier
    *
@@ -65,7 +66,8 @@ export type Product = {
   additional_image_link?: string;
 
   /**
-   * Your product’s mobile-optimized landing page when you have a different URL for mobile and desktop traffic
+   * Your product’s mobile-optimized landing page when you have a different URL
+   * for mobile and desktop traffic
    *
    * @example
    * http://www.m.example.com/asp/sp.asp?cat=12&id=1030
@@ -120,7 +122,9 @@ export type Product = {
    * New [new]
    * Brand new, original, unopened packaging
    * Refurbished [refurbished]
-   * Professionally restored to working order, comes with a warranty, may or may not have the original packaging
+   * Professionally restored to working order, comes with a warranty, may or may not have the
+   * original packaging
+   *
    * Used [used]
    * Previously used, original packaging opened or missing
    */
@@ -184,7 +188,8 @@ export type Product = {
   unit_pricing_measure?: string;
 
   /**
-   * The product’s base measure for pricing (for example, 100ml means the price is calculated based on a 100ml units)
+   * The product’s base measure for pricing (for example, 100ml means the price
+   * is calculated based on a 100ml units)
    *
    * @example
    * 100g
@@ -240,6 +245,6 @@ export type Product = {
    * The full path of the category
    */
   google_product_category?: string;
-};
+}
 
 export type FeedVariant = "googlemerchant" | "facebookcommerce";

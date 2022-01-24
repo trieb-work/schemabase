@@ -6,6 +6,7 @@ import { Topic } from "./registry";
 export interface EventHandler<TEvent> {
   handleEvent: (ctx: Context, event: TEvent) => Promise<void>;
 }
+export type OnSuccess<TEvent> = (ctx: Context, event: TEvent) => Promise<void>;
 
 export function publishSuccess<TEvent>(
   producer: KafkaProducer<TEvent>,
@@ -23,5 +24,3 @@ export function publishSuccess<TEvent>(
     );
   };
 }
-
-export type OnSuccess<TEvent> = (ctx: Context, event: TEvent) => Promise<void>;

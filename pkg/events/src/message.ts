@@ -3,7 +3,7 @@ import { id } from "@eci/pkg/ids";
 // /**
 //  * Additional meta information about the message
 //  */
-export type Header = {
+export interface Header {
   /**
    * Unique id for this messages
    */
@@ -20,18 +20,18 @@ export type Header = {
     remaining: number;
     notBefore: number;
   };
-};
+}
 
 /**
  * A signed message
  */
-export type Signed<TMessage> = {
+export interface Signed<TMessage> {
   message: TMessage;
   /**
    * Siganture to verify the message comes from a trusted source
    */
   signature: string;
-};
+}
 
 type OptionalKey<T, O extends keyof T> = Omit<T, O> & Partial<Pick<T, O>>;
 

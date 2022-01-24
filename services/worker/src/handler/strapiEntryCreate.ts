@@ -12,9 +12,14 @@ import { Context } from "@eci/pkg/context";
 export class StrapiEntryCreate
   implements EventHandler<EventSchemaRegistry.StrapiEntryCreate["message"]>
 {
-  private prisma: PrismaClient;
-  private logger: ILogger;
-  private onSuccess: OnSuccess<EventSchemaRegistry.BulkorderSynced["message"]>;
+  private readonly prisma: PrismaClient;
+
+  private readonly logger: ILogger;
+
+  private readonly onSuccess: OnSuccess<
+    EventSchemaRegistry.BulkorderSynced["message"]
+  >;
+
   constructor(config: {
     prisma: PrismaClient;
     logger: ILogger;
@@ -24,6 +29,7 @@ export class StrapiEntryCreate
     this.logger = config.logger;
     this.onSuccess = config.onSuccess;
   }
+
   public async handleEvent(
     ctx: Context,
     message: EventSchemaRegistry.StrapiEntryCreate["message"],
@@ -31,7 +37,7 @@ export class StrapiEntryCreate
     const zohoApp = await this.prisma.zohoApp.findUnique({
       where: { id: message.zohoAppId },
     });
-    if (!zohoApp) {
+    if (zohoApp == null) {
       throw new Error(`No zoho app found: ${message.zohoAppId}`);
     }
 

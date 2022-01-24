@@ -1,13 +1,13 @@
 import { PrismaClient } from "@eci/pkg/prisma";
 import { ILogger } from "@eci/pkg/logger";
 
-export type Context = {
+export interface Context {
   trace: {
     id: string;
   };
   logger: ILogger;
   prisma?: PrismaClient;
-};
+}
 
 /**
  * The basic Context where some additional keys are set as required
@@ -37,7 +37,7 @@ export type ExtendContextFn<K extends keyof Context> = (
 export async function extendContext<Keys extends keyof Context>(
   ctx: Context,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ...extendContext: ExtendContextFn<any>[]
+  ...extendContext: Array<ExtendContextFn<any>>
 ): Promise<ExtendedContext<Keys>> {
   if (extendContext) {
     for (const extend of extendContext) {

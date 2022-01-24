@@ -12,12 +12,15 @@ import { Context } from "@eci/pkg/context";
 export class StrapiEntryUpdate
   implements EventHandler<EventSchemaRegistry.StrapiEntryCreate["message"]>
 {
-  private prisma: PrismaClient;
-  private logger: ILogger;
+  private readonly prisma: PrismaClient;
+
+  private readonly logger: ILogger;
+
   constructor(config: { prisma: PrismaClient; logger: ILogger }) {
     this.prisma = config.prisma;
     this.logger = config.logger;
   }
+
   public async handleEvent(
     _ctx: Context,
     message: EventSchemaRegistry.StrapiEntryCreate["message"],
@@ -25,7 +28,7 @@ export class StrapiEntryUpdate
     const zohoApp = await this.prisma.zohoApp.findUnique({
       where: { id: message.zohoAppId },
     });
-    if (!zohoApp) {
+    if (zohoApp == null) {
       throw new Error(`No zoho app found: ${message.zohoAppId}`);
     }
 

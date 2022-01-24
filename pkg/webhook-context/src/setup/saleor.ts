@@ -17,7 +17,7 @@ export const newSaleorClient = (
   host: string,
   token?: string,
 ): SaleorClient => {
-  if (!ctx.prisma) {
+  if (ctx.prisma == null) {
     throw new ContextMissingFieldError("prisma");
   }
   ctx.logger = ctx.logger.with({ saleorHost: host });

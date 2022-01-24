@@ -69,6 +69,7 @@ class ClusterCache {
       exp: number;
     };
   };
+
   constructor() {
     this.cache = {};
   }
@@ -96,7 +97,7 @@ class ClusterCache {
 
 const cache = new ClusterCache();
 
-type Metadata = {
+interface Metadata {
   requestId?: string;
   // milliseconds
   duration?: number;
@@ -105,7 +106,7 @@ type Metadata = {
   // Megabytes
   memorySize?: number;
   maxMemoryUsed?: number;
-};
+}
 type Log = Metadata & {
   level?: string;
   message?: string;
@@ -183,17 +184,17 @@ export default async function (
           },
         },
       });
-      if (!webhook) {
+      if (webhook == null) {
         throw new HttpError(404, `Webhook not found: ${webhookId}`);
       }
-      if (!webhook.secret) {
+      if (webhook.secret == null) {
         throw new HttpError(400, "secret is not configured");
       }
       if (!verify(req.body, webhook.secret.secret, signature)) {
         throw new HttpError(403, "Signature does not match");
       }
       const { vercelLogDrainApp } = webhook;
-      if (!vercelLogDrainApp) {
+      if (vercelLogDrainApp == null) {
         throw new HttpError(400, "vercel log drain is not configured");
       }
       const { elasticLogDrainIntegrations } = vercelLogDrainApp;

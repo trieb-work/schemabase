@@ -5,24 +5,24 @@ import { ILogger } from "@eci/pkg/logger";
 import { EventSchemaRegistry } from "@eci/pkg/events";
 import { isValidTransition } from "./eventSorting";
 
-export type PackageEventHandlerConfig = {
+export interface PackageEventHandlerConfig {
   db: PrismaClient;
   onSuccess: (
     ctx: Context,
     res: EventSchemaRegistry.PackageStateTransition["message"],
   ) => Promise<void>;
   logger: ILogger;
-};
+}
 
 export class PackageEventHandler {
-  private db: PrismaClient;
+  private readonly db: PrismaClient;
 
-  private onSuccess: (
+  private readonly onSuccess: (
     ctx: Context,
     res: EventSchemaRegistry.PackageStateTransition["message"],
   ) => Promise<void>;
 
-  private logger: ILogger;
+  private readonly logger: ILogger;
 
   constructor(config: PackageEventHandlerConfig) {
     this.db = config.db;
@@ -43,7 +43,7 @@ export class PackageEventHandler {
         order: true,
       },
     });
-    if (!storedPackage) {
+    if (storedPackage == null) {
       throw new Error(`No package found with tracking id: ${event.trackingId}`);
     }
     const currentState = storedPackage.state;

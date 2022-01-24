@@ -18,7 +18,7 @@ export class NoopLogger implements ILogger {
 
   public error(_message: string, _fields: Fields): void {}
 
-  public flush(): Promise<void> {
-    return Promise.resolve();
+  public async flush(): Promise<void> {
+    return await Promise.resolve();
   }
 }

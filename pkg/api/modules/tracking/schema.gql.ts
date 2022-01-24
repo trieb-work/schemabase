@@ -10,7 +10,8 @@ export default gql`
     IN_TRANSIT
     # The carrier is on its way to deliver the shipment.
     OUT_FOR_DELIVERY
-    # The carrier attemptet to deliver the shipment but failed. It ususlly leavesa notice and will try to deliver again.
+    # The carrier attemptet to deliver the shipment but failed.
+    # It ususlly leavesa notice and will try to deliver again.
     FAILED_ATTEMPT
     # The shipment has been delivered successfully.
     DELIVERED

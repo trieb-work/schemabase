@@ -38,7 +38,8 @@ const packageTransitions: Record<PackageState, PackageState[]> = {
     PackageState.AVAILABLE_FOR_PICKUP,
     PackageState.EXCEPTION,
   ],
-  // The carrier attemptet to deliver the shipment but failed. It ususlly leavesa notice and will try to deliver again.
+  // The carrier attemptet to deliver the shipment but failed. It usually
+  // leavesa notice and will try to deliver again.
   FAILED_ATTEMPT: [
     PackageState.OUT_FOR_DELIVERY,
     PackageState.FAILED_ATTEMPT,
