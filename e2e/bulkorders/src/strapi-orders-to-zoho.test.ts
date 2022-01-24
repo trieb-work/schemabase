@@ -7,7 +7,7 @@ import {
   it,
 } from "@jest/globals";
 import { config } from "dotenv";
-import { PrismaClient } from "@eci/pkg/prisma";
+import { PrismaClient } from "@prisma/client";
 import faker from "faker";
 import { createHash, randomInt } from "crypto";
 import { HttpClient } from "@eci/pkg/http";

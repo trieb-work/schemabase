@@ -1,7 +1,6 @@
-import winston from "winston";
-import { ElasticsearchTransport } from "winston-elasticsearch";
+import * as tslog from "tslog";
+
 import { env } from "@eci/pkg/env";
-import ecsFormat from "@elastic/ecs-winston-format";
 
 export interface LogDrain {
   log: (message: string) => void;
@@ -27,13 +26,9 @@ export interface ILogger {
 }
 
 export class Logger implements ILogger {
-  private readonly logger: winston.Logger;
+  private readonly logger: tslog.Logger;
 
   private meta: Record<string, unknown>;
-
-  private readonly elasticSearchTransport?: ElasticsearchTransport;
-
-  private readonly logDrains: LogDrain[] = [];
 
   public constructor(config?: LoggerConfig) {
     this.meta = {
@@ -41,52 +36,9 @@ export class Logger implements ILogger {
       commit: env.get("GIT_COMMIT_SHA", env.get("VERCEL_GIT_COMMIT_SHA")),
       ...config?.meta,
     };
-    this.logger = winston.createLogger({
-      transports: [new winston.transports.Console()],
-      format: winston.format.prettyPrint({
-        colorize: true,
-        depth: 10,
-      }),
+    this.logger = new tslog.Logger({
+      type: this.meta.env === "production" ? "json" : "pretty",
     });
-
-    if (this.meta.env === "production") {
-      this.debug("Enabling elastic transport");
-      // this.apm ??= APMAgent.start({ serviceName: "eci-v2" });
-
-      /**
-       * ECS requires a special logging format.
-       * This overwrites the prettyprint or json format.
-       *
-       * @see https://www.elastic.co/guide/en/ecs-logging/nodejs/current/winston.html
-       */
-      this.logger.format = ecsFormat({ convertReqRes: true });
-
-      /**
-       * Ships all our logs to elasticsearch
-       */
-      this.elasticSearchTransport = new ElasticsearchTransport({
-        level: "info", // log info and above, not debug
-        dataStream: true,
-        clientOpts: {
-          node: env.require("ELASTIC_LOGGING_SERVER"),
-          auth: {
-            username: env.require("ELASTIC_LOGGING_USERNAME"),
-            password: env.require("ELASTIC_LOGGING_PASSWORD"),
-          },
-        },
-      });
-      this.logger.add(this.elasticSearchTransport);
-    }
-  }
-
-  public withLogDrain(logDrain: LogDrain): ILogger {
-    const copy = Object.assign(
-      Object.create(Object.getPrototypeOf(this)),
-      this,
-    ) as Logger;
-
-    copy.logDrains.push(logDrain);
-    return copy;
   }
 
   /**
@@ -103,37 +55,19 @@ export class Logger implements ILogger {
     return copy;
   }
 
-  /**
-   * Serialize the message
-   *
-   * The fields will overwrite the default metadata if keys overlap.
-   */
-  private log(level: string, message: string, fields: Fields): void {
-    this.logger.log(level, message, { ...this.meta, ...fields });
-    for (const logDrain of this.logDrains) {
-      logDrain.log(
-        JSON.stringify({ level, message, ...this.meta, ...fields }, null, 2),
-      );
-    }
-  }
-
   public debug(message: string, fields: Fields = {}): void {
-    return this.log("debug", message, fields);
+    this.logger.debug(message, { ...this.meta, ...fields });
   }
 
   public info(message: string, fields: Fields = {}): void {
-    return this.log("info", message, fields);
+    this.logger.info(message, { ...this.meta, ...fields });
   }
 
   public warn(message: string, fields: Fields = {}): void {
-    return this.log("warn", message, fields);
+    this.logger.warn(message, { ...this.meta, ...fields });
   }
 
   public error(message: string, fields: Fields = {}): void {
-    return this.log("error", message, fields);
-  }
-
-  public async flush(): Promise<void> {
-    await Promise.all([this.elasticSearchTransport?.flush()]);
+    this.logger.error(message, { ...this.meta, ...fields });
   }
 }

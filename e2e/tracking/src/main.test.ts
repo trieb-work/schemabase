@@ -1,4 +1,6 @@
-import { Carrier, Language, PackageState, PrismaClient } from "@eci/pkg/prisma";
+import { Carrier, Language, PackageState } from "@eci/pkg/prisma";
+import { PrismaClient } from "@prisma/client";
+
 import { HttpClient } from "@eci/pkg/http";
 import { id } from "@eci/pkg/ids";
 import faker from "faker";

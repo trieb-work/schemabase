@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from "@jest/globals";
 import { HttpClient } from "@eci/pkg/http";
-import { PrismaClient } from "@eci/pkg/prisma";
+import { PrismaClient } from "@prisma/client";
 import { id } from "@eci/pkg/ids";
 import { CountryCode, createSaleorClient } from "@eci/pkg/saleor";
 import { env } from "@eci/pkg/env";
