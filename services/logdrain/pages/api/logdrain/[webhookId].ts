@@ -129,23 +129,32 @@ function formatLog(raw: string): Log {
     memorySize: undefined,
     maxMemoryUsed: undefined,
   };
-  // grok
-  //   .loadDefaultSync()
-  //   .createPattern(vercelReportLogPattern)
-  //   .parseSync(report) as Record<string, string | undefined>;
+  const lineRegex =
+    // eslint-disable-next-line max-len
+    /[\d]{4}-[\d]{2}-[\d]{2}T[\d]{2}:[\d]{2}:[\d]{2}.[\d]+Z\\t[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\t(\w+)\\t(.*)/im;
+  const logs: {
+    level: string;
+    message: string;
+  }[] = lines.map((line) => {
+    const match = lineRegex.exec(line);
+    if (!match) {
+      throw new Error(`Log does not match regex: ${line}`);
+    }
+    return { level: match[1].toLowerCase(), message: match[2] };
+  });
 
   return {
     requestId,
-    level: "info",
+    level: logs.length > 0 ? logs[0].level : "info",
     duration: duration ? parseFloat(duration) : undefined,
     billedDuration: billedDuration ? parseFloat(billedDuration) : undefined,
     memorySize: memorySize ? parseInt(memorySize) : undefined,
     maxMemoryUsed: maxMemoryUsed ? parseInt(maxMemoryUsed) : undefined,
     message:
-      lines && lines.length > 0
-        ? lines
-            .map((line) => line?.split("\t").at(-1))
-            .filter((line) => !!line && line.length > 0)
+      logs && logs.length > 0
+        ? logs
+            .map(({ message }) => message)
+            .filter((message) => !!message && message.length > 0)
             .join("\n")
         : undefined,
   };
