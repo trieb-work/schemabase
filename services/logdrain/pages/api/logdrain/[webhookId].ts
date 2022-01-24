@@ -8,10 +8,12 @@ import { Client as ElasticClient } from "@elastic/elasticsearch";
 import { HttpError } from "@eci/pkg/errors";
 import { createHmac } from "crypto";
 import { sha256 } from "@eci/pkg/hash";
+import { Logger } from "@eci/pkg/logger";
 
 // const vercelReportLogPattern =
 // eslint-disable-next-line max-len
 //   "REPORT RequestId: %{UUID:requestId}\\tDuration: %{NUMBER:duration} ms\\tBilled Duration: %{NUMBER:billedDuration} ms\\tMemory Size: %{NUMBER:memorySize} MB\\tMax Memory Used: %{NUMBER:maxMemoryUsed} MB";
+const logger = new Logger();
 
 const verify = (
   body: z.infer<typeof requestValidation>["body"],
@@ -122,7 +124,8 @@ function formatLogs(raw: string): Log[] {
       (line) =>
         !line.startsWith("START") &&
         !line.startsWith("END") &&
-        !line.startsWith("REPORT"),
+        !line.startsWith("REPORT") &&
+        line.length > 0,
     );
   const reportLine =
     raw.split("\n").find((line) => line.startsWith("REPORT")) ?? "";
@@ -146,32 +149,42 @@ function formatLogs(raw: string): Log[] {
     report.maxMemoryUsed = parseInt(reportMatch[5]);
   }
 
-  const logs: {
+  let logs: {
     level?: string;
     message: string | unknown | null;
     timestamp?: number;
-  }[] =
-    lines.length > 0
-      ? lines.map((line) => {
-          if (line === "") {
-            return { message: null };
+  }[] = [];
+  logger.info("lines", { lines });
+  if (lines.length > 0) {
+    logs.push({ message: null });
+  } else {
+    try {
+      console.log("lines", { lines: lines.join("\n") });
+      const message = JSON.parse(lines.join("\n"));
+      console.log("message", { message });
+      logs.push(message);
+    } catch {
+      logs = lines.map((line) => {
+        if (line === "") {
+          return { message: null };
+        }
+        try {
+          const split = line.split("\t");
+          if (split.length === 4) {
+            return {
+              timestamp: new Date(split[0]).getTime(),
+              level: split[2].toLowerCase(),
+              message: split[3],
+            };
+          } else {
+            return { message: JSON.parse(line) };
           }
-          try {
-            const split = line.split("\t");
-            if (split.length === 4) {
-              return {
-                timestamp: new Date(split[0]).getTime(),
-                level: split[2].toLowerCase(),
-                message: split[3],
-              };
-            } else {
-              return { message: JSON.parse(line) };
-            }
-          } catch {
-            return { message: line };
-          }
-        })
-      : [{ message: null }];
+        } catch {
+          return { message: line };
+        }
+      });
+    }
+  }
   return logs.map((log) => ({
     ...report,
     ...log,
@@ -189,6 +202,7 @@ export default async function (
       body,
       headers: { "x-vercel-signature": signature },
     } = requestValidation.parse(req);
+    // logger.info("body", { body });
     let clusters = cache.get(webhookId);
     if (clusters.length === 0) {
       const webhook = await prisma.incomingWebhook.findUnique({
