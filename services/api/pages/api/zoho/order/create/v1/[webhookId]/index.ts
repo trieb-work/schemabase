@@ -72,7 +72,6 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     webhookId,
     body: body,
   });
-  ctx.logger.info("body", { body: JSON.stringify(req.body, null, 2) });
   const rawPayload = Object.keys(body)[0];
   ctx.logger.info("rawPayload", {
     rawPayload,
