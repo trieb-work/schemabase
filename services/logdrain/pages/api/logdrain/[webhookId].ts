@@ -300,6 +300,7 @@ export default async function (
             },
           ]);
         });
+      console.log(JSON.stringify(bulkBody));
       if (bulkBody.length !== 0) {
         await elastic.bulk({
           body: bulkBody,
