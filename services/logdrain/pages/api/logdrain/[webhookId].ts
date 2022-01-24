@@ -177,7 +177,6 @@ export default async function (
       headers: { "x-vercel-signature": signature },
     } = requestValidation.parse(req);
 
-    console.log({ entrypoints: body.map((b) => b.entrypoint) });
     const prisma = new PrismaClient();
 
     let clusters = cache.get(webhookId);
@@ -250,7 +249,7 @@ export default async function (
         .flatMap((event) => {
           const logs = event.message ? formatLogs(event.message) : [];
 
-          return logs.map((log) => [
+          return logs.flatMap((log) => [
             {
               create: {
                 _index:
