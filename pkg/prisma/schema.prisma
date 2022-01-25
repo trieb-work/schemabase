@@ -1,0 +1,469 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+
+}
+
+model Order {
+  // internal id
+  id              String   @id
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  externalOrderId String   @unique
+
+  // The end customers emails where we send transactional emails to
+  emails   String[]
+  language Language
+  packages Package[]
+}
+
+enum PackageState {
+  // Initial state when the package is created
+  INIT
+  // The carrier has received the shipment info and is about to pick up the package.
+  INFORMATION_RECEIVED
+  // The shipment has been accepted and is in transit now.
+  IN_TRANSIT
+  // The carrier is on its way to deliver the shipment.
+  OUT_FOR_DELIVERY
+  // The carrier attemptet to deliver the shipment but failed. It ususlly leavesa notice and will try to deliver again.
+  FAILED_ATTEMPT
+  // The shipment has been delivered successfully.
+  DELIVERED
+  // The package has arrived at the nearest pickup point and is available for pickup.
+  AVAILABLE_FOR_PICKUP
+  // Held at customs, undelivered, returned to sender, or any other shipping exceptions.
+  EXCEPTION
+  // The shipment has expired as the carrier didn't return the tracking info for the lat 30 days.
+  EXPIRED
+  // The shipment is pending as the carrier didn't return the tracking info.
+  PENDING
+}
+
+enum Carrier {
+  DPD
+}
+
+model ElasticCluster {
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  endpoint String
+  username String
+  password String
+
+  // Send logs to a specific index
+  index String?
+
+
+  elasticLogDrainIntegrations ElasticLogDrainIntegration[]
+}
+
+model VercelLogDrainApp {
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+
+  configurationId String  @unique
+  installationId  String  @unique
+  projectId       String?  @unique
+  teamId          String?
+  userId          String
+
+  webhooks IncomingWebhook[]
+
+  elasticLogDrainIntegrations ElasticLogDrainIntegration[]
+}
+
+model ElasticLogDrainIntegration {
+  id               String            @id
+  // Allow the user to manually enabled or disable the integration
+  // Regardless of current subscription state.
+  enabled          Boolean           @default(true)
+  subscription     Subscription?     @relation(fields: [subscriptionId], references: [id])
+  subscriptionId   String?           @unique
+  tenant           Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId         String
+  logDrainApp      VercelLogDrainApp @relation(fields: [logDrainAppId], references: [id])
+  logDrainAppId    String            @unique
+  elasticCluster   ElasticCluster    @relation(fields: [elasticClusterId], references: [id])
+  elasticClusterId String            @unique
+
+}
+
+model Package {
+  // internal id
+  id                 String         @id
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  carrier            Carrier
+  state              PackageState
+  // tracking id from the carrier
+  trackingId         String         @unique
+  // A link to the carriers tracking page
+  carrierTrackingUrl String
+  order              Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId            String
+  events             PackageEvent[]
+}
+
+model PackageEvent {
+  id        String              @id
+  // When the event happened
+  time      DateTime
+  state     PackageState
+  // What happened
+  // eg: "The shipment has cleared customs"
+  message   String
+  package   Package             @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  packageId String
+  // `Nürnberg, Deutschland` for example
+  location  String
+  sentEmail TransactionalEmail?
+}
+
+model TransactionalEmail {
+  id             String       @id
+  time           DateTime
+  email          String
+  // Sendgrid returns a unique id for each email
+  sentEmailId    String
+  // The related package event that caused this email to be sent
+  packageEvent   PackageEvent @relation(fields: [packageEventId], references: [id])
+  packageEventId String       @unique
+}
+
+model TrackingEmailApp {
+  id                String                @id
+  tenant            Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId          String
+  sendgridTemplates SendgridTemplate[]
+  defaultLanguage   Language?
+  sender            String
+  replyTo           String
+  integration       TrackingIntegration[]
+}
+
+enum Language {
+  DE
+  EN
+}
+
+model SendgridTemplate {
+  // internal id
+  id                 String           @id
+  // A human readable name provided by the user
+  // To use internationalized emails you should prefix the name with the language code
+  name               String
+  packageState       PackageState
+  language           Language
+  // Localized subject for the email
+  subject            String
+  // The template id in sendgrid
+  templateId         String
+  trackingEmailApp   TrackingEmailApp @relation(fields: [trackingEmailAppId], references: [id], onDelete: Cascade)
+  trackingEmailAppId String
+
+  @@unique([trackingEmailAppId, language, packageState])
+}
+
+model DpdApp {
+  id          String               @id
+  name        String?
+  tenant      Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId    String               @unique
+  integration TrackingIntegration?
+  webhooks    IncomingWebhook[]
+}
+
+model ProductDataFeedApp {
+  id String @id
+
+  // Graphql endpoint of a saleor app
+  productDetailStorefrontURL String
+
+
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String @unique
+
+  webhooks    IncomingWebhook[]
+  integration ProductDataFeedIntegration?
+}
+
+model LogisticsApp {
+  id String @id
+
+  // The custom view ID use to get all current orders
+  currentOrdersCustomViewId String
+
+  // Regular orders in the next fice days custom view
+  nextFiveDaysOrdersCustomViewId String
+
+  // The custom view ID to get all current bulk orders
+  currentBulkOrdersCustomViewId String
+
+  // custom view ID to get all bulk orders for the next days
+  nextFiveDaysBulkOrdersCustomViewId String
+
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String @unique
+
+  webhooks    IncomingWebhook[]
+  integration LogisticsIntegration?
+}
+
+model ZohoApp {
+  id String @id
+
+  orgId                    String
+  clientId                 String
+  clientSecret             String
+  tenant                   Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId                 String                    @unique
+  strapiToZohoIntegrations StrapiToZohoIntegration[]
+  logisticsIntegrations    LogisticsIntegration[]
+  trackingIntegrations     TrackingIntegration[]
+
+  webhooks IncomingWebhook[]
+}
+
+// Saleor Apps are separate applications that use GraphQL to talk to a Saleor
+// server and receive webhooks with event notifications from Saleor.
+// Every tenant can have multiple saleor apps which correspond to different
+// saleor instances.
+model SaleorApp {
+
+  id String @id
+
+  // The domain of a running saleor instance.
+  // You can prefix with http:// or https:// if you want.
+  // If no protocol is specified, https:// is assumed.
+  domain String
+
+  name String
+
+  channelSlug String?
+
+  installedSaleorApp InstalledSaleorApp?
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  productDataFeedIntegration ProductDataFeedIntegration[]
+
+  @@unique([domain, channelSlug])
+}
+
+model InstalledSaleorApp {
+  // The saleor application id
+  // This is the id for the app on saleor's side and can be used in queries and
+  // mutations to identify the app.
+  id String @id
+
+  // Every SaleorApp can have multiple webhooks configured.
+  // This is not really necessary because a webhook can fire on multiple events
+  // but let's be on the safe side.
+  webhooks IncomingWebhook[]
+
+  // Unlike regular users, Saleor Apps use a bearer token. The token is
+  // assigned at App installation time and needs to be stored in a secure manner.
+  // The authorization header for Apps has the following format:
+  // Authorization: Bearer <app-token>
+  token String
+
+
+  saleorApp   SaleorApp @relation(fields: [saleorAppId], references: [id], onDelete: Cascade)
+  saleorAppId String    @unique
+}
+
+// One tenant per company
+// Every tenant can have multiple connections with every integration.
+model Tenant {
+  id String @id
+
+  // Human readable identifier
+  name String
+
+  Subscriptions Subscription[]
+
+  // App configurations
+  saleorApps                  SaleorApp[]
+  zohoApps                    ZohoApp[]
+  productdatafeedApps         ProductDataFeedApp[]
+  strapiApps                  StrapiApp[]
+  productDataFeedIntegrations ProductDataFeedIntegration[]
+  strapiToZohoIntegrations    StrapiToZohoIntegration[]
+  logisticsIntegrations       LogisticsIntegration[]
+  logisticsApps               LogisticsApp[]
+  trackingEmailApps           TrackingEmailApp[]
+  dpdApps                     DpdApp[]
+  trackingIntegrations        TrackingIntegration[]
+  ElasticLogDrainIntegration  ElasticLogDrainIntegration[]
+}
+
+// A subscription indicates a tenant has payed for one integration.
+model Subscription {
+  id String @id
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+
+  payedUntil DateTime?
+
+  productDataFeedIntegration ProductDataFeedIntegration?
+  strapiToZohoIntegration    StrapiToZohoIntegration?
+  logisticsIntegration       LogisticsIntegration?
+  trackingIntegration        TrackingIntegration?
+  ElasticLogDrainIntegration ElasticLogDrainIntegration[]
+}
+
+// ----------------------------------------------------------------------------
+// Integrations
+//
+// Every integration is a connection between application configurations and a tenant
+// ----------------------------------------------------------------------------
+
+model TrackingIntegration {
+  id                 String           @id
+  // Allow the user to manually enabled or disable the integration
+  // Regardless of current subscription state.
+  enabled            Boolean          @default(true)
+  subscription       Subscription?    @relation(fields: [subscriptionId], references: [id])
+  subscriptionId     String?          @unique
+  tenant             Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId           String
+  dpdApp             DpdApp           @relation(fields: [dpdAppId], references: [id])
+  dpdAppId           String           @unique
+  trackingEmailApp   TrackingEmailApp @relation(fields: [trackingEmailAppId], references: [id])
+  trackingEmailAppId String
+  zohoApp            ZohoApp?         @relation(fields: [zohoAppId], references: [id])
+  zohoAppId          String?
+}
+
+model ProductDataFeedIntegration {
+  id String @id
+
+  // Allow the user to manually enabled or disable the integration
+  // Regardless of current subscription state.
+  enabled Boolean @default(true)
+
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  subscriptionId String?       @unique
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  productDataFeedApp   ProductDataFeedApp @relation(fields: [productDataFeedAppId], references: [id])
+  productDataFeedAppId String             @unique
+  saleorApp            SaleorApp          @relation(fields: [saleorAppId], references: [id])
+  saleorAppId          String
+}
+
+model LogisticsIntegration {
+  id String @id
+
+  // Allow the user to manually enabled or disable the integration
+  // Regardless of current subscription state.
+  enabled Boolean @default(true)
+
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  subscriptionId String?       @unique
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id])
+  zohoAppId String
+
+  logisticsApp   LogisticsApp @relation(fields: [logisticsAppId], references: [id])
+  logisticsAppId String       @unique
+}
+
+model StrapiToZohoIntegration {
+  id         String    @id
+  payedUntil DateTime?
+  enabled    Boolean   @default(true)
+
+  // The Content type of BulkOrders
+  strapiContentType String @default("bulkorder")
+
+
+
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  subscriptionId String?       @unique
+
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId    String
+  strapiApp   StrapiApp @relation(fields: [strapiAppId], references: [id])
+  strapiAppId String    @unique
+  zohoApp     ZohoApp   @relation(fields: [zohoAppId], references: [id])
+  zohoAppId   String
+
+}
+
+// Every tenant can have multiple strapi instances
+model StrapiApp {
+  id String @id
+
+  name     String
+  webhooks IncomingWebhook[]
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+
+  integration StrapiToZohoIntegration?
+}
+
+// ----------------------------------------------------------------------------
+// Every Config/App can have multiple webhooks attached
+// ----------------------------------------------------------------------------
+
+model IncomingWebhook {
+  id        String     @id
+  // Human readable name
+  name      String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  secret    SecretKey?
+
+
+  // Webhook Connections
+  dpdApp               DpdApp?             @relation(fields: [dpdAppId], references: [id], onDelete: Cascade)
+  dpdAppId             String?
+  logisticsApp         LogisticsApp?       @relation(fields: [logisticsAppId], references: [id], onDelete: Cascade)
+  logisticsAppId       String?
+  productDataFeedApp   ProductDataFeedApp? @relation(fields: [productDataFeedAppId], references: [id], onDelete: Cascade)
+  productDataFeedAppId String?
+  zohoApp              ZohoApp?            @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId            String?
+  strapiApp            StrapiApp?          @relation(fields: [strapiAppId], references: [id], onDelete: Cascade)
+  strapiAppId          String?
+  installedSaleorApp   InstalledSaleorApp? @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String?
+  vercelLogDrainApp          VercelLogDrainApp?  @relation(fields: [vercelLogDrainAppId], references: [id], onDelete: Cascade)
+  vercelLogDrainAppId        String?
+
+}
+
+model SecretKey {
+  id String @id
+
+  // Human readable name
+  name      String?
+  secret    String
+  createdAt DateTime @default(now())
+
+
+  incomingWebhook   IncomingWebhook @relation(fields: [incomingWebhookId], references: [id], onDelete: Cascade)
+  incomingWebhookId String          @unique
+}

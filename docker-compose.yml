@@ -3,6 +3,7 @@ version: "3.9"
 services:
   # Our own database where we store tenants and config
   eci_db:
+    container_name: db.eci
     image: postgres
     ports:
       # Must be exposed on the host for prisma to migrate and seed
@@ -11,52 +12,78 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-    volumes:
-      - eci_db:/var/lib/postgresql/data
 
-  # Nextjs Serverless application to receive webhooks from various services
-  eci_webhooks:
-    image: eci_webhooks
+  # Nextjs Serverless application to receive api from various services
+  eci_api:
+    image: eci_api
     build:
       context: .
-      dockerfile: ./apps/webhooks/Dockerfile
-    container_name: webhooks.eci
+      dockerfile: ./services/api/Dockerfile
+
+    container_name: api.eci
     ports:
       - 3000:3000
     environment:
-      DATABASE_URL: postgres://postgres:postgres@eci_db:5432/postgres
-      DATABASE_URL_POOL: postgres://postgres:postgres@eci_db:5432/postgres
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
+      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL_POOL: ${DATABASE_URL_POOL}
+
+      KAFKA_BROKER_URL: ${KAFKA_BROKER_URL}
+      KAFKA_SASL_MECHANISM: ${KAFKA_SASL_MECHANISM}
+      KAFKA_USERNAME: ${KAFKA_USERNAME}
+      KAFKA_PASSWORD: ${KAFKA_PASSWORD}
       SIGNING_KEY: anything
       NODE_ENV: production
-      ECI_BASE_URL: http://webhooks.eci:3000
+      ECI_BASE_URL: http://api.eci:3000
       ECI_ENV: development
+      JWT_SIGNING_KEY: ${JWT_SIGNING_KEY}
     depends_on:
       - eci_db
-      - redis
+
+  logdrain:
+    image: logdrain
+    build:
+      context: .
+      dockerfile: ./services/logdrain/Dockerfile
+
+    container_name: logdrain.eci
+    ports:
+      - 4000:3000
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL_POOL: ${DATABASE_URL_POOL}
+
+      NODE_ENV: production
+      ECI_ENV: dev"
+
+    depends_on:
+      - eci_db
 
   eci_worker:
     image: eci_worker
+    container_name: worker.eci
 
     build:
       context: .
-      dockerfile: ./apps/worker/Dockerfile
+      dockerfile: ./services/worker/Dockerfile
       args:
         - commit_sha=development
     environment:
-      DATABASE_URL: postgres://postgres:postgres@eci_db:5432/postgres
-      DATABASE_URL_POOL: postgres://postgres:postgres@eci_db:5432/postgres
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
+      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL_POOL: ${DATABASE_URL_POOL}
+
+      KAFKA_BROKER_URL: ${KAFKA_BROKER_URL}
+      KAFKA_SASL_MECHANISM: ${KAFKA_SASL_MECHANISM}
+      KAFKA_USERNAME: ${KAFKA_USERNAME}
+      KAFKA_PASSWORD: ${KAFKA_PASSWORD}
       SIGNING_KEY: anything
       NODE_ENV: production
       ECI_ENV: development
-      ZOHO_TOKEN: ${ZOHO_TOKEN}
+      ZOHO_ZCSRF_TOKEN: ${ZOHO_ZCSRF_TOKEN}
       ZOHO_COOKIES: ${ZOHO_COOKIES}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+
     depends_on:
       - eci_db
-      - redis
 
   saleor_api:
     image: registry.gitlab.com/trieb.work/saleor:3.0.0-b.13-triebwork1
@@ -70,12 +97,11 @@ services:
       SECRET_KEY: de068091c088ad706703ed50cdec8994e596936cda803a7c0a9df98b454b4860
       STOREFRONT_URL: http://storefront.saleor.api:4000/
       DASHBOARD_URL: http://dashboard.saleor.api:9000/
-      ALLOWED_CLIENT_HOSTS: localhost,webhooks.eci
+      ALLOWED_CLIENT_HOSTS: localhost,api.eci
       ALLOWED_HOSTS: saleor.eci,localhost
       ELASTIC_APM_ENABLED: "False"
     depends_on:
       - saleor_db
-      - redis
 
   # Required by saleor
   saleor_db:
@@ -85,14 +111,3 @@ services:
       - POSTGRES_PASSWORD=saleor
     ports:
       - 15432:5432
-    volumes:
-      - saleor_db:/var/lib/postgresql
-
-  redis:
-    image: redis
-    ports:
-      - 6379:6379
-
-volumes:
-  eci_db:
-  saleor_db:

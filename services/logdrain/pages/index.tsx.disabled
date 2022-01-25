@@ -1,0 +1,20 @@
+// import { GetServerSideProps, NextPage } from "next";
+// import { useRouter } from "next/router";
+// import { env } from "@eci/pkg/env";
+
+// type NewPageProps = {
+//   authToken: string;
+// };
+// const NewPage: NextPage<NewPageProps> = ({ authToken }) => {
+//   const router = useRouter();
+
+//   const code = router.query["code"] as string;
+//   const teamId = router.query["teamId"] as string;
+//   const configurationId = router.query["configurationId"] as string;
+//   const next = router.query["next"] as string;
+
+//   return <div>Hello wrold</div>;
+// };
+
+// export default NewPage;
+
