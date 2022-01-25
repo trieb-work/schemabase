@@ -9,6 +9,9 @@ import { randomUUID } from "crypto";
 import { sha256 } from "@eci/pkg/hash";
 import { env } from "@eci/pkg/env";
 import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
+import { config } from "dotenv";
+config();
+
 const prisma = new PrismaClient();
 const dpdWebhookId = id.id("webhook");
 const zohoWebhookId = id.id("webhook");
@@ -266,18 +269,22 @@ describe("with invalid webhook", () => {
       const res = await new HttpClient().call({
         url: `http://localhost:3000/api/zoho/order/create/v1/${zohoWebhookId}`,
         method: "POST",
-        headers: {
-          "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
-        },
-        body: `JSONString: ${encodeURIComponent(JSON.stringify(payload))}`,
+        // headers: {
+        //   "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
+        // },
+        body: { JSONString: JSON.stringify(payload) },
       });
       expect(res.status).toBe(200);
+
+      await sleep(10000);
+
       const storedPackage = await prisma.package.findUnique({
         where: {
           trackingId,
         },
         include: { order: true, events: true },
       });
+
       expect(storedPackage).toBeDefined();
       expect(storedPackage!.order).toBeDefined();
       expect(storedPackage!.order.externalOrderId).toEqual(

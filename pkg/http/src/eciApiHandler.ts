@@ -72,7 +72,6 @@ export function handleWebhook<TRequest>({
     const logger: ILogger = new Logger({
       meta: {
         traceId,
-        endpoint: req.url,
       },
     });
 
