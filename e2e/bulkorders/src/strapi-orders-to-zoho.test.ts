@@ -263,14 +263,12 @@ describe("with valid webhook", () => {
         const event = await generateEvent("entry.create", 1);
         event.entry.status = "Draft";
 
-        const jobId = await triggerWebhook(webhookId, webhookSecret, event);
-        await waitForPropagation(`strapi.${event.event}`, jobId);
+        await triggerWebhook(webhookId, webhookSecret, event);
+        await waitForPropagation();
 
         const bulkOrderId = [event.entry.prefix, event.entry.id].join("-");
 
-        const salesOrders = await zoho.searchSalesOrdersWithScrolling({
-          searchString: bulkOrderId,
-        });
+        const salesOrders = await zoho.salesOrder.search(bulkOrderId);
 
         expect(salesOrders.length).toBe(0);
       }, 100_000);

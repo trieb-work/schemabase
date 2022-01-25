@@ -208,8 +208,8 @@ export class StrapiOrdersToZoho {
         orderId: rawEvent.entry.id,
       });
       for (const order of existingOrders) {
-        await this.zoho
-          .deleteSalesorder(order.salesorder_id)
+        await this.zoho.salesOrder
+          .delete([order.salesorder_id])
           .catch((err: Error) => {
             throw new Error(
               `Unable to delete order: ${order.salesorder_id}: ${err}`,
@@ -294,14 +294,11 @@ export class StrapiOrdersToZoho {
      */
     await this.zoho.salesOrder.confirm(syncedOrderIds);
     if (event.entry.status === "ReadyToFulfill") {
-      await this.zoho.salesOrder.setCustomFieldValue(
-        {
-          customFieldName: "cf_ready_to_fulfill",
-          salesOrderIds: syncedOrderIds,value:true
-
-        }
-
-      );
+      await this.zoho.salesOrder.setCustomFieldValue({
+        customFieldName: "cf_ready_to_fulfill",
+        salesOrderIds: syncedOrderIds,
+        value: true,
+      });
     }
   }
 
