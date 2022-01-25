@@ -21,6 +21,7 @@ async function main() {
     meta: {
       env: env.require("ECI_ENV"),
     },
+    enableElasticLogDrain: true,
   });
   logger.info("Starting worker");
 
