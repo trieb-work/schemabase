@@ -16,12 +16,13 @@ import {
 } from "@eci/pkg/events";
 import * as tracking from "@eci/pkg/integration-tracking";
 import { Sendgrid } from "@eci/pkg/email/src/emailSender";
+import { OrderUpdater } from "./handler/zohoOrderUpsert";
 async function main() {
   const logger = new Logger({
     meta: {
       env: env.require("ECI_ENV"),
     },
-    enableElasticLogDrain: true,
+    enableElasticLogDrain: env.get("ECI_ENV") === "production",
   });
   logger.info("Starting worker");
 
@@ -122,6 +123,27 @@ async function main() {
       onSuccess: publishSuccess(producer, Topic.NOTIFICATION_EMAIL_SENT),
       logger,
       emailTemplateSender: new Sendgrid(env.require("SENDGRID_API_KEY")),
+    }),
+  );
+
+  /**
+   * Upsert orders from zoho
+   */
+
+  const zohoOrderUpserter = await KafkaSubscriber.new<
+    EventSchemaRegistry.OrderUpdate["message"]
+  >({
+    topic: Topic.ORDER_UPDATE,
+    signer,
+    logger,
+    groupId: "zohoOrderUpserter",
+  });
+
+  zohoOrderUpserter.subscribe(
+    new OrderUpdater({
+      db: prisma,
+      onSuccess: publishSuccess(producer, Topic.ORDER_UPDATE_COMPLETE),
+      logger,
     }),
   );
 }

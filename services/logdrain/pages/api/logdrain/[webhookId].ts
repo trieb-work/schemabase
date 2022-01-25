@@ -286,7 +286,7 @@ export default async function (
                 level: log?.level,
               },
               "@timestamp": log.timestamp ?? event.timestamp,
-              trace: {
+              transaction: {
                 id: log?.requestId,
               },
               event: {

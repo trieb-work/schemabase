@@ -50,14 +50,10 @@ export class PackageEventHandler {
 
     const eventId = id.id("event");
 
-    const shouldUpdateState = isValidTransition(currentState, event.state);
-
-    this.logger.info("decition", {
-      currentState,
-      nextState: event.state,
-      shouldUpdateState,
+    this.logger.info("Updating package state", {
+      trackingId: event.trackingId,
+      state: event.state,
     });
-
     await this.db.package.update({
       where: {
         id: storedPackage.id,
