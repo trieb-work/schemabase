@@ -1,16 +1,31 @@
 import { z } from "zod";
 import { handleWebhook, Webhook } from "@eci/pkg/http";
 import {
+  EventSchemaRegistry,
+  KafkaProducer,
+  Message,
+  Signer,
+  Topic,
+} from "@eci/pkg/events";
+import {
   authorizeIntegration,
   extendContext,
   setupPrisma,
 } from "@eci/pkg/webhook-context";
+import { env } from "@eci/pkg/env";
 import { HttpError } from "@eci/pkg/errors";
-import { id } from "@eci/pkg/ids";
-import { Carrier, Language, PackageState } from "@prisma/client";
-import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
-import { generateTrackingPortalURL } from "@eci/pkg/integration-tracking";
-const payloadValidation = z.object({
+import { Carrier } from "@eci/pkg/prisma";
+
+const requestValidation = z.object({
+  query: z.object({
+    webhookId: z.string(),
+  }),
+  body: z.object({
+    JSONString: z.string(),
+  }),
+});
+
+const eventValidation = z.object({
   salesorder: z.object({
     salesorder_number: z.string(),
     customer_id: z.string(),
@@ -39,47 +54,25 @@ function parseCarrier(carrier: string): Carrier {
   throw new HttpError(400, `Only DPD is supported, received: ${carrier}`);
 }
 
-function parseLanguage(language: string): Language {
-  switch (language.toLowerCase()) {
-    case "en":
-      return Language.EN;
-    case "de":
-      return Language.DE;
-    default:
-      throw new HttpError(400, `Language not supported: ${language}`);
-  }
-}
-
-const requestValidation = z.object({
-  query: z.object({
-    webhookId: z.string(),
-  }),
-  body: z.record(z.string()),
-});
-
 const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   req,
   res,
   backgroundContext,
 }): Promise<void> => {
+  console.log("body", JSON.stringify(req.body));
   const {
     query: { webhookId },
     body,
   } = req;
 
+  const event = eventValidation.parse(JSON.parse(body.JSONString));
+
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
   ctx.logger.info("Incoming zoho webhook", {
     webhookId,
-    body: body,
+    event,
   });
-  const rawPayload = Object.keys(body)[0];
-  ctx.logger.info("rawPayload", {
-    rawPayload,
-  });
-  const payload = payloadValidation.parse(
-    JSON.parse(decodeURIComponent(rawPayload.replace(/^JSONString: /, ""))),
-  );
-  ctx.logger.info("payload", { payload });
+
   const webhook = await ctx.prisma.incomingWebhook.findUnique({
     where: {
       id: webhookId,
@@ -108,23 +101,6 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   if (!trackingIntegrations) {
     throw new HttpError(400, "Integration is not configured");
   }
-  const zohoClient = await ZohoApiClient.fromOAuth({
-    orgId: zohoApp.orgId,
-    client: {
-      id: zohoApp.clientId,
-      secret: zohoApp.clientSecret,
-    },
-  }).catch((err) => {
-    throw new Error(`Unable to authenticate with zoho: ${err}`);
-  });
-  const zoho = new Zoho(zohoClient);
-
-  const contact = await zoho.contact.retrieve(payload.salesorder.customer_id);
-  if (contact == null) {
-    throw new Error(
-      `Unable to find zoho contact: ${payload.salesorder.customer_id}`,
-    );
-  }
 
   for (const integration of trackingIntegrations) {
     /**
@@ -132,45 +108,28 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
      */
     authorizeIntegration(integration);
 
-    const order = await ctx.prisma.order.upsert({
-      where: {
-        externalOrderId: payload.salesorder.salesorder_number,
+    const kafka = await KafkaProducer.new({
+      signer: new Signer({ signingKey: env.require("SIGNING_KEY") }),
+    });
+
+    const message = new Message<EventSchemaRegistry.OrderUpdate["message"]>({
+      header: {
+        traceId: ctx.trace.id,
       },
-      update: {},
-      create: {
-        id: id.id("order"),
-        externalOrderId: payload.salesorder.salesorder_number,
-        emails: payload.salesorder.contact_person_details.map((c) => c.email),
-        language: parseLanguage(contact.language_code),
+      content: {
+        zohoAppId: zohoApp.id,
+        customerId: event.salesorder.customer_id,
+        emails: event.salesorder.contact_person_details.map((c) => c.email),
+        externalOrderId: event.salesorder.salesorder_number,
+        packages: event.salesorder.packages.map((p) => ({
+          trackingId: p.shipment_order.tracking_number,
+          carrier: parseCarrier(p.shipment_order.carrier),
+        })),
       },
     });
 
-    for (const p of payload.salesorder.packages) {
-      const carrier = parseCarrier(p.shipment_order.carrier);
-
-      await ctx.prisma.package.upsert({
-        where: {
-          trackingId: p.shipment_order.tracking_number,
-        },
-        update: {},
-        create: {
-          id: id.id("package"),
-          trackingId: p.shipment_order.tracking_number,
-          carrier,
-          state: PackageState.INIT,
-          carrierTrackingUrl: generateTrackingPortalURL(
-            carrier,
-            "DE",
-            p.shipment_order.tracking_number,
-          ),
-          order: {
-            connect: {
-              id: order.id,
-            },
-          },
-        },
-      });
-    }
+    const { messageId } = await kafka.produce(Topic.ORDER_UPDATE, message);
+    ctx.logger.info("Queued new event", { messageId });
   }
   res.json({
     status: "received",

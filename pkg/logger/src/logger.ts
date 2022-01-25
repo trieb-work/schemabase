@@ -15,7 +15,11 @@ export type LoggerConfig = {
      * Unique id for every trace.
      */
     traceId?: string;
-  } & Fields;
+    /**
+     * Environment
+     */
+    env?: string;
+  };
   enableElasticLogDrain?: boolean;
 };
 
@@ -40,16 +44,25 @@ export class Logger implements ILogger {
 
   public constructor(config?: LoggerConfig) {
     this.meta = {
-      env: env.require("ECI_ENV"),
-      commit: env.get("GIT_COMMIT_SHA", env.get("VERCEL_GIT_COMMIT_SHA")),
-      ...config?.meta,
+      service: {
+        environment: config?.meta?.env ?? env.get("ECI_ENV"),
+      },
+      package: {
+        version: env.get("GIT_COMMIT_SHA") ?? env.get("VERCEL_GIT_COMMIT_SHA"),
+      },
+      trace: {
+        id: config?.meta?.traceId,
+      },
     };
     this.logger = winston.createLogger({
       transports: [new winston.transports.Console()],
-      format: winston.format.prettyPrint({
-        colorize: true,
-        depth: 10,
-      }),
+      format:
+        env.get("VERCEL") === "1"
+          ? winston.format.json()
+          : winston.format.prettyPrint({
+              colorize: true,
+              depth: 10,
+            }),
     });
 
     if (config?.enableElasticLogDrain) {

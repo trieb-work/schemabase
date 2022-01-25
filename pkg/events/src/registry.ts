@@ -1,5 +1,5 @@
-import { PackageState } from "@prisma/client";
 import { EntryEvent } from "@eci/pkg/integration-bulkorders";
+import { Carrier, PackageState } from "@eci/pkg/prisma";
 export enum Topic {
   BULKORDER_SYNCED = "bulkorder.synced",
   STRAPI_ENTRY_CREATE = "strapi.entry.create",
@@ -7,6 +7,8 @@ export enum Topic {
   PACKAGE_UPDATE = "tracking.package.update",
   PACKAGE_STATE_TRANSITION = "tracking.package.state.transition",
   NOTIFICATION_EMAIL_SENT = "tracking.package.notification.email.sent",
+  ORDER_UPDATE = "tracking.order.update",
+  ORDER_UPDATE_COMPLETE = "tracking.order.update.complete",
 }
 
 export interface EventSchema<TTopic, TMessage> {
@@ -51,5 +53,26 @@ export namespace EventSchemaRegistry {
   export type NotificationEmailSent = EventSchema<
     Topic.NOTIFICATION_EMAIL_SENT,
     { emailIds: string[] }
+  >;
+
+  export type OrderUpdate = EventSchema<
+    Topic.ORDER_UPDATE,
+    {
+      zohoAppId: string;
+      customerId: string;
+      emails: string[];
+      externalOrderId: string;
+      packages: {
+        carrier: Carrier;
+        trackingId: string;
+      }[];
+    }
+  >;
+
+  export type OrderUpdateComplete = EventSchema<
+    Topic.ORDER_UPDATE_COMPLETE,
+    {
+      orderId: string;
+    }
   >;
 }
