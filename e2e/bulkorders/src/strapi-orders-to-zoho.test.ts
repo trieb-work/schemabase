@@ -18,7 +18,7 @@ import { generateAddress, triggerWebhook } from "./util";
 import { OrderEvent } from "@eci/pkg/integration-bulkorders";
 import { verifySyncedOrders } from "./verifySyncedOrders";
 
-config({ path: ".env.local" });
+config({ path: ".env" });
 
 /**
  * Delete contacts and orders after the test cases

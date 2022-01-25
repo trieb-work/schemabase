@@ -106,7 +106,6 @@ db-migrate:
 db-push:
 	npx prisma db push
 
-
 tsc: 
 	pnpm tsc --pretty
 
