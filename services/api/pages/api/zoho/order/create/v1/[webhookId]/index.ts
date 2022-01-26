@@ -28,13 +28,11 @@ const eventValidation = z.object({
   salesorder: z.object({
     salesorder_number: z.string(),
     customer_id: z.string(),
-    contact_person_details: z
-      .array(
-        z.object({
-          email: z.string().email(),
-        }),
-      )
-      .nonempty(),
+    contact_person_details: z.array(
+      z.object({
+        email: z.string().email(),
+      }),
+    ),
     packages: z
       .array(
         z.object({
