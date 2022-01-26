@@ -68,6 +68,14 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
+  if (!event.salesorder.packages || event.salesorder.packages.length === 0) {
+    ctx.logger.info("No packages found in order, skipping...");
+    return res.json({
+      status: "received",
+      traceId: ctx.trace.id,
+    });
+  }
+
   const webhook = await ctx.prisma.incomingWebhook.findUnique({
     where: {
       id: webhookId,
@@ -116,7 +124,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
         customerId: event.salesorder.customer_id,
         emails: event.salesorder.contact_person_details.map((c) => c.email),
         externalOrderId: event.salesorder.salesorder_number,
-        packages: (event.salesorder.packages ?? []).map((p) => ({
+        packages: event.salesorder.packages.map((p) => ({
           packageId: p.package_id,
           trackingId: p.shipment_order.tracking_number,
           carrier: p.shipment_order.carrier,
