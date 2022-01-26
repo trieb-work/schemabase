@@ -74,6 +74,7 @@ export function handleWebhook<TRequest>({
         traceId,
       },
     });
+    logger.info("Receiving webhook");
 
     const backgroundContext: Context = {
       trace: { id: traceId },
