@@ -35,15 +35,17 @@ const eventValidation = z.object({
         }),
       )
       .nonempty(),
-    packages: z.array(
-      z.object({
-        package_id: z.string(),
-        shipment_order: z.object({
-          tracking_number: z.string(),
-          carrier: z.string(),
+    packages: z
+      .array(
+        z.object({
+          package_id: z.string(),
+          shipment_order: z.object({
+            tracking_number: z.string(),
+            carrier: z.string(),
+          }),
         }),
-      }),
-    ),
+      )
+      .optional(),
   }),
 });
 
@@ -58,9 +60,21 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     body,
   } = req;
 
-  const event = eventValidation.parse(JSON.parse(body.JSONString));
+  const event = await eventValidation
+    .parseAsync(JSON.parse(body.JSONString))
+    .catch((err) => {
+      throw new HttpError(400, err.message);
+    });
 
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
+
+  if (!event.salesorder.packages || event.salesorder.packages.length === 0) {
+    ctx.logger.info("No packages found in order, skipping...");
+    return res.json({
+      status: "received",
+      traceId: ctx.trace.id,
+    });
+  }
 
   const webhook = await ctx.prisma.incomingWebhook.findUnique({
     where: {
