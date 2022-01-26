@@ -108,7 +108,7 @@ model Package {
   // tracking id from the carrier
   trackingId         String         @unique
   // A link to the carriers tracking page
-  carrierTrackingUrl String
+  carrierTrackingUrl String?
   order              Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId            String
   events             PackageEvent[]
