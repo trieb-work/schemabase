@@ -2,7 +2,7 @@ import { EventHandler, EventSchemaRegistry, OnSuccess } from "@eci/pkg/events";
 
 import { id } from "@eci/pkg/ids";
 import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
-import { PrismaClient, Language, PackageState } from "@eci/pkg/prisma";
+import { PrismaClient, Language, PackageState, Carrier } from "@eci/pkg/prisma";
 import { ILogger } from "@eci/pkg/logger";
 import { env } from "@eci/pkg/env";
 import { Context } from "@eci/pkg/context";
@@ -27,6 +27,13 @@ export class OrderUpdater
     this.db = config.db;
     this.logger = config.logger;
     this.onSuccess = config.onSuccess;
+  }
+
+  private parseCarrier(carrier: string): Carrier {
+    if (carrier.toLowerCase() === "dpd") {
+      return Carrier.DPD;
+    }
+    return Carrier.UNKNOWN;
   }
 
   private parseLanguage(language: string): Language {
@@ -94,6 +101,15 @@ export class OrderUpdater
       this.logger.info("Upserting package", {
         trackingId: p.trackingId,
       });
+
+      if (p.carrier === "" || p.trackingId === "") {
+        const packageResponse = await zoho.package.retrieve(p.packageId);
+        if (!packageResponse) {
+          throw new Error(`Unable to load package from zoho: ${p.packageId}`);
+        }
+        p.carrier = packageResponse.carrier;
+        p.trackingId = packageResponse.tracking_number;
+      }
       await this.db.package.upsert({
         where: {
           trackingId: p.trackingId,
@@ -102,10 +118,10 @@ export class OrderUpdater
         create: {
           id: id.id("package"),
           trackingId: p.trackingId,
-          carrier: p.carrier,
+          carrier: this.parseCarrier(p.carrier),
           state: PackageState.INIT,
           carrierTrackingUrl: generateTrackingPortalURL(
-            p.carrier,
+            this.parseCarrier(p.carrier),
             language,
             p.trackingId,
           ),

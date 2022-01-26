@@ -14,7 +14,6 @@ import {
 } from "@eci/pkg/webhook-context";
 import { env } from "@eci/pkg/env";
 import { HttpError } from "@eci/pkg/errors";
-import { Carrier } from "@eci/pkg/prisma";
 
 const requestValidation = z.object({
   query: z.object({
@@ -38,6 +37,7 @@ const eventValidation = z.object({
       .nonempty(),
     packages: z.array(
       z.object({
+        package_id: z.string(),
         shipment_order: z.object({
           tracking_number: z.string(),
           carrier: z.string(),
@@ -46,13 +46,6 @@ const eventValidation = z.object({
     ),
   }),
 });
-
-function parseCarrier(carrier: string): Carrier {
-  if (carrier.toLowerCase() === "dpd") {
-    return Carrier.DPD;
-  }
-  throw new HttpError(400, `Only DPD is supported, received: ${carrier}`);
-}
 
 const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   req,
@@ -122,8 +115,9 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
         emails: event.salesorder.contact_person_details.map((c) => c.email),
         externalOrderId: event.salesorder.salesorder_number,
         packages: event.salesorder.packages.map((p) => ({
+          packageId: p.package_id,
           trackingId: p.shipment_order.tracking_number,
-          carrier: parseCarrier(p.shipment_order.carrier),
+          carrier: p.shipment_order.carrier,
         })),
       },
     });
