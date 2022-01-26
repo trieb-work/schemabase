@@ -1,5 +1,5 @@
 import { EntryEvent } from "@eci/pkg/integration-bulkorders";
-import { Carrier, PackageState } from "@eci/pkg/prisma";
+import { PackageState } from "@eci/pkg/prisma";
 export enum Topic {
   BULKORDER_SYNCED = "bulkorder.synced",
   STRAPI_ENTRY_CREATE = "strapi.entry.create",
@@ -63,7 +63,8 @@ export namespace EventSchemaRegistry {
       emails: string[];
       externalOrderId: string;
       packages: {
-        carrier: Carrier;
+        packageId: string;
+        carrier: string;
         trackingId: string;
       }[];
     }

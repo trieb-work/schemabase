@@ -66,7 +66,7 @@ export class Logger implements ILogger {
     });
 
     if (config?.enableElasticLogDrain) {
-      this.debug("Enabling elastic transport");
+      this.info("Enabling elastic transport");
       // this.apm ??= APMAgent.start({ serviceName: "eci-v2" });
 
       /**

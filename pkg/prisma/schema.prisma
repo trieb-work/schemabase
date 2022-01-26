@@ -46,6 +46,7 @@ enum PackageState {
 
 enum Carrier {
   DPD
+  UNKNOWN
 }
 
 model ElasticCluster {
@@ -72,7 +73,7 @@ model VercelLogDrainApp {
 
   configurationId String  @unique
   installationId  String  @unique
-  projectId       String?  @unique
+  projectId       String? @unique
   teamId          String?
   userId          String
 
@@ -450,8 +451,8 @@ model IncomingWebhook {
   strapiAppId          String?
   installedSaleorApp   InstalledSaleorApp? @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
   installedSaleorAppId String?
-  vercelLogDrainApp          VercelLogDrainApp?  @relation(fields: [vercelLogDrainAppId], references: [id], onDelete: Cascade)
-  vercelLogDrainAppId        String?
+  vercelLogDrainApp    VercelLogDrainApp?  @relation(fields: [vercelLogDrainAppId], references: [id], onDelete: Cascade)
+  vercelLogDrainAppId  String?
 
 }
 

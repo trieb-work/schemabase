@@ -9,6 +9,7 @@ export function generateTrackingPortalURL(
   const languageCode = `${language.toLowerCase()}_${language.toUpperCase()}`;
   const trackingUrls: Record<Carrier, string> = {
     DPD: `https://tracking.dpd.de/status/${languageCode}/parcel/${trackingId}`,
+    UNKNOWN: "",
   };
   return trackingUrls[carrier];
 }
