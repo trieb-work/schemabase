@@ -126,6 +126,15 @@ export class OrderUpdater
           trackingId: p.trackingId,
           carrier: carrier ?? Carrier.UNKNOWN,
           state: PackageState.INIT,
+          events: {
+            create: [
+              {
+                id: id.id("event"),
+                state: PackageState.INIT,
+                time: new Date(),
+              },
+            ],
+          },
           carrierTrackingUrl: carrier
             ? generateTrackingPortalURL(carrier, language, p.trackingId)
             : undefined,
