@@ -54,7 +54,6 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   res,
   backgroundContext,
 }): Promise<void> => {
-  console.log("body", JSON.stringify(req.body));
   const {
     query: { webhookId },
     body,
