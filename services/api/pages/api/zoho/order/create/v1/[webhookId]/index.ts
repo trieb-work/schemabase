@@ -61,10 +61,6 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   const event = eventValidation.parse(JSON.parse(body.JSONString));
 
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
-  ctx.logger.info("Incoming zoho webhook", {
-    webhookId,
-    event,
-  });
 
   const webhook = await ctx.prisma.incomingWebhook.findUnique({
     where: {
