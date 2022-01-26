@@ -108,6 +108,7 @@ export class CustomerNotifier
               newState: packageEvent.state,
               message: packageEvent.message,
               location: packageEvent.location,
+              trackingId: packageEvent.package.trackingId,
             },
           );
 
