@@ -29,21 +29,24 @@ export class OrderUpdater
     this.onSuccess = config.onSuccess;
   }
 
-  private parseCarrier(carrier: string): Carrier {
-    if (carrier.toLowerCase() === "dpd") {
-      return Carrier.DPD;
+  private parseCarrier(carrier: string): Carrier | null {
+    switch (carrier.toLowerCase()) {
+      case "dpd":
+        return Carrier.DPD;
+
+      default:
+        return null;
     }
-    return Carrier.UNKNOWN;
   }
 
-  private parseLanguage(language: string): Language {
+  private parseLanguage(language: string): Language | null {
     switch (language.toLowerCase()) {
       case "en":
         return Language.EN;
       case "de":
         return Language.DE;
       default:
-        throw new Error(`Language not supported: ${language}`);
+        return null;
     }
   }
 
@@ -80,7 +83,7 @@ export class OrderUpdater
       throw new Error(`Unable to find zoho contact: ${message.customerId}`);
     }
 
-    const language = this.parseLanguage(contact.language_code);
+    const language = this.parseLanguage(contact.language_code) ?? Language.DE;
     this.logger.info("Upserting order", {
       externalOrderId: message.externalOrderId,
     });
@@ -110,6 +113,7 @@ export class OrderUpdater
         p.carrier = packageResponse.carrier;
         p.trackingId = packageResponse.tracking_number;
       }
+      const carrier = this.parseCarrier(p.carrier);
       await this.db.package.upsert({
         where: {
           trackingId: p.trackingId,
@@ -118,13 +122,11 @@ export class OrderUpdater
         create: {
           id: id.id("package"),
           trackingId: p.trackingId,
-          carrier: this.parseCarrier(p.carrier),
+          carrier: carrier ?? Carrier.UNKNOWN,
           state: PackageState.INIT,
-          carrierTrackingUrl: generateTrackingPortalURL(
-            this.parseCarrier(p.carrier),
-            language,
-            p.trackingId,
-          ),
+          carrierTrackingUrl: carrier
+            ? generateTrackingPortalURL(carrier, language, p.trackingId)
+            : undefined,
           order: {
             connect: {
               id: order.id,
