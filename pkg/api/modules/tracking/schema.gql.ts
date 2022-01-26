@@ -55,9 +55,9 @@ export default gql`
     # Unix timestamp in seconds
     time: Int!
     state: PackageState!
-    message: String!
+    message: String
     package: Package!
-    location: String!
+    location: String
     sentEmail: TransactionalEmail
   }
   type TransactionalEmail {

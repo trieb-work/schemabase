@@ -60,8 +60,8 @@ export type Package = {
 export type PackageEvent = {
   __typename?: "PackageEvent";
   id: Scalars["ID"];
-  location: Scalars["String"];
-  message: Scalars["String"];
+  location?: Maybe<Scalars["String"]>;
+  message?: Maybe<Scalars["String"]>;
   package: Package;
   sentEmail?: Maybe<TransactionalEmail>;
   state: PackageState;
@@ -287,8 +287,8 @@ export type PackageEventResolvers<
   ParentType extends ResolversParentTypes["PackageEvent"] = ResolversParentTypes["PackageEvent"],
 > = ResolversObject<{
   id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
-  location?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
-  message?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  location?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>;
+  message?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>;
   package?: Resolver<ResolversTypes["Package"], ParentType, ContextType>;
   sentEmail?: Resolver<
     Maybe<ResolversTypes["TransactionalEmail"]>,
