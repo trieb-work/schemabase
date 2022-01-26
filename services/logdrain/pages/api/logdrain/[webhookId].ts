@@ -287,7 +287,7 @@ export default async function (
               },
               "@timestamp": log.timestamp ?? event.timestamp,
               transaction: {
-                id: log?.requestId,
+                id: event.requestId,
               },
               event: {
                 duration: log.duration,
