@@ -35,15 +35,17 @@ const eventValidation = z.object({
         }),
       )
       .nonempty(),
-    packages: z.array(
-      z.object({
-        package_id: z.string(),
-        shipment_order: z.object({
-          tracking_number: z.string(),
-          carrier: z.string(),
+    packages: z
+      .array(
+        z.object({
+          package_id: z.string(),
+          shipment_order: z.object({
+            tracking_number: z.string(),
+            carrier: z.string(),
+          }),
         }),
-      }),
-    ),
+      )
+      .optional(),
   }),
 });
 
@@ -58,7 +60,11 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     body,
   } = req;
 
-  const event = eventValidation.parse(JSON.parse(body.JSONString));
+  const event = await eventValidation
+    .parseAsync(JSON.parse(body.JSONString))
+    .catch((err) => {
+      throw new HttpError(400, err.message);
+    });
 
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
@@ -110,7 +116,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
         customerId: event.salesorder.customer_id,
         emails: event.salesorder.contact_person_details.map((c) => c.email),
         externalOrderId: event.salesorder.salesorder_number,
-        packages: event.salesorder.packages.map((p) => ({
+        packages: (event.salesorder.packages ?? []).map((p) => ({
           packageId: p.package_id,
           trackingId: p.shipment_order.tracking_number,
           carrier: p.shipment_order.carrier,
