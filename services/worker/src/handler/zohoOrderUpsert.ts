@@ -87,6 +87,8 @@ export class OrderUpdater
     this.logger.info("Upserting order", {
       externalOrderId: message.externalOrderId,
     });
+
+    const emails = message.emails.length > 0 ? message.emails : [contact.email];
     const order = await this.db.order.upsert({
       where: {
         externalOrderId: message.externalOrderId,
@@ -95,7 +97,7 @@ export class OrderUpdater
       create: {
         id: id.id("order"),
         externalOrderId: message.externalOrderId,
-        emails: message.emails,
+        emails,
         language,
       },
     });
