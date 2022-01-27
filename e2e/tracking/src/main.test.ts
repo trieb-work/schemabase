@@ -8,15 +8,16 @@ import { afterAll, beforeAll, describe, expect, it } from "@jest/globals";
 import { randomUUID } from "crypto";
 import { sha256 } from "@eci/pkg/hash";
 import { env } from "@eci/pkg/env";
-import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
+import { SalesOrder, Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
 import { config } from "dotenv";
-config();
+config({ path: ".env" });
 
 const prisma = new PrismaClient();
 const dpdWebhookId = id.id("webhook");
 const zohoWebhookId = id.id("webhook");
 const zohoWebhookSecret = id.id("webhookSecret");
 let customerId: string;
+let salesorder: SalesOrder;
 let zoho: Zoho;
 
 const sleep = async (ms: number) =>
@@ -42,10 +43,19 @@ beforeAll(async () => {
 
   const customer = await zoho.contact.create({
     contact_name: id.id("test"),
-    language_code: "en",
   });
   customerId = customer.contact_id;
 
+  salesorder = await zoho.salesOrder.create({
+    salesorder_number: id.id("test"),
+    customer_id: customer.contact_id,
+    line_items: [
+      {
+        item_id: "116240000000112128",
+        quantity: 1,
+      },
+    ],
+  });
   const tenant = await prisma.tenant.create({
     data: {
       id: id.id("test"),
@@ -77,20 +87,27 @@ beforeAll(async () => {
     },
   });
   for (const state of Object.values(PackageState)) {
-    await prisma.sendgridTemplate.create({
-      data: {
-        id: id.id("test"),
-        name: id.id("test"),
-        templateId: "d-22ba8412d0c149108bdd8f1b4fd3b8b0",
-        language: Language.EN,
-        packageState: state,
-        subject: "Hello from jest",
-        trackingEmailApp: {
-          connect: {
-            id: trackingApp.id,
-          },
+    await prisma.sendgridTemplate.createMany({
+      data: [
+        {
+          id: id.id("test"),
+          name: id.id("test"),
+          templateId: "d-b06a4b4e78cc47cba807aa975f82e095",
+          language: Language.EN,
+          packageState: state,
+          subject: "Hello from jest",
+          trackingEmailAppId: trackingApp.id,
         },
-      },
+        {
+          id: id.id("test"),
+          name: id.id("test"),
+          templateId: "d-8845f68c32d343628bb94a440f2cf40c",
+          language: Language.DE,
+          packageState: state,
+          subject: "Hello from jest",
+          trackingEmailAppId: trackingApp.id,
+        },
+      ],
     });
   }
 
@@ -156,6 +173,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await prisma.$disconnect();
+  await zoho.salesOrder.delete([salesorder.salesorder_id]);
   await zoho.contact.delete(customerId);
 }, 100_000);
 
@@ -233,7 +251,7 @@ describe("with invalid webhook", () => {
           include: { events: { include: { sentEmail: true } } },
         });
 
-        expect(storedPackage).toBeDefined();
+        expect(storedPackage).not.toBeNull();
         expect(storedPackage!.events.length).toBe(1);
         expect(storedPackage!.events[0].state).toEqual(
           PackageState.FAILED_ATTEMPT,
@@ -248,7 +266,8 @@ describe("with invalid webhook", () => {
       const trackingId = randomUUID();
       const payload = {
         salesorder: {
-          salesorder_number: randomUUID(),
+          salesorder_id: salesorder.salesorder_id,
+          salesorder_number: salesorder.salesorder_number,
           customer_id: customerId,
           contact_person_details: [
             {
@@ -257,6 +276,7 @@ describe("with invalid webhook", () => {
           ],
           packages: [
             {
+              package_id: randomUUID(),
               shipment_order: {
                 tracking_number: trackingId,
                 carrier: "DPD",
@@ -285,8 +305,8 @@ describe("with invalid webhook", () => {
         include: { order: true, events: true },
       });
 
-      expect(storedPackage).toBeDefined();
-      expect(storedPackage!.order).toBeDefined();
+      expect(storedPackage).not.toBeNull();
+      expect(storedPackage!.order).not.toBeNull();
       expect(storedPackage!.order.externalOrderId).toEqual(
         payload.salesorder.salesorder_number,
       );
@@ -294,7 +314,7 @@ describe("with invalid webhook", () => {
         payload.salesorder.contact_person_details.map((c) => c.email),
       );
       expect(storedPackage!.order.language).toBe(Language.EN);
-      expect(storedPackage!.events.length).toBe(0);
+      expect(storedPackage!.events.length).toBe(1);
       expect(storedPackage!.state).toEqual(PackageState.INIT);
     });
   });
@@ -350,7 +370,7 @@ describe("with invalid webhook", () => {
         include: { events: { include: { sentEmail: true } } },
       });
 
-      expect(storedPackage).toBeDefined();
+      expect(storedPackage).not.toBeNull();
       expect(storedPackage!.events.length).toBe(3);
       expect(storedPackage!.state).toEqual(PackageState.DELIVERED);
 
@@ -409,13 +429,13 @@ describe("with invalid webhook", () => {
         include: { events: { include: { sentEmail: true } } },
       });
 
-      expect(storedPackage).toBeDefined();
+      expect(storedPackage).not.toBeNull();
       expect(storedPackage!.events.length).toBe(3);
       const events = storedPackage!.events.sort(
         (a, b) => a.time.getTime() - b.time.getTime(),
       );
-      expect(events[0].sentEmail).toBeDefined();
-      expect(events[1].sentEmail).toBeDefined();
+      expect(events[0].sentEmail).not.toBeNull();
+      expect(events[1].sentEmail).not.toBeNull();
       expect(events[2].sentEmail).toBeNull();
       expect(storedPackage!.state).toEqual(PackageState.DELIVERED);
     });

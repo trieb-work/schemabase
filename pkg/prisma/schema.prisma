@@ -145,7 +145,7 @@ model TrackingEmailApp {
   tenant            Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId          String
   sendgridTemplates SendgridTemplate[]
-  defaultLanguage   Language?
+  defaultLanguage   Language
   sender            String
   replyTo           String
   integration       TrackingIntegration[]
@@ -162,7 +162,7 @@ model SendgridTemplate {
   // A human readable name provided by the user
   // To use internationalized emails you should prefix the name with the language code
   name               String
-  packageState       PackageState
+  packageState       PackageState?
   language           Language
   // Localized subject for the email
   subject            String

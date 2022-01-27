@@ -1,6 +1,5 @@
 import { Carrier, Language } from "@eci/pkg/prisma";
 
-export type CountryCode = "DE";
 export function generateTrackingPortalURL(
   carrier: Carrier,
   language: Language,

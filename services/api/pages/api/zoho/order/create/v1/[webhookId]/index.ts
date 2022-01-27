@@ -26,6 +26,7 @@ const requestValidation = z.object({
 
 const eventValidation = z.object({
   salesorder: z.object({
+    salesorder_id: z.string(),
     salesorder_number: z.string(),
     customer_id: z.string(),
     contact_person_details: z.array(
@@ -83,6 +84,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
           trackingIntegrations: {
             include: {
               subscription: true,
+              trackingEmailApp: true,
             },
           },
         },
@@ -118,9 +120,10 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
       },
       content: {
         zohoAppId: zohoApp.id,
-        customerId: event.salesorder.customer_id,
+        salesorderId: event.salesorder.salesorder_id,
         emails: event.salesorder.contact_person_details.map((c) => c.email),
         externalOrderId: event.salesorder.salesorder_number,
+        defaultLanguage: integration.trackingEmailApp.defaultLanguage,
         packages: event.salesorder.packages.map((p) => ({
           packageId: p.package_id,
           trackingId: p.shipment_order.tracking_number,

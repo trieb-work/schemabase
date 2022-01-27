@@ -289,8 +289,11 @@ export default async function (
               transaction: {
                 id: event.requestId,
               },
-              event: {
+              metrics: {
                 duration: log.duration,
+                billedDuration: log.billedDuration,
+                memorySize: log.memorySize,
+                maxMemoryUsed: log.maxMemoryUsed,
               },
               cloud: {
                 instance: {

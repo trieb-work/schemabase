@@ -86,15 +86,11 @@ export class CustomerNotifier
       if (templates.length === 0) {
         throw new Error(`No matching template found for event: ${event}`);
       }
-      const template =
-        templates.find(
-          (t) => t.language === packageEvent.package.order.language,
-        ) ??
-        templates.find(
-          (t) => t.language === integration.trackingEmailApp.defaultLanguage,
-        );
+      const template = templates.find(
+        (t) => t.language === packageEvent.package.order.language,
+      );
 
-      if (template == null) {
+      if (!template) {
         throw new Error("No matching language for this template found");
       }
 
@@ -104,7 +100,9 @@ export class CustomerNotifier
             template.templateId,
             "test@trieb.work",
             {
-              time: packageEvent.time.toString(),
+              time: packageEvent.time.toLocaleString(
+                packageEvent.package.order.language,
+              ),
               newState: packageEvent.state,
               message: packageEvent.message,
               location: packageEvent.location,
