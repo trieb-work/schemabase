@@ -1,4 +1,5 @@
 import { HttpClient } from "@eci/pkg/http";
+import { ILogger } from "@eci/pkg/logger";
 
 export interface EmailTemplateSender {
   sendTemplate: (
@@ -10,9 +11,12 @@ export interface EmailTemplateSender {
 export class Sendgrid implements EmailTemplateSender {
   private readonly client: HttpClient;
 
-  constructor(apiKey: string) {
+  private logger: ILogger;
+
+  constructor(apiKey: string, config: { logger: ILogger }) {
     this.client = new HttpClient();
     this.client.setHeader("Authorization", `Bearer ${apiKey}`);
+    this.logger = config.logger;
   }
 
   public async sendTemplate(
@@ -38,9 +42,15 @@ export class Sendgrid implements EmailTemplateSender {
       }),
     });
     if (!res.ok) {
-      throw new Error(`Unable to send email: ${res.status}: ${res.data}`);
+      throw new Error(
+        `Unable to send email: ${res.status}: ${JSON.stringify(res.data)}`,
+      );
     }
     const messageId = res.headers["x-message-id"] ?? "";
+    this.logger.info("Sent email", {
+      messageId,
+      templateId,
+    });
     return { id: messageId.toString() };
   }
 }

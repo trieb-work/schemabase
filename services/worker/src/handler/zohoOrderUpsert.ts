@@ -7,6 +7,7 @@ import { ILogger } from "@eci/pkg/logger";
 import { env } from "@eci/pkg/env";
 import { Context } from "@eci/pkg/context";
 import { generateTrackingPortalURL } from "@eci/pkg/integration-tracking";
+import { CustomFieldLabel } from "@eci/pkg/zoho-custom-fields/src/registry";
 
 export class OrderUpdater
   implements EventHandler<EventSchemaRegistry.OrderUpdate["message"]>
@@ -16,13 +17,13 @@ export class OrderUpdater
   private readonly logger: ILogger;
 
   private readonly onSuccess: OnSuccess<
-    EventSchemaRegistry.BulkorderSynced["message"]
+    EventSchemaRegistry.OrderUpdateComplete["message"]
   >;
 
   constructor(config: {
     db: PrismaClient;
     logger: ILogger;
-    onSuccess: OnSuccess<EventSchemaRegistry.BulkorderSynced["message"]>;
+    onSuccess: OnSuccess<EventSchemaRegistry.OrderUpdateComplete["message"]>;
   }) {
     this.db = config.db;
     this.logger = config.logger;
@@ -39,7 +40,10 @@ export class OrderUpdater
     }
   }
 
-  private parseLanguage(language: string): Language | null {
+  public parseLanguage(language: string | undefined): Language | null {
+    if (!language) {
+      return null;
+    }
     switch (language.toLowerCase()) {
       case "en":
         return Language.EN;
@@ -78,27 +82,37 @@ export class OrderUpdater
           }),
     );
 
-    const contact = await zoho.contact.retrieve(message.customerId);
-    if (contact == null) {
-      throw new Error(`Unable to find zoho contact: ${message.customerId}`);
+    const salesorders = await zoho.salesOrder.search(message.externalOrderId);
+    if (salesorders.length === 0) {
+      throw new Error(
+        `Unable to find zoho salesorder: ${message.salesorderId}`,
+      );
     }
+    const salesorder = salesorders[0];
 
-    const language = this.parseLanguage(contact.language_code) ?? Language.DE;
+    const language = this.parseLanguage(
+      salesorder.custom_fields?.find(
+        (field) => field.label === CustomFieldLabel.PREFERRED_LANGUAGE,
+      )?.value as string | undefined,
+    );
+
     this.logger.info("Upserting order", {
       externalOrderId: message.externalOrderId,
     });
 
-    const emails = message.emails.length > 0 ? message.emails : [contact.email];
     const order = await this.db.order.upsert({
       where: {
         externalOrderId: message.externalOrderId,
       },
-      update: {},
+      update: {
+        emails: message.emails,
+        language: language ?? undefined,
+      },
       create: {
         id: id.id("order"),
         externalOrderId: message.externalOrderId,
-        emails,
-        language,
+        emails: message.emails,
+        language: language ?? message.defaultLanguage,
       },
     });
 
@@ -136,7 +150,11 @@ export class OrderUpdater
             ],
           },
           carrierTrackingUrl: carrier
-            ? generateTrackingPortalURL(carrier, language, p.trackingId)
+            ? generateTrackingPortalURL(
+                carrier,
+                language ?? message.defaultLanguage,
+                p.trackingId,
+              )
             : undefined,
           order: {
             connect: {

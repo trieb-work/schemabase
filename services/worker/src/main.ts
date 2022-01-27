@@ -122,7 +122,9 @@ async function main() {
       db: prisma,
       onSuccess: publishSuccess(producer, Topic.NOTIFICATION_EMAIL_SENT),
       logger,
-      emailTemplateSender: new Sendgrid(env.require("SENDGRID_API_KEY")),
+      emailTemplateSender: new Sendgrid(env.require("SENDGRID_API_KEY"), {
+        logger,
+      }),
     }),
   );
 
