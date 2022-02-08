@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: eci-logdrain
+      tier: backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: eci-logdrain
+        tier: backend
+    spec:
+      {{- if .Values.imagePullSecret }}
+      imagePullSecrets: 
+        - name: {{ .Values.imagePullSecret }}
+      {{- end }}
+      containers:
+        - name: eci-logdrain
+          imagePullPolicy: IfNotPresent
+          image: "{{ .Values.image.imageName }}"
+          env:
+            - name: ECI_ENV
+              value: "{{ .Values.eciEnv }}"
+          envFrom:
+            - secretRef:
+                name: eci-logdrain-secrets
+          resources:
+            requests:
+              cpu: 50m
+              memory: 180Mi
+            limits:
+              cpu: 100m
+              memory: 250Mi
+w

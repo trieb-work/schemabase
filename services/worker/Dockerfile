@@ -15,7 +15,6 @@ COPY . .
 RUN make build-worker
 
 RUN pnpm prisma generate
-CMD ["ls", "-al", "node_modules"]
 
 
 WORKDIR /eci/services/worker/dist
