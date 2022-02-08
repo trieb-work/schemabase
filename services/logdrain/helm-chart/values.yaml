@@ -1,0 +1,21 @@
+# The Environment, where the Worker should register to
+eciEnv: development
+
+image:
+  imageName: ghcr.io/trieb-work/eci/logdrain
+
+databaseUrl: postgres://
+databaseUrlPool: postgres://
+
+
+imagePullSecret: regreced
+
+redis:
+  host: redis.test.de
+  port: 3456
+  password: 24ß5f-2345f-245
+
+elasticsearch:
+  host: elastic.test.com
+  username: elastic
+  password: elastic
