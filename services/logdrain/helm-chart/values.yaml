@@ -19,3 +19,19 @@ elasticsearch:
   host: elastic.test.com
   username: elastic
   password: elastic
+
+service:
+  type: ClusterIP
+  port: 4000
+  
+ingress:
+  enabled: true
+  host: ""
+  className: ""
+  pathType: ImplementationSpecific  
+  annotations:
+    cert-manager.io/acme-challenge-type: http01
+    cert-manager.io/cluster-issuer: letsencrypt-prod    
+
+  tls:
+    enabled: true

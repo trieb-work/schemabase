@@ -49,3 +49,6 @@ dist/
 
 coverage/
 .vercel
+
+yarn-error.log
+.nx
