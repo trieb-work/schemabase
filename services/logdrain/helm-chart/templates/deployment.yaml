@@ -5,14 +5,12 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: eci-logdrain
-      tier: backend
+     {{- include "logdrain-helm.selectorLabels" . | nindent 6 }}
   replicas: 1
   template:
     metadata:
       labels:
-        app: eci-logdrain
-        tier: backend
+        {{- include "logdrain-helm.selectorLabels" . | nindent 8 }}
     spec:
       {{- if .Values.imagePullSecret }}
       imagePullSecrets: 
@@ -22,6 +20,10 @@ spec:
         - name: eci-logdrain
           imagePullPolicy: IfNotPresent
           image: "{{ .Values.image.imageName }}"
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
           env:
             - name: ECI_ENV
               value: "{{ .Values.eciEnv }}"
