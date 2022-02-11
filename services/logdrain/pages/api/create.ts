@@ -112,14 +112,13 @@ export default async function (
         },
       },
     });
-    const host = req.headers.host ?? "logdrain-triebwork.vercel.app";
 
     await createLogDrain({
       token,
       teamId: vercel.teamId,
       name: "elastic",
       type: "json",
-      url: `https://${host}/api/logdrain/${webhook.id}`,
+      url: `https://eci-logdrain.triebwork.com/api/${webhook.id}`,
       secret,
     }).catch((err) => {
       console.error("Unable to create logdrain", err);
