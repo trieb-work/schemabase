@@ -23,7 +23,7 @@ RUN pnpm prune --prod
 RUN curl -sf https://gobinaries.com/tj/node-prune | sh
 RUN /usr/local/bin/node-prune
 
-FROM node:14-alpine AS runner
+FROM node:14 AS runner
 WORKDIR /eci
 
 ENV NODE_ENV production
