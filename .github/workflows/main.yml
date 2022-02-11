@@ -172,5 +172,8 @@ jobs:
           --set=elasticsearch.host="${{ secrets.ELASTIC_LOGGING_SERVER }}"
           --set=elasticsearch.username="${{ secrets.ELASTIC_LOGGING_USERNAME }}"
           --set=elasticsearch.password="${{ secrets.ELASTIC_LOGGING_PASSWORD }}"
+          --set=logdrain.client.id="${{ secrets.LOGDRAIN_CLIENT_ID }}"
+          --set=logdrain.client.secret="${{ secrets.LOGDRAIN_CLIENT_SECRET }}"
+          --set=logdrain.redirectUri="${{ secrets.LOGDRAIN_REDIRECT_URI }}"
           --set=ingress.host="${{ secrets.LOGDRAIN_HOST }}"
           

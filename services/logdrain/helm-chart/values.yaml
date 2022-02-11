@@ -20,6 +20,12 @@ elasticsearch:
   username: elastic
   password: elastic
 
+logdrain:
+  client:
+    id: abc
+    secret: abc
+  redirectUri: abc
+
 service:
   type: ClusterIP
   port: 3000
