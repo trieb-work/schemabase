@@ -1,8 +1,6 @@
 import { z } from "zod";
 import { authorizeIntegration } from "@eci/pkg/webhook-context";
 import { ElasticCluster, PrismaClient } from "@eci/pkg/prisma";
-import { env } from "@eci/pkg/env";
-// import grok from "node-grok-v2";
 import { NextApiRequest, NextApiResponse } from "next";
 import { Client as ElasticClient } from "@elastic/elasticsearch";
 import { HttpError } from "@eci/pkg/errors";
@@ -260,13 +258,8 @@ export default async function (
         },
       });
 
-      /**
-       * Logging my own messages causes an infinite loop of nested messages.
-       */
-      const vercelUrl = env.require("VERCEL_URL");
-
       const bulkBody = body
-        .filter((event) => event.host !== vercelUrl && event.source !== "build")
+        .filter((event) => event.source !== "build")
         .flatMap((event) => {
           const logs = event.message ? formatLogs(event.message) : [];
 
