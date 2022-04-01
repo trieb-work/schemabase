@@ -142,8 +142,7 @@ jobs:
       max-parallel: 1
       matrix:
         saleor: [
-            "registry.gitlab.com/trieb.work/saleor:3.0.0-b.13-triebwork1", #v3 custom
-            "ghcr.io/saleor/saleor:3.0.0-b.27",
+            "ghcr.io/saleor/saleor:3.0.4",
           ]
 
     steps:
