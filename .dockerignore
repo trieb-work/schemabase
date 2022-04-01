@@ -3,3 +3,8 @@ Dockerfile
 dist
 helm-chart
 node_modules
+.next
+.nx
+.github
+.husky
+.vscode
