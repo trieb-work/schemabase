@@ -85,7 +85,7 @@ services:
       - eci_db
 
   saleor_api:
-    image: registry.gitlab.com/trieb.work/saleor:3.0.0-b.13-triebwork1
+    image: ghcr.io/saleor/saleor:3.0.4
     container_name: saleor.eci
     ports:
       - 8000:8000
@@ -104,9 +104,14 @@ services:
 
   # Required by saleor
   saleor_db:
-    image: postgres
+    image: postgres:13
+    volumes:
+      - saleor_db_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=saleor
       - POSTGRES_PASSWORD=saleor
     ports:
       - 15432:5432
+
+volumes:
+  saleor_db_data:
