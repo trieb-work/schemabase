@@ -31,5 +31,6 @@ Thumbs.db
 
 dist/
 .next/
+.nx
 
 .github/workflows/*.yml
