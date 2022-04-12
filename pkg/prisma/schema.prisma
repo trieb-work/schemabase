@@ -2,6 +2,9 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+generator dbml {
+  provider = "prisma-dbml-generator"
+}
 
 generator client {
   provider = "prisma-client-js"
@@ -14,6 +17,9 @@ model Order {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   externalOrderId String   @unique
+  // tenant relation
+  // zohoOrderId String? @unique
+  // saleorOrderId String? @unique
 
   // The end customers emails where we send transactional emails to
   emails   String[]
@@ -244,6 +250,7 @@ model SaleorApp {
 
   id String @id
 
+
   // The domain of a running saleor instance.
   // You can prefix with http:// or https:// if you want.
   // If no protocol is specified, https:// is assumed.
@@ -430,7 +437,7 @@ model StrapiApp {
 // ----------------------------------------------------------------------------
 
 model IncomingWebhook {
-  id        String     @id
+  id        String     @id 
   // Human readable name
   name      String?
   createdAt DateTime   @default(now())
