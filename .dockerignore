@@ -3,3 +3,4 @@ Dockerfile
 dist
 helm-chart
 node_modules
+.vscode
