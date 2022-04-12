@@ -188,8 +188,9 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
           this.logger.error("Unable to process message", {
             err: err,
           });
-
-          payload.message.headers ??= {};
+          if (!payload.message.headers) {
+            payload.message.headers = {};
+          }
           payload.message.headers.error = err.message;
           await this.errorProducer.send({
             topic: "UNHANDLED_EXCEPTION",

@@ -18,7 +18,7 @@ RUN pnpm prisma generate
 
 
 WORKDIR /eci/services/worker/dist
-RUN cp /eci/node_modules/.prisma/client/* .
+RUN cp /eci/node_modules/.pnpm/@prisma+client@*_prisma@*/node_modules/.prisma/client/* .
 
 
  FROM node:lts

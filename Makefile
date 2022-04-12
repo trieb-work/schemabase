@@ -3,6 +3,25 @@ export COMPOSE_DOCKER_CLI_BUILD=1
 export COMPOSE_DOCKER_BUILDKIT=1
 
 
+install: NODE_ENV=development
+install:
+	pnpm install
+
+db-migrate:
+	npx prisma migrate dev
+
+db-push:
+	npx prisma db push
+
+
+tsc: 
+	pnpm tsc --pretty
+
+fmt:
+	pnpm eslint --ext .js,.ts,.tsx --fix .
+	pnpm prettier --write .
+check: build tsc fmt
+
 down:
 	docker-compose down --remove-orphans --volumes
 
@@ -12,7 +31,7 @@ destroy: down
 # Pull development environment variables from vercel
 # Copy over database connections for prisma
 pull-env:
-	npx vercel env pull && mv .env .env.local
+	npx vercel env pull
 
 migrate-saleor:
 	docker-compose exec -T saleor_api python manage.py migrate
@@ -95,22 +114,3 @@ build-api-prod: build
 
 build-logdrain-prod: build
 	pnpm next build ./services/logdrain
-
-install: NODE_ENV=development
-install:
-	pnpm install
-
-db-migrate:
-	npx prisma migrate dev
-
-db-push:
-	npx prisma db push
-
-
-tsc: 
-	pnpm tsc --pretty
-
-fmt:
-	pnpm eslint --ext .js,.ts,.tsx --fix .
-	pnpm prettier --write .
-check: build tsc fmt
