@@ -47,7 +47,11 @@ export const orderValidation = z.object({
 });
 
 export type OrderEvent = EntryEvent & z.infer<typeof orderValidation>;
-
+/**
+ * TODO: kurze allgemeine beschreibung des services
+ * hinweis darauf das es die alte art und weiße ist so einen async handler zu schreiben
+ * wer triggert das ganze? -> async event durch webhook?
+ */
 export class StrapiOrdersToZoho {
   private readonly zoho: Zoho;
 

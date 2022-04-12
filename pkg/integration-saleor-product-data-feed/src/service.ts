@@ -27,9 +27,10 @@ export interface ProductDataFeedServiceConfig {
 }
 
 /**
+ * TODO:
  * Generate product data as .csv
+ * -> scheint synchron zu sein? -> wer triggert das ganze? -> was kommt raus? nur das CSV?
  */
-
 export class ProductDataFeedGenerator implements ProductDataFeedService {
   public readonly saleorClient: {
     products: (variables: {

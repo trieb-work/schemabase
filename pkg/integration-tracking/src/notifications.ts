@@ -13,7 +13,12 @@ export interface CustomerNotifierConfig {
   emailTemplateSender: EmailTemplateSender;
 }
 
-export class CustomerNotifier
+/**
+ * TODO:
+ * woher kommt das event? -> direkt von webhook oder von packageEventHandler
+ * was wird erzeugt? bzw. was macht der event handler?
+ */
+export class CustomerNotifier // warum nicht NoticationEventHandler wie alle anderen?
   implements
     EventHandler<EventSchemaRegistry.PackageStateTransition["message"]>
 {
