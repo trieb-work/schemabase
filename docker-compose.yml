@@ -24,8 +24,8 @@ services:
     ports:
       - 3000:3000
     environment:
-      DATABASE_URL: ${DATABASE_URL}
-      DATABASE_URL_POOL: ${DATABASE_URL_POOL}
+      DATABASE_URL: postgresql://postgres:postgres@eci.db:5432/postgres
+      DATABASE_URL_POOL: postgresql://postgres:postgres@eci.db:5432/postgres
 
       KAFKA_BROKER_URL: ${KAFKA_BROKER_URL}
       KAFKA_SASL_MECHANISM: ${KAFKA_SASL_MECHANISM}
