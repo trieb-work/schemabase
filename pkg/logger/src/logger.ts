@@ -110,6 +110,7 @@ export class Logger implements ILogger {
    * Existing metadata is carried over unless overwritten
    */
   public with(additionalMeta: Fields): ILogger {
+    // TODO: fix this, copy from ANWR --> evtl. move it to a triebwork package
     const copy = Object.assign(
       Object.create(Object.getPrototypeOf(this)),
       this,

@@ -75,7 +75,9 @@ export function handleWebhook<TRequest>({
       },
     });
     logger.info("Receiving webhook");
-
+    /**
+     * backgroundContext = commonContext which alle webhooks are using
+     */
     const backgroundContext: Context = {
       trace: { id: traceId },
       logger,

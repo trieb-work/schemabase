@@ -57,7 +57,7 @@ export class KafkaProducer<TContent> implements EventProducer<TContent> {
   }
 
   public async produce(
-    topic: string,
+    topic: string, // TODO: string[] und in alle messages reinschreiben
     message: Message<TContent>,
     opts?: { key?: string; headers?: Record<string, string> },
   ): Promise<{ messageId: string; partition: number; offset?: string }> {
