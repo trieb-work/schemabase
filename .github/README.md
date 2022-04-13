@@ -1,8 +1,45 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+**Table of Contents**
+
+- [Requirements](#requirements)
+- [Components overview](#components-overview)
+- [Setup](#setup)
+  - [Develop a single service (Example api)](#develop-a-single-service-example-api)
+- [How do I get the zoho cookies?](#how-do-i-get-the-zoho-cookies)
+- [Glossary](#glossary)
+  - [Event](#event)
+  - [Topic](#topic)
+  - [Producer](#producer)
+  - [Consumer / Subscriber](#consumer--subscriber)
+  - [Integration / EventHandler](#integration--eventhandler)
+- [Webhooks](#webhooks)
+  - [Synchronous api](#synchronous-api)
+  - [Async webhooks.](#async-webhooks)
+- [Graphql API](#graphql-api)
+- [Typical Flow of an event triggered by an incoming webhook](#typical-flow-of-an-event-triggered-by-an-incoming-webhook)
+- [Howto: Adding a new integration](#howto-adding-a-new-integration)
+  - [Adding a new integration:](#adding-a-new-integration)
+    - [1. Create a mapping for topic and message type](#1-create-a-mapping-for-topic-and-message-type)
+    - [2. Create the handler/integration](#2-create-the-handlerintegration)
+    - [3. Create a susbscriber and subscribe the handler.](#3-create-a-susbscriber-and-subscribe-the-handler)
+    - [4. Create webhook and producer in the api](#4-create-webhook-and-producer-in-the-api)
+- [Database](#database)
+  - [Tenants, Integrations, Apps](#tenants-integrations-apps)
+  - [Other tables](#other-tables)
+    - [Tracking](#tracking)
+- [Debugging Kafka](#debugging-kafka)
+- [Integration tests](#integration-tests)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Requirements
 
 - [pnpm](https://pnpm.io/) `npm i -g pnpm`
 - docker
 - docker-compose
+- better internet :'(
 
 # Components overview
 
@@ -13,31 +50,38 @@
 - **Kafka**: Hosted on Upstash
 - **Worker**: Nodejs container hosted on k8s, listens to events from kafka and executes integrations.
 - **External**: Zoho, Strapi, Saleor etc, we receive webhooks and make http calls to them.
-- **Postgres**: Our internal db
+- **Postgres**: Our internal db in k8s
 
 # Setup
 
 Run install, codegen and database migration in one command:
 
 1. `make init`
+2. Get a cup of coffee while everything starts
+
+## Develop a single service (Example api)
+
+1. `make init` Start a complete environment
+2. `docker compose stop eci_api`
+3. `npx dotenv-cli pnpm next dev ./services/api`
+4. Do stuff
+5. Once you are ready, you can run your full test suite:
+   5.1 `make rebuild-api`
+   5.2 `make test`
 
 # How do I get the zoho cookies?
 
 1. login in zoho info@trieb.work
 2. network tab
 3. network request an inventory.zoho.com raussuchen
-4. Cookie aus request kopieren ZOHO*COOKIES="BuildCookie*..."
-5. X-ZCSRF-TOKEN aus request kopieren: ZOHO_ZCSRF_TOKEN="zomcsparam=4fd4929a3....0bc4233"
+4. Cookie aus request kopieren `ZOHO_COOKIES="..."`
+5. X-ZCSRF-TOKEN aus request kopieren: `ZOHO_ZCSRF_TOKEN="zomcsparam=4fd4929a3....0bc4233"`
 
 # Glossary
 
 ## Event
 
-A single message in kafka/bull. An event is produced by a producer in the nextjs api or inside an [event handler](#EventHandler).
-
-## EventHandler
-
-An implementation that receices an event from kafka and performs an action. An action is just a function that you provide to the event handler. Some eventhandlers also publish new events on successful or failed actions.
+A single message in kafka/bull. An event is produced by a producer in the nextjs api or inside an `EventHandler`'s `onSuccess` function.
 
 ## Topic
 
@@ -59,11 +103,13 @@ In bull this would be the `Worker` class.
 
 ## Integration / EventHandler
 
-In the beginning there were only syncronisations, and we called them `integrations`. An integration was basically a function that could be called in response to a new message from a queue.
+In the beginning there were only synchronisations, and we called them `integrations`. An integration was basically a function that could be called in response to a new message from a queue.
 
 Now we have a little bit more logic for receiving the message and handling errors and we're merging the receiving of a message with the actual business logic, and we're calling this an EventHandler.
 
 An event handler has to offer a single function that receives an event and can do with that whatever it wants, a callback for successful work is provided to allow different eventHandlers to be chained together via kafka.
+
+Think of a `Workflow` in anwr dwh.
 
 # Webhooks
 
@@ -296,9 +342,9 @@ export default handleWebhook({
 
 ## Tenants, Integrations, Apps
 
-Our own database is setup in a modular way, there are 2 main types of entities: Apps and Integrations.
+Our own database is setup in a modular way, there are 2 important types of entities: Apps and Integrations.
 If we could do inheritance this would be what I would build:
-**!!!This diagram is not complete! It does not include every app and integration in order to simplify the illustration and explain my thoughts!!!**
+**!!!This diagram is not complete! It does not include every table in order to simplify the illustration and explain my thoughts!!!**
 
 [![](https://mermaid.ink/img/pako:eNqVVMFuwyAM_RXEcWqj9YqqSpu2Q8_ZNGniQoPboCYQEUda1fXfR0OSQksrLSfz_OxnHoQjLYwEymhRibZ9U2JnRc0118R9PUY-QAuNHvExI0qeOT3mSS9N4xnLpdi0aEWBq9UFdQHxVZcV9r3WAcap5pTM5y5YuGAUDofJXetGTX2npav67fUYgR_XWbbXBN-zb_7kgi_YlMbsr1mMZFkWS36b0kyCw-Ke3Jh-JDZyElJrjeAOAJXRCTdvsgEQuBujscthzo_20O3XrtobK8HeSKcy3pQAuDInWTO4cDfP6XOWLcJBgyP9T9l0NPF96jZtYVVz2VmInF3VSBpxAPmpUVVJyrSBCL9jb4I3jTmMHJkdDhtdo2FBxp_xhpZDYQEjsocYcVdK6R0pRVsm8gnzJmWu6YzWYGuhpHs1judyTrGEGjhlLpSwFV2FnHJ9ctSukQLhXSo0lrKtqFqYUdGhyQ-6oAxtByNpeHwG1ukPGN15-Q)](https://mermaid-js.github.io/mermaid-live-editor/edit#pako:eNqVVMFuwyAM_RXEcWqj9YqqSpu2Q8_ZNGniQoPboCYQEUda1fXfR0OSQksrLSfz_OxnHoQjLYwEymhRibZ9U2JnRc0118R9PUY-QAuNHvExI0qeOT3mSS9N4xnLpdi0aEWBq9UFdQHxVZcV9r3WAcap5pTM5y5YuGAUDofJXetGTX2npav67fUYgR_XWbbXBN-zb_7kgi_YlMbsr1mMZFkWS36b0kyCw-Ke3Jh-JDZyElJrjeAOAJXRCTdvsgEQuBujscthzo_20O3XrtobK8HeSKcy3pQAuDInWTO4cDfP6XOWLcJBgyP9T9l0NPF96jZtYVVz2VmInF3VSBpxAPmpUVVJyrSBCL9jb4I3jTmMHJkdDhtdo2FBxp_xhpZDYQEjsocYcVdK6R0pRVsm8gnzJmWu6YzWYGuhpHs1judyTrGEGjhlLpSwFV2FnHJ9ctSukQLhXSo0lrKtqFqYUdGhyQ-6oAxtByNpeHwG1ukPGN15-Q)
 
@@ -325,3 +371,13 @@ Some fields are omitted, just check `pkg/prisma/schema.prisma`
 # Debugging Kafka
 
 Go to [http://localhost:8080/ui/clusters/eci/consumer-groups](http://localhost:8080/ui/clusters/eci/consumer-groups) for kafka-ui (started with docker-compose)
+
+# Integration tests
+
+Tests are in `/e2e` and are loosely grouped by domain.
+To execute tests, run `make test` (after `make init`)
+They usually follow the same process:
+
+1. Seed database for test
+2. Run test
+3. Remove test data from 3rd party systems (especially zoho)

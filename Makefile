@@ -44,9 +44,9 @@ fmt:
 # Static error checking 
 check: build tsc fmt
 
-# Alias for docker-compose down
+# Alias for docker compose down
 down:
-	docker-compose down --remove-orphans --volumes
+	docker compose down --remove-orphans --volumes
 
 # CAUTION!! THIS WILL DELETE ABSOLUTE EVERYTHING DOCKER RELATED ON YOUR MACHINE.
 # images, volumes, containers, EVERYTHING! 
@@ -62,8 +62,8 @@ pull-env:
 # Apply migrations to the saleor db and create the admin user.
 # The saleor container as well as its db must be running.
 migrate-saleor:
-	docker-compose exec -T saleor_api python manage.py migrate
-	docker-compose exec -T \
+	docker compose exec -T saleor_api python manage.py migrate
+	docker compose exec -T \
 	-e DJANGO_SUPERUSER_PASSWORD=admin \
 	saleor_api \
 	python manage.py createsuperuser \
@@ -75,16 +75,16 @@ migrate-saleor:
 init: down build
 	@# Migrating saleor is expensiev and should be done
 	@# before all memory is used for the other services
-	docker-compose up -d saleor_api
+	docker compose up -d saleor_api
 	$(MAKE) migrate-saleor
 
-	docker-compose up -d
+	docker compose up -d
 
 	$(MAKE) db-push
 
 # Similar to `init` but only rebuilds our own services (Useful to speed up development but feel free to delete this)
 init-core: down build
-	docker-compose up -d --build eci_api eci_worker logdrain
+	docker compose up -d --build eci_api eci_worker logdrain
 	$(MAKE) db-push
 
 # Runs all codegens
@@ -107,10 +107,10 @@ build-worker: build
 	
 # Utility to stop, rebuild and restart the api in docker 
 rebuild-api:
-	docker-compose stop eci_api
-	docker-compose up -d eci_db
-	docker-compose build eci_api
-	docker-compose up -d eci_api
+	docker compose stop eci_api
+	docker compose up -d eci_db
+	docker compose build eci_api
+	docker compose up -d eci_api
 
 
 
@@ -118,10 +118,10 @@ rebuild-api:
 rebuild-worker: export COMPOSE_DOCKER_CLI_BUILD=1
 rebuild-worker: export DOCKER_BUILDKIT=1
 rebuild-worker:
-	docker-compose stop eci_worker
-	docker-compose up -d eci_db
-	docker-compose build eci_worker
-	docker-compose up -d eci_worker
+	docker compose stop eci_worker
+	docker compose up -d eci_db
+	docker compose build eci_worker
+	docker compose up -d eci_worker
 
 
 # Run integration tests

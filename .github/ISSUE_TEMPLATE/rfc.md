@@ -1,9 +1,27 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+**Table of Contents** _generated with [DocToc](https://github.com/thlorenz/doctoc)_
+
+- [Audience](#audience)
+- [Summary](#summary)
+- [Basic example](#basic-example)
+- [Motivation](#motivation)
+- [Detailed design](#detailed-design)
+- [Drawbacks](#drawbacks)
+- [Alternatives](#alternatives)
+- [Unresolved questions](#unresolved-questions)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ---
+
 name: Custom issue template
 about: Describe this issue template's purpose here.
 title: "RFC: "
 labels: RFC
 assignees: ""
+
 ---
 
 # Audience
