@@ -1,4 +1,4 @@
-Nextjs application used to incoming webhooks and syncronous requests.
+Nextjs application used to incoming webhooks and synchronous requests.
 
 Initially I though appending the version at the end was a good idea because you could version them individually, however that disallows renaming the path for a new version, so I think starting with `/api/vX/.../[webhookId]/index.ts` is best.
 

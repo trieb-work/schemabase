@@ -27,7 +27,7 @@ export interface ProductDataFeedServiceConfig {
 }
 
 /**
- * Syncronous service to load product data from saleor and return it in either
+ * Synchronous service to load product data from saleor and return it in either
  * google or facebook syntax.
  *
  * This service is offered via the nextjs api and does not produce any messages

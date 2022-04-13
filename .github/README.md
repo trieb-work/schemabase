@@ -1,6 +1,8 @@
 # Requirements
 
 - [pnpm](https://pnpm.io/) `npm i -g pnpm`
+- docker
+- docker-compose
 
 # Components overview
 
@@ -27,7 +29,7 @@ Run install, codegen and database migration in one command:
 4. Cookie aus request kopieren ZOHO*COOKIES="BuildCookie*..."
 5. X-ZCSRF-TOKEN aus request kopieren: ZOHO_ZCSRF_TOKEN="zomcsparam=4fd4929a3....0bc4233"
 
-# Glossar
+# Glossary
 
 ## Event
 
@@ -37,9 +39,51 @@ A single message in kafka/bull. An event is produced by a producer in the nextjs
 
 An implementation that receices an event from kafka and performs an action. An action is just a function that you provide to the event handler. Some eventhandlers also publish new events on successful or failed actions.
 
+## Topic
+
+Events are organized and durably stored in topics. Very simplified, a topic is similar to a folder in a filesystem, and the events are the files in that folder. An example topic name could be "payments". Topics in Kafka are always multi-producer and multi-subscriber: a topic can have zero, one, or many producers that write events to it, as well as zero, one, or many consumers that subscribe to these events. Events in a topic can be read as often as needed—unlike traditional messaging systems, events are not deleted after consumption.
+
+In bull this would be a queue name.
+
+## Producer
+
+A kafka producer is a wrapper around a kafka client that can create new messages and add them to a topic.
+
+In bull this would be the `Queue` class.
+
+## Consumer / Subscriber
+
+Consumer and subscriber are the same thing. In Kafka terms you would call this a consumer, but redis based queues usually call it a subscription. Either way a consumer is listening on a certain topic and calling a given handler function for every new message.
+
+In bull this would be the `Worker` class.
+
+## Integration / EventHandler
+
+In the beginning there were only syncronisations, and we called them `integrations`. An integration was basically a function that could be called in response to a new message from a queue.
+
+Now we have a little bit more logic for receiving the message and handling errors and we're merging the receiving of a message with the actual business logic, and we're calling this an EventHandler.
+
+An event handler has to offer a single function that receives an event and can do with that whatever it wants, a callback for successful work is provided to allow different eventHandlers to be chained together via kafka.
+
 # Webhooks
 
 All webhooks are inside `services/api/pages/api`. Each webhook has a `README.md` file with further information.
+
+## Synchronous api
+
+The api offers a few synchronous resources such as the product datafeed. Here we simply make a request to the db and a 3rd party system and return the data.
+
+## Async webhooks.
+
+Most endpoinst are only meant to receive an event from a 3rd party, validate the request body, load necessary data from the database and allow/disallow an action depending on whether the tenant has payed for a specific integration.
+
+If all goes well, the api handler simply produces an event to a specific topic and returns `200 OK` to the caller. At this point we have the event in our system and we can retry as many times as we need.
+
+- **Cylinder** shaped elements are Kafka topics / bull queues.
+- **Rounded** are api routes inside nextjs.
+- **Rectangular** are EventHandlers running on the worker
+
+[![](https://mermaid.ink/img/pako:eNqVVU1vozAQ_SsWJyI1RXvNYSUWvLuoKUFADl0SIYKdBCWxkTGt2qr_fW0MCV9t0hwiMzN-8948bN61lCKszbQdS_I9mPsrAsRP_dueDaZT8II3e0oPYvkTJHlmoBzpkSFXebLDRbV6_mFwlqSHjOxkfj1RCHW5RMkZRWWKK5Qw9kzrwfwD46VnmyFUxYFAyLOxjkWVGTRVYaOuNlKGE44FlaZ7a--QQRD6pufE0A39p9jy4ZnG7bva5P_RPe1RlzhvIjzgLYMGZQizIecmP2y98G3o1z0jvf00Wau9o6IifSQ4WU_vQUpJUZ4wuBfwavaQcPZqVZTalrTCklbwSlKwKY-HSgLgFNSEvwfTVfdrOX9QmoIn14J2pPcjjcpG61fzAD15C8l0mSPRmqn97UgjilGSveEC8D0GBL-Asz60qVheR_ncsdhaPHpzKF-XUbMaHSPBoZzWPFXzwZhV-Ha3rsJ87VbXme7hjvTu81COJy4OcTjgMyb8b0LQsRnvSEJyqd-hXGUBlmmQkcam78KN30xBKF0TbriBEzoL9-LbZxV9WVZZcHrCzKU822YNiX608ggTBEo1a3xKsqO0Ka0LK163Y3XVuIvQ-e1YpuQXw0fTmceBeLci_ZOEPGTXdF4M7WcuF9Etl9Xo8egWn8OTtXanCaViOEh8rd4lxkoTB_WEV9pMLBHeJuWRr7QV-RClapgQZZwybbZNjgW-05KSU3kctBlnJW6K7CwRH79TXfXxH-tDQdc)](https://mermaid-js.github.io/mermaid-live-editor/edit#pako:eNqVVU1vozAQ_SsWJyI1RXvNYSUWvLuoKUFADl0SIYKdBCWxkTGt2qr_fW0MCV9t0hwiMzN-8948bN61lCKszbQdS_I9mPsrAsRP_dueDaZT8II3e0oPYvkTJHlmoBzpkSFXebLDRbV6_mFwlqSHjOxkfj1RCHW5RMkZRWWKK5Qw9kzrwfwD46VnmyFUxYFAyLOxjkWVGTRVYaOuNlKGE44FlaZ7a--QQRD6pufE0A39p9jy4ZnG7bva5P_RPe1RlzhvIjzgLYMGZQizIecmP2y98G3o1z0jvf00Wau9o6IifSQ4WU_vQUpJUZ4wuBfwavaQcPZqVZTalrTCklbwSlKwKY-HSgLgFNSEvwfTVfdrOX9QmoIn14J2pPcjjcpG61fzAD15C8l0mSPRmqn97UgjilGSveEC8D0GBL-Asz60qVheR_ncsdhaPHpzKF-XUbMaHSPBoZzWPFXzwZhV-Ha3rsJ87VbXme7hjvTu81COJy4OcTjgMyb8b0LQsRnvSEJyqd-hXGUBlmmQkcam78KN30xBKF0TbriBEzoL9-LbZxV9WVZZcHrCzKU822YNiX608ggTBEo1a3xKsqO0Ka0LK163Y3XVuIvQ-e1YpuQXw0fTmceBeLci_ZOEPGTXdF4M7WcuF9Etl9Xo8egWn8OTtXanCaViOEh8rd4lxkoTB_WEV9pMLBHeJuWRr7QV-RClapgQZZwybbZNjgW-05KSU3kctBlnJW6K7CwRH79TXfXxH-tDQdc)
 
 # Graphql API
 
@@ -49,7 +93,7 @@ The graphql api is hosted on the api service under `/api/graphql`. The actual im
 
 [![](https://mermaid.ink/img/pako:eNp1U01v2zAM_SuETg2WYF2LXHwwUGw9FNuwAAHaiy-MRCdCbNGj5LZu0f9eKbYbN8t0MGzzfZBP0qvSbEhlytPflpymHxa3gnXhIK7b50DisII1yaPVtFjMvtys7jJ4os2OeQ-lcA00oHpOrC_yvIfdY2UNBgJJ6j5A6BqCixc2syM4aq7Yh62Qz-AXowF6JOnCzrotbLrR6870lBEbeYuDydS2dyWxZQfWBYqjBMsO0Bnw7cZrsU36MXX_ieUeM1gJm1ZTMnehr1fMDZQsfUPTSloHXhr1gWVPksF3dr6t6RQnpAPIdnNxdXk5h2_L-LhaLmdHQFq9RuzmGMWfQ6cx_JTJ13VgIYhh4mfiJI6xj_8oX4tZoYRuovwb9x9785k1gs_KkjPHD6xCjFZr8v68cT4EzINr1UEzZO3o6TQtqnxMUITlrFqen25Xgv4jMjZ4eFFzVZPUaE0856-pUKiwo5oKFadShkpsq1Cowr1FaNukE3trbAxcZSXGfuYK28DrzmmVBWlpBA13ZUC9vQOqqwfP)](https://mermaid-js.github.io/mermaid-live-editor/edit#pako:eNp1U01v2zAM_SuETg2WYF2LXHwwUGw9FNuwAAHaiy-MRCdCbNGj5LZu0f9eKbYbN8t0MGzzfZBP0qvSbEhlytPflpymHxa3gnXhIK7b50DisII1yaPVtFjMvtys7jJ4os2OeQ-lcA00oHpOrC_yvIfdY2UNBgJJ6j5A6BqCixc2syM4aq7Yh62Qz-AXowF6JOnCzrotbLrR6870lBEbeYuDydS2dyWxZQfWBYqjBMsO0Bnw7cZrsU36MXX_ieUeM1gJm1ZTMnehr1fMDZQsfUPTSloHXhr1gWVPksF3dr6t6RQnpAPIdnNxdXk5h2_L-LhaLmdHQFq9RuzmGMWfQ6cx_JTJ13VgIYhh4mfiJI6xj_8oX4tZoYRuovwb9x9785k1gs_KkjPHD6xCjFZr8v68cT4EzINr1UEzZO3o6TQtqnxMUITlrFqen25Xgv4jMjZ4eFFzVZPUaE0856-pUKiwo5oKFadShkpsq1Cowr1FaNukE3trbAxcZSXGfuYK28DrzmmVBWlpBA13ZUC9vQOqqwfP)
 
-# Howto: Adding a new integration.
+# Howto: Adding a new integration
 
 There are currently two ways integrations are built.
 
@@ -63,19 +107,190 @@ Here the integration implements the `EventHandler` interface and can be plugged 
 
 ### 1. Create a mapping for topic and message type
 
-TODO:
+1. Go to `/pkg/events/src/registry.ts` and extend the Topic enum at the top of the file.
+2. Scroll down and copy one of the `export type XXX = EventSchema<` segments to add your new message type.
 
-### 2. Create the handler
+### 2. Create the handler/integration
 
-TODO:
+Create a new integration in `pkg/`. The `CustomerNotifier` can be a good starting point and I suggest copying that. (`pkg/integration-tracking/src/notifications.ts`).
+The important part is that your new integration must implement the `EventHandler` interface (`/pkg/events/src/handler.ts`)
 
-### 3. Create a susbcriber and subscribe the handler.
+EventHandlers usually have a `onSuccess` function provided to them in the constructor. I used this to produce a new event to a different topic to be handled by a different event handler. You could add this directly into the eventHandler but that would require setting up a kafka producer and you would need to know about the topic inside your business logic.
 
-TODO:
+By providing an `onSuccess` function to the constructor we can remove the routing logic from the business logic and handle all of it in a central `main.ts` file (think of `sourceIndex` and `destIndex` in anwr dwh)
+
+```ts
+// service/worker/src/main.ts
+
+new tracking.CustomerNotifier({
+  onSuccess: publishSuccess(producer, Topic.NOTIFICATION_EMAIL_SENT),
+  // remaining config
+});
+```
+
+As you can see, we're using a helper function `publishSuccess` that will receive the value of our `CustomerNotifier` (in this case the email address) and publish it to the `NOTIFICATION_EMAIL_SENT` topic. Almost all of the routing logic, which event will trigger which integration and what gets published to different topics is contained in a single file. The only implicit producer is part of the `KafkaConsumer` class and will produce a new event to the `UNHANDLED_EXCEPTION` topic in case of unhandled exceptions in your integration code. In bullmq this would be done implicitly by bull itself.
+
+### 3. Create a susbscriber and subscribe the handler.
+
+Now that you have created an eventHandler, you need to hook it up to receive events.
+
+In `services/worker/src/main.ts` create a new subscriber and event handler instance like this:
+
+Replace `PackageStateTransition` and `Topic.PACKAGE_STATE_TRANSITION` with your previously created names from step 1.
+
+Use any unique value as `groupId` and simply ignore it. it's not needed once you switch kafka for bullmq.
+
+```ts
+const customerNotifierSubscriber = await KafkaSubscriber.new<
+  EventSchemaRegistry.PackageStateTransition["message"]
+>({
+  topic: Topic.PACKAGE_STATE_TRANSITION,
+  signer,
+  logger,
+  groupId: "customerNotifierSubscriber",
+});
+```
+
+After creating the subscriber, you can add the eventHandler like this:
+
+```ts
+customerNotifierSubscriber.subscribe(
+  new tracking.CustomerNotifier({
+    db: prisma,
+    onSuccess: publishSuccess(producer, Topic.NOTIFICATION_EMAIL_SENT),
+    logger,
+    emailTemplateSender: new Sendgrid(env.require("SENDGRID_API_KEY"), {
+      logger,
+    }),
+  }),
+);
+```
+
+That's it, now the worker will start handling the new events.
+If you already have a producer for this topic (existing webhook or eventHandler, that produces on success), you can stop here.
+
+Next up is producing the events from a webhook.
 
 ### 4. Create webhook and producer in the api
 
-TODO:
+1. Create a new api route in `services/api/v1/my/path/[webhookId]/index.ts`
+
+```ts [services/api/v1/my/path/[webhookId]/index.ts]
+import {
+  authorizeIntegration,
+  extendContext,
+  setupPrisma,
+} from "@eci/pkg/webhook-context";
+import { z } from "zod";
+import { HttpError } from "@eci/pkg/errors";
+import { handleWebhook, Webhook } from "@eci/pkg/http";
+import { env } from "@eci/pkg/env";
+import {
+  EventSchemaRegistry,
+  KafkaProducer,
+  Message,
+  Signer,
+  Topic,
+} from "@eci/pkg/events";
+
+const requestValidation = z.object({
+  query: z.object({
+    webhookId: z.string(),
+  }),
+  body: z.object({
+    someField: z.string(),
+  }),
+});
+
+const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
+  backgroundContext,
+  req,
+  res,
+}): Promise<void> => {
+  /**
+   *  If this function gets executed the request has already been validated by zod.
+   * So you are safe to destructure the `req` object without validating
+   */
+  const {
+    query: { webhookId },
+    body: { someField },
+  } = req;
+
+  const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
+
+  /**
+   * load the necessary data from the database by joining tables, starting at the webhook.
+   */
+  const webhook = await ctx.prisma.incomingWebhook.findUnique({
+    where: { id: webhookId },
+    include: {
+      dpdApp: {
+        include: {
+          integration: {
+            include: {
+              trackingEmailApp: true,
+              subscription: true,
+            },
+          },
+        },
+      },
+    },
+  });
+  /**
+   * Verify we have all required data
+   */
+  if (webhook == null) {
+    throw new HttpError(404, `Webhook not found: ${webhookId}`);
+  }
+
+  const { dpdApp } = webhook;
+  if (dpdApp == null) {
+    throw new HttpError(400, "dpd app is not configured");
+  }
+  const { integration } = dpdApp;
+  if (integration == null) {
+    throw new HttpError(400, "Integration is not configured");
+  }
+  /**
+   * Ensure the integration is enabled and payed for
+   */
+  authorizeIntegration(integration);
+
+  ctx.logger.info("The user has something to say", {
+    someField,
+  });
+
+  const event: EventSchemaRegistry.MadeUpname["message"] = {
+    someField,
+    dpdAppId: dpdApp.id,
+  };
+
+  const kafka = await KafkaProducer.new<
+    EventSchemaRegistry.MadeUpName["message"]
+  >({
+    signer: new Signer({ signingKey: env.require("SIGNING_KEY") }),
+  });
+
+  const message = new Message({
+    header: {
+      traceId: ctx.trace.id,
+    },
+    content: event,
+  });
+
+  const { messageId } = await kafka.produce(Topic.MADE_UP_NAME, message);
+
+  ctx.logger.info("Queued new event", { messageId });
+};
+
+export default handleWebhook({
+  webhook,
+  validation: {
+    http: { allowedMethods: ["POST"] },
+    request: requestValidation,
+  },
+});
+```
 
 # Debugging Kafka
 
