@@ -3,7 +3,7 @@ version: "3.9"
 services:
   # Our own database where we store tenants and config
   eci_db:
-    container_name: db.eci
+    container_name: eci.db
     image: postgres
     ports:
       # Must be exposed on the host for prisma to migrate and seed
@@ -27,10 +27,7 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@eci.db:5432/postgres
       DATABASE_URL_POOL: postgresql://postgres:postgres@eci.db:5432/postgres
 
-      KAFKA_BROKER_URL: ${KAFKA_BROKER_URL}
-      KAFKA_SASL_MECHANISM: ${KAFKA_SASL_MECHANISM}
-      KAFKA_USERNAME: ${KAFKA_USERNAME}
-      KAFKA_PASSWORD: ${KAFKA_PASSWORD}
+      KAFKA_BROKER_URL: kafka:9092
       SIGNING_KEY: anything
       NODE_ENV: production
       ECI_BASE_URL: http://api.eci:3000
@@ -38,6 +35,7 @@ services:
       JWT_SIGNING_KEY: ${JWT_SIGNING_KEY}
     depends_on:
       - eci_db
+      - kafka
 
   logdrain:
     image: logdrain
@@ -68,12 +66,9 @@ services:
       args:
         - commit_sha=development
     environment:
-      DATABASE_URL: ${DATABASE_URL}
-      DATABASE_URL_POOL: ${DATABASE_URL_POOL}
-      KAFKA_BROKER_URL: ${KAFKA_BROKER_URL}
-      KAFKA_SASL_MECHANISM: ${KAFKA_SASL_MECHANISM}
-      KAFKA_USERNAME: ${KAFKA_USERNAME}
-      KAFKA_PASSWORD: ${KAFKA_PASSWORD}
+      DATABASE_URL: postgresql://postgres:postgres@eci.db:5432/postgres
+      DATABASE_URL_POOL: postgresql://postgres:postgres@eci.db:5432/postgres
+      KAFKA_BROKER_URL: kafka:9092
       SIGNING_KEY: anything
       NODE_ENV: production
       ECI_ENV: development
@@ -83,9 +78,11 @@ services:
 
     depends_on:
       - eci_db
+      - kafka
 
   saleor_api:
-    image: registry.gitlab.com/trieb.work/saleor:3.0.0-b.13-triebwork1
+    # image: registry.gitlab.com/trieb.work/saleor:3.0.0-b.13-triebwork1
+    image:  ghcr.io/saleor/saleor:3.0.0
     container_name: saleor.eci
     ports:
       - 8000:8000
@@ -110,3 +107,19 @@ services:
       - POSTGRES_PASSWORD=saleor
     ports:
       - 15432:5432
+  zookeeper:
+    image: docker.io/bitnami/zookeeper:3.7
+    ports:
+      - "2181:2181"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+  kafka:
+    container_name: kafka
+    image: docker.io/bitnami/kafka:3
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_CFG_ZOOKEEPER_CONNECT: zookeeper:2181
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+    depends_on:
+      - zookeeper
