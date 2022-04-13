@@ -3,6 +3,10 @@ import { env } from "@eci/pkg/env";
 import { afterAll, describe, expect, it } from "@jest/globals";
 import { PrismaClient } from "@prisma/client";
 import { id } from "@eci/pkg/ids";
+import { config } from "dotenv";
+
+config({ path: ".env" });
+
 /**
  * The saleor endpoint reachable from outside of the cluster
  * For example: "http://localhost:8000/graphql/";

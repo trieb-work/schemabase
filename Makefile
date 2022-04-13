@@ -90,6 +90,7 @@ init-core: down build
 build: install
 	pnpm prisma generate
 	pnpm graphql-codegen -c pkg/api/codegen.yml
+	pnpm graphql-codegen -c pkg/saleor/codegen.yml
 	
 # Builds the api service
 build-api: build
