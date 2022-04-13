@@ -292,6 +292,36 @@ export default handleWebhook({
 });
 ```
 
+# Database
+
+## Tenants, Integrations, Apps
+
+Our own database is setup in a modular way, there are 2 main types of entities: Apps and Integrations.
+If we could do inheritance this would be what I would build:
+**!!!This diagram is not complete! It does not include every app and integration in order to simplify the illustration and explain my thoughts!!!**
+
+[![](https://mermaid.ink/img/pako:eNqVVMFuwyAM_RXEcWqj9YqqSpu2Q8_ZNGniQoPboCYQEUda1fXfR0OSQksrLSfz_OxnHoQjLYwEymhRibZ9U2JnRc0118R9PUY-QAuNHvExI0qeOT3mSS9N4xnLpdi0aEWBq9UFdQHxVZcV9r3WAcap5pTM5y5YuGAUDofJXetGTX2npav67fUYgR_XWbbXBN-zb_7kgi_YlMbsr1mMZFkWS36b0kyCw-Ke3Jh-JDZyElJrjeAOAJXRCTdvsgEQuBujscthzo_20O3XrtobK8HeSKcy3pQAuDInWTO4cDfP6XOWLcJBgyP9T9l0NPF96jZtYVVz2VmInF3VSBpxAPmpUVVJyrSBCL9jb4I3jTmMHJkdDhtdo2FBxp_xhpZDYQEjsocYcVdK6R0pRVsm8gnzJmWu6YzWYGuhpHs1judyTrGEGjhlLpSwFV2FnHJ9ctSukQLhXSo0lrKtqFqYUdGhyQ-6oAxtByNpeHwG1ukPGN15-Q)](https://mermaid-js.github.io/mermaid-live-editor/edit#pako:eNqVVMFuwyAM_RXEcWqj9YqqSpu2Q8_ZNGniQoPboCYQEUda1fXfR0OSQksrLSfz_OxnHoQjLYwEymhRibZ9U2JnRc0118R9PUY-QAuNHvExI0qeOT3mSS9N4xnLpdi0aEWBq9UFdQHxVZcV9r3WAcap5pTM5y5YuGAUDofJXetGTX2npav67fUYgR_XWbbXBN-zb_7kgi_YlMbsr1mMZFkWS36b0kyCw-Ke3Jh-JDZyElJrjeAOAJXRCTdvsgEQuBujscthzo_20O3XrtobK8HeSKcy3pQAuDInWTO4cDfP6XOWLcJBgyP9T9l0NPF96jZtYVVz2VmInF3VSBpxAPmpUVVJyrSBCL9jb4I3jTmMHJkdDhtdo2FBxp_xhpZDYQEjsocYcVdK6R0pRVsm8gnzJmWu6YzWYGuhpHs1judyTrGEGjhlLpSwFV2FnHJ9ctSukQLhXSo0lrKtqFqYUdGhyQ-6oAxtByNpeHwG1ukPGN15-Q)
+
+- **Tenant** A single customer of ours (Pfeffer und Frost)
+- **App** A single application configuration. Here we store connection details and other config for a 3rd party system. The idea is that a customer can add these App configs using our UI (at some point) or add them automatically via one-click installations. Afterwards they can connect these apps via `integrations`
+- **Integration** The connection of 1..n applications and a tenant. (The bulkorder integration connects a strapi app with a zoho app)
+- **Subscription** Every integration can have a subscription attached, that can hold information such billing periods and usage tracking for usage based pricing.
+- **Webhook** Every app can have 0..n webhooks attached. This gives us a unique identifier for incoming webhooks and allows us to load the attached `app`, its `integration` and other connected `apps` as well as `subscription` state. Allowing multiple webhooks per app also makes it possible for customers to replace webhooks (and their secret) without downtime.
+- **WebhookSecret** We require an authorization header to be present with every incoming request and match its hash against a hash stored in the db.
+  This is a separate table because in the past we had separate webhooks tables for each app. Right now there's nothing stopping us from adding a `secret` column to the `webhooks` table and remove the `webhooksSecret` table.
+
+As mentioned above, inheritance is not possible in prisma, so we have to manually duplicate columns in different `XXXApp` and `XXXIntegration` tables, but the mental model should be, that all integrations behave similar and have relations to a tenant, a subscription and one or more apps. In practice this results in a few optional relations here and there that prisma requires and actually creates on its own using `prisma format`
+
+## Other tables
+
+### Tracking
+
+For the tracking integration we added more tables to store data for later use. In the future there will be more tables to have different mapping tables etc.
+
+Specifically for tracking we added 4 new tables:
+Some fields are omitted, just check `pkg/prisma/schema.prisma`
+[![](https://mermaid.ink/img/pako:eNqFkjFvwyAQhf8KurFKrGZl6RLPrZSMLCe4uKgYV3CuVEX57wVDq7hGLQO6e3z3EE9cQU-GQIJ2GOPR4hBwVF55kdaiiedgKBRhKaXouq70a_AF9RsOVKTaCAUPCsR-n4pDKu7MKlHtGkb9B3lesYvy27J17QJKETlYPwhrWodHZBJsRxKivGWL1O7EGY15_-OWkWLML25bVchNGtlOvomkvR_ROnEO6CPqDKJbpKd1QlugnG71FNJj1x0agd3Fux3bZNdCfhL814VyBzsYKaTKpP92zTMK-JXSOMhUGrrg7FiB8reEzu8m2ffG8hRAXtBF2gHOPJ0-vQbJYaZvqH7bSt2-AJPe7xo)](https://mermaid-js.github.io/mermaid-live-editor/edit#pako:eNqFkjFvwyAQhf8KurFKrGZl6RLPrZSMLCe4uKgYV3CuVEX57wVDq7hGLQO6e3z3EE9cQU-GQIJ2GOPR4hBwVF55kdaiiedgKBRhKaXouq70a_AF9RsOVKTaCAUPCsR-n4pDKu7MKlHtGkb9B3lesYvy27J17QJKETlYPwhrWodHZBJsRxKivGWL1O7EGY15_-OWkWLML25bVchNGtlOvomkvR_ROnEO6CPqDKJbpKd1QlugnG71FNJj1x0agd3Fux3bZNdCfhL814VyBzsYKaTKpP92zTMK-JXSOMhUGrrg7FiB8reEzu8m2ffG8hRAXtBF2gHOPJ0-vQbJYaZvqH7bSt2-AJPe7xo)
+
 # Debugging Kafka
 
 Go to [http://localhost:8080/ui/clusters/eci/consumer-groups](http://localhost:8080/ui/clusters/eci/consumer-groups) for kafka-ui (started with docker-compose)
