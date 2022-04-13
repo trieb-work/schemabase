@@ -174,7 +174,7 @@ new tracking.CustomerNotifier({
 });
 ```
 
-As you can see, we're using a helper function `publishSuccess` that will receive the value of our `CustomerNotifier` (in this case the email address) and publish it to the `NOTIFICATION_EMAIL_SENT` topic. Almost all of the routing logic, which event will trigger which integration and what gets published to different topics is contained in a single file. The only implicit producer is part of the `KafkaConsumer` class and will produce a new event to the `UNHANDLED_EXCEPTION` topic in case of unhandled exceptions in your integration code. In bullmq this would be done implicitly by bull itself.
+As you can see, we're using a helper function `publishSuccess` that will receive the return value of our `CustomerNotifier` (in this case the email address) and publish it to the `NOTIFICATION_EMAIL_SENT` topic. Almost all of the routing logic, which event will trigger which integration and what gets published to different topics is contained in a single file. The only implicit producer is part of the `KafkaConsumer` class and will produce a new event to the `UNHANDLED_EXCEPTION` topic in case of unhandled exceptions in your integration code. In bullmq this would be done implicitly by bull itself.
 
 ### 3. Create a susbscriber and subscribe the handler.
 
