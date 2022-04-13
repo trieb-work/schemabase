@@ -10,10 +10,14 @@ import { generateTrackingPortalURL } from "@eci/pkg/integration-tracking";
 import { CustomFieldLabel } from "@eci/pkg/zoho-custom-fields/src/registry";
 
 /**
- * zoho 2 internal db
- * TODO: kurze beschreibung was hier gemacht wird
- * -> wo wird die order ge-upserted? in zoho oder in der eci db?
- * -> warum/für was wird das gemacht? -> wo wird es später benötigt?
+ * OrderUpdater is responsible for updating our internal database with new orders/packages.
+ * The original event originates from zoho, and we forward it through kafka to this integration.
+ *
+ * Unfortunately zoho doesn't send us all the information we need, so we make a request to zoho
+ * to get the missing data and then upsert orders and packages in our database for later use.
+ *
+ * Ie the tracking integration requires orders and packages to be setup in order to attach package
+ * events correctly.
  */
 export class OrderUpdater
   implements EventHandler<EventSchemaRegistry.OrderUpdate["message"]>

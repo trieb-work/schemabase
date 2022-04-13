@@ -63,7 +63,8 @@ async function main() {
     groupId: "strapiEntryCreateConsumer", // bei bullmq nicht benötigt
   });
 
-  strapiEntryCreateConsumer.subscribe( // hier wird der message handler registriert
+  strapiEntryCreateConsumer.subscribe(
+    // hier wird der message handler registriert
     new StrapiEntryCreate({
       prisma,
       logger,
@@ -129,8 +130,8 @@ async function main() {
   );
 
   /**
-   * Upsert orders from zoho
-   * TODO: wo wird die order ge-upserted? in zoho oder in der eci db?
+   * A new order was created in zoho and we received that event via webhooks.
+   * Now we need to sync our database and create or edit the order
    */
   const zohoOrderUpserter = await KafkaSubscriber.new<
     EventSchemaRegistry.OrderUpdate["message"]

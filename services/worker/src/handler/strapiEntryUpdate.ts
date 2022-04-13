@@ -11,7 +11,11 @@ import { Context } from "@eci/pkg/context";
 
 /**
  * Strapi 2 Zoho bulk order update
- * TODO: kurze beschreibung was hier gemacht wird
+ * A strapi entry update was received by our webhook api and forwarded via kafka.
+ * The bulkorder integration then upserts all missing orders and customers into zoho.
+ *
+ * This way of defining the event handler is deprecated, please combine the integration
+ * with the event handler into one class (See `.github/README.md)
  */
 export class StrapiEntryUpdate
   implements EventHandler<EventSchemaRegistry.StrapiEntryCreate["message"]>

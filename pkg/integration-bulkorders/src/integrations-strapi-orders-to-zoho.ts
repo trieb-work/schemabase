@@ -48,9 +48,12 @@ export const orderValidation = z.object({
 
 export type OrderEvent = EntryEvent & z.infer<typeof orderValidation>;
 /**
- * TODO: kurze allgemeine beschreibung des services
- * hinweis darauf das es die alte art und weiße ist so einen async handler zu schreiben
- * wer triggert das ganze? -> async event durch webhook?
+ * Strapi 2 Zoho bulk order create
+ * A strapi entry event was received by our webhook api and forwarded via kafka.
+ * The bulkorder integration then creates orders and customers in zoho.
+ *
+ * This way of defining and integration is deprecated, please combine the integration
+ * with the event handler into one class (See `.github/README.md)
  */
 export class StrapiOrdersToZoho {
   private readonly zoho: Zoho;

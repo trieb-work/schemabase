@@ -14,9 +14,12 @@ export interface CustomerNotifierConfig {
 }
 
 /**
- * TODO:
- * woher kommt das event? -> direkt von webhook oder von packageEventHandler
- * was wird erzeugt? bzw. was macht der event handler?
+ * When we receive an OrderUpadteEvent from Zoho a different eventHandler syncs
+ * the order/packages to our internal db and then emits a new event which this
+ * handler will process.
+ *
+ * This handler is then responbile for sending an email to a customer only if it
+ * is actually new and not just received out of order.
  */
 export class CustomerNotifier // warum nicht NoticationEventHandler wie alle anderen?
   implements
