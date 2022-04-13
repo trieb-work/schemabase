@@ -9,6 +9,12 @@ import { ILogger } from "@eci/pkg/logger";
 import { env } from "@eci/pkg/env";
 import { Context } from "@eci/pkg/context";
 
+/**
+ * Strapi 2 Zoho bulk order creation
+ * TODO: kurze beschreibung was hier gemacht wird
+ * -> so ist die alte art und weiße einen EventHandler zu schreiben
+ * -> neue art und weiße ist so wie bei integration-tracking dass der EventHandler direkt von der /pkg/integration exportiert wird
+ */
 export class StrapiEntryCreate
   implements EventHandler<EventSchemaRegistry.StrapiEntryCreate["message"]>
 {

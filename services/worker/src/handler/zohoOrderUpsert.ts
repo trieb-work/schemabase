@@ -9,6 +9,12 @@ import { Context } from "@eci/pkg/context";
 import { generateTrackingPortalURL } from "@eci/pkg/integration-tracking";
 import { CustomFieldLabel } from "@eci/pkg/zoho-custom-fields/src/registry";
 
+/**
+ * zoho 2 internal db
+ * TODO: kurze beschreibung was hier gemacht wird
+ * -> wo wird die order ge-upserted? in zoho oder in der eci db?
+ * -> warum/für was wird das gemacht? -> wo wird es später benötigt?
+ */
 export class OrderUpdater
   implements EventHandler<EventSchemaRegistry.OrderUpdate["message"]>
 {

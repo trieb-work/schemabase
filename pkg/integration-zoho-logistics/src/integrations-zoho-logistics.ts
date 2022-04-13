@@ -33,6 +33,10 @@ interface CustomFields {
   nextFiveDaysBulkOrders: string;
 }
 
+/**
+ * TODO: was ist das für ein Service? 
+ * -> scheint synchron zu sein? -> was macht das ganze?
+ */
 export class LogisticStats implements ZohoLogisticsService {
   private readonly zoho: ZohoClientInstance;
 

@@ -14,6 +14,13 @@ export interface PackageEventHandlerConfig {
   logger: ILogger;
 }
 
+/**
+ * TODO: was macht dieser event handler. kurze beschreibung hinzufügen
+ * wer hat das event kreiert? DPD webhook?
+ * was erzeugt der event handler? DB entry? -> kann dann über eci graphql api abgefragt werden?
+ * --> ist es garantiert dass die webhooks in der richtigen reihenfolge reinkommen? --> NEIN
+ * --> wird es gerytried?
+ */
 export class PackageEventHandler {
   private readonly db: PrismaClient;
 

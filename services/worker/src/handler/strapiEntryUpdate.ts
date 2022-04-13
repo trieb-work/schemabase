@@ -9,6 +9,10 @@ import { ILogger } from "@eci/pkg/logger";
 import { env } from "@eci/pkg/env";
 import { Context } from "@eci/pkg/context";
 
+/**
+ * Strapi 2 Zoho bulk order update
+ * TODO: kurze beschreibung was hier gemacht wird
+ */
 export class StrapiEntryUpdate
   implements EventHandler<EventSchemaRegistry.StrapiEntryCreate["message"]>
 {
