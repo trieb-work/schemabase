@@ -1,6 +1,6 @@
 overwrite: true
-schema: "./pkg/saleor/src/api/lib/schema.gql"
-documents: "./pkg/saleor/src/api/lib/{mutations,queries}/**/*.gql"
+schema: "./pkg/saleor/src/api/schema.gql"
+documents: "./pkg/saleor/src/api/{mutations,queries}/**/*.gql"
 generates:
   ./pkg/saleor/src/api/generated/graphql.ts:
     plugins:

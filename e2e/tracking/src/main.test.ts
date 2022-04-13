@@ -10,6 +10,7 @@ import { sha256 } from "@eci/pkg/hash";
 import { env } from "@eci/pkg/env";
 import { SalesOrder, Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
 import { config } from "dotenv";
+
 config({ path: ".env" });
 
 const prisma = new PrismaClient();

@@ -1,6 +1,7 @@
 import { DocumentNode } from "graphql";
 import gql from "graphql-tag";
 export type Maybe<T> = T | null;
+export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = {
   [K in keyof T]: T[K];
 };
@@ -11,7 +12,7 @@ export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & {
   [SubKey in K]: Maybe<T[SubKey]>;
 };
 /** All built-in and custom scalars, mapped to their actual values */
-export interface Scalars {
+export type Scalars = {
   ID: string;
   String: string;
   Boolean: boolean;
@@ -26,50 +27,50 @@ export interface Scalars {
   Upload: any;
   WeightScalar: any;
   _Any: any;
-}
+};
 
-export interface AccountAddressCreate {
+export type AccountAddressCreate = {
   __typename?: "AccountAddressCreate";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
+  accountErrors: Array<AccountError>;
   address?: Maybe<Address>;
-  errors: AccountError[];
+  errors: Array<AccountError>;
   user?: Maybe<User>;
-}
+};
 
-export interface AccountAddressDelete {
+export type AccountAddressDelete = {
   __typename?: "AccountAddressDelete";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
+  accountErrors: Array<AccountError>;
   address?: Maybe<Address>;
-  errors: AccountError[];
+  errors: Array<AccountError>;
   user?: Maybe<User>;
-}
+};
 
-export interface AccountAddressUpdate {
+export type AccountAddressUpdate = {
   __typename?: "AccountAddressUpdate";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
+  accountErrors: Array<AccountError>;
   address?: Maybe<Address>;
-  errors: AccountError[];
+  errors: Array<AccountError>;
   user?: Maybe<User>;
-}
+};
 
-export interface AccountDelete {
+export type AccountDelete = {
   __typename?: "AccountDelete";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
-  errors: AccountError[];
+  accountErrors: Array<AccountError>;
+  errors: Array<AccountError>;
   user?: Maybe<User>;
-}
+};
 
-export interface AccountError {
+export type AccountError = {
   __typename?: "AccountError";
   addressType?: Maybe<AddressTypeEnum>;
   code: AccountErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
-}
+};
 
 export enum AccountErrorCode {
   AccountNotConfirmed = "ACCOUNT_NOT_CONFIRMED",
@@ -107,54 +108,54 @@ export enum AccountErrorCode {
   Unique = "UNIQUE",
 }
 
-export interface AccountInput {
-  defaultBillingAddress?: Maybe<AddressInput>;
-  defaultShippingAddress?: Maybe<AddressInput>;
-  firstName?: Maybe<Scalars["String"]>;
-  languageCode?: Maybe<LanguageCodeEnum>;
-  lastName?: Maybe<Scalars["String"]>;
-}
+export type AccountInput = {
+  defaultBillingAddress?: InputMaybe<AddressInput>;
+  defaultShippingAddress?: InputMaybe<AddressInput>;
+  firstName?: InputMaybe<Scalars["String"]>;
+  languageCode?: InputMaybe<LanguageCodeEnum>;
+  lastName?: InputMaybe<Scalars["String"]>;
+};
 
-export interface AccountRegister {
+export type AccountRegister = {
   __typename?: "AccountRegister";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
-  errors: AccountError[];
+  accountErrors: Array<AccountError>;
+  errors: Array<AccountError>;
   requiresConfirmation?: Maybe<Scalars["Boolean"]>;
   user?: Maybe<User>;
-}
+};
 
-export interface AccountRegisterInput {
-  channel?: Maybe<Scalars["String"]>;
+export type AccountRegisterInput = {
+  channel?: InputMaybe<Scalars["String"]>;
   email: Scalars["String"];
-  languageCode?: Maybe<LanguageCodeEnum>;
-  metadata?: Maybe<MetadataInput[]>;
+  languageCode?: InputMaybe<LanguageCodeEnum>;
+  metadata?: InputMaybe<Array<MetadataInput>>;
   password: Scalars["String"];
-  redirectUrl?: Maybe<Scalars["String"]>;
-}
+  redirectUrl?: InputMaybe<Scalars["String"]>;
+};
 
-export interface AccountRequestDeletion {
+export type AccountRequestDeletion = {
   __typename?: "AccountRequestDeletion";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
-  errors: AccountError[];
-}
+  accountErrors: Array<AccountError>;
+  errors: Array<AccountError>;
+};
 
-export interface AccountSetDefaultAddress {
+export type AccountSetDefaultAddress = {
   __typename?: "AccountSetDefaultAddress";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
-  errors: AccountError[];
+  accountErrors: Array<AccountError>;
+  errors: Array<AccountError>;
   user?: Maybe<User>;
-}
+};
 
-export interface AccountUpdate {
+export type AccountUpdate = {
   __typename?: "AccountUpdate";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
-  errors: AccountError[];
+  accountErrors: Array<AccountError>;
+  errors: Array<AccountError>;
   user?: Maybe<User>;
-}
+};
 
 export type Address = Node & {
   __typename?: "Address";
@@ -174,61 +175,61 @@ export type Address = Node & {
   streetAddress2: Scalars["String"];
 };
 
-export interface AddressCreate {
+export type AddressCreate = {
   __typename?: "AddressCreate";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
+  accountErrors: Array<AccountError>;
   address?: Maybe<Address>;
-  errors: AccountError[];
+  errors: Array<AccountError>;
   user?: Maybe<User>;
-}
+};
 
-export interface AddressDelete {
+export type AddressDelete = {
   __typename?: "AddressDelete";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
+  accountErrors: Array<AccountError>;
   address?: Maybe<Address>;
-  errors: AccountError[];
+  errors: Array<AccountError>;
   user?: Maybe<User>;
-}
+};
 
-export interface AddressInput {
-  city?: Maybe<Scalars["String"]>;
-  cityArea?: Maybe<Scalars["String"]>;
-  companyName?: Maybe<Scalars["String"]>;
-  country?: Maybe<CountryCode>;
-  countryArea?: Maybe<Scalars["String"]>;
-  firstName?: Maybe<Scalars["String"]>;
-  lastName?: Maybe<Scalars["String"]>;
-  phone?: Maybe<Scalars["String"]>;
-  postalCode?: Maybe<Scalars["String"]>;
-  streetAddress1?: Maybe<Scalars["String"]>;
-  streetAddress2?: Maybe<Scalars["String"]>;
-}
+export type AddressInput = {
+  city?: InputMaybe<Scalars["String"]>;
+  cityArea?: InputMaybe<Scalars["String"]>;
+  companyName?: InputMaybe<Scalars["String"]>;
+  country?: InputMaybe<CountryCode>;
+  countryArea?: InputMaybe<Scalars["String"]>;
+  firstName?: InputMaybe<Scalars["String"]>;
+  lastName?: InputMaybe<Scalars["String"]>;
+  phone?: InputMaybe<Scalars["String"]>;
+  postalCode?: InputMaybe<Scalars["String"]>;
+  streetAddress1?: InputMaybe<Scalars["String"]>;
+  streetAddress2?: InputMaybe<Scalars["String"]>;
+};
 
-export interface AddressSetDefault {
+export type AddressSetDefault = {
   __typename?: "AddressSetDefault";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
-  errors: AccountError[];
+  accountErrors: Array<AccountError>;
+  errors: Array<AccountError>;
   user?: Maybe<User>;
-}
+};
 
 export enum AddressTypeEnum {
   Billing = "BILLING",
   Shipping = "SHIPPING",
 }
 
-export interface AddressUpdate {
+export type AddressUpdate = {
   __typename?: "AddressUpdate";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
+  accountErrors: Array<AccountError>;
   address?: Maybe<Address>;
-  errors: AccountError[];
+  errors: Array<AccountError>;
   user?: Maybe<User>;
-}
+};
 
-export interface AddressValidationData {
+export type AddressValidationData = {
   __typename?: "AddressValidationData";
   addressFormat?: Maybe<Scalars["String"]>;
   addressLatinFormat?: Maybe<Scalars["String"]>;
@@ -247,7 +248,7 @@ export interface AddressValidationData {
   postalCodeType?: Maybe<Scalars["String"]>;
   requiredFields?: Maybe<Array<Maybe<Scalars["String"]>>>;
   upperFields?: Maybe<Array<Maybe<Scalars["String"]>>>;
-}
+};
 
 export type Allocation = Node & {
   __typename?: "Allocation";
@@ -280,67 +281,67 @@ export type App = Node &
     webhooks?: Maybe<Array<Maybe<Webhook>>>;
   };
 
-export interface AppActivate {
+export type AppActivate = {
   __typename?: "AppActivate";
   app?: Maybe<App>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  appErrors: AppError[];
-  errors: AppError[];
-}
+  appErrors: Array<AppError>;
+  errors: Array<AppError>;
+};
 
-export interface AppCountableConnection {
+export type AppCountableConnection = {
   __typename?: "AppCountableConnection";
-  edges: AppCountableEdge[];
+  edges: Array<AppCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface AppCountableEdge {
+export type AppCountableEdge = {
   __typename?: "AppCountableEdge";
   cursor: Scalars["String"];
   node: App;
-}
+};
 
-export interface AppCreate {
+export type AppCreate = {
   __typename?: "AppCreate";
   app?: Maybe<App>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  appErrors: AppError[];
+  appErrors: Array<AppError>;
   authToken?: Maybe<Scalars["String"]>;
-  errors: AppError[];
-}
+  errors: Array<AppError>;
+};
 
-export interface AppDeactivate {
+export type AppDeactivate = {
   __typename?: "AppDeactivate";
   app?: Maybe<App>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  appErrors: AppError[];
-  errors: AppError[];
-}
+  appErrors: Array<AppError>;
+  errors: Array<AppError>;
+};
 
-export interface AppDelete {
+export type AppDelete = {
   __typename?: "AppDelete";
   app?: Maybe<App>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  appErrors: AppError[];
-  errors: AppError[];
-}
+  appErrors: Array<AppError>;
+  errors: Array<AppError>;
+};
 
-export interface AppDeleteFailedInstallation {
+export type AppDeleteFailedInstallation = {
   __typename?: "AppDeleteFailedInstallation";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  appErrors: AppError[];
+  appErrors: Array<AppError>;
   appInstallation?: Maybe<AppInstallation>;
-  errors: AppError[];
-}
+  errors: Array<AppError>;
+};
 
-export interface AppError {
+export type AppError = {
   __typename?: "AppError";
   code: AppErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
-  permissions?: Maybe<PermissionEnum[]>;
-}
+  permissions?: Maybe<Array<PermissionEnum>>;
+};
 
 export enum AppErrorCode {
   Forbidden = "FORBIDDEN",
@@ -358,39 +359,39 @@ export enum AppErrorCode {
   Unique = "UNIQUE",
 }
 
-export interface AppFetchManifest {
+export type AppFetchManifest = {
   __typename?: "AppFetchManifest";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  appErrors: AppError[];
-  errors: AppError[];
+  appErrors: Array<AppError>;
+  errors: Array<AppError>;
   manifest?: Maybe<Manifest>;
-}
+};
 
-export interface AppFilterInput {
-  isActive?: Maybe<Scalars["Boolean"]>;
-  search?: Maybe<Scalars["String"]>;
-  type?: Maybe<AppTypeEnum>;
-}
+export type AppFilterInput = {
+  isActive?: InputMaybe<Scalars["Boolean"]>;
+  search?: InputMaybe<Scalars["String"]>;
+  type?: InputMaybe<AppTypeEnum>;
+};
 
-export interface AppInput {
-  name?: Maybe<Scalars["String"]>;
-  permissions?: Maybe<Array<Maybe<PermissionEnum>>>;
-}
+export type AppInput = {
+  name?: InputMaybe<Scalars["String"]>;
+  permissions?: InputMaybe<Array<InputMaybe<PermissionEnum>>>;
+};
 
-export interface AppInstall {
+export type AppInstall = {
   __typename?: "AppInstall";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  appErrors: AppError[];
+  appErrors: Array<AppError>;
   appInstallation?: Maybe<AppInstallation>;
-  errors: AppError[];
-}
+  errors: Array<AppError>;
+};
 
-export interface AppInstallInput {
-  activateAfterInstallation?: Maybe<Scalars["Boolean"]>;
-  appName?: Maybe<Scalars["String"]>;
-  manifestUrl?: Maybe<Scalars["String"]>;
-  permissions?: Maybe<Array<Maybe<PermissionEnum>>>;
-}
+export type AppInstallInput = {
+  activateAfterInstallation?: InputMaybe<Scalars["Boolean"]>;
+  appName?: InputMaybe<Scalars["String"]>;
+  manifestUrl?: InputMaybe<Scalars["String"]>;
+  permissions?: InputMaybe<Array<InputMaybe<PermissionEnum>>>;
+};
 
 export type AppInstallation = Job &
   Node & {
@@ -404,23 +405,23 @@ export type AppInstallation = Job &
     updatedAt: Scalars["DateTime"];
   };
 
-export interface AppRetryInstall {
+export type AppRetryInstall = {
   __typename?: "AppRetryInstall";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  appErrors: AppError[];
+  appErrors: Array<AppError>;
   appInstallation?: Maybe<AppInstallation>;
-  errors: AppError[];
-}
+  errors: Array<AppError>;
+};
 
 export enum AppSortField {
   CreationDate = "CREATION_DATE",
   Name = "NAME",
 }
 
-export interface AppSortingInput {
+export type AppSortingInput = {
   direction: OrderDirection;
   field: AppSortField;
-}
+};
 
 export type AppToken = Node & {
   __typename?: "AppToken";
@@ -429,48 +430,48 @@ export type AppToken = Node & {
   name?: Maybe<Scalars["String"]>;
 };
 
-export interface AppTokenCreate {
+export type AppTokenCreate = {
   __typename?: "AppTokenCreate";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  appErrors: AppError[];
+  appErrors: Array<AppError>;
   appToken?: Maybe<AppToken>;
   authToken?: Maybe<Scalars["String"]>;
-  errors: AppError[];
-}
+  errors: Array<AppError>;
+};
 
-export interface AppTokenDelete {
+export type AppTokenDelete = {
   __typename?: "AppTokenDelete";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  appErrors: AppError[];
+  appErrors: Array<AppError>;
   appToken?: Maybe<AppToken>;
-  errors: AppError[];
-}
+  errors: Array<AppError>;
+};
 
-export interface AppTokenInput {
+export type AppTokenInput = {
   app: Scalars["ID"];
-  name?: Maybe<Scalars["String"]>;
-}
+  name?: InputMaybe<Scalars["String"]>;
+};
 
-export interface AppTokenVerify {
+export type AppTokenVerify = {
   __typename?: "AppTokenVerify";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  appErrors: AppError[];
-  errors: AppError[];
+  appErrors: Array<AppError>;
+  errors: Array<AppError>;
   valid: Scalars["Boolean"];
-}
+};
 
 export enum AppTypeEnum {
   Local = "LOCAL",
   Thirdparty = "THIRDPARTY",
 }
 
-export interface AppUpdate {
+export type AppUpdate = {
   __typename?: "AppUpdate";
   app?: Maybe<App>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  appErrors: AppError[];
-  errors: AppError[];
-}
+  appErrors: Array<AppError>;
+  errors: Array<AppError>;
+};
 
 export enum AreaUnitsEnum {
   SqCm = "SQ_CM",
@@ -481,13 +482,13 @@ export enum AreaUnitsEnum {
   SqYd = "SQ_YD",
 }
 
-export interface AssignNavigation {
+export type AssignNavigation = {
   __typename?: "AssignNavigation";
-  errors: MenuError[];
+  errors: Array<MenuError>;
   menu?: Maybe<Menu>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  menuErrors: MenuError[];
-}
+  menuErrors: Array<MenuError>;
+};
 
 export type Attribute = Node &
   ObjectWithMetadata & {
@@ -514,108 +515,108 @@ export type Attribute = Node &
     withChoices: Scalars["Boolean"];
   };
 
-export interface AttributeChoicesArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  filter?: Maybe<AttributeValueFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-  sortBy?: Maybe<AttributeChoicesSortingInput>;
-}
+export type AttributeChoicesArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<AttributeValueFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+  sortBy?: InputMaybe<AttributeChoicesSortingInput>;
+};
 
-export interface AttributeProductTypesArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type AttributeProductTypesArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface AttributeProductVariantTypesArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type AttributeProductVariantTypesArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface AttributeTranslationArgs {
+export type AttributeTranslationArgs = {
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface AttributeBulkDelete {
+export type AttributeBulkDelete = {
   __typename?: "AttributeBulkDelete";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  attributeErrors: AttributeError[];
+  attributeErrors: Array<AttributeError>;
   count: Scalars["Int"];
-  errors: AttributeError[];
-}
+  errors: Array<AttributeError>;
+};
 
 export enum AttributeChoicesSortField {
   Name = "NAME",
   Slug = "SLUG",
 }
 
-export interface AttributeChoicesSortingInput {
+export type AttributeChoicesSortingInput = {
   direction: OrderDirection;
   field: AttributeChoicesSortField;
-}
+};
 
-export interface AttributeCountableConnection {
+export type AttributeCountableConnection = {
   __typename?: "AttributeCountableConnection";
-  edges: AttributeCountableEdge[];
+  edges: Array<AttributeCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface AttributeCountableEdge {
+export type AttributeCountableEdge = {
   __typename?: "AttributeCountableEdge";
   cursor: Scalars["String"];
   node: Attribute;
-}
+};
 
-export interface AttributeCreate {
+export type AttributeCreate = {
   __typename?: "AttributeCreate";
   attribute?: Maybe<Attribute>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  attributeErrors: AttributeError[];
-  errors: AttributeError[];
-}
+  attributeErrors: Array<AttributeError>;
+  errors: Array<AttributeError>;
+};
 
-export interface AttributeCreateInput {
-  availableInGrid?: Maybe<Scalars["Boolean"]>;
-  entityType?: Maybe<AttributeEntityTypeEnum>;
-  filterableInDashboard?: Maybe<Scalars["Boolean"]>;
-  filterableInStorefront?: Maybe<Scalars["Boolean"]>;
-  inputType?: Maybe<AttributeInputTypeEnum>;
-  isVariantOnly?: Maybe<Scalars["Boolean"]>;
+export type AttributeCreateInput = {
+  availableInGrid?: InputMaybe<Scalars["Boolean"]>;
+  entityType?: InputMaybe<AttributeEntityTypeEnum>;
+  filterableInDashboard?: InputMaybe<Scalars["Boolean"]>;
+  filterableInStorefront?: InputMaybe<Scalars["Boolean"]>;
+  inputType?: InputMaybe<AttributeInputTypeEnum>;
+  isVariantOnly?: InputMaybe<Scalars["Boolean"]>;
   name: Scalars["String"];
-  slug?: Maybe<Scalars["String"]>;
-  storefrontSearchPosition?: Maybe<Scalars["Int"]>;
+  slug?: InputMaybe<Scalars["String"]>;
+  storefrontSearchPosition?: InputMaybe<Scalars["Int"]>;
   type: AttributeTypeEnum;
-  unit?: Maybe<MeasurementUnitsEnum>;
-  valueRequired?: Maybe<Scalars["Boolean"]>;
-  values?: Maybe<Array<Maybe<AttributeValueCreateInput>>>;
-  visibleInStorefront?: Maybe<Scalars["Boolean"]>;
-}
+  unit?: InputMaybe<MeasurementUnitsEnum>;
+  valueRequired?: InputMaybe<Scalars["Boolean"]>;
+  values?: InputMaybe<Array<InputMaybe<AttributeValueCreateInput>>>;
+  visibleInStorefront?: InputMaybe<Scalars["Boolean"]>;
+};
 
-export interface AttributeDelete {
+export type AttributeDelete = {
   __typename?: "AttributeDelete";
   attribute?: Maybe<Attribute>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  attributeErrors: AttributeError[];
-  errors: AttributeError[];
-}
+  attributeErrors: Array<AttributeError>;
+  errors: Array<AttributeError>;
+};
 
 export enum AttributeEntityTypeEnum {
   Page = "PAGE",
   Product = "PRODUCT",
 }
 
-export interface AttributeError {
+export type AttributeError = {
   __typename?: "AttributeError";
   code: AttributeErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
-}
+};
 
 export enum AttributeErrorCode {
   AlreadyExists = "ALREADY_EXISTS",
@@ -626,30 +627,30 @@ export enum AttributeErrorCode {
   Unique = "UNIQUE",
 }
 
-export interface AttributeFilterInput {
-  availableInGrid?: Maybe<Scalars["Boolean"]>;
-  channel?: Maybe<Scalars["String"]>;
-  filterableInDashboard?: Maybe<Scalars["Boolean"]>;
-  filterableInStorefront?: Maybe<Scalars["Boolean"]>;
-  ids?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  inCategory?: Maybe<Scalars["ID"]>;
-  inCollection?: Maybe<Scalars["ID"]>;
-  isVariantOnly?: Maybe<Scalars["Boolean"]>;
-  metadata?: Maybe<Array<Maybe<MetadataFilter>>>;
-  search?: Maybe<Scalars["String"]>;
-  type?: Maybe<AttributeTypeEnum>;
-  valueRequired?: Maybe<Scalars["Boolean"]>;
-  visibleInStorefront?: Maybe<Scalars["Boolean"]>;
-}
+export type AttributeFilterInput = {
+  availableInGrid?: InputMaybe<Scalars["Boolean"]>;
+  channel?: InputMaybe<Scalars["String"]>;
+  filterableInDashboard?: InputMaybe<Scalars["Boolean"]>;
+  filterableInStorefront?: InputMaybe<Scalars["Boolean"]>;
+  ids?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  inCategory?: InputMaybe<Scalars["ID"]>;
+  inCollection?: InputMaybe<Scalars["ID"]>;
+  isVariantOnly?: InputMaybe<Scalars["Boolean"]>;
+  metadata?: InputMaybe<Array<InputMaybe<MetadataFilter>>>;
+  search?: InputMaybe<Scalars["String"]>;
+  type?: InputMaybe<AttributeTypeEnum>;
+  valueRequired?: InputMaybe<Scalars["Boolean"]>;
+  visibleInStorefront?: InputMaybe<Scalars["Boolean"]>;
+};
 
-export interface AttributeInput {
-  boolean?: Maybe<Scalars["Boolean"]>;
-  date?: Maybe<DateRangeInput>;
-  dateTime?: Maybe<DateTimeRangeInput>;
+export type AttributeInput = {
+  boolean?: InputMaybe<Scalars["Boolean"]>;
+  date?: InputMaybe<DateRangeInput>;
+  dateTime?: InputMaybe<DateTimeRangeInput>;
   slug: Scalars["String"];
-  values?: Maybe<Array<Maybe<Scalars["String"]>>>;
-  valuesRange?: Maybe<IntRangeInput>;
-}
+  values?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
+  valuesRange?: InputMaybe<IntRangeInput>;
+};
 
 export enum AttributeInputTypeEnum {
   Boolean = "BOOLEAN",
@@ -663,13 +664,13 @@ export enum AttributeInputTypeEnum {
   RichText = "RICH_TEXT",
 }
 
-export interface AttributeReorderValues {
+export type AttributeReorderValues = {
   __typename?: "AttributeReorderValues";
   attribute?: Maybe<Attribute>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  attributeErrors: AttributeError[];
-  errors: AttributeError[];
-}
+  attributeErrors: Array<AttributeError>;
+  errors: Array<AttributeError>;
+};
 
 export enum AttributeSortField {
   AvailableInGrid = "AVAILABLE_IN_GRID",
@@ -683,10 +684,10 @@ export enum AttributeSortField {
   VisibleInStorefront = "VISIBLE_IN_STOREFRONT",
 }
 
-export interface AttributeSortingInput {
+export type AttributeSortingInput = {
   direction: OrderDirection;
   field: AttributeSortField;
-}
+};
 
 export type AttributeTranslatableContent = Node & {
   __typename?: "AttributeTranslatableContent";
@@ -697,17 +698,17 @@ export type AttributeTranslatableContent = Node & {
   translation?: Maybe<AttributeTranslation>;
 };
 
-export interface AttributeTranslatableContentTranslationArgs {
+export type AttributeTranslatableContentTranslationArgs = {
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface AttributeTranslate {
+export type AttributeTranslate = {
   __typename?: "AttributeTranslate";
   attribute?: Maybe<Attribute>;
-  errors: TranslationError[];
+  errors: Array<TranslationError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  translationErrors: TranslationError[];
-}
+  translationErrors: Array<TranslationError>;
+};
 
 export type AttributeTranslation = Node & {
   __typename?: "AttributeTranslation";
@@ -721,28 +722,28 @@ export enum AttributeTypeEnum {
   ProductType = "PRODUCT_TYPE",
 }
 
-export interface AttributeUpdate {
+export type AttributeUpdate = {
   __typename?: "AttributeUpdate";
   attribute?: Maybe<Attribute>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  attributeErrors: AttributeError[];
-  errors: AttributeError[];
-}
+  attributeErrors: Array<AttributeError>;
+  errors: Array<AttributeError>;
+};
 
-export interface AttributeUpdateInput {
-  addValues?: Maybe<Array<Maybe<AttributeValueCreateInput>>>;
-  availableInGrid?: Maybe<Scalars["Boolean"]>;
-  filterableInDashboard?: Maybe<Scalars["Boolean"]>;
-  filterableInStorefront?: Maybe<Scalars["Boolean"]>;
-  isVariantOnly?: Maybe<Scalars["Boolean"]>;
-  name?: Maybe<Scalars["String"]>;
-  removeValues?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  slug?: Maybe<Scalars["String"]>;
-  storefrontSearchPosition?: Maybe<Scalars["Int"]>;
-  unit?: Maybe<MeasurementUnitsEnum>;
-  valueRequired?: Maybe<Scalars["Boolean"]>;
-  visibleInStorefront?: Maybe<Scalars["Boolean"]>;
-}
+export type AttributeUpdateInput = {
+  addValues?: InputMaybe<Array<InputMaybe<AttributeValueCreateInput>>>;
+  availableInGrid?: InputMaybe<Scalars["Boolean"]>;
+  filterableInDashboard?: InputMaybe<Scalars["Boolean"]>;
+  filterableInStorefront?: InputMaybe<Scalars["Boolean"]>;
+  isVariantOnly?: InputMaybe<Scalars["Boolean"]>;
+  name?: InputMaybe<Scalars["String"]>;
+  removeValues?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  slug?: InputMaybe<Scalars["String"]>;
+  storefrontSearchPosition?: InputMaybe<Scalars["Int"]>;
+  unit?: InputMaybe<MeasurementUnitsEnum>;
+  valueRequired?: InputMaybe<Scalars["Boolean"]>;
+  visibleInStorefront?: InputMaybe<Scalars["Boolean"]>;
+};
 
 export type AttributeValue = Node & {
   __typename?: "AttributeValue";
@@ -760,70 +761,70 @@ export type AttributeValue = Node & {
   value?: Maybe<Scalars["String"]>;
 };
 
-export interface AttributeValueTranslationArgs {
+export type AttributeValueTranslationArgs = {
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface AttributeValueBulkDelete {
+export type AttributeValueBulkDelete = {
   __typename?: "AttributeValueBulkDelete";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  attributeErrors: AttributeError[];
+  attributeErrors: Array<AttributeError>;
   count: Scalars["Int"];
-  errors: AttributeError[];
-}
+  errors: Array<AttributeError>;
+};
 
-export interface AttributeValueCountableConnection {
+export type AttributeValueCountableConnection = {
   __typename?: "AttributeValueCountableConnection";
-  edges: AttributeValueCountableEdge[];
+  edges: Array<AttributeValueCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface AttributeValueCountableEdge {
+export type AttributeValueCountableEdge = {
   __typename?: "AttributeValueCountableEdge";
   cursor: Scalars["String"];
   node: AttributeValue;
-}
+};
 
-export interface AttributeValueCreate {
+export type AttributeValueCreate = {
   __typename?: "AttributeValueCreate";
   attribute?: Maybe<Attribute>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  attributeErrors: AttributeError[];
+  attributeErrors: Array<AttributeError>;
   attributeValue?: Maybe<AttributeValue>;
-  errors: AttributeError[];
-}
+  errors: Array<AttributeError>;
+};
 
-export interface AttributeValueCreateInput {
+export type AttributeValueCreateInput = {
   name: Scalars["String"];
-  richText?: Maybe<Scalars["JSONString"]>;
-  value?: Maybe<Scalars["String"]>;
-}
+  richText?: InputMaybe<Scalars["JSONString"]>;
+  value?: InputMaybe<Scalars["String"]>;
+};
 
-export interface AttributeValueDelete {
+export type AttributeValueDelete = {
   __typename?: "AttributeValueDelete";
   attribute?: Maybe<Attribute>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  attributeErrors: AttributeError[];
+  attributeErrors: Array<AttributeError>;
   attributeValue?: Maybe<AttributeValue>;
-  errors: AttributeError[];
-}
+  errors: Array<AttributeError>;
+};
 
-export interface AttributeValueFilterInput {
-  search?: Maybe<Scalars["String"]>;
-}
+export type AttributeValueFilterInput = {
+  search?: InputMaybe<Scalars["String"]>;
+};
 
-export interface AttributeValueInput {
-  boolean?: Maybe<Scalars["Boolean"]>;
-  contentType?: Maybe<Scalars["String"]>;
-  date?: Maybe<Scalars["Date"]>;
-  dateTime?: Maybe<Scalars["DateTime"]>;
-  file?: Maybe<Scalars["String"]>;
-  id?: Maybe<Scalars["ID"]>;
-  references?: Maybe<Array<Scalars["ID"]>>;
-  richText?: Maybe<Scalars["JSONString"]>;
-  values?: Maybe<Array<Scalars["String"]>>;
-}
+export type AttributeValueInput = {
+  boolean?: InputMaybe<Scalars["Boolean"]>;
+  contentType?: InputMaybe<Scalars["String"]>;
+  date?: InputMaybe<Scalars["Date"]>;
+  dateTime?: InputMaybe<Scalars["DateTime"]>;
+  file?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["ID"]>;
+  references?: InputMaybe<Array<Scalars["ID"]>>;
+  richText?: InputMaybe<Scalars["JSONString"]>;
+  values?: InputMaybe<Array<Scalars["String"]>>;
+};
 
 export type AttributeValueTranslatableContent = Node & {
   __typename?: "AttributeValueTranslatableContent";
@@ -835,17 +836,17 @@ export type AttributeValueTranslatableContent = Node & {
   translation?: Maybe<AttributeValueTranslation>;
 };
 
-export interface AttributeValueTranslatableContentTranslationArgs {
+export type AttributeValueTranslatableContentTranslationArgs = {
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface AttributeValueTranslate {
+export type AttributeValueTranslate = {
   __typename?: "AttributeValueTranslate";
   attributeValue?: Maybe<AttributeValue>;
-  errors: TranslationError[];
+  errors: Array<TranslationError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  translationErrors: TranslationError[];
-}
+  translationErrors: Array<TranslationError>;
+};
 
 export type AttributeValueTranslation = Node & {
   __typename?: "AttributeValueTranslation";
@@ -855,27 +856,27 @@ export type AttributeValueTranslation = Node & {
   richText?: Maybe<Scalars["JSONString"]>;
 };
 
-export interface AttributeValueTranslationInput {
-  name?: Maybe<Scalars["String"]>;
-  richText?: Maybe<Scalars["JSONString"]>;
-}
+export type AttributeValueTranslationInput = {
+  name?: InputMaybe<Scalars["String"]>;
+  richText?: InputMaybe<Scalars["JSONString"]>;
+};
 
-export interface AttributeValueUpdate {
+export type AttributeValueUpdate = {
   __typename?: "AttributeValueUpdate";
   attribute?: Maybe<Attribute>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  attributeErrors: AttributeError[];
+  attributeErrors: Array<AttributeError>;
   attributeValue?: Maybe<AttributeValue>;
-  errors: AttributeError[];
-}
+  errors: Array<AttributeError>;
+};
 
-export interface BulkAttributeValueInput {
-  boolean?: Maybe<Scalars["Boolean"]>;
-  id?: Maybe<Scalars["ID"]>;
-  values?: Maybe<Array<Scalars["String"]>>;
-}
+export type BulkAttributeValueInput = {
+  boolean?: InputMaybe<Scalars["Boolean"]>;
+  id?: InputMaybe<Scalars["ID"]>;
+  values?: InputMaybe<Array<Scalars["String"]>>;
+};
 
-export interface BulkProductError {
+export type BulkProductError = {
   __typename?: "BulkProductError";
   attributes?: Maybe<Array<Scalars["ID"]>>;
   channels?: Maybe<Array<Scalars["ID"]>>;
@@ -885,9 +886,9 @@ export interface BulkProductError {
   message?: Maybe<Scalars["String"]>;
   values?: Maybe<Array<Scalars["ID"]>>;
   warehouses?: Maybe<Array<Scalars["ID"]>>;
-}
+};
 
-export interface BulkStockError {
+export type BulkStockError = {
   __typename?: "BulkStockError";
   attributes?: Maybe<Array<Scalars["ID"]>>;
   code: ProductErrorCode;
@@ -895,13 +896,13 @@ export interface BulkStockError {
   index?: Maybe<Scalars["Int"]>;
   message?: Maybe<Scalars["String"]>;
   values?: Maybe<Array<Scalars["ID"]>>;
-}
+};
 
-export interface CatalogueInput {
-  categories?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  collections?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  products?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-}
+export type CatalogueInput = {
+  categories?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  collections?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  products?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+};
 
 export type Category = Node &
   ObjectWithMetadata & {
@@ -925,87 +926,87 @@ export type Category = Node &
     translation?: Maybe<CategoryTranslation>;
   };
 
-export interface CategoryAncestorsArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type CategoryAncestorsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface CategoryBackgroundImageArgs {
-  size?: Maybe<Scalars["Int"]>;
-}
+export type CategoryBackgroundImageArgs = {
+  size?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface CategoryChildrenArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type CategoryChildrenArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface CategoryProductsArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  channel?: Maybe<Scalars["String"]>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type CategoryProductsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  channel?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface CategoryTranslationArgs {
+export type CategoryTranslationArgs = {
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface CategoryBulkDelete {
+export type CategoryBulkDelete = {
   __typename?: "CategoryBulkDelete";
   count: Scalars["Int"];
-  errors: ProductError[];
+  errors: Array<ProductError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
-}
+  productErrors: Array<ProductError>;
+};
 
-export interface CategoryCountableConnection {
+export type CategoryCountableConnection = {
   __typename?: "CategoryCountableConnection";
-  edges: CategoryCountableEdge[];
+  edges: Array<CategoryCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface CategoryCountableEdge {
+export type CategoryCountableEdge = {
   __typename?: "CategoryCountableEdge";
   cursor: Scalars["String"];
   node: Category;
-}
+};
 
-export interface CategoryCreate {
+export type CategoryCreate = {
   __typename?: "CategoryCreate";
   category?: Maybe<Category>;
-  errors: ProductError[];
+  errors: Array<ProductError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
-}
+  productErrors: Array<ProductError>;
+};
 
-export interface CategoryDelete {
+export type CategoryDelete = {
   __typename?: "CategoryDelete";
   category?: Maybe<Category>;
-  errors: ProductError[];
+  errors: Array<ProductError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
-}
+  productErrors: Array<ProductError>;
+};
 
-export interface CategoryFilterInput {
-  ids?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  metadata?: Maybe<Array<Maybe<MetadataFilter>>>;
-  search?: Maybe<Scalars["String"]>;
-}
+export type CategoryFilterInput = {
+  ids?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  metadata?: InputMaybe<Array<InputMaybe<MetadataFilter>>>;
+  search?: InputMaybe<Scalars["String"]>;
+};
 
-export interface CategoryInput {
-  backgroundImage?: Maybe<Scalars["Upload"]>;
-  backgroundImageAlt?: Maybe<Scalars["String"]>;
-  description?: Maybe<Scalars["JSONString"]>;
-  name?: Maybe<Scalars["String"]>;
-  seo?: Maybe<SeoInput>;
-  slug?: Maybe<Scalars["String"]>;
-}
+export type CategoryInput = {
+  backgroundImage?: InputMaybe<Scalars["Upload"]>;
+  backgroundImageAlt?: InputMaybe<Scalars["String"]>;
+  description?: InputMaybe<Scalars["JSONString"]>;
+  name?: InputMaybe<Scalars["String"]>;
+  seo?: InputMaybe<SeoInput>;
+  slug?: InputMaybe<Scalars["String"]>;
+};
 
 export enum CategorySortField {
   Name = "NAME",
@@ -1013,11 +1014,11 @@ export enum CategorySortField {
   SubcategoryCount = "SUBCATEGORY_COUNT",
 }
 
-export interface CategorySortingInput {
-  channel?: Maybe<Scalars["String"]>;
+export type CategorySortingInput = {
+  channel?: InputMaybe<Scalars["String"]>;
   direction: OrderDirection;
   field: CategorySortField;
-}
+};
 
 export type CategoryTranslatableContent = Node & {
   __typename?: "CategoryTranslatableContent";
@@ -1033,17 +1034,17 @@ export type CategoryTranslatableContent = Node & {
   translation?: Maybe<CategoryTranslation>;
 };
 
-export interface CategoryTranslatableContentTranslationArgs {
+export type CategoryTranslatableContentTranslationArgs = {
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface CategoryTranslate {
+export type CategoryTranslate = {
   __typename?: "CategoryTranslate";
   category?: Maybe<Category>;
-  errors: TranslationError[];
+  errors: Array<TranslationError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  translationErrors: TranslationError[];
-}
+  translationErrors: Array<TranslationError>;
+};
 
 export type CategoryTranslation = Node & {
   __typename?: "CategoryTranslation";
@@ -1057,13 +1058,13 @@ export type CategoryTranslation = Node & {
   seoTitle?: Maybe<Scalars["String"]>;
 };
 
-export interface CategoryUpdate {
+export type CategoryUpdate = {
   __typename?: "CategoryUpdate";
   category?: Maybe<Category>;
-  errors: ProductError[];
+  errors: Array<ProductError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
-}
+  productErrors: Array<ProductError>;
+};
 
 export type Channel = Node & {
   __typename?: "Channel";
@@ -1076,58 +1077,58 @@ export type Channel = Node & {
   slug: Scalars["String"];
 };
 
-export interface ChannelActivate {
+export type ChannelActivate = {
   __typename?: "ChannelActivate";
   channel?: Maybe<Channel>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  channelErrors: ChannelError[];
-  errors: ChannelError[];
-}
+  channelErrors: Array<ChannelError>;
+  errors: Array<ChannelError>;
+};
 
-export interface ChannelCreate {
+export type ChannelCreate = {
   __typename?: "ChannelCreate";
   channel?: Maybe<Channel>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  channelErrors: ChannelError[];
-  errors: ChannelError[];
-}
+  channelErrors: Array<ChannelError>;
+  errors: Array<ChannelError>;
+};
 
-export interface ChannelCreateInput {
-  addShippingZones?: Maybe<Array<Scalars["ID"]>>;
+export type ChannelCreateInput = {
+  addShippingZones?: InputMaybe<Array<Scalars["ID"]>>;
   currencyCode: Scalars["String"];
   defaultCountry: CountryCode;
-  isActive?: Maybe<Scalars["Boolean"]>;
+  isActive?: InputMaybe<Scalars["Boolean"]>;
   name: Scalars["String"];
   slug: Scalars["String"];
-}
+};
 
-export interface ChannelDeactivate {
+export type ChannelDeactivate = {
   __typename?: "ChannelDeactivate";
   channel?: Maybe<Channel>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  channelErrors: ChannelError[];
-  errors: ChannelError[];
-}
+  channelErrors: Array<ChannelError>;
+  errors: Array<ChannelError>;
+};
 
-export interface ChannelDelete {
+export type ChannelDelete = {
   __typename?: "ChannelDelete";
   channel?: Maybe<Channel>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  channelErrors: ChannelError[];
-  errors: ChannelError[];
-}
+  channelErrors: Array<ChannelError>;
+  errors: Array<ChannelError>;
+};
 
-export interface ChannelDeleteInput {
+export type ChannelDeleteInput = {
   channelId: Scalars["ID"];
-}
+};
 
-export interface ChannelError {
+export type ChannelError = {
   __typename?: "ChannelError";
   code: ChannelErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
   shippingZones?: Maybe<Array<Scalars["ID"]>>;
-}
+};
 
 export enum ChannelErrorCode {
   AlreadyExists = "ALREADY_EXISTS",
@@ -1141,27 +1142,27 @@ export enum ChannelErrorCode {
   Unique = "UNIQUE",
 }
 
-export interface ChannelUpdate {
+export type ChannelUpdate = {
   __typename?: "ChannelUpdate";
   channel?: Maybe<Channel>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  channelErrors: ChannelError[];
-  errors: ChannelError[];
-}
+  channelErrors: Array<ChannelError>;
+  errors: Array<ChannelError>;
+};
 
-export interface ChannelUpdateInput {
-  addShippingZones?: Maybe<Array<Scalars["ID"]>>;
-  defaultCountry?: Maybe<CountryCode>;
-  isActive?: Maybe<Scalars["Boolean"]>;
-  name?: Maybe<Scalars["String"]>;
-  removeShippingZones?: Maybe<Array<Scalars["ID"]>>;
-  slug?: Maybe<Scalars["String"]>;
-}
+export type ChannelUpdateInput = {
+  addShippingZones?: InputMaybe<Array<Scalars["ID"]>>;
+  defaultCountry?: InputMaybe<CountryCode>;
+  isActive?: InputMaybe<Scalars["Boolean"]>;
+  name?: InputMaybe<Scalars["String"]>;
+  removeShippingZones?: InputMaybe<Array<Scalars["ID"]>>;
+  slug?: InputMaybe<Scalars["String"]>;
+};
 
 export type Checkout = Node &
   ObjectWithMetadata & {
     __typename?: "Checkout";
-    availablePaymentGateways: PaymentGateway[];
+    availablePaymentGateways: Array<PaymentGateway>;
     availableShippingMethods: Array<Maybe<ShippingMethod>>;
     billingAddress?: Maybe<Address>;
     channel: Channel;
@@ -1190,95 +1191,95 @@ export type Checkout = Node &
     voucherCode?: Maybe<Scalars["String"]>;
   };
 
-export interface CheckoutAddPromoCode {
+export type CheckoutAddPromoCode = {
   __typename?: "CheckoutAddPromoCode";
   checkout?: Maybe<Checkout>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  checkoutErrors: CheckoutError[];
-  errors: CheckoutError[];
-}
+  checkoutErrors: Array<CheckoutError>;
+  errors: Array<CheckoutError>;
+};
 
-export interface CheckoutBillingAddressUpdate {
+export type CheckoutBillingAddressUpdate = {
   __typename?: "CheckoutBillingAddressUpdate";
   checkout?: Maybe<Checkout>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  checkoutErrors: CheckoutError[];
-  errors: CheckoutError[];
-}
+  checkoutErrors: Array<CheckoutError>;
+  errors: Array<CheckoutError>;
+};
 
-export interface CheckoutComplete {
+export type CheckoutComplete = {
   __typename?: "CheckoutComplete";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  checkoutErrors: CheckoutError[];
+  checkoutErrors: Array<CheckoutError>;
   confirmationData?: Maybe<Scalars["JSONString"]>;
   confirmationNeeded: Scalars["Boolean"];
-  errors: CheckoutError[];
+  errors: Array<CheckoutError>;
   order?: Maybe<Order>;
-}
+};
 
-export interface CheckoutCountableConnection {
+export type CheckoutCountableConnection = {
   __typename?: "CheckoutCountableConnection";
-  edges: CheckoutCountableEdge[];
+  edges: Array<CheckoutCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface CheckoutCountableEdge {
+export type CheckoutCountableEdge = {
   __typename?: "CheckoutCountableEdge";
   cursor: Scalars["String"];
   node: Checkout;
-}
+};
 
-export interface CheckoutCreate {
+export type CheckoutCreate = {
   __typename?: "CheckoutCreate";
   checkout?: Maybe<Checkout>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  checkoutErrors: CheckoutError[];
+  checkoutErrors: Array<CheckoutError>;
   created?: Maybe<Scalars["Boolean"]>;
-  errors: CheckoutError[];
-}
+  errors: Array<CheckoutError>;
+};
 
-export interface CheckoutCreateInput {
-  billingAddress?: Maybe<AddressInput>;
-  channel?: Maybe<Scalars["String"]>;
-  email?: Maybe<Scalars["String"]>;
-  languageCode?: Maybe<LanguageCodeEnum>;
-  lines: Array<Maybe<CheckoutLineInput>>;
-  shippingAddress?: Maybe<AddressInput>;
-}
+export type CheckoutCreateInput = {
+  billingAddress?: InputMaybe<AddressInput>;
+  channel?: InputMaybe<Scalars["String"]>;
+  email?: InputMaybe<Scalars["String"]>;
+  languageCode?: InputMaybe<LanguageCodeEnum>;
+  lines: Array<InputMaybe<CheckoutLineInput>>;
+  shippingAddress?: InputMaybe<AddressInput>;
+};
 
-export interface CheckoutCustomerAttach {
+export type CheckoutCustomerAttach = {
   __typename?: "CheckoutCustomerAttach";
   checkout?: Maybe<Checkout>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  checkoutErrors: CheckoutError[];
-  errors: CheckoutError[];
-}
+  checkoutErrors: Array<CheckoutError>;
+  errors: Array<CheckoutError>;
+};
 
-export interface CheckoutCustomerDetach {
+export type CheckoutCustomerDetach = {
   __typename?: "CheckoutCustomerDetach";
   checkout?: Maybe<Checkout>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  checkoutErrors: CheckoutError[];
-  errors: CheckoutError[];
-}
+  checkoutErrors: Array<CheckoutError>;
+  errors: Array<CheckoutError>;
+};
 
-export interface CheckoutEmailUpdate {
+export type CheckoutEmailUpdate = {
   __typename?: "CheckoutEmailUpdate";
   checkout?: Maybe<Checkout>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  checkoutErrors: CheckoutError[];
-  errors: CheckoutError[];
-}
+  checkoutErrors: Array<CheckoutError>;
+  errors: Array<CheckoutError>;
+};
 
-export interface CheckoutError {
+export type CheckoutError = {
   __typename?: "CheckoutError";
   addressType?: Maybe<AddressTypeEnum>;
   code: CheckoutErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
   variants?: Maybe<Array<Scalars["ID"]>>;
-}
+};
 
 export enum CheckoutErrorCode {
   BillingAddressNotSet = "BILLING_ADDRESS_NOT_SET",
@@ -1306,13 +1307,13 @@ export enum CheckoutErrorCode {
   ZeroQuantity = "ZERO_QUANTITY",
 }
 
-export interface CheckoutLanguageCodeUpdate {
+export type CheckoutLanguageCodeUpdate = {
   __typename?: "CheckoutLanguageCodeUpdate";
   checkout?: Maybe<Checkout>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  checkoutErrors: CheckoutError[];
-  errors: CheckoutError[];
-}
+  checkoutErrors: Array<CheckoutError>;
+  errors: Array<CheckoutError>;
+};
 
 export type CheckoutLine = Node & {
   __typename?: "CheckoutLine";
@@ -1323,93 +1324,93 @@ export type CheckoutLine = Node & {
   variant: ProductVariant;
 };
 
-export interface CheckoutLineCountableConnection {
+export type CheckoutLineCountableConnection = {
   __typename?: "CheckoutLineCountableConnection";
-  edges: CheckoutLineCountableEdge[];
+  edges: Array<CheckoutLineCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface CheckoutLineCountableEdge {
+export type CheckoutLineCountableEdge = {
   __typename?: "CheckoutLineCountableEdge";
   cursor: Scalars["String"];
   node: CheckoutLine;
-}
+};
 
-export interface CheckoutLineDelete {
+export type CheckoutLineDelete = {
   __typename?: "CheckoutLineDelete";
   checkout?: Maybe<Checkout>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  checkoutErrors: CheckoutError[];
-  errors: CheckoutError[];
-}
+  checkoutErrors: Array<CheckoutError>;
+  errors: Array<CheckoutError>;
+};
 
-export interface CheckoutLineInput {
+export type CheckoutLineInput = {
   quantity: Scalars["Int"];
   variantId: Scalars["ID"];
-}
+};
 
-export interface CheckoutLinesAdd {
+export type CheckoutLinesAdd = {
   __typename?: "CheckoutLinesAdd";
   checkout?: Maybe<Checkout>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  checkoutErrors: CheckoutError[];
-  errors: CheckoutError[];
-}
+  checkoutErrors: Array<CheckoutError>;
+  errors: Array<CheckoutError>;
+};
 
-export interface CheckoutLinesUpdate {
+export type CheckoutLinesUpdate = {
   __typename?: "CheckoutLinesUpdate";
   checkout?: Maybe<Checkout>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  checkoutErrors: CheckoutError[];
-  errors: CheckoutError[];
-}
+  checkoutErrors: Array<CheckoutError>;
+  errors: Array<CheckoutError>;
+};
 
-export interface CheckoutPaymentCreate {
+export type CheckoutPaymentCreate = {
   __typename?: "CheckoutPaymentCreate";
   checkout?: Maybe<Checkout>;
-  errors: PaymentError[];
+  errors: Array<PaymentError>;
   payment?: Maybe<Payment>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  paymentErrors: PaymentError[];
-}
+  paymentErrors: Array<PaymentError>;
+};
 
-export interface CheckoutRemovePromoCode {
+export type CheckoutRemovePromoCode = {
   __typename?: "CheckoutRemovePromoCode";
   checkout?: Maybe<Checkout>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  checkoutErrors: CheckoutError[];
-  errors: CheckoutError[];
-}
+  checkoutErrors: Array<CheckoutError>;
+  errors: Array<CheckoutError>;
+};
 
-export interface CheckoutShippingAddressUpdate {
+export type CheckoutShippingAddressUpdate = {
   __typename?: "CheckoutShippingAddressUpdate";
   checkout?: Maybe<Checkout>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  checkoutErrors: CheckoutError[];
-  errors: CheckoutError[];
-}
+  checkoutErrors: Array<CheckoutError>;
+  errors: Array<CheckoutError>;
+};
 
-export interface CheckoutShippingMethodUpdate {
+export type CheckoutShippingMethodUpdate = {
   __typename?: "CheckoutShippingMethodUpdate";
   checkout?: Maybe<Checkout>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  checkoutErrors: CheckoutError[];
-  errors: CheckoutError[];
-}
+  checkoutErrors: Array<CheckoutError>;
+  errors: Array<CheckoutError>;
+};
 
-export interface ChoiceValue {
+export type ChoiceValue = {
   __typename?: "ChoiceValue";
   raw?: Maybe<Scalars["String"]>;
   verbose?: Maybe<Scalars["String"]>;
-}
+};
 
 export type Collection = Node &
   ObjectWithMetadata & {
     __typename?: "Collection";
     backgroundImage?: Maybe<Image>;
     channel?: Maybe<Scalars["String"]>;
-    channelListings?: Maybe<CollectionChannelListing[]>;
+    channelListings?: Maybe<Array<CollectionChannelListing>>;
     description?: Maybe<Scalars["JSONString"]>;
     /** @deprecated Will be removed in Saleor 4.0. Use the `description` field instead. */
     descriptionJson?: Maybe<Scalars["JSONString"]>;
@@ -1424,38 +1425,38 @@ export type Collection = Node &
     translation?: Maybe<CollectionTranslation>;
   };
 
-export interface CollectionBackgroundImageArgs {
-  size?: Maybe<Scalars["Int"]>;
-}
+export type CollectionBackgroundImageArgs = {
+  size?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface CollectionProductsArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  filter?: Maybe<ProductFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-  sortBy?: Maybe<ProductOrder>;
-}
+export type CollectionProductsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<ProductFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+  sortBy?: InputMaybe<ProductOrder>;
+};
 
-export interface CollectionTranslationArgs {
+export type CollectionTranslationArgs = {
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface CollectionAddProducts {
+export type CollectionAddProducts = {
   __typename?: "CollectionAddProducts";
   collection?: Maybe<Collection>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  collectionErrors: CollectionError[];
-  errors: CollectionError[];
-}
+  collectionErrors: Array<CollectionError>;
+  errors: Array<CollectionError>;
+};
 
-export interface CollectionBulkDelete {
+export type CollectionBulkDelete = {
   __typename?: "CollectionBulkDelete";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  collectionErrors: CollectionError[];
+  collectionErrors: Array<CollectionError>;
   count: Scalars["Int"];
-  errors: CollectionError[];
-}
+  errors: Array<CollectionError>;
+};
 
 export type CollectionChannelListing = Node & {
   __typename?: "CollectionChannelListing";
@@ -1465,7 +1466,7 @@ export type CollectionChannelListing = Node & {
   publicationDate?: Maybe<Scalars["Date"]>;
 };
 
-export interface CollectionChannelListingError {
+export type CollectionChannelListingError = {
   __typename?: "CollectionChannelListingError";
   attributes?: Maybe<Array<Scalars["ID"]>>;
   channels?: Maybe<Array<Scalars["ID"]>>;
@@ -1473,69 +1474,69 @@ export interface CollectionChannelListingError {
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
   values?: Maybe<Array<Scalars["ID"]>>;
-}
+};
 
-export interface CollectionChannelListingUpdate {
+export type CollectionChannelListingUpdate = {
   __typename?: "CollectionChannelListingUpdate";
   collection?: Maybe<Collection>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  collectionChannelListingErrors: CollectionChannelListingError[];
-  errors: CollectionChannelListingError[];
-}
+  collectionChannelListingErrors: Array<CollectionChannelListingError>;
+  errors: Array<CollectionChannelListingError>;
+};
 
-export interface CollectionChannelListingUpdateInput {
-  addChannels?: Maybe<PublishableChannelListingInput[]>;
-  removeChannels?: Maybe<Array<Scalars["ID"]>>;
-}
+export type CollectionChannelListingUpdateInput = {
+  addChannels?: InputMaybe<Array<PublishableChannelListingInput>>;
+  removeChannels?: InputMaybe<Array<Scalars["ID"]>>;
+};
 
-export interface CollectionCountableConnection {
+export type CollectionCountableConnection = {
   __typename?: "CollectionCountableConnection";
-  edges: CollectionCountableEdge[];
+  edges: Array<CollectionCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface CollectionCountableEdge {
+export type CollectionCountableEdge = {
   __typename?: "CollectionCountableEdge";
   cursor: Scalars["String"];
   node: Collection;
-}
+};
 
-export interface CollectionCreate {
+export type CollectionCreate = {
   __typename?: "CollectionCreate";
   collection?: Maybe<Collection>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  collectionErrors: CollectionError[];
-  errors: CollectionError[];
-}
+  collectionErrors: Array<CollectionError>;
+  errors: Array<CollectionError>;
+};
 
-export interface CollectionCreateInput {
-  backgroundImage?: Maybe<Scalars["Upload"]>;
-  backgroundImageAlt?: Maybe<Scalars["String"]>;
-  description?: Maybe<Scalars["JSONString"]>;
-  isPublished?: Maybe<Scalars["Boolean"]>;
-  name?: Maybe<Scalars["String"]>;
-  products?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  publicationDate?: Maybe<Scalars["Date"]>;
-  seo?: Maybe<SeoInput>;
-  slug?: Maybe<Scalars["String"]>;
-}
+export type CollectionCreateInput = {
+  backgroundImage?: InputMaybe<Scalars["Upload"]>;
+  backgroundImageAlt?: InputMaybe<Scalars["String"]>;
+  description?: InputMaybe<Scalars["JSONString"]>;
+  isPublished?: InputMaybe<Scalars["Boolean"]>;
+  name?: InputMaybe<Scalars["String"]>;
+  products?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  publicationDate?: InputMaybe<Scalars["Date"]>;
+  seo?: InputMaybe<SeoInput>;
+  slug?: InputMaybe<Scalars["String"]>;
+};
 
-export interface CollectionDelete {
+export type CollectionDelete = {
   __typename?: "CollectionDelete";
   collection?: Maybe<Collection>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  collectionErrors: CollectionError[];
-  errors: CollectionError[];
-}
+  collectionErrors: Array<CollectionError>;
+  errors: Array<CollectionError>;
+};
 
-export interface CollectionError {
+export type CollectionError = {
   __typename?: "CollectionError";
   code: CollectionErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
   products?: Maybe<Array<Scalars["ID"]>>;
-}
+};
 
 export enum CollectionErrorCode {
   CannotManageProductWithoutVariant = "CANNOT_MANAGE_PRODUCT_WITHOUT_VARIANT",
@@ -1547,45 +1548,45 @@ export enum CollectionErrorCode {
   Unique = "UNIQUE",
 }
 
-export interface CollectionFilterInput {
-  channel?: Maybe<Scalars["String"]>;
-  ids?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  metadata?: Maybe<Array<Maybe<MetadataFilter>>>;
-  published?: Maybe<CollectionPublished>;
-  search?: Maybe<Scalars["String"]>;
-}
+export type CollectionFilterInput = {
+  channel?: InputMaybe<Scalars["String"]>;
+  ids?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  metadata?: InputMaybe<Array<InputMaybe<MetadataFilter>>>;
+  published?: InputMaybe<CollectionPublished>;
+  search?: InputMaybe<Scalars["String"]>;
+};
 
-export interface CollectionInput {
-  backgroundImage?: Maybe<Scalars["Upload"]>;
-  backgroundImageAlt?: Maybe<Scalars["String"]>;
-  description?: Maybe<Scalars["JSONString"]>;
-  isPublished?: Maybe<Scalars["Boolean"]>;
-  name?: Maybe<Scalars["String"]>;
-  publicationDate?: Maybe<Scalars["Date"]>;
-  seo?: Maybe<SeoInput>;
-  slug?: Maybe<Scalars["String"]>;
-}
+export type CollectionInput = {
+  backgroundImage?: InputMaybe<Scalars["Upload"]>;
+  backgroundImageAlt?: InputMaybe<Scalars["String"]>;
+  description?: InputMaybe<Scalars["JSONString"]>;
+  isPublished?: InputMaybe<Scalars["Boolean"]>;
+  name?: InputMaybe<Scalars["String"]>;
+  publicationDate?: InputMaybe<Scalars["Date"]>;
+  seo?: InputMaybe<SeoInput>;
+  slug?: InputMaybe<Scalars["String"]>;
+};
 
 export enum CollectionPublished {
   Hidden = "HIDDEN",
   Published = "PUBLISHED",
 }
 
-export interface CollectionRemoveProducts {
+export type CollectionRemoveProducts = {
   __typename?: "CollectionRemoveProducts";
   collection?: Maybe<Collection>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  collectionErrors: CollectionError[];
-  errors: CollectionError[];
-}
+  collectionErrors: Array<CollectionError>;
+  errors: Array<CollectionError>;
+};
 
-export interface CollectionReorderProducts {
+export type CollectionReorderProducts = {
   __typename?: "CollectionReorderProducts";
   collection?: Maybe<Collection>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  collectionErrors: CollectionError[];
-  errors: CollectionError[];
-}
+  collectionErrors: Array<CollectionError>;
+  errors: Array<CollectionError>;
+};
 
 export enum CollectionSortField {
   Availability = "AVAILABILITY",
@@ -1594,11 +1595,11 @@ export enum CollectionSortField {
   PublicationDate = "PUBLICATION_DATE",
 }
 
-export interface CollectionSortingInput {
-  channel?: Maybe<Scalars["String"]>;
+export type CollectionSortingInput = {
+  channel?: InputMaybe<Scalars["String"]>;
   direction: OrderDirection;
   field: CollectionSortField;
-}
+};
 
 export type CollectionTranslatableContent = Node & {
   __typename?: "CollectionTranslatableContent";
@@ -1614,17 +1615,17 @@ export type CollectionTranslatableContent = Node & {
   translation?: Maybe<CollectionTranslation>;
 };
 
-export interface CollectionTranslatableContentTranslationArgs {
+export type CollectionTranslatableContentTranslationArgs = {
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface CollectionTranslate {
+export type CollectionTranslate = {
   __typename?: "CollectionTranslate";
   collection?: Maybe<Collection>;
-  errors: TranslationError[];
+  errors: Array<TranslationError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  translationErrors: TranslationError[];
-}
+  translationErrors: Array<TranslationError>;
+};
 
 export type CollectionTranslation = Node & {
   __typename?: "CollectionTranslation";
@@ -1638,27 +1639,27 @@ export type CollectionTranslation = Node & {
   seoTitle?: Maybe<Scalars["String"]>;
 };
 
-export interface CollectionUpdate {
+export type CollectionUpdate = {
   __typename?: "CollectionUpdate";
   collection?: Maybe<Collection>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  collectionErrors: CollectionError[];
-  errors: CollectionError[];
-}
+  collectionErrors: Array<CollectionError>;
+  errors: Array<CollectionError>;
+};
 
-export interface ConfigurationItem {
+export type ConfigurationItem = {
   __typename?: "ConfigurationItem";
   helpText?: Maybe<Scalars["String"]>;
   label?: Maybe<Scalars["String"]>;
   name: Scalars["String"];
   type?: Maybe<ConfigurationTypeFieldEnum>;
   value?: Maybe<Scalars["String"]>;
-}
+};
 
-export interface ConfigurationItemInput {
+export type ConfigurationItemInput = {
   name: Scalars["String"];
-  value?: Maybe<Scalars["String"]>;
-}
+  value?: InputMaybe<Scalars["String"]>;
+};
 
 export enum ConfigurationTypeFieldEnum {
   Boolean = "BOOLEAN",
@@ -1670,21 +1671,21 @@ export enum ConfigurationTypeFieldEnum {
   String = "STRING",
 }
 
-export interface ConfirmAccount {
+export type ConfirmAccount = {
   __typename?: "ConfirmAccount";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
-  errors: AccountError[];
+  accountErrors: Array<AccountError>;
+  errors: Array<AccountError>;
   user?: Maybe<User>;
-}
+};
 
-export interface ConfirmEmailChange {
+export type ConfirmEmailChange = {
   __typename?: "ConfirmEmailChange";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
-  errors: AccountError[];
+  accountErrors: Array<AccountError>;
+  errors: Array<AccountError>;
   user?: Maybe<User>;
-}
+};
 
 export enum CountryCode {
   Ad = "AD",
@@ -1939,56 +1940,56 @@ export enum CountryCode {
   Zw = "ZW",
 }
 
-export interface CountryDisplay {
+export type CountryDisplay = {
   __typename?: "CountryDisplay";
   code: Scalars["String"];
   country: Scalars["String"];
   vat?: Maybe<Vat>;
-}
+};
 
-export interface CreateToken {
+export type CreateToken = {
   __typename?: "CreateToken";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
+  accountErrors: Array<AccountError>;
   csrfToken?: Maybe<Scalars["String"]>;
-  errors: AccountError[];
+  errors: Array<AccountError>;
   refreshToken?: Maybe<Scalars["String"]>;
   token?: Maybe<Scalars["String"]>;
   user?: Maybe<User>;
-}
+};
 
-export interface CreditCard {
+export type CreditCard = {
   __typename?: "CreditCard";
   brand: Scalars["String"];
   expMonth?: Maybe<Scalars["Int"]>;
   expYear?: Maybe<Scalars["Int"]>;
   firstDigits?: Maybe<Scalars["String"]>;
   lastDigits: Scalars["String"];
-}
+};
 
-export interface CustomerBulkDelete {
+export type CustomerBulkDelete = {
   __typename?: "CustomerBulkDelete";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
+  accountErrors: Array<AccountError>;
   count: Scalars["Int"];
-  errors: AccountError[];
-}
+  errors: Array<AccountError>;
+};
 
-export interface CustomerCreate {
+export type CustomerCreate = {
   __typename?: "CustomerCreate";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
-  errors: AccountError[];
+  accountErrors: Array<AccountError>;
+  errors: Array<AccountError>;
   user?: Maybe<User>;
-}
+};
 
-export interface CustomerDelete {
+export type CustomerDelete = {
   __typename?: "CustomerDelete";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
-  errors: AccountError[];
+  accountErrors: Array<AccountError>;
+  errors: Array<AccountError>;
   user?: Maybe<User>;
-}
+};
 
 export type CustomerEvent = Node & {
   __typename?: "CustomerEvent";
@@ -2019,65 +2020,65 @@ export enum CustomerEventsEnum {
   PlacedOrder = "PLACED_ORDER",
 }
 
-export interface CustomerFilterInput {
-  dateJoined?: Maybe<DateRangeInput>;
-  metadata?: Maybe<Array<Maybe<MetadataFilter>>>;
-  numberOfOrders?: Maybe<IntRangeInput>;
-  placedOrders?: Maybe<DateRangeInput>;
-  search?: Maybe<Scalars["String"]>;
-}
+export type CustomerFilterInput = {
+  dateJoined?: InputMaybe<DateRangeInput>;
+  metadata?: InputMaybe<Array<InputMaybe<MetadataFilter>>>;
+  numberOfOrders?: InputMaybe<IntRangeInput>;
+  placedOrders?: InputMaybe<DateRangeInput>;
+  search?: InputMaybe<Scalars["String"]>;
+};
 
-export interface CustomerInput {
-  defaultBillingAddress?: Maybe<AddressInput>;
-  defaultShippingAddress?: Maybe<AddressInput>;
-  email?: Maybe<Scalars["String"]>;
-  firstName?: Maybe<Scalars["String"]>;
-  isActive?: Maybe<Scalars["Boolean"]>;
-  languageCode?: Maybe<LanguageCodeEnum>;
-  lastName?: Maybe<Scalars["String"]>;
-  note?: Maybe<Scalars["String"]>;
-}
+export type CustomerInput = {
+  defaultBillingAddress?: InputMaybe<AddressInput>;
+  defaultShippingAddress?: InputMaybe<AddressInput>;
+  email?: InputMaybe<Scalars["String"]>;
+  firstName?: InputMaybe<Scalars["String"]>;
+  isActive?: InputMaybe<Scalars["Boolean"]>;
+  languageCode?: InputMaybe<LanguageCodeEnum>;
+  lastName?: InputMaybe<Scalars["String"]>;
+  note?: InputMaybe<Scalars["String"]>;
+};
 
-export interface CustomerUpdate {
+export type CustomerUpdate = {
   __typename?: "CustomerUpdate";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
-  errors: AccountError[];
+  accountErrors: Array<AccountError>;
+  errors: Array<AccountError>;
   user?: Maybe<User>;
-}
+};
 
-export interface DateRangeInput {
-  gte?: Maybe<Scalars["Date"]>;
-  lte?: Maybe<Scalars["Date"]>;
-}
+export type DateRangeInput = {
+  gte?: InputMaybe<Scalars["Date"]>;
+  lte?: InputMaybe<Scalars["Date"]>;
+};
 
-export interface DateTimeRangeInput {
-  gte?: Maybe<Scalars["DateTime"]>;
-  lte?: Maybe<Scalars["DateTime"]>;
-}
+export type DateTimeRangeInput = {
+  gte?: InputMaybe<Scalars["DateTime"]>;
+  lte?: InputMaybe<Scalars["DateTime"]>;
+};
 
-export interface DeactivateAllUserTokens {
+export type DeactivateAllUserTokens = {
   __typename?: "DeactivateAllUserTokens";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
-  errors: AccountError[];
-}
+  accountErrors: Array<AccountError>;
+  errors: Array<AccountError>;
+};
 
-export interface DeleteMetadata {
+export type DeleteMetadata = {
   __typename?: "DeleteMetadata";
-  errors: MetadataError[];
+  errors: Array<MetadataError>;
   item?: Maybe<ObjectWithMetadata>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  metadataErrors: MetadataError[];
-}
+  metadataErrors: Array<MetadataError>;
+};
 
-export interface DeletePrivateMetadata {
+export type DeletePrivateMetadata = {
   __typename?: "DeletePrivateMetadata";
-  errors: MetadataError[];
+  errors: Array<MetadataError>;
   item?: Maybe<ObjectWithMetadata>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  metadataErrors: MetadataError[];
-}
+  metadataErrors: Array<MetadataError>;
+};
 
 export type DigitalContent = Node &
   ObjectWithMetadata & {
@@ -2094,59 +2095,59 @@ export type DigitalContent = Node &
     useDefaultSettings: Scalars["Boolean"];
   };
 
-export interface DigitalContentCountableConnection {
+export type DigitalContentCountableConnection = {
   __typename?: "DigitalContentCountableConnection";
-  edges: DigitalContentCountableEdge[];
+  edges: Array<DigitalContentCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface DigitalContentCountableEdge {
+export type DigitalContentCountableEdge = {
   __typename?: "DigitalContentCountableEdge";
   cursor: Scalars["String"];
   node: DigitalContent;
-}
+};
 
-export interface DigitalContentCreate {
+export type DigitalContentCreate = {
   __typename?: "DigitalContentCreate";
   content?: Maybe<DigitalContent>;
-  errors: ProductError[];
+  errors: Array<ProductError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
+  productErrors: Array<ProductError>;
   variant?: Maybe<ProductVariant>;
-}
+};
 
-export interface DigitalContentDelete {
+export type DigitalContentDelete = {
   __typename?: "DigitalContentDelete";
-  errors: ProductError[];
+  errors: Array<ProductError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
+  productErrors: Array<ProductError>;
   variant?: Maybe<ProductVariant>;
-}
+};
 
-export interface DigitalContentInput {
-  automaticFulfillment?: Maybe<Scalars["Boolean"]>;
-  maxDownloads?: Maybe<Scalars["Int"]>;
-  urlValidDays?: Maybe<Scalars["Int"]>;
+export type DigitalContentInput = {
+  automaticFulfillment?: InputMaybe<Scalars["Boolean"]>;
+  maxDownloads?: InputMaybe<Scalars["Int"]>;
+  urlValidDays?: InputMaybe<Scalars["Int"]>;
   useDefaultSettings: Scalars["Boolean"];
-}
+};
 
-export interface DigitalContentUpdate {
+export type DigitalContentUpdate = {
   __typename?: "DigitalContentUpdate";
   content?: Maybe<DigitalContent>;
-  errors: ProductError[];
+  errors: Array<ProductError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
+  productErrors: Array<ProductError>;
   variant?: Maybe<ProductVariant>;
-}
+};
 
-export interface DigitalContentUploadInput {
-  automaticFulfillment?: Maybe<Scalars["Boolean"]>;
+export type DigitalContentUploadInput = {
+  automaticFulfillment?: InputMaybe<Scalars["Boolean"]>;
   contentFile: Scalars["Upload"];
-  maxDownloads?: Maybe<Scalars["Int"]>;
-  urlValidDays?: Maybe<Scalars["Int"]>;
+  maxDownloads?: InputMaybe<Scalars["Int"]>;
+  urlValidDays?: InputMaybe<Scalars["Int"]>;
   useDefaultSettings: Scalars["Boolean"];
-}
+};
 
 export type DigitalContentUrl = Node & {
   __typename?: "DigitalContentUrl";
@@ -2158,26 +2159,26 @@ export type DigitalContentUrl = Node & {
   url?: Maybe<Scalars["String"]>;
 };
 
-export interface DigitalContentUrlCreate {
+export type DigitalContentUrlCreate = {
   __typename?: "DigitalContentUrlCreate";
   digitalContentUrl?: Maybe<DigitalContentUrl>;
-  errors: ProductError[];
+  errors: Array<ProductError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
-}
+  productErrors: Array<ProductError>;
+};
 
-export interface DigitalContentUrlCreateInput {
+export type DigitalContentUrlCreateInput = {
   content: Scalars["ID"];
-}
+};
 
-export interface DiscountError {
+export type DiscountError = {
   __typename?: "DiscountError";
   channels?: Maybe<Array<Scalars["ID"]>>;
   code: DiscountErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
   products?: Maybe<Array<Scalars["ID"]>>;
-}
+};
 
 export enum DiscountErrorCode {
   AlreadyExists = "ALREADY_EXISTS",
@@ -2210,94 +2211,94 @@ export enum DistanceUnitsEnum {
   Yd = "YD",
 }
 
-export interface Domain {
+export type Domain = {
   __typename?: "Domain";
   host: Scalars["String"];
   sslEnabled: Scalars["Boolean"];
   url: Scalars["String"];
-}
+};
 
-export interface DraftOrderBulkDelete {
+export type DraftOrderBulkDelete = {
   __typename?: "DraftOrderBulkDelete";
   count: Scalars["Int"];
-  errors: OrderError[];
+  errors: Array<OrderError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
-}
+  orderErrors: Array<OrderError>;
+};
 
-export interface DraftOrderComplete {
+export type DraftOrderComplete = {
   __typename?: "DraftOrderComplete";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
-}
+  orderErrors: Array<OrderError>;
+};
 
-export interface DraftOrderCreate {
+export type DraftOrderCreate = {
   __typename?: "DraftOrderCreate";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
-}
+  orderErrors: Array<OrderError>;
+};
 
-export interface DraftOrderCreateInput {
-  billingAddress?: Maybe<AddressInput>;
-  channelId?: Maybe<Scalars["ID"]>;
-  customerNote?: Maybe<Scalars["String"]>;
-  discount?: Maybe<Scalars["PositiveDecimal"]>;
-  lines?: Maybe<Array<Maybe<OrderLineCreateInput>>>;
-  redirectUrl?: Maybe<Scalars["String"]>;
-  shippingAddress?: Maybe<AddressInput>;
-  shippingMethod?: Maybe<Scalars["ID"]>;
-  user?: Maybe<Scalars["ID"]>;
-  userEmail?: Maybe<Scalars["String"]>;
-  voucher?: Maybe<Scalars["ID"]>;
-}
+export type DraftOrderCreateInput = {
+  billingAddress?: InputMaybe<AddressInput>;
+  channelId?: InputMaybe<Scalars["ID"]>;
+  customerNote?: InputMaybe<Scalars["String"]>;
+  discount?: InputMaybe<Scalars["PositiveDecimal"]>;
+  lines?: InputMaybe<Array<InputMaybe<OrderLineCreateInput>>>;
+  redirectUrl?: InputMaybe<Scalars["String"]>;
+  shippingAddress?: InputMaybe<AddressInput>;
+  shippingMethod?: InputMaybe<Scalars["ID"]>;
+  user?: InputMaybe<Scalars["ID"]>;
+  userEmail?: InputMaybe<Scalars["String"]>;
+  voucher?: InputMaybe<Scalars["ID"]>;
+};
 
-export interface DraftOrderDelete {
+export type DraftOrderDelete = {
   __typename?: "DraftOrderDelete";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
-}
+  orderErrors: Array<OrderError>;
+};
 
-export interface DraftOrderInput {
-  billingAddress?: Maybe<AddressInput>;
-  channelId?: Maybe<Scalars["ID"]>;
-  customerNote?: Maybe<Scalars["String"]>;
-  discount?: Maybe<Scalars["PositiveDecimal"]>;
-  redirectUrl?: Maybe<Scalars["String"]>;
-  shippingAddress?: Maybe<AddressInput>;
-  shippingMethod?: Maybe<Scalars["ID"]>;
-  user?: Maybe<Scalars["ID"]>;
-  userEmail?: Maybe<Scalars["String"]>;
-  voucher?: Maybe<Scalars["ID"]>;
-}
+export type DraftOrderInput = {
+  billingAddress?: InputMaybe<AddressInput>;
+  channelId?: InputMaybe<Scalars["ID"]>;
+  customerNote?: InputMaybe<Scalars["String"]>;
+  discount?: InputMaybe<Scalars["PositiveDecimal"]>;
+  redirectUrl?: InputMaybe<Scalars["String"]>;
+  shippingAddress?: InputMaybe<AddressInput>;
+  shippingMethod?: InputMaybe<Scalars["ID"]>;
+  user?: InputMaybe<Scalars["ID"]>;
+  userEmail?: InputMaybe<Scalars["String"]>;
+  voucher?: InputMaybe<Scalars["ID"]>;
+};
 
-export interface DraftOrderLinesBulkDelete {
+export type DraftOrderLinesBulkDelete = {
   __typename?: "DraftOrderLinesBulkDelete";
   count: Scalars["Int"];
-  errors: OrderError[];
+  errors: Array<OrderError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
-}
+  orderErrors: Array<OrderError>;
+};
 
-export interface DraftOrderUpdate {
+export type DraftOrderUpdate = {
   __typename?: "DraftOrderUpdate";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
-}
+  orderErrors: Array<OrderError>;
+};
 
-export interface ExportError {
+export type ExportError = {
   __typename?: "ExportError";
   code: ExportErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
-}
+};
 
 export enum ExportErrorCode {
   GraphqlError = "GRAPHQL_ERROR",
@@ -2330,7 +2331,7 @@ export type ExportFile = Job &
     __typename?: "ExportFile";
     app?: Maybe<App>;
     createdAt: Scalars["DateTime"];
-    events?: Maybe<ExportEvent[]>;
+    events?: Maybe<Array<ExportEvent>>;
     id: Scalars["ID"];
     message?: Maybe<Scalars["String"]>;
     status: JobStatusEnum;
@@ -2339,26 +2340,26 @@ export type ExportFile = Job &
     user?: Maybe<User>;
   };
 
-export interface ExportFileCountableConnection {
+export type ExportFileCountableConnection = {
   __typename?: "ExportFileCountableConnection";
-  edges: ExportFileCountableEdge[];
+  edges: Array<ExportFileCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface ExportFileCountableEdge {
+export type ExportFileCountableEdge = {
   __typename?: "ExportFileCountableEdge";
   cursor: Scalars["String"];
   node: ExportFile;
-}
+};
 
-export interface ExportFileFilterInput {
-  app?: Maybe<Scalars["String"]>;
-  createdAt?: Maybe<DateTimeRangeInput>;
-  status?: Maybe<JobStatusEnum>;
-  updatedAt?: Maybe<DateTimeRangeInput>;
-  user?: Maybe<Scalars["String"]>;
-}
+export type ExportFileFilterInput = {
+  app?: InputMaybe<Scalars["String"]>;
+  createdAt?: InputMaybe<DateTimeRangeInput>;
+  status?: InputMaybe<JobStatusEnum>;
+  updatedAt?: InputMaybe<DateTimeRangeInput>;
+  user?: InputMaybe<Scalars["String"]>;
+};
 
 export enum ExportFileSortField {
   CreatedAt = "CREATED_AT",
@@ -2366,33 +2367,33 @@ export enum ExportFileSortField {
   UpdatedAt = "UPDATED_AT",
 }
 
-export interface ExportFileSortingInput {
+export type ExportFileSortingInput = {
   direction: OrderDirection;
   field: ExportFileSortField;
-}
+};
 
-export interface ExportInfoInput {
-  attributes?: Maybe<Array<Scalars["ID"]>>;
-  channels?: Maybe<Array<Scalars["ID"]>>;
-  fields?: Maybe<ProductFieldEnum[]>;
-  warehouses?: Maybe<Array<Scalars["ID"]>>;
-}
+export type ExportInfoInput = {
+  attributes?: InputMaybe<Array<Scalars["ID"]>>;
+  channels?: InputMaybe<Array<Scalars["ID"]>>;
+  fields?: InputMaybe<Array<ProductFieldEnum>>;
+  warehouses?: InputMaybe<Array<Scalars["ID"]>>;
+};
 
-export interface ExportProducts {
+export type ExportProducts = {
   __typename?: "ExportProducts";
-  errors: ExportError[];
+  errors: Array<ExportError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  exportErrors: ExportError[];
+  exportErrors: Array<ExportError>;
   exportFile?: Maybe<ExportFile>;
-}
+};
 
-export interface ExportProductsInput {
-  exportInfo?: Maybe<ExportInfoInput>;
+export type ExportProductsInput = {
+  exportInfo?: InputMaybe<ExportInfoInput>;
   fileType: FileTypesEnum;
-  filter?: Maybe<ProductFilterInput>;
-  ids?: Maybe<Array<Scalars["ID"]>>;
+  filter?: InputMaybe<ProductFilterInput>;
+  ids?: InputMaybe<Array<Scalars["ID"]>>;
   scope: ExportScope;
-}
+};
 
 export enum ExportScope {
   All = "ALL",
@@ -2400,78 +2401,78 @@ export enum ExportScope {
   Ids = "IDS",
 }
 
-export interface ExternalAuthentication {
+export type ExternalAuthentication = {
   __typename?: "ExternalAuthentication";
   id: Scalars["String"];
   name?: Maybe<Scalars["String"]>;
-}
+};
 
-export interface ExternalAuthenticationUrl {
+export type ExternalAuthenticationUrl = {
   __typename?: "ExternalAuthenticationUrl";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
+  accountErrors: Array<AccountError>;
   authenticationData?: Maybe<Scalars["JSONString"]>;
-  errors: AccountError[];
-}
+  errors: Array<AccountError>;
+};
 
-export interface ExternalLogout {
+export type ExternalLogout = {
   __typename?: "ExternalLogout";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
-  errors: AccountError[];
+  accountErrors: Array<AccountError>;
+  errors: Array<AccountError>;
   logoutData?: Maybe<Scalars["JSONString"]>;
-}
+};
 
-export interface ExternalObtainAccessTokens {
+export type ExternalObtainAccessTokens = {
   __typename?: "ExternalObtainAccessTokens";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
+  accountErrors: Array<AccountError>;
   csrfToken?: Maybe<Scalars["String"]>;
-  errors: AccountError[];
+  errors: Array<AccountError>;
   refreshToken?: Maybe<Scalars["String"]>;
   token?: Maybe<Scalars["String"]>;
   user?: Maybe<User>;
-}
+};
 
-export interface ExternalRefresh {
+export type ExternalRefresh = {
   __typename?: "ExternalRefresh";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
+  accountErrors: Array<AccountError>;
   csrfToken?: Maybe<Scalars["String"]>;
-  errors: AccountError[];
+  errors: Array<AccountError>;
   refreshToken?: Maybe<Scalars["String"]>;
   token?: Maybe<Scalars["String"]>;
   user?: Maybe<User>;
-}
+};
 
-export interface ExternalVerify {
+export type ExternalVerify = {
   __typename?: "ExternalVerify";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
-  errors: AccountError[];
+  accountErrors: Array<AccountError>;
+  errors: Array<AccountError>;
   isValid: Scalars["Boolean"];
   user?: Maybe<User>;
   verifyData?: Maybe<Scalars["JSONString"]>;
-}
+};
 
-export interface File {
+export type File = {
   __typename?: "File";
   contentType?: Maybe<Scalars["String"]>;
   url: Scalars["String"];
-}
+};
 
 export enum FileTypesEnum {
   Csv = "CSV",
   Xlsx = "XLSX",
 }
 
-export interface FileUpload {
+export type FileUpload = {
   __typename?: "FileUpload";
-  errors: UploadError[];
+  errors: Array<UploadError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  uploadErrors: UploadError[];
+  uploadErrors: Array<UploadError>;
   uploadedFile?: Maybe<File>;
-}
+};
 
 export type Fulfillment = Node &
   ObjectWithMetadata & {
@@ -2488,18 +2489,18 @@ export type Fulfillment = Node &
     warehouse?: Maybe<Warehouse>;
   };
 
-export interface FulfillmentCancel {
+export type FulfillmentCancel = {
   __typename?: "FulfillmentCancel";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   fulfillment?: Maybe<Fulfillment>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
-}
+  orderErrors: Array<OrderError>;
+};
 
-export interface FulfillmentCancelInput {
+export type FulfillmentCancelInput = {
   warehouseId: Scalars["ID"];
-}
+};
 
 export type FulfillmentLine = Node & {
   __typename?: "FulfillmentLine";
@@ -2508,25 +2509,25 @@ export type FulfillmentLine = Node & {
   quantity: Scalars["Int"];
 };
 
-export interface FulfillmentRefundProducts {
+export type FulfillmentRefundProducts = {
   __typename?: "FulfillmentRefundProducts";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   fulfillment?: Maybe<Fulfillment>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
-}
+  orderErrors: Array<OrderError>;
+};
 
-export interface FulfillmentReturnProducts {
+export type FulfillmentReturnProducts = {
   __typename?: "FulfillmentReturnProducts";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
+  orderErrors: Array<OrderError>;
   replaceFulfillment?: Maybe<Fulfillment>;
   replaceOrder?: Maybe<Order>;
   returnFulfillment?: Maybe<Fulfillment>;
-}
+};
 
 export enum FulfillmentStatus {
   Canceled = "CANCELED",
@@ -2537,25 +2538,25 @@ export enum FulfillmentStatus {
   Returned = "RETURNED",
 }
 
-export interface FulfillmentUpdateTracking {
+export type FulfillmentUpdateTracking = {
   __typename?: "FulfillmentUpdateTracking";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   fulfillment?: Maybe<Fulfillment>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
-}
+  orderErrors: Array<OrderError>;
+};
 
-export interface FulfillmentUpdateTrackingInput {
-  notifyCustomer?: Maybe<Scalars["Boolean"]>;
-  trackingNumber?: Maybe<Scalars["String"]>;
-}
+export type FulfillmentUpdateTrackingInput = {
+  notifyCustomer?: InputMaybe<Scalars["Boolean"]>;
+  trackingNumber?: InputMaybe<Scalars["String"]>;
+};
 
-export interface GatewayConfigLine {
+export type GatewayConfigLine = {
   __typename?: "GatewayConfigLine";
   field: Scalars["String"];
   value?: Maybe<Scalars["String"]>;
-}
+};
 
 export type GiftCard = Node & {
   __typename?: "GiftCard";
@@ -2572,57 +2573,57 @@ export type GiftCard = Node & {
   user?: Maybe<User>;
 };
 
-export interface GiftCardActivate {
+export type GiftCardActivate = {
   __typename?: "GiftCardActivate";
-  errors: GiftCardError[];
+  errors: Array<GiftCardError>;
   giftCard?: Maybe<GiftCard>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  giftCardErrors: GiftCardError[];
-}
+  giftCardErrors: Array<GiftCardError>;
+};
 
-export interface GiftCardCountableConnection {
+export type GiftCardCountableConnection = {
   __typename?: "GiftCardCountableConnection";
-  edges: GiftCardCountableEdge[];
+  edges: Array<GiftCardCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface GiftCardCountableEdge {
+export type GiftCardCountableEdge = {
   __typename?: "GiftCardCountableEdge";
   cursor: Scalars["String"];
   node: GiftCard;
-}
+};
 
-export interface GiftCardCreate {
+export type GiftCardCreate = {
   __typename?: "GiftCardCreate";
-  errors: GiftCardError[];
+  errors: Array<GiftCardError>;
   giftCard?: Maybe<GiftCard>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  giftCardErrors: GiftCardError[];
-}
+  giftCardErrors: Array<GiftCardError>;
+};
 
-export interface GiftCardCreateInput {
-  balance?: Maybe<Scalars["PositiveDecimal"]>;
-  code?: Maybe<Scalars["String"]>;
-  endDate?: Maybe<Scalars["Date"]>;
-  startDate?: Maybe<Scalars["Date"]>;
-  userEmail?: Maybe<Scalars["String"]>;
-}
+export type GiftCardCreateInput = {
+  balance?: InputMaybe<Scalars["PositiveDecimal"]>;
+  code?: InputMaybe<Scalars["String"]>;
+  endDate?: InputMaybe<Scalars["Date"]>;
+  startDate?: InputMaybe<Scalars["Date"]>;
+  userEmail?: InputMaybe<Scalars["String"]>;
+};
 
-export interface GiftCardDeactivate {
+export type GiftCardDeactivate = {
   __typename?: "GiftCardDeactivate";
-  errors: GiftCardError[];
+  errors: Array<GiftCardError>;
   giftCard?: Maybe<GiftCard>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  giftCardErrors: GiftCardError[];
-}
+  giftCardErrors: Array<GiftCardError>;
+};
 
-export interface GiftCardError {
+export type GiftCardError = {
   __typename?: "GiftCardError";
   code: GiftCardErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
-}
+};
 
 export enum GiftCardErrorCode {
   AlreadyExists = "ALREADY_EXISTS",
@@ -2633,20 +2634,20 @@ export enum GiftCardErrorCode {
   Unique = "UNIQUE",
 }
 
-export interface GiftCardUpdate {
+export type GiftCardUpdate = {
   __typename?: "GiftCardUpdate";
-  errors: GiftCardError[];
+  errors: Array<GiftCardError>;
   giftCard?: Maybe<GiftCard>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  giftCardErrors: GiftCardError[];
-}
+  giftCardErrors: Array<GiftCardError>;
+};
 
-export interface GiftCardUpdateInput {
-  balance?: Maybe<Scalars["PositiveDecimal"]>;
-  endDate?: Maybe<Scalars["Date"]>;
-  startDate?: Maybe<Scalars["Date"]>;
-  userEmail?: Maybe<Scalars["String"]>;
-}
+export type GiftCardUpdateInput = {
+  balance?: InputMaybe<Scalars["PositiveDecimal"]>;
+  endDate?: InputMaybe<Scalars["Date"]>;
+  startDate?: InputMaybe<Scalars["Date"]>;
+  userEmail?: InputMaybe<Scalars["String"]>;
+};
 
 export type Group = Node & {
   __typename?: "Group";
@@ -2657,29 +2658,29 @@ export type Group = Node & {
   users?: Maybe<Array<Maybe<User>>>;
 };
 
-export interface GroupCountableConnection {
+export type GroupCountableConnection = {
   __typename?: "GroupCountableConnection";
-  edges: GroupCountableEdge[];
+  edges: Array<GroupCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface GroupCountableEdge {
+export type GroupCountableEdge = {
   __typename?: "GroupCountableEdge";
   cursor: Scalars["String"];
   node: Group;
-}
+};
 
-export interface Image {
+export type Image = {
   __typename?: "Image";
   alt?: Maybe<Scalars["String"]>;
   url: Scalars["String"];
-}
+};
 
-export interface IntRangeInput {
-  gte?: Maybe<Scalars["Int"]>;
-  lte?: Maybe<Scalars["Int"]>;
-}
+export type IntRangeInput = {
+  gte?: InputMaybe<Scalars["Int"]>;
+  lte?: InputMaybe<Scalars["Int"]>;
+};
 
 export type Invoice = Job &
   Node &
@@ -2697,33 +2698,33 @@ export type Invoice = Job &
     url?: Maybe<Scalars["String"]>;
   };
 
-export interface InvoiceCreate {
+export type InvoiceCreate = {
   __typename?: "InvoiceCreate";
-  errors: InvoiceError[];
+  errors: Array<InvoiceError>;
   invoice?: Maybe<Invoice>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  invoiceErrors: InvoiceError[];
-}
+  invoiceErrors: Array<InvoiceError>;
+};
 
-export interface InvoiceCreateInput {
+export type InvoiceCreateInput = {
   number: Scalars["String"];
   url: Scalars["String"];
-}
+};
 
-export interface InvoiceDelete {
+export type InvoiceDelete = {
   __typename?: "InvoiceDelete";
-  errors: InvoiceError[];
+  errors: Array<InvoiceError>;
   invoice?: Maybe<Invoice>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  invoiceErrors: InvoiceError[];
-}
+  invoiceErrors: Array<InvoiceError>;
+};
 
-export interface InvoiceError {
+export type InvoiceError = {
   __typename?: "InvoiceError";
   code: InvoiceErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
-}
+};
 
 export enum InvoiceErrorCode {
   EmailNotSet = "EMAIL_NOT_SET",
@@ -2735,45 +2736,45 @@ export enum InvoiceErrorCode {
   UrlNotSet = "URL_NOT_SET",
 }
 
-export interface InvoiceRequest {
+export type InvoiceRequest = {
   __typename?: "InvoiceRequest";
-  errors: InvoiceError[];
+  errors: Array<InvoiceError>;
   invoice?: Maybe<Invoice>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  invoiceErrors: InvoiceError[];
+  invoiceErrors: Array<InvoiceError>;
   order?: Maybe<Order>;
-}
+};
 
-export interface InvoiceRequestDelete {
+export type InvoiceRequestDelete = {
   __typename?: "InvoiceRequestDelete";
-  errors: InvoiceError[];
+  errors: Array<InvoiceError>;
   invoice?: Maybe<Invoice>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  invoiceErrors: InvoiceError[];
-}
+  invoiceErrors: Array<InvoiceError>;
+};
 
-export interface InvoiceSendNotification {
+export type InvoiceSendNotification = {
   __typename?: "InvoiceSendNotification";
-  errors: InvoiceError[];
+  errors: Array<InvoiceError>;
   invoice?: Maybe<Invoice>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  invoiceErrors: InvoiceError[];
-}
+  invoiceErrors: Array<InvoiceError>;
+};
 
-export interface InvoiceUpdate {
+export type InvoiceUpdate = {
   __typename?: "InvoiceUpdate";
-  errors: InvoiceError[];
+  errors: Array<InvoiceError>;
   invoice?: Maybe<Invoice>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  invoiceErrors: InvoiceError[];
-}
+  invoiceErrors: Array<InvoiceError>;
+};
 
-export interface Job {
+export type Job = {
   createdAt: Scalars["DateTime"];
   message?: Maybe<Scalars["String"]>;
   status: JobStatusEnum;
   updatedAt: Scalars["DateTime"];
-}
+};
 
 export enum JobStatusEnum {
   Deleted = "DELETED",
@@ -3564,28 +3565,28 @@ export enum LanguageCodeEnum {
   ZuZa = "ZU_ZA",
 }
 
-export interface LanguageDisplay {
+export type LanguageDisplay = {
   __typename?: "LanguageDisplay";
   code: LanguageCodeEnum;
   language: Scalars["String"];
-}
+};
 
-export interface LimitInfo {
+export type LimitInfo = {
   __typename?: "LimitInfo";
   allowedUsage: Limits;
   currentUsage: Limits;
-}
+};
 
-export interface Limits {
+export type Limits = {
   __typename?: "Limits";
   channels?: Maybe<Scalars["Int"]>;
   orders?: Maybe<Scalars["Int"]>;
   productVariants?: Maybe<Scalars["Int"]>;
   staffUsers?: Maybe<Scalars["Int"]>;
   warehouses?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface Manifest {
+export type Manifest = {
   __typename?: "Manifest";
   about?: Maybe<Scalars["String"]>;
   appUrl?: Maybe<Scalars["String"]>;
@@ -3599,13 +3600,13 @@ export interface Manifest {
   supportUrl?: Maybe<Scalars["String"]>;
   tokenTargetUrl?: Maybe<Scalars["String"]>;
   version: Scalars["String"];
-}
+};
 
-export interface Margin {
+export type Margin = {
   __typename?: "Margin";
   start?: Maybe<Scalars["Int"]>;
   stop?: Maybe<Scalars["Int"]>;
-}
+};
 
 export enum MeasurementUnitsEnum {
   AcreFt = "ACRE_FT",
@@ -3651,55 +3652,55 @@ export type Menu = Node &
     slug: Scalars["String"];
   };
 
-export interface MenuBulkDelete {
+export type MenuBulkDelete = {
   __typename?: "MenuBulkDelete";
   count: Scalars["Int"];
-  errors: MenuError[];
+  errors: Array<MenuError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  menuErrors: MenuError[];
-}
+  menuErrors: Array<MenuError>;
+};
 
-export interface MenuCountableConnection {
+export type MenuCountableConnection = {
   __typename?: "MenuCountableConnection";
-  edges: MenuCountableEdge[];
+  edges: Array<MenuCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface MenuCountableEdge {
+export type MenuCountableEdge = {
   __typename?: "MenuCountableEdge";
   cursor: Scalars["String"];
   node: Menu;
-}
+};
 
-export interface MenuCreate {
+export type MenuCreate = {
   __typename?: "MenuCreate";
-  errors: MenuError[];
+  errors: Array<MenuError>;
   menu?: Maybe<Menu>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  menuErrors: MenuError[];
-}
+  menuErrors: Array<MenuError>;
+};
 
-export interface MenuCreateInput {
-  items?: Maybe<Array<Maybe<MenuItemInput>>>;
+export type MenuCreateInput = {
+  items?: InputMaybe<Array<InputMaybe<MenuItemInput>>>;
   name: Scalars["String"];
-  slug?: Maybe<Scalars["String"]>;
-}
+  slug?: InputMaybe<Scalars["String"]>;
+};
 
-export interface MenuDelete {
+export type MenuDelete = {
   __typename?: "MenuDelete";
-  errors: MenuError[];
+  errors: Array<MenuError>;
   menu?: Maybe<Menu>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  menuErrors: MenuError[];
-}
+  menuErrors: Array<MenuError>;
+};
 
-export interface MenuError {
+export type MenuError = {
   __typename?: "MenuError";
   code: MenuErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
-}
+};
 
 export enum MenuErrorCode {
   CannotAssignNode = "CANNOT_ASSIGN_NODE",
@@ -3713,16 +3714,16 @@ export enum MenuErrorCode {
   Unique = "UNIQUE",
 }
 
-export interface MenuFilterInput {
-  metadata?: Maybe<Array<Maybe<MetadataFilter>>>;
-  search?: Maybe<Scalars["String"]>;
-  slug?: Maybe<Array<Maybe<Scalars["String"]>>>;
-}
+export type MenuFilterInput = {
+  metadata?: InputMaybe<Array<InputMaybe<MetadataFilter>>>;
+  search?: InputMaybe<Scalars["String"]>;
+  slug?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
+};
 
-export interface MenuInput {
-  name?: Maybe<Scalars["String"]>;
-  slug?: Maybe<Scalars["String"]>;
-}
+export type MenuInput = {
+  name?: InputMaybe<Scalars["String"]>;
+  slug?: InputMaybe<Scalars["String"]>;
+};
 
 export type MenuItem = Node &
   ObjectWithMetadata & {
@@ -3742,88 +3743,88 @@ export type MenuItem = Node &
     url?: Maybe<Scalars["String"]>;
   };
 
-export interface MenuItemTranslationArgs {
+export type MenuItemTranslationArgs = {
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface MenuItemBulkDelete {
+export type MenuItemBulkDelete = {
   __typename?: "MenuItemBulkDelete";
   count: Scalars["Int"];
-  errors: MenuError[];
+  errors: Array<MenuError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  menuErrors: MenuError[];
-}
+  menuErrors: Array<MenuError>;
+};
 
-export interface MenuItemCountableConnection {
+export type MenuItemCountableConnection = {
   __typename?: "MenuItemCountableConnection";
-  edges: MenuItemCountableEdge[];
+  edges: Array<MenuItemCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface MenuItemCountableEdge {
+export type MenuItemCountableEdge = {
   __typename?: "MenuItemCountableEdge";
   cursor: Scalars["String"];
   node: MenuItem;
-}
+};
 
-export interface MenuItemCreate {
+export type MenuItemCreate = {
   __typename?: "MenuItemCreate";
-  errors: MenuError[];
+  errors: Array<MenuError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  menuErrors: MenuError[];
+  menuErrors: Array<MenuError>;
   menuItem?: Maybe<MenuItem>;
-}
+};
 
-export interface MenuItemCreateInput {
-  category?: Maybe<Scalars["ID"]>;
-  collection?: Maybe<Scalars["ID"]>;
+export type MenuItemCreateInput = {
+  category?: InputMaybe<Scalars["ID"]>;
+  collection?: InputMaybe<Scalars["ID"]>;
   menu: Scalars["ID"];
   name: Scalars["String"];
-  page?: Maybe<Scalars["ID"]>;
-  parent?: Maybe<Scalars["ID"]>;
-  url?: Maybe<Scalars["String"]>;
-}
+  page?: InputMaybe<Scalars["ID"]>;
+  parent?: InputMaybe<Scalars["ID"]>;
+  url?: InputMaybe<Scalars["String"]>;
+};
 
-export interface MenuItemDelete {
+export type MenuItemDelete = {
   __typename?: "MenuItemDelete";
-  errors: MenuError[];
+  errors: Array<MenuError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  menuErrors: MenuError[];
+  menuErrors: Array<MenuError>;
   menuItem?: Maybe<MenuItem>;
-}
+};
 
-export interface MenuItemFilterInput {
-  metadata?: Maybe<Array<Maybe<MetadataFilter>>>;
-  search?: Maybe<Scalars["String"]>;
-}
+export type MenuItemFilterInput = {
+  metadata?: InputMaybe<Array<InputMaybe<MetadataFilter>>>;
+  search?: InputMaybe<Scalars["String"]>;
+};
 
-export interface MenuItemInput {
-  category?: Maybe<Scalars["ID"]>;
-  collection?: Maybe<Scalars["ID"]>;
-  name?: Maybe<Scalars["String"]>;
-  page?: Maybe<Scalars["ID"]>;
-  url?: Maybe<Scalars["String"]>;
-}
+export type MenuItemInput = {
+  category?: InputMaybe<Scalars["ID"]>;
+  collection?: InputMaybe<Scalars["ID"]>;
+  name?: InputMaybe<Scalars["String"]>;
+  page?: InputMaybe<Scalars["ID"]>;
+  url?: InputMaybe<Scalars["String"]>;
+};
 
-export interface MenuItemMove {
+export type MenuItemMove = {
   __typename?: "MenuItemMove";
-  errors: MenuError[];
+  errors: Array<MenuError>;
   menu?: Maybe<Menu>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  menuErrors: MenuError[];
-}
+  menuErrors: Array<MenuError>;
+};
 
-export interface MenuItemMoveInput {
+export type MenuItemMoveInput = {
   itemId: Scalars["ID"];
-  parentId?: Maybe<Scalars["ID"]>;
-  sortOrder?: Maybe<Scalars["Int"]>;
-}
+  parentId?: InputMaybe<Scalars["ID"]>;
+  sortOrder?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface MenuItemSortingInput {
+export type MenuItemSortingInput = {
   direction: OrderDirection;
   field: MenuItemsSortField;
-}
+};
 
 export type MenuItemTranslatableContent = Node & {
   __typename?: "MenuItemTranslatableContent";
@@ -3834,17 +3835,17 @@ export type MenuItemTranslatableContent = Node & {
   translation?: Maybe<MenuItemTranslation>;
 };
 
-export interface MenuItemTranslatableContentTranslationArgs {
+export type MenuItemTranslatableContentTranslationArgs = {
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface MenuItemTranslate {
+export type MenuItemTranslate = {
   __typename?: "MenuItemTranslate";
-  errors: TranslationError[];
+  errors: Array<TranslationError>;
   menuItem?: Maybe<MenuItem>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  translationErrors: TranslationError[];
-}
+  translationErrors: Array<TranslationError>;
+};
 
 export type MenuItemTranslation = Node & {
   __typename?: "MenuItemTranslation";
@@ -3853,13 +3854,13 @@ export type MenuItemTranslation = Node & {
   name: Scalars["String"];
 };
 
-export interface MenuItemUpdate {
+export type MenuItemUpdate = {
   __typename?: "MenuItemUpdate";
-  errors: MenuError[];
+  errors: Array<MenuError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  menuErrors: MenuError[];
+  menuErrors: Array<MenuError>;
   menuItem?: Maybe<MenuItem>;
-}
+};
 
 export enum MenuItemsSortField {
   Name = "NAME",
@@ -3870,25 +3871,25 @@ export enum MenuSortField {
   Name = "NAME",
 }
 
-export interface MenuSortingInput {
+export type MenuSortingInput = {
   direction: OrderDirection;
   field: MenuSortField;
-}
+};
 
-export interface MenuUpdate {
+export type MenuUpdate = {
   __typename?: "MenuUpdate";
-  errors: MenuError[];
+  errors: Array<MenuError>;
   menu?: Maybe<Menu>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  menuErrors: MenuError[];
-}
+  menuErrors: Array<MenuError>;
+};
 
-export interface MetadataError {
+export type MetadataError = {
   __typename?: "MetadataError";
   code: MetadataErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
-}
+};
 
 export enum MetadataErrorCode {
   GraphqlError = "GRAPHQL_ERROR",
@@ -3897,40 +3898,40 @@ export enum MetadataErrorCode {
   Required = "REQUIRED",
 }
 
-export interface MetadataFilter {
+export type MetadataFilter = {
   key: Scalars["String"];
-  value?: Maybe<Scalars["String"]>;
-}
+  value?: InputMaybe<Scalars["String"]>;
+};
 
-export interface MetadataInput {
+export type MetadataInput = {
   key: Scalars["String"];
   value: Scalars["String"];
-}
+};
 
-export interface MetadataItem {
+export type MetadataItem = {
   __typename?: "MetadataItem";
   key: Scalars["String"];
   value: Scalars["String"];
-}
+};
 
-export interface Money {
+export type Money = {
   __typename?: "Money";
   amount: Scalars["Float"];
   currency: Scalars["String"];
-}
+};
 
-export interface MoneyRange {
+export type MoneyRange = {
   __typename?: "MoneyRange";
   start?: Maybe<Money>;
   stop?: Maybe<Money>;
-}
+};
 
-export interface MoveProductInput {
+export type MoveProductInput = {
   productId: Scalars["ID"];
-  sortOrder?: Maybe<Scalars["Int"]>;
-}
+  sortOrder?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface Mutation {
+export type Mutation = {
   __typename?: "Mutation";
   accountAddressCreate?: Maybe<AccountAddressCreate>;
   accountAddressDelete?: Maybe<AccountAddressDelete>;
@@ -4188,1219 +4189,1219 @@ export interface Mutation {
   webhookCreate?: Maybe<WebhookCreate>;
   webhookDelete?: Maybe<WebhookDelete>;
   webhookUpdate?: Maybe<WebhookUpdate>;
-}
+};
 
-export interface MutationAccountAddressCreateArgs {
+export type MutationAccountAddressCreateArgs = {
   input: AddressInput;
-  type?: Maybe<AddressTypeEnum>;
-}
+  type?: InputMaybe<AddressTypeEnum>;
+};
 
-export interface MutationAccountAddressDeleteArgs {
+export type MutationAccountAddressDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationAccountAddressUpdateArgs {
+export type MutationAccountAddressUpdateArgs = {
   id: Scalars["ID"];
   input: AddressInput;
-}
+};
 
-export interface MutationAccountDeleteArgs {
+export type MutationAccountDeleteArgs = {
   token: Scalars["String"];
-}
+};
 
-export interface MutationAccountRegisterArgs {
+export type MutationAccountRegisterArgs = {
   input: AccountRegisterInput;
-}
+};
 
-export interface MutationAccountRequestDeletionArgs {
-  channel?: Maybe<Scalars["String"]>;
+export type MutationAccountRequestDeletionArgs = {
+  channel?: InputMaybe<Scalars["String"]>;
   redirectUrl: Scalars["String"];
-}
+};
 
-export interface MutationAccountSetDefaultAddressArgs {
+export type MutationAccountSetDefaultAddressArgs = {
   id: Scalars["ID"];
   type: AddressTypeEnum;
-}
+};
 
-export interface MutationAccountUpdateArgs {
+export type MutationAccountUpdateArgs = {
   input: AccountInput;
-}
+};
 
-export interface MutationAddressCreateArgs {
+export type MutationAddressCreateArgs = {
   input: AddressInput;
   userId: Scalars["ID"];
-}
+};
 
-export interface MutationAddressDeleteArgs {
+export type MutationAddressDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationAddressSetDefaultArgs {
+export type MutationAddressSetDefaultArgs = {
   addressId: Scalars["ID"];
   type: AddressTypeEnum;
   userId: Scalars["ID"];
-}
+};
 
-export interface MutationAddressUpdateArgs {
+export type MutationAddressUpdateArgs = {
   id: Scalars["ID"];
   input: AddressInput;
-}
+};
 
-export interface MutationAppActivateArgs {
+export type MutationAppActivateArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationAppCreateArgs {
+export type MutationAppCreateArgs = {
   input: AppInput;
-}
+};
 
-export interface MutationAppDeactivateArgs {
+export type MutationAppDeactivateArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationAppDeleteArgs {
+export type MutationAppDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationAppDeleteFailedInstallationArgs {
+export type MutationAppDeleteFailedInstallationArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationAppFetchManifestArgs {
+export type MutationAppFetchManifestArgs = {
   manifestUrl: Scalars["String"];
-}
+};
 
-export interface MutationAppInstallArgs {
+export type MutationAppInstallArgs = {
   input: AppInstallInput;
-}
+};
 
-export interface MutationAppRetryInstallArgs {
-  activateAfterInstallation?: Maybe<Scalars["Boolean"]>;
+export type MutationAppRetryInstallArgs = {
+  activateAfterInstallation?: InputMaybe<Scalars["Boolean"]>;
   id: Scalars["ID"];
-}
+};
 
-export interface MutationAppTokenCreateArgs {
+export type MutationAppTokenCreateArgs = {
   input: AppTokenInput;
-}
+};
 
-export interface MutationAppTokenDeleteArgs {
+export type MutationAppTokenDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationAppTokenVerifyArgs {
+export type MutationAppTokenVerifyArgs = {
   token: Scalars["String"];
-}
+};
 
-export interface MutationAppUpdateArgs {
+export type MutationAppUpdateArgs = {
   id: Scalars["ID"];
   input: AppInput;
-}
+};
 
-export interface MutationAssignNavigationArgs {
-  menu?: Maybe<Scalars["ID"]>;
+export type MutationAssignNavigationArgs = {
+  menu?: InputMaybe<Scalars["ID"]>;
   navigationType: NavigationType;
-}
+};
 
-export interface MutationAssignWarehouseShippingZoneArgs {
+export type MutationAssignWarehouseShippingZoneArgs = {
   id: Scalars["ID"];
   shippingZoneIds: Array<Scalars["ID"]>;
-}
+};
 
-export interface MutationAttributeBulkDeleteArgs {
-  ids: Array<Maybe<Scalars["ID"]>>;
-}
+export type MutationAttributeBulkDeleteArgs = {
+  ids: Array<InputMaybe<Scalars["ID"]>>;
+};
 
-export interface MutationAttributeCreateArgs {
+export type MutationAttributeCreateArgs = {
   input: AttributeCreateInput;
-}
+};
 
-export interface MutationAttributeDeleteArgs {
+export type MutationAttributeDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationAttributeReorderValuesArgs {
+export type MutationAttributeReorderValuesArgs = {
   attributeId: Scalars["ID"];
-  moves: Array<Maybe<ReorderInput>>;
-}
+  moves: Array<InputMaybe<ReorderInput>>;
+};
 
-export interface MutationAttributeTranslateArgs {
+export type MutationAttributeTranslateArgs = {
   id: Scalars["ID"];
   input: NameTranslationInput;
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface MutationAttributeUpdateArgs {
+export type MutationAttributeUpdateArgs = {
   id: Scalars["ID"];
   input: AttributeUpdateInput;
-}
+};
 
-export interface MutationAttributeValueBulkDeleteArgs {
-  ids: Array<Maybe<Scalars["ID"]>>;
-}
+export type MutationAttributeValueBulkDeleteArgs = {
+  ids: Array<InputMaybe<Scalars["ID"]>>;
+};
 
-export interface MutationAttributeValueCreateArgs {
+export type MutationAttributeValueCreateArgs = {
   attribute: Scalars["ID"];
   input: AttributeValueCreateInput;
-}
+};
 
-export interface MutationAttributeValueDeleteArgs {
+export type MutationAttributeValueDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationAttributeValueTranslateArgs {
+export type MutationAttributeValueTranslateArgs = {
   id: Scalars["ID"];
   input: AttributeValueTranslationInput;
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface MutationAttributeValueUpdateArgs {
+export type MutationAttributeValueUpdateArgs = {
   id: Scalars["ID"];
   input: AttributeValueCreateInput;
-}
+};
 
-export interface MutationCategoryBulkDeleteArgs {
-  ids: Array<Maybe<Scalars["ID"]>>;
-}
+export type MutationCategoryBulkDeleteArgs = {
+  ids: Array<InputMaybe<Scalars["ID"]>>;
+};
 
-export interface MutationCategoryCreateArgs {
+export type MutationCategoryCreateArgs = {
   input: CategoryInput;
-  parent?: Maybe<Scalars["ID"]>;
-}
+  parent?: InputMaybe<Scalars["ID"]>;
+};
 
-export interface MutationCategoryDeleteArgs {
+export type MutationCategoryDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationCategoryTranslateArgs {
+export type MutationCategoryTranslateArgs = {
   id: Scalars["ID"];
   input: TranslationInput;
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface MutationCategoryUpdateArgs {
+export type MutationCategoryUpdateArgs = {
   id: Scalars["ID"];
   input: CategoryInput;
-}
+};
 
-export interface MutationChannelActivateArgs {
+export type MutationChannelActivateArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationChannelCreateArgs {
+export type MutationChannelCreateArgs = {
   input: ChannelCreateInput;
-}
+};
 
-export interface MutationChannelDeactivateArgs {
+export type MutationChannelDeactivateArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationChannelDeleteArgs {
+export type MutationChannelDeleteArgs = {
   id: Scalars["ID"];
-  input?: Maybe<ChannelDeleteInput>;
-}
+  input?: InputMaybe<ChannelDeleteInput>;
+};
 
-export interface MutationChannelUpdateArgs {
+export type MutationChannelUpdateArgs = {
   id: Scalars["ID"];
   input: ChannelUpdateInput;
-}
+};
 
-export interface MutationCheckoutAddPromoCodeArgs {
-  checkoutId?: Maybe<Scalars["ID"]>;
+export type MutationCheckoutAddPromoCodeArgs = {
+  checkoutId?: InputMaybe<Scalars["ID"]>;
   promoCode: Scalars["String"];
-  token?: Maybe<Scalars["UUID"]>;
-}
+  token?: InputMaybe<Scalars["UUID"]>;
+};
 
-export interface MutationCheckoutBillingAddressUpdateArgs {
+export type MutationCheckoutBillingAddressUpdateArgs = {
   billingAddress: AddressInput;
-  checkoutId?: Maybe<Scalars["ID"]>;
-  token?: Maybe<Scalars["UUID"]>;
-}
+  checkoutId?: InputMaybe<Scalars["ID"]>;
+  token?: InputMaybe<Scalars["UUID"]>;
+};
 
-export interface MutationCheckoutCompleteArgs {
-  checkoutId?: Maybe<Scalars["ID"]>;
-  paymentData?: Maybe<Scalars["JSONString"]>;
-  redirectUrl?: Maybe<Scalars["String"]>;
-  storeSource?: Maybe<Scalars["Boolean"]>;
-  token?: Maybe<Scalars["UUID"]>;
-}
+export type MutationCheckoutCompleteArgs = {
+  checkoutId?: InputMaybe<Scalars["ID"]>;
+  paymentData?: InputMaybe<Scalars["JSONString"]>;
+  redirectUrl?: InputMaybe<Scalars["String"]>;
+  storeSource?: InputMaybe<Scalars["Boolean"]>;
+  token?: InputMaybe<Scalars["UUID"]>;
+};
 
-export interface MutationCheckoutCreateArgs {
+export type MutationCheckoutCreateArgs = {
   input: CheckoutCreateInput;
-}
+};
 
-export interface MutationCheckoutCustomerAttachArgs {
-  checkoutId?: Maybe<Scalars["ID"]>;
-  customerId?: Maybe<Scalars["ID"]>;
-  token?: Maybe<Scalars["UUID"]>;
-}
+export type MutationCheckoutCustomerAttachArgs = {
+  checkoutId?: InputMaybe<Scalars["ID"]>;
+  customerId?: InputMaybe<Scalars["ID"]>;
+  token?: InputMaybe<Scalars["UUID"]>;
+};
 
-export interface MutationCheckoutCustomerDetachArgs {
-  checkoutId?: Maybe<Scalars["ID"]>;
-  token?: Maybe<Scalars["UUID"]>;
-}
+export type MutationCheckoutCustomerDetachArgs = {
+  checkoutId?: InputMaybe<Scalars["ID"]>;
+  token?: InputMaybe<Scalars["UUID"]>;
+};
 
-export interface MutationCheckoutEmailUpdateArgs {
-  checkoutId?: Maybe<Scalars["ID"]>;
+export type MutationCheckoutEmailUpdateArgs = {
+  checkoutId?: InputMaybe<Scalars["ID"]>;
   email: Scalars["String"];
-  token?: Maybe<Scalars["UUID"]>;
-}
+  token?: InputMaybe<Scalars["UUID"]>;
+};
 
-export interface MutationCheckoutLanguageCodeUpdateArgs {
-  checkoutId?: Maybe<Scalars["ID"]>;
+export type MutationCheckoutLanguageCodeUpdateArgs = {
+  checkoutId?: InputMaybe<Scalars["ID"]>;
   languageCode: LanguageCodeEnum;
-  token?: Maybe<Scalars["UUID"]>;
-}
+  token?: InputMaybe<Scalars["UUID"]>;
+};
 
-export interface MutationCheckoutLineDeleteArgs {
-  checkoutId?: Maybe<Scalars["ID"]>;
-  lineId?: Maybe<Scalars["ID"]>;
-  token?: Maybe<Scalars["UUID"]>;
-}
+export type MutationCheckoutLineDeleteArgs = {
+  checkoutId?: InputMaybe<Scalars["ID"]>;
+  lineId?: InputMaybe<Scalars["ID"]>;
+  token?: InputMaybe<Scalars["UUID"]>;
+};
 
-export interface MutationCheckoutLinesAddArgs {
-  checkoutId?: Maybe<Scalars["ID"]>;
-  lines: Array<Maybe<CheckoutLineInput>>;
-  token?: Maybe<Scalars["UUID"]>;
-}
+export type MutationCheckoutLinesAddArgs = {
+  checkoutId?: InputMaybe<Scalars["ID"]>;
+  lines: Array<InputMaybe<CheckoutLineInput>>;
+  token?: InputMaybe<Scalars["UUID"]>;
+};
 
-export interface MutationCheckoutLinesUpdateArgs {
-  checkoutId?: Maybe<Scalars["ID"]>;
-  lines: Array<Maybe<CheckoutLineInput>>;
-  token?: Maybe<Scalars["UUID"]>;
-}
+export type MutationCheckoutLinesUpdateArgs = {
+  checkoutId?: InputMaybe<Scalars["ID"]>;
+  lines: Array<InputMaybe<CheckoutLineInput>>;
+  token?: InputMaybe<Scalars["UUID"]>;
+};
 
-export interface MutationCheckoutPaymentCreateArgs {
-  checkoutId?: Maybe<Scalars["ID"]>;
+export type MutationCheckoutPaymentCreateArgs = {
+  checkoutId?: InputMaybe<Scalars["ID"]>;
   input: PaymentInput;
-  token?: Maybe<Scalars["UUID"]>;
-}
+  token?: InputMaybe<Scalars["UUID"]>;
+};
 
-export interface MutationCheckoutRemovePromoCodeArgs {
-  checkoutId?: Maybe<Scalars["ID"]>;
+export type MutationCheckoutRemovePromoCodeArgs = {
+  checkoutId?: InputMaybe<Scalars["ID"]>;
   promoCode: Scalars["String"];
-  token?: Maybe<Scalars["UUID"]>;
-}
+  token?: InputMaybe<Scalars["UUID"]>;
+};
 
-export interface MutationCheckoutShippingAddressUpdateArgs {
-  checkoutId?: Maybe<Scalars["ID"]>;
+export type MutationCheckoutShippingAddressUpdateArgs = {
+  checkoutId?: InputMaybe<Scalars["ID"]>;
   shippingAddress: AddressInput;
-  token?: Maybe<Scalars["UUID"]>;
-}
+  token?: InputMaybe<Scalars["UUID"]>;
+};
 
-export interface MutationCheckoutShippingMethodUpdateArgs {
-  checkoutId?: Maybe<Scalars["ID"]>;
+export type MutationCheckoutShippingMethodUpdateArgs = {
+  checkoutId?: InputMaybe<Scalars["ID"]>;
   shippingMethodId: Scalars["ID"];
-  token?: Maybe<Scalars["UUID"]>;
-}
+  token?: InputMaybe<Scalars["UUID"]>;
+};
 
-export interface MutationCollectionAddProductsArgs {
+export type MutationCollectionAddProductsArgs = {
   collectionId: Scalars["ID"];
-  products: Array<Maybe<Scalars["ID"]>>;
-}
+  products: Array<InputMaybe<Scalars["ID"]>>;
+};
 
-export interface MutationCollectionBulkDeleteArgs {
-  ids: Array<Maybe<Scalars["ID"]>>;
-}
+export type MutationCollectionBulkDeleteArgs = {
+  ids: Array<InputMaybe<Scalars["ID"]>>;
+};
 
-export interface MutationCollectionChannelListingUpdateArgs {
+export type MutationCollectionChannelListingUpdateArgs = {
   id: Scalars["ID"];
   input: CollectionChannelListingUpdateInput;
-}
+};
 
-export interface MutationCollectionCreateArgs {
+export type MutationCollectionCreateArgs = {
   input: CollectionCreateInput;
-}
+};
 
-export interface MutationCollectionDeleteArgs {
+export type MutationCollectionDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationCollectionRemoveProductsArgs {
+export type MutationCollectionRemoveProductsArgs = {
   collectionId: Scalars["ID"];
-  products: Array<Maybe<Scalars["ID"]>>;
-}
+  products: Array<InputMaybe<Scalars["ID"]>>;
+};
 
-export interface MutationCollectionReorderProductsArgs {
+export type MutationCollectionReorderProductsArgs = {
   collectionId: Scalars["ID"];
-  moves: Array<Maybe<MoveProductInput>>;
-}
+  moves: Array<InputMaybe<MoveProductInput>>;
+};
 
-export interface MutationCollectionTranslateArgs {
+export type MutationCollectionTranslateArgs = {
   id: Scalars["ID"];
   input: TranslationInput;
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface MutationCollectionUpdateArgs {
+export type MutationCollectionUpdateArgs = {
   id: Scalars["ID"];
   input: CollectionInput;
-}
+};
 
-export interface MutationConfirmAccountArgs {
+export type MutationConfirmAccountArgs = {
   email: Scalars["String"];
   token: Scalars["String"];
-}
+};
 
-export interface MutationConfirmEmailChangeArgs {
-  channel?: Maybe<Scalars["String"]>;
+export type MutationConfirmEmailChangeArgs = {
+  channel?: InputMaybe<Scalars["String"]>;
   token: Scalars["String"];
-}
+};
 
-export interface MutationCreateWarehouseArgs {
+export type MutationCreateWarehouseArgs = {
   input: WarehouseCreateInput;
-}
+};
 
-export interface MutationCustomerBulkDeleteArgs {
-  ids: Array<Maybe<Scalars["ID"]>>;
-}
+export type MutationCustomerBulkDeleteArgs = {
+  ids: Array<InputMaybe<Scalars["ID"]>>;
+};
 
-export interface MutationCustomerCreateArgs {
+export type MutationCustomerCreateArgs = {
   input: UserCreateInput;
-}
+};
 
-export interface MutationCustomerDeleteArgs {
+export type MutationCustomerDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationCustomerUpdateArgs {
+export type MutationCustomerUpdateArgs = {
   id: Scalars["ID"];
   input: CustomerInput;
-}
+};
 
-export interface MutationDeleteMetadataArgs {
+export type MutationDeleteMetadataArgs = {
   id: Scalars["ID"];
   keys: Array<Scalars["String"]>;
-}
+};
 
-export interface MutationDeletePrivateMetadataArgs {
+export type MutationDeletePrivateMetadataArgs = {
   id: Scalars["ID"];
   keys: Array<Scalars["String"]>;
-}
+};
 
-export interface MutationDeleteWarehouseArgs {
+export type MutationDeleteWarehouseArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationDigitalContentCreateArgs {
+export type MutationDigitalContentCreateArgs = {
   input: DigitalContentUploadInput;
   variantId: Scalars["ID"];
-}
+};
 
-export interface MutationDigitalContentDeleteArgs {
+export type MutationDigitalContentDeleteArgs = {
   variantId: Scalars["ID"];
-}
+};
 
-export interface MutationDigitalContentUpdateArgs {
+export type MutationDigitalContentUpdateArgs = {
   input: DigitalContentInput;
   variantId: Scalars["ID"];
-}
+};
 
-export interface MutationDigitalContentUrlCreateArgs {
+export type MutationDigitalContentUrlCreateArgs = {
   input: DigitalContentUrlCreateInput;
-}
+};
 
-export interface MutationDraftOrderBulkDeleteArgs {
-  ids: Array<Maybe<Scalars["ID"]>>;
-}
+export type MutationDraftOrderBulkDeleteArgs = {
+  ids: Array<InputMaybe<Scalars["ID"]>>;
+};
 
-export interface MutationDraftOrderCompleteArgs {
+export type MutationDraftOrderCompleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationDraftOrderCreateArgs {
+export type MutationDraftOrderCreateArgs = {
   input: DraftOrderCreateInput;
-}
+};
 
-export interface MutationDraftOrderDeleteArgs {
+export type MutationDraftOrderDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationDraftOrderLinesBulkDeleteArgs {
-  ids: Array<Maybe<Scalars["ID"]>>;
-}
+export type MutationDraftOrderLinesBulkDeleteArgs = {
+  ids: Array<InputMaybe<Scalars["ID"]>>;
+};
 
-export interface MutationDraftOrderUpdateArgs {
+export type MutationDraftOrderUpdateArgs = {
   id: Scalars["ID"];
   input: DraftOrderInput;
-}
+};
 
-export interface MutationExportProductsArgs {
+export type MutationExportProductsArgs = {
   input: ExportProductsInput;
-}
+};
 
-export interface MutationExternalAuthenticationUrlArgs {
+export type MutationExternalAuthenticationUrlArgs = {
   input: Scalars["JSONString"];
   pluginId: Scalars["String"];
-}
+};
 
-export interface MutationExternalLogoutArgs {
+export type MutationExternalLogoutArgs = {
   input: Scalars["JSONString"];
   pluginId: Scalars["String"];
-}
+};
 
-export interface MutationExternalObtainAccessTokensArgs {
+export type MutationExternalObtainAccessTokensArgs = {
   input: Scalars["JSONString"];
   pluginId: Scalars["String"];
-}
+};
 
-export interface MutationExternalRefreshArgs {
+export type MutationExternalRefreshArgs = {
   input: Scalars["JSONString"];
   pluginId: Scalars["String"];
-}
+};
 
-export interface MutationExternalVerifyArgs {
+export type MutationExternalVerifyArgs = {
   input: Scalars["JSONString"];
   pluginId: Scalars["String"];
-}
+};
 
-export interface MutationFileUploadArgs {
+export type MutationFileUploadArgs = {
   file: Scalars["Upload"];
-}
+};
 
-export interface MutationGiftCardActivateArgs {
+export type MutationGiftCardActivateArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationGiftCardCreateArgs {
+export type MutationGiftCardCreateArgs = {
   input: GiftCardCreateInput;
-}
+};
 
-export interface MutationGiftCardDeactivateArgs {
+export type MutationGiftCardDeactivateArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationGiftCardUpdateArgs {
+export type MutationGiftCardUpdateArgs = {
   id: Scalars["ID"];
   input: GiftCardUpdateInput;
-}
+};
 
-export interface MutationInvoiceCreateArgs {
+export type MutationInvoiceCreateArgs = {
   input: InvoiceCreateInput;
   orderId: Scalars["ID"];
-}
+};
 
-export interface MutationInvoiceDeleteArgs {
+export type MutationInvoiceDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationInvoiceRequestArgs {
-  number?: Maybe<Scalars["String"]>;
+export type MutationInvoiceRequestArgs = {
+  number?: InputMaybe<Scalars["String"]>;
   orderId: Scalars["ID"];
-}
+};
 
-export interface MutationInvoiceRequestDeleteArgs {
+export type MutationInvoiceRequestDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationInvoiceSendNotificationArgs {
+export type MutationInvoiceSendNotificationArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationInvoiceUpdateArgs {
+export type MutationInvoiceUpdateArgs = {
   id: Scalars["ID"];
   input: UpdateInvoiceInput;
-}
+};
 
-export interface MutationMenuBulkDeleteArgs {
-  ids: Array<Maybe<Scalars["ID"]>>;
-}
+export type MutationMenuBulkDeleteArgs = {
+  ids: Array<InputMaybe<Scalars["ID"]>>;
+};
 
-export interface MutationMenuCreateArgs {
+export type MutationMenuCreateArgs = {
   input: MenuCreateInput;
-}
+};
 
-export interface MutationMenuDeleteArgs {
+export type MutationMenuDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationMenuItemBulkDeleteArgs {
-  ids: Array<Maybe<Scalars["ID"]>>;
-}
+export type MutationMenuItemBulkDeleteArgs = {
+  ids: Array<InputMaybe<Scalars["ID"]>>;
+};
 
-export interface MutationMenuItemCreateArgs {
+export type MutationMenuItemCreateArgs = {
   input: MenuItemCreateInput;
-}
+};
 
-export interface MutationMenuItemDeleteArgs {
+export type MutationMenuItemDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationMenuItemMoveArgs {
+export type MutationMenuItemMoveArgs = {
   menu: Scalars["ID"];
-  moves: Array<Maybe<MenuItemMoveInput>>;
-}
+  moves: Array<InputMaybe<MenuItemMoveInput>>;
+};
 
-export interface MutationMenuItemTranslateArgs {
+export type MutationMenuItemTranslateArgs = {
   id: Scalars["ID"];
   input: NameTranslationInput;
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface MutationMenuItemUpdateArgs {
+export type MutationMenuItemUpdateArgs = {
   id: Scalars["ID"];
   input: MenuItemInput;
-}
+};
 
-export interface MutationMenuUpdateArgs {
+export type MutationMenuUpdateArgs = {
   id: Scalars["ID"];
   input: MenuInput;
-}
+};
 
-export interface MutationOrderAddNoteArgs {
+export type MutationOrderAddNoteArgs = {
   input: OrderAddNoteInput;
   order: Scalars["ID"];
-}
+};
 
-export interface MutationOrderBulkCancelArgs {
-  ids: Array<Maybe<Scalars["ID"]>>;
-}
+export type MutationOrderBulkCancelArgs = {
+  ids: Array<InputMaybe<Scalars["ID"]>>;
+};
 
-export interface MutationOrderCancelArgs {
+export type MutationOrderCancelArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationOrderCaptureArgs {
+export type MutationOrderCaptureArgs = {
   amount: Scalars["PositiveDecimal"];
   id: Scalars["ID"];
-}
+};
 
-export interface MutationOrderConfirmArgs {
+export type MutationOrderConfirmArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationOrderDiscountAddArgs {
+export type MutationOrderDiscountAddArgs = {
   input: OrderDiscountCommonInput;
   orderId: Scalars["ID"];
-}
+};
 
-export interface MutationOrderDiscountDeleteArgs {
+export type MutationOrderDiscountDeleteArgs = {
   discountId: Scalars["ID"];
-}
+};
 
-export interface MutationOrderDiscountUpdateArgs {
+export type MutationOrderDiscountUpdateArgs = {
   discountId: Scalars["ID"];
   input: OrderDiscountCommonInput;
-}
+};
 
-export interface MutationOrderFulfillArgs {
+export type MutationOrderFulfillArgs = {
   input: OrderFulfillInput;
-  order?: Maybe<Scalars["ID"]>;
-}
+  order?: InputMaybe<Scalars["ID"]>;
+};
 
-export interface MutationOrderFulfillmentCancelArgs {
+export type MutationOrderFulfillmentCancelArgs = {
   id: Scalars["ID"];
   input: FulfillmentCancelInput;
-}
+};
 
-export interface MutationOrderFulfillmentRefundProductsArgs {
+export type MutationOrderFulfillmentRefundProductsArgs = {
   input: OrderRefundProductsInput;
   order: Scalars["ID"];
-}
+};
 
-export interface MutationOrderFulfillmentReturnProductsArgs {
+export type MutationOrderFulfillmentReturnProductsArgs = {
   input: OrderReturnProductsInput;
   order: Scalars["ID"];
-}
+};
 
-export interface MutationOrderFulfillmentUpdateTrackingArgs {
+export type MutationOrderFulfillmentUpdateTrackingArgs = {
   id: Scalars["ID"];
   input: FulfillmentUpdateTrackingInput;
-}
+};
 
-export interface MutationOrderLineDeleteArgs {
+export type MutationOrderLineDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationOrderLineDiscountRemoveArgs {
+export type MutationOrderLineDiscountRemoveArgs = {
   orderLineId: Scalars["ID"];
-}
+};
 
-export interface MutationOrderLineDiscountUpdateArgs {
+export type MutationOrderLineDiscountUpdateArgs = {
   input: OrderDiscountCommonInput;
   orderLineId: Scalars["ID"];
-}
+};
 
-export interface MutationOrderLineUpdateArgs {
+export type MutationOrderLineUpdateArgs = {
   id: Scalars["ID"];
   input: OrderLineInput;
-}
+};
 
-export interface MutationOrderLinesCreateArgs {
+export type MutationOrderLinesCreateArgs = {
   id: Scalars["ID"];
-  input: Array<Maybe<OrderLineCreateInput>>;
-}
+  input: Array<InputMaybe<OrderLineCreateInput>>;
+};
 
-export interface MutationOrderMarkAsPaidArgs {
+export type MutationOrderMarkAsPaidArgs = {
   id: Scalars["ID"];
-  transactionReference?: Maybe<Scalars["String"]>;
-}
+  transactionReference?: InputMaybe<Scalars["String"]>;
+};
 
-export interface MutationOrderRefundArgs {
+export type MutationOrderRefundArgs = {
   amount: Scalars["PositiveDecimal"];
   id: Scalars["ID"];
-}
+};
 
-export interface MutationOrderSettingsUpdateArgs {
+export type MutationOrderSettingsUpdateArgs = {
   input: OrderSettingsUpdateInput;
-}
+};
 
-export interface MutationOrderUpdateArgs {
+export type MutationOrderUpdateArgs = {
   id: Scalars["ID"];
   input: OrderUpdateInput;
-}
+};
 
-export interface MutationOrderUpdateShippingArgs {
-  input?: Maybe<OrderUpdateShippingInput>;
+export type MutationOrderUpdateShippingArgs = {
+  input?: InputMaybe<OrderUpdateShippingInput>;
   order: Scalars["ID"];
-}
+};
 
-export interface MutationOrderVoidArgs {
+export type MutationOrderVoidArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationPageAttributeAssignArgs {
+export type MutationPageAttributeAssignArgs = {
   attributeIds: Array<Scalars["ID"]>;
   pageTypeId: Scalars["ID"];
-}
+};
 
-export interface MutationPageAttributeUnassignArgs {
+export type MutationPageAttributeUnassignArgs = {
   attributeIds: Array<Scalars["ID"]>;
   pageTypeId: Scalars["ID"];
-}
+};
 
-export interface MutationPageBulkDeleteArgs {
-  ids: Array<Maybe<Scalars["ID"]>>;
-}
+export type MutationPageBulkDeleteArgs = {
+  ids: Array<InputMaybe<Scalars["ID"]>>;
+};
 
-export interface MutationPageBulkPublishArgs {
-  ids: Array<Maybe<Scalars["ID"]>>;
+export type MutationPageBulkPublishArgs = {
+  ids: Array<InputMaybe<Scalars["ID"]>>;
   isPublished: Scalars["Boolean"];
-}
+};
 
-export interface MutationPageCreateArgs {
+export type MutationPageCreateArgs = {
   input: PageCreateInput;
-}
+};
 
-export interface MutationPageDeleteArgs {
+export type MutationPageDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationPageReorderAttributeValuesArgs {
+export type MutationPageReorderAttributeValuesArgs = {
   attributeId: Scalars["ID"];
-  moves: Array<Maybe<ReorderInput>>;
+  moves: Array<InputMaybe<ReorderInput>>;
   pageId: Scalars["ID"];
-}
+};
 
-export interface MutationPageTranslateArgs {
+export type MutationPageTranslateArgs = {
   id: Scalars["ID"];
   input: PageTranslationInput;
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface MutationPageTypeBulkDeleteArgs {
+export type MutationPageTypeBulkDeleteArgs = {
   ids: Array<Scalars["ID"]>;
-}
+};
 
-export interface MutationPageTypeCreateArgs {
+export type MutationPageTypeCreateArgs = {
   input: PageTypeCreateInput;
-}
+};
 
-export interface MutationPageTypeDeleteArgs {
+export type MutationPageTypeDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationPageTypeReorderAttributesArgs {
-  moves: ReorderInput[];
+export type MutationPageTypeReorderAttributesArgs = {
+  moves: Array<ReorderInput>;
   pageTypeId: Scalars["ID"];
-}
+};
 
-export interface MutationPageTypeUpdateArgs {
-  id?: Maybe<Scalars["ID"]>;
+export type MutationPageTypeUpdateArgs = {
+  id?: InputMaybe<Scalars["ID"]>;
   input: PageTypeUpdateInput;
-}
+};
 
-export interface MutationPageUpdateArgs {
+export type MutationPageUpdateArgs = {
   id: Scalars["ID"];
   input: PageInput;
-}
+};
 
-export interface MutationPasswordChangeArgs {
+export type MutationPasswordChangeArgs = {
   newPassword: Scalars["String"];
   oldPassword: Scalars["String"];
-}
+};
 
-export interface MutationPaymentCaptureArgs {
-  amount?: Maybe<Scalars["PositiveDecimal"]>;
+export type MutationPaymentCaptureArgs = {
+  amount?: InputMaybe<Scalars["PositiveDecimal"]>;
   paymentId: Scalars["ID"];
-}
+};
 
-export interface MutationPaymentInitializeArgs {
-  channel?: Maybe<Scalars["String"]>;
+export type MutationPaymentInitializeArgs = {
+  channel?: InputMaybe<Scalars["String"]>;
   gateway: Scalars["String"];
-  paymentData?: Maybe<Scalars["JSONString"]>;
-}
+  paymentData?: InputMaybe<Scalars["JSONString"]>;
+};
 
-export interface MutationPaymentRefundArgs {
-  amount?: Maybe<Scalars["PositiveDecimal"]>;
+export type MutationPaymentRefundArgs = {
+  amount?: InputMaybe<Scalars["PositiveDecimal"]>;
   paymentId: Scalars["ID"];
-}
+};
 
-export interface MutationPaymentVoidArgs {
+export type MutationPaymentVoidArgs = {
   paymentId: Scalars["ID"];
-}
+};
 
-export interface MutationPermissionGroupCreateArgs {
+export type MutationPermissionGroupCreateArgs = {
   input: PermissionGroupCreateInput;
-}
+};
 
-export interface MutationPermissionGroupDeleteArgs {
+export type MutationPermissionGroupDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationPermissionGroupUpdateArgs {
+export type MutationPermissionGroupUpdateArgs = {
   id: Scalars["ID"];
   input: PermissionGroupUpdateInput;
-}
+};
 
-export interface MutationPluginUpdateArgs {
-  channelId?: Maybe<Scalars["ID"]>;
+export type MutationPluginUpdateArgs = {
+  channelId?: InputMaybe<Scalars["ID"]>;
   id: Scalars["ID"];
   input: PluginUpdateInput;
-}
+};
 
-export interface MutationProductAttributeAssignArgs {
-  operations: Array<Maybe<ProductAttributeAssignInput>>;
+export type MutationProductAttributeAssignArgs = {
+  operations: Array<InputMaybe<ProductAttributeAssignInput>>;
   productTypeId: Scalars["ID"];
-}
+};
 
-export interface MutationProductAttributeUnassignArgs {
-  attributeIds: Array<Maybe<Scalars["ID"]>>;
+export type MutationProductAttributeUnassignArgs = {
+  attributeIds: Array<InputMaybe<Scalars["ID"]>>;
   productTypeId: Scalars["ID"];
-}
+};
 
-export interface MutationProductBulkDeleteArgs {
-  ids: Array<Maybe<Scalars["ID"]>>;
-}
+export type MutationProductBulkDeleteArgs = {
+  ids: Array<InputMaybe<Scalars["ID"]>>;
+};
 
-export interface MutationProductChannelListingUpdateArgs {
+export type MutationProductChannelListingUpdateArgs = {
   id: Scalars["ID"];
   input: ProductChannelListingUpdateInput;
-}
+};
 
-export interface MutationProductCreateArgs {
+export type MutationProductCreateArgs = {
   input: ProductCreateInput;
-}
+};
 
-export interface MutationProductDeleteArgs {
+export type MutationProductDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationProductMediaBulkDeleteArgs {
-  ids: Array<Maybe<Scalars["ID"]>>;
-}
+export type MutationProductMediaBulkDeleteArgs = {
+  ids: Array<InputMaybe<Scalars["ID"]>>;
+};
 
-export interface MutationProductMediaCreateArgs {
+export type MutationProductMediaCreateArgs = {
   input: ProductMediaCreateInput;
-}
+};
 
-export interface MutationProductMediaDeleteArgs {
+export type MutationProductMediaDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationProductMediaReorderArgs {
-  mediaIds: Array<Maybe<Scalars["ID"]>>;
+export type MutationProductMediaReorderArgs = {
+  mediaIds: Array<InputMaybe<Scalars["ID"]>>;
   productId: Scalars["ID"];
-}
+};
 
-export interface MutationProductMediaUpdateArgs {
+export type MutationProductMediaUpdateArgs = {
   id: Scalars["ID"];
   input: ProductMediaUpdateInput;
-}
+};
 
-export interface MutationProductReorderAttributeValuesArgs {
+export type MutationProductReorderAttributeValuesArgs = {
   attributeId: Scalars["ID"];
-  moves: Array<Maybe<ReorderInput>>;
+  moves: Array<InputMaybe<ReorderInput>>;
   productId: Scalars["ID"];
-}
+};
 
-export interface MutationProductTranslateArgs {
+export type MutationProductTranslateArgs = {
   id: Scalars["ID"];
   input: TranslationInput;
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface MutationProductTypeBulkDeleteArgs {
-  ids: Array<Maybe<Scalars["ID"]>>;
-}
+export type MutationProductTypeBulkDeleteArgs = {
+  ids: Array<InputMaybe<Scalars["ID"]>>;
+};
 
-export interface MutationProductTypeCreateArgs {
+export type MutationProductTypeCreateArgs = {
   input: ProductTypeInput;
-}
+};
 
-export interface MutationProductTypeDeleteArgs {
+export type MutationProductTypeDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationProductTypeReorderAttributesArgs {
-  moves: Array<Maybe<ReorderInput>>;
+export type MutationProductTypeReorderAttributesArgs = {
+  moves: Array<InputMaybe<ReorderInput>>;
   productTypeId: Scalars["ID"];
   type: ProductAttributeType;
-}
+};
 
-export interface MutationProductTypeUpdateArgs {
+export type MutationProductTypeUpdateArgs = {
   id: Scalars["ID"];
   input: ProductTypeInput;
-}
+};
 
-export interface MutationProductUpdateArgs {
+export type MutationProductUpdateArgs = {
   id: Scalars["ID"];
   input: ProductInput;
-}
+};
 
-export interface MutationProductVariantBulkCreateArgs {
+export type MutationProductVariantBulkCreateArgs = {
   product: Scalars["ID"];
-  variants: Array<Maybe<ProductVariantBulkCreateInput>>;
-}
+  variants: Array<InputMaybe<ProductVariantBulkCreateInput>>;
+};
 
-export interface MutationProductVariantBulkDeleteArgs {
-  ids: Array<Maybe<Scalars["ID"]>>;
-}
+export type MutationProductVariantBulkDeleteArgs = {
+  ids: Array<InputMaybe<Scalars["ID"]>>;
+};
 
-export interface MutationProductVariantChannelListingUpdateArgs {
+export type MutationProductVariantChannelListingUpdateArgs = {
   id: Scalars["ID"];
-  input: ProductVariantChannelListingAddInput[];
-}
+  input: Array<ProductVariantChannelListingAddInput>;
+};
 
-export interface MutationProductVariantCreateArgs {
+export type MutationProductVariantCreateArgs = {
   input: ProductVariantCreateInput;
-}
+};
 
-export interface MutationProductVariantDeleteArgs {
+export type MutationProductVariantDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationProductVariantReorderArgs {
-  moves: Array<Maybe<ReorderInput>>;
+export type MutationProductVariantReorderArgs = {
+  moves: Array<InputMaybe<ReorderInput>>;
   productId: Scalars["ID"];
-}
+};
 
-export interface MutationProductVariantReorderAttributeValuesArgs {
+export type MutationProductVariantReorderAttributeValuesArgs = {
   attributeId: Scalars["ID"];
-  moves: Array<Maybe<ReorderInput>>;
+  moves: Array<InputMaybe<ReorderInput>>;
   variantId: Scalars["ID"];
-}
+};
 
-export interface MutationProductVariantSetDefaultArgs {
+export type MutationProductVariantSetDefaultArgs = {
   productId: Scalars["ID"];
   variantId: Scalars["ID"];
-}
+};
 
-export interface MutationProductVariantStocksCreateArgs {
-  stocks: StockInput[];
+export type MutationProductVariantStocksCreateArgs = {
+  stocks: Array<StockInput>;
   variantId: Scalars["ID"];
-}
+};
 
-export interface MutationProductVariantStocksDeleteArgs {
+export type MutationProductVariantStocksDeleteArgs = {
   variantId: Scalars["ID"];
-  warehouseIds?: Maybe<Array<Scalars["ID"]>>;
-}
+  warehouseIds?: InputMaybe<Array<Scalars["ID"]>>;
+};
 
-export interface MutationProductVariantStocksUpdateArgs {
-  stocks: StockInput[];
+export type MutationProductVariantStocksUpdateArgs = {
+  stocks: Array<StockInput>;
   variantId: Scalars["ID"];
-}
+};
 
-export interface MutationProductVariantTranslateArgs {
+export type MutationProductVariantTranslateArgs = {
   id: Scalars["ID"];
   input: NameTranslationInput;
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface MutationProductVariantUpdateArgs {
+export type MutationProductVariantUpdateArgs = {
   id: Scalars["ID"];
   input: ProductVariantInput;
-}
+};
 
-export interface MutationRequestEmailChangeArgs {
-  channel?: Maybe<Scalars["String"]>;
+export type MutationRequestEmailChangeArgs = {
+  channel?: InputMaybe<Scalars["String"]>;
   newEmail: Scalars["String"];
   password: Scalars["String"];
   redirectUrl: Scalars["String"];
-}
+};
 
-export interface MutationRequestPasswordResetArgs {
-  channel?: Maybe<Scalars["String"]>;
+export type MutationRequestPasswordResetArgs = {
+  channel?: InputMaybe<Scalars["String"]>;
   email: Scalars["String"];
   redirectUrl: Scalars["String"];
-}
+};
 
-export interface MutationSaleBulkDeleteArgs {
-  ids: Array<Maybe<Scalars["ID"]>>;
-}
+export type MutationSaleBulkDeleteArgs = {
+  ids: Array<InputMaybe<Scalars["ID"]>>;
+};
 
-export interface MutationSaleCataloguesAddArgs {
+export type MutationSaleCataloguesAddArgs = {
   id: Scalars["ID"];
   input: CatalogueInput;
-}
+};
 
-export interface MutationSaleCataloguesRemoveArgs {
+export type MutationSaleCataloguesRemoveArgs = {
   id: Scalars["ID"];
   input: CatalogueInput;
-}
+};
 
-export interface MutationSaleChannelListingUpdateArgs {
+export type MutationSaleChannelListingUpdateArgs = {
   id: Scalars["ID"];
   input: SaleChannelListingInput;
-}
+};
 
-export interface MutationSaleCreateArgs {
+export type MutationSaleCreateArgs = {
   input: SaleInput;
-}
+};
 
-export interface MutationSaleDeleteArgs {
+export type MutationSaleDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationSaleTranslateArgs {
+export type MutationSaleTranslateArgs = {
   id: Scalars["ID"];
   input: NameTranslationInput;
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface MutationSaleUpdateArgs {
+export type MutationSaleUpdateArgs = {
   id: Scalars["ID"];
   input: SaleInput;
-}
+};
 
-export interface MutationSetPasswordArgs {
+export type MutationSetPasswordArgs = {
   email: Scalars["String"];
   password: Scalars["String"];
   token: Scalars["String"];
-}
+};
 
-export interface MutationShippingMethodChannelListingUpdateArgs {
+export type MutationShippingMethodChannelListingUpdateArgs = {
   id: Scalars["ID"];
   input: ShippingMethodChannelListingInput;
-}
+};
 
-export interface MutationShippingPriceBulkDeleteArgs {
-  ids: Array<Maybe<Scalars["ID"]>>;
-}
+export type MutationShippingPriceBulkDeleteArgs = {
+  ids: Array<InputMaybe<Scalars["ID"]>>;
+};
 
-export interface MutationShippingPriceCreateArgs {
+export type MutationShippingPriceCreateArgs = {
   input: ShippingPriceInput;
-}
+};
 
-export interface MutationShippingPriceDeleteArgs {
+export type MutationShippingPriceDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationShippingPriceExcludeProductsArgs {
+export type MutationShippingPriceExcludeProductsArgs = {
   id: Scalars["ID"];
   input: ShippingPriceExcludeProductsInput;
-}
+};
 
-export interface MutationShippingPriceRemoveProductFromExcludeArgs {
+export type MutationShippingPriceRemoveProductFromExcludeArgs = {
   id: Scalars["ID"];
-  products: Array<Maybe<Scalars["ID"]>>;
-}
+  products: Array<InputMaybe<Scalars["ID"]>>;
+};
 
-export interface MutationShippingPriceTranslateArgs {
+export type MutationShippingPriceTranslateArgs = {
   id: Scalars["ID"];
   input: ShippingPriceTranslationInput;
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface MutationShippingPriceUpdateArgs {
+export type MutationShippingPriceUpdateArgs = {
   id: Scalars["ID"];
   input: ShippingPriceInput;
-}
+};
 
-export interface MutationShippingZoneBulkDeleteArgs {
-  ids: Array<Maybe<Scalars["ID"]>>;
-}
+export type MutationShippingZoneBulkDeleteArgs = {
+  ids: Array<InputMaybe<Scalars["ID"]>>;
+};
 
-export interface MutationShippingZoneCreateArgs {
+export type MutationShippingZoneCreateArgs = {
   input: ShippingZoneCreateInput;
-}
+};
 
-export interface MutationShippingZoneDeleteArgs {
+export type MutationShippingZoneDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationShippingZoneUpdateArgs {
+export type MutationShippingZoneUpdateArgs = {
   id: Scalars["ID"];
   input: ShippingZoneUpdateInput;
-}
+};
 
-export interface MutationShopAddressUpdateArgs {
-  input?: Maybe<AddressInput>;
-}
+export type MutationShopAddressUpdateArgs = {
+  input?: InputMaybe<AddressInput>;
+};
 
-export interface MutationShopDomainUpdateArgs {
-  input?: Maybe<SiteDomainInput>;
-}
+export type MutationShopDomainUpdateArgs = {
+  input?: InputMaybe<SiteDomainInput>;
+};
 
-export interface MutationShopSettingsTranslateArgs {
+export type MutationShopSettingsTranslateArgs = {
   input: ShopSettingsTranslationInput;
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface MutationShopSettingsUpdateArgs {
+export type MutationShopSettingsUpdateArgs = {
   input: ShopSettingsInput;
-}
+};
 
-export interface MutationStaffBulkDeleteArgs {
-  ids: Array<Maybe<Scalars["ID"]>>;
-}
+export type MutationStaffBulkDeleteArgs = {
+  ids: Array<InputMaybe<Scalars["ID"]>>;
+};
 
-export interface MutationStaffCreateArgs {
+export type MutationStaffCreateArgs = {
   input: StaffCreateInput;
-}
+};
 
-export interface MutationStaffDeleteArgs {
+export type MutationStaffDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationStaffNotificationRecipientCreateArgs {
+export type MutationStaffNotificationRecipientCreateArgs = {
   input: StaffNotificationRecipientInput;
-}
+};
 
-export interface MutationStaffNotificationRecipientDeleteArgs {
+export type MutationStaffNotificationRecipientDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationStaffNotificationRecipientUpdateArgs {
+export type MutationStaffNotificationRecipientUpdateArgs = {
   id: Scalars["ID"];
   input: StaffNotificationRecipientInput;
-}
+};
 
-export interface MutationStaffUpdateArgs {
+export type MutationStaffUpdateArgs = {
   id: Scalars["ID"];
   input: StaffUpdateInput;
-}
+};
 
-export interface MutationTokenCreateArgs {
+export type MutationTokenCreateArgs = {
   email: Scalars["String"];
   password: Scalars["String"];
-}
+};
 
-export interface MutationTokenRefreshArgs {
-  csrfToken?: Maybe<Scalars["String"]>;
-  refreshToken?: Maybe<Scalars["String"]>;
-}
+export type MutationTokenRefreshArgs = {
+  csrfToken?: InputMaybe<Scalars["String"]>;
+  refreshToken?: InputMaybe<Scalars["String"]>;
+};
 
-export interface MutationTokenVerifyArgs {
+export type MutationTokenVerifyArgs = {
   token: Scalars["String"];
-}
+};
 
-export interface MutationUnassignWarehouseShippingZoneArgs {
+export type MutationUnassignWarehouseShippingZoneArgs = {
   id: Scalars["ID"];
   shippingZoneIds: Array<Scalars["ID"]>;
-}
+};
 
-export interface MutationUpdateMetadataArgs {
+export type MutationUpdateMetadataArgs = {
   id: Scalars["ID"];
-  input: MetadataInput[];
-}
+  input: Array<MetadataInput>;
+};
 
-export interface MutationUpdatePrivateMetadataArgs {
+export type MutationUpdatePrivateMetadataArgs = {
   id: Scalars["ID"];
-  input: MetadataInput[];
-}
+  input: Array<MetadataInput>;
+};
 
-export interface MutationUpdateWarehouseArgs {
+export type MutationUpdateWarehouseArgs = {
   id: Scalars["ID"];
   input: WarehouseUpdateInput;
-}
+};
 
-export interface MutationUserAvatarUpdateArgs {
+export type MutationUserAvatarUpdateArgs = {
   image: Scalars["Upload"];
-}
+};
 
-export interface MutationUserBulkSetActiveArgs {
-  ids: Array<Maybe<Scalars["ID"]>>;
+export type MutationUserBulkSetActiveArgs = {
+  ids: Array<InputMaybe<Scalars["ID"]>>;
   isActive: Scalars["Boolean"];
-}
+};
 
-export interface MutationVariantMediaAssignArgs {
+export type MutationVariantMediaAssignArgs = {
   mediaId: Scalars["ID"];
   variantId: Scalars["ID"];
-}
+};
 
-export interface MutationVariantMediaUnassignArgs {
+export type MutationVariantMediaUnassignArgs = {
   mediaId: Scalars["ID"];
   variantId: Scalars["ID"];
-}
+};
 
-export interface MutationVoucherBulkDeleteArgs {
-  ids: Array<Maybe<Scalars["ID"]>>;
-}
+export type MutationVoucherBulkDeleteArgs = {
+  ids: Array<InputMaybe<Scalars["ID"]>>;
+};
 
-export interface MutationVoucherCataloguesAddArgs {
+export type MutationVoucherCataloguesAddArgs = {
   id: Scalars["ID"];
   input: CatalogueInput;
-}
+};
 
-export interface MutationVoucherCataloguesRemoveArgs {
+export type MutationVoucherCataloguesRemoveArgs = {
   id: Scalars["ID"];
   input: CatalogueInput;
-}
+};
 
-export interface MutationVoucherChannelListingUpdateArgs {
+export type MutationVoucherChannelListingUpdateArgs = {
   id: Scalars["ID"];
   input: VoucherChannelListingInput;
-}
+};
 
-export interface MutationVoucherCreateArgs {
+export type MutationVoucherCreateArgs = {
   input: VoucherInput;
-}
+};
 
-export interface MutationVoucherDeleteArgs {
+export type MutationVoucherDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationVoucherTranslateArgs {
+export type MutationVoucherTranslateArgs = {
   id: Scalars["ID"];
   input: NameTranslationInput;
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface MutationVoucherUpdateArgs {
+export type MutationVoucherUpdateArgs = {
   id: Scalars["ID"];
   input: VoucherInput;
-}
+};
 
-export interface MutationWebhookCreateArgs {
+export type MutationWebhookCreateArgs = {
   input: WebhookCreateInput;
-}
+};
 
-export interface MutationWebhookDeleteArgs {
+export type MutationWebhookDeleteArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface MutationWebhookUpdateArgs {
+export type MutationWebhookUpdateArgs = {
   id: Scalars["ID"];
   input: WebhookUpdateInput;
-}
+};
 
-export interface NameTranslationInput {
-  name?: Maybe<Scalars["String"]>;
-}
+export type NameTranslationInput = {
+  name?: InputMaybe<Scalars["String"]>;
+};
 
 export enum NavigationType {
   Main = "MAIN",
   Secondary = "SECONDARY",
 }
 
-export interface Node {
+export type Node = {
   id: Scalars["ID"];
-}
+};
 
-export interface ObjectWithMetadata {
+export type ObjectWithMetadata = {
   metadata: Array<Maybe<MetadataItem>>;
   privateMetadata: Array<Maybe<MetadataItem>>;
-}
+};
 
 export type Order = Node &
   ObjectWithMetadata & {
@@ -5416,9 +5417,9 @@ export type Order = Node &
     discount?: Maybe<Money>;
     /** @deprecated Use discounts field. This field will be removed in Saleor 4.0. */
     discountName?: Maybe<Scalars["String"]>;
-    discounts?: Maybe<OrderDiscount[]>;
+    discounts?: Maybe<Array<OrderDiscount>>;
     displayGrossPrices: Scalars["Boolean"];
-    errors: OrderError[];
+    errors: Array<OrderError>;
     events?: Maybe<Array<Maybe<OrderEvent>>>;
     fulfillments: Array<Maybe<Fulfillment>>;
     giftCards?: Maybe<Array<Maybe<GiftCard>>>;
@@ -5469,63 +5470,63 @@ export enum OrderAction {
   Void = "VOID",
 }
 
-export interface OrderAddNote {
+export type OrderAddNote = {
   __typename?: "OrderAddNote";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   event?: Maybe<OrderEvent>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
-}
+  orderErrors: Array<OrderError>;
+};
 
-export interface OrderAddNoteInput {
+export type OrderAddNoteInput = {
   message: Scalars["String"];
-}
+};
 
-export interface OrderBulkCancel {
+export type OrderBulkCancel = {
   __typename?: "OrderBulkCancel";
   count: Scalars["Int"];
-  errors: OrderError[];
+  errors: Array<OrderError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
-}
+  orderErrors: Array<OrderError>;
+};
 
-export interface OrderCancel {
+export type OrderCancel = {
   __typename?: "OrderCancel";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
-}
+  orderErrors: Array<OrderError>;
+};
 
-export interface OrderCapture {
+export type OrderCapture = {
   __typename?: "OrderCapture";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
-}
+  orderErrors: Array<OrderError>;
+};
 
-export interface OrderConfirm {
+export type OrderConfirm = {
   __typename?: "OrderConfirm";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
-}
+  orderErrors: Array<OrderError>;
+};
 
-export interface OrderCountableConnection {
+export type OrderCountableConnection = {
   __typename?: "OrderCountableConnection";
-  edges: OrderCountableEdge[];
+  edges: Array<OrderCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface OrderCountableEdge {
+export type OrderCountableEdge = {
   __typename?: "OrderCountableEdge";
   cursor: Scalars["String"];
   node: Order;
-}
+};
 
 export enum OrderDirection {
   Asc = "ASC",
@@ -5544,50 +5545,50 @@ export type OrderDiscount = Node & {
   valueType: DiscountValueTypeEnum;
 };
 
-export interface OrderDiscountAdd {
+export type OrderDiscountAdd = {
   __typename?: "OrderDiscountAdd";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
-}
+  orderErrors: Array<OrderError>;
+};
 
-export interface OrderDiscountCommonInput {
-  reason?: Maybe<Scalars["String"]>;
+export type OrderDiscountCommonInput = {
+  reason?: InputMaybe<Scalars["String"]>;
   value: Scalars["PositiveDecimal"];
   valueType: DiscountValueTypeEnum;
-}
+};
 
-export interface OrderDiscountDelete {
+export type OrderDiscountDelete = {
   __typename?: "OrderDiscountDelete";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
-}
+  orderErrors: Array<OrderError>;
+};
 
 export enum OrderDiscountType {
   Manual = "MANUAL",
   Voucher = "VOUCHER",
 }
 
-export interface OrderDiscountUpdate {
+export type OrderDiscountUpdate = {
   __typename?: "OrderDiscountUpdate";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
-}
+  orderErrors: Array<OrderError>;
+};
 
-export interface OrderDraftFilterInput {
-  channels?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  created?: Maybe<DateRangeInput>;
-  customer?: Maybe<Scalars["String"]>;
-  metadata?: Maybe<Array<Maybe<MetadataFilter>>>;
-  search?: Maybe<Scalars["String"]>;
-}
+export type OrderDraftFilterInput = {
+  channels?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  created?: InputMaybe<DateRangeInput>;
+  customer?: InputMaybe<Scalars["String"]>;
+  metadata?: InputMaybe<Array<InputMaybe<MetadataFilter>>>;
+  search?: InputMaybe<Scalars["String"]>;
+};
 
-export interface OrderError {
+export type OrderError = {
   __typename?: "OrderError";
   addressType?: Maybe<AddressTypeEnum>;
   code: OrderErrorCode;
@@ -5596,7 +5597,7 @@ export interface OrderError {
   orderLines?: Maybe<Array<Scalars["ID"]>>;
   variants?: Maybe<Array<Scalars["ID"]>>;
   warehouse?: Maybe<Scalars["ID"]>;
-}
+};
 
 export enum OrderErrorCode {
   BillingAddressNotSet = "BILLING_ADDRESS_NOT_SET",
@@ -5657,20 +5658,20 @@ export type OrderEvent = Node & {
   warehouse?: Maybe<Warehouse>;
 };
 
-export interface OrderEventCountableConnection {
+export type OrderEventCountableConnection = {
   __typename?: "OrderEventCountableConnection";
-  edges: OrderEventCountableEdge[];
+  edges: Array<OrderEventCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface OrderEventCountableEdge {
+export type OrderEventCountableEdge = {
   __typename?: "OrderEventCountableEdge";
   cursor: Scalars["String"];
   node: OrderEvent;
-}
+};
 
-export interface OrderEventDiscountObject {
+export type OrderEventDiscountObject = {
   __typename?: "OrderEventDiscountObject";
   amount?: Maybe<Money>;
   oldAmount?: Maybe<Money>;
@@ -5679,15 +5680,15 @@ export interface OrderEventDiscountObject {
   reason?: Maybe<Scalars["String"]>;
   value: Scalars["PositiveDecimal"];
   valueType: DiscountValueTypeEnum;
-}
+};
 
-export interface OrderEventOrderLineObject {
+export type OrderEventOrderLineObject = {
   __typename?: "OrderEventOrderLineObject";
   discount?: Maybe<OrderEventDiscountObject>;
   itemName?: Maybe<Scalars["String"]>;
   orderLine?: Maybe<OrderLine>;
   quantity?: Maybe<Scalars["Int"]>;
-}
+};
 
 export enum OrderEventsEmailsEnum {
   Confirmed = "CONFIRMED",
@@ -5745,45 +5746,45 @@ export enum OrderEventsEnum {
   UpdatedAddress = "UPDATED_ADDRESS",
 }
 
-export interface OrderFilterInput {
-  channels?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  created?: Maybe<DateRangeInput>;
-  customer?: Maybe<Scalars["String"]>;
-  ids?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  metadata?: Maybe<Array<Maybe<MetadataFilter>>>;
-  paymentStatus?: Maybe<Array<Maybe<PaymentChargeStatusEnum>>>;
-  search?: Maybe<Scalars["String"]>;
-  status?: Maybe<Array<Maybe<OrderStatusFilter>>>;
-}
+export type OrderFilterInput = {
+  channels?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  created?: InputMaybe<DateRangeInput>;
+  customer?: InputMaybe<Scalars["String"]>;
+  ids?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  metadata?: InputMaybe<Array<InputMaybe<MetadataFilter>>>;
+  paymentStatus?: InputMaybe<Array<InputMaybe<PaymentChargeStatusEnum>>>;
+  search?: InputMaybe<Scalars["String"]>;
+  status?: InputMaybe<Array<InputMaybe<OrderStatusFilter>>>;
+};
 
-export interface OrderFulfill {
+export type OrderFulfill = {
   __typename?: "OrderFulfill";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   fulfillments?: Maybe<Array<Maybe<Fulfillment>>>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
-}
+  orderErrors: Array<OrderError>;
+};
 
-export interface OrderFulfillInput {
-  allowStockToBeExceeded?: Maybe<Scalars["Boolean"]>;
-  lines: OrderFulfillLineInput[];
-  notifyCustomer?: Maybe<Scalars["Boolean"]>;
-}
+export type OrderFulfillInput = {
+  allowStockToBeExceeded?: InputMaybe<Scalars["Boolean"]>;
+  lines: Array<OrderFulfillLineInput>;
+  notifyCustomer?: InputMaybe<Scalars["Boolean"]>;
+};
 
-export interface OrderFulfillLineInput {
-  orderLineId?: Maybe<Scalars["ID"]>;
-  stocks: OrderFulfillStockInput[];
-}
+export type OrderFulfillLineInput = {
+  orderLineId?: InputMaybe<Scalars["ID"]>;
+  stocks: Array<OrderFulfillStockInput>;
+};
 
-export interface OrderFulfillStockInput {
+export type OrderFulfillStockInput = {
   quantity: Scalars["Int"];
   warehouse: Scalars["ID"];
-}
+};
 
 export type OrderLine = Node & {
   __typename?: "OrderLine";
-  allocations?: Maybe<Allocation[]>;
+  allocations?: Maybe<Array<Allocation>>;
   digitalContentUrl?: Maybe<DigitalContentUrl>;
   id: Scalars["ID"];
   isShippingRequired: Scalars["Boolean"];
@@ -5806,71 +5807,71 @@ export type OrderLine = Node & {
   variantName: Scalars["String"];
 };
 
-export interface OrderLineThumbnailArgs {
-  size?: Maybe<Scalars["Int"]>;
-}
+export type OrderLineThumbnailArgs = {
+  size?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface OrderLineCreateInput {
+export type OrderLineCreateInput = {
   quantity: Scalars["Int"];
   variantId: Scalars["ID"];
-}
+};
 
-export interface OrderLineDelete {
+export type OrderLineDelete = {
   __typename?: "OrderLineDelete";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
+  orderErrors: Array<OrderError>;
   orderLine?: Maybe<OrderLine>;
-}
+};
 
-export interface OrderLineDiscountRemove {
+export type OrderLineDiscountRemove = {
   __typename?: "OrderLineDiscountRemove";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
+  orderErrors: Array<OrderError>;
   orderLine?: Maybe<OrderLine>;
-}
+};
 
-export interface OrderLineDiscountUpdate {
+export type OrderLineDiscountUpdate = {
   __typename?: "OrderLineDiscountUpdate";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
+  orderErrors: Array<OrderError>;
   orderLine?: Maybe<OrderLine>;
-}
+};
 
-export interface OrderLineInput {
+export type OrderLineInput = {
   quantity: Scalars["Int"];
-}
+};
 
-export interface OrderLineUpdate {
+export type OrderLineUpdate = {
   __typename?: "OrderLineUpdate";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
+  orderErrors: Array<OrderError>;
   orderLine?: Maybe<OrderLine>;
-}
+};
 
-export interface OrderLinesCreate {
+export type OrderLinesCreate = {
   __typename?: "OrderLinesCreate";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
-  orderLines?: Maybe<OrderLine[]>;
-}
+  orderErrors: Array<OrderError>;
+  orderLines?: Maybe<Array<OrderLine>>;
+};
 
-export interface OrderMarkAsPaid {
+export type OrderMarkAsPaid = {
   __typename?: "OrderMarkAsPaid";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
-}
+  orderErrors: Array<OrderError>;
+};
 
 export enum OrderOriginEnum {
   Checkout = "CHECKOUT",
@@ -5878,78 +5879,78 @@ export enum OrderOriginEnum {
   Reissue = "REISSUE",
 }
 
-export interface OrderRefund {
+export type OrderRefund = {
   __typename?: "OrderRefund";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
-}
+  orderErrors: Array<OrderError>;
+};
 
-export interface OrderRefundFulfillmentLineInput {
+export type OrderRefundFulfillmentLineInput = {
   fulfillmentLineId: Scalars["ID"];
   quantity: Scalars["Int"];
-}
+};
 
-export interface OrderRefundLineInput {
+export type OrderRefundLineInput = {
   orderLineId: Scalars["ID"];
   quantity: Scalars["Int"];
-}
+};
 
-export interface OrderRefundProductsInput {
-  amountToRefund?: Maybe<Scalars["PositiveDecimal"]>;
-  fulfillmentLines?: Maybe<OrderRefundFulfillmentLineInput[]>;
-  includeShippingCosts?: Maybe<Scalars["Boolean"]>;
-  orderLines?: Maybe<OrderRefundLineInput[]>;
-}
+export type OrderRefundProductsInput = {
+  amountToRefund?: InputMaybe<Scalars["PositiveDecimal"]>;
+  fulfillmentLines?: InputMaybe<Array<OrderRefundFulfillmentLineInput>>;
+  includeShippingCosts?: InputMaybe<Scalars["Boolean"]>;
+  orderLines?: InputMaybe<Array<OrderRefundLineInput>>;
+};
 
-export interface OrderReturnFulfillmentLineInput {
+export type OrderReturnFulfillmentLineInput = {
   fulfillmentLineId: Scalars["ID"];
   quantity: Scalars["Int"];
-  replace?: Maybe<Scalars["Boolean"]>;
-}
+  replace?: InputMaybe<Scalars["Boolean"]>;
+};
 
-export interface OrderReturnLineInput {
+export type OrderReturnLineInput = {
   orderLineId: Scalars["ID"];
   quantity: Scalars["Int"];
-  replace?: Maybe<Scalars["Boolean"]>;
-}
+  replace?: InputMaybe<Scalars["Boolean"]>;
+};
 
-export interface OrderReturnProductsInput {
-  amountToRefund?: Maybe<Scalars["PositiveDecimal"]>;
-  fulfillmentLines?: Maybe<OrderReturnFulfillmentLineInput[]>;
-  includeShippingCosts?: Maybe<Scalars["Boolean"]>;
-  orderLines?: Maybe<OrderReturnLineInput[]>;
-  refund?: Maybe<Scalars["Boolean"]>;
-}
+export type OrderReturnProductsInput = {
+  amountToRefund?: InputMaybe<Scalars["PositiveDecimal"]>;
+  fulfillmentLines?: InputMaybe<Array<OrderReturnFulfillmentLineInput>>;
+  includeShippingCosts?: InputMaybe<Scalars["Boolean"]>;
+  orderLines?: InputMaybe<Array<OrderReturnLineInput>>;
+  refund?: InputMaybe<Scalars["Boolean"]>;
+};
 
-export interface OrderSettings {
+export type OrderSettings = {
   __typename?: "OrderSettings";
   automaticallyConfirmAllNewOrders: Scalars["Boolean"];
-}
+};
 
-export interface OrderSettingsError {
+export type OrderSettingsError = {
   __typename?: "OrderSettingsError";
   code: OrderSettingsErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
-}
+};
 
 export enum OrderSettingsErrorCode {
   Invalid = "INVALID",
 }
 
-export interface OrderSettingsUpdate {
+export type OrderSettingsUpdate = {
   __typename?: "OrderSettingsUpdate";
-  errors: OrderSettingsError[];
+  errors: Array<OrderSettingsError>;
   orderSettings?: Maybe<OrderSettings>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderSettingsErrors: OrderSettingsError[];
-}
+  orderSettingsErrors: Array<OrderSettingsError>;
+};
 
-export interface OrderSettingsUpdateInput {
+export type OrderSettingsUpdateInput = {
   automaticallyConfirmAllNewOrders: Scalars["Boolean"];
-}
+};
 
 export enum OrderSortField {
   CreationDate = "CREATION_DATE",
@@ -5959,10 +5960,10 @@ export enum OrderSortField {
   Payment = "PAYMENT",
 }
 
-export interface OrderSortingInput {
+export type OrderSortingInput = {
   direction: OrderDirection;
   field: OrderSortField;
-}
+};
 
 export enum OrderStatus {
   Canceled = "CANCELED",
@@ -5985,44 +5986,44 @@ export enum OrderStatusFilter {
   Unfulfilled = "UNFULFILLED",
 }
 
-export interface OrderUpdate {
+export type OrderUpdate = {
   __typename?: "OrderUpdate";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
-}
+  orderErrors: Array<OrderError>;
+};
 
-export interface OrderUpdateInput {
-  billingAddress?: Maybe<AddressInput>;
-  shippingAddress?: Maybe<AddressInput>;
-  userEmail?: Maybe<Scalars["String"]>;
-}
+export type OrderUpdateInput = {
+  billingAddress?: InputMaybe<AddressInput>;
+  shippingAddress?: InputMaybe<AddressInput>;
+  userEmail?: InputMaybe<Scalars["String"]>;
+};
 
-export interface OrderUpdateShipping {
+export type OrderUpdateShipping = {
   __typename?: "OrderUpdateShipping";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
-}
+  orderErrors: Array<OrderError>;
+};
 
-export interface OrderUpdateShippingInput {
-  shippingMethod?: Maybe<Scalars["ID"]>;
-}
+export type OrderUpdateShippingInput = {
+  shippingMethod?: InputMaybe<Scalars["ID"]>;
+};
 
-export interface OrderVoid {
+export type OrderVoid = {
   __typename?: "OrderVoid";
-  errors: OrderError[];
+  errors: Array<OrderError>;
   order?: Maybe<Order>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  orderErrors: OrderError[];
-}
+  orderErrors: Array<OrderError>;
+};
 
 export type Page = Node &
   ObjectWithMetadata & {
     __typename?: "Page";
-    attributes: SelectedAttribute[];
+    attributes: Array<SelectedAttribute>;
     content?: Maybe<Scalars["JSONString"]>;
     /** @deprecated Will be removed in Saleor 4.0. Use the `content` field instead. */
     contentJson: Scalars["JSONString"];
@@ -6040,90 +6041,90 @@ export type Page = Node &
     translation?: Maybe<PageTranslation>;
   };
 
-export interface PageTranslationArgs {
+export type PageTranslationArgs = {
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface PageAttributeAssign {
+export type PageAttributeAssign = {
   __typename?: "PageAttributeAssign";
-  errors: PageError[];
+  errors: Array<PageError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  pageErrors: PageError[];
+  pageErrors: Array<PageError>;
   pageType?: Maybe<PageType>;
-}
+};
 
-export interface PageAttributeUnassign {
+export type PageAttributeUnassign = {
   __typename?: "PageAttributeUnassign";
-  errors: PageError[];
+  errors: Array<PageError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  pageErrors: PageError[];
+  pageErrors: Array<PageError>;
   pageType?: Maybe<PageType>;
-}
+};
 
-export interface PageBulkDelete {
+export type PageBulkDelete = {
   __typename?: "PageBulkDelete";
   count: Scalars["Int"];
-  errors: PageError[];
+  errors: Array<PageError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  pageErrors: PageError[];
-}
+  pageErrors: Array<PageError>;
+};
 
-export interface PageBulkPublish {
+export type PageBulkPublish = {
   __typename?: "PageBulkPublish";
   count: Scalars["Int"];
-  errors: PageError[];
+  errors: Array<PageError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  pageErrors: PageError[];
-}
+  pageErrors: Array<PageError>;
+};
 
-export interface PageCountableConnection {
+export type PageCountableConnection = {
   __typename?: "PageCountableConnection";
-  edges: PageCountableEdge[];
+  edges: Array<PageCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface PageCountableEdge {
+export type PageCountableEdge = {
   __typename?: "PageCountableEdge";
   cursor: Scalars["String"];
   node: Page;
-}
+};
 
-export interface PageCreate {
+export type PageCreate = {
   __typename?: "PageCreate";
-  errors: PageError[];
+  errors: Array<PageError>;
   page?: Maybe<Page>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  pageErrors: PageError[];
-}
+  pageErrors: Array<PageError>;
+};
 
-export interface PageCreateInput {
-  attributes?: Maybe<AttributeValueInput[]>;
-  content?: Maybe<Scalars["JSONString"]>;
-  isPublished?: Maybe<Scalars["Boolean"]>;
+export type PageCreateInput = {
+  attributes?: InputMaybe<Array<AttributeValueInput>>;
+  content?: InputMaybe<Scalars["JSONString"]>;
+  isPublished?: InputMaybe<Scalars["Boolean"]>;
   pageType: Scalars["ID"];
-  publicationDate?: Maybe<Scalars["String"]>;
-  seo?: Maybe<SeoInput>;
-  slug?: Maybe<Scalars["String"]>;
-  title?: Maybe<Scalars["String"]>;
-}
+  publicationDate?: InputMaybe<Scalars["String"]>;
+  seo?: InputMaybe<SeoInput>;
+  slug?: InputMaybe<Scalars["String"]>;
+  title?: InputMaybe<Scalars["String"]>;
+};
 
-export interface PageDelete {
+export type PageDelete = {
   __typename?: "PageDelete";
-  errors: PageError[];
+  errors: Array<PageError>;
   page?: Maybe<Page>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  pageErrors: PageError[];
-}
+  pageErrors: Array<PageError>;
+};
 
-export interface PageError {
+export type PageError = {
   __typename?: "PageError";
   attributes?: Maybe<Array<Scalars["ID"]>>;
   code: PageErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
   values?: Maybe<Array<Scalars["ID"]>>;
-}
+};
 
 export enum PageErrorCode {
   AttributeAlreadyAssigned = "ATTRIBUTE_ALREADY_ASSIGNED",
@@ -6135,38 +6136,38 @@ export enum PageErrorCode {
   Unique = "UNIQUE",
 }
 
-export interface PageFilterInput {
-  ids?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  metadata?: Maybe<Array<Maybe<MetadataFilter>>>;
-  pageTypes?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  search?: Maybe<Scalars["String"]>;
-}
+export type PageFilterInput = {
+  ids?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  metadata?: InputMaybe<Array<InputMaybe<MetadataFilter>>>;
+  pageTypes?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  search?: InputMaybe<Scalars["String"]>;
+};
 
-export interface PageInfo {
+export type PageInfo = {
   __typename?: "PageInfo";
   endCursor?: Maybe<Scalars["String"]>;
   hasNextPage: Scalars["Boolean"];
   hasPreviousPage: Scalars["Boolean"];
   startCursor?: Maybe<Scalars["String"]>;
-}
+};
 
-export interface PageInput {
-  attributes?: Maybe<AttributeValueInput[]>;
-  content?: Maybe<Scalars["JSONString"]>;
-  isPublished?: Maybe<Scalars["Boolean"]>;
-  publicationDate?: Maybe<Scalars["String"]>;
-  seo?: Maybe<SeoInput>;
-  slug?: Maybe<Scalars["String"]>;
-  title?: Maybe<Scalars["String"]>;
-}
+export type PageInput = {
+  attributes?: InputMaybe<Array<AttributeValueInput>>;
+  content?: InputMaybe<Scalars["JSONString"]>;
+  isPublished?: InputMaybe<Scalars["Boolean"]>;
+  publicationDate?: InputMaybe<Scalars["String"]>;
+  seo?: InputMaybe<SeoInput>;
+  slug?: InputMaybe<Scalars["String"]>;
+  title?: InputMaybe<Scalars["String"]>;
+};
 
-export interface PageReorderAttributeValues {
+export type PageReorderAttributeValues = {
   __typename?: "PageReorderAttributeValues";
-  errors: PageError[];
+  errors: Array<PageError>;
   page?: Maybe<Page>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  pageErrors: PageError[];
-}
+  pageErrors: Array<PageError>;
+};
 
 export enum PageSortField {
   CreationDate = "CREATION_DATE",
@@ -6176,14 +6177,14 @@ export enum PageSortField {
   Visibility = "VISIBILITY",
 }
 
-export interface PageSortingInput {
+export type PageSortingInput = {
   direction: OrderDirection;
   field: PageSortField;
-}
+};
 
 export type PageTranslatableContent = Node & {
   __typename?: "PageTranslatableContent";
-  attributeValues: AttributeValueTranslatableContent[];
+  attributeValues: Array<AttributeValueTranslatableContent>;
   content?: Maybe<Scalars["JSONString"]>;
   /** @deprecated Will be removed in Saleor 4.0. Use the `content` field instead. */
   contentJson?: Maybe<Scalars["JSONString"]>;
@@ -6196,17 +6197,17 @@ export type PageTranslatableContent = Node & {
   translation?: Maybe<PageTranslation>;
 };
 
-export interface PageTranslatableContentTranslationArgs {
+export type PageTranslatableContentTranslationArgs = {
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface PageTranslate {
+export type PageTranslate = {
   __typename?: "PageTranslate";
-  errors: TranslationError[];
+  errors: Array<TranslationError>;
   page?: Maybe<PageTranslatableContent>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  translationErrors: TranslationError[];
-}
+  translationErrors: Array<TranslationError>;
+};
 
 export type PageTranslation = Node & {
   __typename?: "PageTranslation";
@@ -6220,12 +6221,12 @@ export type PageTranslation = Node & {
   title?: Maybe<Scalars["String"]>;
 };
 
-export interface PageTranslationInput {
-  content?: Maybe<Scalars["JSONString"]>;
-  seoDescription?: Maybe<Scalars["String"]>;
-  seoTitle?: Maybe<Scalars["String"]>;
-  title?: Maybe<Scalars["String"]>;
-}
+export type PageTranslationInput = {
+  content?: InputMaybe<Scalars["JSONString"]>;
+  seoDescription?: InputMaybe<Scalars["String"]>;
+  seoTitle?: InputMaybe<Scalars["String"]>;
+  title?: InputMaybe<Scalars["String"]>;
+};
 
 export type PageType = Node &
   ObjectWithMetadata & {
@@ -6240,109 +6241,109 @@ export type PageType = Node &
     slug: Scalars["String"];
   };
 
-export interface PageTypeAvailableAttributesArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  filter?: Maybe<AttributeFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type PageTypeAvailableAttributesArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<AttributeFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface PageTypeBulkDelete {
+export type PageTypeBulkDelete = {
   __typename?: "PageTypeBulkDelete";
   count: Scalars["Int"];
-  errors: PageError[];
+  errors: Array<PageError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  pageErrors: PageError[];
-}
+  pageErrors: Array<PageError>;
+};
 
-export interface PageTypeCountableConnection {
+export type PageTypeCountableConnection = {
   __typename?: "PageTypeCountableConnection";
-  edges: PageTypeCountableEdge[];
+  edges: Array<PageTypeCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface PageTypeCountableEdge {
+export type PageTypeCountableEdge = {
   __typename?: "PageTypeCountableEdge";
   cursor: Scalars["String"];
   node: PageType;
-}
+};
 
-export interface PageTypeCreate {
+export type PageTypeCreate = {
   __typename?: "PageTypeCreate";
-  errors: PageError[];
+  errors: Array<PageError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  pageErrors: PageError[];
+  pageErrors: Array<PageError>;
   pageType?: Maybe<PageType>;
-}
+};
 
-export interface PageTypeCreateInput {
-  addAttributes?: Maybe<Array<Scalars["ID"]>>;
-  name?: Maybe<Scalars["String"]>;
-  slug?: Maybe<Scalars["String"]>;
-}
+export type PageTypeCreateInput = {
+  addAttributes?: InputMaybe<Array<Scalars["ID"]>>;
+  name?: InputMaybe<Scalars["String"]>;
+  slug?: InputMaybe<Scalars["String"]>;
+};
 
-export interface PageTypeDelete {
+export type PageTypeDelete = {
   __typename?: "PageTypeDelete";
-  errors: PageError[];
+  errors: Array<PageError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  pageErrors: PageError[];
+  pageErrors: Array<PageError>;
   pageType?: Maybe<PageType>;
-}
+};
 
-export interface PageTypeFilterInput {
-  search?: Maybe<Scalars["String"]>;
-}
+export type PageTypeFilterInput = {
+  search?: InputMaybe<Scalars["String"]>;
+};
 
-export interface PageTypeReorderAttributes {
+export type PageTypeReorderAttributes = {
   __typename?: "PageTypeReorderAttributes";
-  errors: PageError[];
+  errors: Array<PageError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  pageErrors: PageError[];
+  pageErrors: Array<PageError>;
   pageType?: Maybe<PageType>;
-}
+};
 
 export enum PageTypeSortField {
   Name = "NAME",
   Slug = "SLUG",
 }
 
-export interface PageTypeSortingInput {
+export type PageTypeSortingInput = {
   direction: OrderDirection;
   field: PageTypeSortField;
-}
+};
 
-export interface PageTypeUpdate {
+export type PageTypeUpdate = {
   __typename?: "PageTypeUpdate";
-  errors: PageError[];
+  errors: Array<PageError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  pageErrors: PageError[];
+  pageErrors: Array<PageError>;
   pageType?: Maybe<PageType>;
-}
+};
 
-export interface PageTypeUpdateInput {
-  addAttributes?: Maybe<Array<Scalars["ID"]>>;
-  name?: Maybe<Scalars["String"]>;
-  removeAttributes?: Maybe<Array<Scalars["ID"]>>;
-  slug?: Maybe<Scalars["String"]>;
-}
+export type PageTypeUpdateInput = {
+  addAttributes?: InputMaybe<Array<Scalars["ID"]>>;
+  name?: InputMaybe<Scalars["String"]>;
+  removeAttributes?: InputMaybe<Array<Scalars["ID"]>>;
+  slug?: InputMaybe<Scalars["String"]>;
+};
 
-export interface PageUpdate {
+export type PageUpdate = {
   __typename?: "PageUpdate";
-  errors: PageError[];
+  errors: Array<PageError>;
   page?: Maybe<Page>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  pageErrors: PageError[];
-}
+  pageErrors: Array<PageError>;
+};
 
-export interface PasswordChange {
+export type PasswordChange = {
   __typename?: "PasswordChange";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
-  errors: AccountError[];
+  accountErrors: Array<AccountError>;
+  errors: Array<AccountError>;
   user?: Maybe<User>;
-}
+};
 
 export type Payment = Node & {
   __typename?: "Payment";
@@ -6366,13 +6367,13 @@ export type Payment = Node & {
   transactions?: Maybe<Array<Maybe<Transaction>>>;
 };
 
-export interface PaymentCapture {
+export type PaymentCapture = {
   __typename?: "PaymentCapture";
-  errors: PaymentError[];
+  errors: Array<PaymentError>;
   payment?: Maybe<Payment>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  paymentErrors: PaymentError[];
-}
+  paymentErrors: Array<PaymentError>;
+};
 
 export enum PaymentChargeStatusEnum {
   Cancelled = "CANCELLED",
@@ -6385,25 +6386,25 @@ export enum PaymentChargeStatusEnum {
   Refused = "REFUSED",
 }
 
-export interface PaymentCountableConnection {
+export type PaymentCountableConnection = {
   __typename?: "PaymentCountableConnection";
-  edges: PaymentCountableEdge[];
+  edges: Array<PaymentCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface PaymentCountableEdge {
+export type PaymentCountableEdge = {
   __typename?: "PaymentCountableEdge";
   cursor: Scalars["String"];
   node: Payment;
-}
+};
 
-export interface PaymentError {
+export type PaymentError = {
   __typename?: "PaymentError";
   code: PaymentErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
-}
+};
 
 export enum PaymentErrorCode {
   BillingAddressNotSet = "BILLING_ADDRESS_NOT_SET",
@@ -6421,68 +6422,68 @@ export enum PaymentErrorCode {
   Unique = "UNIQUE",
 }
 
-export interface PaymentFilterInput {
-  checkouts?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-}
+export type PaymentFilterInput = {
+  checkouts?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+};
 
-export interface PaymentGateway {
+export type PaymentGateway = {
   __typename?: "PaymentGateway";
-  config: GatewayConfigLine[];
+  config: Array<GatewayConfigLine>;
   currencies: Array<Maybe<Scalars["String"]>>;
   id: Scalars["ID"];
   name: Scalars["String"];
-}
+};
 
-export interface PaymentInitialize {
+export type PaymentInitialize = {
   __typename?: "PaymentInitialize";
-  errors: PaymentError[];
+  errors: Array<PaymentError>;
   initializedPayment?: Maybe<PaymentInitialized>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  paymentErrors: PaymentError[];
-}
+  paymentErrors: Array<PaymentError>;
+};
 
-export interface PaymentInitialized {
+export type PaymentInitialized = {
   __typename?: "PaymentInitialized";
   data?: Maybe<Scalars["JSONString"]>;
   gateway: Scalars["String"];
   name: Scalars["String"];
-}
+};
 
-export interface PaymentInput {
-  amount?: Maybe<Scalars["PositiveDecimal"]>;
+export type PaymentInput = {
+  amount?: InputMaybe<Scalars["PositiveDecimal"]>;
   gateway: Scalars["String"];
-  returnUrl?: Maybe<Scalars["String"]>;
-  token?: Maybe<Scalars["String"]>;
-}
+  returnUrl?: InputMaybe<Scalars["String"]>;
+  token?: InputMaybe<Scalars["String"]>;
+};
 
-export interface PaymentRefund {
+export type PaymentRefund = {
   __typename?: "PaymentRefund";
-  errors: PaymentError[];
+  errors: Array<PaymentError>;
   payment?: Maybe<Payment>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  paymentErrors: PaymentError[];
-}
+  paymentErrors: Array<PaymentError>;
+};
 
-export interface PaymentSource {
+export type PaymentSource = {
   __typename?: "PaymentSource";
   creditCardInfo?: Maybe<CreditCard>;
   gateway: Scalars["String"];
   paymentMethodId?: Maybe<Scalars["String"]>;
-}
+};
 
-export interface PaymentVoid {
+export type PaymentVoid = {
   __typename?: "PaymentVoid";
-  errors: PaymentError[];
+  errors: Array<PaymentError>;
   payment?: Maybe<Payment>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  paymentErrors: PaymentError[];
-}
+  paymentErrors: Array<PaymentError>;
+};
 
-export interface Permission {
+export type Permission = {
   __typename?: "Permission";
   code: PermissionEnum;
   name: Scalars["String"];
-}
+};
 
 export enum PermissionEnum {
   HandlePayments = "HANDLE_PAYMENTS",
@@ -6506,36 +6507,36 @@ export enum PermissionEnum {
   ManageUsers = "MANAGE_USERS",
 }
 
-export interface PermissionGroupCreate {
+export type PermissionGroupCreate = {
   __typename?: "PermissionGroupCreate";
-  errors: PermissionGroupError[];
+  errors: Array<PermissionGroupError>;
   group?: Maybe<Group>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  permissionGroupErrors: PermissionGroupError[];
-}
+  permissionGroupErrors: Array<PermissionGroupError>;
+};
 
-export interface PermissionGroupCreateInput {
-  addPermissions?: Maybe<PermissionEnum[]>;
-  addUsers?: Maybe<Array<Scalars["ID"]>>;
+export type PermissionGroupCreateInput = {
+  addPermissions?: InputMaybe<Array<PermissionEnum>>;
+  addUsers?: InputMaybe<Array<Scalars["ID"]>>;
   name: Scalars["String"];
-}
+};
 
-export interface PermissionGroupDelete {
+export type PermissionGroupDelete = {
   __typename?: "PermissionGroupDelete";
-  errors: PermissionGroupError[];
+  errors: Array<PermissionGroupError>;
   group?: Maybe<Group>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  permissionGroupErrors: PermissionGroupError[];
-}
+  permissionGroupErrors: Array<PermissionGroupError>;
+};
 
-export interface PermissionGroupError {
+export type PermissionGroupError = {
   __typename?: "PermissionGroupError";
   code: PermissionGroupErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
-  permissions?: Maybe<PermissionEnum[]>;
+  permissions?: Maybe<Array<PermissionEnum>>;
   users?: Maybe<Array<Scalars["ID"]>>;
-}
+};
 
 export enum PermissionGroupErrorCode {
   AssignNonStaffMember = "ASSIGN_NON_STAFF_MEMBER",
@@ -6548,75 +6549,75 @@ export enum PermissionGroupErrorCode {
   Unique = "UNIQUE",
 }
 
-export interface PermissionGroupFilterInput {
-  search?: Maybe<Scalars["String"]>;
-}
+export type PermissionGroupFilterInput = {
+  search?: InputMaybe<Scalars["String"]>;
+};
 
 export enum PermissionGroupSortField {
   Name = "NAME",
 }
 
-export interface PermissionGroupSortingInput {
+export type PermissionGroupSortingInput = {
   direction: OrderDirection;
   field: PermissionGroupSortField;
-}
+};
 
-export interface PermissionGroupUpdate {
+export type PermissionGroupUpdate = {
   __typename?: "PermissionGroupUpdate";
-  errors: PermissionGroupError[];
+  errors: Array<PermissionGroupError>;
   group?: Maybe<Group>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  permissionGroupErrors: PermissionGroupError[];
-}
+  permissionGroupErrors: Array<PermissionGroupError>;
+};
 
-export interface PermissionGroupUpdateInput {
-  addPermissions?: Maybe<PermissionEnum[]>;
-  addUsers?: Maybe<Array<Scalars["ID"]>>;
-  name?: Maybe<Scalars["String"]>;
-  removePermissions?: Maybe<PermissionEnum[]>;
-  removeUsers?: Maybe<Array<Scalars["ID"]>>;
-}
+export type PermissionGroupUpdateInput = {
+  addPermissions?: InputMaybe<Array<PermissionEnum>>;
+  addUsers?: InputMaybe<Array<Scalars["ID"]>>;
+  name?: InputMaybe<Scalars["String"]>;
+  removePermissions?: InputMaybe<Array<PermissionEnum>>;
+  removeUsers?: InputMaybe<Array<Scalars["ID"]>>;
+};
 
-export interface Plugin {
+export type Plugin = {
   __typename?: "Plugin";
-  channelConfigurations: PluginConfiguration[];
+  channelConfigurations: Array<PluginConfiguration>;
   description: Scalars["String"];
   globalConfiguration?: Maybe<PluginConfiguration>;
   id: Scalars["ID"];
   name: Scalars["String"];
-}
+};
 
-export interface PluginConfiguration {
+export type PluginConfiguration = {
   __typename?: "PluginConfiguration";
   active: Scalars["Boolean"];
   channel?: Maybe<Channel>;
   configuration?: Maybe<Array<Maybe<ConfigurationItem>>>;
-}
+};
 
 export enum PluginConfigurationType {
   Global = "GLOBAL",
   PerChannel = "PER_CHANNEL",
 }
 
-export interface PluginCountableConnection {
+export type PluginCountableConnection = {
   __typename?: "PluginCountableConnection";
-  edges: PluginCountableEdge[];
+  edges: Array<PluginCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface PluginCountableEdge {
+export type PluginCountableEdge = {
   __typename?: "PluginCountableEdge";
   cursor: Scalars["String"];
   node: Plugin;
-}
+};
 
-export interface PluginError {
+export type PluginError = {
   __typename?: "PluginError";
   code: PluginErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
-}
+};
 
 export enum PluginErrorCode {
   GraphqlError = "GRAPHQL_ERROR",
@@ -6627,58 +6628,58 @@ export enum PluginErrorCode {
   Unique = "UNIQUE",
 }
 
-export interface PluginFilterInput {
-  search?: Maybe<Scalars["String"]>;
-  statusInChannels?: Maybe<PluginStatusInChannelsInput>;
-  type?: Maybe<PluginConfigurationType>;
-}
+export type PluginFilterInput = {
+  search?: InputMaybe<Scalars["String"]>;
+  statusInChannels?: InputMaybe<PluginStatusInChannelsInput>;
+  type?: InputMaybe<PluginConfigurationType>;
+};
 
 export enum PluginSortField {
   IsActive = "IS_ACTIVE",
   Name = "NAME",
 }
 
-export interface PluginSortingInput {
+export type PluginSortingInput = {
   direction: OrderDirection;
   field: PluginSortField;
-}
+};
 
-export interface PluginStatusInChannelsInput {
+export type PluginStatusInChannelsInput = {
   active: Scalars["Boolean"];
   channels: Array<Scalars["ID"]>;
-}
+};
 
-export interface PluginUpdate {
+export type PluginUpdate = {
   __typename?: "PluginUpdate";
-  errors: PluginError[];
+  errors: Array<PluginError>;
   plugin?: Maybe<Plugin>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  pluginsErrors: PluginError[];
-}
+  pluginsErrors: Array<PluginError>;
+};
 
-export interface PluginUpdateInput {
-  active?: Maybe<Scalars["Boolean"]>;
-  configuration?: Maybe<Array<Maybe<ConfigurationItemInput>>>;
-}
+export type PluginUpdateInput = {
+  active?: InputMaybe<Scalars["Boolean"]>;
+  configuration?: InputMaybe<Array<InputMaybe<ConfigurationItemInput>>>;
+};
 
 export enum PostalCodeRuleInclusionTypeEnum {
   Exclude = "EXCLUDE",
   Include = "INCLUDE",
 }
 
-export interface PriceRangeInput {
-  gte?: Maybe<Scalars["Float"]>;
-  lte?: Maybe<Scalars["Float"]>;
-}
+export type PriceRangeInput = {
+  gte?: InputMaybe<Scalars["Float"]>;
+  lte?: InputMaybe<Scalars["Float"]>;
+};
 
 export type Product = Node &
   ObjectWithMetadata & {
     __typename?: "Product";
-    attributes: SelectedAttribute[];
+    attributes: Array<SelectedAttribute>;
     availableForPurchase?: Maybe<Scalars["Date"]>;
     category?: Maybe<Category>;
     channel?: Maybe<Scalars["String"]>;
-    channelListings?: Maybe<ProductChannelListing[]>;
+    channelListings?: Maybe<Array<ProductChannelListing>>;
     chargeTaxes: Scalars["Boolean"];
     collections?: Maybe<Array<Maybe<Collection>>>;
     defaultVariant?: Maybe<ProductVariant>;
@@ -6692,7 +6693,7 @@ export type Product = Node &
     images?: Maybe<Array<Maybe<ProductImage>>>;
     isAvailable?: Maybe<Scalars["Boolean"]>;
     isAvailableForPurchase?: Maybe<Scalars["Boolean"]>;
-    media?: Maybe<ProductMedia[]>;
+    media?: Maybe<Array<ProductMedia>>;
     mediaById?: Maybe<ProductMedia>;
     metadata: Array<Maybe<MetadataItem>>;
     name: Scalars["String"];
@@ -6711,63 +6712,63 @@ export type Product = Node &
     weight?: Maybe<Weight>;
   };
 
-export interface ProductImageByIdArgs {
-  id?: Maybe<Scalars["ID"]>;
-}
+export type ProductImageByIdArgs = {
+  id?: InputMaybe<Scalars["ID"]>;
+};
 
-export interface ProductIsAvailableArgs {
-  address?: Maybe<AddressInput>;
-}
+export type ProductIsAvailableArgs = {
+  address?: InputMaybe<AddressInput>;
+};
 
-export interface ProductMediaByIdArgs {
-  id?: Maybe<Scalars["ID"]>;
-}
+export type ProductMediaByIdArgs = {
+  id?: InputMaybe<Scalars["ID"]>;
+};
 
-export interface ProductPricingArgs {
-  address?: Maybe<AddressInput>;
-}
+export type ProductPricingArgs = {
+  address?: InputMaybe<AddressInput>;
+};
 
-export interface ProductThumbnailArgs {
-  size?: Maybe<Scalars["Int"]>;
-}
+export type ProductThumbnailArgs = {
+  size?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface ProductTranslationArgs {
+export type ProductTranslationArgs = {
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface ProductAttributeAssign {
+export type ProductAttributeAssign = {
   __typename?: "ProductAttributeAssign";
-  errors: ProductError[];
+  errors: Array<ProductError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
+  productErrors: Array<ProductError>;
   productType?: Maybe<ProductType>;
-}
+};
 
-export interface ProductAttributeAssignInput {
+export type ProductAttributeAssignInput = {
   id: Scalars["ID"];
   type: ProductAttributeType;
-}
+};
 
 export enum ProductAttributeType {
   Product = "PRODUCT",
   Variant = "VARIANT",
 }
 
-export interface ProductAttributeUnassign {
+export type ProductAttributeUnassign = {
   __typename?: "ProductAttributeUnassign";
-  errors: ProductError[];
+  errors: Array<ProductError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
+  productErrors: Array<ProductError>;
   productType?: Maybe<ProductType>;
-}
+};
 
-export interface ProductBulkDelete {
+export type ProductBulkDelete = {
   __typename?: "ProductBulkDelete";
   count: Scalars["Int"];
-  errors: ProductError[];
+  errors: Array<ProductError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
-}
+  productErrors: Array<ProductError>;
+};
 
 export type ProductChannelListing = Node & {
   __typename?: "ProductChannelListing";
@@ -6784,22 +6785,22 @@ export type ProductChannelListing = Node & {
   visibleInListings: Scalars["Boolean"];
 };
 
-export interface ProductChannelListingPricingArgs {
-  address?: Maybe<AddressInput>;
-}
+export type ProductChannelListingPricingArgs = {
+  address?: InputMaybe<AddressInput>;
+};
 
-export interface ProductChannelListingAddInput {
-  addVariants?: Maybe<Array<Scalars["ID"]>>;
-  availableForPurchaseDate?: Maybe<Scalars["Date"]>;
+export type ProductChannelListingAddInput = {
+  addVariants?: InputMaybe<Array<Scalars["ID"]>>;
+  availableForPurchaseDate?: InputMaybe<Scalars["Date"]>;
   channelId: Scalars["ID"];
-  isAvailableForPurchase?: Maybe<Scalars["Boolean"]>;
-  isPublished?: Maybe<Scalars["Boolean"]>;
-  publicationDate?: Maybe<Scalars["Date"]>;
-  removeVariants?: Maybe<Array<Scalars["ID"]>>;
-  visibleInListings?: Maybe<Scalars["Boolean"]>;
-}
+  isAvailableForPurchase?: InputMaybe<Scalars["Boolean"]>;
+  isPublished?: InputMaybe<Scalars["Boolean"]>;
+  publicationDate?: InputMaybe<Scalars["Date"]>;
+  removeVariants?: InputMaybe<Array<Scalars["ID"]>>;
+  visibleInListings?: InputMaybe<Scalars["Boolean"]>;
+};
 
-export interface ProductChannelListingError {
+export type ProductChannelListingError = {
   __typename?: "ProductChannelListingError";
   attributes?: Maybe<Array<Scalars["ID"]>>;
   channels?: Maybe<Array<Scalars["ID"]>>;
@@ -6808,73 +6809,73 @@ export interface ProductChannelListingError {
   message?: Maybe<Scalars["String"]>;
   values?: Maybe<Array<Scalars["ID"]>>;
   variants?: Maybe<Array<Scalars["ID"]>>;
-}
+};
 
-export interface ProductChannelListingUpdate {
+export type ProductChannelListingUpdate = {
   __typename?: "ProductChannelListingUpdate";
-  errors: ProductChannelListingError[];
+  errors: Array<ProductChannelListingError>;
   product?: Maybe<Product>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productChannelListingErrors: ProductChannelListingError[];
-}
+  productChannelListingErrors: Array<ProductChannelListingError>;
+};
 
-export interface ProductChannelListingUpdateInput {
-  removeChannels?: Maybe<Array<Scalars["ID"]>>;
-  updateChannels?: Maybe<ProductChannelListingAddInput[]>;
-}
+export type ProductChannelListingUpdateInput = {
+  removeChannels?: InputMaybe<Array<Scalars["ID"]>>;
+  updateChannels?: InputMaybe<Array<ProductChannelListingAddInput>>;
+};
 
-export interface ProductCountableConnection {
+export type ProductCountableConnection = {
   __typename?: "ProductCountableConnection";
-  edges: ProductCountableEdge[];
+  edges: Array<ProductCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface ProductCountableEdge {
+export type ProductCountableEdge = {
   __typename?: "ProductCountableEdge";
   cursor: Scalars["String"];
   node: Product;
-}
+};
 
-export interface ProductCreate {
+export type ProductCreate = {
   __typename?: "ProductCreate";
-  errors: ProductError[];
+  errors: Array<ProductError>;
   product?: Maybe<Product>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
-}
+  productErrors: Array<ProductError>;
+};
 
-export interface ProductCreateInput {
-  attributes?: Maybe<AttributeValueInput[]>;
-  category?: Maybe<Scalars["ID"]>;
-  chargeTaxes?: Maybe<Scalars["Boolean"]>;
-  collections?: Maybe<Array<Scalars["ID"]>>;
-  description?: Maybe<Scalars["JSONString"]>;
-  name?: Maybe<Scalars["String"]>;
+export type ProductCreateInput = {
+  attributes?: InputMaybe<Array<AttributeValueInput>>;
+  category?: InputMaybe<Scalars["ID"]>;
+  chargeTaxes?: InputMaybe<Scalars["Boolean"]>;
+  collections?: InputMaybe<Array<Scalars["ID"]>>;
+  description?: InputMaybe<Scalars["JSONString"]>;
+  name?: InputMaybe<Scalars["String"]>;
   productType: Scalars["ID"];
-  rating?: Maybe<Scalars["Float"]>;
-  seo?: Maybe<SeoInput>;
-  slug?: Maybe<Scalars["String"]>;
-  taxCode?: Maybe<Scalars["String"]>;
-  weight?: Maybe<Scalars["WeightScalar"]>;
-}
+  rating?: InputMaybe<Scalars["Float"]>;
+  seo?: InputMaybe<SeoInput>;
+  slug?: InputMaybe<Scalars["String"]>;
+  taxCode?: InputMaybe<Scalars["String"]>;
+  weight?: InputMaybe<Scalars["WeightScalar"]>;
+};
 
-export interface ProductDelete {
+export type ProductDelete = {
   __typename?: "ProductDelete";
-  errors: ProductError[];
+  errors: Array<ProductError>;
   product?: Maybe<Product>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
-}
+  productErrors: Array<ProductError>;
+};
 
-export interface ProductError {
+export type ProductError = {
   __typename?: "ProductError";
   attributes?: Maybe<Array<Scalars["ID"]>>;
   code: ProductErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
   values?: Maybe<Array<Scalars["ID"]>>;
-}
+};
 
 export enum ProductErrorCode {
   AlreadyExists = "ALREADY_EXISTS",
@@ -6910,48 +6911,48 @@ export enum ProductFieldEnum {
   VariantWeight = "VARIANT_WEIGHT",
 }
 
-export interface ProductFilterInput {
-  attributes?: Maybe<Array<Maybe<AttributeInput>>>;
-  categories?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  channel?: Maybe<Scalars["String"]>;
-  collections?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  hasCategory?: Maybe<Scalars["Boolean"]>;
-  ids?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  isPublished?: Maybe<Scalars["Boolean"]>;
-  metadata?: Maybe<Array<Maybe<MetadataFilter>>>;
-  minimalPrice?: Maybe<PriceRangeInput>;
-  price?: Maybe<PriceRangeInput>;
-  productTypes?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  search?: Maybe<Scalars["String"]>;
-  stockAvailability?: Maybe<StockAvailability>;
-  stocks?: Maybe<ProductStockFilterInput>;
-}
+export type ProductFilterInput = {
+  attributes?: InputMaybe<Array<InputMaybe<AttributeInput>>>;
+  categories?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  channel?: InputMaybe<Scalars["String"]>;
+  collections?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  hasCategory?: InputMaybe<Scalars["Boolean"]>;
+  ids?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  isPublished?: InputMaybe<Scalars["Boolean"]>;
+  metadata?: InputMaybe<Array<InputMaybe<MetadataFilter>>>;
+  minimalPrice?: InputMaybe<PriceRangeInput>;
+  price?: InputMaybe<PriceRangeInput>;
+  productTypes?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  search?: InputMaybe<Scalars["String"]>;
+  stockAvailability?: InputMaybe<StockAvailability>;
+  stocks?: InputMaybe<ProductStockFilterInput>;
+};
 
-export interface ProductImage {
+export type ProductImage = {
   __typename?: "ProductImage";
   alt?: Maybe<Scalars["String"]>;
   id: Scalars["ID"];
   sortOrder?: Maybe<Scalars["Int"]>;
   url: Scalars["String"];
-}
+};
 
-export interface ProductImageUrlArgs {
-  size?: Maybe<Scalars["Int"]>;
-}
+export type ProductImageUrlArgs = {
+  size?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface ProductInput {
-  attributes?: Maybe<AttributeValueInput[]>;
-  category?: Maybe<Scalars["ID"]>;
-  chargeTaxes?: Maybe<Scalars["Boolean"]>;
-  collections?: Maybe<Array<Scalars["ID"]>>;
-  description?: Maybe<Scalars["JSONString"]>;
-  name?: Maybe<Scalars["String"]>;
-  rating?: Maybe<Scalars["Float"]>;
-  seo?: Maybe<SeoInput>;
-  slug?: Maybe<Scalars["String"]>;
-  taxCode?: Maybe<Scalars["String"]>;
-  weight?: Maybe<Scalars["WeightScalar"]>;
-}
+export type ProductInput = {
+  attributes?: InputMaybe<Array<AttributeValueInput>>;
+  category?: InputMaybe<Scalars["ID"]>;
+  chargeTaxes?: InputMaybe<Scalars["Boolean"]>;
+  collections?: InputMaybe<Array<Scalars["ID"]>>;
+  description?: InputMaybe<Scalars["JSONString"]>;
+  name?: InputMaybe<Scalars["String"]>;
+  rating?: InputMaybe<Scalars["Float"]>;
+  seo?: InputMaybe<SeoInput>;
+  slug?: InputMaybe<Scalars["String"]>;
+  taxCode?: InputMaybe<Scalars["String"]>;
+  weight?: InputMaybe<Scalars["WeightScalar"]>;
+};
 
 export type ProductMedia = Node & {
   __typename?: "ProductMedia";
@@ -6963,76 +6964,76 @@ export type ProductMedia = Node & {
   url: Scalars["String"];
 };
 
-export interface ProductMediaUrlArgs {
-  size?: Maybe<Scalars["Int"]>;
-}
+export type ProductMediaUrlArgs = {
+  size?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface ProductMediaBulkDelete {
+export type ProductMediaBulkDelete = {
   __typename?: "ProductMediaBulkDelete";
   count: Scalars["Int"];
-  errors: ProductError[];
+  errors: Array<ProductError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
-}
+  productErrors: Array<ProductError>;
+};
 
-export interface ProductMediaCreate {
+export type ProductMediaCreate = {
   __typename?: "ProductMediaCreate";
-  errors: ProductError[];
+  errors: Array<ProductError>;
   media?: Maybe<ProductMedia>;
   product?: Maybe<Product>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
-}
+  productErrors: Array<ProductError>;
+};
 
-export interface ProductMediaCreateInput {
-  alt?: Maybe<Scalars["String"]>;
-  image?: Maybe<Scalars["Upload"]>;
-  mediaUrl?: Maybe<Scalars["String"]>;
+export type ProductMediaCreateInput = {
+  alt?: InputMaybe<Scalars["String"]>;
+  image?: InputMaybe<Scalars["Upload"]>;
+  mediaUrl?: InputMaybe<Scalars["String"]>;
   product: Scalars["ID"];
-}
+};
 
-export interface ProductMediaDelete {
+export type ProductMediaDelete = {
   __typename?: "ProductMediaDelete";
-  errors: ProductError[];
+  errors: Array<ProductError>;
   media?: Maybe<ProductMedia>;
   product?: Maybe<Product>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
-}
+  productErrors: Array<ProductError>;
+};
 
-export interface ProductMediaReorder {
+export type ProductMediaReorder = {
   __typename?: "ProductMediaReorder";
-  errors: ProductError[];
-  media?: Maybe<ProductMedia[]>;
+  errors: Array<ProductError>;
+  media?: Maybe<Array<ProductMedia>>;
   product?: Maybe<Product>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
-}
+  productErrors: Array<ProductError>;
+};
 
 export enum ProductMediaType {
   Image = "IMAGE",
   Video = "VIDEO",
 }
 
-export interface ProductMediaUpdate {
+export type ProductMediaUpdate = {
   __typename?: "ProductMediaUpdate";
-  errors: ProductError[];
+  errors: Array<ProductError>;
   media?: Maybe<ProductMedia>;
   product?: Maybe<Product>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
-}
+  productErrors: Array<ProductError>;
+};
 
-export interface ProductMediaUpdateInput {
-  alt?: Maybe<Scalars["String"]>;
-}
+export type ProductMediaUpdateInput = {
+  alt?: InputMaybe<Scalars["String"]>;
+};
 
-export interface ProductOrder {
-  attributeId?: Maybe<Scalars["ID"]>;
-  channel?: Maybe<Scalars["String"]>;
+export type ProductOrder = {
+  attributeId?: InputMaybe<Scalars["ID"]>;
+  channel?: InputMaybe<Scalars["String"]>;
   direction: OrderDirection;
-  field?: Maybe<ProductOrderField>;
-}
+  field?: InputMaybe<ProductOrderField>;
+};
 
 export enum ProductOrderField {
   Collection = "COLLECTION",
@@ -7047,7 +7048,7 @@ export enum ProductOrderField {
   Type = "TYPE",
 }
 
-export interface ProductPricingInfo {
+export type ProductPricingInfo = {
   __typename?: "ProductPricingInfo";
   discount?: Maybe<TaxedMoney>;
   discountLocalCurrency?: Maybe<TaxedMoney>;
@@ -7055,24 +7056,24 @@ export interface ProductPricingInfo {
   priceRange?: Maybe<TaxedMoneyRange>;
   priceRangeLocalCurrency?: Maybe<TaxedMoneyRange>;
   priceRangeUndiscounted?: Maybe<TaxedMoneyRange>;
-}
+};
 
-export interface ProductReorderAttributeValues {
+export type ProductReorderAttributeValues = {
   __typename?: "ProductReorderAttributeValues";
-  errors: ProductError[];
+  errors: Array<ProductError>;
   product?: Maybe<Product>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
-}
+  productErrors: Array<ProductError>;
+};
 
-export interface ProductStockFilterInput {
-  quantity?: Maybe<IntRangeInput>;
-  warehouseIds?: Maybe<Array<Scalars["ID"]>>;
-}
+export type ProductStockFilterInput = {
+  quantity?: InputMaybe<IntRangeInput>;
+  warehouseIds?: InputMaybe<Array<Scalars["ID"]>>;
+};
 
 export type ProductTranslatableContent = Node & {
   __typename?: "ProductTranslatableContent";
-  attributeValues: AttributeValueTranslatableContent[];
+  attributeValues: Array<AttributeValueTranslatableContent>;
   description?: Maybe<Scalars["JSONString"]>;
   /** @deprecated Will be removed in Saleor 4.0. Use the `description` field instead. */
   descriptionJson?: Maybe<Scalars["JSONString"]>;
@@ -7085,17 +7086,17 @@ export type ProductTranslatableContent = Node & {
   translation?: Maybe<ProductTranslation>;
 };
 
-export interface ProductTranslatableContentTranslationArgs {
+export type ProductTranslatableContentTranslationArgs = {
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface ProductTranslate {
+export type ProductTranslate = {
   __typename?: "ProductTranslate";
-  errors: TranslationError[];
+  errors: Array<TranslationError>;
   product?: Maybe<Product>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  translationErrors: TranslationError[];
-}
+  translationErrors: Array<TranslationError>;
+};
 
 export type ProductTranslation = Node & {
   __typename?: "ProductTranslation";
@@ -7129,100 +7130,100 @@ export type ProductType = Node &
     weight?: Maybe<Weight>;
   };
 
-export interface ProductTypeAvailableAttributesArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  filter?: Maybe<AttributeFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type ProductTypeAvailableAttributesArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<AttributeFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface ProductTypeProductsArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  channel?: Maybe<Scalars["String"]>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type ProductTypeProductsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  channel?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface ProductTypeVariantAttributesArgs {
-  variantSelection?: Maybe<VariantAttributeScope>;
-}
+export type ProductTypeVariantAttributesArgs = {
+  variantSelection?: InputMaybe<VariantAttributeScope>;
+};
 
-export interface ProductTypeBulkDelete {
+export type ProductTypeBulkDelete = {
   __typename?: "ProductTypeBulkDelete";
   count: Scalars["Int"];
-  errors: ProductError[];
+  errors: Array<ProductError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
-}
+  productErrors: Array<ProductError>;
+};
 
 export enum ProductTypeConfigurable {
   Configurable = "CONFIGURABLE",
   Simple = "SIMPLE",
 }
 
-export interface ProductTypeCountableConnection {
+export type ProductTypeCountableConnection = {
   __typename?: "ProductTypeCountableConnection";
-  edges: ProductTypeCountableEdge[];
+  edges: Array<ProductTypeCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface ProductTypeCountableEdge {
+export type ProductTypeCountableEdge = {
   __typename?: "ProductTypeCountableEdge";
   cursor: Scalars["String"];
   node: ProductType;
-}
+};
 
-export interface ProductTypeCreate {
+export type ProductTypeCreate = {
   __typename?: "ProductTypeCreate";
-  errors: ProductError[];
+  errors: Array<ProductError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
+  productErrors: Array<ProductError>;
   productType?: Maybe<ProductType>;
-}
+};
 
-export interface ProductTypeDelete {
+export type ProductTypeDelete = {
   __typename?: "ProductTypeDelete";
-  errors: ProductError[];
+  errors: Array<ProductError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
+  productErrors: Array<ProductError>;
   productType?: Maybe<ProductType>;
-}
+};
 
 export enum ProductTypeEnum {
   Digital = "DIGITAL",
   Shippable = "SHIPPABLE",
 }
 
-export interface ProductTypeFilterInput {
-  configurable?: Maybe<ProductTypeConfigurable>;
-  ids?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  metadata?: Maybe<Array<Maybe<MetadataFilter>>>;
-  productType?: Maybe<ProductTypeEnum>;
-  search?: Maybe<Scalars["String"]>;
-}
+export type ProductTypeFilterInput = {
+  configurable?: InputMaybe<ProductTypeConfigurable>;
+  ids?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  metadata?: InputMaybe<Array<InputMaybe<MetadataFilter>>>;
+  productType?: InputMaybe<ProductTypeEnum>;
+  search?: InputMaybe<Scalars["String"]>;
+};
 
-export interface ProductTypeInput {
-  hasVariants?: Maybe<Scalars["Boolean"]>;
-  isDigital?: Maybe<Scalars["Boolean"]>;
-  isShippingRequired?: Maybe<Scalars["Boolean"]>;
-  name?: Maybe<Scalars["String"]>;
-  productAttributes?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  slug?: Maybe<Scalars["String"]>;
-  taxCode?: Maybe<Scalars["String"]>;
-  variantAttributes?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  weight?: Maybe<Scalars["WeightScalar"]>;
-}
+export type ProductTypeInput = {
+  hasVariants?: InputMaybe<Scalars["Boolean"]>;
+  isDigital?: InputMaybe<Scalars["Boolean"]>;
+  isShippingRequired?: InputMaybe<Scalars["Boolean"]>;
+  name?: InputMaybe<Scalars["String"]>;
+  productAttributes?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  slug?: InputMaybe<Scalars["String"]>;
+  taxCode?: InputMaybe<Scalars["String"]>;
+  variantAttributes?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  weight?: InputMaybe<Scalars["WeightScalar"]>;
+};
 
-export interface ProductTypeReorderAttributes {
+export type ProductTypeReorderAttributes = {
   __typename?: "ProductTypeReorderAttributes";
-  errors: ProductError[];
+  errors: Array<ProductError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
+  productErrors: Array<ProductError>;
   productType?: Maybe<ProductType>;
-}
+};
 
 export enum ProductTypeSortField {
   Digital = "DIGITAL",
@@ -7230,39 +7231,39 @@ export enum ProductTypeSortField {
   ShippingRequired = "SHIPPING_REQUIRED",
 }
 
-export interface ProductTypeSortingInput {
+export type ProductTypeSortingInput = {
   direction: OrderDirection;
   field: ProductTypeSortField;
-}
+};
 
-export interface ProductTypeUpdate {
+export type ProductTypeUpdate = {
   __typename?: "ProductTypeUpdate";
-  errors: ProductError[];
+  errors: Array<ProductError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
+  productErrors: Array<ProductError>;
   productType?: Maybe<ProductType>;
-}
+};
 
-export interface ProductUpdate {
+export type ProductUpdate = {
   __typename?: "ProductUpdate";
-  errors: ProductError[];
+  errors: Array<ProductError>;
   product?: Maybe<Product>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
-}
+  productErrors: Array<ProductError>;
+};
 
 export type ProductVariant = Node &
   ObjectWithMetadata & {
     __typename?: "ProductVariant";
-    attributes: SelectedAttribute[];
+    attributes: Array<SelectedAttribute>;
     channel?: Maybe<Scalars["String"]>;
-    channelListings?: Maybe<ProductVariantChannelListing[]>;
+    channelListings?: Maybe<Array<ProductVariantChannelListing>>;
     digitalContent?: Maybe<DigitalContent>;
     id: Scalars["ID"];
     /** @deprecated Will be removed in Saleor 4.0. Use the `media` instead. */
     images?: Maybe<Array<Maybe<ProductImage>>>;
     margin?: Maybe<Scalars["Int"]>;
-    media?: Maybe<ProductMedia[]>;
+    media?: Maybe<Array<ProductMedia>>;
     metadata: Array<Maybe<MetadataItem>>;
     name: Scalars["String"];
     pricing?: Maybe<VariantPricingInfo>;
@@ -7278,57 +7279,57 @@ export type ProductVariant = Node &
     weight?: Maybe<Weight>;
   };
 
-export interface ProductVariantAttributesArgs {
-  variantSelection?: Maybe<VariantAttributeScope>;
-}
+export type ProductVariantAttributesArgs = {
+  variantSelection?: InputMaybe<VariantAttributeScope>;
+};
 
-export interface ProductVariantPricingArgs {
-  address?: Maybe<AddressInput>;
-}
+export type ProductVariantPricingArgs = {
+  address?: InputMaybe<AddressInput>;
+};
 
-export interface ProductVariantQuantityAvailableArgs {
-  address?: Maybe<AddressInput>;
-  countryCode?: Maybe<CountryCode>;
-}
+export type ProductVariantQuantityAvailableArgs = {
+  address?: InputMaybe<AddressInput>;
+  countryCode?: InputMaybe<CountryCode>;
+};
 
-export interface ProductVariantRevenueArgs {
-  period?: Maybe<ReportingPeriod>;
-}
+export type ProductVariantRevenueArgs = {
+  period?: InputMaybe<ReportingPeriod>;
+};
 
-export interface ProductVariantStocksArgs {
-  address?: Maybe<AddressInput>;
-  countryCode?: Maybe<CountryCode>;
-}
+export type ProductVariantStocksArgs = {
+  address?: InputMaybe<AddressInput>;
+  countryCode?: InputMaybe<CountryCode>;
+};
 
-export interface ProductVariantTranslationArgs {
+export type ProductVariantTranslationArgs = {
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface ProductVariantBulkCreate {
+export type ProductVariantBulkCreate = {
   __typename?: "ProductVariantBulkCreate";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  bulkProductErrors: BulkProductError[];
+  bulkProductErrors: Array<BulkProductError>;
   count: Scalars["Int"];
-  errors: BulkProductError[];
-  productVariants: ProductVariant[];
-}
+  errors: Array<BulkProductError>;
+  productVariants: Array<ProductVariant>;
+};
 
-export interface ProductVariantBulkCreateInput {
-  attributes: BulkAttributeValueInput[];
-  channelListings?: Maybe<ProductVariantChannelListingAddInput[]>;
+export type ProductVariantBulkCreateInput = {
+  attributes: Array<BulkAttributeValueInput>;
+  channelListings?: InputMaybe<Array<ProductVariantChannelListingAddInput>>;
   sku: Scalars["String"];
-  stocks?: Maybe<StockInput[]>;
-  trackInventory?: Maybe<Scalars["Boolean"]>;
-  weight?: Maybe<Scalars["WeightScalar"]>;
-}
+  stocks?: InputMaybe<Array<StockInput>>;
+  trackInventory?: InputMaybe<Scalars["Boolean"]>;
+  weight?: InputMaybe<Scalars["WeightScalar"]>;
+};
 
-export interface ProductVariantBulkDelete {
+export type ProductVariantBulkDelete = {
   __typename?: "ProductVariantBulkDelete";
   count: Scalars["Int"];
-  errors: ProductError[];
+  errors: Array<ProductError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
-}
+  productErrors: Array<ProductError>;
+};
 
 export type ProductVariantChannelListing = Node & {
   __typename?: "ProductVariantChannelListing";
@@ -7339,122 +7340,122 @@ export type ProductVariantChannelListing = Node & {
   price?: Maybe<Money>;
 };
 
-export interface ProductVariantChannelListingAddInput {
+export type ProductVariantChannelListingAddInput = {
   channelId: Scalars["ID"];
-  costPrice?: Maybe<Scalars["PositiveDecimal"]>;
+  costPrice?: InputMaybe<Scalars["PositiveDecimal"]>;
   price: Scalars["PositiveDecimal"];
-}
+};
 
-export interface ProductVariantChannelListingUpdate {
+export type ProductVariantChannelListingUpdate = {
   __typename?: "ProductVariantChannelListingUpdate";
-  errors: ProductChannelListingError[];
+  errors: Array<ProductChannelListingError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productChannelListingErrors: ProductChannelListingError[];
+  productChannelListingErrors: Array<ProductChannelListingError>;
   variant?: Maybe<ProductVariant>;
-}
+};
 
-export interface ProductVariantCountableConnection {
+export type ProductVariantCountableConnection = {
   __typename?: "ProductVariantCountableConnection";
-  edges: ProductVariantCountableEdge[];
+  edges: Array<ProductVariantCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface ProductVariantCountableEdge {
+export type ProductVariantCountableEdge = {
   __typename?: "ProductVariantCountableEdge";
   cursor: Scalars["String"];
   node: ProductVariant;
-}
+};
 
-export interface ProductVariantCreate {
+export type ProductVariantCreate = {
   __typename?: "ProductVariantCreate";
-  errors: ProductError[];
+  errors: Array<ProductError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
+  productErrors: Array<ProductError>;
   productVariant?: Maybe<ProductVariant>;
-}
+};
 
-export interface ProductVariantCreateInput {
-  attributes: AttributeValueInput[];
+export type ProductVariantCreateInput = {
+  attributes: Array<AttributeValueInput>;
   product: Scalars["ID"];
-  sku?: Maybe<Scalars["String"]>;
-  stocks?: Maybe<StockInput[]>;
-  trackInventory?: Maybe<Scalars["Boolean"]>;
-  weight?: Maybe<Scalars["WeightScalar"]>;
-}
+  sku?: InputMaybe<Scalars["String"]>;
+  stocks?: InputMaybe<Array<StockInput>>;
+  trackInventory?: InputMaybe<Scalars["Boolean"]>;
+  weight?: InputMaybe<Scalars["WeightScalar"]>;
+};
 
-export interface ProductVariantDelete {
+export type ProductVariantDelete = {
   __typename?: "ProductVariantDelete";
-  errors: ProductError[];
+  errors: Array<ProductError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
+  productErrors: Array<ProductError>;
   productVariant?: Maybe<ProductVariant>;
-}
+};
 
-export interface ProductVariantFilterInput {
-  metadata?: Maybe<Array<Maybe<MetadataFilter>>>;
-  search?: Maybe<Scalars["String"]>;
-  sku?: Maybe<Array<Maybe<Scalars["String"]>>>;
-}
+export type ProductVariantFilterInput = {
+  metadata?: InputMaybe<Array<InputMaybe<MetadataFilter>>>;
+  search?: InputMaybe<Scalars["String"]>;
+  sku?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
+};
 
-export interface ProductVariantInput {
-  attributes?: Maybe<AttributeValueInput[]>;
-  sku?: Maybe<Scalars["String"]>;
-  trackInventory?: Maybe<Scalars["Boolean"]>;
-  weight?: Maybe<Scalars["WeightScalar"]>;
-}
+export type ProductVariantInput = {
+  attributes?: InputMaybe<Array<AttributeValueInput>>;
+  sku?: InputMaybe<Scalars["String"]>;
+  trackInventory?: InputMaybe<Scalars["Boolean"]>;
+  weight?: InputMaybe<Scalars["WeightScalar"]>;
+};
 
-export interface ProductVariantReorder {
+export type ProductVariantReorder = {
   __typename?: "ProductVariantReorder";
-  errors: ProductError[];
+  errors: Array<ProductError>;
   product?: Maybe<Product>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
-}
+  productErrors: Array<ProductError>;
+};
 
-export interface ProductVariantReorderAttributeValues {
+export type ProductVariantReorderAttributeValues = {
   __typename?: "ProductVariantReorderAttributeValues";
-  errors: ProductError[];
+  errors: Array<ProductError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
+  productErrors: Array<ProductError>;
   productVariant?: Maybe<ProductVariant>;
-}
+};
 
-export interface ProductVariantSetDefault {
+export type ProductVariantSetDefault = {
   __typename?: "ProductVariantSetDefault";
-  errors: ProductError[];
+  errors: Array<ProductError>;
   product?: Maybe<Product>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
-}
+  productErrors: Array<ProductError>;
+};
 
-export interface ProductVariantStocksCreate {
+export type ProductVariantStocksCreate = {
   __typename?: "ProductVariantStocksCreate";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  bulkStockErrors: BulkStockError[];
-  errors: BulkStockError[];
+  bulkStockErrors: Array<BulkStockError>;
+  errors: Array<BulkStockError>;
   productVariant?: Maybe<ProductVariant>;
-}
+};
 
-export interface ProductVariantStocksDelete {
+export type ProductVariantStocksDelete = {
   __typename?: "ProductVariantStocksDelete";
-  errors: StockError[];
+  errors: Array<StockError>;
   productVariant?: Maybe<ProductVariant>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  stockErrors: StockError[];
-}
+  stockErrors: Array<StockError>;
+};
 
-export interface ProductVariantStocksUpdate {
+export type ProductVariantStocksUpdate = {
   __typename?: "ProductVariantStocksUpdate";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  bulkStockErrors: BulkStockError[];
-  errors: BulkStockError[];
+  bulkStockErrors: Array<BulkStockError>;
+  errors: Array<BulkStockError>;
   productVariant?: Maybe<ProductVariant>;
-}
+};
 
 export type ProductVariantTranslatableContent = Node & {
   __typename?: "ProductVariantTranslatableContent";
-  attributeValues: AttributeValueTranslatableContent[];
+  attributeValues: Array<AttributeValueTranslatableContent>;
   id: Scalars["ID"];
   name: Scalars["String"];
   /** @deprecated Will be removed in Saleor 4.0. Get model fields from the root level. */
@@ -7462,17 +7463,17 @@ export type ProductVariantTranslatableContent = Node & {
   translation?: Maybe<ProductVariantTranslation>;
 };
 
-export interface ProductVariantTranslatableContentTranslationArgs {
+export type ProductVariantTranslatableContentTranslationArgs = {
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface ProductVariantTranslate {
+export type ProductVariantTranslate = {
   __typename?: "ProductVariantTranslate";
-  errors: TranslationError[];
+  errors: Array<TranslationError>;
   productVariant?: Maybe<ProductVariant>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  translationErrors: TranslationError[];
-}
+  translationErrors: Array<TranslationError>;
+};
 
 export type ProductVariantTranslation = Node & {
   __typename?: "ProductVariantTranslation";
@@ -7481,21 +7482,21 @@ export type ProductVariantTranslation = Node & {
   name: Scalars["String"];
 };
 
-export interface ProductVariantUpdate {
+export type ProductVariantUpdate = {
   __typename?: "ProductVariantUpdate";
-  errors: ProductError[];
+  errors: Array<ProductError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
+  productErrors: Array<ProductError>;
   productVariant?: Maybe<ProductVariant>;
-}
+};
 
-export interface PublishableChannelListingInput {
+export type PublishableChannelListingInput = {
   channelId: Scalars["ID"];
-  isPublished?: Maybe<Scalars["Boolean"]>;
-  publicationDate?: Maybe<Scalars["Date"]>;
-}
+  isPublished?: InputMaybe<Scalars["Boolean"]>;
+  publicationDate?: InputMaybe<Scalars["Date"]>;
+};
 
-export interface Query {
+export type Query = {
   __typename?: "Query";
   _entities?: Maybe<Array<Maybe<_Entity>>>;
   _service?: Maybe<_Service>;
@@ -7503,13 +7504,13 @@ export interface Query {
   addressValidationRules?: Maybe<AddressValidationData>;
   app?: Maybe<App>;
   apps?: Maybe<AppCountableConnection>;
-  appsInstallations: AppInstallation[];
+  appsInstallations: Array<AppInstallation>;
   attribute?: Maybe<Attribute>;
   attributes?: Maybe<AttributeCountableConnection>;
   categories?: Maybe<CategoryCountableConnection>;
   category?: Maybe<Category>;
   channel?: Maybe<Channel>;
-  channels?: Maybe<Channel[]>;
+  channels?: Maybe<Array<Channel>>;
   checkout?: Maybe<Checkout>;
   checkoutLines?: Maybe<CheckoutLineCountableConnection>;
   checkouts?: Maybe<CheckoutCountableConnection>;
@@ -7570,490 +7571,490 @@ export interface Query {
   webhook?: Maybe<Webhook>;
   webhookEvents?: Maybe<Array<Maybe<WebhookEvent>>>;
   webhookSamplePayload?: Maybe<Scalars["JSONString"]>;
-}
+};
 
-export interface Query_EntitiesArgs {
-  representations?: Maybe<Array<Maybe<Scalars["_Any"]>>>;
-}
+export type Query_EntitiesArgs = {
+  representations?: InputMaybe<Array<InputMaybe<Scalars["_Any"]>>>;
+};
 
-export interface QueryAddressArgs {
+export type QueryAddressArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface QueryAddressValidationRulesArgs {
-  city?: Maybe<Scalars["String"]>;
-  cityArea?: Maybe<Scalars["String"]>;
-  countryArea?: Maybe<Scalars["String"]>;
+export type QueryAddressValidationRulesArgs = {
+  city?: InputMaybe<Scalars["String"]>;
+  cityArea?: InputMaybe<Scalars["String"]>;
+  countryArea?: InputMaybe<Scalars["String"]>;
   countryCode: CountryCode;
-}
+};
 
-export interface QueryAppArgs {
-  id?: Maybe<Scalars["ID"]>;
-}
+export type QueryAppArgs = {
+  id?: InputMaybe<Scalars["ID"]>;
+};
 
-export interface QueryAppsArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  filter?: Maybe<AppFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-  sortBy?: Maybe<AppSortingInput>;
-}
+export type QueryAppsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<AppFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+  sortBy?: InputMaybe<AppSortingInput>;
+};
 
-export interface QueryAttributeArgs {
-  id?: Maybe<Scalars["ID"]>;
-  slug?: Maybe<Scalars["String"]>;
-}
+export type QueryAttributeArgs = {
+  id?: InputMaybe<Scalars["ID"]>;
+  slug?: InputMaybe<Scalars["String"]>;
+};
 
-export interface QueryAttributesArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  channel?: Maybe<Scalars["String"]>;
-  filter?: Maybe<AttributeFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-  sortBy?: Maybe<AttributeSortingInput>;
-}
+export type QueryAttributesArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  channel?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<AttributeFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+  sortBy?: InputMaybe<AttributeSortingInput>;
+};
 
-export interface QueryCategoriesArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  filter?: Maybe<CategoryFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-  level?: Maybe<Scalars["Int"]>;
-  sortBy?: Maybe<CategorySortingInput>;
-}
+export type QueryCategoriesArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<CategoryFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+  level?: InputMaybe<Scalars["Int"]>;
+  sortBy?: InputMaybe<CategorySortingInput>;
+};
 
-export interface QueryCategoryArgs {
-  id?: Maybe<Scalars["ID"]>;
-  slug?: Maybe<Scalars["String"]>;
-}
+export type QueryCategoryArgs = {
+  id?: InputMaybe<Scalars["ID"]>;
+  slug?: InputMaybe<Scalars["String"]>;
+};
 
-export interface QueryChannelArgs {
-  id?: Maybe<Scalars["ID"]>;
-}
+export type QueryChannelArgs = {
+  id?: InputMaybe<Scalars["ID"]>;
+};
 
-export interface QueryCheckoutArgs {
-  token?: Maybe<Scalars["UUID"]>;
-}
+export type QueryCheckoutArgs = {
+  token?: InputMaybe<Scalars["UUID"]>;
+};
 
-export interface QueryCheckoutLinesArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type QueryCheckoutLinesArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface QueryCheckoutsArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  channel?: Maybe<Scalars["String"]>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type QueryCheckoutsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  channel?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface QueryCollectionArgs {
-  channel?: Maybe<Scalars["String"]>;
-  id?: Maybe<Scalars["ID"]>;
-  slug?: Maybe<Scalars["String"]>;
-}
+export type QueryCollectionArgs = {
+  channel?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["ID"]>;
+  slug?: InputMaybe<Scalars["String"]>;
+};
 
-export interface QueryCollectionsArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  channel?: Maybe<Scalars["String"]>;
-  filter?: Maybe<CollectionFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-  sortBy?: Maybe<CollectionSortingInput>;
-}
+export type QueryCollectionsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  channel?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<CollectionFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+  sortBy?: InputMaybe<CollectionSortingInput>;
+};
 
-export interface QueryCustomersArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  filter?: Maybe<CustomerFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-  sortBy?: Maybe<UserSortingInput>;
-}
+export type QueryCustomersArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<CustomerFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+  sortBy?: InputMaybe<UserSortingInput>;
+};
 
-export interface QueryDigitalContentArgs {
+export type QueryDigitalContentArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface QueryDigitalContentsArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type QueryDigitalContentsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface QueryDraftOrdersArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  filter?: Maybe<OrderDraftFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-  sortBy?: Maybe<OrderSortingInput>;
-}
+export type QueryDraftOrdersArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<OrderDraftFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+  sortBy?: InputMaybe<OrderSortingInput>;
+};
 
-export interface QueryExportFileArgs {
+export type QueryExportFileArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface QueryExportFilesArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  filter?: Maybe<ExportFileFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-  sortBy?: Maybe<ExportFileSortingInput>;
-}
+export type QueryExportFilesArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<ExportFileFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+  sortBy?: InputMaybe<ExportFileSortingInput>;
+};
 
-export interface QueryGiftCardArgs {
+export type QueryGiftCardArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface QueryGiftCardsArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type QueryGiftCardsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface QueryHomepageEventsArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type QueryHomepageEventsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface QueryMenuArgs {
-  channel?: Maybe<Scalars["String"]>;
-  id?: Maybe<Scalars["ID"]>;
-  name?: Maybe<Scalars["String"]>;
-  slug?: Maybe<Scalars["String"]>;
-}
+export type QueryMenuArgs = {
+  channel?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["ID"]>;
+  name?: InputMaybe<Scalars["String"]>;
+  slug?: InputMaybe<Scalars["String"]>;
+};
 
-export interface QueryMenuItemArgs {
-  channel?: Maybe<Scalars["String"]>;
+export type QueryMenuItemArgs = {
+  channel?: InputMaybe<Scalars["String"]>;
   id: Scalars["ID"];
-}
+};
 
-export interface QueryMenuItemsArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  channel?: Maybe<Scalars["String"]>;
-  filter?: Maybe<MenuItemFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-  sortBy?: Maybe<MenuItemSortingInput>;
-}
+export type QueryMenuItemsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  channel?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<MenuItemFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+  sortBy?: InputMaybe<MenuItemSortingInput>;
+};
 
-export interface QueryMenusArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  channel?: Maybe<Scalars["String"]>;
-  filter?: Maybe<MenuFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-  sortBy?: Maybe<MenuSortingInput>;
-}
+export type QueryMenusArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  channel?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<MenuFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+  sortBy?: InputMaybe<MenuSortingInput>;
+};
 
-export interface QueryOrderArgs {
+export type QueryOrderArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface QueryOrderByTokenArgs {
+export type QueryOrderByTokenArgs = {
   token: Scalars["UUID"];
-}
+};
 
-export interface QueryOrdersArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  channel?: Maybe<Scalars["String"]>;
-  filter?: Maybe<OrderFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-  sortBy?: Maybe<OrderSortingInput>;
-}
+export type QueryOrdersArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  channel?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<OrderFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+  sortBy?: InputMaybe<OrderSortingInput>;
+};
 
-export interface QueryOrdersTotalArgs {
-  channel?: Maybe<Scalars["String"]>;
-  period?: Maybe<ReportingPeriod>;
-}
+export type QueryOrdersTotalArgs = {
+  channel?: InputMaybe<Scalars["String"]>;
+  period?: InputMaybe<ReportingPeriod>;
+};
 
-export interface QueryPageArgs {
-  id?: Maybe<Scalars["ID"]>;
-  slug?: Maybe<Scalars["String"]>;
-}
+export type QueryPageArgs = {
+  id?: InputMaybe<Scalars["ID"]>;
+  slug?: InputMaybe<Scalars["String"]>;
+};
 
-export interface QueryPageTypeArgs {
+export type QueryPageTypeArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface QueryPageTypesArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  filter?: Maybe<PageTypeFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-  sortBy?: Maybe<PageTypeSortingInput>;
-}
+export type QueryPageTypesArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<PageTypeFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+  sortBy?: InputMaybe<PageTypeSortingInput>;
+};
 
-export interface QueryPagesArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  filter?: Maybe<PageFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-  sortBy?: Maybe<PageSortingInput>;
-}
+export type QueryPagesArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<PageFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+  sortBy?: InputMaybe<PageSortingInput>;
+};
 
-export interface QueryPaymentArgs {
+export type QueryPaymentArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface QueryPaymentsArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  filter?: Maybe<PaymentFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type QueryPaymentsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<PaymentFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface QueryPermissionGroupArgs {
+export type QueryPermissionGroupArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface QueryPermissionGroupsArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  filter?: Maybe<PermissionGroupFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-  sortBy?: Maybe<PermissionGroupSortingInput>;
-}
+export type QueryPermissionGroupsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<PermissionGroupFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+  sortBy?: InputMaybe<PermissionGroupSortingInput>;
+};
 
-export interface QueryPluginArgs {
+export type QueryPluginArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface QueryPluginsArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  filter?: Maybe<PluginFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-  sortBy?: Maybe<PluginSortingInput>;
-}
+export type QueryPluginsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<PluginFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+  sortBy?: InputMaybe<PluginSortingInput>;
+};
 
-export interface QueryProductArgs {
-  channel?: Maybe<Scalars["String"]>;
-  id?: Maybe<Scalars["ID"]>;
-  slug?: Maybe<Scalars["String"]>;
-}
+export type QueryProductArgs = {
+  channel?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["ID"]>;
+  slug?: InputMaybe<Scalars["String"]>;
+};
 
-export interface QueryProductTypeArgs {
+export type QueryProductTypeArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface QueryProductTypesArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  filter?: Maybe<ProductTypeFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-  sortBy?: Maybe<ProductTypeSortingInput>;
-}
+export type QueryProductTypesArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<ProductTypeFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+  sortBy?: InputMaybe<ProductTypeSortingInput>;
+};
 
-export interface QueryProductVariantArgs {
-  channel?: Maybe<Scalars["String"]>;
-  id?: Maybe<Scalars["ID"]>;
-  sku?: Maybe<Scalars["String"]>;
-}
+export type QueryProductVariantArgs = {
+  channel?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["ID"]>;
+  sku?: InputMaybe<Scalars["String"]>;
+};
 
-export interface QueryProductVariantsArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  channel?: Maybe<Scalars["String"]>;
-  filter?: Maybe<ProductVariantFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  ids?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type QueryProductVariantsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  channel?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<ProductVariantFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  ids?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface QueryProductsArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  channel?: Maybe<Scalars["String"]>;
-  filter?: Maybe<ProductFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-  sortBy?: Maybe<ProductOrder>;
-}
+export type QueryProductsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  channel?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<ProductFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+  sortBy?: InputMaybe<ProductOrder>;
+};
 
-export interface QueryReportProductSalesArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
+export type QueryReportProductSalesArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
   channel: Scalars["String"];
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
   period: ReportingPeriod;
-}
+};
 
-export interface QuerySaleArgs {
-  channel?: Maybe<Scalars["String"]>;
+export type QuerySaleArgs = {
+  channel?: InputMaybe<Scalars["String"]>;
   id: Scalars["ID"];
-}
+};
 
-export interface QuerySalesArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  channel?: Maybe<Scalars["String"]>;
-  filter?: Maybe<SaleFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-  query?: Maybe<Scalars["String"]>;
-  sortBy?: Maybe<SaleSortingInput>;
-}
+export type QuerySalesArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  channel?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<SaleFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+  query?: InputMaybe<Scalars["String"]>;
+  sortBy?: InputMaybe<SaleSortingInput>;
+};
 
-export interface QueryShippingZoneArgs {
-  channel?: Maybe<Scalars["String"]>;
+export type QueryShippingZoneArgs = {
+  channel?: InputMaybe<Scalars["String"]>;
   id: Scalars["ID"];
-}
+};
 
-export interface QueryShippingZonesArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  channel?: Maybe<Scalars["String"]>;
-  filter?: Maybe<ShippingZoneFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type QueryShippingZonesArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  channel?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<ShippingZoneFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface QueryStaffUsersArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  filter?: Maybe<StaffUserInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-  sortBy?: Maybe<UserSortingInput>;
-}
+export type QueryStaffUsersArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<StaffUserInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+  sortBy?: InputMaybe<UserSortingInput>;
+};
 
-export interface QueryStockArgs {
+export type QueryStockArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface QueryStocksArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  filter?: Maybe<StockFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type QueryStocksArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<StockFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface QueryTranslationArgs {
+export type QueryTranslationArgs = {
   id: Scalars["ID"];
   kind: TranslatableKinds;
-}
+};
 
-export interface QueryTranslationsArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  first?: Maybe<Scalars["Int"]>;
+export type QueryTranslationsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
   kind: TranslatableKinds;
-  last?: Maybe<Scalars["Int"]>;
-}
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface QueryUserArgs {
-  email?: Maybe<Scalars["String"]>;
-  id?: Maybe<Scalars["ID"]>;
-}
+export type QueryUserArgs = {
+  email?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["ID"]>;
+};
 
-export interface QueryVoucherArgs {
-  channel?: Maybe<Scalars["String"]>;
+export type QueryVoucherArgs = {
+  channel?: InputMaybe<Scalars["String"]>;
   id: Scalars["ID"];
-}
+};
 
-export interface QueryVouchersArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  channel?: Maybe<Scalars["String"]>;
-  filter?: Maybe<VoucherFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-  query?: Maybe<Scalars["String"]>;
-  sortBy?: Maybe<VoucherSortingInput>;
-}
+export type QueryVouchersArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  channel?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<VoucherFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+  query?: InputMaybe<Scalars["String"]>;
+  sortBy?: InputMaybe<VoucherSortingInput>;
+};
 
-export interface QueryWarehouseArgs {
+export type QueryWarehouseArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface QueryWarehousesArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  filter?: Maybe<WarehouseFilterInput>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-  sortBy?: Maybe<WarehouseSortingInput>;
-}
+export type QueryWarehousesArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  filter?: InputMaybe<WarehouseFilterInput>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+  sortBy?: InputMaybe<WarehouseSortingInput>;
+};
 
-export interface QueryWebhookArgs {
+export type QueryWebhookArgs = {
   id: Scalars["ID"];
-}
+};
 
-export interface QueryWebhookSamplePayloadArgs {
+export type QueryWebhookSamplePayloadArgs = {
   eventType: WebhookSampleEventTypeEnum;
-}
+};
 
-export interface ReducedRate {
+export type ReducedRate = {
   __typename?: "ReducedRate";
   rate: Scalars["Float"];
   rateType: Scalars["String"];
-}
+};
 
-export interface RefreshToken {
+export type RefreshToken = {
   __typename?: "RefreshToken";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
-  errors: AccountError[];
+  accountErrors: Array<AccountError>;
+  errors: Array<AccountError>;
   token?: Maybe<Scalars["String"]>;
   user?: Maybe<User>;
-}
+};
 
-export interface ReorderInput {
+export type ReorderInput = {
   id: Scalars["ID"];
-  sortOrder?: Maybe<Scalars["Int"]>;
-}
+  sortOrder?: InputMaybe<Scalars["Int"]>;
+};
 
 export enum ReportingPeriod {
   ThisMonth = "THIS_MONTH",
   Today = "TODAY",
 }
 
-export interface RequestEmailChange {
+export type RequestEmailChange = {
   __typename?: "RequestEmailChange";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
-  errors: AccountError[];
+  accountErrors: Array<AccountError>;
+  errors: Array<AccountError>;
   user?: Maybe<User>;
-}
+};
 
-export interface RequestPasswordReset {
+export type RequestPasswordReset = {
   __typename?: "RequestPasswordReset";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
-  errors: AccountError[];
-}
+  accountErrors: Array<AccountError>;
+  errors: Array<AccountError>;
+};
 
 export type Sale = Node &
   ObjectWithMetadata & {
     __typename?: "Sale";
     categories?: Maybe<CategoryCountableConnection>;
-    channelListings?: Maybe<SaleChannelListing[]>;
+    channelListings?: Maybe<Array<SaleChannelListing>>;
     collections?: Maybe<CollectionCountableConnection>;
     currency?: Maybe<Scalars["String"]>;
     discountValue?: Maybe<Scalars["Float"]>;
@@ -8068,46 +8069,46 @@ export type Sale = Node &
     type: SaleType;
   };
 
-export interface SaleCategoriesArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type SaleCategoriesArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface SaleCollectionsArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type SaleCollectionsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface SaleProductsArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type SaleProductsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface SaleTranslationArgs {
+export type SaleTranslationArgs = {
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface SaleAddCatalogues {
+export type SaleAddCatalogues = {
   __typename?: "SaleAddCatalogues";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  discountErrors: DiscountError[];
-  errors: DiscountError[];
+  discountErrors: Array<DiscountError>;
+  errors: Array<DiscountError>;
   sale?: Maybe<Sale>;
-}
+};
 
-export interface SaleBulkDelete {
+export type SaleBulkDelete = {
   __typename?: "SaleBulkDelete";
   count: Scalars["Int"];
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  discountErrors: DiscountError[];
-  errors: DiscountError[];
-}
+  discountErrors: Array<DiscountError>;
+  errors: Array<DiscountError>;
+};
 
 export type SaleChannelListing = Node & {
   __typename?: "SaleChannelListing";
@@ -8117,79 +8118,79 @@ export type SaleChannelListing = Node & {
   id: Scalars["ID"];
 };
 
-export interface SaleChannelListingAddInput {
+export type SaleChannelListingAddInput = {
   channelId: Scalars["ID"];
   discountValue: Scalars["PositiveDecimal"];
-}
+};
 
-export interface SaleChannelListingInput {
-  addChannels?: Maybe<SaleChannelListingAddInput[]>;
-  removeChannels?: Maybe<Array<Scalars["ID"]>>;
-}
+export type SaleChannelListingInput = {
+  addChannels?: InputMaybe<Array<SaleChannelListingAddInput>>;
+  removeChannels?: InputMaybe<Array<Scalars["ID"]>>;
+};
 
-export interface SaleChannelListingUpdate {
+export type SaleChannelListingUpdate = {
   __typename?: "SaleChannelListingUpdate";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  discountErrors: DiscountError[];
-  errors: DiscountError[];
+  discountErrors: Array<DiscountError>;
+  errors: Array<DiscountError>;
   sale?: Maybe<Sale>;
-}
+};
 
-export interface SaleCountableConnection {
+export type SaleCountableConnection = {
   __typename?: "SaleCountableConnection";
-  edges: SaleCountableEdge[];
+  edges: Array<SaleCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface SaleCountableEdge {
+export type SaleCountableEdge = {
   __typename?: "SaleCountableEdge";
   cursor: Scalars["String"];
   node: Sale;
-}
+};
 
-export interface SaleCreate {
+export type SaleCreate = {
   __typename?: "SaleCreate";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  discountErrors: DiscountError[];
-  errors: DiscountError[];
+  discountErrors: Array<DiscountError>;
+  errors: Array<DiscountError>;
   sale?: Maybe<Sale>;
-}
+};
 
-export interface SaleDelete {
+export type SaleDelete = {
   __typename?: "SaleDelete";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  discountErrors: DiscountError[];
-  errors: DiscountError[];
+  discountErrors: Array<DiscountError>;
+  errors: Array<DiscountError>;
   sale?: Maybe<Sale>;
-}
+};
 
-export interface SaleFilterInput {
-  metadata?: Maybe<Array<Maybe<MetadataFilter>>>;
-  saleType?: Maybe<DiscountValueTypeEnum>;
-  search?: Maybe<Scalars["String"]>;
-  started?: Maybe<DateTimeRangeInput>;
-  status?: Maybe<Array<Maybe<DiscountStatusEnum>>>;
-}
+export type SaleFilterInput = {
+  metadata?: InputMaybe<Array<InputMaybe<MetadataFilter>>>;
+  saleType?: InputMaybe<DiscountValueTypeEnum>;
+  search?: InputMaybe<Scalars["String"]>;
+  started?: InputMaybe<DateTimeRangeInput>;
+  status?: InputMaybe<Array<InputMaybe<DiscountStatusEnum>>>;
+};
 
-export interface SaleInput {
-  categories?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  collections?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  endDate?: Maybe<Scalars["DateTime"]>;
-  name?: Maybe<Scalars["String"]>;
-  products?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  startDate?: Maybe<Scalars["DateTime"]>;
-  type?: Maybe<DiscountValueTypeEnum>;
-  value?: Maybe<Scalars["PositiveDecimal"]>;
-}
+export type SaleInput = {
+  categories?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  collections?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  endDate?: InputMaybe<Scalars["DateTime"]>;
+  name?: InputMaybe<Scalars["String"]>;
+  products?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  startDate?: InputMaybe<Scalars["DateTime"]>;
+  type?: InputMaybe<DiscountValueTypeEnum>;
+  value?: InputMaybe<Scalars["PositiveDecimal"]>;
+};
 
-export interface SaleRemoveCatalogues {
+export type SaleRemoveCatalogues = {
   __typename?: "SaleRemoveCatalogues";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  discountErrors: DiscountError[];
-  errors: DiscountError[];
+  discountErrors: Array<DiscountError>;
+  errors: Array<DiscountError>;
   sale?: Maybe<Sale>;
-}
+};
 
 export enum SaleSortField {
   EndDate = "END_DATE",
@@ -8199,11 +8200,11 @@ export enum SaleSortField {
   Value = "VALUE",
 }
 
-export interface SaleSortingInput {
-  channel?: Maybe<Scalars["String"]>;
+export type SaleSortingInput = {
+  channel?: InputMaybe<Scalars["String"]>;
   direction: OrderDirection;
   field: SaleSortField;
-}
+};
 
 export type SaleTranslatableContent = Node & {
   __typename?: "SaleTranslatableContent";
@@ -8214,17 +8215,17 @@ export type SaleTranslatableContent = Node & {
   translation?: Maybe<SaleTranslation>;
 };
 
-export interface SaleTranslatableContentTranslationArgs {
+export type SaleTranslatableContentTranslationArgs = {
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface SaleTranslate {
+export type SaleTranslate = {
   __typename?: "SaleTranslate";
-  errors: TranslationError[];
+  errors: Array<TranslationError>;
   sale?: Maybe<Sale>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  translationErrors: TranslationError[];
-}
+  translationErrors: Array<TranslationError>;
+};
 
 export type SaleTranslation = Node & {
   __typename?: "SaleTranslation";
@@ -8238,44 +8239,44 @@ export enum SaleType {
   Percentage = "PERCENTAGE",
 }
 
-export interface SaleUpdate {
+export type SaleUpdate = {
   __typename?: "SaleUpdate";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  discountErrors: DiscountError[];
-  errors: DiscountError[];
+  discountErrors: Array<DiscountError>;
+  errors: Array<DiscountError>;
   sale?: Maybe<Sale>;
-}
+};
 
-export interface SelectedAttribute {
+export type SelectedAttribute = {
   __typename?: "SelectedAttribute";
   attribute: Attribute;
   values: Array<Maybe<AttributeValue>>;
-}
+};
 
-export interface SeoInput {
-  description?: Maybe<Scalars["String"]>;
-  title?: Maybe<Scalars["String"]>;
-}
+export type SeoInput = {
+  description?: InputMaybe<Scalars["String"]>;
+  title?: InputMaybe<Scalars["String"]>;
+};
 
-export interface SetPassword {
+export type SetPassword = {
   __typename?: "SetPassword";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
+  accountErrors: Array<AccountError>;
   csrfToken?: Maybe<Scalars["String"]>;
-  errors: AccountError[];
+  errors: Array<AccountError>;
   refreshToken?: Maybe<Scalars["String"]>;
   token?: Maybe<Scalars["String"]>;
   user?: Maybe<User>;
-}
+};
 
-export interface ShippingError {
+export type ShippingError = {
   __typename?: "ShippingError";
   channels?: Maybe<Array<Scalars["ID"]>>;
   code: ShippingErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
   warehouses?: Maybe<Array<Scalars["ID"]>>;
-}
+};
 
 export enum ShippingErrorCode {
   AlreadyExists = "ALREADY_EXISTS",
@@ -8291,7 +8292,7 @@ export enum ShippingErrorCode {
 export type ShippingMethod = Node &
   ObjectWithMetadata & {
     __typename?: "ShippingMethod";
-    channelListings?: Maybe<ShippingMethodChannelListing[]>;
+    channelListings?: Maybe<Array<ShippingMethodChannelListing>>;
     description?: Maybe<Scalars["JSONString"]>;
     excludedProducts?: Maybe<ProductCountableConnection>;
     id: Scalars["ID"];
@@ -8310,16 +8311,16 @@ export type ShippingMethod = Node &
     type?: Maybe<ShippingMethodTypeEnum>;
   };
 
-export interface ShippingMethodExcludedProductsArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type ShippingMethodExcludedProductsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface ShippingMethodTranslationArgs {
+export type ShippingMethodTranslationArgs = {
   languageCode: LanguageCodeEnum;
-}
+};
 
 export type ShippingMethodChannelListing = Node & {
   __typename?: "ShippingMethodChannelListing";
@@ -8330,25 +8331,25 @@ export type ShippingMethodChannelListing = Node & {
   price?: Maybe<Money>;
 };
 
-export interface ShippingMethodChannelListingAddInput {
+export type ShippingMethodChannelListingAddInput = {
   channelId: Scalars["ID"];
-  maximumOrderPrice?: Maybe<Scalars["PositiveDecimal"]>;
-  minimumOrderPrice?: Maybe<Scalars["PositiveDecimal"]>;
-  price?: Maybe<Scalars["PositiveDecimal"]>;
-}
+  maximumOrderPrice?: InputMaybe<Scalars["PositiveDecimal"]>;
+  minimumOrderPrice?: InputMaybe<Scalars["PositiveDecimal"]>;
+  price?: InputMaybe<Scalars["PositiveDecimal"]>;
+};
 
-export interface ShippingMethodChannelListingInput {
-  addChannels?: Maybe<ShippingMethodChannelListingAddInput[]>;
-  removeChannels?: Maybe<Array<Scalars["ID"]>>;
-}
+export type ShippingMethodChannelListingInput = {
+  addChannels?: InputMaybe<Array<ShippingMethodChannelListingAddInput>>;
+  removeChannels?: InputMaybe<Array<Scalars["ID"]>>;
+};
 
-export interface ShippingMethodChannelListingUpdate {
+export type ShippingMethodChannelListingUpdate = {
   __typename?: "ShippingMethodChannelListingUpdate";
-  errors: ShippingError[];
+  errors: Array<ShippingError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  shippingErrors: ShippingError[];
+  shippingErrors: Array<ShippingError>;
   shippingMethod?: Maybe<ShippingMethod>;
-}
+};
 
 export type ShippingMethodPostalCodeRule = Node & {
   __typename?: "ShippingMethodPostalCodeRule";
@@ -8368,9 +8369,9 @@ export type ShippingMethodTranslatableContent = Node & {
   translation?: Maybe<ShippingMethodTranslation>;
 };
 
-export interface ShippingMethodTranslatableContentTranslationArgs {
+export type ShippingMethodTranslatableContentTranslationArgs = {
   languageCode: LanguageCodeEnum;
-}
+};
 
 export type ShippingMethodTranslation = Node & {
   __typename?: "ShippingMethodTranslation";
@@ -8385,97 +8386,99 @@ export enum ShippingMethodTypeEnum {
   Weight = "WEIGHT",
 }
 
-export interface ShippingPostalCodeRulesCreateInputRange {
-  end?: Maybe<Scalars["String"]>;
+export type ShippingPostalCodeRulesCreateInputRange = {
+  end?: InputMaybe<Scalars["String"]>;
   start: Scalars["String"];
-}
+};
 
-export interface ShippingPriceBulkDelete {
+export type ShippingPriceBulkDelete = {
   __typename?: "ShippingPriceBulkDelete";
   count: Scalars["Int"];
-  errors: ShippingError[];
+  errors: Array<ShippingError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  shippingErrors: ShippingError[];
-}
+  shippingErrors: Array<ShippingError>;
+};
 
-export interface ShippingPriceCreate {
+export type ShippingPriceCreate = {
   __typename?: "ShippingPriceCreate";
-  errors: ShippingError[];
+  errors: Array<ShippingError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  shippingErrors: ShippingError[];
+  shippingErrors: Array<ShippingError>;
   shippingMethod?: Maybe<ShippingMethod>;
   shippingZone?: Maybe<ShippingZone>;
-}
+};
 
-export interface ShippingPriceDelete {
+export type ShippingPriceDelete = {
   __typename?: "ShippingPriceDelete";
-  errors: ShippingError[];
+  errors: Array<ShippingError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  shippingErrors: ShippingError[];
+  shippingErrors: Array<ShippingError>;
   shippingMethod?: Maybe<ShippingMethod>;
   shippingZone?: Maybe<ShippingZone>;
-}
+};
 
-export interface ShippingPriceExcludeProducts {
+export type ShippingPriceExcludeProducts = {
   __typename?: "ShippingPriceExcludeProducts";
-  errors: ShippingError[];
+  errors: Array<ShippingError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  shippingErrors: ShippingError[];
+  shippingErrors: Array<ShippingError>;
   shippingMethod?: Maybe<ShippingMethod>;
-}
+};
 
-export interface ShippingPriceExcludeProductsInput {
-  products: Array<Maybe<Scalars["ID"]>>;
-}
+export type ShippingPriceExcludeProductsInput = {
+  products: Array<InputMaybe<Scalars["ID"]>>;
+};
 
-export interface ShippingPriceInput {
-  addPostalCodeRules?: Maybe<ShippingPostalCodeRulesCreateInputRange[]>;
-  deletePostalCodeRules?: Maybe<Array<Scalars["ID"]>>;
-  description?: Maybe<Scalars["JSONString"]>;
-  inclusionType?: Maybe<PostalCodeRuleInclusionTypeEnum>;
-  maximumDeliveryDays?: Maybe<Scalars["Int"]>;
-  maximumOrderWeight?: Maybe<Scalars["WeightScalar"]>;
-  minimumDeliveryDays?: Maybe<Scalars["Int"]>;
-  minimumOrderWeight?: Maybe<Scalars["WeightScalar"]>;
-  name?: Maybe<Scalars["String"]>;
-  shippingZone?: Maybe<Scalars["ID"]>;
-  type?: Maybe<ShippingMethodTypeEnum>;
-}
+export type ShippingPriceInput = {
+  addPostalCodeRules?: InputMaybe<
+    Array<ShippingPostalCodeRulesCreateInputRange>
+  >;
+  deletePostalCodeRules?: InputMaybe<Array<Scalars["ID"]>>;
+  description?: InputMaybe<Scalars["JSONString"]>;
+  inclusionType?: InputMaybe<PostalCodeRuleInclusionTypeEnum>;
+  maximumDeliveryDays?: InputMaybe<Scalars["Int"]>;
+  maximumOrderWeight?: InputMaybe<Scalars["WeightScalar"]>;
+  minimumDeliveryDays?: InputMaybe<Scalars["Int"]>;
+  minimumOrderWeight?: InputMaybe<Scalars["WeightScalar"]>;
+  name?: InputMaybe<Scalars["String"]>;
+  shippingZone?: InputMaybe<Scalars["ID"]>;
+  type?: InputMaybe<ShippingMethodTypeEnum>;
+};
 
-export interface ShippingPriceRemoveProductFromExclude {
+export type ShippingPriceRemoveProductFromExclude = {
   __typename?: "ShippingPriceRemoveProductFromExclude";
-  errors: ShippingError[];
+  errors: Array<ShippingError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  shippingErrors: ShippingError[];
+  shippingErrors: Array<ShippingError>;
   shippingMethod?: Maybe<ShippingMethod>;
-}
+};
 
-export interface ShippingPriceTranslate {
+export type ShippingPriceTranslate = {
   __typename?: "ShippingPriceTranslate";
-  errors: TranslationError[];
+  errors: Array<TranslationError>;
   shippingMethod?: Maybe<ShippingMethod>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  translationErrors: TranslationError[];
-}
+  translationErrors: Array<TranslationError>;
+};
 
-export interface ShippingPriceTranslationInput {
-  description?: Maybe<Scalars["JSONString"]>;
-  name?: Maybe<Scalars["String"]>;
-}
+export type ShippingPriceTranslationInput = {
+  description?: InputMaybe<Scalars["JSONString"]>;
+  name?: InputMaybe<Scalars["String"]>;
+};
 
-export interface ShippingPriceUpdate {
+export type ShippingPriceUpdate = {
   __typename?: "ShippingPriceUpdate";
-  errors: ShippingError[];
+  errors: Array<ShippingError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  shippingErrors: ShippingError[];
+  shippingErrors: Array<ShippingError>;
   shippingMethod?: Maybe<ShippingMethod>;
   shippingZone?: Maybe<ShippingZone>;
-}
+};
 
 export type ShippingZone = Node &
   ObjectWithMetadata & {
     __typename?: "ShippingZone";
-    channels: Channel[];
+    channels: Array<Channel>;
     countries?: Maybe<Array<Maybe<CountryDisplay>>>;
     default: Scalars["Boolean"];
     description?: Maybe<Scalars["String"]>;
@@ -8485,88 +8488,88 @@ export type ShippingZone = Node &
     priceRange?: Maybe<MoneyRange>;
     privateMetadata: Array<Maybe<MetadataItem>>;
     shippingMethods?: Maybe<Array<Maybe<ShippingMethod>>>;
-    warehouses: Warehouse[];
+    warehouses: Array<Warehouse>;
   };
 
-export interface ShippingZoneBulkDelete {
+export type ShippingZoneBulkDelete = {
   __typename?: "ShippingZoneBulkDelete";
   count: Scalars["Int"];
-  errors: ShippingError[];
+  errors: Array<ShippingError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  shippingErrors: ShippingError[];
-}
+  shippingErrors: Array<ShippingError>;
+};
 
-export interface ShippingZoneCountableConnection {
+export type ShippingZoneCountableConnection = {
   __typename?: "ShippingZoneCountableConnection";
-  edges: ShippingZoneCountableEdge[];
+  edges: Array<ShippingZoneCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface ShippingZoneCountableEdge {
+export type ShippingZoneCountableEdge = {
   __typename?: "ShippingZoneCountableEdge";
   cursor: Scalars["String"];
   node: ShippingZone;
-}
+};
 
-export interface ShippingZoneCreate {
+export type ShippingZoneCreate = {
   __typename?: "ShippingZoneCreate";
-  errors: ShippingError[];
+  errors: Array<ShippingError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  shippingErrors: ShippingError[];
+  shippingErrors: Array<ShippingError>;
   shippingZone?: Maybe<ShippingZone>;
-}
+};
 
-export interface ShippingZoneCreateInput {
-  addChannels?: Maybe<Array<Scalars["ID"]>>;
-  addWarehouses?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  countries?: Maybe<Array<Maybe<Scalars["String"]>>>;
-  default?: Maybe<Scalars["Boolean"]>;
-  description?: Maybe<Scalars["String"]>;
-  name?: Maybe<Scalars["String"]>;
-}
+export type ShippingZoneCreateInput = {
+  addChannels?: InputMaybe<Array<Scalars["ID"]>>;
+  addWarehouses?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  countries?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
+  default?: InputMaybe<Scalars["Boolean"]>;
+  description?: InputMaybe<Scalars["String"]>;
+  name?: InputMaybe<Scalars["String"]>;
+};
 
-export interface ShippingZoneDelete {
+export type ShippingZoneDelete = {
   __typename?: "ShippingZoneDelete";
-  errors: ShippingError[];
+  errors: Array<ShippingError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  shippingErrors: ShippingError[];
+  shippingErrors: Array<ShippingError>;
   shippingZone?: Maybe<ShippingZone>;
-}
+};
 
-export interface ShippingZoneFilterInput {
-  channels?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  search?: Maybe<Scalars["String"]>;
-}
+export type ShippingZoneFilterInput = {
+  channels?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  search?: InputMaybe<Scalars["String"]>;
+};
 
-export interface ShippingZoneUpdate {
+export type ShippingZoneUpdate = {
   __typename?: "ShippingZoneUpdate";
-  errors: ShippingError[];
+  errors: Array<ShippingError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  shippingErrors: ShippingError[];
+  shippingErrors: Array<ShippingError>;
   shippingZone?: Maybe<ShippingZone>;
-}
+};
 
-export interface ShippingZoneUpdateInput {
-  addChannels?: Maybe<Array<Scalars["ID"]>>;
-  addWarehouses?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  countries?: Maybe<Array<Maybe<Scalars["String"]>>>;
-  default?: Maybe<Scalars["Boolean"]>;
-  description?: Maybe<Scalars["String"]>;
-  name?: Maybe<Scalars["String"]>;
-  removeChannels?: Maybe<Array<Scalars["ID"]>>;
-  removeWarehouses?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-}
+export type ShippingZoneUpdateInput = {
+  addChannels?: InputMaybe<Array<Scalars["ID"]>>;
+  addWarehouses?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  countries?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
+  default?: InputMaybe<Scalars["Boolean"]>;
+  description?: InputMaybe<Scalars["String"]>;
+  name?: InputMaybe<Scalars["String"]>;
+  removeChannels?: InputMaybe<Array<Scalars["ID"]>>;
+  removeWarehouses?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+};
 
-export interface Shop {
+export type Shop = {
   __typename?: "Shop";
   automaticFulfillmentDigitalProducts?: Maybe<Scalars["Boolean"]>;
-  availableExternalAuthentications: ExternalAuthentication[];
-  availablePaymentGateways: PaymentGateway[];
+  availableExternalAuthentications: Array<ExternalAuthentication>;
+  availablePaymentGateways: Array<PaymentGateway>;
   availableShippingMethods?: Maybe<Array<Maybe<ShippingMethod>>>;
   chargeTaxesOnShipping: Scalars["Boolean"];
   companyAddress?: Maybe<Address>;
-  countries: CountryDisplay[];
+  countries: Array<CountryDisplay>;
   customerSetPasswordUrl?: Maybe<Scalars["String"]>;
   defaultCountry?: Maybe<CountryDisplay>;
   defaultDigitalMaxDownloads?: Maybe<Scalars["Int"]>;
@@ -8588,48 +8591,48 @@ export interface Shop {
   trackInventoryByDefault?: Maybe<Scalars["Boolean"]>;
   translation?: Maybe<ShopTranslation>;
   version: Scalars["String"];
-}
+};
 
-export interface ShopAvailablePaymentGatewaysArgs {
-  channel?: Maybe<Scalars["String"]>;
-  currency?: Maybe<Scalars["String"]>;
-}
+export type ShopAvailablePaymentGatewaysArgs = {
+  channel?: InputMaybe<Scalars["String"]>;
+  currency?: InputMaybe<Scalars["String"]>;
+};
 
-export interface ShopAvailableShippingMethodsArgs {
-  address?: Maybe<AddressInput>;
+export type ShopAvailableShippingMethodsArgs = {
+  address?: InputMaybe<AddressInput>;
   channel: Scalars["String"];
-}
+};
 
-export interface ShopCountriesArgs {
-  languageCode?: Maybe<LanguageCodeEnum>;
-}
+export type ShopCountriesArgs = {
+  languageCode?: InputMaybe<LanguageCodeEnum>;
+};
 
-export interface ShopTranslationArgs {
+export type ShopTranslationArgs = {
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface ShopAddressUpdate {
+export type ShopAddressUpdate = {
   __typename?: "ShopAddressUpdate";
-  errors: ShopError[];
+  errors: Array<ShopError>;
   shop?: Maybe<Shop>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  shopErrors: ShopError[];
-}
+  shopErrors: Array<ShopError>;
+};
 
-export interface ShopDomainUpdate {
+export type ShopDomainUpdate = {
   __typename?: "ShopDomainUpdate";
-  errors: ShopError[];
+  errors: Array<ShopError>;
   shop?: Maybe<Shop>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  shopErrors: ShopError[];
-}
+  shopErrors: Array<ShopError>;
+};
 
-export interface ShopError {
+export type ShopError = {
   __typename?: "ShopError";
   code: ShopErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
-}
+};
 
 export enum ShopErrorCode {
   AlreadyExists = "ALREADY_EXISTS",
@@ -8641,50 +8644,50 @@ export enum ShopErrorCode {
   Unique = "UNIQUE",
 }
 
-export interface ShopFetchTaxRates {
+export type ShopFetchTaxRates = {
   __typename?: "ShopFetchTaxRates";
-  errors: ShopError[];
+  errors: Array<ShopError>;
   shop?: Maybe<Shop>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  shopErrors: ShopError[];
-}
+  shopErrors: Array<ShopError>;
+};
 
-export interface ShopSettingsInput {
-  automaticFulfillmentDigitalProducts?: Maybe<Scalars["Boolean"]>;
-  chargeTaxesOnShipping?: Maybe<Scalars["Boolean"]>;
-  customerSetPasswordUrl?: Maybe<Scalars["String"]>;
-  defaultDigitalMaxDownloads?: Maybe<Scalars["Int"]>;
-  defaultDigitalUrlValidDays?: Maybe<Scalars["Int"]>;
-  defaultMailSenderAddress?: Maybe<Scalars["String"]>;
-  defaultMailSenderName?: Maybe<Scalars["String"]>;
-  defaultWeightUnit?: Maybe<WeightUnitsEnum>;
-  description?: Maybe<Scalars["String"]>;
-  displayGrossPrices?: Maybe<Scalars["Boolean"]>;
-  headerText?: Maybe<Scalars["String"]>;
-  includeTaxesInPrices?: Maybe<Scalars["Boolean"]>;
-  trackInventoryByDefault?: Maybe<Scalars["Boolean"]>;
-}
+export type ShopSettingsInput = {
+  automaticFulfillmentDigitalProducts?: InputMaybe<Scalars["Boolean"]>;
+  chargeTaxesOnShipping?: InputMaybe<Scalars["Boolean"]>;
+  customerSetPasswordUrl?: InputMaybe<Scalars["String"]>;
+  defaultDigitalMaxDownloads?: InputMaybe<Scalars["Int"]>;
+  defaultDigitalUrlValidDays?: InputMaybe<Scalars["Int"]>;
+  defaultMailSenderAddress?: InputMaybe<Scalars["String"]>;
+  defaultMailSenderName?: InputMaybe<Scalars["String"]>;
+  defaultWeightUnit?: InputMaybe<WeightUnitsEnum>;
+  description?: InputMaybe<Scalars["String"]>;
+  displayGrossPrices?: InputMaybe<Scalars["Boolean"]>;
+  headerText?: InputMaybe<Scalars["String"]>;
+  includeTaxesInPrices?: InputMaybe<Scalars["Boolean"]>;
+  trackInventoryByDefault?: InputMaybe<Scalars["Boolean"]>;
+};
 
-export interface ShopSettingsTranslate {
+export type ShopSettingsTranslate = {
   __typename?: "ShopSettingsTranslate";
-  errors: TranslationError[];
+  errors: Array<TranslationError>;
   shop?: Maybe<Shop>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  translationErrors: TranslationError[];
-}
+  translationErrors: Array<TranslationError>;
+};
 
-export interface ShopSettingsTranslationInput {
-  description?: Maybe<Scalars["String"]>;
-  headerText?: Maybe<Scalars["String"]>;
-}
+export type ShopSettingsTranslationInput = {
+  description?: InputMaybe<Scalars["String"]>;
+  headerText?: InputMaybe<Scalars["String"]>;
+};
 
-export interface ShopSettingsUpdate {
+export type ShopSettingsUpdate = {
   __typename?: "ShopSettingsUpdate";
-  errors: ShopError[];
+  errors: Array<ShopError>;
   shop?: Maybe<Shop>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  shopErrors: ShopError[];
-}
+  shopErrors: Array<ShopError>;
+};
 
 export type ShopTranslation = Node & {
   __typename?: "ShopTranslation";
@@ -8694,55 +8697,55 @@ export type ShopTranslation = Node & {
   language: LanguageDisplay;
 };
 
-export interface SiteDomainInput {
-  domain?: Maybe<Scalars["String"]>;
-  name?: Maybe<Scalars["String"]>;
-}
+export type SiteDomainInput = {
+  domain?: InputMaybe<Scalars["String"]>;
+  name?: InputMaybe<Scalars["String"]>;
+};
 
-export interface StaffBulkDelete {
+export type StaffBulkDelete = {
   __typename?: "StaffBulkDelete";
   count: Scalars["Int"];
-  errors: StaffError[];
+  errors: Array<StaffError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  staffErrors: StaffError[];
-}
+  staffErrors: Array<StaffError>;
+};
 
-export interface StaffCreate {
+export type StaffCreate = {
   __typename?: "StaffCreate";
-  errors: StaffError[];
+  errors: Array<StaffError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  staffErrors: StaffError[];
+  staffErrors: Array<StaffError>;
   user?: Maybe<User>;
-}
+};
 
-export interface StaffCreateInput {
-  addGroups?: Maybe<Array<Scalars["ID"]>>;
-  email?: Maybe<Scalars["String"]>;
-  firstName?: Maybe<Scalars["String"]>;
-  isActive?: Maybe<Scalars["Boolean"]>;
-  lastName?: Maybe<Scalars["String"]>;
-  note?: Maybe<Scalars["String"]>;
-  redirectUrl?: Maybe<Scalars["String"]>;
-}
+export type StaffCreateInput = {
+  addGroups?: InputMaybe<Array<Scalars["ID"]>>;
+  email?: InputMaybe<Scalars["String"]>;
+  firstName?: InputMaybe<Scalars["String"]>;
+  isActive?: InputMaybe<Scalars["Boolean"]>;
+  lastName?: InputMaybe<Scalars["String"]>;
+  note?: InputMaybe<Scalars["String"]>;
+  redirectUrl?: InputMaybe<Scalars["String"]>;
+};
 
-export interface StaffDelete {
+export type StaffDelete = {
   __typename?: "StaffDelete";
-  errors: StaffError[];
+  errors: Array<StaffError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  staffErrors: StaffError[];
+  staffErrors: Array<StaffError>;
   user?: Maybe<User>;
-}
+};
 
-export interface StaffError {
+export type StaffError = {
   __typename?: "StaffError";
   addressType?: Maybe<AddressTypeEnum>;
   code: AccountErrorCode;
   field?: Maybe<Scalars["String"]>;
   groups?: Maybe<Array<Scalars["ID"]>>;
   message?: Maybe<Scalars["String"]>;
-  permissions?: Maybe<PermissionEnum[]>;
+  permissions?: Maybe<Array<PermissionEnum>>;
   users?: Maybe<Array<Scalars["ID"]>>;
-}
+};
 
 export enum StaffMemberStatus {
   Active = "ACTIVE",
@@ -8757,58 +8760,58 @@ export type StaffNotificationRecipient = Node & {
   user?: Maybe<User>;
 };
 
-export interface StaffNotificationRecipientCreate {
+export type StaffNotificationRecipientCreate = {
   __typename?: "StaffNotificationRecipientCreate";
-  errors: ShopError[];
+  errors: Array<ShopError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  shopErrors: ShopError[];
+  shopErrors: Array<ShopError>;
   staffNotificationRecipient?: Maybe<StaffNotificationRecipient>;
-}
+};
 
-export interface StaffNotificationRecipientDelete {
+export type StaffNotificationRecipientDelete = {
   __typename?: "StaffNotificationRecipientDelete";
-  errors: ShopError[];
+  errors: Array<ShopError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  shopErrors: ShopError[];
+  shopErrors: Array<ShopError>;
   staffNotificationRecipient?: Maybe<StaffNotificationRecipient>;
-}
+};
 
-export interface StaffNotificationRecipientInput {
-  active?: Maybe<Scalars["Boolean"]>;
-  email?: Maybe<Scalars["String"]>;
-  user?: Maybe<Scalars["ID"]>;
-}
+export type StaffNotificationRecipientInput = {
+  active?: InputMaybe<Scalars["Boolean"]>;
+  email?: InputMaybe<Scalars["String"]>;
+  user?: InputMaybe<Scalars["ID"]>;
+};
 
-export interface StaffNotificationRecipientUpdate {
+export type StaffNotificationRecipientUpdate = {
   __typename?: "StaffNotificationRecipientUpdate";
-  errors: ShopError[];
+  errors: Array<ShopError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  shopErrors: ShopError[];
+  shopErrors: Array<ShopError>;
   staffNotificationRecipient?: Maybe<StaffNotificationRecipient>;
-}
+};
 
-export interface StaffUpdate {
+export type StaffUpdate = {
   __typename?: "StaffUpdate";
-  errors: StaffError[];
+  errors: Array<StaffError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  staffErrors: StaffError[];
+  staffErrors: Array<StaffError>;
   user?: Maybe<User>;
-}
+};
 
-export interface StaffUpdateInput {
-  addGroups?: Maybe<Array<Scalars["ID"]>>;
-  email?: Maybe<Scalars["String"]>;
-  firstName?: Maybe<Scalars["String"]>;
-  isActive?: Maybe<Scalars["Boolean"]>;
-  lastName?: Maybe<Scalars["String"]>;
-  note?: Maybe<Scalars["String"]>;
-  removeGroups?: Maybe<Array<Scalars["ID"]>>;
-}
+export type StaffUpdateInput = {
+  addGroups?: InputMaybe<Array<Scalars["ID"]>>;
+  email?: InputMaybe<Scalars["String"]>;
+  firstName?: InputMaybe<Scalars["String"]>;
+  isActive?: InputMaybe<Scalars["Boolean"]>;
+  lastName?: InputMaybe<Scalars["String"]>;
+  note?: InputMaybe<Scalars["String"]>;
+  removeGroups?: InputMaybe<Array<Scalars["ID"]>>;
+};
 
-export interface StaffUserInput {
-  search?: Maybe<Scalars["String"]>;
-  status?: Maybe<StaffMemberStatus>;
-}
+export type StaffUserInput = {
+  search?: InputMaybe<Scalars["String"]>;
+  status?: InputMaybe<StaffMemberStatus>;
+};
 
 export type Stock = Node & {
   __typename?: "Stock";
@@ -8824,25 +8827,25 @@ export enum StockAvailability {
   OutOfStock = "OUT_OF_STOCK",
 }
 
-export interface StockCountableConnection {
+export type StockCountableConnection = {
   __typename?: "StockCountableConnection";
-  edges: StockCountableEdge[];
+  edges: Array<StockCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface StockCountableEdge {
+export type StockCountableEdge = {
   __typename?: "StockCountableEdge";
   cursor: Scalars["String"];
   node: Stock;
-}
+};
 
-export interface StockError {
+export type StockError = {
   __typename?: "StockError";
   code: StockErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
-}
+};
 
 export enum StockErrorCode {
   AlreadyExists = "ALREADY_EXISTS",
@@ -8853,35 +8856,35 @@ export enum StockErrorCode {
   Unique = "UNIQUE",
 }
 
-export interface StockFilterInput {
-  quantity?: Maybe<Scalars["Float"]>;
-  search?: Maybe<Scalars["String"]>;
-}
+export type StockFilterInput = {
+  quantity?: InputMaybe<Scalars["Float"]>;
+  search?: InputMaybe<Scalars["String"]>;
+};
 
-export interface StockInput {
+export type StockInput = {
   quantity: Scalars["Int"];
   warehouse: Scalars["ID"];
-}
+};
 
-export interface TaxType {
+export type TaxType = {
   __typename?: "TaxType";
   description?: Maybe<Scalars["String"]>;
   taxCode?: Maybe<Scalars["String"]>;
-}
+};
 
-export interface TaxedMoney {
+export type TaxedMoney = {
   __typename?: "TaxedMoney";
   currency: Scalars["String"];
   gross: Money;
   net: Money;
   tax: Money;
-}
+};
 
-export interface TaxedMoneyRange {
+export type TaxedMoneyRange = {
   __typename?: "TaxedMoneyRange";
   start?: Maybe<TaxedMoney>;
   stop?: Maybe<TaxedMoney>;
-}
+};
 
 export type Transaction = Node & {
   __typename?: "Transaction";
@@ -8922,18 +8925,18 @@ export type TranslatableItem =
   | ShippingMethodTranslatableContent
   | VoucherTranslatableContent;
 
-export interface TranslatableItemConnection {
+export type TranslatableItemConnection = {
   __typename?: "TranslatableItemConnection";
-  edges: TranslatableItemEdge[];
+  edges: Array<TranslatableItemEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface TranslatableItemEdge {
+export type TranslatableItemEdge = {
   __typename?: "TranslatableItemEdge";
   cursor: Scalars["String"];
   node: TranslatableItem;
-}
+};
 
 export enum TranslatableKinds {
   Attribute = "ATTRIBUTE",
@@ -8949,12 +8952,12 @@ export enum TranslatableKinds {
   Voucher = "VOUCHER",
 }
 
-export interface TranslationError {
+export type TranslationError = {
   __typename?: "TranslationError";
   code: TranslationErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
-}
+};
 
 export enum TranslationErrorCode {
   GraphqlError = "GRAPHQL_ERROR",
@@ -8962,40 +8965,40 @@ export enum TranslationErrorCode {
   Required = "REQUIRED",
 }
 
-export interface TranslationInput {
-  description?: Maybe<Scalars["JSONString"]>;
-  name?: Maybe<Scalars["String"]>;
-  seoDescription?: Maybe<Scalars["String"]>;
-  seoTitle?: Maybe<Scalars["String"]>;
-}
+export type TranslationInput = {
+  description?: InputMaybe<Scalars["JSONString"]>;
+  name?: InputMaybe<Scalars["String"]>;
+  seoDescription?: InputMaybe<Scalars["String"]>;
+  seoTitle?: InputMaybe<Scalars["String"]>;
+};
 
-export interface UpdateInvoiceInput {
-  number?: Maybe<Scalars["String"]>;
-  url?: Maybe<Scalars["String"]>;
-}
+export type UpdateInvoiceInput = {
+  number?: InputMaybe<Scalars["String"]>;
+  url?: InputMaybe<Scalars["String"]>;
+};
 
-export interface UpdateMetadata {
+export type UpdateMetadata = {
   __typename?: "UpdateMetadata";
-  errors: MetadataError[];
+  errors: Array<MetadataError>;
   item?: Maybe<ObjectWithMetadata>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  metadataErrors: MetadataError[];
-}
+  metadataErrors: Array<MetadataError>;
+};
 
-export interface UpdatePrivateMetadata {
+export type UpdatePrivateMetadata = {
   __typename?: "UpdatePrivateMetadata";
-  errors: MetadataError[];
+  errors: Array<MetadataError>;
   item?: Maybe<ObjectWithMetadata>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  metadataErrors: MetadataError[];
-}
+  metadataErrors: Array<MetadataError>;
+};
 
-export interface UploadError {
+export type UploadError = {
   __typename?: "UploadError";
   code: UploadErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
-}
+};
 
 export enum UploadErrorCode {
   GraphqlError = "GRAPHQL_ERROR",
@@ -9032,92 +9035,92 @@ export type User = Node &
     userPermissions?: Maybe<Array<Maybe<UserPermission>>>;
   };
 
-export interface UserAvatarArgs {
-  size?: Maybe<Scalars["Int"]>;
-}
+export type UserAvatarArgs = {
+  size?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface UserCheckoutTokensArgs {
-  channel?: Maybe<Scalars["String"]>;
-}
+export type UserCheckoutTokensArgs = {
+  channel?: InputMaybe<Scalars["String"]>;
+};
 
-export interface UserGiftCardsArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type UserGiftCardsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface UserOrdersArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type UserOrdersArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface UserStoredPaymentSourcesArgs {
-  channel?: Maybe<Scalars["String"]>;
-}
+export type UserStoredPaymentSourcesArgs = {
+  channel?: InputMaybe<Scalars["String"]>;
+};
 
-export interface UserAvatarDelete {
+export type UserAvatarDelete = {
   __typename?: "UserAvatarDelete";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
-  errors: AccountError[];
+  accountErrors: Array<AccountError>;
+  errors: Array<AccountError>;
   user?: Maybe<User>;
-}
+};
 
-export interface UserAvatarUpdate {
+export type UserAvatarUpdate = {
   __typename?: "UserAvatarUpdate";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
-  errors: AccountError[];
+  accountErrors: Array<AccountError>;
+  errors: Array<AccountError>;
   user?: Maybe<User>;
-}
+};
 
-export interface UserBulkSetActive {
+export type UserBulkSetActive = {
   __typename?: "UserBulkSetActive";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
+  accountErrors: Array<AccountError>;
   count: Scalars["Int"];
-  errors: AccountError[];
-}
+  errors: Array<AccountError>;
+};
 
-export interface UserCountableConnection {
+export type UserCountableConnection = {
   __typename?: "UserCountableConnection";
-  edges: UserCountableEdge[];
+  edges: Array<UserCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface UserCountableEdge {
+export type UserCountableEdge = {
   __typename?: "UserCountableEdge";
   cursor: Scalars["String"];
   node: User;
-}
+};
 
-export interface UserCreateInput {
-  channel?: Maybe<Scalars["String"]>;
-  defaultBillingAddress?: Maybe<AddressInput>;
-  defaultShippingAddress?: Maybe<AddressInput>;
-  email?: Maybe<Scalars["String"]>;
-  firstName?: Maybe<Scalars["String"]>;
-  isActive?: Maybe<Scalars["Boolean"]>;
-  languageCode?: Maybe<LanguageCodeEnum>;
-  lastName?: Maybe<Scalars["String"]>;
-  note?: Maybe<Scalars["String"]>;
-  redirectUrl?: Maybe<Scalars["String"]>;
-}
+export type UserCreateInput = {
+  channel?: InputMaybe<Scalars["String"]>;
+  defaultBillingAddress?: InputMaybe<AddressInput>;
+  defaultShippingAddress?: InputMaybe<AddressInput>;
+  email?: InputMaybe<Scalars["String"]>;
+  firstName?: InputMaybe<Scalars["String"]>;
+  isActive?: InputMaybe<Scalars["Boolean"]>;
+  languageCode?: InputMaybe<LanguageCodeEnum>;
+  lastName?: InputMaybe<Scalars["String"]>;
+  note?: InputMaybe<Scalars["String"]>;
+  redirectUrl?: InputMaybe<Scalars["String"]>;
+};
 
-export interface UserPermission {
+export type UserPermission = {
   __typename?: "UserPermission";
   code: PermissionEnum;
   name: Scalars["String"];
-  sourcePermissionGroups?: Maybe<Group[]>;
-}
+  sourcePermissionGroups?: Maybe<Array<Group>>;
+};
 
-export interface UserPermissionSourcePermissionGroupsArgs {
+export type UserPermissionSourcePermissionGroupsArgs = {
   userId: Scalars["ID"];
-}
+};
 
 export enum UserSortField {
   Email = "EMAIL",
@@ -9126,17 +9129,17 @@ export enum UserSortField {
   OrderCount = "ORDER_COUNT",
 }
 
-export interface UserSortingInput {
+export type UserSortingInput = {
   direction: OrderDirection;
   field: UserSortField;
-}
+};
 
-export interface Vat {
+export type Vat = {
   __typename?: "VAT";
   countryCode: Scalars["String"];
   reducedRates: Array<Maybe<ReducedRate>>;
   standardRate?: Maybe<Scalars["Float"]>;
-}
+};
 
 export enum VariantAttributeScope {
   All = "ALL",
@@ -9144,25 +9147,25 @@ export enum VariantAttributeScope {
   VariantSelection = "VARIANT_SELECTION",
 }
 
-export interface VariantMediaAssign {
+export type VariantMediaAssign = {
   __typename?: "VariantMediaAssign";
-  errors: ProductError[];
+  errors: Array<ProductError>;
   media?: Maybe<ProductMedia>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
+  productErrors: Array<ProductError>;
   productVariant?: Maybe<ProductVariant>;
-}
+};
 
-export interface VariantMediaUnassign {
+export type VariantMediaUnassign = {
   __typename?: "VariantMediaUnassign";
-  errors: ProductError[];
+  errors: Array<ProductError>;
   media?: Maybe<ProductMedia>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  productErrors: ProductError[];
+  productErrors: Array<ProductError>;
   productVariant?: Maybe<ProductVariant>;
-}
+};
 
-export interface VariantPricingInfo {
+export type VariantPricingInfo = {
   __typename?: "VariantPricingInfo";
   discount?: Maybe<TaxedMoney>;
   discountLocalCurrency?: Maybe<TaxedMoney>;
@@ -9170,17 +9173,17 @@ export interface VariantPricingInfo {
   price?: Maybe<TaxedMoney>;
   priceLocalCurrency?: Maybe<TaxedMoney>;
   priceUndiscounted?: Maybe<TaxedMoney>;
-}
+};
 
-export interface VerifyToken {
+export type VerifyToken = {
   __typename?: "VerifyToken";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  accountErrors: AccountError[];
-  errors: AccountError[];
+  accountErrors: Array<AccountError>;
+  errors: Array<AccountError>;
   isValid: Scalars["Boolean"];
   payload?: Maybe<Scalars["GenericScalar"]>;
   user?: Maybe<User>;
-}
+};
 
 export enum VolumeUnitsEnum {
   AcreFt = "ACRE_FT",
@@ -9204,7 +9207,7 @@ export type Voucher = Node &
     applyOncePerCustomer: Scalars["Boolean"];
     applyOncePerOrder: Scalars["Boolean"];
     categories?: Maybe<CategoryCountableConnection>;
-    channelListings?: Maybe<VoucherChannelListing[]>;
+    channelListings?: Maybe<Array<VoucherChannelListing>>;
     code: Scalars["String"];
     collections?: Maybe<CollectionCountableConnection>;
     countries?: Maybe<Array<Maybe<CountryDisplay>>>;
@@ -9227,46 +9230,46 @@ export type Voucher = Node &
     used: Scalars["Int"];
   };
 
-export interface VoucherCategoriesArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type VoucherCategoriesArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface VoucherCollectionsArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type VoucherCollectionsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface VoucherProductsArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type VoucherProductsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface VoucherTranslationArgs {
+export type VoucherTranslationArgs = {
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface VoucherAddCatalogues {
+export type VoucherAddCatalogues = {
   __typename?: "VoucherAddCatalogues";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  discountErrors: DiscountError[];
-  errors: DiscountError[];
+  discountErrors: Array<DiscountError>;
+  errors: Array<DiscountError>;
   voucher?: Maybe<Voucher>;
-}
+};
 
-export interface VoucherBulkDelete {
+export type VoucherBulkDelete = {
   __typename?: "VoucherBulkDelete";
   count: Scalars["Int"];
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  discountErrors: DiscountError[];
-  errors: DiscountError[];
-}
+  discountErrors: Array<DiscountError>;
+  errors: Array<DiscountError>;
+};
 
 export type VoucherChannelListing = Node & {
   __typename?: "VoucherChannelListing";
@@ -9277,53 +9280,53 @@ export type VoucherChannelListing = Node & {
   minSpent?: Maybe<Money>;
 };
 
-export interface VoucherChannelListingAddInput {
+export type VoucherChannelListingAddInput = {
   channelId: Scalars["ID"];
-  discountValue?: Maybe<Scalars["PositiveDecimal"]>;
-  minAmountSpent?: Maybe<Scalars["PositiveDecimal"]>;
-}
+  discountValue?: InputMaybe<Scalars["PositiveDecimal"]>;
+  minAmountSpent?: InputMaybe<Scalars["PositiveDecimal"]>;
+};
 
-export interface VoucherChannelListingInput {
-  addChannels?: Maybe<VoucherChannelListingAddInput[]>;
-  removeChannels?: Maybe<Array<Scalars["ID"]>>;
-}
+export type VoucherChannelListingInput = {
+  addChannels?: InputMaybe<Array<VoucherChannelListingAddInput>>;
+  removeChannels?: InputMaybe<Array<Scalars["ID"]>>;
+};
 
-export interface VoucherChannelListingUpdate {
+export type VoucherChannelListingUpdate = {
   __typename?: "VoucherChannelListingUpdate";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  discountErrors: DiscountError[];
-  errors: DiscountError[];
+  discountErrors: Array<DiscountError>;
+  errors: Array<DiscountError>;
   voucher?: Maybe<Voucher>;
-}
+};
 
-export interface VoucherCountableConnection {
+export type VoucherCountableConnection = {
   __typename?: "VoucherCountableConnection";
-  edges: VoucherCountableEdge[];
+  edges: Array<VoucherCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface VoucherCountableEdge {
+export type VoucherCountableEdge = {
   __typename?: "VoucherCountableEdge";
   cursor: Scalars["String"];
   node: Voucher;
-}
+};
 
-export interface VoucherCreate {
+export type VoucherCreate = {
   __typename?: "VoucherCreate";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  discountErrors: DiscountError[];
-  errors: DiscountError[];
+  discountErrors: Array<DiscountError>;
+  errors: Array<DiscountError>;
   voucher?: Maybe<Voucher>;
-}
+};
 
-export interface VoucherDelete {
+export type VoucherDelete = {
   __typename?: "VoucherDelete";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  discountErrors: DiscountError[];
-  errors: DiscountError[];
+  discountErrors: Array<DiscountError>;
+  errors: Array<DiscountError>;
   voucher?: Maybe<Voucher>;
-}
+};
 
 export enum VoucherDiscountType {
   Fixed = "FIXED",
@@ -9331,40 +9334,40 @@ export enum VoucherDiscountType {
   Shipping = "SHIPPING",
 }
 
-export interface VoucherFilterInput {
-  discountType?: Maybe<Array<Maybe<VoucherDiscountType>>>;
-  metadata?: Maybe<Array<Maybe<MetadataFilter>>>;
-  search?: Maybe<Scalars["String"]>;
-  started?: Maybe<DateTimeRangeInput>;
-  status?: Maybe<Array<Maybe<DiscountStatusEnum>>>;
-  timesUsed?: Maybe<IntRangeInput>;
-}
+export type VoucherFilterInput = {
+  discountType?: InputMaybe<Array<InputMaybe<VoucherDiscountType>>>;
+  metadata?: InputMaybe<Array<InputMaybe<MetadataFilter>>>;
+  search?: InputMaybe<Scalars["String"]>;
+  started?: InputMaybe<DateTimeRangeInput>;
+  status?: InputMaybe<Array<InputMaybe<DiscountStatusEnum>>>;
+  timesUsed?: InputMaybe<IntRangeInput>;
+};
 
-export interface VoucherInput {
-  applyOncePerCustomer?: Maybe<Scalars["Boolean"]>;
-  applyOncePerOrder?: Maybe<Scalars["Boolean"]>;
-  categories?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  code?: Maybe<Scalars["String"]>;
-  collections?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  countries?: Maybe<Array<Maybe<Scalars["String"]>>>;
-  discountValueType?: Maybe<DiscountValueTypeEnum>;
-  endDate?: Maybe<Scalars["DateTime"]>;
-  minCheckoutItemsQuantity?: Maybe<Scalars["Int"]>;
-  name?: Maybe<Scalars["String"]>;
-  onlyForStaff?: Maybe<Scalars["Boolean"]>;
-  products?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  startDate?: Maybe<Scalars["DateTime"]>;
-  type?: Maybe<VoucherTypeEnum>;
-  usageLimit?: Maybe<Scalars["Int"]>;
-}
+export type VoucherInput = {
+  applyOncePerCustomer?: InputMaybe<Scalars["Boolean"]>;
+  applyOncePerOrder?: InputMaybe<Scalars["Boolean"]>;
+  categories?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  code?: InputMaybe<Scalars["String"]>;
+  collections?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  countries?: InputMaybe<Array<InputMaybe<Scalars["String"]>>>;
+  discountValueType?: InputMaybe<DiscountValueTypeEnum>;
+  endDate?: InputMaybe<Scalars["DateTime"]>;
+  minCheckoutItemsQuantity?: InputMaybe<Scalars["Int"]>;
+  name?: InputMaybe<Scalars["String"]>;
+  onlyForStaff?: InputMaybe<Scalars["Boolean"]>;
+  products?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  startDate?: InputMaybe<Scalars["DateTime"]>;
+  type?: InputMaybe<VoucherTypeEnum>;
+  usageLimit?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface VoucherRemoveCatalogues {
+export type VoucherRemoveCatalogues = {
   __typename?: "VoucherRemoveCatalogues";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  discountErrors: DiscountError[];
-  errors: DiscountError[];
+  discountErrors: Array<DiscountError>;
+  errors: Array<DiscountError>;
   voucher?: Maybe<Voucher>;
-}
+};
 
 export enum VoucherSortField {
   Code = "CODE",
@@ -9376,11 +9379,11 @@ export enum VoucherSortField {
   Value = "VALUE",
 }
 
-export interface VoucherSortingInput {
-  channel?: Maybe<Scalars["String"]>;
+export type VoucherSortingInput = {
+  channel?: InputMaybe<Scalars["String"]>;
   direction: OrderDirection;
   field: VoucherSortField;
-}
+};
 
 export type VoucherTranslatableContent = Node & {
   __typename?: "VoucherTranslatableContent";
@@ -9391,17 +9394,17 @@ export type VoucherTranslatableContent = Node & {
   voucher?: Maybe<Voucher>;
 };
 
-export interface VoucherTranslatableContentTranslationArgs {
+export type VoucherTranslatableContentTranslationArgs = {
   languageCode: LanguageCodeEnum;
-}
+};
 
-export interface VoucherTranslate {
+export type VoucherTranslate = {
   __typename?: "VoucherTranslate";
-  errors: TranslationError[];
+  errors: Array<TranslationError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  translationErrors: TranslationError[];
+  translationErrors: Array<TranslationError>;
   voucher?: Maybe<Voucher>;
-}
+};
 
 export type VoucherTranslation = Node & {
   __typename?: "VoucherTranslation";
@@ -9416,13 +9419,13 @@ export enum VoucherTypeEnum {
   SpecificProduct = "SPECIFIC_PRODUCT",
 }
 
-export interface VoucherUpdate {
+export type VoucherUpdate = {
   __typename?: "VoucherUpdate";
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  discountErrors: DiscountError[];
-  errors: DiscountError[];
+  discountErrors: Array<DiscountError>;
+  errors: Array<DiscountError>;
   voucher?: Maybe<Voucher>;
-}
+};
 
 export type Warehouse = Node &
   ObjectWithMetadata & {
@@ -9439,56 +9442,56 @@ export type Warehouse = Node &
     slug: Scalars["String"];
   };
 
-export interface WarehouseShippingZonesArgs {
-  after?: Maybe<Scalars["String"]>;
-  before?: Maybe<Scalars["String"]>;
-  first?: Maybe<Scalars["Int"]>;
-  last?: Maybe<Scalars["Int"]>;
-}
+export type WarehouseShippingZonesArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
 
-export interface WarehouseCountableConnection {
+export type WarehouseCountableConnection = {
   __typename?: "WarehouseCountableConnection";
-  edges: WarehouseCountableEdge[];
+  edges: Array<WarehouseCountableEdge>;
   pageInfo: PageInfo;
   totalCount?: Maybe<Scalars["Int"]>;
-}
+};
 
-export interface WarehouseCountableEdge {
+export type WarehouseCountableEdge = {
   __typename?: "WarehouseCountableEdge";
   cursor: Scalars["String"];
   node: Warehouse;
-}
+};
 
-export interface WarehouseCreate {
+export type WarehouseCreate = {
   __typename?: "WarehouseCreate";
-  errors: WarehouseError[];
+  errors: Array<WarehouseError>;
   warehouse?: Maybe<Warehouse>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  warehouseErrors: WarehouseError[];
-}
+  warehouseErrors: Array<WarehouseError>;
+};
 
-export interface WarehouseCreateInput {
+export type WarehouseCreateInput = {
   address: AddressInput;
-  email?: Maybe<Scalars["String"]>;
+  email?: InputMaybe<Scalars["String"]>;
   name: Scalars["String"];
-  shippingZones?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  slug?: Maybe<Scalars["String"]>;
-}
+  shippingZones?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  slug?: InputMaybe<Scalars["String"]>;
+};
 
-export interface WarehouseDelete {
+export type WarehouseDelete = {
   __typename?: "WarehouseDelete";
-  errors: WarehouseError[];
+  errors: Array<WarehouseError>;
   warehouse?: Maybe<Warehouse>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  warehouseErrors: WarehouseError[];
-}
+  warehouseErrors: Array<WarehouseError>;
+};
 
-export interface WarehouseError {
+export type WarehouseError = {
   __typename?: "WarehouseError";
   code: WarehouseErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
-}
+};
 
 export enum WarehouseErrorCode {
   AlreadyExists = "ALREADY_EXISTS",
@@ -9499,55 +9502,55 @@ export enum WarehouseErrorCode {
   Unique = "UNIQUE",
 }
 
-export interface WarehouseFilterInput {
-  ids?: Maybe<Array<Maybe<Scalars["ID"]>>>;
-  search?: Maybe<Scalars["String"]>;
-}
+export type WarehouseFilterInput = {
+  ids?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  search?: InputMaybe<Scalars["String"]>;
+};
 
-export interface WarehouseShippingZoneAssign {
+export type WarehouseShippingZoneAssign = {
   __typename?: "WarehouseShippingZoneAssign";
-  errors: WarehouseError[];
+  errors: Array<WarehouseError>;
   warehouse?: Maybe<Warehouse>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  warehouseErrors: WarehouseError[];
-}
+  warehouseErrors: Array<WarehouseError>;
+};
 
-export interface WarehouseShippingZoneUnassign {
+export type WarehouseShippingZoneUnassign = {
   __typename?: "WarehouseShippingZoneUnassign";
-  errors: WarehouseError[];
+  errors: Array<WarehouseError>;
   warehouse?: Maybe<Warehouse>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  warehouseErrors: WarehouseError[];
-}
+  warehouseErrors: Array<WarehouseError>;
+};
 
 export enum WarehouseSortField {
   Name = "NAME",
 }
 
-export interface WarehouseSortingInput {
+export type WarehouseSortingInput = {
   direction: OrderDirection;
   field: WarehouseSortField;
-}
+};
 
-export interface WarehouseUpdate {
+export type WarehouseUpdate = {
   __typename?: "WarehouseUpdate";
-  errors: WarehouseError[];
+  errors: Array<WarehouseError>;
   warehouse?: Maybe<Warehouse>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  warehouseErrors: WarehouseError[];
-}
+  warehouseErrors: Array<WarehouseError>;
+};
 
-export interface WarehouseUpdateInput {
-  address?: Maybe<AddressInput>;
-  email?: Maybe<Scalars["String"]>;
-  name?: Maybe<Scalars["String"]>;
-  slug?: Maybe<Scalars["String"]>;
-}
+export type WarehouseUpdateInput = {
+  address?: InputMaybe<AddressInput>;
+  email?: InputMaybe<Scalars["String"]>;
+  name?: InputMaybe<Scalars["String"]>;
+  slug?: InputMaybe<Scalars["String"]>;
+};
 
 export type Webhook = Node & {
   __typename?: "Webhook";
   app: App;
-  events: WebhookEvent[];
+  events: Array<WebhookEvent>;
   id: Scalars["ID"];
   isActive: Scalars["Boolean"];
   name: Scalars["String"];
@@ -9555,37 +9558,37 @@ export type Webhook = Node & {
   targetUrl: Scalars["String"];
 };
 
-export interface WebhookCreate {
+export type WebhookCreate = {
   __typename?: "WebhookCreate";
-  errors: WebhookError[];
+  errors: Array<WebhookError>;
   webhook?: Maybe<Webhook>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  webhookErrors: WebhookError[];
-}
+  webhookErrors: Array<WebhookError>;
+};
 
-export interface WebhookCreateInput {
-  app?: Maybe<Scalars["ID"]>;
-  events?: Maybe<Array<Maybe<WebhookEventTypeEnum>>>;
-  isActive?: Maybe<Scalars["Boolean"]>;
-  name?: Maybe<Scalars["String"]>;
-  secretKey?: Maybe<Scalars["String"]>;
-  targetUrl?: Maybe<Scalars["String"]>;
-}
+export type WebhookCreateInput = {
+  app?: InputMaybe<Scalars["ID"]>;
+  events?: InputMaybe<Array<InputMaybe<WebhookEventTypeEnum>>>;
+  isActive?: InputMaybe<Scalars["Boolean"]>;
+  name?: InputMaybe<Scalars["String"]>;
+  secretKey?: InputMaybe<Scalars["String"]>;
+  targetUrl?: InputMaybe<Scalars["String"]>;
+};
 
-export interface WebhookDelete {
+export type WebhookDelete = {
   __typename?: "WebhookDelete";
-  errors: WebhookError[];
+  errors: Array<WebhookError>;
   webhook?: Maybe<Webhook>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  webhookErrors: WebhookError[];
-}
+  webhookErrors: Array<WebhookError>;
+};
 
-export interface WebhookError {
+export type WebhookError = {
   __typename?: "WebhookError";
   code: WebhookErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
-}
+};
 
 export enum WebhookErrorCode {
   GraphqlError = "GRAPHQL_ERROR",
@@ -9595,11 +9598,11 @@ export enum WebhookErrorCode {
   Unique = "UNIQUE",
 }
 
-export interface WebhookEvent {
+export type WebhookEvent = {
   __typename?: "WebhookEvent";
   eventType: WebhookEventTypeEnum;
   name: Scalars["String"];
-}
+};
 
 export enum WebhookEventTypeEnum {
   AnyEvents = "ANY_EVENTS",
@@ -9680,28 +9683,28 @@ export enum WebhookSampleEventTypeEnum {
   TranslationUpdated = "TRANSLATION_UPDATED",
 }
 
-export interface WebhookUpdate {
+export type WebhookUpdate = {
   __typename?: "WebhookUpdate";
-  errors: WebhookError[];
+  errors: Array<WebhookError>;
   webhook?: Maybe<Webhook>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
-  webhookErrors: WebhookError[];
-}
+  webhookErrors: Array<WebhookError>;
+};
 
-export interface WebhookUpdateInput {
-  app?: Maybe<Scalars["ID"]>;
-  events?: Maybe<Array<Maybe<WebhookEventTypeEnum>>>;
-  isActive?: Maybe<Scalars["Boolean"]>;
-  name?: Maybe<Scalars["String"]>;
-  secretKey?: Maybe<Scalars["String"]>;
-  targetUrl?: Maybe<Scalars["String"]>;
-}
+export type WebhookUpdateInput = {
+  app?: InputMaybe<Scalars["ID"]>;
+  events?: InputMaybe<Array<InputMaybe<WebhookEventTypeEnum>>>;
+  isActive?: InputMaybe<Scalars["Boolean"]>;
+  name?: InputMaybe<Scalars["String"]>;
+  secretKey?: InputMaybe<Scalars["String"]>;
+  targetUrl?: InputMaybe<Scalars["String"]>;
+};
 
-export interface Weight {
+export type Weight = {
   __typename?: "Weight";
   unit: WeightUnitsEnum;
   value: Scalars["Float"];
-}
+};
 
 export enum WeightUnitsEnum {
   G = "G",
@@ -9725,273 +9728,271 @@ export type _Entity =
   | ProductVariant
   | User;
 
-export interface _Service {
+export type _Service = {
   __typename?: "_Service";
   sdl?: Maybe<Scalars["String"]>;
-}
+};
 
 export type AppInstallMutationVariables = Exact<{
   input: AppInstallInput;
 }>;
 
-export interface AppInstallMutation {
+export type AppInstallMutation = {
   __typename?: "Mutation";
-  appInstall?: Maybe<{
+  appInstall?: {
     __typename?: "AppInstall";
     errors: Array<{
       __typename?: "AppError";
-      field?: Maybe<string>;
-      message?: Maybe<string>;
+      field?: string | null;
+      message?: string | null;
     }>;
-    appInstallation?: Maybe<{
+    appInstallation?: {
       __typename?: "AppInstallation";
       id: string;
       status: JobStatusEnum;
-    }>;
-  }>;
-}
+    } | null;
+  } | null;
+};
 
 export type AppTokenVerifyMutationVariables = Exact<{
   token: Scalars["String"];
 }>;
 
-export interface AppTokenVerifyMutation {
+export type AppTokenVerifyMutation = {
   __typename?: "Mutation";
-  appTokenVerify?: Maybe<{ __typename?: "AppTokenVerify"; valid: boolean }>;
-}
+  appTokenVerify?: { __typename?: "AppTokenVerify"; valid: boolean } | null;
+};
 
 export type CategoryCreateMutationVariables = Exact<{
   input: CategoryInput;
 }>;
 
-export interface CategoryCreateMutation {
+export type CategoryCreateMutation = {
   __typename?: "Mutation";
-  categoryCreate?: Maybe<{
+  categoryCreate?: {
     __typename?: "CategoryCreate";
-    category?: Maybe<{ __typename?: "Category"; id: string }>;
+    category?: { __typename?: "Category"; id: string } | null;
     errors: Array<{
       __typename?: "ProductError";
-      field?: Maybe<string>;
-      message?: Maybe<string>;
+      field?: string | null;
+      message?: string | null;
     }>;
-  }>;
-}
+  } | null;
+};
 
 export type ChannelCreateMutationVariables = Exact<{
   input: ChannelCreateInput;
 }>;
 
-export interface ChannelCreateMutation {
+export type ChannelCreateMutation = {
   __typename?: "Mutation";
-  channelCreate?: Maybe<{
+  channelCreate?: {
     __typename?: "ChannelCreate";
     errors: Array<{
       __typename?: "ChannelError";
-      field?: Maybe<string>;
-      message?: Maybe<string>;
+      field?: string | null;
+      message?: string | null;
     }>;
-    channel?: Maybe<{ __typename?: "Channel"; id: string; slug: string }>;
-  }>;
-}
+    channel?: { __typename?: "Channel"; id: string; slug: string } | null;
+  } | null;
+};
 
 export type ProductChannelListingUpdateMutationVariables = Exact<{
   id: Scalars["ID"];
   input: ProductChannelListingUpdateInput;
 }>;
 
-export interface ProductChannelListingUpdateMutation {
+export type ProductChannelListingUpdateMutation = {
   __typename?: "Mutation";
-  productChannelListingUpdate?: Maybe<{
+  productChannelListingUpdate?: {
     __typename?: "ProductChannelListingUpdate";
     errors: Array<{
       __typename?: "ProductChannelListingError";
-      field?: Maybe<string>;
-      message?: Maybe<string>;
+      field?: string | null;
+      message?: string | null;
     }>;
-  }>;
-}
+  } | null;
+};
 
 export type ProductCreateMutationVariables = Exact<{
   input: ProductCreateInput;
 }>;
 
-export interface ProductCreateMutation {
+export type ProductCreateMutation = {
   __typename?: "Mutation";
-  productCreate?: Maybe<{
+  productCreate?: {
     __typename?: "ProductCreate";
     errors: Array<{
       __typename?: "ProductError";
-      field?: Maybe<string>;
-      message?: Maybe<string>;
+      field?: string | null;
+      message?: string | null;
     }>;
-    product?: Maybe<{
+    product?: {
       __typename?: "Product";
       id: string;
-      defaultVariant?: Maybe<{ __typename?: "ProductVariant"; id: string }>;
-    }>;
-  }>;
-}
+      defaultVariant?: { __typename?: "ProductVariant"; id: string } | null;
+    } | null;
+  } | null;
+};
 
 export type ProductTypeCreateMutationVariables = Exact<{
   input: ProductTypeInput;
 }>;
 
-export interface ProductTypeCreateMutation {
+export type ProductTypeCreateMutation = {
   __typename?: "Mutation";
-  productTypeCreate?: Maybe<{
+  productTypeCreate?: {
     __typename?: "ProductTypeCreate";
-    productType?: Maybe<{ __typename?: "ProductType"; id: string }>;
+    productType?: { __typename?: "ProductType"; id: string } | null;
     errors: Array<{
       __typename?: "ProductError";
-      field?: Maybe<string>;
-      message?: Maybe<string>;
+      field?: string | null;
+      message?: string | null;
     }>;
-  }>;
-}
+  } | null;
+};
 
 export type ProductVariantChannelListingUpdateMutationVariables = Exact<{
   id: Scalars["ID"];
   input:
-    | ProductVariantChannelListingAddInput[]
+    | Array<ProductVariantChannelListingAddInput>
     | ProductVariantChannelListingAddInput;
 }>;
 
-export interface ProductVariantChannelListingUpdateMutation {
+export type ProductVariantChannelListingUpdateMutation = {
   __typename?: "Mutation";
-  productVariantChannelListingUpdate?: Maybe<{
+  productVariantChannelListingUpdate?: {
     __typename?: "ProductVariantChannelListingUpdate";
     errors: Array<{
       __typename?: "ProductChannelListingError";
-      field?: Maybe<string>;
-      message?: Maybe<string>;
+      field?: string | null;
+      message?: string | null;
     }>;
-    variant?: Maybe<{ __typename?: "ProductVariant"; id: string }>;
-  }>;
-}
+    variant?: { __typename?: "ProductVariant"; id: string } | null;
+  } | null;
+};
 
 export type ProductVariantCreateMutationVariables = Exact<{
   input: ProductVariantCreateInput;
 }>;
 
-export interface ProductVariantCreateMutation {
+export type ProductVariantCreateMutation = {
   __typename?: "Mutation";
-  productVariantCreate?: Maybe<{
+  productVariantCreate?: {
     __typename?: "ProductVariantCreate";
     errors: Array<{
       __typename?: "ProductError";
-      field?: Maybe<string>;
-      message?: Maybe<string>;
+      field?: string | null;
+      message?: string | null;
     }>;
-    productVariant?: Maybe<{ __typename?: "ProductVariant"; id: string }>;
-  }>;
-}
+    productVariant?: { __typename?: "ProductVariant"; id: string } | null;
+  } | null;
+};
 
 export type TokenCreateMutationVariables = Exact<{
   email: Scalars["String"];
   password: Scalars["String"];
 }>;
 
-export interface TokenCreateMutation {
+export type TokenCreateMutation = {
   __typename?: "Mutation";
-  tokenCreate?: Maybe<{
+  tokenCreate?: {
     __typename?: "CreateToken";
-    token?: Maybe<string>;
-    refreshToken?: Maybe<string>;
-    csrfToken?: Maybe<string>;
-    user?: Maybe<{ __typename?: "User"; email: string }>;
+    token?: string | null;
+    refreshToken?: string | null;
+    csrfToken?: string | null;
+    user?: { __typename?: "User"; email: string } | null;
     errors: Array<{
       __typename?: "AccountError";
-      field?: Maybe<string>;
-      message?: Maybe<string>;
+      field?: string | null;
+      message?: string | null;
     }>;
-  }>;
-}
+  } | null;
+};
 
 export type WebhookCreateMutationVariables = Exact<{
   input: WebhookCreateInput;
 }>;
 
-export interface WebhookCreateMutation {
+export type WebhookCreateMutation = {
   __typename?: "Mutation";
-  webhookCreate?: Maybe<{
+  webhookCreate?: {
     __typename?: "WebhookCreate";
     errors: Array<{
       __typename?: "WebhookError";
-      field?: Maybe<string>;
-      message?: Maybe<string>;
+      field?: string | null;
+      message?: string | null;
       code: WebhookErrorCode;
     }>;
-    webhook?: Maybe<{ __typename?: "Webhook"; id: string }>;
-  }>;
-}
+    webhook?: { __typename?: "Webhook"; id: string } | null;
+  } | null;
+};
 
 export type AppQueryVariables = Exact<{
-  id?: Maybe<Scalars["ID"]>;
+  id?: InputMaybe<Scalars["ID"]>;
 }>;
 
-export interface AppQuery {
+export type AppQuery = {
   __typename?: "Query";
-  app?: Maybe<{
+  app?: {
     __typename?: "App";
     id: string;
-    webhooks?: Maybe<
-      Array<
-        Maybe<{
-          __typename?: "Webhook";
-          id: string;
-          targetUrl: string;
-          secretKey?: Maybe<string>;
-          isActive: boolean;
-        }>
-      >
-    >;
-  }>;
-}
+    webhooks?: Array<{
+      __typename?: "Webhook";
+      id: string;
+      targetUrl: string;
+      secretKey?: string | null;
+      isActive: boolean;
+    } | null> | null;
+  } | null;
+};
 
 export type ProductsQueryVariables = Exact<{
   first: Scalars["Int"];
-  channel?: Maybe<Scalars["String"]>;
+  channel?: InputMaybe<Scalars["String"]>;
 }>;
 
-export interface ProductsQuery {
+export type ProductsQuery = {
   __typename?: "Query";
-  products?: Maybe<{
+  products?: {
     __typename?: "ProductCountableConnection";
     edges: Array<{
       __typename?: "ProductCountableEdge";
       node: {
         __typename?: "Product";
-        seoDescription?: Maybe<string>;
+        seoDescription?: string | null;
         name: string;
-        seoTitle?: Maybe<string>;
-        isAvailableForPurchase?: Maybe<boolean>;
-        description?: Maybe<any>;
+        seoTitle?: string | null;
+        isAvailableForPurchase?: boolean | null;
+        description?: any | null;
         slug: string;
-        weight?: Maybe<{
+        weight?: {
           __typename?: "Weight";
           unit: WeightUnitsEnum;
           value: number;
-        }>;
-        images?: Maybe<
-          Array<Maybe<{ __typename?: "ProductImage"; id: string; url: string }>>
-        >;
-        metadata: Array<
-          Maybe<{ __typename?: "MetadataItem"; key: string; value: string }>
-        >;
+        } | null;
+        images?: Array<{
+          __typename?: "ProductImage";
+          id: string;
+          url: string;
+        } | null> | null;
+        metadata: Array<{
+          __typename?: "MetadataItem";
+          key: string;
+          value: string;
+        } | null>;
         attributes: Array<{
           __typename?: "SelectedAttribute";
           attribute: {
             __typename?: "Attribute";
             id: string;
-            name?: Maybe<string>;
+            name?: string | null;
           };
-          values: Array<
-            Maybe<{
-              __typename?: "AttributeValue";
-              id: string;
-              name?: Maybe<string>;
-            }>
-          >;
+          values: Array<{
+            __typename?: "AttributeValue";
+            id: string;
+            name?: string | null;
+          } | null>;
         }>;
         productType: {
           __typename?: "ProductType";
@@ -9999,61 +10000,48 @@ export interface ProductsQuery {
           id: string;
           hasVariants: boolean;
         };
-        variants?: Maybe<
-          Array<
-            Maybe<{
-              __typename?: "ProductVariant";
-              id: string;
-              name: string;
-              sku: string;
-              quantityAvailable: number;
-              weight?: Maybe<{
-                __typename?: "Weight";
-                unit: WeightUnitsEnum;
-                value: number;
-              }>;
-              metadata: Array<
-                Maybe<{
-                  __typename?: "MetadataItem";
-                  key: string;
-                  value: string;
-                }>
-              >;
-              pricing?: Maybe<{
-                __typename?: "VariantPricingInfo";
-                onSale?: Maybe<boolean>;
-                priceUndiscounted?: Maybe<{
-                  __typename?: "TaxedMoney";
-                  gross: {
-                    __typename?: "Money";
-                    amount: number;
-                    currency: string;
-                  };
-                }>;
-                price?: Maybe<{
-                  __typename?: "TaxedMoney";
-                  gross: {
-                    __typename?: "Money";
-                    amount: number;
-                    currency: string;
-                  };
-                  net: { __typename?: "Money"; amount: number };
-                }>;
-                discount?: Maybe<{
-                  __typename?: "TaxedMoney";
-                  gross: { __typename?: "Money"; amount: number };
-                }>;
-              }>;
-              images?: Maybe<
-                Array<Maybe<{ __typename?: "ProductImage"; url: string }>>
-              >;
-            }>
-          >
-        >;
+        variants?: Array<{
+          __typename?: "ProductVariant";
+          id: string;
+          name: string;
+          sku: string;
+          quantityAvailable: number;
+          weight?: {
+            __typename?: "Weight";
+            unit: WeightUnitsEnum;
+            value: number;
+          } | null;
+          metadata: Array<{
+            __typename?: "MetadataItem";
+            key: string;
+            value: string;
+          } | null>;
+          pricing?: {
+            __typename?: "VariantPricingInfo";
+            onSale?: boolean | null;
+            priceUndiscounted?: {
+              __typename?: "TaxedMoney";
+              gross: { __typename?: "Money"; amount: number; currency: string };
+            } | null;
+            price?: {
+              __typename?: "TaxedMoney";
+              gross: { __typename?: "Money"; amount: number; currency: string };
+              net: { __typename?: "Money"; amount: number };
+            } | null;
+            discount?: {
+              __typename?: "TaxedMoney";
+              gross: { __typename?: "Money"; amount: number };
+            } | null;
+          } | null;
+          images?: Array<{
+            __typename?: "ProductImage";
+            url: string;
+          } | null> | null;
+        } | null> | null;
       };
     }>;
-  }>;
-}
+  } | null;
+};
 
 export const AppInstallDocument = gql`
   mutation appInstall($input: AppInstallInput!) {
@@ -10307,119 +10295,124 @@ export type Requester<C = {}> = <R, V>(
 ) => Promise<R>;
 export function getSdk<C>(requester: Requester<C>) {
   return {
-    async appInstall(
+    appInstall(
       variables: AppInstallMutationVariables,
       options?: C,
     ): Promise<AppInstallMutation> {
-      return await requester<AppInstallMutation, AppInstallMutationVariables>(
+      return requester<AppInstallMutation, AppInstallMutationVariables>(
         AppInstallDocument,
         variables,
         options,
       );
     },
-    async appTokenVerify(
+    appTokenVerify(
       variables: AppTokenVerifyMutationVariables,
       options?: C,
     ): Promise<AppTokenVerifyMutation> {
-      return await requester<
-        AppTokenVerifyMutation,
-        AppTokenVerifyMutationVariables
-      >(AppTokenVerifyDocument, variables, options);
+      return requester<AppTokenVerifyMutation, AppTokenVerifyMutationVariables>(
+        AppTokenVerifyDocument,
+        variables,
+        options,
+      );
     },
-    async categoryCreate(
+    categoryCreate(
       variables: CategoryCreateMutationVariables,
       options?: C,
     ): Promise<CategoryCreateMutation> {
-      return await requester<
-        CategoryCreateMutation,
-        CategoryCreateMutationVariables
-      >(CategoryCreateDocument, variables, options);
+      return requester<CategoryCreateMutation, CategoryCreateMutationVariables>(
+        CategoryCreateDocument,
+        variables,
+        options,
+      );
     },
-    async channelCreate(
+    channelCreate(
       variables: ChannelCreateMutationVariables,
       options?: C,
     ): Promise<ChannelCreateMutation> {
-      return await requester<
-        ChannelCreateMutation,
-        ChannelCreateMutationVariables
-      >(ChannelCreateDocument, variables, options);
+      return requester<ChannelCreateMutation, ChannelCreateMutationVariables>(
+        ChannelCreateDocument,
+        variables,
+        options,
+      );
     },
-    async productChannelListingUpdate(
+    productChannelListingUpdate(
       variables: ProductChannelListingUpdateMutationVariables,
       options?: C,
     ): Promise<ProductChannelListingUpdateMutation> {
-      return await requester<
+      return requester<
         ProductChannelListingUpdateMutation,
         ProductChannelListingUpdateMutationVariables
       >(ProductChannelListingUpdateDocument, variables, options);
     },
-    async productCreate(
+    productCreate(
       variables: ProductCreateMutationVariables,
       options?: C,
     ): Promise<ProductCreateMutation> {
-      return await requester<
-        ProductCreateMutation,
-        ProductCreateMutationVariables
-      >(ProductCreateDocument, variables, options);
+      return requester<ProductCreateMutation, ProductCreateMutationVariables>(
+        ProductCreateDocument,
+        variables,
+        options,
+      );
     },
-    async productTypeCreate(
+    productTypeCreate(
       variables: ProductTypeCreateMutationVariables,
       options?: C,
     ): Promise<ProductTypeCreateMutation> {
-      return await requester<
+      return requester<
         ProductTypeCreateMutation,
         ProductTypeCreateMutationVariables
       >(ProductTypeCreateDocument, variables, options);
     },
-    async productVariantChannelListingUpdate(
+    productVariantChannelListingUpdate(
       variables: ProductVariantChannelListingUpdateMutationVariables,
       options?: C,
     ): Promise<ProductVariantChannelListingUpdateMutation> {
-      return await requester<
+      return requester<
         ProductVariantChannelListingUpdateMutation,
         ProductVariantChannelListingUpdateMutationVariables
       >(ProductVariantChannelListingUpdateDocument, variables, options);
     },
-    async productVariantCreate(
+    productVariantCreate(
       variables: ProductVariantCreateMutationVariables,
       options?: C,
     ): Promise<ProductVariantCreateMutation> {
-      return await requester<
+      return requester<
         ProductVariantCreateMutation,
         ProductVariantCreateMutationVariables
       >(ProductVariantCreateDocument, variables, options);
     },
-    async tokenCreate(
+    tokenCreate(
       variables: TokenCreateMutationVariables,
       options?: C,
     ): Promise<TokenCreateMutation> {
-      return await requester<TokenCreateMutation, TokenCreateMutationVariables>(
+      return requester<TokenCreateMutation, TokenCreateMutationVariables>(
         TokenCreateDocument,
         variables,
         options,
       );
     },
-    async webhookCreate(
+    webhookCreate(
       variables: WebhookCreateMutationVariables,
       options?: C,
     ): Promise<WebhookCreateMutation> {
-      return await requester<
-        WebhookCreateMutation,
-        WebhookCreateMutationVariables
-      >(WebhookCreateDocument, variables, options);
+      return requester<WebhookCreateMutation, WebhookCreateMutationVariables>(
+        WebhookCreateDocument,
+        variables,
+        options,
+      );
     },
-    async app(variables?: AppQueryVariables, options?: C): Promise<AppQuery> {
-      return await requester<AppQuery, AppQueryVariables>(
+    app(variables?: AppQueryVariables, options?: C): Promise<AppQuery> {
+      return requester<AppQuery, AppQueryVariables>(
         AppDocument,
         variables,
         options,
       );
     },
-    async products(
+    products(
       variables: ProductsQueryVariables,
       options?: C,
     ): Promise<ProductsQuery> {
-      return await requester<ProductsQuery, ProductsQueryVariables>(
+      return requester<ProductsQuery, ProductsQueryVariables>(
         ProductsDocument,
         variables,
         options,

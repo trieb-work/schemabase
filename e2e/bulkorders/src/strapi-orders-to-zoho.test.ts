@@ -20,6 +20,7 @@ import { verifySyncedOrders } from "./verifySyncedOrders";
 
 config();
 
+
 /**
  * Delete contacts and orders after the test cases
  */
