@@ -4,9 +4,8 @@ It is resposible for offering a Producer and a Consumer and will handle all seri
 
 # src/registry
 
-A mapping of topic/queue-names and the message datatype. 
-Add a new mapping by adding a topic at the top of the file and then copy and edit a section starting with `export type ...` 
-
+A mapping of topic/queue-names and the message datatype.
+Add a new mapping by adding a topic at the top of the file and then copy and edit a section starting with `export type ...`
 
 # src/signature
 

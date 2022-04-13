@@ -2,6 +2,17 @@
 
 - [pnpm](https://pnpm.io/) `npm i -g pnpm`
 
+# Components overview
+
+[![](https://mermaid.ink/img/pako:eNp9kctqwzAQRX9FzDr2B3hRKLFX7SIkLd1oM1hjR0QPM5KgJeTfK1sxbdq0WkgX3TMv5gy9VwQNjIzTUby00ol8yv04aVFVYrt_bfNbiZ0PcWQKN-6OvUo9ZfkgnnA4YXHfPJ-I7wLX7EVXtdh6F5IlUWeghP1M8UcHz35UjNrNyJ5Q_YvUs15qdAZD1P23Kb68lb_t4E5sAbr3SOzQLE2iMcuQOeWvAVZvDSgAbMASW9Qqb-A8_0mIR7IkoclS0YDJRAnSXTKaJoWROqWjZ2gGNIE2gCn6w4froYmcaIVajXmh9kpdPgGEYZNz)](https://mermaid-js.github.io/mermaid-live-editor/edit#pako:eNp9kctqwzAQRX9FzDr2B3hRKLFX7SIkLd1oM1hjR0QPM5KgJeTfK1sxbdq0WkgX3TMv5gy9VwQNjIzTUby00ol8yv04aVFVYrt_bfNbiZ0PcWQKN-6OvUo9ZfkgnnA4YXHfPJ-I7wLX7EVXtdh6F5IlUWeghP1M8UcHz35UjNrNyJ5Q_YvUs15qdAZD1P23Kb68lb_t4E5sAbr3SOzQLE2iMcuQOeWvAVZvDSgAbMASW9Qqb-A8_0mIR7IkoclS0YDJRAnSXTKaJoWROqWjZ2gGNIE2gCn6w4froYmcaIVajXmh9kpdPgGEYZNz)
+
+- **Api**: Nextjs hosted on vercel to receive webhooks and run graphql server
+- **Logdrain**: Nextjs hosted on k8s to forward logs to elasticsearch
+- **Kafka**: Hosted on Upstash
+- **Worker**: Nodejs container hosted on k8s, listens to events from kafka and executes integrations.
+- **External**: Zoho, Strapi, Saleor etc, we receive webhooks and make http calls to them.
+- **Postgres**: Our internal db
+
 # Setup
 
 Run install, codegen and database migration in one command:

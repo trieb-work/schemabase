@@ -36,11 +36,12 @@ db-push:
 tsc: 
 	pnpm tsc --pretty
 
+# Formatted code = happy devs
 fmt:
-	pnpm eslint --ext .js,.ts,.tsx --fix .
+	pnpm eslint --ext .js,.ts,.tsx --ignore-path=.gitignore --fix .
 	pnpm prettier --write .
 
-# Just check everything...
+# Static error checking 
 check: build tsc fmt
 
 # Alias for docker-compose down

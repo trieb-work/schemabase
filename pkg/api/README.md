@@ -1,4 +1,4 @@
-Graphql API hosted inside the nextjs api service to get or create data in the eci database  
+Graphql API hosted inside the nextjs api service to get or create data in the eci database
 
 Using graphql-modules and apollo server
 

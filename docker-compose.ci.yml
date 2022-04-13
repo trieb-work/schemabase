@@ -6,5 +6,3 @@
 services:
   saleor_api:
     image: ${SALEOR_IMAGE}
-
-  
