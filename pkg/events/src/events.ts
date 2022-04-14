@@ -20,7 +20,6 @@ export interface EventProducer<TContent> {
 }
 
 export const newKafkaClient = (): kafka.Kafka => {
-  console.log(env.require("KAFKA_BROKER_URL"));
   const config: kafka.KafkaConfig = {
     brokers: [env.require("KAFKA_BROKER_URL")],
     logLevel: 1,
