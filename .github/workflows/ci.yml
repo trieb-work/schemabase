@@ -135,7 +135,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      max-parallel: 1
       matrix:
         saleor: [
             "registry.gitlab.com/trieb.work/saleor:3.0.0-b.13-triebwork1", #v3 custom
@@ -209,7 +208,7 @@ jobs:
         run: make build
 
       - name: Test
-        run: pnpm jest
+        run: pnpm jest --testPathIgnorePatterns=./e2e/bulkorders -i
         env:
           SALEOR_URL: http://localhost:8000/graphql/
           ECI_BASE_URL: http://localhost:3000
