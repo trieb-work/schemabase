@@ -898,10 +898,17 @@ export type BulkStockError = {
   values?: Maybe<Array<Scalars["ID"]>>;
 };
 
+export type CardInput = {
+  code: Scalars["String"];
+  cvc?: InputMaybe<Scalars["String"]>;
+  money: MoneyInput;
+};
+
 export type CatalogueInput = {
   categories?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
   collections?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
   products?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
+  variants?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
 };
 
 export type Category = Node &
@@ -1163,6 +1170,7 @@ export type Checkout = Node &
   ObjectWithMetadata & {
     __typename?: "Checkout";
     availablePaymentGateways: Array<PaymentGateway>;
+    /** @deprecated Use `shippingMethods`, this field will be removed in 4.0. */
     availableShippingMethods: Array<Maybe<ShippingMethod>>;
     billingAddress?: Maybe<Address>;
     channel: Channel;
@@ -1182,6 +1190,7 @@ export type Checkout = Node &
     quantity: Scalars["Int"];
     shippingAddress?: Maybe<Address>;
     shippingMethod?: Maybe<ShippingMethod>;
+    shippingMethods: Array<Maybe<ShippingMethod>>;
     shippingPrice?: Maybe<TaxedMoney>;
     subtotalPrice?: Maybe<TaxedMoney>;
     token: Scalars["UUID"];
@@ -1277,6 +1286,7 @@ export type CheckoutError = {
   addressType?: Maybe<AddressTypeEnum>;
   code: CheckoutErrorCode;
   field?: Maybe<Scalars["String"]>;
+  lines?: Maybe<Array<Scalars["ID"]>>;
   message?: Maybe<Scalars["String"]>;
   variants?: Maybe<Array<Scalars["ID"]>>;
 };
@@ -1291,6 +1301,7 @@ export enum CheckoutErrorCode {
   InvalidShippingMethod = "INVALID_SHIPPING_METHOD",
   MissingChannelSlug = "MISSING_CHANNEL_SLUG",
   NotFound = "NOT_FOUND",
+  NoLines = "NO_LINES",
   PaymentError = "PAYMENT_ERROR",
   ProductNotPublished = "PRODUCT_NOT_PUBLISHED",
   ProductUnavailableForPurchase = "PRODUCT_UNAVAILABLE_FOR_PURCHASE",
@@ -1355,6 +1366,12 @@ export type CheckoutLinesAdd = {
   checkout?: Maybe<Checkout>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   checkoutErrors: Array<CheckoutError>;
+  errors: Array<CheckoutError>;
+};
+
+export type CheckoutLinesDelete = {
+  __typename?: "CheckoutLinesDelete";
+  checkout?: Maybe<Checkout>;
   errors: Array<CheckoutError>;
 };
 
@@ -1945,6 +1962,10 @@ export type CountryDisplay = {
   code: Scalars["String"];
   country: Scalars["String"];
   vat?: Maybe<Vat>;
+};
+
+export type CountryFilterInput = {
+  attachedToShippingZones?: InputMaybe<Scalars["Boolean"]>;
 };
 
 export type CreateToken = {
@@ -2731,6 +2752,7 @@ export enum InvoiceErrorCode {
   InvalidStatus = "INVALID_STATUS",
   NotFound = "NOT_FOUND",
   NotReady = "NOT_READY",
+  NoInvoicePlugin = "NO_INVOICE_PLUGIN",
   NumberNotSet = "NUMBER_NOT_SET",
   Required = "REQUIRED",
   UrlNotSet = "URL_NOT_SET",
@@ -3920,6 +3942,11 @@ export type Money = {
   currency: Scalars["String"];
 };
 
+export type MoneyInput = {
+  amount: Scalars["PositiveDecimal"];
+  currency: Scalars["String"];
+};
+
 export type MoneyRange = {
   __typename?: "MoneyRange";
   start?: Maybe<Money>;
@@ -3988,8 +4015,10 @@ export type Mutation = {
   checkoutCustomerDetach?: Maybe<CheckoutCustomerDetach>;
   checkoutEmailUpdate?: Maybe<CheckoutEmailUpdate>;
   checkoutLanguageCodeUpdate?: Maybe<CheckoutLanguageCodeUpdate>;
+  /** @deprecated DEPRECATED: Will be removed in Saleor 4.0. Use `checkoutLinesDelete` instead. */
   checkoutLineDelete?: Maybe<CheckoutLineDelete>;
   checkoutLinesAdd?: Maybe<CheckoutLinesAdd>;
+  checkoutLinesDelete?: Maybe<CheckoutLinesDelete>;
   checkoutLinesUpdate?: Maybe<CheckoutLinesUpdate>;
   checkoutPaymentCreate?: Maybe<CheckoutPaymentCreate>;
   checkoutRemovePromoCode?: Maybe<CheckoutRemovePromoCode>;
@@ -4091,6 +4120,7 @@ export type Mutation = {
   pageUpdate?: Maybe<PageUpdate>;
   passwordChange?: Maybe<PasswordChange>;
   paymentCapture?: Maybe<PaymentCapture>;
+  paymentCheckBalance?: Maybe<PaymentCheckBalance>;
   paymentInitialize?: Maybe<PaymentInitialize>;
   paymentRefund?: Maybe<PaymentRefund>;
   paymentVoid?: Maybe<PaymentVoid>;
@@ -4462,6 +4492,11 @@ export type MutationCheckoutLinesAddArgs = {
   checkoutId?: InputMaybe<Scalars["ID"]>;
   lines: Array<InputMaybe<CheckoutLineInput>>;
   token?: InputMaybe<Scalars["UUID"]>;
+};
+
+export type MutationCheckoutLinesDeleteArgs = {
+  linesIds: Array<InputMaybe<Scalars["ID"]>>;
+  token: Scalars["UUID"];
 };
 
 export type MutationCheckoutLinesUpdateArgs = {
@@ -4933,6 +4968,10 @@ export type MutationPasswordChangeArgs = {
 export type MutationPaymentCaptureArgs = {
   amount?: InputMaybe<Scalars["PositiveDecimal"]>;
   paymentId: Scalars["ID"];
+};
+
+export type MutationPaymentCheckBalanceArgs = {
+  input: PaymentCheckBalanceInput;
 };
 
 export type MutationPaymentInitializeArgs = {
@@ -5407,6 +5446,7 @@ export type Order = Node &
   ObjectWithMetadata & {
     __typename?: "Order";
     actions: Array<Maybe<OrderAction>>;
+    /** @deprecated Use `shippingMethods`, this field will be removed in 4.0 */
     availableShippingMethods?: Maybe<Array<Maybe<ShippingMethod>>>;
     billingAddress?: Maybe<Address>;
     canFinalize: Scalars["Boolean"];
@@ -5443,6 +5483,7 @@ export type Order = Node &
     shippingAddress?: Maybe<Address>;
     shippingMethod?: Maybe<ShippingMethod>;
     shippingMethodName?: Maybe<Scalars["String"]>;
+    shippingMethods: Array<ShippingMethod>;
     shippingPrice: TaxedMoney;
     shippingTaxRate: Scalars["Float"];
     status: OrderStatus;
@@ -6386,6 +6427,21 @@ export enum PaymentChargeStatusEnum {
   Refused = "REFUSED",
 }
 
+export type PaymentCheckBalance = {
+  __typename?: "PaymentCheckBalance";
+  data?: Maybe<Scalars["JSONString"]>;
+  errors: Array<PaymentError>;
+  /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
+  paymentErrors: Array<PaymentError>;
+};
+
+export type PaymentCheckBalanceInput = {
+  card: CardInput;
+  channel: Scalars["String"];
+  gatewayId: Scalars["String"];
+  method: Scalars["String"];
+};
+
 export type PaymentCountableConnection = {
   __typename?: "PaymentCountableConnection";
   edges: Array<PaymentCountableEdge>;
@@ -6404,9 +6460,11 @@ export type PaymentError = {
   code: PaymentErrorCode;
   field?: Maybe<Scalars["String"]>;
   message?: Maybe<Scalars["String"]>;
+  variants?: Maybe<Array<Scalars["ID"]>>;
 };
 
 export enum PaymentErrorCode {
+  BalanceCheckError = "BALANCE_CHECK_ERROR",
   BillingAddressNotSet = "BILLING_ADDRESS_NOT_SET",
   ChannelInactive = "CHANNEL_INACTIVE",
   GraphqlError = "GRAPHQL_ERROR",
@@ -6414,11 +6472,13 @@ export enum PaymentErrorCode {
   InvalidShippingMethod = "INVALID_SHIPPING_METHOD",
   NotFound = "NOT_FOUND",
   NotSupportedGateway = "NOT_SUPPORTED_GATEWAY",
+  NoCheckoutLines = "NO_CHECKOUT_LINES",
   PartialPaymentNotAllowed = "PARTIAL_PAYMENT_NOT_ALLOWED",
   PaymentError = "PAYMENT_ERROR",
   Required = "REQUIRED",
   ShippingAddressNotSet = "SHIPPING_ADDRESS_NOT_SET",
   ShippingMethodNotSet = "SHIPPING_METHOD_NOT_SET",
+  UnavailableVariantInChannel = "UNAVAILABLE_VARIANT_IN_CHANNEL",
   Unique = "UNIQUE",
 }
 
@@ -6550,6 +6610,7 @@ export enum PermissionGroupErrorCode {
 }
 
 export type PermissionGroupFilterInput = {
+  ids?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
   search?: InputMaybe<Scalars["String"]>;
 };
 
@@ -8067,6 +8128,7 @@ export type Sale = Node &
     startDate: Scalars["DateTime"];
     translation?: Maybe<SaleTranslation>;
     type: SaleType;
+    variants?: Maybe<ProductVariantCountableConnection>;
   };
 
 export type SaleCategoriesArgs = {
@@ -8092,6 +8154,13 @@ export type SaleProductsArgs = {
 
 export type SaleTranslationArgs = {
   languageCode: LanguageCodeEnum;
+};
+
+export type SaleVariantsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
 };
 
 export type SaleAddCatalogues = {
@@ -8182,6 +8251,7 @@ export type SaleInput = {
   startDate?: InputMaybe<Scalars["DateTime"]>;
   type?: InputMaybe<DiscountValueTypeEnum>;
   value?: InputMaybe<Scalars["PositiveDecimal"]>;
+  variants?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
 };
 
 export type SaleRemoveCatalogues = {
@@ -8292,31 +8362,26 @@ export enum ShippingErrorCode {
 export type ShippingMethod = Node &
   ObjectWithMetadata & {
     __typename?: "ShippingMethod";
-    channelListings?: Maybe<Array<ShippingMethodChannelListing>>;
+    active: Scalars["Boolean"];
     description?: Maybe<Scalars["JSONString"]>;
-    excludedProducts?: Maybe<ProductCountableConnection>;
     id: Scalars["ID"];
     maximumDeliveryDays?: Maybe<Scalars["Int"]>;
     maximumOrderPrice?: Maybe<Money>;
+    /** @deprecated This field will be removed in Saleor 4.0. */
     maximumOrderWeight?: Maybe<Weight>;
+    message?: Maybe<Scalars["String"]>;
     metadata: Array<Maybe<MetadataItem>>;
     minimumDeliveryDays?: Maybe<Scalars["Int"]>;
     minimumOrderPrice?: Maybe<Money>;
+    /** @deprecated This field will be removed in Saleor 4.0. */
     minimumOrderWeight?: Maybe<Weight>;
     name: Scalars["String"];
-    postalCodeRules?: Maybe<Array<Maybe<ShippingMethodPostalCodeRule>>>;
-    price?: Maybe<Money>;
+    price: Money;
     privateMetadata: Array<Maybe<MetadataItem>>;
     translation?: Maybe<ShippingMethodTranslation>;
+    /** @deprecated This field will be removed in Saleor 4.0. */
     type?: Maybe<ShippingMethodTypeEnum>;
   };
-
-export type ShippingMethodExcludedProductsArgs = {
-  after?: InputMaybe<Scalars["String"]>;
-  before?: InputMaybe<Scalars["String"]>;
-  first?: InputMaybe<Scalars["Int"]>;
-  last?: InputMaybe<Scalars["Int"]>;
-};
 
 export type ShippingMethodTranslationArgs = {
   languageCode: LanguageCodeEnum;
@@ -8348,7 +8413,7 @@ export type ShippingMethodChannelListingUpdate = {
   errors: Array<ShippingError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   shippingErrors: Array<ShippingError>;
-  shippingMethod?: Maybe<ShippingMethod>;
+  shippingMethod?: Maybe<ShippingMethodType>;
 };
 
 export type ShippingMethodPostalCodeRule = Node & {
@@ -8365,7 +8430,7 @@ export type ShippingMethodTranslatableContent = Node & {
   id: Scalars["ID"];
   name: Scalars["String"];
   /** @deprecated Will be removed in Saleor 4.0. Get model fields from the root level. */
-  shippingMethod?: Maybe<ShippingMethod>;
+  shippingMethod?: Maybe<ShippingMethodType>;
   translation?: Maybe<ShippingMethodTranslation>;
 };
 
@@ -8379,6 +8444,36 @@ export type ShippingMethodTranslation = Node & {
   id: Scalars["ID"];
   language: LanguageDisplay;
   name?: Maybe<Scalars["String"]>;
+};
+
+export type ShippingMethodType = Node &
+  ObjectWithMetadata & {
+    __typename?: "ShippingMethodType";
+    channelListings?: Maybe<Array<ShippingMethodChannelListing>>;
+    description?: Maybe<Scalars["JSONString"]>;
+    excludedProducts?: Maybe<ProductCountableConnection>;
+    id: Scalars["ID"];
+    maximumDeliveryDays?: Maybe<Scalars["Int"]>;
+    maximumOrderWeight?: Maybe<Weight>;
+    metadata: Array<Maybe<MetadataItem>>;
+    minimumDeliveryDays?: Maybe<Scalars["Int"]>;
+    minimumOrderWeight?: Maybe<Weight>;
+    name: Scalars["String"];
+    postalCodeRules?: Maybe<Array<Maybe<ShippingMethodPostalCodeRule>>>;
+    privateMetadata: Array<Maybe<MetadataItem>>;
+    translation?: Maybe<ShippingMethodTranslation>;
+    type?: Maybe<ShippingMethodTypeEnum>;
+  };
+
+export type ShippingMethodTypeExcludedProductsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+};
+
+export type ShippingMethodTypeTranslationArgs = {
+  languageCode: LanguageCodeEnum;
 };
 
 export enum ShippingMethodTypeEnum {
@@ -8404,7 +8499,7 @@ export type ShippingPriceCreate = {
   errors: Array<ShippingError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   shippingErrors: Array<ShippingError>;
-  shippingMethod?: Maybe<ShippingMethod>;
+  shippingMethod?: Maybe<ShippingMethodType>;
   shippingZone?: Maybe<ShippingZone>;
 };
 
@@ -8413,7 +8508,7 @@ export type ShippingPriceDelete = {
   errors: Array<ShippingError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   shippingErrors: Array<ShippingError>;
-  shippingMethod?: Maybe<ShippingMethod>;
+  shippingMethod?: Maybe<ShippingMethodType>;
   shippingZone?: Maybe<ShippingZone>;
 };
 
@@ -8422,7 +8517,7 @@ export type ShippingPriceExcludeProducts = {
   errors: Array<ShippingError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   shippingErrors: Array<ShippingError>;
-  shippingMethod?: Maybe<ShippingMethod>;
+  shippingMethod?: Maybe<ShippingMethodType>;
 };
 
 export type ShippingPriceExcludeProductsInput = {
@@ -8450,13 +8545,13 @@ export type ShippingPriceRemoveProductFromExclude = {
   errors: Array<ShippingError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   shippingErrors: Array<ShippingError>;
-  shippingMethod?: Maybe<ShippingMethod>;
+  shippingMethod?: Maybe<ShippingMethodType>;
 };
 
 export type ShippingPriceTranslate = {
   __typename?: "ShippingPriceTranslate";
   errors: Array<TranslationError>;
-  shippingMethod?: Maybe<ShippingMethod>;
+  shippingMethod?: Maybe<ShippingMethodType>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   translationErrors: Array<TranslationError>;
 };
@@ -8471,7 +8566,7 @@ export type ShippingPriceUpdate = {
   errors: Array<ShippingError>;
   /** @deprecated Use errors field instead. This field will be removed in Saleor 4.0. */
   shippingErrors: Array<ShippingError>;
-  shippingMethod?: Maybe<ShippingMethod>;
+  shippingMethod?: Maybe<ShippingMethodType>;
   shippingZone?: Maybe<ShippingZone>;
 };
 
@@ -8487,7 +8582,7 @@ export type ShippingZone = Node &
     name: Scalars["String"];
     priceRange?: Maybe<MoneyRange>;
     privateMetadata: Array<Maybe<MetadataItem>>;
-    shippingMethods?: Maybe<Array<Maybe<ShippingMethod>>>;
+    shippingMethods?: Maybe<Array<Maybe<ShippingMethodType>>>;
     warehouses: Array<Warehouse>;
   };
 
@@ -8604,6 +8699,7 @@ export type ShopAvailableShippingMethodsArgs = {
 };
 
 export type ShopCountriesArgs = {
+  filter?: InputMaybe<CountryFilterInput>;
   languageCode?: InputMaybe<LanguageCodeEnum>;
 };
 
@@ -8809,6 +8905,7 @@ export type StaffUpdateInput = {
 };
 
 export type StaffUserInput = {
+  ids?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
   search?: InputMaybe<Scalars["String"]>;
   status?: InputMaybe<StaffMemberStatus>;
 };
@@ -9228,6 +9325,7 @@ export type Voucher = Node &
     type: VoucherTypeEnum;
     usageLimit?: Maybe<Scalars["Int"]>;
     used: Scalars["Int"];
+    variants?: Maybe<ProductVariantCountableConnection>;
   };
 
 export type VoucherCategoriesArgs = {
@@ -9253,6 +9351,13 @@ export type VoucherProductsArgs = {
 
 export type VoucherTranslationArgs = {
   languageCode: LanguageCodeEnum;
+};
+
+export type VoucherVariantsArgs = {
+  after?: InputMaybe<Scalars["String"]>;
+  before?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
 };
 
 export type VoucherAddCatalogues = {
@@ -9359,6 +9464,7 @@ export type VoucherInput = {
   startDate?: InputMaybe<Scalars["DateTime"]>;
   type?: InputMaybe<VoucherTypeEnum>;
   usageLimit?: InputMaybe<Scalars["Int"]>;
+  variants?: InputMaybe<Array<InputMaybe<Scalars["ID"]>>>;
 };
 
 export type VoucherRemoveCatalogues = {
@@ -9607,6 +9713,7 @@ export type WebhookEvent = {
 export enum WebhookEventTypeEnum {
   AnyEvents = "ANY_EVENTS",
   CheckoutCreated = "CHECKOUT_CREATED",
+  CheckoutFilterShippingMethods = "CHECKOUT_FILTER_SHIPPING_METHODS",
   CheckoutUpdated = "CHECKOUT_UPDATED",
   CustomerCreated = "CUSTOMER_CREATED",
   CustomerUpdated = "CUSTOMER_UPDATED",
@@ -9621,6 +9728,7 @@ export enum WebhookEventTypeEnum {
   OrderCancelled = "ORDER_CANCELLED",
   OrderConfirmed = "ORDER_CONFIRMED",
   OrderCreated = "ORDER_CREATED",
+  OrderFilterShippingMethods = "ORDER_FILTER_SHIPPING_METHODS",
   OrderFulfilled = "ORDER_FULFILLED",
   OrderFullyPaid = "ORDER_FULLY_PAID",
   OrderUpdated = "ORDER_UPDATED",
@@ -9646,6 +9754,7 @@ export enum WebhookEventTypeEnum {
 
 export enum WebhookSampleEventTypeEnum {
   CheckoutCreated = "CHECKOUT_CREATED",
+  CheckoutFilterShippingMethods = "CHECKOUT_FILTER_SHIPPING_METHODS",
   CheckoutUpdated = "CHECKOUT_UPDATED",
   CustomerCreated = "CUSTOMER_CREATED",
   CustomerUpdated = "CUSTOMER_UPDATED",
@@ -9660,6 +9769,7 @@ export enum WebhookSampleEventTypeEnum {
   OrderCancelled = "ORDER_CANCELLED",
   OrderConfirmed = "ORDER_CONFIRMED",
   OrderCreated = "ORDER_CREATED",
+  OrderFilterShippingMethods = "ORDER_FILTER_SHIPPING_METHODS",
   OrderFulfilled = "ORDER_FULFILLED",
   OrderFullyPaid = "ORDER_FULLY_PAID",
   OrderUpdated = "ORDER_UPDATED",
@@ -9722,7 +9832,6 @@ export type _Entity =
   | Group
   | PageType
   | Product
-  | ProductImage
   | ProductMedia
   | ProductType
   | ProductVariant

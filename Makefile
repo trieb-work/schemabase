@@ -55,7 +55,7 @@ destroy: down
 	docker system prune -af
 
 # Pull development environment variables from vercel
-# Copy over database connections for prisma
+# Link project on vercel `eci-v2` before using `npx vercel link`
 pull-env:
 	npx vercel env pull
 
@@ -133,7 +133,7 @@ test: export ECI_BASE_URL_FROM_CONTAINER  = http://api.eci:3000
 test: export SALEOR_URL                   = http://localhost:8000/graphql/
 test: export SALEOR_URL_FROM_CONTAINER    = http://saleor.eci:8000/graphql/
 test: build db-push
-	pnpm jest
+	pnpm jest 
 
 # DO NOT RUN THIS YOURSELF!
 #

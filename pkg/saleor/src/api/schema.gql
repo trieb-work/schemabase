@@ -11,7 +11,6 @@ union _Entity =
   | Collection
   | Category
   | ProductMedia
-  | ProductImage
   | PageType
 type _Service {
   sdl: String
@@ -878,10 +877,17 @@ type BulkStockError {
   index: Int
 }
 
+input CardInput {
+  code: String!
+  cvc: String
+  money: MoneyInput!
+}
+
 input CatalogueInput {
   products: [ID]
   categories: [ID]
   collections: [ID]
+  variants: [ID]
 }
 
 type Category implements Node & ObjectWithMetadata {
@@ -1148,6 +1154,10 @@ type Checkout implements Node & ObjectWithMetadata {
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
   availableShippingMethods: [ShippingMethod]!
+    @deprecated(
+      reason: "Use `shippingMethods`, this field will be removed in 4.0."
+    )
+  shippingMethods: [ShippingMethod]!
   availablePaymentGateways: [PaymentGateway!]!
   email: String!
   isShippingRequired: Boolean!
@@ -1252,6 +1262,7 @@ type CheckoutError {
   message: String
   code: CheckoutErrorCode!
   variants: [ID!]
+  lines: [ID!]
   addressType: AddressTypeEnum
 }
 
@@ -1279,6 +1290,7 @@ enum CheckoutErrorCode {
   MISSING_CHANNEL_SLUG
   CHANNEL_INACTIVE
   UNAVAILABLE_VARIANT_IN_CHANNEL
+  NO_LINES
 }
 
 type CheckoutLanguageCodeUpdate {
@@ -1329,6 +1341,11 @@ type CheckoutLinesAdd {
     @deprecated(
       reason: "Use errors field instead. This field will be removed in Saleor 4.0."
     )
+  errors: [CheckoutError!]!
+}
+
+type CheckoutLinesDelete {
+  checkout: Checkout
   errors: [CheckoutError!]!
 }
 
@@ -1917,6 +1934,10 @@ type CountryDisplay {
   code: String!
   country: String!
   vat: VAT
+}
+
+input CountryFilterInput {
+  attachedToShippingZones: Boolean
 }
 
 type CreateToken {
@@ -2714,6 +2735,7 @@ enum InvoiceErrorCode {
   NUMBER_NOT_SET
   NOT_FOUND
   INVALID_STATUS
+  NO_INVOICE_PLUGIN
 }
 
 type InvoiceRequest {
@@ -3891,6 +3913,11 @@ type Money {
   amount: Float!
 }
 
+input MoneyInput {
+  currency: String!
+  amount: PositiveDecimal!
+}
+
 type MoneyRange {
   start: Money
   stop: Money
@@ -4105,6 +4132,7 @@ type Mutation {
     gateway: String!
     paymentData: JSONString
   ): PaymentInitialize
+  paymentCheckBalance(input: PaymentCheckBalanceInput!): PaymentCheckBalance
   pageCreate(input: PageCreateInput!): PageCreate
   pageDelete(id: ID!): PageDelete
   pageBulkDelete(ids: [ID]!): PageBulkDelete
@@ -4291,6 +4319,10 @@ type Mutation {
     lineId: ID
     token: UUID
   ): CheckoutLineDelete
+    @deprecated(
+      reason: "DEPRECATED: Will be removed in Saleor 4.0. Use `checkoutLinesDelete` instead."
+    )
+  checkoutLinesDelete(linesIds: [ID]!, token: UUID!): CheckoutLinesDelete
   checkoutLinesAdd(
     checkoutId: ID
     lines: [CheckoutLineInput]!
@@ -4476,7 +4508,6 @@ type Order implements Node & ObjectWithMetadata {
   trackingClientId: String!
   billingAddress: Address
   shippingAddress: Address
-  shippingMethod: ShippingMethod
   shippingMethodName: String
   channel: Channel!
   shippingPrice: TaxedMoney!
@@ -4494,6 +4525,10 @@ type Order implements Node & ObjectWithMetadata {
   lines: [OrderLine]!
   actions: [OrderAction]!
   availableShippingMethods: [ShippingMethod]
+    @deprecated(
+      reason: "Use `shippingMethods`, this field will be removed in 4.0"
+    )
+  shippingMethods: [ShippingMethod!]!
   invoices: [Invoice]
   number: String
   original: ID
@@ -4504,6 +4539,7 @@ type Order implements Node & ObjectWithMetadata {
   payments: [Payment]
   total: TaxedMoney!
   undiscountedTotal: TaxedMoney!
+  shippingMethod: ShippingMethod
   subtotal: TaxedMoney!
   statusDisplay: String
   canFinalize: Boolean!
@@ -5462,6 +5498,22 @@ enum PaymentChargeStatusEnum {
   CANCELLED
 }
 
+type PaymentCheckBalance {
+  data: JSONString
+  paymentErrors: [PaymentError!]!
+    @deprecated(
+      reason: "Use errors field instead. This field will be removed in Saleor 4.0."
+    )
+  errors: [PaymentError!]!
+}
+
+input PaymentCheckBalanceInput {
+  gatewayId: String!
+  method: String!
+  channel: String!
+  card: CardInput!
+}
+
 type PaymentCountableConnection {
   pageInfo: PageInfo!
   edges: [PaymentCountableEdge!]!
@@ -5477,6 +5529,7 @@ type PaymentError {
   field: String
   message: String
   code: PaymentErrorCode!
+  variants: [ID!]
 }
 
 enum PaymentErrorCode {
@@ -5493,6 +5546,9 @@ enum PaymentErrorCode {
   PAYMENT_ERROR
   NOT_SUPPORTED_GATEWAY
   CHANNEL_INACTIVE
+  BALANCE_CHECK_ERROR
+  UNAVAILABLE_VARIANT_IN_CHANNEL
+  NO_CHECKOUT_LINES
 }
 
 input PaymentFilterInput {
@@ -5624,6 +5680,7 @@ enum PermissionGroupErrorCode {
 
 input PermissionGroupFilterInput {
   search: String
+  ids: [ID]
 }
 
 enum PermissionGroupSortField {
@@ -6883,6 +6940,12 @@ type Sale implements Node & ObjectWithMetadata {
     first: Int
     last: Int
   ): ProductCountableConnection
+  variants(
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): ProductVariantCountableConnection
   translation(languageCode: LanguageCodeEnum!): SaleTranslation
   channelListings: [SaleChannelListing!]
   discountValue: Float
@@ -6975,6 +7038,7 @@ input SaleInput {
   type: DiscountValueTypeEnum
   value: PositiveDecimal
   products: [ID]
+  variants: [ID]
   categories: [ID]
   collections: [ID]
   startDate: DateTime
@@ -7086,27 +7150,24 @@ enum ShippingErrorCode {
 
 type ShippingMethod implements Node & ObjectWithMetadata {
   id: ID!
-  name: String!
-  description: JSONString
-  minimumOrderWeight: Weight
-  maximumOrderWeight: Weight
-  maximumDeliveryDays: Int
-  minimumDeliveryDays: Int
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
   type: ShippingMethodTypeEnum
+    @deprecated(reason: "This field will be removed in Saleor 4.0.")
+  name: String!
+  description: JSONString
+  maximumDeliveryDays: Int
+  minimumDeliveryDays: Int
+  maximumOrderWeight: Weight
+    @deprecated(reason: "This field will be removed in Saleor 4.0.")
+  minimumOrderWeight: Weight
+    @deprecated(reason: "This field will be removed in Saleor 4.0.")
   translation(languageCode: LanguageCodeEnum!): ShippingMethodTranslation
-  channelListings: [ShippingMethodChannelListing!]
-  price: Money
+  price: Money!
   maximumOrderPrice: Money
   minimumOrderPrice: Money
-  postalCodeRules: [ShippingMethodPostalCodeRule]
-  excludedProducts(
-    before: String
-    after: String
-    first: Int
-    last: Int
-  ): ProductCountableConnection
+  active: Boolean!
+  message: String
 }
 
 type ShippingMethodChannelListing implements Node {
@@ -7130,7 +7191,7 @@ input ShippingMethodChannelListingInput {
 }
 
 type ShippingMethodChannelListingUpdate {
-  shippingMethod: ShippingMethod
+  shippingMethod: ShippingMethodType
   shippingErrors: [ShippingError!]!
     @deprecated(
       reason: "Use errors field instead. This field will be removed in Saleor 4.0."
@@ -7150,7 +7211,7 @@ type ShippingMethodTranslatableContent implements Node {
   name: String!
   description: JSONString
   translation(languageCode: LanguageCodeEnum!): ShippingMethodTranslation
-  shippingMethod: ShippingMethod
+  shippingMethod: ShippingMethodType
     @deprecated(
       reason: "Will be removed in Saleor 4.0. Get model fields from the root level."
     )
@@ -7161,6 +7222,28 @@ type ShippingMethodTranslation implements Node {
   name: String
   description: JSONString
   language: LanguageDisplay!
+}
+
+type ShippingMethodType implements Node & ObjectWithMetadata {
+  id: ID!
+  name: String!
+  description: JSONString
+  minimumOrderWeight: Weight
+  maximumOrderWeight: Weight
+  maximumDeliveryDays: Int
+  minimumDeliveryDays: Int
+  privateMetadata: [MetadataItem]!
+  metadata: [MetadataItem]!
+  type: ShippingMethodTypeEnum
+  translation(languageCode: LanguageCodeEnum!): ShippingMethodTranslation
+  channelListings: [ShippingMethodChannelListing!]
+  postalCodeRules: [ShippingMethodPostalCodeRule]
+  excludedProducts(
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): ProductCountableConnection
 }
 
 enum ShippingMethodTypeEnum {
@@ -7184,7 +7267,7 @@ type ShippingPriceBulkDelete {
 
 type ShippingPriceCreate {
   shippingZone: ShippingZone
-  shippingMethod: ShippingMethod
+  shippingMethod: ShippingMethodType
   shippingErrors: [ShippingError!]!
     @deprecated(
       reason: "Use errors field instead. This field will be removed in Saleor 4.0."
@@ -7193,7 +7276,7 @@ type ShippingPriceCreate {
 }
 
 type ShippingPriceDelete {
-  shippingMethod: ShippingMethod
+  shippingMethod: ShippingMethodType
   shippingZone: ShippingZone
   shippingErrors: [ShippingError!]!
     @deprecated(
@@ -7203,7 +7286,7 @@ type ShippingPriceDelete {
 }
 
 type ShippingPriceExcludeProducts {
-  shippingMethod: ShippingMethod
+  shippingMethod: ShippingMethodType
   shippingErrors: [ShippingError!]!
     @deprecated(
       reason: "Use errors field instead. This field will be removed in Saleor 4.0."
@@ -7230,7 +7313,7 @@ input ShippingPriceInput {
 }
 
 type ShippingPriceRemoveProductFromExclude {
-  shippingMethod: ShippingMethod
+  shippingMethod: ShippingMethodType
   shippingErrors: [ShippingError!]!
     @deprecated(
       reason: "Use errors field instead. This field will be removed in Saleor 4.0."
@@ -7244,7 +7327,7 @@ type ShippingPriceTranslate {
       reason: "Use errors field instead. This field will be removed in Saleor 4.0."
     )
   errors: [TranslationError!]!
-  shippingMethod: ShippingMethod
+  shippingMethod: ShippingMethodType
 }
 
 input ShippingPriceTranslationInput {
@@ -7254,7 +7337,7 @@ input ShippingPriceTranslationInput {
 
 type ShippingPriceUpdate {
   shippingZone: ShippingZone
-  shippingMethod: ShippingMethod
+  shippingMethod: ShippingMethodType
   shippingErrors: [ShippingError!]!
     @deprecated(
       reason: "Use errors field instead. This field will be removed in Saleor 4.0."
@@ -7270,7 +7353,7 @@ type ShippingZone implements Node & ObjectWithMetadata {
   metadata: [MetadataItem]!
   priceRange: MoneyRange
   countries: [CountryDisplay]
-  shippingMethods: [ShippingMethod]
+  shippingMethods: [ShippingMethodType]
   warehouses: [Warehouse!]!
   channels: [Channel!]!
   description: String
@@ -7358,7 +7441,10 @@ type Shop {
     channel: String!
     address: AddressInput
   ): [ShippingMethod]
-  countries(languageCode: LanguageCodeEnum): [CountryDisplay!]!
+  countries(
+    languageCode: LanguageCodeEnum
+    filter: CountryFilterInput
+  ): [CountryDisplay!]!
   defaultCountry: CountryDisplay
   defaultMailSenderName: String
   defaultMailSenderAddress: String
@@ -7593,14 +7679,15 @@ input StaffUpdateInput {
 input StaffUserInput {
   status: StaffMemberStatus
   search: String
+  ids: [ID]
 }
 
 type Stock implements Node {
   warehouse: Warehouse!
   productVariant: ProductVariant!
   quantity: Int!
-  id: ID!
   quantityAllocated: Int!
+  id: ID!
 }
 
 enum StockAvailability {
@@ -7991,6 +8078,12 @@ type Voucher implements Node & ObjectWithMetadata {
     first: Int
     last: Int
   ): ProductCountableConnection
+  variants(
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): ProductVariantCountableConnection
   countries: [CountryDisplay]
   translation(languageCode: LanguageCodeEnum!): VoucherTranslation
   discountValue: Float
@@ -8097,6 +8190,7 @@ input VoucherInput {
   endDate: DateTime
   discountValueType: DiscountValueTypeEnum
   products: [ID]
+  variants: [ID]
   collections: [ID]
   categories: [ID]
   minCheckoutItemsQuantity: Int
@@ -8356,6 +8450,7 @@ enum WebhookEventTypeEnum {
   ORDER_UPDATED
   ORDER_CANCELLED
   ORDER_FULFILLED
+  ORDER_FILTER_SHIPPING_METHODS
   DRAFT_ORDER_CREATED
   DRAFT_ORDER_UPDATED
   DRAFT_ORDER_DELETED
@@ -8372,6 +8467,7 @@ enum WebhookEventTypeEnum {
   PRODUCT_VARIANT_DELETED
   CHECKOUT_CREATED
   CHECKOUT_UPDATED
+  CHECKOUT_FILTER_SHIPPING_METHODS
   FULFILLMENT_CREATED
   NOTIFY_USER
   PAGE_CREATED
@@ -8395,6 +8491,7 @@ enum WebhookSampleEventTypeEnum {
   ORDER_UPDATED
   ORDER_CANCELLED
   ORDER_FULFILLED
+  ORDER_FILTER_SHIPPING_METHODS
   DRAFT_ORDER_CREATED
   DRAFT_ORDER_UPDATED
   DRAFT_ORDER_DELETED
@@ -8411,6 +8508,7 @@ enum WebhookSampleEventTypeEnum {
   PRODUCT_VARIANT_DELETED
   CHECKOUT_CREATED
   CHECKOUT_UPDATED
+  CHECKOUT_FILTER_SHIPPING_METHODS
   FULFILLMENT_CREATED
   NOTIFY_USER
   PAGE_CREATED
