@@ -1,4 +1,4 @@
-import { createSaleorClient } from "@eci/pkg/saleor";
+import { createSaleorClient, PermissionEnum } from "@eci/pkg/saleor";
 import { env } from "@eci/pkg/env";
 import { afterAll, describe, expect, it } from "@jest/globals";
 import { PrismaClient } from "@prisma/client";
@@ -71,6 +71,7 @@ describe("Saleor app installation", () => {
         manifestUrl: `${env.require(
           "ECI_BASE_URL_FROM_CONTAINER",
         )}/api/saleor/manifest/${tenant.id}`,
+        permissions: [PermissionEnum.ManageApps],
       },
     });
     /**

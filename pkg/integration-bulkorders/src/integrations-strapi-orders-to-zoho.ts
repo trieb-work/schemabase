@@ -47,7 +47,14 @@ export const orderValidation = z.object({
 });
 
 export type OrderEvent = EntryEvent & z.infer<typeof orderValidation>;
-
+/**
+ * Strapi 2 Zoho bulk order create
+ * A strapi entry event was received by our webhook api and forwarded via kafka.
+ * The bulkorder integration then creates orders and customers in zoho.
+ *
+ * This way of defining and integration is deprecated, please combine the integration
+ * with the event handler into one class (See `.github/README.md)
+ */
 export class StrapiOrdersToZoho {
   private readonly zoho: Zoho;
 

@@ -33,6 +33,11 @@ interface CustomFields {
   nextFiveDaysBulkOrders: string;
 }
 
+/**
+ * LogisticsStats is a synchronous service that allows our logistics team to access information
+ * about upcoming orders from zoho.
+ * They will call our api and we either return cached data or fetch fresh data from zoho.
+ */
 export class LogisticStats implements ZohoLogisticsService {
   private readonly zoho: ZohoClientInstance;
 

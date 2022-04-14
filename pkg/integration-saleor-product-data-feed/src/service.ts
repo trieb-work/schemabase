@@ -27,9 +27,12 @@ export interface ProductDataFeedServiceConfig {
 }
 
 /**
- * Generate product data as .csv
+ * Synchronous service to load product data from saleor and return it in either
+ * google or facebook syntax.
+ *
+ * This service is offered via the nextjs api and does not produce any messages
+ * to kafka
  */
-
 export class ProductDataFeedGenerator implements ProductDataFeedService {
   public readonly saleorClient: {
     products: (variables: {

@@ -29,14 +29,23 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     name: "eCommerce Integrations for Saleor",
     about: "ECI is cool",
     permissions: [
+      "HANDLE_PAYMENTS",
+      "HANDLE_CHECKOUTS",
       "MANAGE_APPS",
-      "MANAGE_SHIPPING",
-      "MANAGE_PRODUCTS",
-      "MANAGE_ORDERS",
-      "MANAGE_GIFT_CARD",
-      "MANAGE_DISCOUNTS",
       "MANAGE_CHECKOUTS",
+      "MANAGE_DISCOUNTS",
+      "MANAGE_GIFT_CARD",
+      "MANAGE_MENUS",
+      "MANAGE_ORDERS",
+      "MANAGE_PAGES",
+      "MANAGE_PLUGINS",
       "MANAGE_PRODUCT_TYPES_AND_ATTRIBUTES",
+      "MANAGE_PRODUCTS",
+      "MANAGE_SETTINGS",
+      "MANAGE_SHIPPING",
+      "MANAGE_STAFF",
+      "MANAGE_TRANSLATIONS",
+      "MANAGE_USERS",
     ],
     appUrl: "http://localhost:3000/app",
     configurationUrl: `${baseUrl}/saleor/configuration/${tenantId}`,
@@ -46,6 +55,8 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     homepageUrl: "https://trieb.work",
     supportUrl: "http://localhost:3000/support",
   };
+
+  ctx.logger.info("Manifest", { manifest });
 
   res.json(manifest);
 };

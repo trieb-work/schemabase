@@ -27,12 +27,8 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: ${{ runner.os }}-
 
-      - uses: pnpm/action-setup@v2.0.1
-        with:
-          version: latest
-
       - name: Install
-        run: pnpm install
+        run: npm i -g pnpm && pnpm install
 
       - name: Build
         run: make build
@@ -143,7 +139,7 @@ jobs:
       matrix:
         saleor: [
             "registry.gitlab.com/trieb.work/saleor:3.0.0-b.13-triebwork1", #v3 custom
-            "ghcr.io/saleor/saleor:3.0.0-b.27",
+            "ghcr.io/saleor/saleor:3.0.0"
           ]
 
     steps:
@@ -161,9 +157,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-
 
-      - uses: pnpm/action-setup@v2.0.1
-        with:
-          version: latest
+    
 
       # load docker images from build jobs
       - name: Load images from artifacts
@@ -181,8 +175,8 @@ jobs:
           path: "**/node_modules"
           key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm.lock') }}
 
-      - name: Install dependencies
-        run: pnpm install
+      - name: Install
+        run: npm i -g pnpm && pnpm install
 
         # Necesarry to test against the predefined saleor versions
       - name: Use docker-compose ci config

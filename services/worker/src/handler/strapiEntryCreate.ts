@@ -9,6 +9,14 @@ import { ILogger } from "@eci/pkg/logger";
 import { env } from "@eci/pkg/env";
 import { Context } from "@eci/pkg/context";
 
+/**
+ * Strapi 2 Zoho bulk order create
+ * A strapi entry create event was received by our webhook api and forwarded via kafka.
+ * The bulkorder integration then creates  orders and customers in zoho.
+ *
+ * This way of defining the event handler is deprecated, please combine the integration
+ * with the event handler into one class (See `.github/README.md)
+ */
 export class StrapiEntryCreate
   implements EventHandler<EventSchemaRegistry.StrapiEntryCreate["message"]>
 {

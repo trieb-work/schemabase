@@ -32,7 +32,6 @@ const NewPage: NextPage = () => {
       },
       code,
     };
-    console.log({ body });
     const res = await fetch("/api/create", {
       method: "POST",
       headers: {

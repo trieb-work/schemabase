@@ -14,6 +14,17 @@ export interface PackageEventHandlerConfig {
   logger: ILogger;
 }
 
+/**
+ * Handles events sent from any parcel service.
+ *
+ * Different parcel services send us webhooks with package updates and we merge
+ * those into a unified schema in the api. That unifiedm essage is then sent
+ * over Kafka and will be processed here.
+ *
+ * Events are not guaranteed to be in chronological order and we simply create
+ * a new entry in our `PackageEvent` table. The PackageEvents can be consumed
+ * via graphql or in different eventHandlers.
+ */
 export class PackageEventHandler {
   private readonly db: PrismaClient;
 
