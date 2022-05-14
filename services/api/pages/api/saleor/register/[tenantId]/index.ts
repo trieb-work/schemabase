@@ -92,11 +92,6 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
   ctx.logger.info("Added app to db", { app });
 
-  res.json({
-    status: "received",
-    traceId: ctx.trace.id,
-  });
-
   try {
     const saleorWebhook = await saleorClient.webhookCreate({
       input: {
@@ -114,6 +109,11 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   } catch (error) {
     ctx.logger.error(`Adding webhook to saleor failed!: ${error}`);
   }
+
+  res.json({
+    status: "received",
+    traceId: ctx.trace.id,
+  });
 };
 
 export default handleWebhook({
