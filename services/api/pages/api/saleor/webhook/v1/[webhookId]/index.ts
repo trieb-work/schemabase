@@ -2,10 +2,15 @@ import { extendContext, setupPrisma } from "@eci/pkg/webhook-context";
 import { z } from "zod";
 import { HttpError } from "@eci/pkg/errors";
 import { handleWebhook, Webhook } from "@eci/pkg/http";
+import { VorkassePaymentService } from "@eci/pkg/integration-saleor-payment";
 
 const requestValidation = z.object({
   query: z.object({
     webhookId: z.string(),
+  }),
+  headers: z.object({
+    "saleor-domain": z.string(),
+    "saleor-event": z.enum(["payment-list-gateways"]),
   }),
 });
 
@@ -20,6 +25,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 }): Promise<void> => {
   const {
     query: { webhookId },
+    headers: { "saleor-event": saleorEvent },
   } = req;
 
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
@@ -31,6 +37,9 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     },
     include: {
       secret: true,
+      installedSaleorApp: {
+        include: { saleorApp: true },
+      },
     },
   });
 
@@ -38,7 +47,24 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     throw new HttpError(404, `Webhook not found: ${webhookId}`);
   }
 
-  ctx.logger.info("Received saleor webhook");
+  const { installedSaleorApp } = webhook;
+
+  if (installedSaleorApp == null) {
+    throw new HttpError(404, "Saleor App is not configured");
+  }
+
+  const { saleorApp } = installedSaleorApp;
+
+  ctx.logger.info("Received valid saleor webhook");
+
+  if (saleorEvent === "payment-list-gateways") {
+    const vorkassePaymentService = new VorkassePaymentService({
+      logger: ctx.logger.with({
+        saleor: { domain: saleorApp.domain, channel: saleorApp.channelSlug },
+      }),
+    });
+    return res.send(vorkassePaymentService.paymentListGateways("EUR"));
+  }
 
   res.send(req);
 };
