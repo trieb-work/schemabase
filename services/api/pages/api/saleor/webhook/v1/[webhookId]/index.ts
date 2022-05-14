@@ -10,7 +10,7 @@ const requestValidation = z.object({
   }),
   headers: z.object({
     "saleor-domain": z.string(),
-    "saleor-event": z.enum(["payment-list-gateways"]),
+    "saleor-event": z.enum(["payment_list_gateways"]),
   }),
 });
 
@@ -30,7 +30,9 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
-  ctx.logger.info(`Incoming saleor webhook: ${webhookId}`);
+  ctx.logger.info(
+    `Incoming saleor webhook: ${webhookId}, saleor-event: ${saleorEvent}`,
+  );
   const webhook = await ctx.prisma.incomingWebhook.findUnique({
     where: {
       id: webhookId,
@@ -44,12 +46,14 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   });
 
   if (webhook == null) {
+    ctx.logger.error(`Webhook not found: ${webhookId}`);
     throw new HttpError(404, `Webhook not found: ${webhookId}`);
   }
 
   const { installedSaleorApp } = webhook;
 
   if (installedSaleorApp == null) {
+    ctx.logger.error("Saleor App is not configured");
     throw new HttpError(404, "Saleor App is not configured");
   }
 
@@ -57,13 +61,17 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
   ctx.logger.info("Received valid saleor webhook");
 
-  if (saleorEvent === "payment-list-gateways") {
+  if (saleorEvent === "payment_list_gateways") {
     const vorkassePaymentService = new VorkassePaymentService({
       logger: ctx.logger.with({
         saleor: { domain: saleorApp.domain, channel: saleorApp.channelSlug },
       }),
     });
-    return res.send(vorkassePaymentService.paymentListGateways("EUR"));
+    const paymentGateways = await vorkassePaymentService.paymentListGateways(
+      "EUR",
+    );
+    ctx.logger.info("Responding with payment gateway list");
+    return res.json(paymentGateways);
   }
 
   res.send(req);
