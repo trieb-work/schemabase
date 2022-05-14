@@ -1,0 +1,408 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table Order {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  externalOrderId String [unique, not null]
+  emails String[] [not null]
+  language Language [not null]
+  packages Package [not null]
+}
+
+Table ElasticCluster {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  endpoint String [not null]
+  username String [not null]
+  password String [not null]
+  index String
+  elasticLogDrainIntegrations ElasticLogDrainIntegration [not null]
+}
+
+Table VercelLogDrainApp {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  configurationId String [unique, not null]
+  installationId String [unique, not null]
+  projectId String [unique]
+  teamId String
+  userId String [not null]
+  webhooks IncomingWebhook [not null]
+  elasticLogDrainIntegrations ElasticLogDrainIntegration [not null]
+}
+
+Table ElasticLogDrainIntegration {
+  id String [pk]
+  enabled Boolean [not null, default: true]
+  subscription Subscription
+  subscriptionId String [unique]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  logDrainApp VercelLogDrainApp [not null]
+  logDrainAppId String [unique, not null]
+  elasticCluster ElasticCluster [not null]
+  elasticClusterId String [unique, not null]
+}
+
+Table Package {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  carrier Carrier [not null]
+  state PackageState [not null]
+  trackingId String [unique, not null]
+  carrierTrackingUrl String
+  order Order [not null]
+  orderId String [not null]
+  events PackageEvent [not null]
+}
+
+Table PackageEvent {
+  id String [pk]
+  time DateTime [not null]
+  state PackageState [not null]
+  message String
+  package Package [not null]
+  packageId String [not null]
+  location String
+  sentEmail TransactionalEmail
+}
+
+Table TransactionalEmail {
+  id String [pk]
+  time DateTime [not null]
+  email String [not null]
+  sentEmailId String [not null]
+  packageEvent PackageEvent [not null]
+  packageEventId String [unique, not null]
+}
+
+Table TrackingEmailApp {
+  id String [pk]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  sendgridTemplates SendgridTemplate [not null]
+  defaultLanguage Language [not null]
+  sender String [not null]
+  replyTo String [not null]
+  integration TrackingIntegration [not null]
+}
+
+Table SendgridTemplate {
+  id String [pk]
+  name String [not null]
+  packageState PackageState
+  language Language [not null]
+  subject String [not null]
+  templateId String [not null]
+  trackingEmailApp TrackingEmailApp [not null]
+  trackingEmailAppId String [not null]
+
+  indexes {
+    (trackingEmailAppId, language, packageState) [unique]
+  }
+}
+
+Table DpdApp {
+  id String [pk]
+  name String
+  tenant Tenant [not null]
+  tenantId String [unique, not null]
+  integration TrackingIntegration
+  webhooks IncomingWebhook [not null]
+}
+
+Table ProductDataFeedApp {
+  id String [pk]
+  productDetailStorefrontURL String [not null]
+  tenant Tenant [not null]
+  tenantId String [unique, not null]
+  webhooks IncomingWebhook [not null]
+  integration ProductDataFeedIntegration
+}
+
+Table LogisticsApp {
+  id String [pk]
+  currentOrdersCustomViewId String [not null]
+  nextFiveDaysOrdersCustomViewId String [not null]
+  currentBulkOrdersCustomViewId String [not null]
+  nextFiveDaysBulkOrdersCustomViewId String [not null]
+  tenant Tenant [not null]
+  tenantId String [unique, not null]
+  webhooks IncomingWebhook [not null]
+  integration LogisticsIntegration
+}
+
+Table ZohoApp {
+  id String [pk]
+  orgId String [not null]
+  clientId String [not null]
+  clientSecret String [not null]
+  tenant Tenant [not null]
+  tenantId String [unique, not null]
+  strapiToZohoIntegrations StrapiToZohoIntegration [not null]
+  logisticsIntegrations LogisticsIntegration [not null]
+  trackingIntegrations TrackingIntegration [not null]
+  webhooks IncomingWebhook [not null]
+}
+
+Table SaleorApp {
+  id String [pk]
+  domain String [not null]
+  name String [not null]
+  channelSlug String
+  installedSaleorApp InstalledSaleorApp
+  tenant Tenant [not null]
+  tenantId String [not null]
+  productDataFeedIntegration ProductDataFeedIntegration [not null]
+
+  indexes {
+    (domain, channelSlug) [unique]
+  }
+}
+
+Table InstalledSaleorApp {
+  id String [pk]
+  webhooks IncomingWebhook [not null]
+  token String [not null]
+  saleorApp SaleorApp [not null]
+  saleorAppId String [unique, not null]
+}
+
+Table Tenant {
+  id String [pk]
+  name String [not null]
+  Subscriptions Subscription [not null]
+  saleorApps SaleorApp [not null]
+  zohoApps ZohoApp [not null]
+  productdatafeedApps ProductDataFeedApp [not null]
+  strapiApps StrapiApp [not null]
+  productDataFeedIntegrations ProductDataFeedIntegration [not null]
+  strapiToZohoIntegrations StrapiToZohoIntegration [not null]
+  logisticsIntegrations LogisticsIntegration [not null]
+  logisticsApps LogisticsApp [not null]
+  trackingEmailApps TrackingEmailApp [not null]
+  dpdApps DpdApp [not null]
+  trackingIntegrations TrackingIntegration [not null]
+  ElasticLogDrainIntegration ElasticLogDrainIntegration [not null]
+}
+
+Table Subscription {
+  id String [pk]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  payedUntil DateTime
+  productDataFeedIntegration ProductDataFeedIntegration
+  strapiToZohoIntegration StrapiToZohoIntegration
+  logisticsIntegration LogisticsIntegration
+  trackingIntegration TrackingIntegration
+  ElasticLogDrainIntegration ElasticLogDrainIntegration [not null]
+}
+
+Table TrackingIntegration {
+  id String [pk]
+  enabled Boolean [not null, default: true]
+  subscription Subscription
+  subscriptionId String [unique]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  dpdApp DpdApp [not null]
+  dpdAppId String [unique, not null]
+  trackingEmailApp TrackingEmailApp [not null]
+  trackingEmailAppId String [not null]
+  zohoApp ZohoApp
+  zohoAppId String
+}
+
+Table ProductDataFeedIntegration {
+  id String [pk]
+  enabled Boolean [not null, default: true]
+  subscription Subscription
+  subscriptionId String [unique]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  productDataFeedApp ProductDataFeedApp [not null]
+  productDataFeedAppId String [unique, not null]
+  saleorApp SaleorApp [not null]
+  saleorAppId String [not null]
+}
+
+Table LogisticsIntegration {
+  id String [pk]
+  enabled Boolean [not null, default: true]
+  subscription Subscription
+  subscriptionId String [unique]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  zohoApp ZohoApp [not null]
+  zohoAppId String [not null]
+  logisticsApp LogisticsApp [not null]
+  logisticsAppId String [unique, not null]
+}
+
+Table StrapiToZohoIntegration {
+  id String [pk]
+  payedUntil DateTime
+  enabled Boolean [not null, default: true]
+  strapiContentType String [not null, default: 'bulkorder']
+  subscription Subscription
+  subscriptionId String [unique]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  strapiApp StrapiApp [not null]
+  strapiAppId String [unique, not null]
+  zohoApp ZohoApp [not null]
+  zohoAppId String [not null]
+}
+
+Table StrapiApp {
+  id String [pk]
+  name String [not null]
+  webhooks IncomingWebhook [not null]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  integration StrapiToZohoIntegration
+}
+
+Table IncomingWebhook {
+  id String [pk]
+  name String
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  secret SecretKey
+  dpdApp DpdApp
+  dpdAppId String
+  logisticsApp LogisticsApp
+  logisticsAppId String
+  productDataFeedApp ProductDataFeedApp
+  productDataFeedAppId String
+  zohoApp ZohoApp
+  zohoAppId String
+  strapiApp StrapiApp
+  strapiAppId String
+  installedSaleorApp InstalledSaleorApp
+  installedSaleorAppId String
+  vercelLogDrainApp VercelLogDrainApp
+  vercelLogDrainAppId String
+}
+
+Table SecretKey {
+  id String [pk]
+  name String
+  secret String [not null]
+  createdAt DateTime [default: `now()`, not null]
+  incomingWebhook IncomingWebhook [not null]
+  incomingWebhookId String [unique, not null]
+}
+
+Enum PackageState {
+  INIT
+  INFORMATION_RECEIVED
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  FAILED_ATTEMPT
+  DELIVERED
+  AVAILABLE_FOR_PICKUP
+  EXCEPTION
+  EXPIRED
+  PENDING
+}
+
+Enum Carrier {
+  DPD
+  UNKNOWN
+}
+
+Enum Language {
+  DE
+  EN
+}
+
+Ref: ElasticLogDrainIntegration.subscriptionId > Subscription.id
+
+Ref: ElasticLogDrainIntegration.tenantId > Tenant.id [delete: Cascade]
+
+Ref: ElasticLogDrainIntegration.logDrainAppId > VercelLogDrainApp.id
+
+Ref: ElasticLogDrainIntegration.elasticClusterId > ElasticCluster.id
+
+Ref: Package.orderId > Order.id [delete: Cascade]
+
+Ref: PackageEvent.packageId > Package.id [delete: Cascade]
+
+Ref: TransactionalEmail.packageEventId - PackageEvent.id
+
+Ref: TrackingEmailApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: SendgridTemplate.trackingEmailAppId > TrackingEmailApp.id [delete: Cascade]
+
+Ref: DpdApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: ProductDataFeedApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: LogisticsApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: ZohoApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: SaleorApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: InstalledSaleorApp.saleorAppId - SaleorApp.id [delete: Cascade]
+
+Ref: Subscription.tenantId > Tenant.id [delete: Cascade]
+
+Ref: TrackingIntegration.subscriptionId - Subscription.id
+
+Ref: TrackingIntegration.tenantId > Tenant.id [delete: Cascade]
+
+Ref: TrackingIntegration.dpdAppId - DpdApp.id
+
+Ref: TrackingIntegration.trackingEmailAppId > TrackingEmailApp.id
+
+Ref: TrackingIntegration.zohoAppId > ZohoApp.id
+
+Ref: ProductDataFeedIntegration.subscriptionId - Subscription.id
+
+Ref: ProductDataFeedIntegration.tenantId > Tenant.id [delete: Cascade]
+
+Ref: ProductDataFeedIntegration.productDataFeedAppId - ProductDataFeedApp.id
+
+Ref: ProductDataFeedIntegration.saleorAppId > SaleorApp.id
+
+Ref: LogisticsIntegration.subscriptionId - Subscription.id
+
+Ref: LogisticsIntegration.tenantId > Tenant.id [delete: Cascade]
+
+Ref: LogisticsIntegration.zohoAppId > ZohoApp.id
+
+Ref: LogisticsIntegration.logisticsAppId - LogisticsApp.id
+
+Ref: StrapiToZohoIntegration.subscriptionId - Subscription.id
+
+Ref: StrapiToZohoIntegration.tenantId > Tenant.id [delete: Cascade]
+
+Ref: StrapiToZohoIntegration.strapiAppId - StrapiApp.id
+
+Ref: StrapiToZohoIntegration.zohoAppId > ZohoApp.id
+
+Ref: StrapiApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: IncomingWebhook.dpdAppId > DpdApp.id [delete: Cascade]
+
+Ref: IncomingWebhook.logisticsAppId > LogisticsApp.id [delete: Cascade]
+
+Ref: IncomingWebhook.productDataFeedAppId > ProductDataFeedApp.id [delete: Cascade]
+
+Ref: IncomingWebhook.zohoAppId > ZohoApp.id [delete: Cascade]
+
+Ref: IncomingWebhook.strapiAppId > StrapiApp.id [delete: Cascade]
+
+Ref: IncomingWebhook.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
+
+Ref: IncomingWebhook.vercelLogDrainAppId > VercelLogDrainApp.id [delete: Cascade]
+
+Ref: SecretKey.incomingWebhookId - IncomingWebhook.id [delete: Cascade]

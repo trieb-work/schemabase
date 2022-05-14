@@ -8,11 +8,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: ["worker", "logdrain"]
     outputs:
       docker_sha: ${{ steps.docker-build-push.outputs.digest }}
     env:
       REGISTRY: ghcr.io
-      IMAGE_NAME: ${{ github.repository }}/worker
+      IMAGE_NAME: ${{ github.repository }}/${{matrix.service}}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -45,7 +48,7 @@ jobs:
         with:
           context: .
           push: true
-          file: ./apps/worker/Dockerfile
+          file: ./services/${{matrix.service}}/Dockerfile
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: commit_sha=${{ github.sha }}
@@ -94,7 +97,7 @@ jobs:
 
       - name: Run helm deploy
         run: >
-          helm upgrade eci-worker-v2 ./apps/worker/helm-chart
+          helm upgrade eci-worker-v2 ./services/worker/helm-chart
           --install
           --create-namespace
           --namespace=eci-prod
@@ -110,3 +113,67 @@ jobs:
           --set=elasticsearch.host="${{ secrets.ELASTIC_LOGGING_SERVER }}"
           --set=elasticsearch.username="${{ secrets.ELASTIC_LOGGING_USERNAME }}"
           --set=elasticsearch.password="${{ secrets.ELASTIC_LOGGING_PASSWORD }}"
+          --set=kafka.brokerUrl="${{ secrets.PROD_KAFKA_BROKER_URL }}"
+          --set=kafka.saslMechanism="scram-sha-256"
+          --set=kafka.username="${{ secrets.PROD_KAFKA_USERNAME }}"
+          --set=kafka.password="${{ secrets.PROD_KAFKA_PASSWORD }}"
+          --set=sendgridApiKey=${{ secrets.SENDGRID_API_KEY }}
+
+
+  deploy-logdrain:
+    name: Deploy Logdrain
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}/logdrain
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set Kubernetes Context
+        uses: azure/k8s-set-context@v1
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: cat ~/.docker/config.json
+
+      - name: Create the image-pull-secret in Kubernetes
+        run: |
+          kubectl create secret docker-registry regcred \
+            --save-config --dry-run=client \
+            --from-file=.dockerconfigjson=$HOME/.docker/config.json\
+            -o yaml |
+          kubectl apply -f -
+
+      - name: Run helm deploy
+        run: >
+          helm upgrade eci-logdrain ./services/logdrain/helm-chart
+          --install
+          --create-namespace
+          --namespace=eci-prod
+          --set=imagePullSecret="regcred"
+          --set=image.imageName="${{ env.REGISTRY }}/${{ github.repository }}/logdrain@${{ needs.build.outputs.docker_sha }}"
+          --set=eciEnv="production"
+          --set=databaseUrl="${{ secrets.DATABASE_URL }}"
+          --set=databaseUrlPool="${{ secrets.DATABASE_URL_POOL }}"
+          --set=redis.host="${{ secrets.REDIS_HOST }}"
+          --set=redis.port="${{ secrets.REDIS_PORT }}"
+          --set=redis.password="${{ secrets.REDIS_PASSWORD }}"
+          --set=elasticsearch.host="${{ secrets.ELASTIC_LOGGING_SERVER }}"
+          --set=elasticsearch.username="${{ secrets.ELASTIC_LOGGING_USERNAME }}"
+          --set=elasticsearch.password="${{ secrets.ELASTIC_LOGGING_PASSWORD }}"
+          --set=logdrain.client.id="${{ secrets.LOGDRAIN_CLIENT_ID }}"
+          --set=logdrain.client.secret="${{ secrets.LOGDRAIN_CLIENT_SECRET }}"
+          --set=logdrain.redirectUri="${{ secrets.LOGDRAIN_REDIRECT_URI }}"
+          --set=ingress.host="${{ secrets.LOGDRAIN_HOST }}"
+          

@@ -1,7 +1,35 @@
-# Add files here to ignore them from prettier formatting
+# See http://help.github.com/ignore-files/ for more about ignoring files.
 
+# compiled output
 /dist
-/coverage
+/tmp
+/out-tsc
 
-# Ignore helm charts
-**/helm-chart/**
+# dependencies
+/node_modules
+
+
+# misc
+/.sass-cache
+/connect.lock
+/coverage
+/libpeerconnection.log
+npm-debug.log
+pnpm-error.log
+testem.log
+/typings
+
+helm-chart
+pnpm-lock.yaml
+
+# System Files
+.DS_Store
+Thumbs.db
+
+
+
+
+dist/
+.next/
+
+.github/workflows/*.yml

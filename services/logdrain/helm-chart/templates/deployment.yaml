@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+     {{- include "logdrain-helm.selectorLabels" . | nindent 6 }}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        {{- include "logdrain-helm.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- if .Values.imagePullSecret }}
+      imagePullSecrets: 
+        - name: {{ .Values.imagePullSecret }}
+      {{- end }}
+      containers:
+        - name: eci-logdrain
+          imagePullPolicy: IfNotPresent
+          image: "{{ .Values.image.imageName }}"
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          env:
+            - name: ECI_ENV
+              value: "{{ .Values.eciEnv }}"
+          envFrom:
+            - secretRef:
+                name: eci-logdrain-secrets
+          resources:
+            requests:
+              cpu: 50m
+              memory: 180Mi
+            limits:
+              cpu: 100m
+              memory: 250Mi

@@ -1,6 +1,6 @@
-.env*
-node_modules
+
+Dockerfile
 dist
-.github
-.husky
+helm-chart
+node_modules
 .vscode

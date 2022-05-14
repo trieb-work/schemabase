@@ -1,6 +1,14 @@
-#!/bin/sh
+#!/bin/zsh
 . "$(dirname "$0")/_/husky.sh"
 
-make tsc
-make test
-yarn lint-staged
+BRANCH=`git rev-parse --abbrev-ref HEAD`
+
+if [[ "$BRANCH" =~ ^(master|main|testing)$ ]]; then
+  echo "You are on branch $BRANCH. Are you sure you want to commit to this branch?"
+  echo "If so, commit with --no-verify to bypass this pre-commit hook."
+  exit 1
+fi
+
+pnpm tsc
+pnpm lint-staged
+pnpm prettier --check .
