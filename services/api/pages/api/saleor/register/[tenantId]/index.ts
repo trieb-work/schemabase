@@ -41,7 +41,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   const domain = headers["saleor-domain"].replace("localhost", "saleor.eci");
 
   ctx.logger = ctx.logger.with({ tenantId, saleor: domain });
-  ctx.logger.info("Registering app");
+  ctx.logger.info("Registering saleor app");
 
   const saleorClient = newSaleorClient(ctx, domain, token);
 
