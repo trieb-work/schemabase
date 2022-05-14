@@ -71,7 +71,7 @@ describe("Saleor app installation", () => {
         manifestUrl: `${env.require(
           "ECI_BASE_URL_FROM_CONTAINER",
         )}/api/saleor/manifest/${tenant.id}`,
-        permissions: [PermissionEnum.ManageApps],
+        permissions: [PermissionEnum.ManageApps, PermissionEnum.HandlePayments],
       },
     });
     /**
