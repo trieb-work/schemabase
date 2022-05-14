@@ -95,7 +95,7 @@ services:
       DASHBOARD_URL: http://dashboard.saleor.api:9000/
       ALLOWED_CLIENT_HOSTS: localhost,api.eci
       ALLOWED_HOSTS: saleor.eci,localhost
-      ELASTIC_APM_ENABLED: "False"
+      RSA_PRIVATE_KEY: ${RSA_PRIVATE_KEY}      
     depends_on:
       - saleor_db
 
