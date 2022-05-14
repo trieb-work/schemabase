@@ -79,7 +79,8 @@ init: down build
 	$(MAKE) migrate-saleor
 
 	docker compose up -d
-
+	
+	sleep 4
 	$(MAKE) db-push
 
 # Similar to `init` but only rebuilds our own services (Useful to speed up development but feel free to delete this)
