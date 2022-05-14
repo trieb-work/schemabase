@@ -15,17 +15,13 @@ const requestValidation = z.object({
     tenantId: z.string(),
   }),
   headers: z.object({
-    "x-saleor-domain": z.string(),
+    "saleor-domain": z.string(),
   }),
   body: z.object({
     auth_token: z.string(),
   }),
 });
 
-/**
- * The product data feed returns a google standard .csv file from products and
- * their attributes in your shop.#
- */
 const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   backgroundContext,
   req,
@@ -42,7 +38,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
    * Saleor in a container will not have a real domain, so we override it here :/
    * see https://github.com/trieb-work/eci/issues/88
    */
-  const domain = headers["x-saleor-domain"].replace("localhost", "saleor.eci");
+  const domain = headers["saleor-domain"].replace("localhost", "saleor.eci");
 
   ctx.logger = ctx.logger.with({ tenantId, saleor: domain });
   ctx.logger.info("Registering app");
@@ -55,6 +51,11 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     throw new HttpError(500, "No app found");
   }
 
+  /**
+   * TODO: Don't always install a "catch all" webhook.
+   * We should just install the webhook events we really need - and have different webhook events
+   * for different installedSaleorApps
+   */
   const app = await ctx.prisma.installedSaleorApp.create({
     data: {
       id: idResponse.app.id,
