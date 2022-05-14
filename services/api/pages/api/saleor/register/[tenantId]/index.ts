@@ -97,19 +97,23 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     traceId: ctx.trace.id,
   });
 
-  const saleorWebhook = await saleorClient.webhookCreate({
-    input: {
-      targetUrl: `${env.require("ECI_BASE_URL")}/api/saleor/webhook/v1/${
-        app.webhooks[0].id
-      }`,
-      events: [WebhookEventTypeEnum.AnyEvents],
-      secretKey: app.webhooks[0].secret!.secret,
-      isActive: true,
-      name: app.webhooks[0].name,
-      app: app.id,
-    },
-  });
-  ctx.logger.info("Added webhook to saleor", { saleorWebhook });
+  try {
+    const saleorWebhook = await saleorClient.webhookCreate({
+      input: {
+        targetUrl: `${env.require("ECI_BASE_URL")}/api/saleor/webhook/v1/${
+          app.webhooks[0].id
+        }`,
+        events: [WebhookEventTypeEnum.AnyEvents],
+        secretKey: app.webhooks[0].secret!.secret,
+        isActive: true,
+        name: app.webhooks[0].name,
+        app: app.id,
+      },
+    });
+    ctx.logger.info("Added webhook to saleor", { saleorWebhook });
+  } catch (error) {
+    ctx.logger.error(`Adding webhook to saleor failed!: ${error}`);
+  }
 };
 
 export default handleWebhook({
