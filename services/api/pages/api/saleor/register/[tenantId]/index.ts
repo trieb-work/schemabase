@@ -91,6 +91,12 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   });
 
   ctx.logger.info("Added app to db", { app });
+
+  res.json({
+    status: "received",
+    traceId: ctx.trace.id,
+  });
+
   const saleorWebhook = await saleorClient.webhookCreate({
     input: {
       targetUrl: `${env.require("ECI_BASE_URL")}/api/saleor/webhook/v1/${
@@ -104,11 +110,6 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     },
   });
   ctx.logger.info("Added webhook to saleor", { saleorWebhook });
-
-  res.json({
-    status: "received",
-    traceId: ctx.trace.id,
-  });
 };
 
 export default handleWebhook({
