@@ -6,13 +6,11 @@ version: "3.9"
 services:
   saleor_dashboard:
     container_name: dashboard.saleor.eci
-    # image: chronark/saleor-dashboard
     build:
       context: https://github.com/saleor/saleor-dashboard.git#3.0
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     ports:
-      - 9000:9000
-    command: npm start -- --host 0.0.0.0
+      - 9000:80
     depends_on:
       - saleor_api
 

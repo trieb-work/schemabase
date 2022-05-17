@@ -19,7 +19,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     query: { tenantId },
   } = req;
   ctx.logger = ctx.logger.with({ tenantId });
-  ctx.logger.info("Manifest requested");
+  ctx.logger.info("Saleor app manifest requested");
 
   const baseUrl = env.require("ECI_BASE_URL");
 
