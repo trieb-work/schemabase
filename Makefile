@@ -109,7 +109,7 @@ build-worker: build
 # Utility to stop, rebuild and restart the api in docker 
 rebuild-api:
 	docker compose stop eci_api
-	docker compose up -d eci_db
+#	docker compose up -d eci_db
 	docker compose build eci_api
 	docker compose up -d eci_api
 
@@ -120,7 +120,7 @@ rebuild-worker: export COMPOSE_DOCKER_CLI_BUILD=1
 rebuild-worker: export DOCKER_BUILDKIT=1
 rebuild-worker:
 	docker compose stop eci_worker
-	docker compose up -d eci_db
+#	docker compose up -d eci_db
 	docker compose build eci_worker
 	docker compose up -d eci_worker
 
