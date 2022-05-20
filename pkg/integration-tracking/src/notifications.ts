@@ -52,7 +52,7 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
       include: {
         sentEmail: true,
         package: {
-          include: { order: true, events: true },
+          include: { order: { include: { contacts: true } }, events: true },
         },
       },
     });
@@ -103,32 +103,34 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
       }
 
       const emailIds = await Promise.all(
-        packageEvent.package.order.emails.map(async (email) => {
-          const res = await this.emailTemplateSender.sendTemplate(
-            template.templateId,
-            "test@trieb.work",
-            {
-              time: packageEvent.time.toLocaleString(
-                packageEvent.package.order.language,
-              ),
-              newState: packageEvent.state,
-              message: packageEvent.message,
-              location: packageEvent.location,
-              trackingId: packageEvent.package.trackingId,
-            },
-          );
+        packageEvent.package.order.contacts
+          .filter((contact) => contact.email)
+          ?.map(async (contact) => {
+            const res = await this.emailTemplateSender.sendTemplate(
+              template.templateId,
+              "test@trieb.work",
+              {
+                time: packageEvent.time.toLocaleString(
+                  packageEvent.package.order.language,
+                ),
+                newState: packageEvent.state,
+                message: packageEvent.message,
+                location: packageEvent.location,
+                trackingId: packageEvent.package.trackingId,
+              },
+            );
 
-          await this.db.transactionalEmail.create({
-            data: {
-              id: id.id("email"),
-              time: new Date(),
-              email,
-              packageEventId: event.packageEventId,
-              sentEmailId: res.id,
-            },
-          });
-          return res.id;
-        }),
+            await this.db.transactionalEmail.create({
+              data: {
+                id: id.id("email"),
+                time: new Date(),
+                email: contact.email,
+                packageEventId: event.packageEventId,
+                sentEmailId: res.id,
+              },
+            });
+            return res.id;
+          }),
       );
       await this.onSuccess(ctx, { emailIds });
     }

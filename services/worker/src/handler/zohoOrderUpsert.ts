@@ -2,7 +2,13 @@ import { EventHandler, EventSchemaRegistry, OnSuccess } from "@eci/pkg/events";
 
 import { id } from "@eci/pkg/ids";
 import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
-import { PrismaClient, Language, PackageState, Carrier } from "@eci/pkg/prisma";
+import {
+  PrismaClient,
+  Language,
+  PackageState,
+  Carrier,
+  Order,
+} from "@eci/pkg/prisma";
 import { ILogger } from "@eci/pkg/logger";
 import { env } from "@eci/pkg/env";
 import { Context } from "@eci/pkg/context";
@@ -70,6 +76,9 @@ export class OrderUpdater
   ) {
     const zohoApp = await this.db.zohoApp.findUnique({
       where: { id: message.zohoAppId },
+      include: {
+        tenant: true,
+      },
     });
     if (zohoApp == null) {
       throw new Error(`No zoho app found: ${message.zohoAppId}`);
@@ -108,23 +117,47 @@ export class OrderUpdater
 
     this.logger.info("Upserting order", {
       externalOrderId: message.externalOrderId,
+      emails: message.emails,
     });
 
-    const order = await this.db.order.upsert({
-      where: {
-        externalOrderId: message.externalOrderId,
-      },
-      update: {
-        emails: message.emails,
-        language: language ?? undefined,
-      },
-      create: {
-        id: id.id("order"),
-        externalOrderId: message.externalOrderId,
-        emails: message.emails,
-        language: language ?? message.defaultLanguage,
-      },
-    });
+    let order: Order | undefined;
+    for (const email of message.emails) {
+      const existingContact = await this.db.contact.findFirst({
+        where: {
+          email,
+          tenantId: zohoApp.tenantId,
+        },
+      });
+
+      order = await this.db.order.upsert({
+        where: {
+          externalOrderId: message.externalOrderId,
+        },
+        update: {
+          language: language ?? undefined,
+        },
+        create: {
+          id: id.id("order"),
+          externalOrderId: message.externalOrderId,
+          tenantId: zohoApp.tenantId,
+          contacts: {
+            connectOrCreate: {
+              create: {
+                id: id.id("contact"),
+                email,
+                tenantId: zohoApp.tenantId,
+              },
+              where: {
+                id: existingContact?.id,
+              },
+            },
+          },
+          language: language ?? message.defaultLanguage,
+        },
+      });
+    }
+
+    if (!order) throw new Error("Order is undefined! Can't proceed");
 
     for (const p of message.packages) {
       this.logger.info("Upserting package", {

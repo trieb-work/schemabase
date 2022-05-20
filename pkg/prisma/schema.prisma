@@ -1,17 +1,33 @@
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
+  shadowDatabaseUrl    = env("SHADOW_DATABASE_URL")
+  referentialIntegrity = "prisma"
 }
+
 generator dbml {
   provider = "prisma-dbml-generator"
 }
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity"]
+}
+
+model Contact {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  email     String
+  orders    Order[]
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String @unique
 }
 
 model Order {
-  // internal id
+  // eci internal id
   id              String   @id
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -21,9 +37,12 @@ model Order {
   // saleorOrderId String? @unique
 
   // The end customers emails where we send transactional emails to
-  emails   String[]
+  contacts Contact[]
   language Language
   packages Package[]
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String @unique
 }
 
 enum PackageState {
@@ -299,7 +318,7 @@ model Tenant {
   // Human readable identifier
   name String
 
-  Subscriptions Subscription[]
+  subscriptions Subscription[]
 
   // App configurations
   saleorApps                  SaleorApp[]
@@ -313,7 +332,9 @@ model Tenant {
   trackingEmailApps           TrackingEmailApp[]
   dpdApps                     DpdApp[]
   trackingIntegrations        TrackingIntegration[]
-  ElasticLogDrainIntegration  ElasticLogDrainIntegration[]
+  elasticLogDrainIntegration  ElasticLogDrainIntegration[]
+  order                       Order[]
+  contact                     Contact[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
@@ -330,7 +351,7 @@ model Subscription {
   strapiToZohoIntegration    StrapiToZohoIntegration?
   logisticsIntegration       LogisticsIntegration?
   trackingIntegration        TrackingIntegration?
-  ElasticLogDrainIntegration ElasticLogDrainIntegration[]
+  elasticLogDrainIntegration ElasticLogDrainIntegration[]
 }
 
 // ----------------------------------------------------------------------------
@@ -436,7 +457,7 @@ model StrapiApp {
 // ----------------------------------------------------------------------------
 
 model IncomingWebhook {
-  id        String     @id 
+  id        String     @id
   // Human readable name
   name      String?
   createdAt DateTime   @default(now())

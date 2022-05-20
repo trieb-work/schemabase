@@ -2,14 +2,26 @@
 //// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 //// ------------------------------------------------------
 
+Table Contact {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  email String [not null]
+  orders Order [not null]
+  tenant Tenant [not null]
+  tenantId String [unique, not null]
+}
+
 Table Order {
   id String [pk]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   externalOrderId String [unique, not null]
-  emails String[] [not null]
+  contacts Contact [not null]
   language Language [not null]
   packages Package [not null]
+  tenant Tenant [not null]
+  tenantId String [unique, not null]
 }
 
 Table ElasticCluster {
@@ -177,7 +189,7 @@ Table InstalledSaleorApp {
 Table Tenant {
   id String [pk]
   name String [not null]
-  Subscriptions Subscription [not null]
+  subscriptions Subscription [not null]
   saleorApps SaleorApp [not null]
   zohoApps ZohoApp [not null]
   productdatafeedApps ProductDataFeedApp [not null]
@@ -189,7 +201,9 @@ Table Tenant {
   trackingEmailApps TrackingEmailApp [not null]
   dpdApps DpdApp [not null]
   trackingIntegrations TrackingIntegration [not null]
-  ElasticLogDrainIntegration ElasticLogDrainIntegration [not null]
+  elasticLogDrainIntegration ElasticLogDrainIntegration [not null]
+  order Order [not null]
+  contact Contact [not null]
 }
 
 Table Subscription {
@@ -201,7 +215,7 @@ Table Subscription {
   strapiToZohoIntegration StrapiToZohoIntegration
   logisticsIntegration LogisticsIntegration
   trackingIntegration TrackingIntegration
-  ElasticLogDrainIntegration ElasticLogDrainIntegration [not null]
+  elasticLogDrainIntegration ElasticLogDrainIntegration [not null]
 }
 
 Table TrackingIntegration {
@@ -300,6 +314,11 @@ Table SecretKey {
   incomingWebhookId String [unique, not null]
 }
 
+Table ContactToOrder {
+  ordersId String [ref: > Order.id]
+  contactsId String [ref: > Contact.id]
+}
+
 Enum PackageState {
   INIT
   INFORMATION_RECEIVED
@@ -322,6 +341,10 @@ Enum Language {
   DE
   EN
 }
+
+Ref: Contact.tenantId > Tenant.id [delete: Cascade]
+
+Ref: Order.tenantId > Tenant.id [delete: Cascade]
 
 Ref: ElasticLogDrainIntegration.subscriptionId > Subscription.id
 

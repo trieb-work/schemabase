@@ -1,6 +1,9 @@
 FROM node:14
 WORKDIR /eci
 
+ARG DATABASE_URL
+ENV DATABASE_URL $DATABASE_URL
+
 RUN npm i -g pnpm
 
 COPY package.json pnpm-lock.yaml ./
