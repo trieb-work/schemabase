@@ -10152,6 +10152,84 @@ export type ProductsQuery = {
   } | null;
 };
 
+export type SaleorCronOrdersOverviewQueryVariables = Exact<{
+  createdGte?: InputMaybe<Scalars["Date"]>;
+}>;
+
+export type SaleorCronOrdersOverviewQuery = {
+  __typename?: "Query";
+  orders?: {
+    __typename?: "OrderCountableConnection";
+    totalCount?: number | null;
+    pageInfo: {
+      __typename?: "PageInfo";
+      hasNextPage: boolean;
+      endCursor?: string | null;
+    };
+    edges: Array<{
+      __typename?: "OrderCountableEdge";
+      node: {
+        __typename?: "Order";
+        id: string;
+        created: any;
+        number?: string | null;
+        channel: { __typename?: "Channel"; id: string; name: string };
+        total: {
+          __typename?: "TaxedMoney";
+          currency: string;
+          gross: { __typename?: "Money"; amount: number };
+          net: { __typename?: "Money"; amount: number };
+        };
+      };
+    }>;
+  } | null;
+};
+
+export type SaleorCronPaymentsQueryVariables = Exact<{
+  createdGte?: InputMaybe<Scalars["Date"]>;
+  after?: InputMaybe<Scalars["String"]>;
+}>;
+
+export type SaleorCronPaymentsQuery = {
+  __typename?: "Query";
+  orders?: {
+    __typename?: "OrderCountableConnection";
+    totalCount?: number | null;
+    pageInfo: {
+      __typename?: "PageInfo";
+      hasNextPage: boolean;
+      endCursor?: string | null;
+      startCursor?: string | null;
+    };
+    edges: Array<{
+      __typename?: "OrderCountableEdge";
+      node: {
+        __typename?: "Order";
+        id: string;
+        channel: { __typename?: "Channel"; id: string; name: string };
+        payments?: Array<{
+          __typename?: "Payment";
+          id: string;
+          gateway: string;
+          created: any;
+          modified: any;
+          paymentMethodType: string;
+          transactions?: Array<{
+            __typename?: "Transaction";
+            id: string;
+            token: string;
+          } | null> | null;
+          total?: {
+            __typename?: "Money";
+            currency: string;
+            amount: number;
+          } | null;
+        } | null> | null;
+      };
+    }>;
+  } | null;
+};
+
 export const AppInstallDocument = gql`
   mutation appInstall($input: AppInstallInput!) {
     appInstall(input: $input) {
@@ -10397,6 +10475,77 @@ export const ProductsDocument = gql`
     }
   }
 `;
+export const SaleorCronOrdersOverviewDocument = gql`
+  query saleorCronOrdersOverview($createdGte: Date) {
+    orders(first: 100, filter: { created: { gte: $createdGte } }) {
+      totalCount
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      edges {
+        node {
+          id
+          created
+          number
+          channel {
+            id
+            name
+          }
+          total {
+            currency
+            gross {
+              amount
+            }
+            net {
+              amount
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+export const SaleorCronPaymentsDocument = gql`
+  query saleorCronPayments($createdGte: Date, $after: String) {
+    orders(
+      first: 100
+      after: $after
+      filter: { created: { gte: $createdGte } }
+    ) {
+      totalCount
+      pageInfo {
+        hasNextPage
+        endCursor
+        startCursor
+      }
+      edges {
+        node {
+          id
+          channel {
+            id
+            name
+          }
+          payments {
+            id
+            gateway
+            created
+            modified
+            paymentMethodType
+            transactions {
+              id
+              token
+            }
+            total {
+              currency
+              amount
+            }
+          }
+        }
+      }
+    }
+  }
+`;
 export type Requester<C = {}> = <R, V>(
   doc: DocumentNode,
   vars?: V,
@@ -10526,6 +10675,24 @@ export function getSdk<C>(requester: Requester<C>) {
         variables,
         options,
       );
+    },
+    saleorCronOrdersOverview(
+      variables?: SaleorCronOrdersOverviewQueryVariables,
+      options?: C,
+    ): Promise<SaleorCronOrdersOverviewQuery> {
+      return requester<
+        SaleorCronOrdersOverviewQuery,
+        SaleorCronOrdersOverviewQueryVariables
+      >(SaleorCronOrdersOverviewDocument, variables, options);
+    },
+    saleorCronPayments(
+      variables?: SaleorCronPaymentsQueryVariables,
+      options?: C,
+    ): Promise<SaleorCronPaymentsQuery> {
+      return requester<
+        SaleorCronPaymentsQuery,
+        SaleorCronPaymentsQueryVariables
+      >(SaleorCronPaymentsDocument, variables, options);
     },
   };
 }
