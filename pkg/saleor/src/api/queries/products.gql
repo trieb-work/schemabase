@@ -79,3 +79,71 @@ query products($first: Int!, $channel: String) {
     }
   }
 }
+
+query saleorCronOrdersOverview( $createdGte: Date )  {
+  orders(first: 100, filter: { created: { gte: $createdGte } }) {
+    totalCount
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      node {
+        id
+        created
+        number
+        channel {
+          id
+          name
+        }
+        total {
+          currency
+          gross {
+            amount
+          }
+          net {
+            amount
+          }
+        }
+      }
+    }
+  }
+}
+
+query saleorCronPayments($createdGte: Date, $after: String) {
+  orders(first: 100, after: $after, filter: { created: { gte: $createdGte } }) {
+    totalCount
+    pageInfo {
+      hasNextPage
+      endCursor
+      startCursor
+    }
+    edges {
+      node {
+        id
+        channel {
+          id
+          name
+        }
+        payments {
+          id
+          gateway
+          created
+          modified
+          paymentMethodType
+          transactions {
+            id
+            # token is the Braintree Transaction ID
+            token
+          }
+          total {
+            currency
+            amount
+          }
+        }
+      }
+    }
+  }
+}
+
+
