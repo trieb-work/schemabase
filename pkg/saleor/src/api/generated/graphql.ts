@@ -10056,6 +10056,84 @@ export type AppQuery = {
   } | null;
 };
 
+export type SaleorCronOrdersOverviewQueryVariables = Exact<{
+  createdGte?: InputMaybe<Scalars["Date"]>;
+}>;
+
+export type SaleorCronOrdersOverviewQuery = {
+  __typename?: "Query";
+  orders?: {
+    __typename?: "OrderCountableConnection";
+    totalCount?: number | null;
+    pageInfo: {
+      __typename?: "PageInfo";
+      hasNextPage: boolean;
+      endCursor?: string | null;
+    };
+    edges: Array<{
+      __typename?: "OrderCountableEdge";
+      node: {
+        __typename?: "Order";
+        id: string;
+        created: any;
+        number?: string | null;
+        channel: { __typename?: "Channel"; id: string; name: string };
+        total: {
+          __typename?: "TaxedMoney";
+          currency: string;
+          gross: { __typename?: "Money"; amount: number };
+          net: { __typename?: "Money"; amount: number };
+        };
+      };
+    }>;
+  } | null;
+};
+
+export type SaleorCronPaymentsQueryVariables = Exact<{
+  createdGte?: InputMaybe<Scalars["Date"]>;
+  after?: InputMaybe<Scalars["String"]>;
+}>;
+
+export type SaleorCronPaymentsQuery = {
+  __typename?: "Query";
+  orders?: {
+    __typename?: "OrderCountableConnection";
+    totalCount?: number | null;
+    pageInfo: {
+      __typename?: "PageInfo";
+      hasNextPage: boolean;
+      endCursor?: string | null;
+      startCursor?: string | null;
+    };
+    edges: Array<{
+      __typename?: "OrderCountableEdge";
+      node: {
+        __typename?: "Order";
+        id: string;
+        channel: { __typename?: "Channel"; id: string; name: string };
+        payments?: Array<{
+          __typename?: "Payment";
+          id: string;
+          gateway: string;
+          created: any;
+          modified: any;
+          paymentMethodType: string;
+          transactions?: Array<{
+            __typename?: "Transaction";
+            id: string;
+            token: string;
+          } | null> | null;
+          total?: {
+            __typename?: "Money";
+            currency: string;
+            amount: number;
+          } | null;
+        } | null> | null;
+      };
+    }>;
+  } | null;
+};
+
 export type ProductsQueryVariables = Exact<{
   first: Scalars["Int"];
   channel?: InputMaybe<Scalars["String"]>;
@@ -10146,84 +10224,6 @@ export type ProductsQuery = {
             __typename?: "ProductImage";
             url: string;
           } | null> | null;
-        } | null> | null;
-      };
-    }>;
-  } | null;
-};
-
-export type SaleorCronOrdersOverviewQueryVariables = Exact<{
-  createdGte?: InputMaybe<Scalars["Date"]>;
-}>;
-
-export type SaleorCronOrdersOverviewQuery = {
-  __typename?: "Query";
-  orders?: {
-    __typename?: "OrderCountableConnection";
-    totalCount?: number | null;
-    pageInfo: {
-      __typename?: "PageInfo";
-      hasNextPage: boolean;
-      endCursor?: string | null;
-    };
-    edges: Array<{
-      __typename?: "OrderCountableEdge";
-      node: {
-        __typename?: "Order";
-        id: string;
-        created: any;
-        number?: string | null;
-        channel: { __typename?: "Channel"; id: string; name: string };
-        total: {
-          __typename?: "TaxedMoney";
-          currency: string;
-          gross: { __typename?: "Money"; amount: number };
-          net: { __typename?: "Money"; amount: number };
-        };
-      };
-    }>;
-  } | null;
-};
-
-export type SaleorCronPaymentsQueryVariables = Exact<{
-  createdGte?: InputMaybe<Scalars["Date"]>;
-  after?: InputMaybe<Scalars["String"]>;
-}>;
-
-export type SaleorCronPaymentsQuery = {
-  __typename?: "Query";
-  orders?: {
-    __typename?: "OrderCountableConnection";
-    totalCount?: number | null;
-    pageInfo: {
-      __typename?: "PageInfo";
-      hasNextPage: boolean;
-      endCursor?: string | null;
-      startCursor?: string | null;
-    };
-    edges: Array<{
-      __typename?: "OrderCountableEdge";
-      node: {
-        __typename?: "Order";
-        id: string;
-        channel: { __typename?: "Channel"; id: string; name: string };
-        payments?: Array<{
-          __typename?: "Payment";
-          id: string;
-          gateway: string;
-          created: any;
-          modified: any;
-          paymentMethodType: string;
-          transactions?: Array<{
-            __typename?: "Transaction";
-            id: string;
-            token: string;
-          } | null> | null;
-          total?: {
-            __typename?: "Money";
-            currency: string;
-            amount: number;
-          } | null;
         } | null> | null;
       };
     }>;
@@ -10392,6 +10392,77 @@ export const AppDocument = gql`
     }
   }
 `;
+export const SaleorCronOrdersOverviewDocument = gql`
+  query saleorCronOrdersOverview($createdGte: Date) {
+    orders(first: 100, filter: { created: { gte: $createdGte } }) {
+      totalCount
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      edges {
+        node {
+          id
+          created
+          number
+          channel {
+            id
+            name
+          }
+          total {
+            currency
+            gross {
+              amount
+            }
+            net {
+              amount
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+export const SaleorCronPaymentsDocument = gql`
+  query saleorCronPayments($createdGte: Date, $after: String) {
+    orders(
+      first: 100
+      after: $after
+      filter: { created: { gte: $createdGte } }
+    ) {
+      totalCount
+      pageInfo {
+        hasNextPage
+        endCursor
+        startCursor
+      }
+      edges {
+        node {
+          id
+          channel {
+            id
+            name
+          }
+          payments {
+            id
+            gateway
+            created
+            modified
+            paymentMethodType
+            transactions {
+              id
+              token
+            }
+            total {
+              currency
+              amount
+            }
+          }
+        }
+      }
+    }
+  }
+`;
 export const ProductsDocument = gql`
   query products($first: Int!, $channel: String) {
     products(first: $first, channel: $channel) {
@@ -10468,77 +10539,6 @@ export const ProductsDocument = gql`
             }
             images {
               url
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-export const SaleorCronOrdersOverviewDocument = gql`
-  query saleorCronOrdersOverview($createdGte: Date) {
-    orders(first: 100, filter: { created: { gte: $createdGte } }) {
-      totalCount
-      pageInfo {
-        hasNextPage
-        endCursor
-      }
-      edges {
-        node {
-          id
-          created
-          number
-          channel {
-            id
-            name
-          }
-          total {
-            currency
-            gross {
-              amount
-            }
-            net {
-              amount
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-export const SaleorCronPaymentsDocument = gql`
-  query saleorCronPayments($createdGte: Date, $after: String) {
-    orders(
-      first: 100
-      after: $after
-      filter: { created: { gte: $createdGte } }
-    ) {
-      totalCount
-      pageInfo {
-        hasNextPage
-        endCursor
-        startCursor
-      }
-      edges {
-        node {
-          id
-          channel {
-            id
-            name
-          }
-          payments {
-            id
-            gateway
-            created
-            modified
-            paymentMethodType
-            transactions {
-              id
-              token
-            }
-            total {
-              currency
-              amount
             }
           }
         }
@@ -10666,16 +10666,6 @@ export function getSdk<C>(requester: Requester<C>) {
         options,
       );
     },
-    products(
-      variables: ProductsQueryVariables,
-      options?: C,
-    ): Promise<ProductsQuery> {
-      return requester<ProductsQuery, ProductsQueryVariables>(
-        ProductsDocument,
-        variables,
-        options,
-      );
-    },
     saleorCronOrdersOverview(
       variables?: SaleorCronOrdersOverviewQueryVariables,
       options?: C,
@@ -10693,6 +10683,16 @@ export function getSdk<C>(requester: Requester<C>) {
         SaleorCronPaymentsQuery,
         SaleorCronPaymentsQueryVariables
       >(SaleorCronPaymentsDocument, variables, options);
+    },
+    products(
+      variables: ProductsQueryVariables,
+      options?: C,
+    ): Promise<ProductsQuery> {
+      return requester<ProductsQuery, ProductsQueryVariables>(
+        ProductsDocument,
+        variables,
+        options,
+      );
     },
   };
 }
