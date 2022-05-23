@@ -86,9 +86,10 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
       )?.values[0]?.name;
 
       // if we want to prefer the title instead of the seoTitle
-      // const title = product.name ? product.name : product.seoTitle;
+      const title = rawProduct.name ? rawProduct.name : rawProduct.seoTitle;
 
-      const title = rawProduct.seoTitle ? rawProduct.seoTitle : rawProduct.name;
+      // if we want to prefer the seo title
+      // const title = rawProduct.seoTitle ? rawProduct.seoTitle : rawProduct.name;
 
       let description = "";
       try {
