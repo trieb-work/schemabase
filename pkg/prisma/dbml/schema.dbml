@@ -2,12 +2,23 @@
 //// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 //// ------------------------------------------------------
 
+Table Company {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  contacts Contact [not null]
+  tenant Tenant [not null]
+  tenantId String [unique, not null]
+}
+
 Table Contact {
   id String [pk]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-  email String [not null]
+  email String
   orders Order [not null]
+  company Company
+  companyId String [unique]
   tenant Tenant [not null]
   tenantId String [unique, not null]
 }
@@ -161,6 +172,7 @@ Table ZohoApp {
   logisticsIntegrations LogisticsIntegration [not null]
   trackingIntegrations TrackingIntegration [not null]
   webhooks IncomingWebhook [not null]
+  saleorZohoIntegration SaleorZohoIntegration [not null]
 }
 
 Table SaleorApp {
@@ -171,7 +183,6 @@ Table SaleorApp {
   installedSaleorApp InstalledSaleorApp
   tenant Tenant [not null]
   tenantId String [not null]
-  productDataFeedIntegration ProductDataFeedIntegration [not null]
 
   indexes {
     (domain, channelSlug) [unique]
@@ -184,6 +195,8 @@ Table InstalledSaleorApp {
   token String [not null]
   saleorApp SaleorApp [not null]
   saleorAppId String [unique, not null]
+  saleorZohoIntegration SaleorZohoIntegration [not null]
+  productDataFeedIntegration ProductDataFeedIntegration [not null]
 }
 
 Table Tenant {
@@ -204,6 +217,8 @@ Table Tenant {
   elasticLogDrainIntegration ElasticLogDrainIntegration [not null]
   order Order [not null]
   contact Contact [not null]
+  company Company [not null]
+  saleorZohoIntegration SaleorZohoIntegration [not null]
 }
 
 Table Subscription {
@@ -216,6 +231,7 @@ Table Subscription {
   logisticsIntegration LogisticsIntegration
   trackingIntegration TrackingIntegration
   elasticLogDrainIntegration ElasticLogDrainIntegration [not null]
+  saleorZohoIntegration SaleorZohoIntegration [not null]
 }
 
 Table TrackingIntegration {
@@ -242,8 +258,25 @@ Table ProductDataFeedIntegration {
   tenantId String [not null]
   productDataFeedApp ProductDataFeedApp [not null]
   productDataFeedAppId String [unique, not null]
-  saleorApp SaleorApp [not null]
-  saleorAppId String [not null]
+  installedSaleorApp InstalledSaleorApp
+  installedSaleorAppId String
+}
+
+Table SaleorZohoIntegration {
+  id String [pk]
+  enabled Boolean [not null, default: true]
+  subscription Subscription
+  subscriptionId String [unique]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  zohoApp ZohoApp [not null]
+  zohoAppId String [not null]
+  installedSaleorApp InstalledSaleorApp [not null]
+  installedSaleorAppId String [not null]
+  syncOrders Boolean [not null, default: false]
+  syncInvoices Boolean [not null, default: false]
+  syncPayments Boolean [not null, default: false]
+  syncProductStocks Boolean [not null, default: false]
 }
 
 Table LogisticsIntegration {
@@ -342,6 +375,10 @@ Enum Language {
   EN
 }
 
+Ref: Company.tenantId > Tenant.id [delete: Cascade]
+
+Ref: Contact.companyId > Company.id
+
 Ref: Contact.tenantId > Tenant.id [delete: Cascade]
 
 Ref: Order.tenantId > Tenant.id [delete: Cascade]
@@ -394,7 +431,15 @@ Ref: ProductDataFeedIntegration.tenantId > Tenant.id [delete: Cascade]
 
 Ref: ProductDataFeedIntegration.productDataFeedAppId - ProductDataFeedApp.id
 
-Ref: ProductDataFeedIntegration.saleorAppId > SaleorApp.id
+Ref: ProductDataFeedIntegration.installedSaleorAppId > InstalledSaleorApp.id
+
+Ref: SaleorZohoIntegration.subscriptionId > Subscription.id
+
+Ref: SaleorZohoIntegration.tenantId > Tenant.id [delete: Cascade]
+
+Ref: SaleorZohoIntegration.zohoAppId > ZohoApp.id
+
+Ref: SaleorZohoIntegration.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
 
 Ref: LogisticsIntegration.subscriptionId - Subscription.id
 

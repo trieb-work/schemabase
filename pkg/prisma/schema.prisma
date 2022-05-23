@@ -1,6 +1,6 @@
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider             = "mysql"
+  url                  = env("DATABASE_URL")
   shadowDatabaseUrl    = env("SHADOW_DATABASE_URL")
   referentialIntegrity = "prisma"
 }
@@ -10,17 +10,36 @@ generator dbml {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["referentialIntegrity"]
 }
 
+model Company {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  contacts Contact[]
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String @unique
+
+
+}
+
+// The ECI internal contact model. One contact has one E-Mail address only.
 model Contact {
   // eci internal id
   id        String   @id
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  email     String
+  email     String?
   orders    Order[]
+
+  // A Contact can be related to one company
+  company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?   @unique
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String @unique
@@ -32,9 +51,6 @@ model Order {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   externalOrderId String   @unique
-  // tenant relation
-  // zohoOrderId String? @unique
-  // saleorOrderId String? @unique
 
   // The end customers emails where we send transactional emails to
   contacts Contact[]
@@ -213,8 +229,6 @@ model ProductDataFeedApp {
   // Graphql endpoint of a saleor app
   productDetailStorefrontURL String
 
-
-
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String @unique
 
@@ -257,13 +271,14 @@ model ZohoApp {
   logisticsIntegrations    LogisticsIntegration[]
   trackingIntegrations     TrackingIntegration[]
 
-  webhooks IncomingWebhook[]
+  webhooks              IncomingWebhook[]
+  saleorZohoIntegration SaleorZohoIntegration[]
 }
 
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor
 // server and receive webhooks with event notifications from Saleor.
 // Every tenant can have multiple saleor apps which correspond to different
-// saleor instances.
+// saleor instances. Per saleor instance and channel we have just one SaleorApp (we use the shop domain as identification)
 model SaleorApp {
 
   id String @id
@@ -283,7 +298,7 @@ model SaleorApp {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  productDataFeedIntegration ProductDataFeedIntegration[]
+
 
   @@unique([domain, channelSlug])
 }
@@ -295,8 +310,7 @@ model InstalledSaleorApp {
   id String @id
 
   // Every SaleorApp can have multiple webhooks configured.
-  // This is not really necessary because a webhook can fire on multiple events
-  // but let's be on the safe side.
+  // One webhook can fire on multiple events. But for sync webhooks, we need a different one
   webhooks IncomingWebhook[]
 
   // Unlike regular users, Saleor Apps use a bearer token. The token is
@@ -308,6 +322,10 @@ model InstalledSaleorApp {
 
   saleorApp   SaleorApp @relation(fields: [saleorAppId], references: [id], onDelete: Cascade)
   saleorAppId String    @unique
+
+  saleorZohoIntegration SaleorZohoIntegration[]
+
+  productDataFeedIntegration ProductDataFeedIntegration[]
 }
 
 // One tenant per company
@@ -335,6 +353,8 @@ model Tenant {
   elasticLogDrainIntegration  ElasticLogDrainIntegration[]
   order                       Order[]
   contact                     Contact[]
+  company                     Company[]
+  saleorZohoIntegration       SaleorZohoIntegration[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
@@ -352,6 +372,7 @@ model Subscription {
   logisticsIntegration       LogisticsIntegration?
   trackingIntegration        TrackingIntegration?
   elasticLogDrainIntegration ElasticLogDrainIntegration[]
+  saleorZohoIntegration      SaleorZohoIntegration[]
 }
 
 // ----------------------------------------------------------------------------
@@ -392,8 +413,36 @@ model ProductDataFeedIntegration {
 
   productDataFeedApp   ProductDataFeedApp @relation(fields: [productDataFeedAppId], references: [id])
   productDataFeedAppId String             @unique
-  saleorApp            SaleorApp          @relation(fields: [saleorAppId], references: [id])
-  saleorAppId          String
+
+  installedSaleorApp   InstalledSaleorApp? @relation(fields: [installedSaleorAppId], references: [id])
+  installedSaleorAppId String?
+}
+
+model SaleorZohoIntegration {
+  id String @id
+
+  // Allow the user to manually enabled or disable the integration
+  // Regardless of current subscription state.
+  enabled Boolean @default(true)
+
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  subscriptionId String?       @unique
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id])
+  zohoAppId String
+
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String
+
+  syncOrders        Boolean @default(false)
+  syncInvoices      Boolean @default(false)
+  syncPayments      Boolean @default(false)
+  syncProductStocks Boolean @default(false)
+
 }
 
 model LogisticsIntegration {
