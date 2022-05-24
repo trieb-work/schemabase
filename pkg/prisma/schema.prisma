@@ -14,6 +14,85 @@ generator client {
   previewFeatures = ["referentialIntegrity"]
 }
 
+// Zoho specific model.
+model ZohoPayment {
+  // Zoho Internal Id
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  payment   Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  paymentId String  @unique
+
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId String
+
+
+  @@unique([id, zohoAppId])
+}
+
+// Saleor specific model for payments.
+model SaleorPayment {
+  // Saleor Internal Id
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  payment   Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  paymentId String  @unique
+
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String
+
+  @@unique([id, installedSaleorAppId])
+}
+
+// Zoho specific model for item metadata. For simplicity, we don't use a seperate product and product variant table.
+model ZohoItem {
+  // Zoho Internal Id
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  productVariant  ProductVariant @relation(fields: [productVarianId], references: [id], onDelete: Cascade)
+  productVarianId String
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId String
+
+
+  @@unique([id, zohoAppId])
+}
+
+
+// categorize payments by payment type
+enum PaymentMethodType {
+  paypal
+  card
+  banktransfer
+}
+// The ECI internal payments model
+model Payment {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  amount        Float
+  paymentMethod PaymentMethodType?
+
+
+  tenant        Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId      String          @unique
+  
+  zohoPayment   ZohoPayment[]
+  saleorPayment SaleorPayment[]
+}
+
 model Company {
   // eci internal id
   id        String   @id
@@ -39,18 +118,21 @@ model Contact {
 
   // A Contact can be related to one company
   company   Company? @relation(fields: [companyId], references: [id])
-  companyId String?   @unique
+  companyId String?  @unique
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String @unique
 }
 
+// The ECI internal Order model.
 model Order {
   // eci internal id
-  id              String   @id
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  externalOrderId String   @unique
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // deprecated!
+  externalOrderId String @unique
 
   // The end customers emails where we send transactional emails to
   contacts Contact[]
@@ -59,6 +141,38 @@ model Order {
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String @unique
+}
+
+// The ECI internal Product model
+model Product {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  variants ProductVariant[]
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String @unique
+
+}
+
+// The ECI internal ProductVariant Model. One product can have one ore many Product Variants
+model ProductVariant {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sku String?
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String  @unique
+
+  tenant   Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String     @unique
+  
+  zohoItem ZohoItem[]
 }
 
 enum PackageState {
@@ -138,6 +252,7 @@ model ElasticLogDrainIntegration {
 
 }
 
+// The ECI Internal Package model
 model Package {
   // internal id
   id                 String         @id
@@ -273,6 +388,8 @@ model ZohoApp {
 
   webhooks              IncomingWebhook[]
   saleorZohoIntegration SaleorZohoIntegration[]
+  zohoPayment           ZohoPayment[]
+  ZohoItem              ZohoItem[]
 }
 
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor
@@ -303,11 +420,23 @@ model SaleorApp {
   @@unique([domain, channelSlug])
 }
 
+// All ECI Integrations for Saleor should be handled as individual Apps that could be installed via the Marketplace for example
+// And the different AppTypes have different settings / webhooks / permissions
+enum SaleorAppType {
+  productdatafeed
+  zohointegration
+  mailchimpintegration
+  paymentgatewaybanktransfer
+}
+
 model InstalledSaleorApp {
   // The saleor application id
   // This is the id for the app on saleor's side and can be used in queries and
   // mutations to identify the app.
   id String @id
+
+  // should be made mandatory later.
+  type SaleorAppType?
 
   // Every SaleorApp can have multiple webhooks configured.
   // One webhook can fire on multiple events. But for sync webhooks, we need a different one
@@ -326,6 +455,7 @@ model InstalledSaleorApp {
   saleorZohoIntegration SaleorZohoIntegration[]
 
   productDataFeedIntegration ProductDataFeedIntegration[]
+  saleorPayment              SaleorPayment[]
 }
 
 // One tenant per company
@@ -355,6 +485,9 @@ model Tenant {
   contact                     Contact[]
   company                     Company[]
   saleorZohoIntegration       SaleorZohoIntegration[]
+  product                     Product[]
+  productVariant              ProductVariant[]
+  payment                     Payment[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
@@ -418,6 +551,9 @@ model ProductDataFeedIntegration {
   installedSaleorAppId String?
 }
 
+// The saleor zoho integration consists of several, individual sync jobs
+// - from both sides to the internal ECI database and from the ECI database to the other system
+//
 model SaleorZohoIntegration {
   id String @id
 
@@ -438,10 +574,15 @@ model SaleorZohoIntegration {
   installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
   installedSaleorAppId String
 
+  // We can create the needed bull jobs for every sync entity, that is enabled
   syncOrders        Boolean @default(false)
   syncInvoices      Boolean @default(false)
   syncPayments      Boolean @default(false)
   syncProductStocks Boolean @default(false)
+
+  // How frequent the synchronisation should run. Default once per hour.
+  cronScheduleZoho   String @default("0 * * * *")
+  cronScheduleSaleor String @default("0 * * * *")
 
 }
 
