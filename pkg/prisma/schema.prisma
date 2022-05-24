@@ -389,7 +389,7 @@ model ZohoApp {
   webhooks              IncomingWebhook[]
   saleorZohoIntegration SaleorZohoIntegration[]
   zohoPayment           ZohoPayment[]
-  ZohoItem              ZohoItem[]
+  zohoItem              ZohoItem[]
 }
 
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor
