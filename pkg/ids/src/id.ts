@@ -13,7 +13,11 @@ const prefixes = {
   contact: "c",
   invoice: "i",
   payment: "p",
-  article: "a",
+  /**
+   * Product Variant
+   */
+  variant: "pro_v",
+  product: "pro",
   /**
    * Only used in automatic tests
    */

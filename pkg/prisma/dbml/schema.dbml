@@ -30,12 +30,54 @@ Table SaleorPayment {
   }
 }
 
+Table SaleorProductVariant {
+  id String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  productVariant ProductVariant [not null]
+  productVariantId String [unique, not null]
+  installedSaleorApp InstalledSaleorApp [not null]
+  installedSaleorAppId String [not null]
+
+  indexes {
+    (id, installedSaleorAppId) [unique]
+  }
+}
+
+Table SaleorWarehouse {
+  id String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  warehouse Warehouse [not null]
+  warehouseId String [unique, not null]
+  installedSaleorApp InstalledSaleorApp [not null]
+  installedSaleorAppId String [not null]
+
+  indexes {
+    (id, installedSaleorAppId) [unique]
+  }
+}
+
 Table ZohoItem {
   id String [not null]
   createdAt DateTime [not null]
   updatedAt DateTime [not null]
   productVariant ProductVariant [not null]
-  productVarianId String [not null]
+  productVariantId String [not null]
+  zohoApp ZohoApp [not null]
+  zohoAppId String [not null]
+
+  indexes {
+    (id, zohoAppId) [unique]
+  }
+}
+
+Table ZohoWarehouse {
+  id String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  warehouse Warehouse [not null]
+  warehouseId String [not null]
   zohoApp ZohoApp [not null]
   zohoAppId String [not null]
 
@@ -77,6 +119,31 @@ Table Contact {
   tenantId String [unique, not null]
 }
 
+Table Warehouse {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  tenant Tenant [not null]
+  tenantId String [unique, not null]
+  zohoWarehouse ZohoWarehouse [not null]
+  saleorWarehouse SaleorWarehouse [not null]
+}
+
+Table OrderLine {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  order Order
+  orderId String
+  quantity Float [not null]
+  totalPriceGross Float [not null]
+  totalPriceNet Float [not null]
+  currency Currency [not null, default: 'EUR']
+  productVariant ProductVariant [not null]
+  productVariantId String [not null]
+  sku String [not null]
+}
+
 Table Order {
   id String [pk]
   createdAt DateTime [default: `now()`, not null]
@@ -85,6 +152,7 @@ Table Order {
   contacts Contact [not null]
   language Language [not null]
   packages Package [not null]
+  orderlines OrderLine [not null]
   tenant Tenant [not null]
   tenantId String [unique, not null]
 }
@@ -93,9 +161,14 @@ Table Product {
   id String [pk]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
+  name String
   variants ProductVariant [not null]
   tenant Tenant [not null]
-  tenantId String [unique, not null]
+  tenantId String [not null]
+
+  indexes {
+    (name, tenantId) [unique]
+  }
 }
 
 Table ProductVariant {
@@ -104,10 +177,16 @@ Table ProductVariant {
   updatedAt DateTime [not null]
   sku String
   product Product [not null]
-  productId String [unique, not null]
+  productId String [not null]
   tenant Tenant [not null]
-  tenantId String [unique, not null]
+  tenantId String [not null]
+  orderLine OrderLine [not null]
   zohoItem ZohoItem [not null]
+  saleorProductVariant SaleorProductVariant [not null]
+
+  indexes {
+    (sku, tenantId) [unique]
+  }
 }
 
 Table ElasticCluster {
@@ -250,6 +329,7 @@ Table ZohoApp {
   saleorZohoIntegration SaleorZohoIntegration [not null]
   zohoPayment ZohoPayment [not null]
   zohoItem ZohoItem [not null]
+  zohoWarehouse ZohoWarehouse [not null]
 }
 
 Table SaleorApp {
@@ -276,6 +356,8 @@ Table InstalledSaleorApp {
   saleorZohoIntegration SaleorZohoIntegration [not null]
   productDataFeedIntegration ProductDataFeedIntegration [not null]
   saleorPayment SaleorPayment [not null]
+  saleorProductVariant SaleorProductVariant [not null]
+  saleorWarehouse SaleorWarehouse [not null]
 }
 
 Table Tenant {
@@ -301,6 +383,7 @@ Table Tenant {
   product Product [not null]
   productVariant ProductVariant [not null]
   payment Payment [not null]
+  warehouse Warehouse [not null]
 }
 
 Table Subscription {
@@ -442,6 +525,11 @@ Enum PaymentMethodType {
   banktransfer
 }
 
+Enum Currency {
+  EUR
+  USD
+}
+
 Enum PackageState {
   INIT
   INFORMATION_RECEIVED
@@ -480,9 +568,21 @@ Ref: SaleorPayment.paymentId > Payment.id [delete: Cascade]
 
 Ref: SaleorPayment.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
 
-Ref: ZohoItem.productVarianId > ProductVariant.id [delete: Cascade]
+Ref: SaleorProductVariant.productVariantId > ProductVariant.id [delete: Cascade]
+
+Ref: SaleorProductVariant.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
+
+Ref: SaleorWarehouse.warehouseId > Warehouse.id [delete: Cascade]
+
+Ref: SaleorWarehouse.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
+
+Ref: ZohoItem.productVariantId > ProductVariant.id [delete: Cascade]
 
 Ref: ZohoItem.zohoAppId > ZohoApp.id [delete: Cascade]
+
+Ref: ZohoWarehouse.warehouseId > Warehouse.id [delete: Cascade]
+
+Ref: ZohoWarehouse.zohoAppId > ZohoApp.id [delete: Cascade]
 
 Ref: Payment.tenantId > Tenant.id [delete: Cascade]
 
@@ -491,6 +591,12 @@ Ref: Company.tenantId > Tenant.id [delete: Cascade]
 Ref: Contact.companyId > Company.id
 
 Ref: Contact.tenantId > Tenant.id [delete: Cascade]
+
+Ref: Warehouse.tenantId > Tenant.id [delete: Cascade]
+
+Ref: OrderLine.orderId > Order.id
+
+Ref: OrderLine.(productVariantId, sku) > ProductVariant.(id, sku)
 
 Ref: Order.tenantId > Tenant.id [delete: Cascade]
 

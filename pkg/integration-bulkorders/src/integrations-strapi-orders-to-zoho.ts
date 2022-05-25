@@ -81,7 +81,7 @@ export class StrapiOrdersToZoho {
     taxPercentage: number;
   }> {
     if (!this.products[productId]) {
-      const item = await this.zoho.item.retrieve(productId);
+      const item = await this.zoho.item.get(productId);
       this.products[productId] = {
         taxId: item.tax_id,
         taxPercentage: item.tax_percentage,
