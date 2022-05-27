@@ -125,6 +125,9 @@ export class ZohoContactSyncService {
           },
           createdAt: new Date(contact.created_time),
           updatedAt: new Date(contact.last_modified_time),
+          firstName: contact.first_name,
+          lastName: contact.last_name,
+          email: lowercaseEmail,
           zohoApp: {
             connect: {
               id: this.zohoApp.id,
@@ -134,6 +137,9 @@ export class ZohoContactSyncService {
         update: {
           createdAt: new Date(contact.created_time),
           updatedAt: new Date(contact.last_modified_time),
+          firstName: contact.first_name,
+          lastName: contact.last_name,
+          email: lowercaseEmail,
           contact: {
             update: {
               email: lowercaseEmail,

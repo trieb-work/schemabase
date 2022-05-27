@@ -119,6 +119,12 @@ model ZohoContact {
   createdAt DateTime
   updatedAt DateTime
 
+  // For easy look-up directly in the ZohoContact model,
+  // we store the email firstname etc here as well.
+  firstName String?
+  lastName  String?
+  email     String?
+
   contact   Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
   contactId String
 
