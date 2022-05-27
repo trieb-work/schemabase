@@ -10045,6 +10045,6 @@ describe("Zoho Inventory Item Sync", () => {
       db: new PrismaClient(),
       zohoApp,
     });
-    await xx.sync();
+    await xx.syncToECI();
   }, 90000);
 });

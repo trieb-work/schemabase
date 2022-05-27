@@ -10,13 +10,21 @@ export class NoopLogger implements ILogger {
     return new NoopLogger();
   }
 
-  public debug(_message: string, _fields: Fields): void {}
+  public debug(message: string, _fields: Fields): void {
+    console.log(message);
+  }
 
-  public info(_message: string, _fields: Fields): void {}
+  public info(message: string, _fields: Fields): void {
+    console.log(message);
+  }
 
-  public warn(_message: string, _fields: Fields): void {}
+  public warn(message: string, _fields: Fields): void {
+    console.log(message);
+  }
 
-  public error(_message: string, _fields: Fields): void {}
+  public error(message: string, _fields: Fields): void {
+    console.log(message);
+  }
 
   public flush(): Promise<void> {
     return Promise.resolve();

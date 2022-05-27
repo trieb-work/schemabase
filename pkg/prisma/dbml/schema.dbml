@@ -72,6 +72,20 @@ Table ZohoItem {
   }
 }
 
+Table ZohoContact {
+  id String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  contact Contact [not null]
+  contactId String [not null]
+  zohoApp ZohoApp [not null]
+  zohoAppId String [not null]
+
+  indexes {
+    (id, zohoAppId) [unique]
+  }
+}
+
 Table ZohoWarehouse {
   id String [not null]
   createdAt DateTime [not null]
@@ -93,7 +107,7 @@ Table Payment {
   amount Float [not null]
   paymentMethod PaymentMethodType
   tenant Tenant [not null]
-  tenantId String [unique, not null]
+  tenantId String [not null]
   zohoPayment ZohoPayment [not null]
   saleorPayment SaleorPayment [not null]
 }
@@ -102,9 +116,14 @@ Table Company {
   id String [pk]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
+  name String [not null]
   contacts Contact [not null]
   tenant Tenant [not null]
-  tenantId String [unique, not null]
+  tenantId String [not null]
+
+  indexes {
+    (name, tenantId) [unique]
+  }
 }
 
 Table Contact {
@@ -114,9 +133,14 @@ Table Contact {
   email String
   orders Order [not null]
   company Company
-  companyId String [unique]
+  companyId String
   tenant Tenant [not null]
-  tenantId String [unique, not null]
+  tenantId String [not null]
+  zohoContact ZohoContact [not null]
+
+  indexes {
+    (email, tenantId) [unique]
+  }
 }
 
 Table Warehouse {
@@ -124,7 +148,7 @@ Table Warehouse {
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   tenant Tenant [not null]
-  tenantId String [unique, not null]
+  tenantId String [not null]
   zohoWarehouse ZohoWarehouse [not null]
   saleorWarehouse SaleorWarehouse [not null]
 }
@@ -154,7 +178,7 @@ Table Order {
   packages Package [not null]
   orderlines OrderLine [not null]
   tenant Tenant [not null]
-  tenantId String [unique, not null]
+  tenantId String [not null]
 }
 
 Table Product {
@@ -330,6 +354,7 @@ Table ZohoApp {
   zohoPayment ZohoPayment [not null]
   zohoItem ZohoItem [not null]
   zohoWarehouse ZohoWarehouse [not null]
+  zohoContact ZohoContact [not null]
 }
 
 Table SaleorApp {
@@ -425,6 +450,12 @@ Table ProductDataFeedIntegration {
   productDataFeedAppId String [unique, not null]
   installedSaleorApp InstalledSaleorApp
   installedSaleorAppId String
+}
+
+Table CronJobState {
+  id String [pk]
+  lastRun DateTime
+  lastRunStatus CronJobStatus
 }
 
 Table SaleorZohoIntegration {
@@ -560,6 +591,11 @@ Enum SaleorAppType {
   paymentgatewaybanktransfer
 }
 
+Enum CronJobStatus {
+  success
+  failure
+}
+
 Ref: ZohoPayment.paymentId > Payment.id [delete: Cascade]
 
 Ref: ZohoPayment.zohoAppId > ZohoApp.id [delete: Cascade]
@@ -579,6 +615,10 @@ Ref: SaleorWarehouse.installedSaleorAppId > InstalledSaleorApp.id [delete: Casca
 Ref: ZohoItem.productVariantId > ProductVariant.id [delete: Cascade]
 
 Ref: ZohoItem.zohoAppId > ZohoApp.id [delete: Cascade]
+
+Ref: ZohoContact.contactId > Contact.id [delete: Cascade]
+
+Ref: ZohoContact.zohoAppId > ZohoApp.id [delete: Cascade]
 
 Ref: ZohoWarehouse.warehouseId > Warehouse.id [delete: Cascade]
 

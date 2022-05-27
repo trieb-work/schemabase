@@ -28,10 +28,13 @@ export class ZohoItemSyncService {
     this.zohoApp = config.zohoApp;
   }
 
-  public async sync() {
-    const items = await this.zoho.item.list({});
+  public async syncToECI() {
+    // Get all active Items from Zoho
+    const items = await this.zoho.item.list({ filterBy: "active" });
     const tenantId = this.zohoApp.tenantId;
 
+    // Loop through every item and upsert the corresponding
+    // product, productVariant and ZohoItem in the DB
     for (const item of items) {
       await this.db.productVariant.upsert({
         where: {

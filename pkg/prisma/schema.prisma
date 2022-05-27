@@ -102,8 +102,25 @@ model ZohoItem {
   createdAt DateTime
   updatedAt DateTime
 
-  productVariant  ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
   productVariantId String
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId String
+
+
+  @@unique([id, zohoAppId])
+}
+
+model ZohoContact {
+  // Zoho Internal Id
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  contact   Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  contactId String
 
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String
@@ -153,7 +170,7 @@ model Payment {
 
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId String @unique
+  tenantId String
 
   zohoPayment   ZohoPayment[]
   saleorPayment SaleorPayment[]
@@ -165,15 +182,20 @@ model Company {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  name      String
+
   contacts Contact[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId String @unique
+  tenantId String
+
+  @@unique([name, tenantId])
 
 
 }
 
 // The ECI internal contact model. One contact has one E-Mail address only.
+// E-Mail addresses are unique per tenant
 model Contact {
   // eci internal id
   id        String   @id
@@ -184,10 +206,14 @@ model Contact {
 
   // A Contact can be related to one company
   company   Company? @relation(fields: [companyId], references: [id])
-  companyId String?  @unique
+  companyId String?
 
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId String @unique
+  tenant      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId    String
+  
+  zohoContact ZohoContact[]
+
+  @@unique([email, tenantId])
 }
 
 // The ECI internal Warehouse model.
@@ -198,7 +224,7 @@ model Warehouse {
   updatedAt DateTime @updatedAt
 
   tenant          Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId        String            @unique
+  tenantId        String
   zohoWarehouse   ZohoWarehouse[]
   saleorWarehouse SaleorWarehouse[]
 }
@@ -247,7 +273,7 @@ model Order {
   orderlines OrderLine[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId String @unique
+  tenantId String
 }
 
 // The ECI internal Product model
@@ -264,8 +290,8 @@ model Product {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  @@unique([name, tenantId])
 
+  @@unique([name, tenantId])
 }
 
 // The ECI internal ProductVariant Model. One product can have one ore many Product Variants
@@ -508,6 +534,7 @@ model ZohoApp {
   zohoPayment           ZohoPayment[]
   zohoItem              ZohoItem[]
   zohoWarehouse         ZohoWarehouse[]
+  zohoContact           ZohoContact[]
 }
 
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor
@@ -671,6 +698,25 @@ model ProductDataFeedIntegration {
   installedSaleorApp   InstalledSaleorApp? @relation(fields: [installedSaleorAppId], references: [id])
   installedSaleorAppId String?
 }
+
+enum CronJobStatus {
+  success
+  failure
+}
+
+// CronJobs / Sync Job model to store the state of synchronisation
+// Use the "cronstate" handler to access data in this model
+model CronJobState {
+
+  // Generated in this schema: TENANTID_APPID_ENTITY -> Entity is contacts / items / ...
+  //                                      ^-- For example the ZohoAppId or the installedSaleorAppId
+  id String @id
+  lastRun DateTime?
+  lastRunStatus CronJobStatus?
+
+
+}
+
 
 // The saleor zoho integration consists of several, individual sync jobs
 // The code is located in the "integration-entity-sync-saleor" and "integration-entity-sync-zoho"
