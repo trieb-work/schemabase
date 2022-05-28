@@ -1,8 +1,8 @@
-query saleorCronOrdersOverview( $createdGte: Date )  {
-  orders(first: 100, filter: { created: { gte: $createdGte } }) {
-    totalCount
+query saleorCronOrders($createdGte: Date, $after: String) {
+  orders(first: 100, after: $after, filter: { created: { gte: $createdGte } }) {
     pageInfo {
       hasNextPage
+      startCursor
       endCursor
     }
     edges {
@@ -13,6 +13,25 @@ query saleorCronOrdersOverview( $createdGte: Date )  {
         channel {
           id
           name
+        }
+        discounts{id value name}
+        shippingPrice{currency gross{amount}}
+        lines {
+          id
+          variant {
+            sku
+          }
+          quantity
+          taxRate
+          totalPrice {
+            gross {
+              amount
+            }
+            net {
+              amount
+            }
+            currency
+          }
         }
         total {
           currency
@@ -27,6 +46,7 @@ query saleorCronOrdersOverview( $createdGte: Date )  {
     }
   }
 }
+
 
 query saleorCronPayments($createdGte: Date, $after: String) {
   orders(first: 100, after: $after, filter: { created: { gte: $createdGte } }) {
