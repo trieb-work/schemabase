@@ -114,7 +114,7 @@ export class SaleorProductSyncService {
             `Product Variant ${variant?.id} has no SKU! Cant't sync`,
           );
         }
-        console.log("Working on", variant);
+
         await this.db.saleorProductVariant.upsert({
           where: {
             id_installedSaleorAppId: {
