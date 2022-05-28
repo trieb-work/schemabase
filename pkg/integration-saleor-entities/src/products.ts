@@ -104,6 +104,9 @@ export class SaleorProductSyncService {
         );
         continue;
       }
+
+      const normalizedProductName = normalizeStrings.productNames(product.name);
+
       for (const variant of product.variants) {
         if (!variant) throw new Error("Variant empty");
         if (!variant?.sku) {
@@ -111,15 +114,17 @@ export class SaleorProductSyncService {
             `Product Variant ${variant?.id} has no SKU! Cant't sync`,
           );
         }
+        console.log("Working on", variant);
         await this.db.saleorProductVariant.upsert({
           where: {
             id_installedSaleorAppId: {
-              id: product.id,
+              id: variant.id,
               installedSaleorAppId: this.installedSaleorApp.id,
             },
           },
           create: {
             id: variant!.id,
+            productId: product.id,
             updatedAt: product.updatedAt,
             installedSaleorApp: {
               connect: {
@@ -146,9 +151,7 @@ export class SaleorProductSyncService {
                     connectOrCreate: {
                       where: {
                         normalizedName_tenantId: {
-                          normalizedName: normalizeStrings.productNames(
-                            product.name,
-                          ),
+                          normalizedName: normalizedProductName,
                           tenantId: this.tenant.id,
                         },
                       },
@@ -160,9 +163,7 @@ export class SaleorProductSyncService {
                           },
                         },
                         name: product.name,
-                        normalizedName: normalizeStrings.productNames(
-                          product.name,
-                        ),
+                        normalizedName: normalizedProductName,
                       },
                     },
                   },
@@ -172,6 +173,7 @@ export class SaleorProductSyncService {
           },
           update: {
             updatedAt: product.updatedAt,
+            productId: product.id,
           },
         });
       }
