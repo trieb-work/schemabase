@@ -10016,18 +10016,19 @@ describe("Zoho Inventory Item Sync", () => {
   } as unknown as Zoho;
 
   beforeAll(async () => {
-    // clean products in DB
-    await prismaClient.product.deleteMany({
-      where: {
-        tenantId: "test",
-      },
-    });
-    await prismaClient.productVariant.deleteMany({
-      where: {
-        tenantId: "test",
-      },
-    });
-    console.log("Cleaned all existing products from the DB");
+    // clean products in DB - this breaks tests, if you let it run in
+    // parallel with Saleor item tests
+    // await prismaClient.product.deleteMany({
+    //   where: {
+    //     tenantId: "test",
+    //   },
+    // });
+    // await prismaClient.productVariant.deleteMany({
+    //   where: {
+    //     tenantId: "test",
+    //   },
+    // });
+    // console.log("Cleaned all existing products from the DB");
 
     zohoApp = await prismaClient.zohoApp.findUnique({
       where: {
