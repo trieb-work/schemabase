@@ -21,4 +21,7 @@ class NormalizationUtility {
   }
 }
 
+/**
+ * Normalize strings for different lookup reasons.
+ */
 export const normalizeStrings = new NormalizationUtility();
