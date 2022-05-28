@@ -19,6 +19,7 @@ const prefixes = {
   variant: "pro_v",
   product: "pro",
   company: "com",
+  warehouse: "wrh",
   /**
    * Only used in automatic tests
    */

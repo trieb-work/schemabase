@@ -10019,21 +10019,6 @@ export type TokenCreateMutation = {
   } | null;
 };
 
-export type WarehousesQueryVariables = Exact<{
-  first?: InputMaybe<Scalars["Int"]>;
-}>;
-
-export type WarehousesQuery = {
-  __typename?: "Query";
-  warehouses?: {
-    __typename?: "WarehouseCountableConnection";
-    edges: Array<{
-      __typename?: "WarehouseCountableEdge";
-      node: { __typename?: "Warehouse"; id: string; name: string };
-    }>;
-  } | null;
-};
-
 export type WebhookCreateMutationVariables = Exact<{
   input: WebhookCreateInput;
 }>;
@@ -10314,6 +10299,21 @@ export type SaleorEntitySyncProductsQuery = {
   } | null;
 };
 
+export type WarehousesQueryVariables = Exact<{
+  first?: InputMaybe<Scalars["Int"]>;
+}>;
+
+export type WarehousesQuery = {
+  __typename?: "Query";
+  warehouses?: {
+    __typename?: "WarehouseCountableConnection";
+    edges: Array<{
+      __typename?: "WarehouseCountableEdge";
+      node: { __typename?: "Warehouse"; id: string; name: string };
+    }>;
+  } | null;
+};
+
 export const AppInstallDocument = gql`
   mutation appInstall($input: AppInstallInput!) {
     appInstall(input: $input) {
@@ -10445,18 +10445,6 @@ export const TokenCreateDocument = gql`
       errors {
         field
         message
-      }
-    }
-  }
-`;
-export const WarehousesDocument = gql`
-  query warehouses($first: Int) {
-    warehouses(first: $first) {
-      edges {
-        node {
-          id
-          name
-        }
       }
     }
   }
@@ -10711,6 +10699,18 @@ export const SaleorEntitySyncProductsDocument = gql`
     }
   }
 `;
+export const WarehousesDocument = gql`
+  query warehouses($first: Int) {
+    warehouses(first: $first) {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
 export type Requester<C = {}> = <R, V>(
   doc: DocumentNode,
   vars?: V,
@@ -10814,16 +10814,6 @@ export function getSdk<C>(requester: Requester<C>) {
         options,
       );
     },
-    warehouses(
-      variables?: WarehousesQueryVariables,
-      options?: C,
-    ): Promise<WarehousesQuery> {
-      return requester<WarehousesQuery, WarehousesQueryVariables>(
-        WarehousesDocument,
-        variables,
-        options,
-      );
-    },
     webhookCreate(
       variables: WebhookCreateMutationVariables,
       options?: C,
@@ -10878,6 +10868,16 @@ export function getSdk<C>(requester: Requester<C>) {
         SaleorEntitySyncProductsQuery,
         SaleorEntitySyncProductsQueryVariables
       >(SaleorEntitySyncProductsDocument, variables, options);
+    },
+    warehouses(
+      variables?: WarehousesQueryVariables,
+      options?: C,
+    ): Promise<WarehousesQuery> {
+      return requester<WarehousesQuery, WarehousesQueryVariables>(
+        WarehousesDocument,
+        variables,
+        options,
+      );
     },
   };
 }
