@@ -32,7 +32,6 @@ Table SaleorPayment {
 
 Table SaleorProductVariant {
   id String [not null]
-  createdAt DateTime [not null]
   updatedAt DateTime [not null]
   productVariant ProductVariant [not null]
   productVariantId String [unique, not null]
@@ -189,12 +188,14 @@ Table Product {
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   name String
+  normalizedName String
   variants ProductVariant [not null]
   tenant Tenant [not null]
   tenantId String [not null]
 
   indexes {
     (name, tenantId) [unique]
+    (normalizedName, tenantId) [unique]
   }
 }
 
@@ -202,7 +203,7 @@ Table ProductVariant {
   id String [pk]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-  sku String
+  sku String [not null]
   product Product [not null]
   productId String [not null]
   tenant Tenant [not null]
@@ -364,13 +365,12 @@ Table SaleorApp {
   id String [pk]
   domain String [not null]
   name String [not null]
-  channelSlug String
   installedSaleorApp InstalledSaleorApp
   tenant Tenant [not null]
   tenantId String [not null]
 
   indexes {
-    (domain, channelSlug) [unique]
+    (domain, tenantId) [unique]
   }
 }
 
@@ -379,13 +379,20 @@ Table InstalledSaleorApp {
   type SaleorAppType
   webhooks IncomingWebhook [not null]
   token String [not null]
+  channelSlug String
   saleorApp SaleorApp [not null]
-  saleorAppId String [unique, not null]
+  saleorAppId String [not null]
+  domain String [not null]
   saleorZohoIntegration SaleorZohoIntegration [not null]
   productDataFeedIntegration ProductDataFeedIntegration [not null]
   saleorPayment SaleorPayment [not null]
   saleorProductVariant SaleorProductVariant [not null]
   saleorWarehouse SaleorWarehouse [not null]
+
+  indexes {
+    (domain, channelSlug) [unique]
+    (saleorAppId, domain) [unique]
+  }
 }
 
 Table Tenant {
@@ -592,6 +599,7 @@ Enum SaleorAppType {
   zohointegration
   mailchimpintegration
   paymentgatewaybanktransfer
+  paymentgatewaybraintree
 }
 
 Enum CronJobStatus {
@@ -677,7 +685,7 @@ Ref: ZohoApp.tenantId > Tenant.id [delete: Cascade]
 
 Ref: SaleorApp.tenantId > Tenant.id [delete: Cascade]
 
-Ref: InstalledSaleorApp.saleorAppId - SaleorApp.id [delete: Cascade]
+Ref: InstalledSaleorApp.(saleorAppId, domain) - SaleorApp.(id, domain) [delete: Cascade]
 
 Ref: Subscription.tenantId > Tenant.id [delete: Cascade]
 

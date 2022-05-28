@@ -55,12 +55,11 @@ model SaleorPayment {
   @@unique([id, installedSaleorAppId])
 }
 
-// Saleor specific model for payments.
+// Saleor specific model for product variant.
 model SaleorProductVariant {
   // Saleor Internal Id
   id String
 
-  createdAt DateTime
   updatedAt DateTime
 
   productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
@@ -283,6 +282,7 @@ model Order {
 }
 
 // The ECI internal Product model
+// We use the ProductVariant more, as only variants have unique identifier like the SKU. Products can be matched only via the product name
 model Product {
   // eci internal id
   id        String   @id
@@ -290,6 +290,8 @@ model Product {
   updatedAt DateTime @updatedAt
 
   name String?
+  // Lowercase, trim, whitespace remove
+  normalizedName String?
 
   variants ProductVariant[]
 
@@ -298,6 +300,7 @@ model Product {
 
 
   @@unique([name, tenantId])
+  @@unique([normalizedName, tenantId])
 }
 
 // The ECI internal ProductVariant Model. One product can have one ore many Product Variants
@@ -307,7 +310,7 @@ model ProductVariant {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  sku String?
+  sku String
 
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String
@@ -559,16 +562,13 @@ model SaleorApp {
 
   name String
 
-  channelSlug String?
-
   installedSaleorApp InstalledSaleorApp?
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
+  @@unique([domain, tenantId])
 
-
-  @@unique([domain, channelSlug])
 }
 
 // All ECI Integrations for Saleor should be handled as individual Apps that could be installed via the Marketplace for example
@@ -578,8 +578,10 @@ enum SaleorAppType {
   zohointegration
   mailchimpintegration
   paymentgatewaybanktransfer
+  paymentgatewaybraintree
 }
 
+// We can have different Installed Saleor Apps for the same Saleor instance. We also have one Installed Saleor App per Channel
 model InstalledSaleorApp {
   // The saleor application id
   // This is the id for the app on saleor's side and can be used in queries and
@@ -599,9 +601,12 @@ model InstalledSaleorApp {
   // Authorization: Bearer <app-token>
   token String
 
+  channelSlug String?
 
-  saleorApp   SaleorApp @relation(fields: [saleorAppId], references: [id], onDelete: Cascade)
-  saleorAppId String    @unique
+
+  saleorApp   SaleorApp @relation(fields: [saleorAppId, domain], references: [id, domain], onDelete: Cascade)
+  saleorAppId String
+  domain      String
 
   saleorZohoIntegration SaleorZohoIntegration[]
 
@@ -609,6 +614,8 @@ model InstalledSaleorApp {
   saleorPayment              SaleorPayment[]
   saleorProductVariant       SaleorProductVariant[]
   saleorWarehouse            SaleorWarehouse[]
+
+  @@unique([domain, channelSlug])
 }
 
 // One tenant per company

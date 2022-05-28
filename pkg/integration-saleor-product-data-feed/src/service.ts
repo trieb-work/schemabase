@@ -122,6 +122,10 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
         if (variant == null) {
           continue;
         }
+        if (!title) {
+          this.logger.warn(`No product name found! ${rawProduct.slug}`);
+          continue;
+        }
 
         const gtin = hasVariants
           ? variant.metadata?.find((x) => x?.key === "EAN")?.value

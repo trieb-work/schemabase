@@ -80,3 +80,27 @@ query products($first: Int!, $channel: String) {
   }
 }
 
+query saleorEntitySyncProducts($first: Int!, $channel: String, $after: String) {
+  products(first: $first, after: $after, channel: $channel) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+    }
+    edges {
+      node {
+        id
+        name
+        updatedAt
+        variants {
+          id
+          name
+          sku
+          variantAttributes: attributes(variantSelection:VARIANT_SELECTION){attribute{name}  values{id name } }        
+        }
+      }
+    }
+  }
+}
+

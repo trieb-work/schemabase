@@ -2,6 +2,7 @@ import { Zoho } from "@trieb.work/zoho-ts/dist/v2";
 import { ILogger } from "@eci/pkg/logger";
 import { PrismaClient, Prisma, ZohoApp } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
+import { normalizeStrings } from "@eci/pkg/normalization";
 
 type ZohoAppWithTenant = ZohoApp & Prisma.TenantInclude;
 
@@ -87,9 +88,11 @@ export class ZohoItemSyncService {
           product: {
             connectOrCreate: {
               where: {
-                name_tenantId: {
+                normalizedName_tenantId: {
                   tenantId,
-                  name: item?.group_name || "",
+                  normalizedName: normalizeStrings.productNames(
+                    item?.group_name || "",
+                  ),
                 },
               },
               create: {
@@ -97,6 +100,9 @@ export class ZohoItemSyncService {
                 tenantId,
                 // If this is a single variant product, we set the variant name as the product name
                 name: item?.group_name || item.name,
+                normalizedName: normalizeStrings.productNames(
+                  item?.group_name || item.name,
+                ),
               },
             },
           },

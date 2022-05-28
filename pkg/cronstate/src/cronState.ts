@@ -9,6 +9,10 @@ type SyncEntity = "items" | "contacts" | "orders";
 
 interface CronStateConfig {
   db: PrismaClient;
+
+  /**
+   * For everything around products/articles/variants etc. use "items"
+   */
   syncEntity: SyncEntity;
   /**
    * The AppId of the sync entity - this can be the id of the ZohoApp or the installedSaleorApp or

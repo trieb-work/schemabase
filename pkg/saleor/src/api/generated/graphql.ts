@@ -10230,6 +10230,50 @@ export type ProductsQuery = {
   } | null;
 };
 
+export type SaleorEntitySyncProductsQueryVariables = Exact<{
+  first: Scalars["Int"];
+  channel?: InputMaybe<Scalars["String"]>;
+  after?: InputMaybe<Scalars["String"]>;
+}>;
+
+export type SaleorEntitySyncProductsQuery = {
+  __typename?: "Query";
+  products?: {
+    __typename?: "ProductCountableConnection";
+    pageInfo: {
+      __typename?: "PageInfo";
+      hasNextPage: boolean;
+      hasPreviousPage: boolean;
+      startCursor?: string | null;
+      endCursor?: string | null;
+    };
+    edges: Array<{
+      __typename?: "ProductCountableEdge";
+      node: {
+        __typename?: "Product";
+        id: string;
+        name: string;
+        updatedAt?: any | null;
+        variants?: Array<{
+          __typename?: "ProductVariant";
+          id: string;
+          name: string;
+          sku: string;
+          variantAttributes: Array<{
+            __typename?: "SelectedAttribute";
+            attribute: { __typename?: "Attribute"; name?: string | null };
+            values: Array<{
+              __typename?: "AttributeValue";
+              id: string;
+              name?: string | null;
+            } | null>;
+          }>;
+        } | null> | null;
+      };
+    }>;
+  } | null;
+};
+
 export const AppInstallDocument = gql`
   mutation appInstall($input: AppInstallInput!) {
     appInstall(input: $input) {
@@ -10546,6 +10590,43 @@ export const ProductsDocument = gql`
     }
   }
 `;
+export const SaleorEntitySyncProductsDocument = gql`
+  query saleorEntitySyncProducts(
+    $first: Int!
+    $channel: String
+    $after: String
+  ) {
+    products(first: $first, after: $after, channel: $channel) {
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
+      edges {
+        node {
+          id
+          name
+          updatedAt
+          variants {
+            id
+            name
+            sku
+            variantAttributes: attributes(variantSelection: VARIANT_SELECTION) {
+              attribute {
+                name
+              }
+              values {
+                id
+                name
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
 export type Requester<C = {}> = <R, V>(
   doc: DocumentNode,
   vars?: V,
@@ -10693,6 +10774,15 @@ export function getSdk<C>(requester: Requester<C>) {
         variables,
         options,
       );
+    },
+    saleorEntitySyncProducts(
+      variables: SaleorEntitySyncProductsQueryVariables,
+      options?: C,
+    ): Promise<SaleorEntitySyncProductsQuery> {
+      return requester<
+        SaleorEntitySyncProductsQuery,
+        SaleorEntitySyncProductsQueryVariables
+      >(SaleorEntitySyncProductsDocument, variables, options);
     },
   };
 }

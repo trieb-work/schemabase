@@ -72,6 +72,13 @@ export class ZohoContactSyncService {
     }
 
     for (const contact of contactsToBeUpserted) {
+      if (!contact.email) {
+        this.logger.warn(
+          // eslint-disable-next-line max-len
+          `Contact ${contact.contact_name}, Id ${contact.contact_id} has no email address - skipping sync`,
+        );
+        continue;
+      }
       const lowercaseEmail = contact.email.toLowerCase();
 
       // Only create a company if the contact is marked as "business" in Zoho
