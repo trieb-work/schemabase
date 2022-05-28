@@ -89,8 +89,6 @@ Table ZohoContact {
 
 Table ZohoWarehouse {
   id String [not null]
-  createdAt DateTime [not null]
-  updatedAt DateTime [not null]
   warehouse Warehouse [not null]
   warehouseId String [not null]
   zohoApp ZohoApp [not null]
@@ -149,6 +147,7 @@ Table Warehouse {
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   name String [not null]
+  normalizedName String [not null]
   tenant Tenant [not null]
   tenantId String [not null]
   zohoWarehouse ZohoWarehouse [not null]
@@ -156,6 +155,7 @@ Table Warehouse {
 
   indexes {
     (name, tenantId) [unique]
+    (normalizedName, tenantId) [unique]
   }
 }
 

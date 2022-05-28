@@ -138,9 +138,6 @@ model ZohoWarehouse {
   // Zoho Internal Id
   id String
 
-  createdAt DateTime
-  updatedAt DateTime
-
   warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
   warehouseId String
 
@@ -229,6 +226,8 @@ model Warehouse {
   updatedAt DateTime @updatedAt
 
   name String
+  // Lowercase, trim, whitespace remove, special characters remove
+  normalizedName String
 
   tenant          Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId        String
@@ -236,6 +235,7 @@ model Warehouse {
   saleorWarehouse SaleorWarehouse[]
 
   @@unique([name, tenantId])
+  @@unique([normalizedName, tenantId])
 }
 
 enum Currency {
@@ -294,7 +294,7 @@ model Product {
   updatedAt DateTime @updatedAt
 
   name String?
-  // Lowercase, trim, whitespace remove
+  // Lowercase, trim, whitespace remove, special characters remove
   normalizedName String?
 
   variants ProductVariant[]

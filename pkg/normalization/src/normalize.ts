@@ -19,6 +19,10 @@ class NormalizationUtility {
   public productNames(input: string) {
     return this.standardNormalize(input);
   }
+
+  public warehouseNames(input: string) {
+    return this.standardNormalize(input);
+  }
 }
 
 /**

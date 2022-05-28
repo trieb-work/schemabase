@@ -1,17 +1,13 @@
 import { ILogger } from "@eci/pkg/logger";
 import { WarehousesQuery } from "@eci/pkg/saleor";
 import { InstalledSaleorApp, PrismaClient, Tenant } from "@eci/pkg/prisma";
-import { CronStateHandler } from "@eci/pkg/cronstate";
 import { id } from "@eci/pkg/ids";
+import { normalizeStrings } from "@eci/pkg/normalization";
 
 interface SaleorWarehouseSyncServiceConfig {
   saleorClient: {
-    warehouses: (variables: {
-      first: number;
-      channel: string;
-    }) => Promise<WarehousesQuery>;
+    warehouses: (variables: { first: number }) => Promise<WarehousesQuery>;
   };
-  channelSlug: string;
   installedSaleorApp: InstalledSaleorApp;
   tenant: Tenant;
   db: PrismaClient;
@@ -20,13 +16,8 @@ interface SaleorWarehouseSyncServiceConfig {
 
 export class SaleorWarehouseSyncService {
   public readonly saleorClient: {
-    warehouses: (variables: {
-      first: number;
-      channel: string;
-    }) => Promise<WarehousesQuery>;
+    warehouses: (variables: { first: number }) => Promise<WarehousesQuery>;
   };
-
-  public readonly channelSlug: string;
 
   private readonly logger: ILogger;
 
@@ -38,7 +29,6 @@ export class SaleorWarehouseSyncService {
 
   public constructor(config: SaleorWarehouseSyncServiceConfig) {
     this.saleorClient = config.saleorClient;
-    this.channelSlug = config.channelSlug;
     this.logger = config.logger;
     this.installedSaleorApp = config.installedSaleorApp;
     this.tenant = config.tenant;
@@ -48,7 +38,6 @@ export class SaleorWarehouseSyncService {
   public async syncToECI(): Promise<void> {
     const response = await this.saleorClient.warehouses({
       first: 100,
-      channel: this.channelSlug,
     });
 
     if (
@@ -63,17 +52,22 @@ export class SaleorWarehouseSyncService {
     this.logger.info(`Syncing ${warehouses?.length}`);
 
     for (const warehouse of warehouses) {
+      const normalizedWarehouseName = normalizeStrings.warehouseNames(
+        warehouse.name,
+      );
+
       const warehouseCreateOrConnect = {
         connectOrCreate: {
           where: {
-            name_tenantId: {
-              name: warehouse.name,
+            normalizedName_tenantId: {
+              normalizedName: normalizedWarehouseName,
               tenantId: this.tenant.id,
             },
           },
           create: {
             id: id.id("warehouse"),
             name: warehouse.name,
+            normalizedName: normalizedWarehouseName,
             tenant: {
               connect: {
                 id: this.tenant.id,
