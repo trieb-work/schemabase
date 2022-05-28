@@ -10019,6 +10019,21 @@ export type TokenCreateMutation = {
   } | null;
 };
 
+export type WarehousesQueryVariables = Exact<{
+  first?: InputMaybe<Scalars["Int"]>;
+}>;
+
+export type WarehousesQuery = {
+  __typename?: "Query";
+  warehouses?: {
+    __typename?: "WarehouseCountableConnection";
+    edges: Array<{
+      __typename?: "WarehouseCountableEdge";
+      node: { __typename?: "Warehouse"; id: string; name: string };
+    }>;
+  } | null;
+};
+
 export type WebhookCreateMutationVariables = Exact<{
   input: WebhookCreateInput;
 }>;
@@ -10056,18 +10071,19 @@ export type AppQuery = {
   } | null;
 };
 
-export type SaleorCronOrdersOverviewQueryVariables = Exact<{
+export type SaleorCronOrdersQueryVariables = Exact<{
   createdGte?: InputMaybe<Scalars["Date"]>;
+  after?: InputMaybe<Scalars["String"]>;
 }>;
 
-export type SaleorCronOrdersOverviewQuery = {
+export type SaleorCronOrdersQuery = {
   __typename?: "Query";
   orders?: {
     __typename?: "OrderCountableConnection";
-    totalCount?: number | null;
     pageInfo: {
       __typename?: "PageInfo";
       hasNextPage: boolean;
+      startCursor?: string | null;
       endCursor?: string | null;
     };
     edges: Array<{
@@ -10078,6 +10094,30 @@ export type SaleorCronOrdersOverviewQuery = {
         created: any;
         number?: string | null;
         channel: { __typename?: "Channel"; id: string; name: string };
+        discounts?: Array<{
+          __typename?: "OrderDiscount";
+          id: string;
+          value: any;
+          name?: string | null;
+        }> | null;
+        shippingPrice: {
+          __typename?: "TaxedMoney";
+          currency: string;
+          gross: { __typename?: "Money"; amount: number };
+        };
+        lines: Array<{
+          __typename?: "OrderLine";
+          id: string;
+          quantity: number;
+          taxRate: number;
+          variant?: { __typename?: "ProductVariant"; sku: string } | null;
+          totalPrice: {
+            __typename?: "TaxedMoney";
+            currency: string;
+            gross: { __typename?: "Money"; amount: number };
+            net: { __typename?: "Money"; amount: number };
+          };
+        } | null>;
         total: {
           __typename?: "TaxedMoney";
           currency: string;
@@ -10409,6 +10449,18 @@ export const TokenCreateDocument = gql`
     }
   }
 `;
+export const WarehousesDocument = gql`
+  query warehouses($first: Int) {
+    warehouses(first: $first) {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
 export const WebhookCreateDocument = gql`
   mutation webhookCreate($input: WebhookCreateInput!) {
     webhookCreate(input: $input) {
@@ -10436,12 +10488,16 @@ export const AppDocument = gql`
     }
   }
 `;
-export const SaleorCronOrdersOverviewDocument = gql`
-  query saleorCronOrdersOverview($createdGte: Date) {
-    orders(first: 100, filter: { created: { gte: $createdGte } }) {
-      totalCount
+export const SaleorCronOrdersDocument = gql`
+  query saleorCronOrders($createdGte: Date, $after: String) {
+    orders(
+      first: 100
+      after: $after
+      filter: { created: { gte: $createdGte } }
+    ) {
       pageInfo {
         hasNextPage
+        startCursor
         endCursor
       }
       edges {
@@ -10452,6 +10508,34 @@ export const SaleorCronOrdersOverviewDocument = gql`
           channel {
             id
             name
+          }
+          discounts {
+            id
+            value
+            name
+          }
+          shippingPrice {
+            currency
+            gross {
+              amount
+            }
+          }
+          lines {
+            id
+            variant {
+              sku
+            }
+            quantity
+            taxRate
+            totalPrice {
+              gross {
+                amount
+              }
+              net {
+                amount
+              }
+              currency
+            }
           }
           total {
             currency
@@ -10730,6 +10814,16 @@ export function getSdk<C>(requester: Requester<C>) {
         options,
       );
     },
+    warehouses(
+      variables?: WarehousesQueryVariables,
+      options?: C,
+    ): Promise<WarehousesQuery> {
+      return requester<WarehousesQuery, WarehousesQueryVariables>(
+        WarehousesDocument,
+        variables,
+        options,
+      );
+    },
     webhookCreate(
       variables: WebhookCreateMutationVariables,
       options?: C,
@@ -10747,14 +10841,15 @@ export function getSdk<C>(requester: Requester<C>) {
         options,
       );
     },
-    saleorCronOrdersOverview(
-      variables?: SaleorCronOrdersOverviewQueryVariables,
+    saleorCronOrders(
+      variables?: SaleorCronOrdersQueryVariables,
       options?: C,
-    ): Promise<SaleorCronOrdersOverviewQuery> {
-      return requester<
-        SaleorCronOrdersOverviewQuery,
-        SaleorCronOrdersOverviewQueryVariables
-      >(SaleorCronOrdersOverviewDocument, variables, options);
+    ): Promise<SaleorCronOrdersQuery> {
+      return requester<SaleorCronOrdersQuery, SaleorCronOrdersQueryVariables>(
+        SaleorCronOrdersDocument,
+        variables,
+        options,
+      );
     },
     saleorCronPayments(
       variables?: SaleorCronPaymentsQueryVariables,
