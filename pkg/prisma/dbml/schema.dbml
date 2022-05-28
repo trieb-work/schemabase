@@ -32,9 +32,10 @@ Table SaleorPayment {
 
 Table SaleorProductVariant {
   id String [not null]
+  productId String [not null]
   updatedAt DateTime [not null]
   productVariant ProductVariant [not null]
-  productVariantId String [unique, not null]
+  productVariantId String [not null]
   installedSaleorApp InstalledSaleorApp [not null]
   installedSaleorAppId String [not null]
 

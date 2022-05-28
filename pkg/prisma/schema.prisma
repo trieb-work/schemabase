@@ -57,13 +57,16 @@ model SaleorPayment {
 
 // Saleor specific model for product variant.
 model SaleorProductVariant {
-  // Saleor Internal Id
+  // Saleor internal product variant id
   id String
+
+  // Saleor internal product Id
+  productId String
 
   updatedAt DateTime
 
   productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
-  productVariantId String         @unique
+  productVariantId String
 
   installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
   installedSaleorAppId String
