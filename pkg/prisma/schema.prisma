@@ -758,6 +758,9 @@ model SaleorZohoIntegration {
   installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
   installedSaleorAppId String
 
+  // The order prefix we use in Zoho to identify orders coming from Saleor
+  orderPrefix String @default("STORE")
+
   // We can create the needed bull jobs for every sync entity, that is enabled
   syncOrders        Boolean @default(false)
   syncInvoices      Boolean @default(false)
