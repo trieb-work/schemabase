@@ -165,7 +165,7 @@ export class OrderUpdater
       });
 
       if (p.carrier === "" || p.trackingId === "") {
-        const packageResponse = await zoho.package.retrieve(p.packageId);
+        const packageResponse = await zoho.package.get(p.packageId);
         if (!packageResponse) {
           throw new Error(`Unable to load package from zoho: ${p.packageId}`);
         }

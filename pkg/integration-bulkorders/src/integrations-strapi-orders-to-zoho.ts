@@ -328,7 +328,7 @@ export class StrapiOrdersToZoho {
        * Check if an address is already added to the customer
        */
 
-      const contact = await this.zoho.contact.retrieve(zohoCustomerId);
+      const contact = await this.zoho.contact.get(zohoCustomerId);
       if (contact == null) {
         throw new Error(`Contact was not found: ${zohoCustomerId}`);
       }

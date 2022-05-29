@@ -39,7 +39,7 @@ export async function verifySyncedOrders(
       );
     }
 
-    const res = await zoho.salesOrder.retrieve(zohoOrder.salesorder_id);
+    const res = await zoho.salesOrder.get(zohoOrder.salesorder_id);
     if (!res || !res.shipping_address) {
       throw new Error(
         `Unable to load order from zoho: ${zohoOrder.salesorder_id}`,
