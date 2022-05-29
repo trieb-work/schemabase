@@ -10144,6 +10144,7 @@ export type SaleorCronPaymentsQuery = {
           created: any;
           modified: any;
           paymentMethodType: string;
+          order?: { __typename?: "Order"; id: string } | null;
           transactions?: Array<{
             __typename?: "Transaction";
             id: string;
@@ -10565,6 +10566,9 @@ export const SaleorCronPaymentsDocument = gql`
             gateway
             created
             modified
+            order {
+              id
+            }
             paymentMethodType
             transactions {
               id

@@ -16,12 +16,25 @@ Table ZohoPayment {
   }
 }
 
+Table SaleorOrder {
+  id String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  installedSaleorApp InstalledSaleorApp [not null]
+  installedSaleorAppId String [not null]
+  saleorPayment SaleorPayment [not null]
+
+  indexes {
+    (id, installedSaleorAppId) [unique]
+  }
+}
+
 Table SaleorPayment {
   id String [not null]
   createdAt DateTime [not null]
   updatedAt DateTime [not null]
-  payment Payment [not null]
-  paymentId String [unique, not null]
+  saleorOrder SaleorOrder
+  saleorOrderId String
   installedSaleorApp InstalledSaleorApp [not null]
   installedSaleorAppId String [not null]
 
@@ -105,10 +118,11 @@ Table Payment {
   updatedAt DateTime [not null]
   amount Float [not null]
   paymentMethod PaymentMethodType
+  order Order
+  orderId String
   tenant Tenant [not null]
   tenantId String [not null]
   zohoPayment ZohoPayment [not null]
-  saleorPayment SaleorPayment [not null]
 }
 
 Table Company {
@@ -185,6 +199,7 @@ Table Order {
   orderlines OrderLine [not null]
   tenant Tenant [not null]
   tenantId String [not null]
+  payment Payment [not null]
 }
 
 Table Product {
@@ -392,6 +407,7 @@ Table InstalledSaleorApp {
   saleorPayment SaleorPayment [not null]
   saleorProductVariant SaleorProductVariant [not null]
   saleorWarehouse SaleorWarehouse [not null]
+  saleorOrder SaleorOrder [not null]
 
   indexes {
     (domain, channelSlug) [unique]
@@ -616,7 +632,9 @@ Ref: ZohoPayment.paymentId > Payment.id [delete: Cascade]
 
 Ref: ZohoPayment.zohoAppId > ZohoApp.id [delete: Cascade]
 
-Ref: SaleorPayment.paymentId > Payment.id [delete: Cascade]
+Ref: SaleorOrder.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
+
+Ref: SaleorPayment.saleorOrderId > SaleorOrder.id
 
 Ref: SaleorPayment.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
 
@@ -639,6 +657,8 @@ Ref: ZohoContact.zohoAppId > ZohoApp.id [delete: Cascade]
 Ref: ZohoWarehouse.warehouseId > Warehouse.id [delete: Cascade]
 
 Ref: ZohoWarehouse.zohoAppId > ZohoApp.id [delete: Cascade]
+
+Ref: Payment.orderId > Order.id
 
 Ref: Payment.tenantId > Tenant.id [delete: Cascade]
 

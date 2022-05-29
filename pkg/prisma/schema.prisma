@@ -38,6 +38,23 @@ model ZohoPayment {
 //  SALEOR SPECIFIC MODELS
 //
 // ------------------------------------------------------------------------------------------------
+
+// Saleor specific model for orders.
+model SaleorOrder {
+  // Saleor Internal Id
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String
+
+  saleorPayment SaleorPayment[]
+
+  @@unique([id, installedSaleorAppId])
+}
+
 // Saleor specific model for payments.
 model SaleorPayment {
   // Saleor Internal Id
@@ -46,8 +63,8 @@ model SaleorPayment {
   createdAt DateTime
   updatedAt DateTime
 
-  payment   Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  paymentId String  @unique
+  saleorOrder   SaleorOrder? @relation(fields: [saleorOrderId], references: [id])
+  saleorOrderId String?
 
   installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
   installedSaleorAppId String
@@ -170,12 +187,13 @@ model Payment {
   amount        Float
   paymentMethod PaymentMethodType?
 
+  order   Order?  @relation(fields: [orderId], references: [id])
+  orderId String?
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  zohoPayment   ZohoPayment[]
-  saleorPayment SaleorPayment[]
+  zohoPayment ZohoPayment[]
 }
 
 model Company {
@@ -184,16 +202,16 @@ model Company {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name      String
+  name String
 
   contacts Contact[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
+
+
   @@unique([name, tenantId])
-
-
 }
 
 // The ECI internal contact model. One contact has one E-Mail address only.
@@ -210,9 +228,9 @@ model Contact {
   company   Company? @relation(fields: [companyId], references: [id])
   companyId String?
 
-  tenant      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId    String
-  
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
   zohoContact ZohoContact[]
 
   @@unique([email, tenantId])
@@ -225,7 +243,7 @@ model Warehouse {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name String
+  name           String
   // Lowercase, trim, whitespace remove, special characters remove
   normalizedName String
 
@@ -281,8 +299,9 @@ model Order {
 
   orderlines OrderLine[]
 
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
+  payment  Payment[]
 }
 
 // The ECI internal Product model
@@ -293,7 +312,7 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name String?
+  name           String?
   // Lowercase, trim, whitespace remove, special characters remove
   normalizedName String?
 
@@ -571,8 +590,8 @@ model SaleorApp {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  @@unique([domain, tenantId])
 
+  @@unique([domain, tenantId])
 }
 
 // All ECI Integrations for Saleor should be handled as individual Apps that could be installed via the Marketplace for example
@@ -618,6 +637,8 @@ model InstalledSaleorApp {
   saleorPayment              SaleorPayment[]
   saleorProductVariant       SaleorProductVariant[]
   saleorWarehouse            SaleorWarehouse[]
+  saleorOrder                SaleorOrder[]
+
 
   @@unique([domain, channelSlug])
 }
@@ -727,13 +748,12 @@ model CronJobState {
 
   // Generated in this schema: TENANTID_APPID_ENTITY -> Entity is contacts / items / ...
   //                                      ^-- For example the ZohoAppId or the installedSaleorAppId
-  id String @id
-  lastRun DateTime?
+  id            String         @id
+  lastRun       DateTime?
   lastRunStatus CronJobStatus?
 
 
 }
-
 
 // The saleor zoho integration consists of several, individual sync jobs
 // The code is located in the "integration-entity-sync-saleor" and "integration-entity-sync-zoho"

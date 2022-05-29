@@ -111,9 +111,51 @@ export class SaleorPaymentSyncService {
     }
 
     const result = await this.queryWithPagination(gteDate);
+    const payments = result.orders?.edges
+      .map((order) => order.node)
+      .map((x) => x.payments)
+      .flat();
 
-    if (!result.orders || result.orders.edges.length === 0) {
+    if (!result.orders || result.orders.edges.length === 0 || !payments) {
       this.logger.info("Saleor returned no orders. Don't sync anything");
+      return;
+    }
+    this.logger.info(`Syncing ${payments?.length} payments`);
+
+    for (const payment of payments) {
+      if (!payment || !payment?.id) continue;
+      await this.db.saleorPayment.upsert({
+        where: {
+          id_installedSaleorAppId: {
+            id: payment?.id,
+            installedSaleorAppId: this.installedSaleorApp.id,
+          },
+        },
+        create: {
+          id: payment?.id,
+          createdAt: payment?.created,
+          updatedAt: payment?.modified,
+          installedSaleorApp: {
+            connect: {
+              id: this.installedSaleorApp.id,
+            },
+          },
+        },
+        update: {
+          createdAt: payment?.created,
+          updatedAt: payment?.modified,
+          saleorOrder: {
+            connect: {
+              id_installedSaleorAppId: {
+                id: payment.order?.id || "",
+                installedSaleorAppId: this.installedSaleorApp.id,
+              },
+            },
+          },
+        },
+      });
+
+      // TODO: go through saleorOrder->order and add the generic payment in this way
     }
   }
 }
