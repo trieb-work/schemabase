@@ -5,7 +5,7 @@ import {
   CronJobState,
 } from "@eci/pkg/prisma";
 
-type SyncEntity = "items" | "contacts" | "orders";
+type SyncEntity = "items" | "contacts" | "orders" | "payments" | "invoices";
 
 interface CronStateConfig {
   db: PrismaClient;
