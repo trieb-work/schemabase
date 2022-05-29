@@ -1,5 +1,5 @@
-query saleorCronOrders($createdGte: Date, $after: String) {
-  orders(first: 100, after: $after, filter: { created: { gte: $createdGte } }) {
+query saleorCronOrders($createdGte: Date, $after: String, $first: Int) {
+  orders(first: $first, after: $after, filter: { created: { gte: $createdGte } }) {
     pageInfo {
       hasNextPage
       startCursor

@@ -10059,6 +10059,7 @@ export type AppQuery = {
 export type SaleorCronOrdersQueryVariables = Exact<{
   createdGte?: InputMaybe<Scalars["Date"]>;
   after?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
 }>;
 
 export type SaleorCronOrdersQuery = {
@@ -10477,9 +10478,9 @@ export const AppDocument = gql`
   }
 `;
 export const SaleorCronOrdersDocument = gql`
-  query saleorCronOrders($createdGte: Date, $after: String) {
+  query saleorCronOrders($createdGte: Date, $after: String, $first: Int) {
     orders(
-      first: 100
+      first: $first
       after: $after
       filter: { created: { gte: $createdGte } }
     ) {
