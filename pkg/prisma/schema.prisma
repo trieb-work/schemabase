@@ -45,7 +45,13 @@ model SaleorOrder {
   id String
 
   createdAt DateTime
-  updatedAt DateTime
+
+  order   Order  @relation(fields: [orderId, orderNumber], references: [id, orderNumber], onDelete: Cascade)
+  orderId String
+
+  // The Human-Readable order number. Gets
+  // prefixed with something like "STORE-" when moved to Zoho
+  orderNumber String
 
   installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
   installedSaleorAppId String
@@ -290,11 +296,16 @@ model Order {
   updatedAt DateTime @updatedAt
 
   // deprecated!
-  externalOrderId String @unique
+  externalOrderId String?
+
+  // Un-Prefixed Order Number (e.g. 30994)
+  // Order-Numbers have to be unique per Tenant!
+  // We use them as unique identifier between systems
+  orderNumber String
 
   // The end customers emails where we send transactional emails to
   contacts Contact[]
-  language Language
+  language Language @default(DE)
   packages Package[]
 
   orderlines OrderLine[]
@@ -302,6 +313,10 @@ model Order {
   tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
   payment  Payment[]
+
+  saleorOrder SaleorOrder[]
+
+  @@unique([orderNumber, tenantId])
 }
 
 // The ECI internal Product model

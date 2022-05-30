@@ -10056,13 +10056,20 @@ export type AppQuery = {
   } | null;
 };
 
-export type SaleorCronOrdersQueryVariables = Exact<{
+export type PageInfoMetaFragment = {
+  __typename?: "PageInfo";
+  hasNextPage: boolean;
+  startCursor?: string | null;
+  endCursor?: string | null;
+};
+
+export type SaleorCronOrdersOverviewQueryVariables = Exact<{
   createdGte?: InputMaybe<Scalars["Date"]>;
   after?: InputMaybe<Scalars["String"]>;
   first?: InputMaybe<Scalars["Int"]>;
 }>;
 
-export type SaleorCronOrdersQuery = {
+export type SaleorCronOrdersOverviewQuery = {
   __typename?: "Query";
   orders?: {
     __typename?: "OrderCountableConnection";
@@ -10079,13 +10086,35 @@ export type SaleorCronOrdersQuery = {
         id: string;
         created: any;
         number?: string | null;
-        channel: { __typename?: "Channel"; id: string; name: string };
-        discounts?: Array<{
-          __typename?: "OrderDiscount";
-          id: string;
-          value: any;
-          name?: string | null;
-        }> | null;
+      };
+    }>;
+  } | null;
+};
+
+export type SaleorCronOrdersDetailsQueryVariables = Exact<{
+  createdGte?: InputMaybe<Scalars["Date"]>;
+  after?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+}>;
+
+export type SaleorCronOrdersDetailsQuery = {
+  __typename?: "Query";
+  orders?: {
+    __typename?: "OrderCountableConnection";
+    pageInfo: {
+      __typename?: "PageInfo";
+      hasNextPage: boolean;
+      startCursor?: string | null;
+      endCursor?: string | null;
+    };
+    edges: Array<{
+      __typename?: "OrderCountableEdge";
+      node: {
+        __typename?: "Order";
+        id: string;
+        created: any;
+        number?: string | null;
+        voucher?: { __typename?: "Voucher"; id: string; code: string } | null;
         shippingPrice: {
           __typename?: "TaxedMoney";
           currency: string;
@@ -10095,8 +10124,16 @@ export type SaleorCronOrdersQuery = {
           __typename?: "OrderLine";
           id: string;
           quantity: number;
+          unitDiscountType?: DiscountValueTypeEnum | null;
+          unitDiscountValue: any;
           taxRate: number;
           variant?: { __typename?: "ProductVariant"; sku: string } | null;
+          undiscountedUnitPrice: {
+            __typename?: "TaxedMoney";
+            currency: string;
+            gross: { __typename?: "Money"; amount: number };
+            net: { __typename?: "Money"; amount: number };
+          };
           totalPrice: {
             __typename?: "TaxedMoney";
             currency: string;
@@ -10316,6 +10353,13 @@ export type WarehousesQuery = {
   } | null;
 };
 
+export const PageInfoMetaFragmentDoc = gql`
+  fragment PageInfoMeta on PageInfo {
+    hasNextPage
+    startCursor
+    endCursor
+  }
+`;
 export const AppInstallDocument = gql`
   mutation appInstall($input: AppInstallInput!) {
     appInstall(input: $input) {
@@ -10478,8 +10522,12 @@ export const AppDocument = gql`
     }
   }
 `;
-export const SaleorCronOrdersDocument = gql`
-  query saleorCronOrders($createdGte: Date, $after: String, $first: Int) {
+export const SaleorCronOrdersOverviewDocument = gql`
+  query saleorCronOrdersOverview(
+    $createdGte: Date
+    $after: String
+    $first: Int
+  ) {
     orders(
       first: $first
       after: $after
@@ -10495,14 +10543,33 @@ export const SaleorCronOrdersDocument = gql`
           id
           created
           number
-          channel {
+        }
+      }
+    }
+  }
+`;
+export const SaleorCronOrdersDetailsDocument = gql`
+  query saleorCronOrdersDetails(
+    $createdGte: Date
+    $after: String
+    $first: Int
+  ) {
+    orders(
+      first: $first
+      after: $after
+      filter: { created: { gte: $createdGte } }
+    ) {
+      pageInfo {
+        ...PageInfoMeta
+      }
+      edges {
+        node {
+          id
+          created
+          number
+          voucher {
             id
-            name
-          }
-          discounts {
-            id
-            value
-            name
+            code
           }
           shippingPrice {
             currency
@@ -10516,6 +10583,17 @@ export const SaleorCronOrdersDocument = gql`
               sku
             }
             quantity
+            unitDiscountType
+            unitDiscountValue
+            undiscountedUnitPrice {
+              currency
+              gross {
+                amount
+              }
+              net {
+                amount
+              }
+            }
             taxRate
             totalPrice {
               gross {
@@ -10540,6 +10618,7 @@ export const SaleorCronOrdersDocument = gql`
       }
     }
   }
+  ${PageInfoMetaFragmentDoc}
 `;
 export const SaleorCronPaymentsDocument = gql`
   query saleorCronPayments($createdGte: Date, $after: String) {
@@ -10836,15 +10915,23 @@ export function getSdk<C>(requester: Requester<C>) {
         options,
       );
     },
-    saleorCronOrders(
-      variables?: SaleorCronOrdersQueryVariables,
+    saleorCronOrdersOverview(
+      variables?: SaleorCronOrdersOverviewQueryVariables,
       options?: C,
-    ): Promise<SaleorCronOrdersQuery> {
-      return requester<SaleorCronOrdersQuery, SaleorCronOrdersQueryVariables>(
-        SaleorCronOrdersDocument,
-        variables,
-        options,
-      );
+    ): Promise<SaleorCronOrdersOverviewQuery> {
+      return requester<
+        SaleorCronOrdersOverviewQuery,
+        SaleorCronOrdersOverviewQueryVariables
+      >(SaleorCronOrdersOverviewDocument, variables, options);
+    },
+    saleorCronOrdersDetails(
+      variables?: SaleorCronOrdersDetailsQueryVariables,
+      options?: C,
+    ): Promise<SaleorCronOrdersDetailsQuery> {
+      return requester<
+        SaleorCronOrdersDetailsQuery,
+        SaleorCronOrdersDetailsQueryVariables
+      >(SaleorCronOrdersDetailsDocument, variables, options);
     },
     saleorCronPayments(
       variables?: SaleorCronPaymentsQueryVariables,

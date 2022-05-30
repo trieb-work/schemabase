@@ -1,5 +1,9 @@
-query saleorCronOrders($createdGte: Date, $after: String, $first: Int) {
-  orders(first: $first, after: $after, filter: { created: { gte: $createdGte } }) {
+query saleorCronOrdersOverview($createdGte: Date, $after: String, $first: Int) {
+  orders(
+    first: $first
+    after: $after
+    filter: { created: { gte: $createdGte } }
+  ) {
     pageInfo {
       hasNextPage
       startCursor
@@ -10,18 +14,48 @@ query saleorCronOrders($createdGte: Date, $after: String, $first: Int) {
         id
         created
         number
-        channel {
+      }
+    }
+  }
+}
+
+query saleorCronOrdersDetails($createdGte: Date, $after: String, $first: Int) {
+  orders(first: $first, after: $after, filter: { created: { gte: $createdGte } }) {
+    pageInfo {
+      ...PageInfoMeta
+    }
+    edges {
+      node {
+        id
+        created
+        number
+        voucher {
           id
-          name
+          code
         }
-        discounts{id value name}
-        shippingPrice{currency gross{amount}}
+        shippingPrice {
+          currency
+          gross {
+            amount
+          }
+        }
         lines {
           id
           variant {
             sku
           }
           quantity
+          unitDiscountType
+          unitDiscountValue
+          undiscountedUnitPrice {
+            currency
+            gross {
+              amount
+            }
+            net {
+              amount
+            }
+          }
           taxRate
           totalPrice {
             gross {

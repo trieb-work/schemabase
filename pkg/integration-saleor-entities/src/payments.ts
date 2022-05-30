@@ -145,11 +145,17 @@ export class SaleorPaymentSyncService {
           createdAt: payment?.created,
           updatedAt: payment?.modified,
           saleorOrder: {
-            connect: {
-              id_installedSaleorAppId: {
-                id: payment.order?.id || "",
-                installedSaleorAppId: this.installedSaleorApp.id,
+            connectOrCreate: {
+              where: {
+                id_installedSaleorAppId: {
+                  id: payment.order?.id || "",
+                  installedSaleorAppId: this.installedSaleorApp.id,
+                },
               },
+              create: {
+                
+              },
+
             },
           },
         },
