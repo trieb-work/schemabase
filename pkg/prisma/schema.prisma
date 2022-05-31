@@ -199,7 +199,9 @@ model Payment {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  zohoPayment ZohoPayment[]
+  zohoPayment   ZohoPayment[]
+
+  @@unique([orderId, tenantId])
 }
 
 model Company {
@@ -305,7 +307,7 @@ model Order {
 
   // The end customers emails where we send transactional emails to
   contacts Contact[]
-  language Language @default(DE)
+  language Language  @default(DE)
   packages Package[]
 
   orderlines OrderLine[]

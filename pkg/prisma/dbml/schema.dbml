@@ -125,6 +125,10 @@ Table Payment {
   tenant Tenant [not null]
   tenantId String [not null]
   zohoPayment ZohoPayment [not null]
+
+  indexes {
+    (orderId, tenantId) [unique]
+  }
 }
 
 Table Company {
