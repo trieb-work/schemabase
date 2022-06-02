@@ -172,8 +172,6 @@ export class SaleorPaymentSyncService {
           },
         },
       });
-
-      // TODO: go through saleorOrder->order and add the generic payment in this way
     }
   }
 }
