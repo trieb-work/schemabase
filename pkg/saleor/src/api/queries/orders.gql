@@ -102,7 +102,7 @@ query saleorCronPayments($createdGte: Date, $after: String) {
           gateway
           created
           modified
-          order{ id }
+          order{ id created number }
           paymentMethodType
           transactions {
             id

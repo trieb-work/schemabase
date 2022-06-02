@@ -15,6 +15,21 @@ generator client {
 }
 
 // Zoho specific model.
+model ZohoInvoice {
+  // Zoho Internal Id
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId String
+
+
+  @@unique([id, zohoAppId])
+}
+
+// Zoho specific model.
 model ZohoPayment {
   // Zoho Internal Id
   id String
@@ -24,7 +39,6 @@ model ZohoPayment {
 
   payment   Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
   paymentId String  @unique
-
 
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String
@@ -183,6 +197,24 @@ enum PaymentMethodType {
   banktransfer
 }
 
+// The ECI internal invoice model
+model Invoice {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  amount        Float
+
+  payments Payment[]
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  orders Order[]
+
+}
+
 // The ECI internal payments model
 model Payment {
   // eci internal id
@@ -191,7 +223,7 @@ model Payment {
   updatedAt DateTime @updatedAt
 
   amount        Float
-  paymentMethod PaymentMethodType?
+  paymentMethod PaymentMethodType
 
   order   Order?  @relation(fields: [orderId], references: [id])
   orderId String?
@@ -199,7 +231,12 @@ model Payment {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
+  invoices Invoice[]
+
   zohoPayment ZohoPayment[]
+
+
+  @@unique([orderId, tenantId])
 }
 
 model Company {
@@ -214,8 +251,6 @@ model Company {
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
-
-
 
   @@unique([name, tenantId])
 }
@@ -305,7 +340,7 @@ model Order {
 
   // The end customers emails where we send transactional emails to
   contacts Contact[]
-  language Language @default(DE)
+  language Language  @default(DE)
   packages Package[]
 
   orderlines OrderLine[]
@@ -315,6 +350,8 @@ model Order {
   payment  Payment[]
 
   saleorOrder SaleorOrder[]
+
+  invoices Invoice[]
 
   @@unique([orderNumber, tenantId])
 }
@@ -582,6 +619,7 @@ model ZohoApp {
   zohoItem              ZohoItem[]
   zohoWarehouse         ZohoWarehouse[]
   zohoContact           ZohoContact[]
+  zohoInvoice           ZohoInvoice[]
 }
 
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor
@@ -689,6 +727,7 @@ model Tenant {
   productVariant              ProductVariant[]
   payment                     Payment[]
   warehouse                   Warehouse[]
+  invoice                     Invoice[]
 }
 
 // A subscription indicates a tenant has payed for one integration.

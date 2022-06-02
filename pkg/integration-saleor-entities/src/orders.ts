@@ -4,7 +4,7 @@ import { ILogger } from "@eci/pkg/logger";
 import {
   SaleorCronOrdersOverviewQuery,
   SaleorCronOrdersDetailsQuery,
-  PageInfoMetaFragment,
+  queryWithPagination,
 } from "@eci/pkg/saleor";
 import { InstalledSaleorApp, PrismaClient, Tenant } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
@@ -33,17 +33,6 @@ interface SaleorOrderSyncServiceConfig {
   db: PrismaClient;
   logger: ILogger;
 }
-
-
-type PagedSaleorResult<ResultNode, EntryName extends string> = Record<EntryName, {
-  pageInfo: PageInfoMetaFragment
-  edges: Array<{
-    node: ResultNode;
-  }>;
-}>
-type PagedSaleorQuery<ResultNode, EntryName extends string> = PagedSaleorResult<ResultNode, EntryName> | {
-  __typename?: "Query";
-};
 
 export class SaleorOrderSyncService {
   public readonly saleorClient: {
@@ -88,40 +77,6 @@ export class SaleorOrderSyncService {
     });
   }
 
-  /**
-   * Recursively query saleor for orders
-   * @param cursor
-   * @param results
-   * @returns
-   */
-  private async queryWithPagination<EntryName extends string, SpecificPagedSaleorQuery extends PagedSaleorQuery<ResultNode, EntryName>, ResultNode = any>(
-    client: (cursor: {
-      first: number;
-      after: string;
-    }) => Promise<SpecificPagedSaleorQuery>,
-    first: number = 100,
-  ): Promise<SpecificPagedSaleorQuery> {
-    const recQueryWithPagination = async (firstInner: number, after: string, resultAkkumulator?: PagedSaleorResult<ResultNode, EntryName>): Promise<PagedSaleorResult<ResultNode, EntryName>> => {
-      const res = await client({first: firstInner, after});
-      const resultEntries = Object.entries(res).filter(([key]) => key !== "__typename") as Array<[EntryName, PagedSaleorResult<ResultNode, EntryName>[EntryName]]>;
-      if(resultEntries.length > 1) throw new Error(`Only one result entrie is allowed. Used following entries: ${Object.keys(res)}`);
-      if(resultEntries.length === 0) throw new Error(`No result entrie provided. Used following entries: ${Object.keys(res)}`);
-      const [singleEntryKey, singleEntryValue] = resultEntries[0];
-      let newResultAkkumulator: PagedSaleorResult<ResultNode, EntryName> | undefined = resultAkkumulator;
-      if(typeof newResultAkkumulator === "undefined"){
-        newResultAkkumulator = { [singleEntryKey]: singleEntryValue } as PagedSaleorResult<ResultNode, EntryName>;
-      } else {
-        newResultAkkumulator[singleEntryKey].edges = newResultAkkumulator[singleEntryKey].edges.concat(singleEntryValue.edges);
-      }
-      if(singleEntryValue.pageInfo.hasNextPage) {
-        if(!singleEntryValue.pageInfo.endCursor) throw new Error(`No endCursor provided by query result. res: ${res}`);
-        return recQueryWithPagination(firstInner, singleEntryValue.pageInfo.endCursor,  newResultAkkumulator)
-      }
-      return newResultAkkumulator;
-    }
-    return recQueryWithPagination(first, "") as Promise<SpecificPagedSaleorQuery>;
-  }
-
   public async syncToECI(): Promise<void> {
     const cronState = await this.cronState.get();
 
@@ -137,7 +92,7 @@ export class SaleorOrderSyncService {
     } else {
       this.logger.info(`Setting GTE date to ${createdGte}`);
     }
-    const result = await this.queryWithPagination(({ first, after }) =>
+    const result = await queryWithPagination(({ first, after }) =>
       this.saleorClient.saleorCronOrdersOverview({ first, after, createdGte, channel: this.channelSlug }),
     );
 

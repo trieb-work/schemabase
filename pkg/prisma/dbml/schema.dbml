@@ -2,6 +2,18 @@
 //// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 //// ------------------------------------------------------
 
+Table ZohoInvoice {
+  id String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  zohoApp ZohoApp [not null]
+  zohoAppId String [not null]
+
+  indexes {
+    (id, zohoAppId) [unique]
+  }
+}
+
 Table ZohoPayment {
   id String [not null]
   createdAt DateTime [not null]
@@ -114,6 +126,17 @@ Table ZohoWarehouse {
   }
 }
 
+Table Invoice {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  amount Float [not null]
+  payments Payment [not null]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  orders Order [not null]
+}
+
 Table Payment {
   id String [pk]
   createdAt DateTime [default: `now()`, not null]
@@ -124,7 +147,12 @@ Table Payment {
   orderId String
   tenant Tenant [not null]
   tenantId String [not null]
+  invoices Invoice [not null]
   zohoPayment ZohoPayment [not null]
+
+  indexes {
+    (orderId, tenantId) [unique]
+  }
 }
 
 Table Company {
@@ -204,6 +232,7 @@ Table Order {
   tenantId String [not null]
   payment Payment [not null]
   saleorOrder SaleorOrder [not null]
+  invoices Invoice [not null]
 
   indexes {
     (orderNumber, tenantId) [unique]
@@ -386,6 +415,7 @@ Table ZohoApp {
   zohoItem ZohoItem [not null]
   zohoWarehouse ZohoWarehouse [not null]
   zohoContact ZohoContact [not null]
+  zohoInvoice ZohoInvoice [not null]
 }
 
 Table SaleorApp {
@@ -447,6 +477,7 @@ Table Tenant {
   productVariant ProductVariant [not null]
   payment Payment [not null]
   warehouse Warehouse [not null]
+  invoice Invoice [not null]
 }
 
 Table Subscription {
@@ -584,6 +615,16 @@ Table SecretKey {
   incomingWebhookId String [unique, not null]
 }
 
+Table InvoiceToPayment {
+  paymentsId String [ref: > Payment.id]
+  invoicesId String [ref: > Invoice.id]
+}
+
+Table InvoiceToOrder {
+  ordersId String [ref: > Order.id]
+  invoicesId String [ref: > Invoice.id]
+}
+
 Table ContactToOrder {
   ordersId String [ref: > Order.id]
   contactsId String [ref: > Contact.id]
@@ -636,6 +677,8 @@ Enum CronJobStatus {
   failure
 }
 
+Ref: ZohoInvoice.zohoAppId > ZohoApp.id [delete: Cascade]
+
 Ref: ZohoPayment.paymentId > Payment.id [delete: Cascade]
 
 Ref: ZohoPayment.zohoAppId > ZohoApp.id [delete: Cascade]
@@ -667,6 +710,8 @@ Ref: ZohoContact.zohoAppId > ZohoApp.id [delete: Cascade]
 Ref: ZohoWarehouse.warehouseId > Warehouse.id [delete: Cascade]
 
 Ref: ZohoWarehouse.zohoAppId > ZohoApp.id [delete: Cascade]
+
+Ref: Invoice.tenantId > Tenant.id [delete: Cascade]
 
 Ref: Payment.orderId > Order.id
 

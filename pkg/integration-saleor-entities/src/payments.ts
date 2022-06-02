@@ -1,8 +1,9 @@
 import { ILogger } from "@eci/pkg/logger";
-import { SaleorCronPaymentsQuery } from "@eci/pkg/saleor";
+import { queryWithPagination, SaleorCronPaymentsQuery } from "@eci/pkg/saleor";
 import { InstalledSaleorApp, PrismaClient, Tenant } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { setHours, subDays, subYears } from "date-fns";
+import { id } from "@eci/pkg/ids";
 // import { id } from "@eci/pkg/ids";
 
 interface SaleorPaymentSyncServiceConfig {
@@ -59,37 +60,6 @@ export class SaleorPaymentSyncService {
   }
 
   /**
-   * Recursively query saleor for orders
-   * @param cursor
-   * @param results
-   * @returns
-   */
-  private async queryWithPagination(
-    createdGte: Date,
-    cursor: string = "",
-    results: SaleorCronPaymentsQuery = {},
-  ): Promise<SaleorCronPaymentsQuery> {
-    const result = await this.saleorClient.saleorCronPayments({
-      first: 50,
-      after: cursor,
-      channel: this.channelSlug,
-      createdGte,
-    });
-    if (
-      !result.orders?.pageInfo.hasNextPage ||
-      !result.orders.pageInfo.endCursor
-    ) {
-      return result;
-    }
-    result.orders.edges.map((order) => results.orders?.edges.push(order));
-    return this.queryWithPagination(
-      createdGte,
-      result.orders.pageInfo.endCursor,
-      results,
-    );
-  }
-
-  /**
    * Pull payment metadata from braintree
    */
   //   private async braintreeGetPaymentDetails() {}
@@ -99,18 +69,26 @@ export class SaleorPaymentSyncService {
 
     const now = new Date();
     const yesterdayMidnight = setHours(subDays(now, 1), 0);
-    let gteDate = yesterdayMidnight;
+    let createdGte = yesterdayMidnight;
     if (!cronState.lastRun) {
-      gteDate = subYears(now, 1);
+      createdGte = subYears(now, 1);
       this.logger.info(
         // eslint-disable-next-line max-len
-        `This seems to be our first sync run. Syncing data from now - 1 Year to: ${gteDate.toISOString()}`,
+        `This seems to be our first sync run. Syncing data from now - 1 Year to: ${createdGte.toISOString()}`,
       );
     } else {
       this.logger.info(`Setting GTE date to ${yesterdayMidnight.toISOString}`);
     }
 
-    const result = await this.queryWithPagination(gteDate);
+    const result = await queryWithPagination(({ first, after }) =>
+      this.saleorClient.saleorCronPayments({
+        first,
+        after,
+        createdGte,
+        channel: this.channelSlug,
+      }),
+    );
+
     const payments = result.orders?.edges
       .map((order) => order.node)
       .map((x) => x.payments)
@@ -124,6 +102,15 @@ export class SaleorPaymentSyncService {
 
     for (const payment of payments) {
       if (!payment || !payment?.id) continue;
+      if (!payment?.order?.id) {
+        this.logger.warn(
+          `Can't sync payment ${payment.id} - No related order id given`,
+        );
+        continue;
+      }
+      const order = payment.order;
+      if (typeof order.number !== "string") continue;
+
       await this.db.saleorPayment.upsert({
         where: {
           id_installedSaleorAppId: {
@@ -153,15 +140,38 @@ export class SaleorPaymentSyncService {
                 },
               },
               create: {
-                
+                id: payment.order?.id,
+                installedSaleorApp: {
+                  connect: {
+                    id: this.installedSaleorApp.id,
+                  },
+                },
+                createdAt: payment.order.created,
+                order: {
+                  connectOrCreate: {
+                    where: {
+                      orderNumber_tenantId: {
+                        orderNumber: order.number as string,
+                        tenantId: this.tenant.id,
+                      },
+                    },
+                    create: {
+                      id: id.id("order"),
+                      orderNumber: order.number,
+                      createdAt: order.created,
+                      tenant: {
+                        connect: {
+                          id: this.tenant.id,
+                        },
+                      },
+                    },
+                  },
+                },
               },
-
             },
           },
         },
       });
-
-      // TODO: go through saleorOrder->order and add the generic payment in this way
     }
   }
 }
