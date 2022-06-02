@@ -4,7 +4,7 @@ import { PrismaClient, Prisma, ZohoApp } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 
-type ZohoAppWithTenant = ZohoApp & Prisma.TenantInclude;
+export type ZohoAppWithTenant = ZohoApp & Prisma.TenantInclude;
 
 export interface ZohoContactSyncConfig {
   logger: ILogger;

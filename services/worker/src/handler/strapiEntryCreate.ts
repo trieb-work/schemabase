@@ -4,7 +4,7 @@ import {
   StrapiOrdersToZoho,
 } from "@eci/pkg/integration-bulkorders";
 import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
-import { PrismaClient } from "@eci/pkg/prisma";
+import type { PrismaClient } from "@eci/pkg/prisma";
 import { ILogger } from "@eci/pkg/logger";
 import { env } from "@eci/pkg/env";
 import { Context } from "@eci/pkg/context";

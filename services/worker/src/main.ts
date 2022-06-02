@@ -17,6 +17,7 @@ import {
 import * as tracking from "@eci/pkg/integration-tracking";
 import { Sendgrid } from "@eci/pkg/email/src/emailSender";
 import { OrderUpdater } from "./handler/zohoOrderUpsert";
+import { scheduleAllWorkflows } from "./cron";
 async function main() {
   const logger = new Logger({
     meta: {
@@ -50,6 +51,13 @@ async function main() {
   const signer = new Signer({ signingKey: env.require("SIGNING_KEY") });
   const prisma = new PrismaClient();
   const producer = await KafkaProducer.new({ signer });
+  const redisConnection = {
+    host: env.require("REDIS_HOST"),
+    port: parseInt(env.require("REDIS_PORT")),
+    password: env.require("REDIS_PASSWORD"),
+  };
+
+  await scheduleAllWorkflows({prisma, logger, redisConnection});
 
   /**
    *  Strapi
@@ -151,4 +159,9 @@ async function main() {
   );
 }
 
-main();
+main().catch((err) => {
+  const logger = new Logger(/* TODO: */);
+  logger.error("Main dwh failed", err);
+  console.error(err);
+  process.exit(1);
+});
