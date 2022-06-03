@@ -33,7 +33,7 @@ describe("Workflow scheduler", () => {
 
   test("It should work to schedule all workflows", async () => {
     await crontable.scheduleTenantWorkflows();
-    await sleep(5000);
+    await sleep(10000); // wait for the workflows to finish
     const keys = await redis.keys("bull:eci:test:test:*");
     console.log("keys", keys)
     console.log("scheduledWorkflows", crontable.scheduler.scheduledWorkflows)

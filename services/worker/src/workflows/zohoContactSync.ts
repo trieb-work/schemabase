@@ -36,7 +36,7 @@ export class ZohoContactSyncWorkflow implements Workflow {
    */
   public async run(): Promise<void> {
     this.logger.info("Starting zoho invoices sync workflow run");
-    const { client: zoho, zohoApp } = await getZohoClientAndEntry(this.zohoAppId, this.prisma, {});
+    const { client: zoho, zohoApp } = await getZohoClientAndEntry(this.zohoAppId, this.prisma, undefined);
     const zohoContactSyncService = new ZohoContactSyncService({
       logger: this.logger,
       zoho,

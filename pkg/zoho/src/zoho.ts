@@ -12,7 +12,7 @@ export async function createZohoClient(zohoAppId: string, prisma: PrismaClient):
     return prismaZohoAppEntryToClient(zohoApp);
 }
 
-export async function getZohoClientAndEntry<T extends Prisma.ZohoAppInclude>(zohoAppId: string, prisma: PrismaClient, include: T) {
+export async function getZohoClientAndEntry<T extends Prisma.ZohoAppInclude | null | undefined>(zohoAppId: string, prisma: PrismaClient, include: T) {
     const zohoApp = await prisma.zohoApp.findUnique({
         where: {
             id: zohoAppId,

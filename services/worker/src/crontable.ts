@@ -1,9 +1,8 @@
 import { ILogger } from "@eci/pkg/logger";
-import { PrismaClient, ZohoApp } from "@eci/pkg/prisma";
-import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
+import { PrismaClient } from "@eci/pkg/prisma";
 import { RedisConnection, WorkflowScheduler } from "@eci/pkg/scheduler/scheduler";
 import { createWorkflowFactory } from "@eci/pkg/scheduler/workflow";
-import { ZohoContactSyncWorkflow, ZohoSyncInvoicesWorkflow } from "./workflows/zohoContactSync";
+import { ZohoContactSyncWorkflow } from "./workflows/zohoContactSync";
 
 interface CronClients {
     logger: ILogger;
