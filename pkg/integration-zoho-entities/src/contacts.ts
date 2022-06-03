@@ -1,16 +1,14 @@
 import { Zoho, Contact } from "@trieb.work/zoho-ts/dist/v2";
 import { ILogger } from "@eci/pkg/logger";
-import { PrismaClient, Prisma, ZohoApp } from "@eci/pkg/prisma";
+import { PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-
-export type ZohoAppWithTenant = ZohoApp & Prisma.TenantInclude;
 
 export interface ZohoContactSyncConfig {
   logger: ILogger;
   zoho: Zoho;
   db: PrismaClient;
-  zohoApp: ZohoAppWithTenant;
+  zohoApp: ZohoApp;
 }
 
 export class ZohoContactSyncService {
@@ -20,7 +18,7 @@ export class ZohoContactSyncService {
 
   private readonly db: PrismaClient;
 
-  private readonly zohoApp: ZohoAppWithTenant;
+  private readonly zohoApp: ZohoApp;
 
   private readonly cronState: CronStateHandler;
 
