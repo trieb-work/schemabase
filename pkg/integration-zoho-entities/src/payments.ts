@@ -1,13 +1,13 @@
 import { Zoho, Payment } from "@trieb.work/zoho-ts/dist/v2";
 import { ILogger } from "@eci/pkg/logger";
 import { PrismaClient, Prisma, ZohoApp } from "@eci/pkg/prisma";
-import { id } from "@eci/pkg/ids";
+// import { id } from "@eci/pkg/ids";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { format, setHours, subDays, subYears } from "date-fns";
 
 type ZohoAppWithTenant = ZohoApp & Prisma.TenantInclude;
 
-export interface ZohopaymentSyncConfig {
+export interface ZohoPaymentSyncConfig {
   logger: ILogger;
   zoho: Zoho;
   db: PrismaClient;
@@ -25,7 +25,7 @@ export class ZohopaymentSyncService {
 
   private readonly cronState: CronStateHandler;
 
-  public constructor(config: ZohopaymentSyncConfig) {
+  public constructor(config: ZohoPaymentSyncConfig) {
     this.logger = config.logger;
     this.zoho = config.zoho;
     this.db = config.db;
@@ -39,7 +39,7 @@ export class ZohopaymentSyncService {
   }
 
   public async syncToECI(): Promise<void> {
-    const tenantId = this.zohoApp.tenantId;
+    // const tenantId = this.zohoApp.tenantId;
 
     const cronState = await this.cronState.get();
 
@@ -70,10 +70,44 @@ export class ZohopaymentSyncService {
     }
 
     for (const payment of payments) {
-
       await this.db.zohoPayment.upsert({
-        
-      })
+        where: {
+          id_zohoAppId: {
+            id: payment.payment_id,
+            zohoAppId: this.zohoApp.id,
+          },
+        },
+        create: {
+          id: payment.payment_id,
+          zohoApp: {
+            connect: {
+              id: this.zohoApp.id,
+            },
+          },
+          createdAt: payment.created_time,
+          updatedAt: payment.last_modified_time,
+          zohoContact: {
+            connect: {
+              id_zohoAppId: {
+                id: payment.customer_id,
+                zohoAppId: this.zohoApp.id,
+              },
+            },
+          },
+        },
+        update: {
+          createdAt: payment.created_time,
+          updatedAt: payment.last_modified_time,
+          zohoContact: {
+            connect: {
+              id_zohoAppId: {
+                id: payment.customer_id,
+                zohoAppId: this.zohoApp.id,
+              },
+            },
+          },
+        },
+      });
     }
 
     await this.cronState.set({

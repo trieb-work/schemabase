@@ -14,39 +14,6 @@ generator client {
   previewFeatures = ["referentialIntegrity"]
 }
 
-// Zoho specific model.
-model ZohoInvoice {
-  // Zoho Internal Id
-  id String
-
-  createdAt DateTime
-  updatedAt DateTime
-
-  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
-  zohoAppId String
-
-
-  @@unique([id, zohoAppId])
-}
-
-// Zoho specific model.
-model ZohoPayment {
-  // Zoho Internal Id
-  id String
-
-  createdAt DateTime
-  updatedAt DateTime
-
-  payment   Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  paymentId String  @unique
-
-  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
-  zohoAppId String
-
-
-  @@unique([id, zohoAppId])
-}
-
 // ------------------------------------------------------------------------------------------------
 //
 //  SALEOR SPECIFIC MODELS
@@ -164,6 +131,52 @@ model ZohoContact {
   contact   Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
   contactId String
 
+  zohoPayments ZohoPayment[]
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId String
+
+
+  @@unique([id, zohoAppId])
+}
+
+// Zoho specific model.
+model ZohoInvoice {
+  // Zoho Internal Id
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  // The Zoho Internal Invoice number
+  // as complete string: INV-395956
+  number String
+
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId String
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId String
+
+
+  @@unique([id, zohoAppId])
+  @@unique([number, zohoAppId])
+}
+
+// Zoho specific model.
+model ZohoPayment {
+  // Zoho Internal Id
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+  
+  zohoContact ZohoContact? @relation(fields: [zohoContactId], references: [id], onDelete: Cascade)
+  zohoContactId String?
+  
+  payment   Payment? @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  paymentId String?  @unique
+
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String
 
@@ -204,7 +217,10 @@ model Invoice {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  amount        Float
+  // Un-Prefixed Order Number (e.g. 30994)
+  // Order-Numbers have to be unique per Tenant!
+  // We use them as unique identifier between systems
+  invoiceNumber String
 
   payments Payment[]
 
@@ -212,7 +228,9 @@ model Invoice {
   tenantId String
 
   orders Order[]
+  zohoInvoice ZohoInvoice[]
 
+  @@unique([invoiceNumber, tenantId])
 }
 
 // The ECI internal payments model
@@ -227,6 +245,7 @@ model Payment {
 
   order   Order?  @relation(fields: [orderId], references: [id])
   orderId String?
+
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
