@@ -12,17 +12,17 @@ services:
   #     - POSTGRES_DB=postgres
   #     - POSTGRES_USER=postgres
   #     - POSTGRES_PASSWORD=postgres
-  eci_db:
-    container_name: eci.mysql.db
-    image: mysql:8
-    command: --default-authentication-plugin=mysql_native_password
-    ports:
-      - 3306:3306
-    environment:
-      - MYSQL_ROOT_PASSWORD=eci
-      - MYSQL_USER=eci
-      - MYSQL_PASSWORD=eci
-      - MYSQL_DATABASE=eci
+  # eci_db:
+  #   container_name: eci.mysql.db
+  #   image: mysql:8
+  #   command: --default-authentication-plugin=mysql_native_password
+  #   ports:
+  #     - 3306:3306
+  #   environment:
+  #     - MYSQL_ROOT_PASSWORD=eci
+  #     - MYSQL_USER=eci
+  #     - MYSQL_PASSWORD=eci
+  #     - MYSQL_DATABASE=eci
 
 
   # Nextjs Serverless application to receive api from various services
@@ -130,8 +130,8 @@ services:
       - zookeeper
 
   redis:
-    container_name: redis
+    container_name: redis.eci
     image: redis
-    command: redis-server --requirepass ${REDIS_PASSWORD}
+    command: redis-server --requirepass hi
     ports:
-      - ${REDIS_PORT}:6379
+      - 6379:6379

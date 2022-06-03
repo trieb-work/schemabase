@@ -60,6 +60,7 @@ specifiers:
   graphql-tag: ^2.12.6
   html-to-text: ^8.1.0
   husky: ^7.0.4
+  ioredis: ^5.0.6
   jest: ^27.4.7
   jsonwebtoken: ^8.5.1
   kafkajs: ^1.15.0
@@ -102,6 +103,7 @@ dependencies:
   graphql-request: 3.7.0_graphql@15.8.0
   graphql-tag: 2.12.6_graphql@15.8.0
   html-to-text: 8.2.0
+  ioredis: 5.0.6
   jsonwebtoken: 8.5.1
   kafkajs: 1.16.0
   micro: 9.3.4
@@ -1711,6 +1713,10 @@ packages:
   /@iarna/toml/2.2.5:
     resolution: {integrity: sha512-trnsAYxU3xnS1gPHPyU961coFyLkh4gAD/0zQ5mymY4yOZ+CYvsPqUbOFSw0aDM4y0tV7tiFxL/1XfXPNC6IPg==}
     dev: true
+
+  /@ioredis/commands/1.1.1:
+    resolution: {integrity: sha512-fsR4P/ROllzf/7lXYyElUJCheWdTJVJvOTps8v9IWKFATxR61ANOlnoPqhH099xYLrJGpc2ZQ28B3rMeUt5VQg==}
+    dev: false
 
   /@istanbuljs/load-nyc-config/1.1.0:
     resolution: {integrity: sha512-VjeHSlIzpv/NyD3N0YuHfXOPDIixcA1q2ZV98wsMqcYlPmv2n3Yb2lYP9XMElnaFVXg5A7YLTeLu6V84uQDjmQ==}
@@ -4689,6 +4695,11 @@ packages:
     engines: {node: '>=0.10'}
     dev: false
 
+  /denque/2.0.1:
+    resolution: {integrity: sha512-tfiWc6BQLXNLpNiR5iGd0Ocu3P3VpxfzFiqubLgMfhfOw9WyvgJBd46CClNn9k3qfbjvT//0cf7AlYRX/OslMQ==}
+    engines: {node: '>=0.10'}
+    dev: false
+
   /depd/1.1.1:
     resolution: {integrity: sha1-V4O04cRZ8G+lyif5kfPQbnoxA1k=}
     engines: {node: '>= 0.6'}
@@ -6654,6 +6665,23 @@ packages:
       - supports-color
     dev: false
 
+  /ioredis/5.0.6:
+    resolution: {integrity: sha512-KUm7wPzIet9QrFMoMm09/4bkfVKBUD9KXwBitP3hrNkZ+A6NBndweXGwYIB/7szHcTZgfo7Kvx88SxljJV4D9A==}
+    engines: {node: '>=12.22.0'}
+    dependencies:
+      '@ioredis/commands': 1.1.1
+      cluster-key-slot: 1.1.0
+      debug: 4.3.4
+      denque: 2.0.1
+      lodash.defaults: 4.2.0
+      lodash.isarguments: 3.1.0
+      redis-errors: 1.2.0
+      redis-parser: 3.0.0
+      standard-as-callback: 2.1.0
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
   /ipaddr.js/1.9.1:
     resolution: {integrity: sha512-0KI/607xoxSToH7GjN1FfSbLoU0+btTicjsQSWQlh/hZykN8KpmMf7uYwPW3R+akZ6R/w18ZlXSHBYXiYUPO3g==}
     engines: {node: '>= 0.10'}
@@ -7859,7 +7887,7 @@ packages:
     dev: true
 
   /lodash.defaults/4.2.0:
-    resolution: {integrity: sha1-0JF4cW/+pN3p5ft7N/bwgCJ0WAw=}
+    resolution: {integrity: sha512-qjxPLHd3r5DnsdGacqOMU6pb/avJzdh9tFX2ymgoZE27BmjXrNy/y4LoaiTeAb+O3gL8AfpJGtqfX/ae2leYYQ==}
 
   /lodash.difference/4.5.0:
     resolution: {integrity: sha1-nMtOUF1Ia5FlE0V3KIWi3yf9AXw=}

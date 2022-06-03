@@ -17,7 +17,8 @@ import {
 import * as tracking from "@eci/pkg/integration-tracking";
 import { Sendgrid } from "@eci/pkg/email/src/emailSender";
 import { OrderUpdater } from "./handler/zohoOrderUpsert";
-import { scheduleAllWorkflows } from "./cron";
+import { CronTable } from "./crontable";
+
 async function main() {
   const logger = new Logger({
     meta: {
@@ -56,8 +57,9 @@ async function main() {
     port: parseInt(env.require("REDIS_PORT")),
     password: env.require("REDIS_PASSWORD"),
   };
+  const crontable = new CronTable({ prisma, logger, redisConnection });
 
-  await scheduleAllWorkflows({prisma, logger, redisConnection});
+  await crontable.scheduleTenantWorkflows();
 
   /**
    *  Strapi
