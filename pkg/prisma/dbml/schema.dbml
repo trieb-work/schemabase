@@ -83,6 +83,7 @@ Table ZohoContact {
   zohoPayments ZohoPayment [not null]
   zohoApp ZohoApp [not null]
   zohoAppId String [not null]
+  zohoInvoices ZohoInvoice [not null]
 
   indexes {
     (id, zohoAppId) [unique]
@@ -94,6 +95,8 @@ Table ZohoInvoice {
   createdAt DateTime [not null]
   updatedAt DateTime [not null]
   number String [not null]
+  zohoContact ZohoContact
+  zohoContactId String
   invoice Invoice [not null]
   invoiceId String [not null]
   zohoApp ZohoApp [not null]
@@ -153,6 +156,7 @@ Table Payment {
   id String [pk]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
+  referenceNumber String [not null]
   amount Float [not null]
   paymentMethod PaymentMethodType [not null]
   order Order
@@ -164,6 +168,7 @@ Table Payment {
 
   indexes {
     (orderId, tenantId) [unique]
+    (referenceNumber, tenantId) [unique]
   }
 }
 
@@ -646,6 +651,8 @@ Enum PaymentMethodType {
   paypal
   card
   banktransfer
+  braintree
+  onlinepayment
 }
 
 Enum Currency {
@@ -712,6 +719,8 @@ Ref: ZohoItem.zohoAppId > ZohoApp.id [delete: Cascade]
 Ref: ZohoContact.contactId > Contact.id [delete: Cascade]
 
 Ref: ZohoContact.zohoAppId > ZohoApp.id [delete: Cascade]
+
+Ref: ZohoInvoice.zohoContactId > ZohoContact.id [delete: Cascade]
 
 Ref: ZohoInvoice.invoiceId > Invoice.id [delete: Cascade]
 

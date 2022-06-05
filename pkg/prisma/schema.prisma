@@ -136,8 +136,10 @@ model ZohoContact {
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String
 
+  zohoInvoices ZohoInvoice[]
 
   @@unique([id, zohoAppId])
+  
 }
 
 // Zoho specific model.
@@ -151,6 +153,9 @@ model ZohoInvoice {
   // The Zoho Internal Invoice number
   // as complete string: INV-395956
   number String
+
+  zohoContact   ZohoContact? @relation(fields: [zohoContactId], references: [id], onDelete: Cascade)
+  zohoContactId String?
 
   invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   invoiceId String
@@ -170,10 +175,10 @@ model ZohoPayment {
 
   createdAt DateTime
   updatedAt DateTime
-  
-  zohoContact ZohoContact? @relation(fields: [zohoContactId], references: [id], onDelete: Cascade)
+
+  zohoContact   ZohoContact? @relation(fields: [zohoContactId], references: [id], onDelete: Cascade)
   zohoContactId String?
-  
+
   payment   Payment? @relation(fields: [paymentId], references: [id], onDelete: Cascade)
   paymentId String?  @unique
 
@@ -208,6 +213,8 @@ enum PaymentMethodType {
   paypal
   card
   banktransfer
+  braintree
+  onlinepayment
 }
 
 // The ECI internal invoice model
@@ -217,8 +224,8 @@ model Invoice {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Un-Prefixed Order Number (e.g. 30994)
-  // Order-Numbers have to be unique per Tenant!
+  // Un-Prefixed Invoice Number (e.g. 30994)
+  // Invoice-Numbers have to be unique per Tenant!
   // We use them as unique identifier between systems
   invoiceNumber String
 
@@ -227,7 +234,7 @@ model Invoice {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  orders Order[]
+  orders      Order[]
   zohoInvoice ZohoInvoice[]
 
   @@unique([invoiceNumber, tenantId])
@@ -239,6 +246,10 @@ model Payment {
   id        String   @id
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Unique identifier for a customer payment.
+  // We use the payment gateway id as reference.
+  referenceNumber String
 
   amount        Float
   paymentMethod PaymentMethodType
@@ -256,6 +267,7 @@ model Payment {
 
 
   @@unique([orderId, tenantId])
+  @@unique([referenceNumber, tenantId])
 }
 
 model Company {

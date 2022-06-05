@@ -1,9 +1,15 @@
-import { Zoho, Payment } from "@trieb.work/zoho-ts/dist/v2";
+import { Zoho } from "@trieb.work/zoho-ts/dist/v2";
 import { ILogger } from "@eci/pkg/logger";
-import { PrismaClient, Prisma, ZohoApp } from "@eci/pkg/prisma";
+import {
+  PrismaClient,
+  Prisma,
+  ZohoApp,
+  PaymentMethodType,
+} from "@eci/pkg/prisma";
 // import { id } from "@eci/pkg/ids";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { format, setHours, subDays, subYears } from "date-fns";
+import { id } from "@eci/pkg/ids";
 
 type ZohoAppWithTenant = ZohoApp & Prisma.TenantInclude;
 
@@ -14,7 +20,7 @@ export interface ZohoPaymentSyncConfig {
   zohoApp: ZohoAppWithTenant;
 }
 
-export class ZohopaymentSyncService {
+export class ZohoPaymentSyncService {
   private readonly logger: ILogger;
 
   private readonly zoho: Zoho;
@@ -52,6 +58,8 @@ export class ZohopaymentSyncService {
       this.logger.info(
         `This seems to be our first sync run. Setting GTE date to ${gteDate}`,
       );
+    } else {
+      this.logger.info(`Setting GTE date to ${gteDate}`);
     }
 
     const payments = await this.zoho.payment.list({
@@ -70,6 +78,78 @@ export class ZohopaymentSyncService {
     }
 
     for (const payment of payments) {
+      const referenceNumber = payment.reference_number || payment.cf_gateway_transaction_id;
+      // TODO: maybe add a second option as reference number identifier,
+      // if no reference number is given
+      if (!referenceNumber) {
+        this.logger.info(
+          `Can't process payment, as no reference number is given ${payment.payment_id}`,
+        );
+        continue;
+      }
+
+      /**
+       * Match the different payment types that might come from Zoho to our
+       * more generic internal types
+       */
+      const paymentMethodMatch: { [key: string]: PaymentMethodType } = {
+        braintree: "braintree",
+        banküberweisung: "banktransfer",
+        banktransfer: "banktransfer",
+        paypal: "paypal",
+        onlinepayment: "onlinepayment",
+      };
+      const paymentMethod: PaymentMethodType =
+        paymentMethodMatch[payment.payment_mode.toLowerCase()];
+
+      if (!paymentMethod) {
+        this.logger.error(
+          // eslint-disable-next-line max-len
+          `Can't match the payment method type of payment ${payment.payment_id}. Got type: ${payment.payment_mode} from Zoho`,
+        );
+        continue;
+      }
+      // We first have to check, if we already have a Zoho Customer to be connected to
+      // this payment
+      const customerExist = await this.db.zohoContact.findFirst({
+        where: {
+          id: payment.customer_id,
+          zohoAppId: this.zohoApp.id,
+        },
+      });
+      const zohoContactConnect = customerExist
+        ? {
+            connect: {
+              id_zohoAppId: {
+                id: payment.customer_id,
+                zohoAppId: this.zohoApp.id,
+              },
+            },
+          }
+        : {};
+
+      const paymentConnectOrCreate = {
+        connectOrCreate: {
+          where: {
+            referenceNumber_tenantId: {
+              referenceNumber,
+              tenantId: this.zohoApp.tenantId,
+            },
+          },
+          create: {
+            id: id.id("payment"),
+            amount: payment.amount,
+            referenceNumber,
+            paymentMethod: paymentMethod,
+            tenant: {
+              connect: {
+                id: this.zohoApp.tenantId,
+              },
+            },
+          },
+        },
+      };
+
       await this.db.zohoPayment.upsert({
         where: {
           id_zohoAppId: {
@@ -84,28 +164,16 @@ export class ZohopaymentSyncService {
               id: this.zohoApp.id,
             },
           },
-          createdAt: payment.created_time,
-          updatedAt: payment.last_modified_time,
-          zohoContact: {
-            connect: {
-              id_zohoAppId: {
-                id: payment.customer_id,
-                zohoAppId: this.zohoApp.id,
-              },
-            },
-          },
+          createdAt: new Date(payment.created_time),
+          updatedAt: new Date(payment.last_modified_time),
+          zohoContact: zohoContactConnect,
+          payment: paymentConnectOrCreate,
         },
         update: {
-          createdAt: payment.created_time,
-          updatedAt: payment.last_modified_time,
-          zohoContact: {
-            connect: {
-              id_zohoAppId: {
-                id: payment.customer_id,
-                zohoAppId: this.zohoApp.id,
-              },
-            },
-          },
+          createdAt: new Date(payment.created_time),
+          updatedAt: new Date(payment.last_modified_time),
+          zohoContact: zohoContactConnect,
+          payment: paymentConnectOrCreate,
         },
       });
     }

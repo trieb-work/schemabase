@@ -48,7 +48,7 @@
     "prettier": "^2.5.1",
     "prisma-dbml-generator": "^0.9.0",
     "ts-jest": "^27.1.2",
-    "typescript": "^4.5.4",
+    "typescript": "^4.7.3",
     "vercel": "^24.2.3"
   },
   "lint-staged": {
@@ -80,7 +80,7 @@
     "@elastic/elasticsearch": "^7.16.0",
     "@geist-ui/react": "^2.2.2",
     "@prisma/client": "^3.14.0",
-    "@trieb.work/zoho-ts": "^0.4.21",
+    "@trieb.work/zoho-ts": "^0.4.25",
     "apollo-datasource": "^3.3.0",
     "apollo-server": "^3.6.1",
     "apollo-server-core": "^3.6.1",
