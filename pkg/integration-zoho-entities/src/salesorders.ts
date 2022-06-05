@@ -4,6 +4,7 @@ import { PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
+import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 
 type ZohoAppWithTenant = ZohoApp;
 
@@ -71,6 +72,8 @@ export class ZohoSalesOrdersSyncService {
       return;
     }
 
+    const tenantId = this.zohoApp.tenantId;
+
     for (const salesorder of salesorders) {
       // We first have to check, if we already have a Zoho Customer to be connected to
       // this salesorder
@@ -86,7 +89,7 @@ export class ZohoSalesOrdersSyncService {
           where: {
             orderNumber_tenantId: {
               orderNumber: salesorder.salesorder_number,
-              tenantId: this.zohoApp.tenantId,
+              tenantId,
             },
           },
           create: {
@@ -94,7 +97,7 @@ export class ZohoSalesOrdersSyncService {
             orderNumber: salesorder.salesorder_number,
             tenant: {
               connect: {
-                id: this.zohoApp.tenantId,
+                id: tenantId,
               },
             },
           },
@@ -111,7 +114,7 @@ export class ZohoSalesOrdersSyncService {
           }
         : {};
 
-      await this.db.zohoSalesOrder.upsert({
+      const createdSalesOrder = await this.db.zohoSalesOrder.upsert({
         where: {
           id_zohoAppId: {
             id: salesorder.salesorder_id,
@@ -138,6 +141,83 @@ export class ZohoSalesOrdersSyncService {
           zohoContact: zohoContactConnect,
         },
       });
+
+      // LINE ITEMs sync
+      if (
+        !cronState.lastRun ||
+        new Date(salesorder.last_modified_time) > cronState.lastRun
+      ) {
+        this.logger.info(`Pulling orderlines for ${salesorder.salesorder_id}`);
+        const fullSalesorder = await this.zoho.salesOrder.get(
+          salesorder.salesorder_id,
+        );
+        const lineItems = fullSalesorder.line_items;
+
+        for (const lineItem of lineItems) {
+          const uniqueString = uniqueStringOrderLine(
+            salesorder.salesorder_number,
+            lineItem.sku,
+            lineItem.quantity,
+          );
+
+          await this.db.zohoLineItems.upsert({
+            where: {
+              id_zohoAppId: {
+                id: lineItem.line_item_id,
+                zohoAppId: this.zohoApp.id,
+              },
+            },
+            create: {
+              id: lineItem.line_item_id,
+              lineItem: {
+                connectOrCreate: {
+                  where: {
+                    uniqueString_tenantId: {
+                      uniqueString,
+                      tenantId,
+                    },
+                  },
+                  create: {
+                    id: id.id("lineItem"),
+                    uniqueString,
+                    order: {
+                      connect: {
+                        id: createdSalesOrder.orderId,
+                      },
+                    },
+                    quantity: lineItem.quantity,
+                    productVariant: {
+                      connect: {
+                        sku_tenantId: {
+                          sku: lineItem.sku as string,
+                          tenantId,
+                        },
+                      },
+                    },
+                    tenant: {
+                      connect: {
+                        id: this.zohoApp.id,
+                      },
+                    },
+                  },
+                },
+              },
+              zohoApp: {
+                connect: {
+                  id: this.zohoApp.id,
+                },
+              },
+            },
+            update: {
+              lineItem: {
+                update: {
+                  quantity: lineItem.quantity,
+                },
+              },
+            },
+          });
+        }
+      }
     }
 
     await this.cronState.set({

@@ -54,7 +54,7 @@ model SaleorPayment {
   saleorOrderId String?
 
   payment   Payment? @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  paymentId String?  @unique
+  paymentId String?
 
   installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
   installedSaleorAppId String
@@ -139,11 +139,11 @@ model ZohoContact {
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String
 
-  zohoInvoices ZohoInvoice[]
+  zohoInvoices    ZohoInvoice[]
   zohoSalesOrders ZohoSalesOrder[]
 
+
   @@unique([id, zohoAppId])
-  
 }
 
 // Zoho specific model.
@@ -225,6 +225,20 @@ model ZohoWarehouse {
 
   warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
   warehouseId String
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId String
+
+
+  @@unique([id, zohoAppId])
+}
+
+model ZohoLineItems {
+  // Zoho Internal Id
+  id String
+
+  lineItem   LineItem @relation(fields: [lineItemId], references: [id], onDelete: Cascade)
+  lineItemId String
 
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String
@@ -365,25 +379,34 @@ enum Currency {
   USD
 }
 
-// The ECI internal orderline model
-model OrderLine {
+// The ECI internal LineItem model
+model LineItem {
   // eci internal id
   id        String   @id
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  order   Order?  @relation(fields: [orderId], references: [id])
-  orderId String?
+  // Unique string to identify this LineItem
+  // between different systems
+  // ${orderNumber}${sku}${quantity}
+  uniqueString String
+
+  order   Order  @relation(fields: [orderId], references: [id])
+  orderId String
 
   quantity        Float
-  totalPriceGross Float
-  totalPriceNet   Float
-  currency        Currency @default(EUR)
 
   productVariant   ProductVariant @relation(fields: [productVariantId, sku], references: [id, sku])
   productVariantId String
   sku              String
 
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  zohoLineItems ZohoLineItems[]
+
+
+  @@unique([uniqueString, tenantId])
 }
 
 // The ECI internal Order model.
@@ -406,19 +429,19 @@ model Order {
   language Language  @default(DE)
   packages Package[]
 
-  orderlines OrderLine[]
+  lineItems LineItem[]
 
   tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
   payment  Payment[]
 
-  saleorOrders SaleorOrder[]
+  saleorOrders    SaleorOrder[]
   zohoSalesOrders ZohoSalesOrder[]
 
   invoices Invoice[]
 
+
   @@unique([orderNumber, tenantId])
-  
 }
 
 // The ECI internal Product model
@@ -458,7 +481,7 @@ model ProductVariant {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  orderLine OrderLine[]
+  lineItem LineItem[]
 
   zohoItem ZohoItem[]
 
@@ -686,6 +709,7 @@ model ZohoApp {
   zohoContact           ZohoContact[]
   zohoInvoice           ZohoInvoice[]
   ZohoSalesOrder        ZohoSalesOrder[]
+  ZohoLineItems         ZohoLineItems[]
 }
 
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor
@@ -794,6 +818,7 @@ model Tenant {
   payment                     Payment[]
   warehouse                   Warehouse[]
   invoice                     Invoice[]
+  lineItem                    LineItem[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
