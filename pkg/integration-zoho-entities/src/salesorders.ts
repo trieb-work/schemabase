@@ -80,21 +80,18 @@ export class ZohoSalesOrdersSyncService {
           zohoAppId: this.zohoApp.id,
         },
       });
-      const unprefixedSalesorderNumber = this.zoho.util.getUnprefixedNumber(
-        salesorder.salesorder_number,
-      );
 
       const orderCreateOrConnect = {
         connectOrCreate: {
           where: {
             orderNumber_tenantId: {
-              orderNumber: unprefixedSalesorderNumber,
+              orderNumber: salesorder.salesorder_number,
               tenantId: this.zohoApp.tenantId,
             },
           },
           create: {
             id: id.id("order"),
-            orderNumber: unprefixedSalesorderNumber,
+            orderNumber: salesorder.salesorder_number,
             tenant: {
               connect: {
                 id: this.zohoApp.tenantId,

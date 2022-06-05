@@ -13,6 +13,7 @@ describe("Saleor Entity Sync payments Test", () => {
     graphqlEndpoint: "https://shop-api.pfefferundfrost.de/graphql/",
     traceId: "test",
     token:
+      // eslint-disable-next-line max-len
       "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IjEifQ.eyJpYXQiOjE2NTM5MTMxODcsIm93bmVyIjoic2FsZW9yIiwiZXhwIjoxNjU0MTcyMzg3LCJ0b2tlbiI6IlJwQWFYc1RXakxndSIsImVtYWlsIjoiamFubmlrQHBmZWZmZXJ1bmRmcm9zdC5kZSIsInR5cGUiOiJhY2Nlc3MiLCJ1c2VyX2lkIjoiVlhObGNqbzNOZz09IiwiaXNfc3RhZmYiOnRydWV9.eyx7zMxP_mkFSugdFtkYbdKhaY-GNCG6eRU1wXTwzmVXQ2hIPf86amupleiMW-zSUfIu9yZSWORP29Pbk7767HHhd__DMsUIeKvhowBnS8fXGtO3XWCeUJkQ9eW9JRu0mkZ0ZZsDjHGKd4iazzDHuwA61WQn0aWQ-MGKqUr17Jg",
   });
   const prismaClient = new PrismaClient();
@@ -1672,7 +1673,13 @@ describe("Saleor Entity Sync payments Test", () => {
         id: "test",
       },
     });
-    if (!installedSaleorApp || !tenant)
+    const saleorZohoIntegration =
+      await prismaClient.saleorZohoIntegration.findUnique({
+        where: {
+          id: "test",
+        },
+      });
+    if (!installedSaleorApp || !tenant || !saleorZohoIntegration)
       throw new Error("Testing Tenant or saleor app not found in DB");
     const xx = new SaleorOrderSyncService({
       saleorClient: TESTSALEOR,
@@ -1681,6 +1688,7 @@ describe("Saleor Entity Sync payments Test", () => {
       db: prismaClient,
       installedSaleorApp,
       tenant,
+      saleorZohoIntegration,
     });
     await xx.syncToECI();
   }, 50000);

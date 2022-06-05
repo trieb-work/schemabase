@@ -80,7 +80,7 @@
     "@elastic/elasticsearch": "^7.16.0",
     "@geist-ui/react": "^2.2.2",
     "@prisma/client": "^3.14.0",
-    "@trieb.work/zoho-ts": "^0.4.25",
+    "@trieb.work/zoho-ts": "^0.4.26",
     "apollo-datasource": "^3.3.0",
     "apollo-server": "^3.6.1",
     "apollo-server-core": "^3.6.1",

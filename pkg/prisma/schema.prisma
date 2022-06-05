@@ -396,7 +396,7 @@ model Order {
   // deprecated!
   externalOrderId String?
 
-  // Un-Prefixed Order Number (e.g. 30994)
+
   // Order-Numbers have to be unique per Tenant!
   // We use them as unique identifier between systems
   orderNumber String

@@ -80,9 +80,7 @@ export class ZohoInvoiceSyncService {
           zohoAppId: this.zohoApp.id,
         },
       });
-      const unprefixedInvoiceNumber = this.zoho.util.getUnprefixedNumber(
-        invoice.invoice_number,
-      );
+
       const zohoContactConnect = customerExist
         ? {
             connect: {
@@ -115,13 +113,13 @@ export class ZohoInvoiceSyncService {
             connectOrCreate: {
               where: {
                 invoiceNumber_tenantId: {
-                  invoiceNumber: unprefixedInvoiceNumber,
+                  invoiceNumber: invoice.invoice_number,
                   tenantId: this.zohoApp.tenantId,
                 },
               },
               create: {
                 id: id.id("invoice"),
-                invoiceNumber: unprefixedInvoiceNumber,
+                invoiceNumber: invoice.invoice_number,
                 tenant: {
                   connect: {
                     id: this.zohoApp.tenantId,
@@ -139,13 +137,13 @@ export class ZohoInvoiceSyncService {
             connectOrCreate: {
               where: {
                 invoiceNumber_tenantId: {
-                  invoiceNumber: unprefixedInvoiceNumber,
+                  invoiceNumber: invoice.invoice_number,
                   tenantId: this.zohoApp.tenantId,
                 },
               },
               create: {
                 id: id.id("invoice"),
-                invoiceNumber: unprefixedInvoiceNumber,
+                invoiceNumber: invoice.invoice_number,
                 tenant: {
                   connect: {
                     id: this.zohoApp.tenantId,
