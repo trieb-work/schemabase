@@ -10,6 +10,7 @@ const prefixes = {
   package: "p",
   email: "em",
   order: "o",
+  lineItem: "li",
   contact: "c",
   invoice: "i",
   payment: "p",
