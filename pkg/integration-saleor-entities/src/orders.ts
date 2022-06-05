@@ -145,7 +145,8 @@ export class SaleorOrderSyncService {
             }
           }
         },
-        update: {}
+        update: {
+        }
       })
     }
   }

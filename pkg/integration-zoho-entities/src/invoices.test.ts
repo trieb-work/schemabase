@@ -1,7 +1,7 @@
 import { NoopLogger } from "@eci/pkg/logger";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { beforeEach, describe, jest, test, beforeAll } from "@jest/globals";
-import { Zoho } from "@trieb.work/zoho-ts/dist/v2";
+import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
 import { ZohoInvoiceSyncService } from "./invoices";
 
 let zohoApp: any;
@@ -13,6 +13,7 @@ beforeEach(() => {
 describe("Zoho Inventory Invoice Sync", () => {
   const prismaClient = new PrismaClient();
 
+  const zohoClient = undefined as unknown as ZohoApiClient
   const mockedZohoClient = {
     invoice: {
       list: async () =>
@@ -26666,6 +26667,7 @@ describe("Zoho Inventory Invoice Sync", () => {
           }
       ]),
     },
+    util: (new Zoho(zohoClient)).util
   } as unknown as Zoho;
 
   beforeAll(async () => {

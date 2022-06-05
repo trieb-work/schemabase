@@ -23,6 +23,8 @@ Table SaleorPayment {
   updatedAt DateTime [not null]
   saleorOrder SaleorOrder
   saleorOrderId String
+  payment Payment
+  paymentId String [unique]
   installedSaleorApp InstalledSaleorApp [not null]
   installedSaleorAppId String [not null]
 
@@ -165,6 +167,7 @@ Table Payment {
   tenantId String [not null]
   invoices Invoice [not null]
   zohoPayment ZohoPayment [not null]
+  saleorPayment SaleorPayment [not null]
 
   indexes {
     (orderId, tenantId) [unique]
@@ -705,6 +708,8 @@ Ref: SaleorOrder.(orderId, orderNumber) > Order.(id, orderNumber) [delete: Casca
 Ref: SaleorOrder.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
 
 Ref: SaleorPayment.saleorOrderId > SaleorOrder.id
+
+Ref: SaleorPayment.paymentId > Payment.id [delete: Cascade]
 
 Ref: SaleorPayment.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
 

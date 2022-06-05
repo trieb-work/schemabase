@@ -53,6 +53,9 @@ model SaleorPayment {
   saleorOrder   SaleorOrder? @relation(fields: [saleorOrderId], references: [id])
   saleorOrderId String?
 
+  payment   Payment? @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  paymentId String?  @unique
+
   installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
   installedSaleorAppId String
 
@@ -138,8 +141,8 @@ model ZohoContact {
 
   zohoInvoices ZohoInvoice[]
 
+
   @@unique([id, zohoAppId])
-  
 }
 
 // Zoho specific model.
@@ -264,10 +267,11 @@ model Payment {
   invoices Invoice[]
 
   zohoPayment ZohoPayment[]
-
+  saleorPayment SaleorPayment[]
 
   @@unique([orderId, tenantId])
   @@unique([referenceNumber, tenantId])
+  
 }
 
 model Company {
@@ -879,8 +883,8 @@ model SaleorZohoIntegration {
   cronScheduleZoho   String @default("0/15 * * * *")
   cronScheduleSaleor String @default("0/15 * * * *")
   // Time in seconds how long one workflow can run before a timeout occurs.
-  cronTimeoutZoho   Int @default(600)
-  cronTimeoutSaleor Int @default(600)
+  cronTimeoutZoho    Int    @default(600)
+  cronTimeoutSaleor  Int    @default(600)
 }
 
 model LogisticsIntegration {

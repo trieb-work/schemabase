@@ -67,7 +67,7 @@ export class ZohoPaymentSyncService {
     });
 
     this.logger.info(
-      `We have ${payments.length} payments that changed since last sync run.`,
+      `We have ${payments.length} payments that we need to sync.`,
     );
     if (payments.length === 0) {
       await this.cronState.set({

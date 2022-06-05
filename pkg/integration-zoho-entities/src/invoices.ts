@@ -103,8 +103,8 @@ export class ZohoInvoiceSyncService {
         },
         create: {
           id: invoice.invoice_id,
-          createdAt: invoice.created_time,
-          updatedAt: invoice.last_modified_time,
+          createdAt: new Date(invoice.created_time),
+          updatedAt: new Date(invoice.last_modified_time),
           number: invoice.invoice_number,
           zohoApp: {
             connect: {
@@ -133,8 +133,8 @@ export class ZohoInvoiceSyncService {
           zohoContact: zohoContactConnect,
         },
         update: {
-          createdAt: invoice.created_time,
-          updatedAt: invoice.last_modified_time,
+          createdAt: new Date(invoice.created_time),
+          updatedAt: new Date(invoice.last_modified_time),
           invoice: {
             connectOrCreate: {
               where: {
