@@ -15,7 +15,7 @@ describe("Zoho Inventory SalesOrders Sync", () => {
 
   const zohoClient = undefined as unknown as ZohoApiClient
   const mockedZohoClient = {
-    salesorder: {
+    salesOrder: {
       list: async () =>
         await Promise.resolve([
             {

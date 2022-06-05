@@ -245,6 +245,7 @@ enum PaymentMethodType {
   banktransfer
   braintree
   onlinepayment
+  unknown
 }
 
 // The ECI internal invoice model
