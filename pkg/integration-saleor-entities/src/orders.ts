@@ -6,7 +6,7 @@ import {
   SaleorCronOrdersDetailsQuery,
   queryWithPagination,
 } from "@eci/pkg/saleor";
-import { InstalledSaleorApp, PrismaClient, Tenant } from "@eci/pkg/prisma";
+import { InstalledSaleorApp, PrismaClient, SaleorZohoIntegration, Tenant } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { setHours, subDays, subYears, format } from "date-fns";
 import { id } from "@eci/pkg/ids";
@@ -31,6 +31,7 @@ interface SaleorOrderSyncServiceConfig {
   installedSaleorApp: InstalledSaleorApp;
   tenant: Tenant;
   db: PrismaClient;
+  saleorZohoIntegration: SaleorZohoIntegration;
   logger: ILogger;
 }
 
@@ -62,6 +63,8 @@ export class SaleorOrderSyncService {
 
   private readonly db: PrismaClient;
 
+  private readonly saleorZohoIntegration: SaleorZohoIntegration;
+
   public constructor(config: SaleorOrderSyncServiceConfig) {
     this.saleorClient = config.saleorClient;
     this.channelSlug = config.channelSlug;
@@ -69,6 +72,7 @@ export class SaleorOrderSyncService {
     this.installedSaleorApp = config.installedSaleorApp;
     this.tenant = config.tenant;
     this.db = config.db;
+    this.saleorZohoIntegration = config.saleorZohoIntegration;
     this.cronState = new CronStateHandler({
       tenantId: this.tenant.id,
       appId: this.installedSaleorApp.id,
@@ -110,6 +114,8 @@ export class SaleorOrderSyncService {
         this.logger.error(`No orderNumber in order ${order.id} - Can't sync`)
         continue;
       }
+      const prefixedOrderNumber = `${this.saleorZohoIntegration.orderPrefix}-${order.number}`;
+      
       await this.db.saleorOrder.upsert({
         where: {
           id_installedSaleorAppId: {
@@ -129,13 +135,13 @@ export class SaleorOrderSyncService {
             connectOrCreate: {
               where: {
                 orderNumber_tenantId: {
-                  orderNumber: order.number,
+                  orderNumber: prefixedOrderNumber,
                   tenantId: this.tenant.id,
                 },
               }, 
               create: {
                 id: id.id("order"),
-                orderNumber: order.number,
+                orderNumber: prefixedOrderNumber,
                 tenant: {
                   connect: {
                     id: this.tenant.id
