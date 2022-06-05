@@ -681,7 +681,7 @@ Enum PaymentMethodType {
   banktransfer
   braintree
   onlinepayment
-  unkown
+  unknown
 }
 
 Enum Currency {
