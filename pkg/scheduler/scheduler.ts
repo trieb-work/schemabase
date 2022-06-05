@@ -112,7 +112,11 @@ export class WorkflowScheduler {
         const logger = this.logger
           .withLogDrain({
             log: (message: string) => {
-              job.log(message);
+              try{
+                job.log(message);
+              } catch(err){
+                console.warn("failed to write log message", err);
+              }
             },
           })
           .with({ jobId: job.id, queueName });
@@ -185,8 +189,8 @@ export class WorkflowScheduler {
   public async shutdownAllQueues(){
     for(const queue of this.queues){
       this.logger.info("Shutting down queue", { queueName: queue.name });
-      await queue.close();
       await queue.drain();
+      await queue.close();
       await queue.disconnect();
       this.logger.info("queue is offline", { queueName: queue.name });
     }

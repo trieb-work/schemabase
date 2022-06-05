@@ -868,15 +868,19 @@ model SaleorZohoIntegration {
   orderPrefix String @default("STORE")
 
   // We can create the needed bull jobs for every sync entity, that is enabled
+  syncContacts      Boolean @default(false)
+  syncWarehouses    Boolean @default(false)
   syncOrders        Boolean @default(false)
   syncInvoices      Boolean @default(false)
   syncPayments      Boolean @default(false)
   syncProductStocks Boolean @default(false)
 
   // How frequent the synchronisation should run. Default once per hour.
-  cronScheduleZoho   String @default("0 * * * *")
-  cronScheduleSaleor String @default("0 * * * *")
-
+  cronScheduleZoho   String @default("0/15 * * * *")
+  cronScheduleSaleor String @default("0/15 * * * *")
+  // Time in seconds how long one workflow can run before a timeout occurs.
+  cronTimeoutZoho   Int @default(600)
+  cronTimeoutSaleor Int @default(600)
 }
 
 model LogisticsIntegration {
