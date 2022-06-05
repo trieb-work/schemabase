@@ -1,6 +1,11 @@
 import { ILogger } from "@eci/pkg/logger";
 import { queryWithPagination, SaleorCronPaymentsQuery } from "@eci/pkg/saleor";
-import { InstalledSaleorApp, PaymentMethodType, PrismaClient, Tenant } from "@eci/pkg/prisma";
+import {
+  InstalledSaleorApp,
+  PaymentMethodType,
+  PrismaClient,
+  Tenant,
+} from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
@@ -113,12 +118,21 @@ export class SaleorPaymentSyncService {
 
       const paymentReference = payment.transactions?.[0]?.token;
       if (!paymentReference) {
-        this.logger.error(`No payment gateway transaction Id given. We use this value as internal payment reference. Cant't sync ${payment.id}`)
+        this.logger.error(
+          `No payment gateway transaction Id given. We use this value as internal payment reference. Cant't sync ${payment.id}`,
+        );
         continue;
       }
-      let paymentMethod :PaymentMethodType = payment.paymentMethodType === "card" ? "card" : payment.paymentMethodType === "paypal" ? "paypal" : "unknown";
+      const paymentMethod: PaymentMethodType =
+        payment.paymentMethodType === "card"
+          ? "card"
+          : payment.paymentMethodType === "paypal"
+          ? "paypal"
+          : "unknown";
       if (paymentMethod === "unknown") {
-        this.logger.warn(`Can't match the payment method with our internal type! ${payment.id}. Received type ${payment.paymentMethodType}`);
+        this.logger.warn(
+          `Can't match the payment method with our internal type! ${payment.id}. Received type ${payment.paymentMethodType}`,
+        );
       }
 
       const paymentCreateOrConnect = {
@@ -126,8 +140,8 @@ export class SaleorPaymentSyncService {
           where: {
             referenceNumber_tenantId: {
               referenceNumber: paymentReference,
-              tenantId: this.tenant.id
-            }
+              tenantId: this.tenant.id,
+            },
           },
           create: {
             id: id.id("payment"),
@@ -135,12 +149,12 @@ export class SaleorPaymentSyncService {
             referenceNumber: paymentReference,
             tenant: {
               connect: {
-                id: this.tenant.id
-              }
+                id: this.tenant.id,
+              },
             },
             paymentMethod: paymentMethod,
-          }
-        }
+          },
+        },
       };
 
       await this.db.saleorPayment.upsert({
@@ -159,7 +173,7 @@ export class SaleorPaymentSyncService {
               id: this.installedSaleorApp.id,
             },
           },
-          payment: paymentCreateOrConnect
+          payment: paymentCreateOrConnect,
         },
         update: {
           createdAt: payment?.created,
@@ -203,7 +217,7 @@ export class SaleorPaymentSyncService {
               },
             },
           },
-          payment: paymentCreateOrConnect
+          payment: paymentCreateOrConnect,
         },
       });
     }
