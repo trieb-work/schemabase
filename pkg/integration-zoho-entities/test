@@ -1,8 +1,0 @@
-res.data.orders.edges.flatMap((order)=>{
-    totalCounts = {}
-    return order.node.payments.sort().filter((payment) => payment.chargeStatus === "FULLY_CHARGED").map((payment)=>{
-        const {amount} = payment.total;
-        totalCounts[amount] = totalCounts[amount] ? totalCounts[amount] + 1 : 1;
-        return order.node.number+'_'+amount+'_'+totalCounts[amount]
-    })
-})
