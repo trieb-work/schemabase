@@ -122,39 +122,40 @@ export class OrderUpdater
 
     let order: Order | undefined;
     for (const email of message.emails) {
-      const existingContact = await this.db.contact.findFirst({
-        where: {
-          email,
-          tenantId: zohoApp.tenantId,
-        },
-      });
+      console.log(email)
+      // const existingContact = await this.db.contact.findFirst({
+      //   where: {
+      //     email,
+      //     tenantId: zohoApp.tenantId,
+      //   },
+      // });
 
-      order = await this.db.order.upsert({
-        where: {
-          externalOrderId: message.externalOrderId,
-        },
-        update: {
-          language: language ?? undefined,
-        },
-        create: {
-          id: id.id("order"),
-          externalOrderId: message.externalOrderId,
-          tenantId: zohoApp.tenantId,
-          contacts: {
-            connectOrCreate: {
-              create: {
-                id: id.id("contact"),
-                email,
-                tenantId: zohoApp.tenantId,
-              },
-              where: {
-                id: existingContact?.id,
-              },
-            },
-          },
-          language: language ?? message.defaultLanguage,
-        },
-      });
+      // order = await this.db.order.upsert({
+      //   where: {
+      //     externalOrderId: message.externalOrderId,
+      //   },
+      //   update: {
+      //     language: language ?? undefined,
+      //   },
+      //   create: {
+      //     id: id.id("order"),
+      //     externalOrderId: message.externalOrderId,
+      //     tenantId: zohoApp.tenantId,
+      //     contacts: {
+      //       connectOrCreate: {
+      //         create: {
+      //           id: id.id("contact"),
+      //           email,
+      //           tenantId: zohoApp.tenantId,
+      //         },
+      //         where: {
+      //           id: existingContact?.id,
+      //         },
+      //       },
+      //     },
+      //     language: language ?? message.defaultLanguage,
+      //   },
+      // });
     }
 
     if (!order) throw new Error("Order is undefined! Can't proceed");
