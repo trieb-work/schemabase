@@ -140,9 +140,36 @@ model ZohoContact {
   zohoAppId String
 
   zohoInvoices ZohoInvoice[]
+  zohoSalesOrders ZohoSalesOrder[]
+
+  @@unique([id, zohoAppId])
+  
+}
+
+// Zoho specific model.
+model ZohoSalesOrder {
+  // Zoho Internal Id
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  // The Zoho Internal sales order number
+  // as complete string: INV-395956
+  number String
+
+  zohoContact   ZohoContact? @relation(fields: [zohoContactId], references: [id], onDelete: Cascade)
+  zohoContactId String?
+
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId String @unique
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId String
 
 
   @@unique([id, zohoAppId])
+  @@unique([number, zohoAppId])
 }
 
 // Zoho specific model.
@@ -266,12 +293,12 @@ model Payment {
 
   invoices Invoice[]
 
-  zohoPayment ZohoPayment[]
+  zohoPayment   ZohoPayment[]
   saleorPayment SaleorPayment[]
+
 
   @@unique([orderId, tenantId])
   @@unique([referenceNumber, tenantId])
-  
 }
 
 model Company {
@@ -307,7 +334,7 @@ model Contact {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  zohoContact ZohoContact[]
+  zohoContacts ZohoContact[]
 
   @@unique([email, tenantId])
 }
@@ -384,11 +411,13 @@ model Order {
   tenantId String
   payment  Payment[]
 
-  saleorOrder SaleorOrder[]
+  saleorOrders SaleorOrder[]
+  zohoSalesOrders ZohoSalesOrder[]
 
   invoices Invoice[]
 
   @@unique([orderNumber, tenantId])
+  
 }
 
 // The ECI internal Product model
@@ -655,6 +684,7 @@ model ZohoApp {
   zohoWarehouse         ZohoWarehouse[]
   zohoContact           ZohoContact[]
   zohoInvoice           ZohoInvoice[]
+  ZohoSalesOrder        ZohoSalesOrder[]
 }
 
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor

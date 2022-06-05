@@ -86,9 +86,28 @@ Table ZohoContact {
   zohoApp ZohoApp [not null]
   zohoAppId String [not null]
   zohoInvoices ZohoInvoice [not null]
+  zohoSalesOrders ZohoSalesOrder [not null]
 
   indexes {
     (id, zohoAppId) [unique]
+  }
+}
+
+Table ZohoSalesOrder {
+  id String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  number String [not null]
+  zohoContact ZohoContact
+  zohoContactId String
+  order Order [not null]
+  orderId String [unique, not null]
+  zohoApp ZohoApp [not null]
+  zohoAppId String [not null]
+
+  indexes {
+    (id, zohoAppId) [unique]
+    (number, zohoAppId) [unique]
   }
 }
 
@@ -199,7 +218,7 @@ Table Contact {
   companyId String
   tenant Tenant [not null]
   tenantId String [not null]
-  zohoContact ZohoContact [not null]
+  zohoContacts ZohoContact [not null]
 
   indexes {
     (email, tenantId) [unique]
@@ -251,7 +270,8 @@ Table Order {
   tenant Tenant [not null]
   tenantId String [not null]
   payment Payment [not null]
-  saleorOrder SaleorOrder [not null]
+  saleorOrders SaleorOrder [not null]
+  zohoSalesOrders ZohoSalesOrder [not null]
   invoices Invoice [not null]
 
   indexes {
@@ -436,6 +456,7 @@ Table ZohoApp {
   zohoWarehouse ZohoWarehouse [not null]
   zohoContact ZohoContact [not null]
   zohoInvoice ZohoInvoice [not null]
+  ZohoSalesOrder ZohoSalesOrder [not null]
 }
 
 Table SaleorApp {
@@ -728,6 +749,12 @@ Ref: ZohoItem.zohoAppId > ZohoApp.id [delete: Cascade]
 Ref: ZohoContact.contactId > Contact.id [delete: Cascade]
 
 Ref: ZohoContact.zohoAppId > ZohoApp.id [delete: Cascade]
+
+Ref: ZohoSalesOrder.zohoContactId > ZohoContact.id [delete: Cascade]
+
+Ref: ZohoSalesOrder.orderId > Order.id [delete: Cascade]
+
+Ref: ZohoSalesOrder.zohoAppId > ZohoApp.id [delete: Cascade]
 
 Ref: ZohoInvoice.zohoContactId > ZohoContact.id [delete: Cascade]
 
