@@ -158,8 +158,6 @@ export class SaleorOrderSyncService {
         update: {},
       });
 
-      this.logger.info(`Requesting detailed order data for ${order.number} from saleor...`);
-
       const orderDetails = await this.saleorClient.saleorCronOrderDetails({ id: order.id })
       if (!orderDetails) {
         this.logger.error(`Can't get order details from saleor for order ${order.id}!`)
@@ -232,6 +230,14 @@ export class SaleorOrderSyncService {
       }
 
 
+
+
     }
+
+
+    await this.cronState.set({
+      lastRun: new Date(),
+      lastRunStatus: "success",
+    });
   }
 }

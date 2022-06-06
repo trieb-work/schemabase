@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { ILogger } from "@eci/pkg/logger";
 import { queryWithPagination, SaleorCronPaymentsQuery } from "@eci/pkg/saleor";
 import {
@@ -82,7 +83,7 @@ export class SaleorPaymentSyncService {
         `This seems to be our first sync run. Syncing data from now - 1 Year to: ${createdGte}`,
       );
     } else {
-      this.logger.info(`Setting GTE date to ${yesterdayMidnight.toISOString}`);
+      this.logger.info(`Setting GTE date to ${createdGte}`);
     }
 
     const result = await queryWithPagination(({ first, after }) =>
@@ -221,5 +222,10 @@ export class SaleorPaymentSyncService {
         },
       });
     }
+
+    await this.cronState.set({
+      lastRun: new Date(),
+      lastRunStatus: "success",
+    });
   }
 }
