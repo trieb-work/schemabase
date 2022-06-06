@@ -163,7 +163,7 @@ enum ZohoSalesOrderStatus {
   draft
   confirmed
   fulfilled
-  shipped 
+  shipped
 }
 
 // Zoho specific model.
@@ -311,7 +311,7 @@ model Tax {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name String
+  name       String
   percentage Float
 
 }
@@ -434,11 +434,11 @@ model LineItem {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  zohoLineItems ZohoLineItem[]
+  zohoLineItems  ZohoLineItem[]
   saleorLineItem SaleorLineItem[]
 
+
   @@unique([uniqueString, tenantId])
-  
 }
 
 // The ECI internal Order model.
@@ -520,6 +520,27 @@ model ProductVariant {
   saleorProductVariant SaleorProductVariant[]
 
   @@unique([sku, tenantId])
+}
+
+enum BraintreeEnvironment {
+  testing
+  production
+}
+
+// Internal model to store braintree payment gateway settings for tenants
+model Braintree {
+  id String @id
+
+  environment BraintreeEnvironment @default(production)
+
+  merchantId String
+  publicKey  String
+  // Encrypt before writing to the DB!
+  privateKey String
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
 }
 
 enum PackageState {
@@ -815,8 +836,8 @@ model InstalledSaleorApp {
   saleorOrder                SaleorOrder[]
   saleorLineItem             SaleorLineItem[]
 
+
   @@unique([domain, channelSlug])
-  
 }
 
 // One tenant per company
@@ -852,6 +873,7 @@ model Tenant {
   warehouse                   Warehouse[]
   invoice                     Invoice[]
   lineItem                    LineItem[]
+  braintree                   Braintree[]
 }
 
 // A subscription indicates a tenant has payed for one integration.

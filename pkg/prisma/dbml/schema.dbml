@@ -716,6 +716,13 @@ Table ContactToOrder {
   contactsId String [ref: > Contact.id]
 }
 
+Enum ZohoSalesOrderStatus {
+  draft
+  confirmed
+  fulfilled
+  shipped
+}
+
 Enum PaymentMethodType {
   paypal
   card
