@@ -24,7 +24,6 @@ services:
   #     - MYSQL_PASSWORD=eci
   #     - MYSQL_DATABASE=eci
 
-
   # Nextjs Serverless application to receive api from various services
   eci_api:
     image: eci_api

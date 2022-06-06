@@ -97,10 +97,17 @@ query saleorEntitySyncProducts($first: Int!, $channel: String, $after: String) {
           id
           name
           sku
-          variantAttributes: attributes(variantSelection:VARIANT_SELECTION){attribute{name}  values{id name } }        
+          variantAttributes: attributes(variantSelection: VARIANT_SELECTION) {
+            attribute {
+              name
+            }
+            values {
+              id
+              name
+            }
+          }
         }
       }
     }
   }
 }
-

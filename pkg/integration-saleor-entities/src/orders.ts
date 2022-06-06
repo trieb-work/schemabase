@@ -6,7 +6,12 @@ import {
   SaleorCronOrdersDetailsQuery,
   queryWithPagination,
 } from "@eci/pkg/saleor";
-import { InstalledSaleorApp, PrismaClient, SaleorZohoIntegration, Tenant } from "@eci/pkg/prisma";
+import {
+  InstalledSaleorApp,
+  PrismaClient,
+  SaleorZohoIntegration,
+  Tenant,
+} from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { setHours, subDays, subYears, format } from "date-fns";
 import { id } from "@eci/pkg/ids";
@@ -97,9 +102,13 @@ export class SaleorOrderSyncService {
       this.logger.info(`Setting GTE date to ${createdGte}`);
     }
     const result = await queryWithPagination(({ first, after }) =>
-      this.saleorClient.saleorCronOrdersOverview({ first, after, createdGte, channel: this.channelSlug }),
+      this.saleorClient.saleorCronOrdersOverview({
+        first,
+        after,
+        createdGte,
+        channel: this.channelSlug,
+      }),
     );
-
 
     if (!result.orders || result.orders.edges.length === 0) {
       this.logger.info("Saleor returned no orders. Don't sync anything");
@@ -110,25 +119,25 @@ export class SaleorOrderSyncService {
     this.logger.info(`Working on ${orders.length} orders`);
 
     for (const order of orders) {
-      if (!order.number || typeof (order.number) === "undefined") {
-        this.logger.error(`No orderNumber in order ${order.id} - Can't sync`)
+      if (!order.number || typeof order.number === "undefined") {
+        this.logger.error(`No orderNumber in order ${order.id} - Can't sync`);
         continue;
       }
       const prefixedOrderNumber = `${this.saleorZohoIntegration.orderPrefix}-${order.number}`;
-      
+
       await this.db.saleorOrder.upsert({
         where: {
           id_installedSaleorAppId: {
             id: order.id,
-            installedSaleorAppId: this.installedSaleorApp.id
-          }
+            installedSaleorAppId: this.installedSaleorApp.id,
+          },
         },
         create: {
           id: order.id,
-          installedSaleorApp: { 
+          installedSaleorApp: {
             connect: {
-              id: this.installedSaleorApp.id
-            }
+              id: this.installedSaleorApp.id,
+            },
           },
           createdAt: order.created,
           order: {
@@ -138,22 +147,21 @@ export class SaleorOrderSyncService {
                   orderNumber: prefixedOrderNumber,
                   tenantId: this.tenant.id,
                 },
-              }, 
+              },
               create: {
                 id: id.id("order"),
                 orderNumber: prefixedOrderNumber,
                 tenant: {
                   connect: {
-                    id: this.tenant.id
-                  }
-                }
-              }
-            }
-          }
+                    id: this.tenant.id,
+                  },
+                },
+              },
+            },
+          },
         },
-        update: {
-        }
-      })
+        update: {},
+      });
     }
   }
 }

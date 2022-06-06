@@ -107,7 +107,7 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
           .filter((contact) => contact.email)
           ?.map(async (contact) => {
             if (!contact.email) {
-              this.logger.warn(`No Email Address found for contact ${contact}`)
+              this.logger.warn(`No Email Address found for contact ${contact}`);
               return "";
             }
             const res = await this.emailTemplateSender.sendTemplate(

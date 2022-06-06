@@ -18,8 +18,8 @@ describe("Workflow scheduler", () => {
     // enableElasticLogDrain: env.get("ECI_ENV") === "production",
   });
   logger.with({
-    test: 'jest-unit-test'
-  })
+    test: "jest-unit-test",
+  });
   const prisma = new PrismaClient();
   const redisConnection = {
     host: env.require("REDIS_HOST"),
@@ -35,8 +35,8 @@ describe("Workflow scheduler", () => {
     await crontable.scheduleTenantWorkflows();
     await sleep(10000); // wait for the workflows to finish
     const keys = await redis.keys("bull:eci:test:test:*");
-    console.log("keys", keys)
-    console.log("scheduledWorkflows", crontable.scheduler.scheduledWorkflows)
+    console.log("keys", keys);
+    console.log("scheduledWorkflows", crontable.scheduler.scheduledWorkflows);
     await crontable.scheduler.shutdownScheduler();
     await redis.quit();
   }, 90000);

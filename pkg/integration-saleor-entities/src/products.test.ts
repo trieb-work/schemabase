@@ -1038,6 +1038,5 @@ describe("Saleor Entity Sync Products Test", () => {
       tenant,
     });
     await xx.syncToECI();
-
   });
 });

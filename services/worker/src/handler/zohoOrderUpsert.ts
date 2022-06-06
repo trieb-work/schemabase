@@ -122,7 +122,7 @@ export class OrderUpdater
 
     let order: Order | undefined;
     for (const email of message.emails) {
-      console.log(email)
+      console.log(email);
       // const existingContact = await this.db.contact.findFirst({
       //   where: {
       //     email,

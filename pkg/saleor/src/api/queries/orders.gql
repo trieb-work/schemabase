@@ -20,7 +20,11 @@ query saleorCronOrdersOverview($createdGte: Date, $after: String, $first: Int) {
 }
 
 query saleorCronOrdersDetails($createdGte: Date, $after: String, $first: Int) {
-  orders(first: $first, after: $after, filter: { created: { gte: $createdGte } }) {
+  orders(
+    first: $first
+    after: $after
+    filter: { created: { gte: $createdGte } }
+  ) {
     pageInfo {
       ...PageInfoMeta
     }
@@ -81,7 +85,6 @@ query saleorCronOrdersDetails($createdGte: Date, $after: String, $first: Int) {
   }
 }
 
-
 query saleorCronPayments($createdGte: Date, $after: String) {
   orders(first: 100, after: $after, filter: { created: { gte: $createdGte } }) {
     totalCount
@@ -102,7 +105,11 @@ query saleorCronPayments($createdGte: Date, $after: String) {
           gateway
           created
           modified
-          order{ id created number }
+          order {
+            id
+            created
+            number
+          }
           paymentMethodType
           transactions {
             id
