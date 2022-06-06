@@ -131,7 +131,6 @@ jobs:
       fail-fast: false
       matrix:
         saleor: [
-            "registry.gitlab.com/trieb.work/saleor:3.0.0-b.13-triebwork1", #v3 custom
             "ghcr.io/saleor/saleor:3.0.0"
           ]
 
