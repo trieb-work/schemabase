@@ -351,6 +351,16 @@ Table ProductVariant {
   }
 }
 
+Table Braintree {
+  id String [pk]
+  environment BraintreeEnvironment [not null, default: 'production']
+  merchantId String [not null]
+  publicKey String [not null]
+  privateKey String [not null]
+  tenant Tenant [not null]
+  tenantId String [not null]
+}
+
 Table ElasticCluster {
   id String [pk]
   createdAt DateTime [default: `now()`, not null]
@@ -560,6 +570,7 @@ Table Tenant {
   warehouse Warehouse [not null]
   invoice Invoice [not null]
   lineItem LineItem [not null]
+  braintree Braintree [not null]
 }
 
 Table Subscription {
@@ -737,6 +748,11 @@ Enum Currency {
   USD
 }
 
+Enum BraintreeEnvironment {
+  testing
+  production
+}
+
 Enum PackageState {
   INIT
   INFORMATION_RECEIVED
@@ -856,6 +872,8 @@ Ref: Product.tenantId > Tenant.id [delete: Cascade]
 Ref: ProductVariant.productId > Product.id [delete: Cascade]
 
 Ref: ProductVariant.tenantId > Tenant.id [delete: Cascade]
+
+Ref: Braintree.tenantId > Tenant.id [delete: Cascade]
 
 Ref: ElasticLogDrainIntegration.subscriptionId > Subscription.id
 
