@@ -151,6 +151,13 @@ export class ZohoSalesOrdersSyncService {
         const fullSalesorder = await this.zoho.salesOrder.get(
           salesorder.salesorder_id,
         );
+
+        if (!fullSalesorder) {
+          this.logger.error(
+            `No data returned from Zoho for SalesOrder ${salesorder.salesorder_id}`,
+          );
+          continue;
+        }
         const lineItems = fullSalesorder.line_items;
 
         for (const lineItem of lineItems) {
