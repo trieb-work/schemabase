@@ -167,7 +167,7 @@ export class ZohoSalesOrdersSyncService {
             lineItem.quantity,
           );
 
-          await this.db.zohoLineItems.upsert({
+          await this.db.zohoLineItem.upsert({
             where: {
               id_zohoAppId: {
                 id: lineItem.line_item_id,

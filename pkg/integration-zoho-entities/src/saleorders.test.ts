@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { NoopLogger } from "@eci/pkg/logger";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { beforeEach, describe, jest, test, beforeAll } from "@jest/globals";
@@ -11301,9 +11302,7 @@ describe("Zoho Inventory SalesOrders Sync", () => {
                 {
                   line_item_id: "98644000012567303",
                   variant_id: "98644000002082003",
-                  track_batch_number: false,
                   item_id: "98644000002082003",
-                  is_returnable: true,
                   product_id: "98644000002082003",
                   attribute_name1: "",
                   attribute_name2: "",
@@ -11352,9 +11351,9 @@ describe("Zoho Inventory SalesOrders Sync", () => {
                     {
                       field_id: "98644000002082020",
                       customfield_id: "98644000002082020",
-                      show_in_store: false,
+
                       show_in_portal: false,
-                      is_active: true,
+
                       index: 1,
                       label: "Öko-Kontrollstelle",
                       show_on_pdf: false,
@@ -11390,9 +11389,7 @@ describe("Zoho Inventory SalesOrders Sync", () => {
                 {
                   line_item_id: "98644000012567305",
                   variant_id: "98644000002131324",
-                  track_batch_number: false,
                   item_id: "98644000002131324",
-                  is_returnable: true,
                   product_id: "98644000002131324",
                   attribute_name1: "",
                   attribute_name2: "",
@@ -11441,9 +11438,9 @@ describe("Zoho Inventory SalesOrders Sync", () => {
                     {
                       field_id: "98644000002082020",
                       customfield_id: "98644000002082020",
-                      show_in_store: false,
+
                       show_in_portal: false,
-                      is_active: true,
+
                       index: 1,
                       label: "Öko-Kontrollstelle",
                       show_on_pdf: false,
@@ -11553,9 +11550,7 @@ describe("Zoho Inventory SalesOrders Sync", () => {
                 {
                   field_id: "98644000000161049",
                   customfield_id: "98644000000161049",
-                  show_in_store: false,
                   show_in_portal: false,
-                  is_active: true,
                   index: 1,
                   label: "Ready to fulfill",
                   show_on_pdf: false,
@@ -11573,9 +11568,7 @@ describe("Zoho Inventory SalesOrders Sync", () => {
                 {
                   field_id: "98644000000971306",
                   customfield_id: "98644000000971306",
-                  show_in_store: false,
                   show_in_portal: false,
-                  is_active: true,
                   index: 2,
                   label: "Anmerkung",
                   show_on_pdf: false,
@@ -11595,9 +11588,7 @@ describe("Zoho Inventory SalesOrders Sync", () => {
                 {
                   field_id: "98644000005854934",
                   customfield_id: "98644000005854934",
-                  show_in_store: false,
                   show_in_portal: false,
-                  is_active: true,
                   index: 3,
                   label: "preferred-language",
                   show_on_pdf: false,
@@ -11840,9 +11831,7 @@ describe("Zoho Inventory SalesOrders Sync", () => {
                 {
                   line_item_id: "98644000014278044",
                   variant_id: "98644000003281359",
-                  track_batch_number: false,
                   item_id: "98644000003281359",
-                  is_returnable: true,
                   product_id: "98644000003281359",
                   attribute_name1: "",
                   attribute_name2: "",
@@ -11983,9 +11972,7 @@ describe("Zoho Inventory SalesOrders Sync", () => {
                 {
                   field_id: "98644000000161049",
                   customfield_id: "98644000000161049",
-                  show_in_store: false,
                   show_in_portal: false,
-                  is_active: true,
                   index: 1,
                   label: "Ready to fulfill",
                   show_on_pdf: false,
@@ -12003,9 +11990,7 @@ describe("Zoho Inventory SalesOrders Sync", () => {
                 {
                   field_id: "98644000000971306",
                   customfield_id: "98644000000971306",
-                  show_in_store: false,
                   show_in_portal: false,
-                  is_active: true,
                   index: 2,
                   label: "Anmerkung",
                   show_on_pdf: false,
@@ -12023,9 +12008,7 @@ describe("Zoho Inventory SalesOrders Sync", () => {
                 {
                   field_id: "98644000005854934",
                   customfield_id: "98644000005854934",
-                  show_in_store: false,
                   show_in_portal: false,
-                  is_active: true,
                   index: 3,
                   label: "preferred-language",
                   show_on_pdf: false,
