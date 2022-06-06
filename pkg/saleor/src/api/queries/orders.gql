@@ -19,71 +19,63 @@ query saleorCronOrdersOverview($createdGte: Date, $after: String, $first: Int) {
   }
 }
 
-query saleorCronOrdersDetails($createdGte: Date, $after: String, $first: Int) {
-  orders(
-    first: $first
-    after: $after
-    filter: { created: { gte: $createdGte } }
-  ) {
-    pageInfo {
-      ...PageInfoMeta
+query saleorCronOrderDetails($id: ID!) {
+  order(id: $id) {
+    id
+    created
+    number
+    voucher {
+      id
+      code
     }
-    edges {
-      node {
-        id
-        created
-        number
-        voucher {
-          id
-          code
+    shippingPrice {
+      currency
+      tax{amount}
+      net{amount}
+      gross {
+        amount
+      }
+    }
+    lines {
+      id
+      variant {
+        sku
+      }
+      quantity
+      unitDiscountType
+      unitDiscountValue
+      undiscountedUnitPrice {
+        currency
+        gross {
+          amount
         }
-        shippingPrice {
-          currency
-          gross {
-            amount
-          }
+        net {
+          amount
         }
-        lines {
-          id
-          variant {
-            sku
-          }
-          quantity
-          unitDiscountType
-          unitDiscountValue
-          undiscountedUnitPrice {
-            currency
-            gross {
-              amount
-            }
-            net {
-              amount
-            }
-          }
-          taxRate
-          totalPrice {
-            gross {
-              amount
-            }
-            net {
-              amount
-            }
-            currency
-          }
+      }
+      taxRate
+      totalPrice {
+        gross {
+          amount
         }
-        total {
-          currency
-          gross {
-            amount
-          }
-          net {
-            amount
-          }
+        net {
+          amount
         }
+        currency
+      }
+    }
+    total {
+      currency
+      gross {
+        amount
+      }
+      net {
+        amount
       }
     }
   }
 }
+
 
 query saleorCronPayments($createdGte: Date, $after: String) {
   orders(first: 100, after: $after, filter: { created: { gte: $createdGte } }) {

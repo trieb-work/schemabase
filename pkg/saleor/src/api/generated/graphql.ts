@@ -10091,64 +10091,52 @@ export type SaleorCronOrdersOverviewQuery = {
   } | null;
 };
 
-export type SaleorCronOrdersDetailsQueryVariables = Exact<{
-  createdGte?: InputMaybe<Scalars["Date"]>;
-  after?: InputMaybe<Scalars["String"]>;
-  first?: InputMaybe<Scalars["Int"]>;
+export type SaleorCronOrderDetailsQueryVariables = Exact<{
+  id: Scalars["ID"];
 }>;
 
-export type SaleorCronOrdersDetailsQuery = {
+export type SaleorCronOrderDetailsQuery = {
   __typename?: "Query";
-  orders?: {
-    __typename?: "OrderCountableConnection";
-    pageInfo: {
-      __typename?: "PageInfo";
-      hasNextPage: boolean;
-      startCursor?: string | null;
-      endCursor?: string | null;
+  order?: {
+    __typename?: "Order";
+    id: string;
+    created: any;
+    number?: string | null;
+    voucher?: { __typename?: "Voucher"; id: string; code: string } | null;
+    shippingPrice: {
+      __typename?: "TaxedMoney";
+      currency: string;
+      tax: { __typename?: "Money"; amount: number };
+      net: { __typename?: "Money"; amount: number };
+      gross: { __typename?: "Money"; amount: number };
     };
-    edges: Array<{
-      __typename?: "OrderCountableEdge";
-      node: {
-        __typename?: "Order";
-        id: string;
-        created: any;
-        number?: string | null;
-        voucher?: { __typename?: "Voucher"; id: string; code: string } | null;
-        shippingPrice: {
-          __typename?: "TaxedMoney";
-          currency: string;
-          gross: { __typename?: "Money"; amount: number };
-        };
-        lines: Array<{
-          __typename?: "OrderLine";
-          id: string;
-          quantity: number;
-          unitDiscountType?: DiscountValueTypeEnum | null;
-          unitDiscountValue: any;
-          taxRate: number;
-          variant?: { __typename?: "ProductVariant"; sku: string } | null;
-          undiscountedUnitPrice: {
-            __typename?: "TaxedMoney";
-            currency: string;
-            gross: { __typename?: "Money"; amount: number };
-            net: { __typename?: "Money"; amount: number };
-          };
-          totalPrice: {
-            __typename?: "TaxedMoney";
-            currency: string;
-            gross: { __typename?: "Money"; amount: number };
-            net: { __typename?: "Money"; amount: number };
-          };
-        } | null>;
-        total: {
-          __typename?: "TaxedMoney";
-          currency: string;
-          gross: { __typename?: "Money"; amount: number };
-          net: { __typename?: "Money"; amount: number };
-        };
+    lines: Array<{
+      __typename?: "OrderLine";
+      id: string;
+      quantity: number;
+      unitDiscountType?: DiscountValueTypeEnum | null;
+      unitDiscountValue: any;
+      taxRate: number;
+      variant?: { __typename?: "ProductVariant"; sku: string } | null;
+      undiscountedUnitPrice: {
+        __typename?: "TaxedMoney";
+        currency: string;
+        gross: { __typename?: "Money"; amount: number };
+        net: { __typename?: "Money"; amount: number };
       };
-    }>;
+      totalPrice: {
+        __typename?: "TaxedMoney";
+        currency: string;
+        gross: { __typename?: "Money"; amount: number };
+        net: { __typename?: "Money"; amount: number };
+      };
+    } | null>;
+    total: {
+      __typename?: "TaxedMoney";
+      currency: string;
+      gross: { __typename?: "Money"; amount: number };
+      net: { __typename?: "Money"; amount: number };
+    };
   } | null;
 };
 
@@ -10553,77 +10541,67 @@ export const SaleorCronOrdersOverviewDocument = gql`
     }
   }
 `;
-export const SaleorCronOrdersDetailsDocument = gql`
-  query saleorCronOrdersDetails(
-    $createdGte: Date
-    $after: String
-    $first: Int
-  ) {
-    orders(
-      first: $first
-      after: $after
-      filter: { created: { gte: $createdGte } }
-    ) {
-      pageInfo {
-        ...PageInfoMeta
+export const SaleorCronOrderDetailsDocument = gql`
+  query saleorCronOrderDetails($id: ID!) {
+    order(id: $id) {
+      id
+      created
+      number
+      voucher {
+        id
+        code
       }
-      edges {
-        node {
-          id
-          created
-          number
-          voucher {
-            id
-            code
+      shippingPrice {
+        currency
+        tax {
+          amount
+        }
+        net {
+          amount
+        }
+        gross {
+          amount
+        }
+      }
+      lines {
+        id
+        variant {
+          sku
+        }
+        quantity
+        unitDiscountType
+        unitDiscountValue
+        undiscountedUnitPrice {
+          currency
+          gross {
+            amount
           }
-          shippingPrice {
-            currency
-            gross {
-              amount
-            }
+          net {
+            amount
           }
-          lines {
-            id
-            variant {
-              sku
-            }
-            quantity
-            unitDiscountType
-            unitDiscountValue
-            undiscountedUnitPrice {
-              currency
-              gross {
-                amount
-              }
-              net {
-                amount
-              }
-            }
-            taxRate
-            totalPrice {
-              gross {
-                amount
-              }
-              net {
-                amount
-              }
-              currency
-            }
+        }
+        taxRate
+        totalPrice {
+          gross {
+            amount
           }
-          total {
-            currency
-            gross {
-              amount
-            }
-            net {
-              amount
-            }
+          net {
+            amount
           }
+          currency
+        }
+      }
+      total {
+        currency
+        gross {
+          amount
+        }
+        net {
+          amount
         }
       }
     }
   }
-  ${PageInfoMetaFragmentDoc}
 `;
 export const SaleorCronPaymentsDocument = gql`
   query saleorCronPayments($createdGte: Date, $after: String) {
@@ -10931,14 +10909,14 @@ export function getSdk<C>(requester: Requester<C>) {
         SaleorCronOrdersOverviewQueryVariables
       >(SaleorCronOrdersOverviewDocument, variables, options);
     },
-    saleorCronOrdersDetails(
-      variables?: SaleorCronOrdersDetailsQueryVariables,
+    saleorCronOrderDetails(
+      variables: SaleorCronOrderDetailsQueryVariables,
       options?: C,
-    ): Promise<SaleorCronOrdersDetailsQuery> {
+    ): Promise<SaleorCronOrderDetailsQuery> {
       return requester<
-        SaleorCronOrdersDetailsQuery,
-        SaleorCronOrdersDetailsQueryVariables
-      >(SaleorCronOrdersDetailsDocument, variables, options);
+        SaleorCronOrderDetailsQuery,
+        SaleorCronOrderDetailsQueryVariables
+      >(SaleorCronOrderDetailsDocument, variables, options);
     },
     saleorCronPayments(
       variables?: SaleorCronPaymentsQueryVariables,

@@ -3,8 +3,8 @@
 import { ILogger } from "@eci/pkg/logger";
 import {
   SaleorCronOrdersOverviewQuery,
-  SaleorCronOrdersDetailsQuery,
   queryWithPagination,
+  SaleorCronOrderDetailsQuery,
 } from "@eci/pkg/saleor";
 import {
   InstalledSaleorApp,
@@ -15,16 +15,14 @@ import {
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { setHours, subDays, subYears, format } from "date-fns";
 import { id } from "@eci/pkg/ids";
+import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 // import { id } from "@eci/pkg/ids";
 
 interface SaleorOrderSyncServiceConfig {
   saleorClient: {
-    saleorCronOrdersDetails: (variables: {
-      first: number;
-      channel: string;
-      after: string;
-      createdGte: string;
-    }) => Promise<SaleorCronOrdersDetailsQuery>;
+    saleorCronOrderDetails: (variables: {
+     id: string;
+    }) => Promise<SaleorCronOrderDetailsQuery>;
     saleorCronOrdersOverview: (variables: {
       first: number;
       channel: string;
@@ -42,12 +40,9 @@ interface SaleorOrderSyncServiceConfig {
 
 export class SaleorOrderSyncService {
   public readonly saleorClient: {
-    saleorCronOrdersDetails: (variables: {
-      first: number;
-      channel: string;
-      after: string;
-      createdGte: string;
-    }) => Promise<SaleorCronOrdersDetailsQuery>;
+    saleorCronOrderDetails: (variables: {
+      id: string;
+    }) => Promise<SaleorCronOrderDetailsQuery>;
     saleorCronOrdersOverview: (variables: {
       first: number;
       channel: string;
@@ -125,7 +120,7 @@ export class SaleorOrderSyncService {
       }
       const prefixedOrderNumber = `${this.saleorZohoIntegration.orderPrefix}-${order.number}`;
 
-      await this.db.saleorOrder.upsert({
+      const upsertedOrder = await this.db.saleorOrder.upsert({
         where: {
           id_installedSaleorAppId: {
             id: order.id,
@@ -162,6 +157,78 @@ export class SaleorOrderSyncService {
         },
         update: {},
       });
+
+      const orderDetails = await this.saleorClient.saleorCronOrderDetails({ id: order.id })
+      if (!orderDetails) {
+        this.logger.error(`Can't get order details from saleor for order ${order.id}!`)
+        continue;
+      }
+      const lineItems = orderDetails.order?.lines;
+      if (!lineItems) {
+        this.logger.error(`No line items returned for order ${order.id}!`)
+        continue;
+      }
+
+      for (const lineItem of lineItems) {
+        if (!lineItem?.id) continue;
+        if (!lineItem?.variant?.sku) continue;
+
+        const uniqueString = uniqueStringOrderLine(order.number, lineItem.variant.sku, lineItem.quantity)
+        
+        await this.db.saleorLineItem.upsert({
+          where: {
+            id_installedSaleorAppId: {
+              id: lineItem.id,
+              installedSaleorAppId: this.installedSaleorApp.id
+            }
+          },
+          create: {
+            id: lineItem.id,
+            lineItem: {
+              connectOrCreate: {
+                where: {
+                  uniqueString_tenantId: {
+                    uniqueString,
+                    tenantId: this.tenant.id,
+                  }
+                },
+                create: {
+                  id: id.id("lineItem"),
+                  tenant: {
+                    connect: {
+                      id: this.tenant.id,
+                    }
+                  },
+                  uniqueString,
+                  order: {
+                    connect: {
+                      id: upsertedOrder.orderId
+                    }
+                  },
+                  quantity: lineItem.quantity,
+                  productVariant: {
+                    connect: {
+                      sku_tenantId: {
+                        sku: lineItem.variant.sku,
+                        tenantId: this.tenant.id
+                      }
+                    }
+                  }
+                }
+
+              }
+            },
+            installedSaleorApp: {
+              connect: {
+                id: this.installedSaleorApp.id,
+              }
+            }
+          },
+          update: {}
+        })
+      }
+
+
     }
   }
 }
