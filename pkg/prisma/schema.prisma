@@ -42,6 +42,19 @@ model SaleorOrder {
   @@unique([id, installedSaleorAppId])
 }
 
+model SaleorLineItem {
+  // Saleor Internal Id
+  id String
+
+  lineItem   LineItem @relation(fields: [lineItemId], references: [id], onDelete: Cascade)
+  lineItemId String
+
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String
+
+  @@unique([id, installedSaleorAppId])
+}
+
 // Saleor specific model for payments.
 model SaleorPayment {
   // Saleor Internal Id
@@ -233,7 +246,7 @@ model ZohoWarehouse {
   @@unique([id, zohoAppId])
 }
 
-model ZohoLineItems {
+model ZohoLineItem {
   // Zoho Internal Id
   id String
 
@@ -394,7 +407,7 @@ model LineItem {
   order   Order  @relation(fields: [orderId], references: [id])
   orderId String
 
-  quantity        Float
+  quantity Float
 
   productVariant   ProductVariant @relation(fields: [productVariantId, sku], references: [id, sku])
   productVariantId String
@@ -403,10 +416,11 @@ model LineItem {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  zohoLineItems ZohoLineItems[]
-
+  zohoLineItems ZohoLineItem[]
+  saleorLineItem SaleorLineItem[]
 
   @@unique([uniqueString, tenantId])
+  
 }
 
 // The ECI internal Order model.
@@ -708,8 +722,8 @@ model ZohoApp {
   zohoWarehouse         ZohoWarehouse[]
   zohoContact           ZohoContact[]
   zohoInvoice           ZohoInvoice[]
-  ZohoSalesOrder        ZohoSalesOrder[]
-  ZohoLineItems         ZohoLineItems[]
+  zohoSalesOrder        ZohoSalesOrder[]
+  zohoLineItems         ZohoLineItem[]
 }
 
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor
@@ -781,9 +795,10 @@ model InstalledSaleorApp {
   saleorProductVariant       SaleorProductVariant[]
   saleorWarehouse            SaleorWarehouse[]
   saleorOrder                SaleorOrder[]
-
+  saleorLineItem             SaleorLineItem[]
 
   @@unique([domain, channelSlug])
+  
 }
 
 // One tenant per company

@@ -17,6 +17,18 @@ Table SaleorOrder {
   }
 }
 
+Table SaleorLineItem {
+  id String [not null]
+  lineItem LineItem [not null]
+  lineItemId String [not null]
+  installedSaleorApp InstalledSaleorApp [not null]
+  installedSaleorAppId String [not null]
+
+  indexes {
+    (id, installedSaleorAppId) [unique]
+  }
+}
+
 Table SaleorPayment {
   id String [not null]
   createdAt DateTime [not null]
@@ -157,7 +169,7 @@ Table ZohoWarehouse {
   }
 }
 
-Table ZohoLineItems {
+Table ZohoLineItem {
   id String [not null]
   lineItem LineItem [not null]
   lineItemId String [not null]
@@ -267,7 +279,8 @@ Table LineItem {
   sku String [not null]
   tenant Tenant [not null]
   tenantId String [not null]
-  zohoLineItems ZohoLineItems [not null]
+  zohoLineItems ZohoLineItem [not null]
+  saleorLineItem SaleorLineItem [not null]
 
   indexes {
     (uniqueString, tenantId) [unique]
@@ -473,8 +486,8 @@ Table ZohoApp {
   zohoWarehouse ZohoWarehouse [not null]
   zohoContact ZohoContact [not null]
   zohoInvoice ZohoInvoice [not null]
-  ZohoSalesOrder ZohoSalesOrder [not null]
-  ZohoLineItems ZohoLineItems [not null]
+  zohoSalesOrder ZohoSalesOrder [not null]
+  zohoLineItems ZohoLineItem [not null]
 }
 
 Table SaleorApp {
@@ -505,6 +518,7 @@ Table InstalledSaleorApp {
   saleorProductVariant SaleorProductVariant [not null]
   saleorWarehouse SaleorWarehouse [not null]
   saleorOrder SaleorOrder [not null]
+  saleorLineItem SaleorLineItem [not null]
 
   indexes {
     (domain, channelSlug) [unique]
@@ -748,6 +762,10 @@ Ref: SaleorOrder.(orderId, orderNumber) > Order.(id, orderNumber) [delete: Casca
 
 Ref: SaleorOrder.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
 
+Ref: SaleorLineItem.lineItemId > LineItem.id [delete: Cascade]
+
+Ref: SaleorLineItem.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
+
 Ref: SaleorPayment.saleorOrderId > SaleorOrder.id
 
 Ref: SaleorPayment.paymentId > Payment.id [delete: Cascade]
@@ -792,9 +810,9 @@ Ref: ZohoWarehouse.warehouseId > Warehouse.id [delete: Cascade]
 
 Ref: ZohoWarehouse.zohoAppId > ZohoApp.id [delete: Cascade]
 
-Ref: ZohoLineItems.lineItemId > LineItem.id [delete: Cascade]
+Ref: ZohoLineItem.lineItemId > LineItem.id [delete: Cascade]
 
-Ref: ZohoLineItems.zohoAppId > ZohoApp.id [delete: Cascade]
+Ref: ZohoLineItem.zohoAppId > ZohoApp.id [delete: Cascade]
 
 Ref: Invoice.tenantId > Tenant.id [delete: Cascade]
 
