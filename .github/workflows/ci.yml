@@ -169,8 +169,7 @@ jobs:
         run: docker-compose up -d
         env:
           SALEOR_IMAGE: ${{ matrix.saleor }}
-          DATABASE_URL: postgres://postgres:postgres@db.eci:5432/postgres
-          DATABASE_URL_POOL: postgres://postgres:postgres@db.eci:5432/postgres
+          DATABASE_URL: mysql://eci:eci@eci.mysql.db/eci
           ECI_BASE_URL: http://localhost:3000
           ECI_BASE_URL_FROM_CONTAINER: http://api.eci:3000
           SALEOR_URL_FROM_CONTAINER: http://saleor.eci:8000/graphql/
@@ -186,7 +185,7 @@ jobs:
       - name: Migrate eci schema
         run: make db-push
         env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+          DATABASE_URL: mysql://eci:eci@localhost/eci
 
       - name: Generate code
         run: make build
@@ -196,8 +195,7 @@ jobs:
         env:
           SALEOR_URL: http://localhost:8000/graphql/
           ECI_BASE_URL: http://localhost:3000
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
-          DATABASE_URL_POOL: postgres://postgres:postgres@db.eci:5432/postgres
+          DATABASE_URL: mysql://eci:eci@localhost/eci
           ZOHO_CLIENT_SECRET: ${{ secrets.ZOHO_CLIENT_SECRET }}
           ZOHO_CLIENT_ID: ${{ secrets.ZOHO_CLIENT_ID }}
           ZOHO_ORG_ID: ${{ secrets.ZOHO_ORG_ID }}
