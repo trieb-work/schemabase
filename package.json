@@ -71,7 +71,8 @@
     }
   },
   "prisma": {
-    "schema": "./pkg/prisma/schema.prisma"
+    "schema": "./pkg/prisma/schema.prisma",
+    "seed": "./pkg/prisma/seeding/testing.ts"
   },
   "dependencies": {
     "@47ng/cloak": "^1.1.0",

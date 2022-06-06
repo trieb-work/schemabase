@@ -183,7 +183,7 @@ jobs:
         run: make migrate-saleor
 
       - name: Migrate eci schema
-        run: make db-push
+        run: pnpm prisma migrate reset -f
         env:
           DATABASE_URL: mysql://eci:eci@localhost/eci
 
