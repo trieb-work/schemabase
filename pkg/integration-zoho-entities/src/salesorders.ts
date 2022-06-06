@@ -173,6 +173,22 @@ export class ZohoSalesOrdersSyncService {
             lineItem.quantity,
           );
 
+          const productVariantLookup = await this.db.productVariant.findUnique({
+            where: {
+              sku_tenantId: {
+                sku: lineItem.sku,
+                tenantId: this.zohoApp.tenantId,
+              },
+            },
+          });
+          if (!productVariantLookup) {
+            this.logger.warn(
+              // eslint-disable-next-line max-len
+              `No internal product variant found for SKU ${lineItem.sku}! Can't process this line item`,
+            );
+            continue;
+          }
+
           await this.db.zohoLineItem.upsert({
             where: {
               id_zohoAppId: {
@@ -201,10 +217,7 @@ export class ZohoSalesOrdersSyncService {
                     quantity: lineItem.quantity,
                     productVariant: {
                       connect: {
-                        sku_tenantId: {
-                          sku: lineItem.sku as string,
-                          tenantId,
-                        },
+                        id: productVariantLookup.id,
                       },
                     },
                     tenant: {
