@@ -7,7 +7,7 @@ import {
   Tenant,
 } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { setHours, subDays, subYears } from "date-fns";
+import { format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 // import { id } from "@eci/pkg/ids";
 
@@ -17,7 +17,7 @@ interface SaleorPaymentSyncServiceConfig {
       first: number;
       channel: string;
       after: string;
-      createdGte: Date;
+      createdGte: string;
     }) => Promise<SaleorCronPaymentsQuery>;
   };
   channelSlug: string;
@@ -33,7 +33,7 @@ export class SaleorPaymentSyncService {
       first: number;
       channel: string;
       after: string;
-      createdGte: Date;
+      createdGte: string;
     }) => Promise<SaleorCronPaymentsQuery>;
   };
 
@@ -74,12 +74,12 @@ export class SaleorPaymentSyncService {
 
     const now = new Date();
     const yesterdayMidnight = setHours(subDays(now, 1), 0);
-    let createdGte = yesterdayMidnight;
+    let createdGte = format(yesterdayMidnight, "yyyy-MM-dd");
     if (!cronState.lastRun) {
-      createdGte = subYears(now, 1);
+      createdGte = format(subYears(now, 1), "yyyy-MM-dd");
       this.logger.info(
         // eslint-disable-next-line max-len
-        `This seems to be our first sync run. Syncing data from now - 1 Year to: ${createdGte.toISOString()}`,
+        `This seems to be our first sync run. Syncing data from now - 1 Year to: ${createdGte}`,
       );
     } else {
       this.logger.info(`Setting GTE date to ${yesterdayMidnight.toISOString}`);

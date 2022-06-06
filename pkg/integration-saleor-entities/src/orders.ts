@@ -158,6 +158,8 @@ export class SaleorOrderSyncService {
         update: {},
       });
 
+      this.logger.info(`Requesting detailed order data for ${order.number} from saleor...`);
+
       const orderDetails = await this.saleorClient.saleorCronOrderDetails({ id: order.id })
       if (!orderDetails) {
         this.logger.error(`Can't get order details from saleor for order ${order.id}!`)
@@ -169,11 +171,12 @@ export class SaleorOrderSyncService {
         continue;
       }
 
+      // loop through all line items and upsert them in the DB
       for (const lineItem of lineItems) {
         if (!lineItem?.id) continue;
         if (!lineItem?.variant?.sku) continue;
 
-        const uniqueString = uniqueStringOrderLine(order.number, lineItem.variant.sku, lineItem.quantity)
+        const uniqueString = uniqueStringOrderLine(prefixedOrderNumber, lineItem.variant.sku, lineItem.quantity)
         
         await this.db.saleorLineItem.upsert({
           where: {

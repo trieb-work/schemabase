@@ -158,6 +158,12 @@ export class ZohoSalesOrdersSyncService {
           );
           continue;
         }
+        if (!fullSalesorder.line_items) {
+          this.logger.error(
+            `No line items for SalesOrder ${salesorder.salesorder_id}`,
+          );
+          continue;
+        }
         const lineItems = fullSalesorder.line_items;
 
         for (const lineItem of lineItems) {

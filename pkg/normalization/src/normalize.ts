@@ -23,6 +23,10 @@ class NormalizationUtility {
   public warehouseNames(input: string) {
     return this.standardNormalize(input);
   }
+
+  public lineItemStrings(input: string) {
+    return input.trim().toLowerCase();
+  }
 }
 
 /**

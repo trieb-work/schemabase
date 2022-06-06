@@ -298,6 +298,17 @@ model Invoice {
   @@unique([invoiceNumber, tenantId])
 }
 
+model Tax {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name String
+  percentage Float
+    
+}
+
 // The ECI internal payments model
 model Payment {
   // eci internal id

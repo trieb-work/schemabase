@@ -1691,5 +1691,5 @@ describe("Saleor Entity Sync payments Test", () => {
       saleorZohoIntegration,
     });
     await xx.syncToECI();
-  }, 80000);
+  }, 1000000);
 });
