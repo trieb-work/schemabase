@@ -30,8 +30,12 @@ query saleorCronOrderDetails($id: ID!) {
     }
     shippingPrice {
       currency
-      tax{amount}
-      net{amount}
+      tax {
+        amount
+      }
+      net {
+        amount
+      }
       gross {
         amount
       }
@@ -75,7 +79,6 @@ query saleorCronOrderDetails($id: ID!) {
     }
   }
 }
-
 
 query saleorCronPayments($createdGte: Date, $after: String) {
   orders(first: 100, after: $after, filter: { created: { gte: $createdGte } }) {

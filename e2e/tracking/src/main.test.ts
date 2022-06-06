@@ -238,21 +238,17 @@ describe("with invalid webhook", () => {
     //         },
     //       },
     //     });
-
     //     await new HttpClient().call({
     //       url: `http://localhost:3000/api/v1/tracking/dpd/${dpdWebhookId}?statusdate=05012022100200&&pnr=${trackingId}&status=delivery_nab&pushid=1&depot=1`,
     //       method: "GET",
     //     });
-
     //     await sleep(10_000);
-
     //     const storedPackage = await prisma.package.findUnique({
     //       where: {
     //         id: packageId,
     //       },
     //       include: { events: { include: { sentEmail: true } } },
     //     });
-
     //     expect(storedPackage).not.toBeNull();
     //     expect(storedPackage!.events.length).toBe(1);
     //     expect(storedPackage!.events[0].state).toEqual(

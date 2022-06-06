@@ -21,7 +21,7 @@ import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline
 interface SaleorOrderSyncServiceConfig {
   saleorClient: {
     saleorCronOrderDetails: (variables: {
-     id: string;
+      id: string;
     }) => Promise<SaleorCronOrderDetailsQuery>;
     saleorCronOrdersOverview: (variables: {
       first: number;
@@ -158,14 +158,18 @@ export class SaleorOrderSyncService {
         update: {},
       });
 
-      const orderDetails = await this.saleorClient.saleorCronOrderDetails({ id: order.id })
+      const orderDetails = await this.saleorClient.saleorCronOrderDetails({
+        id: order.id,
+      });
       if (!orderDetails) {
-        this.logger.error(`Can't get order details from saleor for order ${order.id}!`)
+        this.logger.error(
+          `Can't get order details from saleor for order ${order.id}!`,
+        );
         continue;
       }
       const lineItems = orderDetails.order?.lines;
       if (!lineItems) {
-        this.logger.error(`No line items returned for order ${order.id}!`)
+        this.logger.error(`No line items returned for order ${order.id}!`);
         continue;
       }
 
@@ -174,14 +178,18 @@ export class SaleorOrderSyncService {
         if (!lineItem?.id) continue;
         if (!lineItem?.variant?.sku) continue;
 
-        const uniqueString = uniqueStringOrderLine(prefixedOrderNumber, lineItem.variant.sku, lineItem.quantity)
-        
+        const uniqueString = uniqueStringOrderLine(
+          prefixedOrderNumber,
+          lineItem.variant.sku,
+          lineItem.quantity,
+        );
+
         await this.db.saleorLineItem.upsert({
           where: {
             id_installedSaleorAppId: {
               id: lineItem.id,
-              installedSaleorAppId: this.installedSaleorApp.id
-            }
+              installedSaleorAppId: this.installedSaleorApp.id,
+            },
           },
           create: {
             id: lineItem.id,
@@ -191,49 +199,43 @@ export class SaleorOrderSyncService {
                   uniqueString_tenantId: {
                     uniqueString,
                     tenantId: this.tenant.id,
-                  }
+                  },
                 },
                 create: {
                   id: id.id("lineItem"),
                   tenant: {
                     connect: {
                       id: this.tenant.id,
-                    }
+                    },
                   },
                   uniqueString,
                   order: {
                     connect: {
-                      id: upsertedOrder.orderId
-                    }
+                      id: upsertedOrder.orderId,
+                    },
                   },
                   quantity: lineItem.quantity,
                   productVariant: {
                     connect: {
                       sku_tenantId: {
                         sku: lineItem.variant.sku,
-                        tenantId: this.tenant.id
-                      }
-                    }
-                  }
-                }
-
-              }
+                        tenantId: this.tenant.id,
+                      },
+                    },
+                  },
+                },
+              },
             },
             installedSaleorApp: {
               connect: {
                 id: this.installedSaleorApp.id,
-              }
-            }
+              },
+            },
           },
-          update: {}
-        })
+          update: {},
+        });
       }
-
-
-
-
     }
-
 
     await this.cronState.set({
       lastRun: new Date(),
