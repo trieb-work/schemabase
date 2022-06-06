@@ -159,6 +159,13 @@ model ZohoContact {
   @@unique([id, zohoAppId])
 }
 
+enum ZohoSalesOrderStatus {
+  draft
+  confirmed
+  fulfilled
+  shipped 
+}
+
 // Zoho specific model.
 model ZohoSalesOrder {
   // Zoho Internal Id
@@ -306,7 +313,7 @@ model Tax {
 
   name String
   percentage Float
-    
+
 }
 
 // The ECI internal payments model
