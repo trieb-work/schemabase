@@ -305,6 +305,7 @@ model Invoice {
   @@unique([invoiceNumber, tenantId])
 }
 
+// Internal model to save taxes information
 model Tax {
   // eci internal id
   id        String   @id
@@ -312,7 +313,12 @@ model Tax {
   updatedAt DateTime @updatedAt
 
   name       String
+  // Lowercase, trim, whitespace remove, special characters remove etc.
+  normalizedName String
   percentage Float
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
 
 }
 
@@ -894,6 +900,7 @@ model Tenant {
   invoice                     Invoice[]
   lineItem                    LineItem[]
   braintree                   Braintree[]
+  tax                         Tax[]
 }
 
 // A subscription indicates a tenant has payed for one integration.

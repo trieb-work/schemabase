@@ -202,7 +202,10 @@ Table Tax {
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   name String [not null]
+  normalizedName String [not null]
   percentage Float [not null]
+  tenant Tenant [not null]
+  tenantId String [not null]
 }
 
 Table Payment {
@@ -305,10 +308,15 @@ Table Order {
   updatedAt DateTime [not null]
   externalOrderId String
   orderNumber String [not null]
+  lineItems LineItem [not null]
+  shippingPriceNet Float
+  shippingPriceGross Float
+  shippingPriceTaxPercentage Float
+  totalPriceNet Float
+  totalPriceGross Float [not null]
   contacts Contact [not null]
   language Language [not null, default: 'DE']
   packages Package [not null]
-  lineItems LineItem [not null]
   tenant Tenant [not null]
   tenantId String [not null]
   payment Payment [not null]
@@ -575,6 +583,7 @@ Table Tenant {
   invoice Invoice [not null]
   lineItem LineItem [not null]
   braintree Braintree [not null]
+  tax Tax [not null]
 }
 
 Table Subscription {
@@ -850,6 +859,8 @@ Ref: ZohoLineItem.lineItemId > LineItem.id [delete: Cascade]
 Ref: ZohoLineItem.zohoAppId > ZohoApp.id [delete: Cascade]
 
 Ref: Invoice.tenantId > Tenant.id [delete: Cascade]
+
+Ref: Tax.tenantId > Tenant.id [delete: Cascade]
 
 Ref: Payment.orderId > Order.id
 
