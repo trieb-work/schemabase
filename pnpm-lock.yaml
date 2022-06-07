@@ -75,6 +75,7 @@ specifiers:
   prisma-dbml-generator: ^0.9.0
   react: ^17.0.2
   react-dom: ^17.0.2
+  reliable-round: ^1.0.10
   ts-jest: ^27.1.4
   tslog: ^3.3.3
   typescript: ^4.7.3
@@ -115,6 +116,7 @@ dependencies:
   prisma: 3.14.0
   react: 17.0.2
   react-dom: 17.0.2_react@17.0.2
+  reliable-round: 1.0.10
   tslog: 3.3.3
   winston: 3.7.2
   winston-elasticsearch: 0.16.1
@@ -9366,6 +9368,10 @@ packages:
     transitivePeerDependencies:
       - encoding
     dev: true
+
+  /reliable-round/1.0.10:
+    resolution: {integrity: sha512-32x0CKnHwBfwKrk7tQsTENYEby5jUYgyXYzQUPeo02jvAet3yJV9Do5vnVXApDmQ9Xt2uy1Hii2Igwkg9VQu1Q==}
+    dev: false
 
   /remedial/1.0.8:
     resolution: {integrity: sha512-/62tYiOe6DzS5BqVsNpH/nkGlX45C/Sp6V+NtiN6JQNS1Viay7cWkazmRkrQrdFj2eshDe96SIQNIoMxqhzBOg==}

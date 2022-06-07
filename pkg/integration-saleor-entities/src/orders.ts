@@ -16,7 +16,7 @@ import { CronStateHandler } from "@eci/pkg/cronstate";
 import { setHours, subDays, subYears, format } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
-// import { id } from "@eci/pkg/ids";
+import { round } from "reliable-round";
 
 interface SaleorOrderSyncServiceConfig {
   saleorClient: {
@@ -201,7 +201,9 @@ export class SaleorOrderSyncService {
         // Before Saleor 3.3.13, the discount value is calculated on the
         // gross price (which is just bullshit :D) so we have to calculate the discountValueNet
         // manually
-        const discountValueNet =  lineItem.undiscountedUnitPrice.net.amount - lineItem.totalPrice.net.amount
+        const discountValueNet = round(lineItem.unitDiscountValue === 0 ? 0 : lineItem.undiscountedUnitPrice.net.amount * lineItem.quantity - lineItem.totalPrice.net.amount, 2);
+
+        if (discountValueNet < 0) throw new Error(`Calculated saleor discount is negative: ${discountValueNet}! This can never be. Failing..`)
 
         await this.db.saleorLineItem.upsert({
           where: {
