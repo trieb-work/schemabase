@@ -147,7 +147,6 @@ export class ZohoSalesOrdersSyncService {
         !cronState.lastRun ||
         new Date(salesorder.last_modified_time) > cronState.lastRun
       ) {
-        this.logger.info(`Pulling orderlines for ${salesorder.salesorder_id}`);
         const fullSalesorder = await this.zoho.salesOrder.get(
           salesorder.salesorder_id,
         );
@@ -173,6 +172,7 @@ export class ZohoSalesOrdersSyncService {
             lineItem.quantity,
           );
 
+          // Lookup of the product variant SKU in our internal DB
           const productVariantLookup = await this.db.productVariant.findUnique({
             where: {
               sku_tenantId: {
