@@ -184,11 +184,13 @@ export class SaleorOrderSyncService {
             sku_tenantId: {
               sku: lineItem.variant.sku,
               tenantId: this.tenant.id,
-            }
-          }
-        })
+            },
+          },
+        });
         if (!productSku) {
-          this.logger.warn(`No internal product variant found for SKU ${lineItem.variant.sku}! Can't create line Item`);
+          this.logger.warn(
+            `No internal product variant found for SKU ${lineItem.variant.sku}! Can't create line Item`,
+          );
           continue;
         }
 
@@ -201,9 +203,18 @@ export class SaleorOrderSyncService {
         // Before Saleor 3.3.13, the discount value is calculated on the
         // gross price (which is just bullshit :D) so we have to calculate the discountValueNet
         // manually
-        const discountValueNet = round(lineItem.unitDiscountValue === 0 ? 0 : lineItem.undiscountedUnitPrice.net.amount * lineItem.quantity - lineItem.totalPrice.net.amount, 2);
+        const discountValueNet = round(
+          lineItem.unitDiscountValue === 0
+            ? 0
+            : lineItem.undiscountedUnitPrice.net.amount * lineItem.quantity -
+                lineItem.totalPrice.net.amount,
+          2,
+        );
 
-        if (discountValueNet < 0) throw new Error(`Calculated saleor discount is negative: ${discountValueNet}! This can never be. Failing..`)
+        if (discountValueNet < 0)
+          throw new Error(
+            `Calculated saleor discount is negative: ${discountValueNet}! This can never be. Failing..`,
+          );
 
         await this.db.saleorLineItem.upsert({
           where: {
@@ -266,15 +277,15 @@ export class SaleorOrderSyncService {
                   connect: {
                     id: productSku.id,
                   },
-                }, 
+                },
                 order: {
                   update: {
-                    shippingPriceGross: orderDetails.order?.shippingPrice.gross.amount
-                  }
-                }
-              }
-
-            }
+                    shippingPriceGross:
+                      orderDetails.order?.shippingPrice.gross.amount,
+                  },
+                },
+              },
+            },
           },
         });
       }

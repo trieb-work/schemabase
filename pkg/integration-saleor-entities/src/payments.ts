@@ -158,7 +158,7 @@ export class SaleorPaymentSyncService {
         },
       };
 
-      // check, if we already have this saleor order created, so that we can 
+      // check, if we already have this saleor order created, so that we can
       // connect the payment
       const existingSaleorOrder = await this.db.saleorOrder.findUnique({
         where: {

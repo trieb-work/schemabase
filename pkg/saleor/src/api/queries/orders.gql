@@ -19,7 +19,7 @@ query saleorCronOrdersOverview($createdGte: Date, $after: String, $first: Int) {
           gross {
             amount
           }
-        }        
+        }
       }
     }
   }
