@@ -158,6 +158,27 @@ export class SaleorPaymentSyncService {
         },
       };
 
+      // check, if we already have this saleor order created, so that we can 
+      // connect the payment
+      const existingSaleorOrder = await this.db.saleorOrder.findUnique({
+        where: {
+          id_installedSaleorAppId: {
+            id: order.id,
+            installedSaleorAppId: this.installedSaleorApp.id,
+          },
+        },
+      });
+      let saleorOrderConnect;
+      if (existingSaleorOrder)
+        saleorOrderConnect = {
+          connect: {
+            id_installedSaleorAppId: {
+              id: existingSaleorOrder?.id,
+              installedSaleorAppId: this.installedSaleorApp.id,
+            },
+          },
+        };
+
       await this.db.saleorPayment.upsert({
         where: {
           id_installedSaleorAppId: {
@@ -169,6 +190,7 @@ export class SaleorPaymentSyncService {
           id: payment?.id,
           createdAt: payment?.created,
           updatedAt: payment?.modified,
+          saleorOrder: saleorOrderConnect,
           installedSaleorApp: {
             connect: {
               id: this.installedSaleorApp.id,
@@ -179,45 +201,7 @@ export class SaleorPaymentSyncService {
         update: {
           createdAt: payment?.created,
           updatedAt: payment?.modified,
-          saleorOrder: {
-            connectOrCreate: {
-              where: {
-                id_installedSaleorAppId: {
-                  id: payment.order?.id || "",
-                  installedSaleorAppId: this.installedSaleorApp.id,
-                },
-              },
-              create: {
-                id: payment.order?.id,
-                installedSaleorApp: {
-                  connect: {
-                    id: this.installedSaleorApp.id,
-                  },
-                },
-                createdAt: payment.order.created,
-                order: {
-                  connectOrCreate: {
-                    where: {
-                      orderNumber_tenantId: {
-                        orderNumber: order.number as string,
-                        tenantId: this.tenant.id,
-                      },
-                    },
-                    create: {
-                      id: id.id("order"),
-                      orderNumber: order.number,
-                      createdAt: order.created,
-                      tenant: {
-                        connect: {
-                          id: this.tenant.id,
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
+          saleorOrder: saleorOrderConnect,
           payment: paymentCreateOrConnect,
         },
       });

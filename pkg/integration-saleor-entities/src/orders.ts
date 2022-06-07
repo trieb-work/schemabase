@@ -146,6 +146,7 @@ export class SaleorOrderSyncService {
               create: {
                 id: id.id("order"),
                 orderNumber: prefixedOrderNumber,
+                totalPriceGross: order.total.gross.amount,
                 tenant: {
                   connect: {
                     id: this.tenant.id,

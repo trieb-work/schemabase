@@ -10086,6 +10086,11 @@ export type SaleorCronOrdersOverviewQuery = {
         id: string;
         created: any;
         number?: string | null;
+        total: {
+          __typename?: "TaxedMoney";
+          currency: string;
+          gross: { __typename?: "Money"; amount: number };
+        };
       };
     }>;
   } | null;
@@ -10536,6 +10541,12 @@ export const SaleorCronOrdersOverviewDocument = gql`
           id
           created
           number
+          total {
+            currency
+            gross {
+              amount
+            }
+          }
         }
       }
     }

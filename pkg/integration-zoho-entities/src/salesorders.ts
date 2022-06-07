@@ -95,6 +95,7 @@ export class ZohoSalesOrdersSyncService {
           create: {
             id: id.id("order"),
             orderNumber: salesorder.salesorder_number,
+            totalPriceGross: salesorder.total,
             tenant: {
               connect: {
                 id: tenantId,
@@ -112,7 +113,7 @@ export class ZohoSalesOrdersSyncService {
               },
             },
           }
-        : {};
+        : undefined;
 
       const createdSalesOrder = await this.db.zohoSalesOrder.upsert({
         where: {
