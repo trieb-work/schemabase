@@ -5,39 +5,39 @@ specifiers:
   '@chronark/prefixed-id': ^0.3.8
   '@commitlint/config-conventional': ^15.0.0
   '@elastic/ecs-winston-format': ^1.3.1
-  '@elastic/elasticsearch': ^7.16.0
-  '@geist-ui/react': ^2.2.2
-  '@graphql-codegen/cli': ^2.3.1
-  '@graphql-codegen/graphql-modules-preset': ^2.3.2
+  '@elastic/elasticsearch': ^7.17.0
+  '@geist-ui/react': ^2.2.5
+  '@graphql-codegen/cli': ^2.6.2
+  '@graphql-codegen/graphql-modules-preset': ^2.3.8
   '@graphql-codegen/introspection': ^2.1.1
-  '@graphql-codegen/typescript': ^2.4.2
+  '@graphql-codegen/typescript': ^2.4.8
   '@graphql-codegen/typescript-generic-sdk': ^2.3.7
   '@graphql-codegen/typescript-graphql-files-modules': ^2.1.1
   '@graphql-codegen/typescript-operations': ^2.3.5
-  '@graphql-codegen/typescript-resolvers': ^2.4.3
-  '@jest/globals': ^27.4.6
+  '@graphql-codegen/typescript-resolvers': ^2.6.1
+  '@jest/globals': ^27.5.1
   '@prisma/client': ^3.14.0
-  '@swc/core': ^1.2.127
-  '@swc/jest': ^0.2.15
-  '@trieb.work/eslint-config-base': ^1.8.21
+  '@swc/core': ^1.2.165
+  '@swc/jest': ^0.2.20
+  '@trieb.work/eslint-config-base': ^1.10.0
   '@trieb.work/prettier-base': ^0.1.2
   '@trieb.work/tsconfig-base': ^1.6.4
   '@trieb.work/zoho-ts': ^0.4.50
   '@types/async': ^3.2.13
   '@types/faker': ^5.5.9
-  '@types/html-to-text': ^8.0.1
-  '@types/jest': ^27.4.0
+  '@types/html-to-text': ^8.1.0
+  '@types/jest': ^27.4.1
   '@types/jsonwebtoken': ^8.5.8
-  '@types/node': ^17.0.8
+  '@types/node': ^17.0.23
   '@types/objects-to-csv': ^1.3.1
-  '@types/react': ^17.0.38
-  '@types/react-dom': ^17.0.11
-  '@typescript-eslint/eslint-plugin': ^5.10.0
-  '@typescript-eslint/parser': ^5.10.0
-  apollo-datasource: ^3.3.0
-  apollo-server: ^3.6.1
-  apollo-server-core: ^3.6.1
-  apollo-server-micro: ^3.6.1
+  '@types/react': ^17.0.44
+  '@types/react-dom': ^17.0.15
+  '@typescript-eslint/eslint-plugin': ^5.19.0
+  '@typescript-eslint/parser': ^5.19.0
+  apollo-datasource: ^3.3.1
+  apollo-server: ^3.6.7
+  apollo-server-core: ^3.6.7
+  apollo-server-micro: ^3.6.7
   async: ^3.2.3
   axios: ^0.24.0
   braintree: ^3.11.0
@@ -46,41 +46,42 @@ specifiers:
   date-fns: ^2.28.0
   dotenv: ^10.0.0
   editorjs-html: ^3.4.2
-  esbuild: ^0.14.11
+  esbuild: ^0.14.36
+  esbuild-runner: ^2.2.1
   eslint: ^7.32.0
-  eslint-config-prettier: ^8.3.0
+  eslint-config-prettier: ^8.5.0
   eslint-config-standard: ^16.0.3
-  eslint-plugin-import: ^2.25.4
+  eslint-plugin-import: ^2.26.0
   eslint-plugin-node: ^11.1.0
   eslint-plugin-prettier: ^4.0.0
   eslint-plugin-promise: ^5.2.0
   faker: 5.5.3
-  graphql: 15.x
+  graphql: ~15.8.0
   graphql-modules: ^2.0.0
   graphql-request: ^3.7.0
   graphql-tag: ^2.12.6
-  html-to-text: ^8.1.0
+  html-to-text: ^8.2.0
   husky: ^7.0.4
   ioredis: ^5.0.6
-  jest: ^27.4.7
+  jest: ^27.5.1
   jsonwebtoken: ^8.5.1
-  kafkajs: ^1.15.0
-  lint-staged: ^12.1.7
+  kafkajs: ^1.16.0
+  lint-staged: ^12.3.7
   micro: ^9.3.4
-  next: ^12.0.7
+  next: ^12.1.4
   objects-to-csv: ^1.3.6
-  prettier: ^2.5.1
+  prettier: ^2.6.2
   prisma: ^3.14.0
   prisma-dbml-generator: ^0.9.0
   react: ^17.0.2
   react-dom: ^17.0.2
-  ts-jest: ^27.1.2
-  tslog: ^3.3.1
+  ts-jest: ^27.1.4
+  tslog: ^3.3.3
   typescript: ^4.7.3
   vercel: ^24.2.3
-  winston: ^3.4.0
+  winston: ^3.7.2
   winston-elasticsearch: ^0.16.1
-  zod: ^3.11.6
+  zod: ^3.14.4
 
 dependencies:
   '@47ng/cloak': 1.1.0
@@ -149,6 +150,7 @@ devDependencies:
   commitlint: 15.0.0
   dotenv: 10.0.0
   esbuild: 0.14.36
+  esbuild-runner: 2.2.1_esbuild@0.14.36
   eslint: 7.32.0
   eslint-config-prettier: 8.5.0_eslint@7.32.0
   eslint-config-standard: 16.0.3_wnerebu6rbpsve3qx7qqwvcqtq
@@ -194,7 +196,7 @@ packages:
     resolution: {integrity: sha512-hoyByceqwKirw7w3Z7gnIIZC3Wx3J484Y3L/cMpXFbr7d9ZQj2mODrirNzcJa+SM3UlpWXYvKV4RlRpFXlWgXg==}
     engines: {node: '>=6.0.0'}
     dependencies:
-      '@jridgewell/trace-mapping': 0.3.4
+      '@jridgewell/trace-mapping': 0.3.9
     dev: true
 
   /@apollo/protobufjs/1.2.2:
@@ -1966,8 +1968,8 @@ packages:
     resolution: {integrity: sha512-Fg32GrJo61m+VqYSdRSjRXMjQ06j8YIYfcTqndLYVAaHmroZHLJZCydsWBOTDqXS2v+mjxohBWEMfg97GXmYQg==}
     dev: true
 
-  /@jridgewell/trace-mapping/0.3.4:
-    resolution: {integrity: sha512-vFv9ttIedivx0ux3QSjhgtCVjPZd5l46ZOMDSCwnH1yUO2e964gO8LZGyv2QkqcgR6TnBU1v+1IFqmeoG+0UJQ==}
+  /@jridgewell/trace-mapping/0.3.9:
+    resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
     dependencies:
       '@jridgewell/resolve-uri': 3.0.5
       '@jridgewell/sourcemap-codec': 1.4.11
@@ -3110,12 +3112,12 @@ packages:
       acorn-walk: 7.2.0
     dev: true
 
-  /acorn-jsx/5.3.2_acorn@7.4.1:
+  /acorn-jsx/5.3.2_acorn@8.7.0:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
     peerDependencies:
       acorn: ^6.0.0 || ^7.0.0 || ^8.0.0
     dependencies:
-      acorn: 7.4.1
+      acorn: 8.7.0
     dev: true
 
   /acorn-walk/7.2.0:
@@ -5210,6 +5212,17 @@ packages:
     dev: true
     optional: true
 
+  /esbuild-runner/2.2.1_esbuild@0.14.36:
+    resolution: {integrity: sha512-VP0VfJJZiZ3cKzdOH59ZceDxx/GzBKra7tiGM8MfFMLv6CR1/cpsvtQ3IsJI3pz7HyeYxtbPyecj3fHwR+3XcQ==}
+    hasBin: true
+    peerDependencies:
+      esbuild: '*'
+    dependencies:
+      esbuild: 0.14.36
+      source-map-support: 0.5.19
+      tslib: 2.3.1
+    dev: true
+
   /esbuild-sunos-64/0.14.36:
     resolution: {integrity: sha512-VkUZS5ftTSjhRjuRLp+v78auMO3PZBXu6xl4ajomGenEm2/rGuWlhFSjB7YbBNErOchj51Jb2OK8lKAo8qdmsQ==}
     engines: {node: '>=12'}
@@ -5652,8 +5665,8 @@ packages:
     resolution: {integrity: sha512-v3JCNCE64umkFpmkFGqzVKsOT0tN1Zr+ueqLZfpV1Ob8e+CEgPWa+OxCoGH3tnhimMKIaBm4m/vaRpJ/krRz2g==}
     engines: {node: ^10.12.0 || >=12.0.0}
     dependencies:
-      acorn: 7.4.1
-      acorn-jsx: 5.3.2_acorn@7.4.1
+      acorn: 8.7.0
+      acorn-jsx: 5.3.2_acorn@8.7.0
       eslint-visitor-keys: 1.3.0
     dev: true
 
@@ -9786,6 +9799,13 @@ packages:
     resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}
     engines: {node: '>=0.10.0'}
     dev: false
+
+  /source-map-support/0.5.19:
+    resolution: {integrity: sha512-Wonm7zOCIJzBGQdB+thsPar0kYuCIzYvxZwlBa87yi/Mdjv7Tip2cyVbLj5o0cFPN4EVkuTwb3GDDyUx2DGnGw==}
+    dependencies:
+      buffer-from: 1.1.2
+      source-map: 0.6.1
+    dev: true
 
   /source-map-support/0.5.21:
     resolution: {integrity: sha512-uBHU3L3czsIyYXKX88fdrGovxdSCoTGDRZ6SYXtSRxLZUzHg5P/66Ht6uoUlHu9EZod+inXhKo3qQgwXUT/y1w==}

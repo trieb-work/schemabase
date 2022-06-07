@@ -74,4 +74,5 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
+    console.log("Seeding DB finished");
   });
