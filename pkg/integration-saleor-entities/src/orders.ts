@@ -178,11 +178,29 @@ export class SaleorOrderSyncService {
         if (!lineItem?.id) continue;
         if (!lineItem?.variant?.sku) continue;
 
+        const productSku = await this.db.productVariant.findUnique({
+          where: {
+            sku_tenantId: {
+              sku: lineItem.variant.sku,
+              tenantId: this.tenant.id,
+            }
+          }
+        })
+        if (!productSku) {
+          this.logger.warn(`No internal product variant found for SKU ${lineItem.variant.sku}! Can't create line Item`);
+          continue;
+        }
+
         const uniqueString = uniqueStringOrderLine(
           prefixedOrderNumber,
           lineItem.variant.sku,
           lineItem.quantity,
         );
+
+        // Before Saleor 3.3.13, the discount value is calculated on the
+        // gross price (which is just bullshit :D) so we have to calculate the discountValueNet
+        // manually
+        const discountValueNet =  lineItem.undiscountedUnitPrice.net.amount - lineItem.totalPrice.net.amount
 
         await this.db.saleorLineItem.upsert({
           where: {
@@ -215,12 +233,13 @@ export class SaleorOrderSyncService {
                     },
                   },
                   quantity: lineItem.quantity,
+                  discountValueNet,
+                  totalPriceNet: lineItem.totalPrice.net.amount,
+                  totalPriceGross: lineItem.totalPrice.gross.amount,
+                  taxPercentage: lineItem.taxRate * 100,
                   productVariant: {
                     connect: {
-                      sku_tenantId: {
-                        sku: lineItem.variant.sku,
-                        tenantId: this.tenant.id,
-                      },
+                      id: productSku.id,
                     },
                   },
                 },
@@ -232,7 +251,23 @@ export class SaleorOrderSyncService {
               },
             },
           },
-          update: {},
+          update: {
+            lineItem: {
+              update: {
+                quantity: lineItem.quantity,
+                discountValueNet,
+                totalPriceNet: lineItem.totalPrice.net.amount,
+                totalPriceGross: lineItem.totalPrice.gross.amount,
+                taxPercentage: lineItem.taxRate * 100,
+                productVariant: {
+                  connect: {
+                    id: productSku.id,
+                  },
+                }, 
+              }
+
+            }
+          },
         });
       }
     }

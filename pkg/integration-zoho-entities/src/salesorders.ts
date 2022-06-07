@@ -215,6 +215,9 @@ export class ZohoSalesOrdersSyncService {
                       },
                     },
                     quantity: lineItem.quantity,
+                    discountValueNet: lineItem.discount,
+                    taxPercentage: lineItem.tax_percentage,
+                    totalPriceNet: lineItem.item_total,
                     productVariant: {
                       connect: {
                         id: productVariantLookup.id,
@@ -238,6 +241,9 @@ export class ZohoSalesOrdersSyncService {
               lineItem: {
                 update: {
                   quantity: lineItem.quantity,
+                  discountValueNet: lineItem.discount,
+                  taxPercentage: lineItem.tax_percentage,
+                  totalPriceNet: lineItem.item_total,
                 },
               },
             },

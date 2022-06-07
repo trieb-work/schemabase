@@ -426,10 +426,23 @@ model LineItem {
   orderId String
 
   quantity Float
+  sku              String
+  // Tax Percentage as number (19, 7)
+  taxPercentage   Float
+  
+  // the total price of the line item.
+  // Optional, as we might have just one of the two values
+  // on hand
+  totalPriceNet Float?
+  totalPriceGross Float?
+
+  // The disount amount, that is applied
+  // to the net price. 
+  discountValueNet Float @default(0)
 
   productVariant   ProductVariant @relation(fields: [productVariantId, sku], references: [id, sku])
   productVariantId String
-  sku              String
+  
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -456,12 +469,19 @@ model Order {
   // We use them as unique identifier between systems
   orderNumber String
 
+  lineItems LineItem[]
+
+  shippingPriceNet   Float?  
+  shippingPriceGross Float?
+  shippingPriceTaxPercentage Float?
+
+  totalPriceNet     Float?
+  totalPriceGross   Float
+
   // The end customers emails where we send transactional emails to
   contacts Contact[]
   language Language  @default(DE)
   packages Package[]
-
-  lineItems LineItem[]
 
   tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String

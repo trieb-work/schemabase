@@ -282,9 +282,13 @@ Table LineItem {
   order Order [not null]
   orderId String [not null]
   quantity Float [not null]
+  sku String [not null]
+  taxPercentage Float [not null]
+  totalPriceNet Float
+  totalPriceGross Float
+  discountValueNet Float [not null, default: 0]
   productVariant ProductVariant [not null]
   productVariantId String [not null]
-  sku String [not null]
   tenant Tenant [not null]
   tenantId String [not null]
   zohoLineItems ZohoLineItem [not null]
