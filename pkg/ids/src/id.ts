@@ -13,6 +13,7 @@ const prefixes = {
   lineItem: "li",
   contact: "c",
   invoice: "i",
+  tax: "tx",
   payment: "p",
   /**
    * Product Variant

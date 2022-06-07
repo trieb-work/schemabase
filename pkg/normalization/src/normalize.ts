@@ -24,6 +24,10 @@ class NormalizationUtility {
     return this.standardNormalize(input);
   }
 
+  public taxNames(input: string) {
+    return this.standardNormalize(input);
+  }
+
   public lineItemStrings(input: string) {
     return input.trim().toLowerCase();
   }

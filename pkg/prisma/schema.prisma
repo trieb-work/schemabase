@@ -253,6 +253,20 @@ model ZohoWarehouse {
   @@unique([id, zohoAppId])
 }
 
+model ZohoTax {
+  // Zoho Internal Id
+  id String
+
+  tax   Tax @relation(fields: [taxId], references: [id], onDelete: Cascade)
+  taxId String
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId String
+
+
+  @@unique([id, zohoAppId])
+}
+
 model ZohoLineItem {
   // Zoho Internal Id
   id String
@@ -319,6 +333,10 @@ model Tax {
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
+
+  zohoTaxes ZohoTax[]
+
+  @@unique([normalizedName, tenantId])
 
 }
 
@@ -789,6 +807,7 @@ model ZohoApp {
   zohoInvoice           ZohoInvoice[]
   zohoSalesOrder        ZohoSalesOrder[]
   zohoLineItems         ZohoLineItem[]
+  zohoTaxes             ZohoTax[]
 }
 
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor

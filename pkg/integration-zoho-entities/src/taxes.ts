@@ -4,15 +4,14 @@ import { PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
 
-
-export interface ZohoWarehouseSyncConfig {
+export interface ZohoTaxSyncConfig {
   logger: ILogger;
   zoho: Zoho;
   db: PrismaClient;
   zohoApp: ZohoApp;
 }
 
-export class ZohoWarehouseSyncService {
+export class ZohoTaxSyncService {
   private readonly logger: ILogger;
 
   private readonly zoho: Zoho;
@@ -21,7 +20,7 @@ export class ZohoWarehouseSyncService {
 
   private readonly zohoApp: ZohoApp;
 
-  public constructor(config: ZohoWarehouseSyncConfig) {
+  public constructor(config: ZohoTaxSyncConfig) {
     this.logger = config.logger;
     this.zoho = config.zoho;
     this.db = config.db;
@@ -36,22 +35,21 @@ export class ZohoWarehouseSyncService {
     // Loop through every item and upsert the corresponding
     // product, productVariant and ZohoItem in the DB
     for (const tax of taxes) {
-      const normalizedWarehouseName = normalizeStrings.warehouseNames(
-        warehouse.warehouse_name,
-      );
+      const normalizedTaxName = normalizeStrings.taxNames(tax.tax_name);
 
-      const warehouseCreateOrConnect = {
+      const taxCreateOrConnect = {
         connectOrCreate: {
           where: {
             normalizedName_tenantId: {
               tenantId,
-              normalizedName: normalizedWarehouseName,
+              normalizedName: normalizedTaxName,
             },
           },
           create: {
-            id: id.id("warehouse"),
-            name: warehouse.warehouse_name,
-            normalizedName: normalizedWarehouseName,
+            id: id.id("tax"),
+            name: tax.tax_name,
+            normalizedName: normalizedTaxName,
+            percentage: tax.tax_percentage,
             tenant: {
               connect: {
                 id: tenantId,
@@ -61,16 +59,16 @@ export class ZohoWarehouseSyncService {
         },
       };
 
-      await this.db.zohoWarehouse.upsert({
+      await this.db.zohoTax.upsert({
         where: {
           id_zohoAppId: {
             zohoAppId: this.zohoApp.id,
-            id: warehouse.warehouse_id,
+            id: tax.tax_id,
           },
         },
         create: {
-          id: warehouse.warehouse_id,
-          warehouse: warehouseCreateOrConnect,
+          id: tax.tax_id,
+          tax: taxCreateOrConnect,
           zohoApp: {
             connect: {
               id: this.zohoApp.id,
@@ -78,10 +76,10 @@ export class ZohoWarehouseSyncService {
           },
         },
         update: {
-          warehouse: warehouseCreateOrConnect,
+          tax: taxCreateOrConnect,
         },
       });
     }
-    this.logger.info(`Sync finished for ${warehouses.length} Zoho Warehouse`);
+    this.logger.info(`Sync finished for ${taxes.length} Zoho Taxes`);
   }
 }
