@@ -267,6 +267,11 @@ export class SaleorOrderSyncService {
                     id: productSku.id,
                   },
                 }, 
+                order: {
+                  update: {
+                    shippingPriceGross: orderDetails.order?.shippingPrice.gross.amount
+                  }
+                }
               }
 
             }
