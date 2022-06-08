@@ -191,7 +191,7 @@ jobs:
         run: make build
 
       - name: Test
-        run: pnpm jest --testPathIgnorePatterns=./e2e/bulkorders -i
+        run: pnpm jest --testPathIgnorePatterns=./e2e/ -i
         env:
           SALEOR_URL: http://localhost:8000/graphql/
           ECI_BASE_URL: http://localhost:3000
