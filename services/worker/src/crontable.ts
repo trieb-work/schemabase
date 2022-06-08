@@ -6,6 +6,7 @@ import {
 } from "@eci/pkg/scheduler/scheduler";
 import { createWorkflowFactory } from "@eci/pkg/scheduler/workflow";
 import { ZohoContactSyncWorkflow } from "./workflows/zohoContactSync";
+import { ZohoMiscSyncWorkflow } from "./workflows/zohoMiscSync";
 
 interface CronClients {
   logger: ILogger;
@@ -63,13 +64,19 @@ export class CronTable {
           [tenantId, id],
         );
       }
-      // if(enabledZohoIntegration.syncOrders){
-      //     this.scheduler.schedule(
-      //         createWorkflowFactory(ZohoSyncOrdersWorkflow, commonWorkflowClients, commonWorkflowConfig),
-      //         { ...commonCronConfig, offset: 1, },
-      //         [enabledZohoIntegration.tenantId, enabledZohoIntegration.id]
-      //     );
-      // }
+
+      // Always sync common entities, but use a different
+      // cron schedule
+      this.scheduler.schedule(
+        createWorkflowFactory(
+          ZohoMiscSyncWorkflow,
+          this.clients,
+          commonWorkflowConfig,
+        ),
+        { ...commonCronConfig, cron: "0 0 * * *", offset: 0 },
+        [tenantId, id],
+      );
+
       // if(enabledZohoIntegration.syncProductStocks){
       //     this.scheduler.schedule(
       //         createWorkflowFactory(ZohoSyncProductStocksWorkflow, commonWorkflowClients, commonWorkflowConfig),
