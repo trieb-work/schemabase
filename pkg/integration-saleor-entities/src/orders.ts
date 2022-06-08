@@ -156,7 +156,13 @@ export class SaleorOrderSyncService {
             },
           },
         },
-        update: {},
+        update: {
+          order: {
+            update: {
+              totalPriceGross: order.total.gross.amount,
+            }
+          }
+        },
       });
 
       const orderDetails = await this.saleorClient.saleorCronOrderDetails({
