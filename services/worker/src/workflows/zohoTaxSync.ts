@@ -1,17 +1,18 @@
+import { ZohoTaxSyncService } from "@eci/pkg/integration-zoho-entities/src/taxes";
 import type { ILogger } from "@eci/pkg/logger";
 import type { PrismaClient } from "@eci/pkg/prisma";
 import type { RuntimeContext, Workflow } from "@eci/pkg/scheduler/workflow";
-import { ZohoContactSyncService } from "@eci/pkg/integration-zoho-entities/src/contacts";
 import { getZohoClientAndEntry } from "@eci/pkg/zoho/src/zoho";
 
-export type ZohoContactSyncWorkflowClients = {
+export type ZohoTaxSyncWorkflowClients = {
   prisma: PrismaClient;
 };
-export type ZohoContactSyncWorkflowConfig = {
+export type ZohoTaxSyncWorkflowConfig = {
   zohoAppId: string;
 };
 
-export class ZohoContactSyncWorkflow implements Workflow {
+
+export class ZohoTaxSyncWorkflow implements Workflow {
   private logger: ILogger;
 
   private prisma: PrismaClient;
@@ -20,34 +21,33 @@ export class ZohoContactSyncWorkflow implements Workflow {
 
   public constructor(
     ctx: RuntimeContext,
-    clients: ZohoContactSyncWorkflowClients,
-    config: ZohoContactSyncWorkflowConfig,
+    clients: ZohoTaxSyncWorkflowClients,
+    config: ZohoTaxSyncWorkflowConfig,
   ) {
     this.logger = ctx.logger.with({
-      workflow: ZohoContactSyncWorkflow.name,
+      workflow: ZohoTaxSyncWorkflow.name,
     });
     this.logger = ctx.logger;
     this.prisma = clients.prisma;
     this.zohoAppId = config.zohoAppId;
   }
 
-  /**
-   * Sync all zoho invoices into ECI-DB
-   */
   public async run(): Promise<void> {
-    this.logger.info("Starting zoho contact sync workflow run");
+    this.logger.info("Starting Zoho Tax sync workflow run");
+
     const { client: zoho, zohoApp } = await getZohoClientAndEntry(
       this.zohoAppId,
       this.prisma,
       undefined,
     );
-    const zohoContactSyncService = new ZohoContactSyncService({
+    const zohoTaxSyncService = new ZohoTaxSyncService({
       logger: this.logger,
       zoho,
       db: this.prisma,
       zohoApp,
     });
-    await zohoContactSyncService.syncToECI();
-    this.logger.info("Finished zoho contact sync workflow run");
+    await zohoTaxSyncService.syncToECI();
+
+    this.logger.info("Finished Zoho Tax sync workflow run");
   }
 }

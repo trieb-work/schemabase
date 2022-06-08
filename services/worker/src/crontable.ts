@@ -6,7 +6,8 @@ import {
 } from "@eci/pkg/scheduler/scheduler";
 import { createWorkflowFactory } from "@eci/pkg/scheduler/workflow";
 import { ZohoContactSyncWorkflow } from "./workflows/zohoContactSync";
-import { ZohoMiscSyncWorkflow } from "./workflows/zohoMiscSync";
+import { ZohoTaxSyncWorkflow } from "./workflows/zohoTaxSync";
+import { ZohoWarehouseSyncWorkflow } from "./workflows/zohoWarehouseSync";
 
 interface CronClients {
   logger: ILogger;
@@ -25,7 +26,7 @@ export class CronTable {
   }
 
   public async scheduleTenantWorkflows(): Promise<void> {
-    this.clients.logger.info("Scheduling all workflows");
+    this.clients.logger.info("Starting the scheduling of all workflows...");
     /**
      * Scheduling of Zoho Workflows
      */
@@ -53,6 +54,28 @@ export class CronTable {
         zohoAppId,
         installedSaleorAppId,
       };
+      if (enabledZohoIntegration.syncWarehouses) {
+        this.scheduler.schedule(
+          createWorkflowFactory(
+            ZohoWarehouseSyncWorkflow,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 0 },
+          [tenantId, id],
+        );
+      }
+      if (enabledZohoIntegration.syncTaxes) {
+        this.scheduler.schedule(
+          createWorkflowFactory(
+            ZohoTaxSyncWorkflow,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 0 },
+          [tenantId, id],
+        );
+      }
       if (enabledZohoIntegration.syncContacts) {
         this.scheduler.schedule(
           createWorkflowFactory(
@@ -64,18 +87,6 @@ export class CronTable {
           [tenantId, id],
         );
       }
-
-      // Always sync common entities, but use a different
-      // cron schedule
-      this.scheduler.schedule(
-        createWorkflowFactory(
-          ZohoMiscSyncWorkflow,
-          this.clients,
-          commonWorkflowConfig,
-        ),
-        { ...commonCronConfig, cron: "0 0 * * *", offset: 0 },
-        [tenantId, id],
-      );
 
       // if(enabledZohoIntegration.syncProductStocks){
       //     this.scheduler.schedule(
