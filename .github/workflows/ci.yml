@@ -201,6 +201,9 @@ jobs:
           ZOHO_ORG_ID: ${{ secrets.ZOHO_ORG_ID }}
           ECI_BASE_URL_FROM_CONTAINER: http://api.eci:3000
           ECI_ENV: development
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          REDIS_PASSWORD: hi
 
       - run: docker-compose logs
         if: always()
