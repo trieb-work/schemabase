@@ -40,7 +40,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
       productDataFeedApp: {
         include: {
           integration: {
-            include: { subscription: true, saleorApp: true },
+            include: { subscription: true, installedSaleorApp: true },
           },
         },
       },
@@ -65,22 +65,28 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
   ctx.logger.info("Creating new product datafeed");
 
-  const { saleorApp } = integration;
+  const { installedSaleorApp } = integration;
 
-  if (!saleorApp.channelSlug) {
+  if (!installedSaleorApp)
+    throw new HttpError(400, "Installed Saleor App is not configured");
+
+  if (!installedSaleorApp.channelSlug) {
     throw new HttpError(
       500,
-      `Saleor app does not have a channel configured: ${saleorApp}`,
+      `Saleor app does not have a channel configured: ${installedSaleorApp}`,
     );
   }
 
-  const saleorClient = newSaleorClient(ctx, saleorApp.domain);
+  const saleorClient = newSaleorClient(ctx, installedSaleorApp.domain);
   const generator = new ProductDataFeedGenerator({
     saleorClient,
-    channelSlug: saleorApp.channelSlug,
+    channelSlug: installedSaleorApp.channelSlug,
 
     logger: ctx.logger.with({
-      saleor: { domain: saleorApp.domain, channel: saleorApp.channelSlug },
+      saleor: {
+        domain: installedSaleorApp.domain,
+        channel: installedSaleorApp.channelSlug,
+      },
     }),
   });
 

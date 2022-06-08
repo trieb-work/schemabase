@@ -10,10 +10,18 @@ const prefixes = {
   package: "p",
   email: "em",
   order: "o",
+  lineItem: "li",
   contact: "c",
   invoice: "i",
+  tax: "tx",
   payment: "p",
-  article: "a",
+  /**
+   * Product Variant
+   */
+  variant: "pro_v",
+  product: "pro",
+  company: "com",
+  warehouse: "wrh",
   /**
    * Only used in automatic tests
    */

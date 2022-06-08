@@ -64,7 +64,10 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   if (saleorEvent === "payment_list_gateways") {
     const vorkassePaymentService = new VorkassePaymentService({
       logger: ctx.logger.with({
-        saleor: { domain: saleorApp.domain, channel: saleorApp.channelSlug },
+        saleor: {
+          domain: saleorApp.domain,
+          channel: installedSaleorApp.channelSlug,
+        },
       }),
     });
     const paymentGateways = await vorkassePaymentService.paymentListGateways(

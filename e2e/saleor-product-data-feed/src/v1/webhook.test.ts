@@ -150,12 +150,18 @@ beforeAll(async () => {
   /**
    * Upserting because there is a unique constraint on the domain
    */
-  const saleorApp = await prisma.saleorApp.create({
+  await prisma.saleorApp.create({
+    include: { installedSaleorApp: true },
     data: {
       id: id.id("test"),
       name: id.id("test"),
       tenantId: tenant.id,
-      channelSlug: channel.slug,
+      installedSaleorApp: {
+        create: {
+          id: id.id("test"),
+          token: "3545",
+        },
+      },
       domain: "http://saleor.eci:8000",
     },
   });
@@ -188,7 +194,6 @@ beforeAll(async () => {
       tenantId: tenant.id,
       enabled: true,
       productDataFeedAppId: productDataFeed.id,
-      saleorAppId: saleorApp.id,
     },
   });
   await prisma.subscription.create({

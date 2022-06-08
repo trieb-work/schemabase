@@ -1,0 +1,140 @@
+query saleorCronOrdersOverview($createdGte: Date, $after: String, $first: Int) {
+  orders(
+    first: $first
+    after: $after
+    filter: { created: { gte: $createdGte } }
+  ) {
+    pageInfo {
+      hasNextPage
+      startCursor
+      endCursor
+    }
+    edges {
+      node {
+        id
+        created
+        status
+        paymentStatus
+        number
+        total {
+          currency
+          gross {
+            amount
+          }
+        }
+      }
+    }
+  }
+}
+
+query saleorCronOrderDetails($id: ID!) {
+  order(id: $id) {
+    id
+    created
+    number
+    voucher {
+      id
+      code
+      type
+    }
+    shippingPrice {
+      currency
+      tax {
+        amount
+      }
+      net {
+        amount
+      }
+      gross {
+        amount
+      }
+    }
+    lines {
+      id
+      variant {
+        sku
+      }
+      quantity
+      unitDiscountType
+      unitDiscountValue
+      undiscountedUnitPrice {
+        currency
+        gross {
+          amount
+        }
+        net {
+          amount
+        }
+      }
+      taxRate
+      totalPrice {
+        gross {
+          amount
+        }
+        net {
+          amount
+        }
+        currency
+      }
+    }
+    undiscountedTotal {
+      net {
+        amount
+      }
+      gross {
+        amount
+      }
+    }
+    total {
+      currency
+      gross {
+        amount
+      }
+      net {
+        amount
+      }
+    }
+    paymentStatus
+  }
+}
+
+query saleorCronPayments($createdGte: Date, $after: String) {
+  orders(first: 100, after: $after, filter: { created: { gte: $createdGte } }) {
+    totalCount
+    pageInfo {
+      hasNextPage
+      endCursor
+      startCursor
+    }
+    edges {
+      node {
+        id
+        channel {
+          id
+          name
+        }
+        payments {
+          id
+          gateway
+          created
+          modified
+          order {
+            id
+            created
+            number
+          }
+          paymentMethodType
+          transactions {
+            id
+            # token is the Braintree Transaction ID
+            token
+          }
+          total {
+            currency
+            amount
+          }
+        }
+      }
+    }
+  }
+}

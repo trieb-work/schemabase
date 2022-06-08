@@ -15,20 +15,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - uses: actions/setup-node@v2
+      - uses: pnpm/action-setup@v2
         with:
-          node-version: "14"
-
-      - name: Cache pnpm modules
-        uses: actions/cache@v2
+          version: 7
+      - uses: actions/setup-node@v3
         with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: ${{ runner.os }}-
-
-      - name: Install
-        run: npm i -g pnpm && pnpm install
+          node-version: '14'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
 
       - name: Build
         run: make build
@@ -137,7 +131,6 @@ jobs:
       fail-fast: false
       matrix:
         saleor: [
-            "registry.gitlab.com/trieb.work/saleor:3.0.0-b.13-triebwork1", #v3 custom
             "ghcr.io/saleor/saleor:3.0.0"
           ]
 
@@ -145,16 +138,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - uses: actions/setup-node@v2
+      - uses: pnpm/action-setup@v2
         with:
-          node-version: 14
-      - name: Cache pnpm modules
-        uses: actions/cache@v2
+          version: 7
+      - uses: actions/setup-node@v3
         with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-
+          node-version: '14'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
 
     
 
@@ -169,13 +160,6 @@ jobs:
           docker load -i images/api/api.tar
           docker load -i images/worker/worker.tar
 
-      - uses: actions/cache@v2
-        with:
-          path: "**/node_modules"
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm.lock') }}
-
-      - name: Install
-        run: npm i -g pnpm && pnpm install
 
         # Necesarry to test against the predefined saleor versions
       - name: Use docker-compose ci config
@@ -185,8 +169,7 @@ jobs:
         run: docker-compose up -d
         env:
           SALEOR_IMAGE: ${{ matrix.saleor }}
-          DATABASE_URL: postgres://postgres:postgres@db.eci:5432/postgres
-          DATABASE_URL_POOL: postgres://postgres:postgres@db.eci:5432/postgres
+          DATABASE_URL: mysql://eci:eci@eci.mysql.db/eci
           ECI_BASE_URL: http://localhost:3000
           ECI_BASE_URL_FROM_CONTAINER: http://api.eci:3000
           SALEOR_URL_FROM_CONTAINER: http://saleor.eci:8000/graphql/
@@ -200,24 +183,27 @@ jobs:
         run: make migrate-saleor
 
       - name: Migrate eci schema
-        run: make db-push
+        run: pnpm prisma migrate reset -f
         env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+          DATABASE_URL: mysql://eci:eci@localhost/eci
 
       - name: Generate code
         run: make build
 
       - name: Test
-        run: pnpm jest --testPathIgnorePatterns=./e2e/bulkorders -i
+        run: pnpm jest --testPathIgnorePatterns="./e2e/|./services/worker/" -i
         env:
           SALEOR_URL: http://localhost:8000/graphql/
           ECI_BASE_URL: http://localhost:3000
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
-          DATABASE_URL_POOL: postgres://postgres:postgres@db.eci:5432/postgres
+          DATABASE_URL: mysql://eci:eci@localhost/eci
           ZOHO_CLIENT_SECRET: ${{ secrets.ZOHO_CLIENT_SECRET }}
           ZOHO_CLIENT_ID: ${{ secrets.ZOHO_CLIENT_ID }}
           ZOHO_ORG_ID: ${{ secrets.ZOHO_ORG_ID }}
           ECI_BASE_URL_FROM_CONTAINER: http://api.eci:3000
+          ECI_ENV: development
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          REDIS_PASSWORD: hi
 
       - run: docker-compose logs
         if: always()
