@@ -788,12 +788,15 @@ Enum OrderStatus {
   unconfirmed
   confirmed
   closed
+  canceled
 }
 
 Enum OrderPaymentStatus {
   unpaid
   fullyPaid
   partiallyPaid
+  fullyRefunded
+  partiallyRefunded
 }
 
 Enum OrderShipmentStatus {

@@ -5,12 +5,16 @@ import {
   SaleorCronOrdersOverviewQuery,
   queryWithPagination,
   SaleorCronOrderDetailsQuery,
+  OrderStatus,
+  PaymentChargeStatusEnum
 } from "@eci/pkg/saleor";
 import {
   InstalledSaleorApp,
   PrismaClient,
   SaleorZohoIntegration,
   Tenant,
+  OrderStatus as InternalOrderStatus,
+  OrderPaymentStatus as InternalOrderPaymentStatus,
 } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { setHours, subDays, subYears, format } from "date-fns";
@@ -120,6 +124,31 @@ export class SaleorOrderSyncService {
       }
       const prefixedOrderNumber = `${this.saleorZohoIntegration.orderPrefix}-${order.number}`;
 
+      const orderStatusMapping :{ [key in OrderStatus]: InternalOrderStatus} = {
+          [OrderStatus.Canceled]: "canceled",
+          [OrderStatus.Draft]: "draft",
+          [OrderStatus.Unfulfilled]: "confirmed",
+          [OrderStatus.Fulfilled]: "confirmed",
+          [OrderStatus.PartiallyFulfilled]: "confirmed",
+          [OrderStatus.Returned]: "confirmed",
+          [OrderStatus.Unconfirmed]: "unconfirmed",
+          [OrderStatus.PartiallyReturned]: "confirmed",
+      }
+      const orderStatus = orderStatusMapping[order.status]
+
+      const paymentStatusMapping :{ [key in PaymentChargeStatusEnum]: InternalOrderPaymentStatus} = {
+        [PaymentChargeStatusEnum.Cancelled]: "unpaid",
+        [PaymentChargeStatusEnum.FullyCharged]: "fullyPaid",
+        [PaymentChargeStatusEnum.FullyRefunded]: "fullyRefunded",
+        [PaymentChargeStatusEnum.NotCharged]: "unpaid",
+        [PaymentChargeStatusEnum.PartiallyCharged]: "partiallyPaid",
+        [PaymentChargeStatusEnum.PartiallyRefunded]: "partiallyRefunded",
+        [PaymentChargeStatusEnum.Pending]: "unpaid",
+        [PaymentChargeStatusEnum.Refused]: "unpaid",
+      }
+
+      const paymentStatus = paymentStatusMapping[order.paymentStatus]
+      
       const upsertedOrder = await this.db.saleorOrder.upsert({
         where: {
           id_installedSaleorAppId: {
@@ -147,6 +176,8 @@ export class SaleorOrderSyncService {
                 id: id.id("order"),
                 orderNumber: prefixedOrderNumber,
                 totalPriceGross: order.total.gross.amount,
+                orderStatus,
+                paymentStatus,
                 tenant: {
                   connect: {
                     id: this.tenant.id,

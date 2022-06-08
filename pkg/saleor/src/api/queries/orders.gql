@@ -13,6 +13,8 @@ query saleorCronOrdersOverview($createdGte: Date, $after: String, $first: Int) {
       node {
         id
         created
+        status
+        paymentStatus
         number
         total {
           currency
@@ -33,6 +35,7 @@ query saleorCronOrderDetails($id: ID!) {
     voucher {
       id
       code
+      type
     }
     shippingPrice {
       currency
@@ -74,6 +77,14 @@ query saleorCronOrderDetails($id: ID!) {
         currency
       }
     }
+    undiscountedTotal {
+      net {
+        amount
+      }
+      gross {
+        amount
+      }
+    }
     total {
       currency
       gross {
@@ -83,8 +94,10 @@ query saleorCronOrderDetails($id: ID!) {
         amount
       }
     }
+    paymentStatus
   }
 }
+
 
 query saleorCronPayments($createdGte: Date, $after: String) {
   orders(first: 100, after: $after, filter: { created: { gte: $createdGte } }) {

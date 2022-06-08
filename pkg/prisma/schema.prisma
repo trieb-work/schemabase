@@ -482,13 +482,16 @@ enum OrderStatus {
   draft
   unconfirmed
   confirmed
-  // The order is fulfilled + paid
+  // The order is fulfilled + paid -> finished
   closed
+  canceled
 }
 enum OrderPaymentStatus {
   unpaid
   fullyPaid
   partiallyPaid
+  fullyRefunded
+  partiallyRefunded
 }
 enum OrderShipmentStatus {
   pending

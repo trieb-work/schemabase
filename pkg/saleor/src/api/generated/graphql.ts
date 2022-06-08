@@ -10085,6 +10085,8 @@ export type SaleorCronOrdersOverviewQuery = {
         __typename?: "Order";
         id: string;
         created: any;
+        status: OrderStatus;
+        paymentStatus: PaymentChargeStatusEnum;
         number?: string | null;
         total: {
           __typename?: "TaxedMoney";
@@ -10107,7 +10109,13 @@ export type SaleorCronOrderDetailsQuery = {
     id: string;
     created: any;
     number?: string | null;
-    voucher?: { __typename?: "Voucher"; id: string; code: string } | null;
+    paymentStatus: PaymentChargeStatusEnum;
+    voucher?: {
+      __typename?: "Voucher";
+      id: string;
+      code: string;
+      type: VoucherTypeEnum;
+    } | null;
     shippingPrice: {
       __typename?: "TaxedMoney";
       currency: string;
@@ -10136,6 +10144,11 @@ export type SaleorCronOrderDetailsQuery = {
         net: { __typename?: "Money"; amount: number };
       };
     } | null>;
+    undiscountedTotal: {
+      __typename?: "TaxedMoney";
+      net: { __typename?: "Money"; amount: number };
+      gross: { __typename?: "Money"; amount: number };
+    };
     total: {
       __typename?: "TaxedMoney";
       currency: string;
@@ -10540,6 +10553,8 @@ export const SaleorCronOrdersOverviewDocument = gql`
         node {
           id
           created
+          status
+          paymentStatus
           number
           total {
             currency
@@ -10561,6 +10576,7 @@ export const SaleorCronOrderDetailsDocument = gql`
       voucher {
         id
         code
+        type
       }
       shippingPrice {
         currency
@@ -10602,6 +10618,14 @@ export const SaleorCronOrderDetailsDocument = gql`
           currency
         }
       }
+      undiscountedTotal {
+        net {
+          amount
+        }
+        gross {
+          amount
+        }
+      }
       total {
         currency
         gross {
@@ -10611,6 +10635,7 @@ export const SaleorCronOrderDetailsDocument = gql`
           amount
         }
       }
+      paymentStatus
     }
   }
 `;
