@@ -6,7 +6,7 @@ import {
   queryWithPagination,
   SaleorCronOrderDetailsQuery,
   OrderStatus,
-  PaymentChargeStatusEnum
+  PaymentChargeStatusEnum,
 } from "@eci/pkg/saleor";
 import {
   InstalledSaleorApp,
@@ -124,7 +124,8 @@ export class SaleorOrderSyncService {
       }
       const prefixedOrderNumber = `${this.saleorZohoIntegration.orderPrefix}-${order.number}`;
 
-      const orderStatusMapping :{ [key in OrderStatus]: InternalOrderStatus} = {
+      const orderStatusMapping: { [key in OrderStatus]: InternalOrderStatus } =
+        {
           [OrderStatus.Canceled]: "canceled",
           [OrderStatus.Draft]: "draft",
           [OrderStatus.Unfulfilled]: "confirmed",
@@ -133,10 +134,12 @@ export class SaleorOrderSyncService {
           [OrderStatus.Returned]: "confirmed",
           [OrderStatus.Unconfirmed]: "unconfirmed",
           [OrderStatus.PartiallyReturned]: "confirmed",
-      }
-      const orderStatus = orderStatusMapping[order.status]
+        };
+      const orderStatus = orderStatusMapping[order.status];
 
-      const paymentStatusMapping :{ [key in PaymentChargeStatusEnum]: InternalOrderPaymentStatus} = {
+      const paymentStatusMapping: {
+        [key in PaymentChargeStatusEnum]: InternalOrderPaymentStatus;
+      } = {
         [PaymentChargeStatusEnum.Cancelled]: "unpaid",
         [PaymentChargeStatusEnum.FullyCharged]: "fullyPaid",
         [PaymentChargeStatusEnum.FullyRefunded]: "fullyRefunded",
@@ -145,10 +148,10 @@ export class SaleorOrderSyncService {
         [PaymentChargeStatusEnum.PartiallyRefunded]: "partiallyRefunded",
         [PaymentChargeStatusEnum.Pending]: "unpaid",
         [PaymentChargeStatusEnum.Refused]: "unpaid",
-      }
+      };
 
-      const paymentStatus = paymentStatusMapping[order.paymentStatus]
-      
+      const paymentStatus = paymentStatusMapping[order.paymentStatus];
+
       const upsertedOrder = await this.db.saleorOrder.upsert({
         where: {
           id_installedSaleorAppId: {

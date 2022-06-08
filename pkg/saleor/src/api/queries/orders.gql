@@ -98,7 +98,6 @@ query saleorCronOrderDetails($id: ID!) {
   }
 }
 
-
 query saleorCronPayments($createdGte: Date, $after: String) {
   orders(first: 100, after: $after, filter: { created: { gte: $createdGte } }) {
     totalCount

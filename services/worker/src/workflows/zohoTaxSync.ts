@@ -11,7 +11,6 @@ export type ZohoTaxSyncWorkflowConfig = {
   zohoAppId: string;
 };
 
-
 export class ZohoTaxSyncWorkflow implements Workflow {
   private logger: ILogger;
 
