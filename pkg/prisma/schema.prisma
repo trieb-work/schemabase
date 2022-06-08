@@ -478,6 +478,25 @@ model LineItem {
   @@unique([uniqueString, tenantId])
 }
 
+enum OrderStatus {
+  draft
+  unconfirmed
+  confirmed
+  // The order is fulfilled + paid
+  closed
+}
+enum OrderPaymentStatus {
+  unpaid
+  fullyPaid
+  partiallyPaid
+}
+enum OrderShipmentStatus {
+  pending
+  partiallyShipped
+  shipped
+  delivered
+}
+
 // The ECI internal Order model.
 model Order {
   // eci internal id
@@ -488,6 +507,9 @@ model Order {
   // deprecated!
   externalOrderId String?
 
+  orderStatus   OrderStatus @default(draft)
+  paymentStatus OrderPaymentStatus @default(unpaid)
+  shipmentStatus OrderShipmentStatus @default(pending)
 
   // Order-Numbers have to be unique per Tenant!
   // We use them as unique identifier between systems
@@ -1035,6 +1057,7 @@ model SaleorZohoIntegration {
   syncInvoices      Boolean @default(false)
   syncPayments      Boolean @default(false)
   syncProductStocks Boolean @default(false)
+  syncTaxes         Boolean @default(false)
 
   // How frequent the synchronisation should run. Default once per hour.
   cronScheduleZoho   String @default("0/15 * * * *")
