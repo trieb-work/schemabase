@@ -160,8 +160,8 @@ export class SaleorOrderSyncService {
           order: {
             update: {
               totalPriceGross: order.total.gross.amount,
-            }
-          }
+            },
+          },
         },
       });
 
