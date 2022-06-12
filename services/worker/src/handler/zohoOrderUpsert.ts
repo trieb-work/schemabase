@@ -1,7 +1,7 @@
 import { EventHandler, EventSchemaRegistry, OnSuccess } from "@eci/pkg/events";
 
 import { id } from "@eci/pkg/ids";
-import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
+import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts";
 import {
   PrismaClient,
   Language,

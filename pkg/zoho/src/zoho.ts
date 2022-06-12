@@ -1,4 +1,4 @@
-import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
+import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts";
 import type { Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 
 export async function prismaZohoAppEntryToClient(

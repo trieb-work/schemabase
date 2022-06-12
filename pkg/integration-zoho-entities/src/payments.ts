@@ -1,4 +1,4 @@
-import { Zoho } from "@trieb.work/zoho-ts/dist/v2";
+import { Zoho } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import {
   PrismaClient,

@@ -8,7 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from "@jest/globals";
 import { randomUUID } from "crypto";
 import { sha256 } from "@eci/pkg/hash";
 import { env } from "@eci/pkg/env";
-import { SalesOrder, Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
+import { SalesOrder, Zoho, ZohoApiClient } from "@trieb.work/zoho-ts";
 import { config } from "dotenv";
 
 config({ path: ".env" });

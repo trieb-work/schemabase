@@ -1,5 +1,5 @@
 import { OrderEvent } from "@eci/pkg/integration-bulkorders";
-import { SalesOrder, Zoho } from "@trieb.work/zoho-ts/dist/v2";
+import { SalesOrder, Zoho } from "@trieb.work/zoho-ts";
 import { expect } from "@jest/globals";
 export async function verifySyncedOrders(
   zoho: Zoho,

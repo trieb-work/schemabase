@@ -1,4 +1,4 @@
-import { Zoho, Contact } from "@trieb.work/zoho-ts/dist/v2";
+import { Zoho, Contact, ContactPerson } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
@@ -77,6 +77,7 @@ export class ZohoContactSyncService {
         );
         continue;
       }
+
       const lowercaseEmail = contact.email.toLowerCase();
 
       // Only create a company if the contact is marked as "business" in Zoho
@@ -108,6 +109,67 @@ export class ZohoContactSyncService {
         },
         create: {
           id: contact.contact_id,
+          createdAt: new Date(contact.created_time),
+          updatedAt: new Date(contact.last_modified_time),
+          zohoApp: {
+            connect: {
+              id: this.zohoApp.id,
+            },
+          },
+        },
+        update: {
+          createdAt: new Date(contact.created_time),
+          updatedAt: new Date(contact.last_modified_time),
+        },
+      });
+
+      await this.db.contact.update({
+        where: {
+          email_tenantId: {
+            tenantId,
+            email: lowercaseEmail,
+          },
+        },
+        data: {
+          company: companyCreate,
+        },
+      });
+    }
+
+    // we get all contact persons now. We can't filter contact persons API calls
+    // by timestamps or anything, so this might take a lot of API calls and should not
+    // be run too frequently
+    const contactPersons: ContactPerson[] =
+      await this.zoho.contactperson.list();
+
+    for (const contactPerson of contactPersons) {
+      const lowercaseEmail = contactPerson.email.toLowerCase();
+
+      await this.db.zohoContactPerson.upsert({
+        where: {
+          id_zohoAppId: {
+            id: contactPerson.contact_person_id,
+            zohoAppId: this.zohoApp.id,
+          },
+        },
+        create: {
+          id: contactPerson.contact_person_id,
+          zohoContact: {
+            connect: {
+              id_zohoAppId: {
+                id: contactPerson.contact_person_id,
+                zohoAppId: this.zohoApp.id,
+              },
+            },
+          },
+          zohoApp: {
+            connect: {
+              id: this.zohoApp.id,
+            },
+          },
+          firstName: contactPerson.first_name,
+          lastName: contactPerson.last_name,
+          email: lowercaseEmail,
           contact: {
             connectOrCreate: {
               where: {
@@ -118,7 +180,6 @@ export class ZohoContactSyncService {
               },
               create: {
                 id: id.id("contact"),
-                company: companyCreate,
                 email: lowercaseEmail,
                 tenant: {
                   connect: {
@@ -128,29 +189,11 @@ export class ZohoContactSyncService {
               },
             },
           },
-          createdAt: new Date(contact.created_time),
-          updatedAt: new Date(contact.last_modified_time),
-          firstName: contact.first_name,
-          lastName: contact.last_name,
-          email: lowercaseEmail,
-          zohoApp: {
-            connect: {
-              id: this.zohoApp.id,
-            },
-          },
         },
         update: {
-          createdAt: new Date(contact.created_time),
-          updatedAt: new Date(contact.last_modified_time),
-          firstName: contact.first_name,
-          lastName: contact.last_name,
+          firstName: contactPerson.first_name,
+          lastName: contactPerson.last_name,
           email: lowercaseEmail,
-          contact: {
-            update: {
-              email: lowercaseEmail,
-              company: companyCreate,
-            },
-          },
         },
       });
     }

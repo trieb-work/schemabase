@@ -1,6 +1,6 @@
 import { EntryEvent } from "./types";
 import { z } from "zod";
-import { CreateSalesOrder, Zoho } from "@trieb.work/zoho-ts/dist/v2";
+import { CreateSalesOrder, Zoho } from "@trieb.work/zoho-ts";
 import { sha256 } from "@eci/pkg/hash";
 
 import { ILogger } from "@eci/pkg/logger";

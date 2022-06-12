@@ -1,4 +1,4 @@
-import type { Zoho } from "@trieb.work/zoho-ts/dist/v2";
+import type { Zoho } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
