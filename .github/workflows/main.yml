@@ -85,23 +85,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: cat ~/.docker/config.json
-
-      - name: Create the image-pull-secret in Kubernetes
-        run: |
-          kubectl create secret docker-registry regcred \
-            --save-config --dry-run=client \
-            --from-file=.dockerconfigjson=$HOME/.docker/config.json\
-            -o yaml |
-          kubectl apply -f -
-
       - name: Run helm deploy
         run: >
           helm upgrade eci-worker-v2 ./services/worker/helm-chart
           --install
           --create-namespace
           --namespace=eci-prod
-          --set=imagePullSecret="regcred"
+          --set=imagePullSecret="github"
           --set=image.imageName="${{ env.REGISTRY }}/${{ github.repository }}/worker@${{ needs.build.outputs.docker_sha }}"
           --set=eciEnv="production"
           --set=databaseUrl="${{ secrets.DATABASE_URL }}"
@@ -161,7 +151,7 @@ jobs:
           --install
           --create-namespace
           --namespace=eci-prod
-          --set=imagePullSecret="regcred"
+          --set=imagePullSecret="github"
           --set=image.imageName="${{ env.REGISTRY }}/${{ github.repository }}/logdrain@${{ needs.build.outputs.docker_sha }}"
           --set=eciEnv="production"
           --set=databaseUrl="${{ secrets.DATABASE_URL }}"
