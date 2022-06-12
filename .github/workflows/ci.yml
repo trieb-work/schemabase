@@ -158,13 +158,6 @@ jobs:
         env: 
           SALEOR_IMAGE: ${{ matrix.saleor }}
 
-      # In this step, this action saves a list of existing images,
-      # the cache is created without them in the post run.
-      # It also restores the cache if it exists.
-      - uses: satackey/action-docker-layer-caching@v0.0.11
-        # Ignore the failure of a step and avoid terminating the job.
-        continue-on-error: true
-
       - name: Start services
         run: docker-compose up -d
         env:
@@ -174,7 +167,9 @@ jobs:
           ECI_BASE_URL_FROM_CONTAINER: http://api.eci:3000
           SALEOR_URL_FROM_CONTAINER: http://saleor.eci:8000/graphql/
           SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
-
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          REDIS_PASSWORD: hi
           ECI_ENV: ci
           VERCEL_TOKEN: ${{secrets.VERCEL_TOKEN}}
           KAFKA_BROKER_URL: "kafka:9092"

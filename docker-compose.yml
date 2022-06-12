@@ -50,7 +50,7 @@ services:
       - ECI_ENV=dev
   eci_worker:
     container_name: worker.eci
-
+    image: ghcr.io/trieb-work/eci/worker
     build:
       context: .
       dockerfile: ./services/worker/Dockerfile
