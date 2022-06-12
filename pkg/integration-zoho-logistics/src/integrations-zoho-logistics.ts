@@ -1,4 +1,4 @@
-import { ZohoClientInstance } from "@trieb.work/zoho-ts";
+import { Zoho } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { HttpError } from "@eci/pkg/errors";
 
@@ -39,14 +39,14 @@ interface CustomFields {
  * They will call our api and we either return cached data or fetch fresh data from zoho.
  */
 export class LogisticStats implements ZohoLogisticsService {
-  private readonly zoho: ZohoClientInstance;
+  private readonly zoho: Zoho;
 
   private readonly logger: ILogger;
 
   private readonly customFields: CustomFields;
 
   private constructor(config: {
-    zoho: ZohoClientInstance;
+    zoho: Zoho;
     logger: ILogger;
     customFields: CustomFields;
   }) {
@@ -56,7 +56,7 @@ export class LogisticStats implements ZohoLogisticsService {
   }
 
   public static async new(config: {
-    zoho: ZohoClientInstance;
+    zoho: Zoho;
     logger: ILogger;
     customFields: CustomFields;
   }): Promise<LogisticStats> {
@@ -74,8 +74,6 @@ export class LogisticStats implements ZohoLogisticsService {
       );
     }
 
-    await instance.zoho.authenticate();
-
     return instance;
   }
 
@@ -83,23 +81,23 @@ export class LogisticStats implements ZohoLogisticsService {
     this.logger.debug("fetching salesorders from Zoho");
     const now = new Date().toUTCString();
     const currentOrdersReady = (
-      await this.zoho.searchSalesOrdersWithScrolling({
-        customViewID: this.customFields.currentOrdersReadyToFulfill,
+      await this.zoho.salesOrder.list({
+        customViewId: this.customFields.currentOrdersReadyToFulfill,
       })
     ).length;
     const currentBulkOrders = (
-      await this.zoho.searchSalesOrdersWithScrolling({
-        customViewID: this.customFields.currentBulkOrders,
+      await this.zoho.salesOrder.list({
+        customViewId: this.customFields.currentBulkOrders,
       })
     ).length;
     const nextFiveDaysOrders = (
-      await this.zoho.searchSalesOrdersWithScrolling({
-        customViewID: this.customFields.nextFiveDaysOrders,
+      await this.zoho.salesOrder.list({
+        customViewId: this.customFields.nextFiveDaysOrders,
       })
     ).length;
     const nextFiveDaysBulkOrders = (
-      await this.zoho.searchSalesOrdersWithScrolling({
-        customViewID: this.customFields.nextFiveDaysBulkOrders,
+      await this.zoho.salesOrder.list({
+        customViewId: this.customFields.nextFiveDaysBulkOrders,
       })
     ).length;
 

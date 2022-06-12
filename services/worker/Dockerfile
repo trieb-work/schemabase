@@ -21,13 +21,13 @@ WORKDIR /eci/services/worker/dist
 RUN cp /eci/node_modules/.pnpm/@prisma+client@*_prisma@*/node_modules/.prisma/client/* .
 
 
- FROM node:lts
- WORKDIR /eci
- ARG commit_sha
- ENV GIT_COMMIT_SHA=$commit_sha
+FROM node:lts
+WORKDIR /eci
+ARG commit_sha
+ENV GIT_COMMIT_SHA=$commit_sha
 
- COPY --from=build /eci/services/worker/dist/* .
-  COPY --from=build /eci/node_modules/winston-elasticsearch/index-template-mapping.json .
+COPY --from=build /eci/services/worker/dist/* ./
+COPY --from=build /eci/node_modules/winston-elasticsearch/index-template-mapping.json .
 
 
- CMD [ "node", "main.js" ]
+CMD [ "node", "main.js" ]

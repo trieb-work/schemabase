@@ -10,6 +10,6 @@ export type {
 
 export class PrismaClient extends BaseClient {
   constructor() {
-    super({ datasources: { db: { url: env.require("DATABASE_URL_POOL") } } });
+    super({ datasources: { db: { url: env.require("DATABASE_URL") } } });
   }
 }

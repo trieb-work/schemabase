@@ -3,42 +3,40 @@ version: "3.9"
 services:
   # Our own database where we store tenants and config
   eci_db:
-    container_name: eci.db
-    image: postgres:13
+    container_name: eci.mysql.db
+    image: mysql:8
+    command: --default-authentication-plugin=mysql_native_password
     ports:
-      # Must be exposed on the host for prisma to migrate and seed
-      - 5432:5432
+      - 3306:3306
     environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - MYSQL_ROOT_PASSWORD=eci
+      - MYSQL_USER=eci
+      - MYSQL_PASSWORD=eci
+      - MYSQL_DATABASE=eci
 
   # Nextjs Serverless application to receive api from various services
   eci_api:
-    image: eci_api
     build:
       context: .
       dockerfile: ./services/api/Dockerfile
-
+      args:
+        - DATABASE_URL="${DATABASE_URL}"
     container_name: api.eci
     ports:
       - 3000:3000
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@eci.db:5432/postgres
-      DATABASE_URL_POOL: postgresql://postgres:postgres@eci.db:5432/postgres
-
-      KAFKA_BROKER_URL: kafka:9092
-      SIGNING_KEY: anything
-      NODE_ENV: production
-      ECI_BASE_URL: http://api.eci:3000
-      ECI_ENV: development
-      JWT_SIGNING_KEY: ${JWT_SIGNING_KEY}
+      - DATABASE_URL="${DATABASE_URL}"
+      - SHADOW_DATABASE_URL="${SHADOW_DATABASE_URL}"
+      - KAFKA_BROKER_URL=kafka:9092
+      - SIGNING_KEY=anything
+      - NODE_ENV=production
+      - ECI_BASE_URL=http://api.eci:3000
+      - ECI_ENV=development
+      - JWT_SIGNING_KEY=${JWT_SIGNING_KEY}
     depends_on:
-      - eci_db
       - kafka
 
   logdrain:
-    image: logdrain
     build:
       context: .
       dockerfile: ./services/logdrain/Dockerfile
@@ -47,41 +45,31 @@ services:
     ports:
       - 4000:3000
     environment:
-      DATABASE_URL: ${DATABASE_URL}
-      DATABASE_URL_POOL: ${DATABASE_URL_POOL}
-
-      NODE_ENV: production
-      ECI_ENV: dev"
-
-    depends_on:
-      - eci_db
-
+      - DATABASE_URL="${DATABASE_URL}"
+      - NODE_ENV=production
+      - ECI_ENV=dev
   eci_worker:
-    image: eci_worker
     container_name: worker.eci
-
     build:
       context: .
       dockerfile: ./services/worker/Dockerfile
       args:
         - commit_sha=development
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@eci.db:5432/postgres
-      DATABASE_URL_POOL: postgresql://postgres:postgres@eci.db:5432/postgres
-      KAFKA_BROKER_URL: kafka:9092
-      SIGNING_KEY: anything
-      NODE_ENV: production
-      ECI_ENV: development
-      ZOHO_ZCSRF_TOKEN: ${ZOHO_ZCSRF_TOKEN}
-      ZOHO_COOKIES: ${ZOHO_COOKIES}
-      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+      - DATABASE_URL="${DATABASE_URL}"
+      - SHADOW_DATABASE_URL="${SHADOW_DATABASE_URL}"
+      - KAFKA_BROKER_URL=kafka:9092
+      - SIGNING_KEY=anything
+      - NODE_ENV=production
+      - ECI_ENV=development
+      - ZOHO_ZCSRF_TOKEN=${ZOHO_ZCSRF_TOKEN}
+      - ZOHO_COOKIES=${ZOHO_COOKIES}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
 
     depends_on:
-      - eci_db
       - kafka
 
   saleor_api:
-    #image: registry.gitlab.com/trieb.work/saleor:3.0.0-b.13-triebwork1
     image: ghcr.io/saleor/saleor:3.0.0
     container_name: saleor.eci
     ports:
@@ -124,3 +112,10 @@ services:
       ALLOW_PLAINTEXT_LISTENER: "yes"
     depends_on:
       - zookeeper
+
+  redis:
+    container_name: redis.eci
+    image: redis:7
+    command: redis-server --requirepass hi
+    ports:
+      - 6379:6379

@@ -2,14 +2,421 @@
 //// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 //// ------------------------------------------------------
 
+Table SaleorOrder {
+  id String [not null]
+  createdAt DateTime [not null]
+  order Order [not null]
+  orderId String [not null]
+  orderNumber String [not null]
+  installedSaleorApp InstalledSaleorApp [not null]
+  installedSaleorAppId String [not null]
+  saleorPayment SaleorPayment [not null]
+
+  indexes {
+    (id, installedSaleorAppId) [unique]
+  }
+}
+
+Table SaleorLineItem {
+  id String [not null]
+  lineItem LineItem [not null]
+  lineItemId String [not null]
+  installedSaleorApp InstalledSaleorApp [not null]
+  installedSaleorAppId String [not null]
+
+  indexes {
+    (id, installedSaleorAppId) [unique]
+  }
+}
+
+Table SaleorPayment {
+  id String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  saleorOrder SaleorOrder
+  saleorOrderId String
+  payment Payment
+  paymentId String
+  installedSaleorApp InstalledSaleorApp [not null]
+  installedSaleorAppId String [not null]
+
+  indexes {
+    (id, installedSaleorAppId) [unique]
+  }
+}
+
+Table SaleorProductVariant {
+  id String [not null]
+  productId String [not null]
+  updatedAt DateTime [not null]
+  productVariant ProductVariant [not null]
+  productVariantId String [not null]
+  installedSaleorApp InstalledSaleorApp [not null]
+  installedSaleorAppId String [not null]
+
+  indexes {
+    (id, installedSaleorAppId) [unique]
+  }
+}
+
+Table SaleorWarehouse {
+  id String [not null]
+  warehouse Warehouse [not null]
+  warehouseId String [unique, not null]
+  installedSaleorApp InstalledSaleorApp [not null]
+  installedSaleorAppId String [not null]
+
+  indexes {
+    (id, installedSaleorAppId) [unique]
+  }
+}
+
+Table ZohoItem {
+  id String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  productVariant ProductVariant [not null]
+  productVariantId String [not null]
+  zohoApp ZohoApp [not null]
+  zohoAppId String [not null]
+
+  indexes {
+    (id, zohoAppId) [unique]
+  }
+}
+
+Table ZohoContact {
+  id String [not null]
+  createdAt DateTime
+  updatedAt DateTime
+  zohoApp ZohoApp [not null]
+  zohoAppId String [not null]
+  zohoContactPerson ZohoContactPerson [not null]
+  zohoSalesOrder ZohoSalesOrder [not null]
+  zohoInvoice ZohoInvoice [not null]
+  zohoPayment ZohoPayment [not null]
+
+  indexes {
+    (id, zohoAppId) [unique]
+  }
+}
+
+Table ZohoContactPerson {
+  id String [not null]
+  zohoContact ZohoContact [not null]
+  zohoContactId String [not null]
+  firstName String
+  lastName String
+  email String
+  contact Contact [not null]
+  contactId String [not null]
+  zohoPayments ZohoPayment [not null]
+  zohoApp ZohoApp [not null]
+  zohoAppId String [not null]
+  zohoInvoices ZohoInvoice [not null]
+  zohoSalesOrders ZohoSalesOrder [not null]
+
+  indexes {
+    (id, zohoAppId) [unique]
+  }
+}
+
+Table ZohoSalesOrder {
+  id String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  number String [not null]
+  zohoContact ZohoContact
+  zohoContactId String
+  order Order [not null]
+  orderId String [unique, not null]
+  zohoApp ZohoApp [not null]
+  zohoAppId String [not null]
+  ZohoContactPerson ZohoContactPerson
+  zohoContactPersonId String
+  zohoContactPersonZohoAppId String
+
+  indexes {
+    (id, zohoAppId) [unique]
+    (number, zohoAppId) [unique]
+  }
+}
+
+Table ZohoInvoice {
+  id String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  number String [not null]
+  zohoContact ZohoContact
+  zohoContactId String
+  invoice Invoice [not null]
+  invoiceId String [not null]
+  zohoApp ZohoApp [not null]
+  zohoAppId String [not null]
+  ZohoContactPerson ZohoContactPerson
+  zohoContactPersonId String
+  zohoContactPersonZohoAppId String
+
+  indexes {
+    (id, zohoAppId) [unique]
+    (number, zohoAppId) [unique]
+  }
+}
+
+Table ZohoPayment {
+  id String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  zohoContact ZohoContact
+  zohoContactId String
+  payment Payment
+  paymentId String [unique]
+  zohoApp ZohoApp [not null]
+  zohoAppId String [not null]
+  ZohoContactPerson ZohoContactPerson
+  zohoContactPersonId String
+  zohoContactPersonZohoAppId String
+
+  indexes {
+    (id, zohoAppId) [unique]
+  }
+}
+
+Table ZohoWarehouse {
+  id String [not null]
+  warehouse Warehouse [not null]
+  warehouseId String [not null]
+  zohoApp ZohoApp [not null]
+  zohoAppId String [not null]
+
+  indexes {
+    (id, zohoAppId) [unique]
+  }
+}
+
+Table ZohoTax {
+  id String [not null]
+  tax Tax [not null]
+  taxId String [not null]
+  zohoApp ZohoApp [not null]
+  zohoAppId String [not null]
+
+  indexes {
+    (id, zohoAppId) [unique]
+  }
+}
+
+Table ZohoLineItem {
+  id String [not null]
+  lineItem LineItem [not null]
+  lineItemId String [not null]
+  zohoApp ZohoApp [not null]
+  zohoAppId String [not null]
+
+  indexes {
+    (id, zohoAppId) [unique]
+  }
+}
+
+Table Invoice {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  invoiceNumber String [not null]
+  payments Payment [not null]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  orders Order [not null]
+  zohoInvoice ZohoInvoice [not null]
+
+  indexes {
+    (invoiceNumber, tenantId) [unique]
+  }
+}
+
+Table Tax {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  name String [not null]
+  normalizedName String [not null]
+  percentage Float [not null]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  zohoTaxes ZohoTax [not null]
+
+  indexes {
+    (normalizedName, tenantId) [unique]
+  }
+}
+
+Table Payment {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  referenceNumber String [not null]
+  amount Float [not null]
+  paymentMethod PaymentMethodType [not null]
+  order Order
+  orderId String
+  tenant Tenant [not null]
+  tenantId String [not null]
+  invoices Invoice [not null]
+  zohoPayment ZohoPayment [not null]
+  saleorPayment SaleorPayment [not null]
+
+  indexes {
+    (orderId, tenantId) [unique]
+    (referenceNumber, tenantId) [unique]
+  }
+}
+
+Table Company {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  name String [not null]
+  contacts Contact [not null]
+  tenant Tenant [not null]
+  tenantId String [not null]
+
+  indexes {
+    (name, tenantId) [unique]
+  }
+}
+
+Table Contact {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  email String
+  orders Order [not null]
+  company Company
+  companyId String
+  tenant Tenant [not null]
+  tenantId String [not null]
+  zohoContactPersons ZohoContactPerson [not null]
+
+  indexes {
+    (email, tenantId) [unique]
+  }
+}
+
+Table Warehouse {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  name String [not null]
+  normalizedName String [not null]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  zohoWarehouse ZohoWarehouse [not null]
+  saleorWarehouse SaleorWarehouse [not null]
+
+  indexes {
+    (name, tenantId) [unique]
+    (normalizedName, tenantId) [unique]
+  }
+}
+
+Table LineItem {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  uniqueString String [not null]
+  order Order [not null]
+  orderId String [not null]
+  quantity Float [not null]
+  sku String [not null]
+  taxPercentage Float [not null]
+  totalPriceNet Float
+  totalPriceGross Float
+  discountValueNet Float [not null, default: 0]
+  productVariant ProductVariant [not null]
+  productVariantId String [not null]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  zohoLineItems ZohoLineItem [not null]
+  saleorLineItem SaleorLineItem [not null]
+
+  indexes {
+    (uniqueString, tenantId) [unique]
+  }
+}
+
 Table Order {
   id String [pk]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-  externalOrderId String [unique, not null]
-  emails String[] [not null]
-  language Language [not null]
+  externalOrderId String
+  orderStatus OrderStatus [not null, default: 'draft']
+  paymentStatus OrderPaymentStatus [not null, default: 'unpaid']
+  shipmentStatus OrderShipmentStatus [not null, default: 'pending']
+  orderNumber String [not null]
+  lineItems LineItem [not null]
+  shippingPriceNet Float
+  shippingPriceGross Float
+  shippingPriceTaxPercentage Float
+  discountValueNet Float [not null, default: 0]
+  totalPriceNet Float
+  totalPriceGross Float [not null]
+  contacts Contact [not null]
+  language Language [not null, default: 'DE']
   packages Package [not null]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  payment Payment [not null]
+  saleorOrders SaleorOrder [not null]
+  zohoSalesOrders ZohoSalesOrder [not null]
+  invoices Invoice [not null]
+
+  indexes {
+    (orderNumber, tenantId) [unique]
+  }
+}
+
+Table Product {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  name String
+  normalizedName String
+  variants ProductVariant [not null]
+  tenant Tenant [not null]
+  tenantId String [not null]
+
+  indexes {
+    (name, tenantId) [unique]
+    (normalizedName, tenantId) [unique]
+  }
+}
+
+Table ProductVariant {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  sku String [not null]
+  product Product [not null]
+  productId String [not null]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  lineItem LineItem [not null]
+  zohoItem ZohoItem [not null]
+  saleorProductVariant SaleorProductVariant [not null]
+
+  indexes {
+    (sku, tenantId) [unique]
+  }
+}
+
+Table Braintree {
+  id String [pk]
+  environment BraintreeEnvironment [not null, default: 'production']
+  merchantId String [not null]
+  publicKey String [not null]
+  privateKey String [not null]
+  tenant Tenant [not null]
+  tenantId String [not null]
 }
 
 Table ElasticCluster {
@@ -149,35 +556,58 @@ Table ZohoApp {
   logisticsIntegrations LogisticsIntegration [not null]
   trackingIntegrations TrackingIntegration [not null]
   webhooks IncomingWebhook [not null]
+  saleorZohoIntegration SaleorZohoIntegration [not null]
+  zohoPayment ZohoPayment [not null]
+  zohoItem ZohoItem [not null]
+  zohoWarehouse ZohoWarehouse [not null]
+  zohoContact ZohoContact [not null]
+  zohoInvoice ZohoInvoice [not null]
+  zohoSalesOrder ZohoSalesOrder [not null]
+  zohoLineItems ZohoLineItem [not null]
+  zohoTaxes ZohoTax [not null]
+  ZohoContactPerson ZohoContactPerson [not null]
 }
 
 Table SaleorApp {
   id String [pk]
   domain String [not null]
   name String [not null]
-  channelSlug String
   installedSaleorApp InstalledSaleorApp
   tenant Tenant [not null]
   tenantId String [not null]
-  productDataFeedIntegration ProductDataFeedIntegration [not null]
 
   indexes {
-    (domain, channelSlug) [unique]
+    (domain, tenantId) [unique]
   }
 }
 
 Table InstalledSaleorApp {
   id String [pk]
+  type SaleorAppType
   webhooks IncomingWebhook [not null]
   token String [not null]
+  channelSlug String
   saleorApp SaleorApp [not null]
-  saleorAppId String [unique, not null]
+  saleorAppId String [not null]
+  domain String [not null]
+  saleorZohoIntegration SaleorZohoIntegration [not null]
+  productDataFeedIntegration ProductDataFeedIntegration [not null]
+  saleorPayment SaleorPayment [not null]
+  saleorProductVariant SaleorProductVariant [not null]
+  saleorWarehouse SaleorWarehouse [not null]
+  saleorOrder SaleorOrder [not null]
+  saleorLineItem SaleorLineItem [not null]
+
+  indexes {
+    (domain, channelSlug) [unique]
+    (saleorAppId, domain) [unique]
+  }
 }
 
 Table Tenant {
   id String [pk]
   name String [not null]
-  Subscriptions Subscription [not null]
+  subscriptions Subscription [not null]
   saleorApps SaleorApp [not null]
   zohoApps ZohoApp [not null]
   productdatafeedApps ProductDataFeedApp [not null]
@@ -189,7 +619,19 @@ Table Tenant {
   trackingEmailApps TrackingEmailApp [not null]
   dpdApps DpdApp [not null]
   trackingIntegrations TrackingIntegration [not null]
-  ElasticLogDrainIntegration ElasticLogDrainIntegration [not null]
+  elasticLogDrainIntegration ElasticLogDrainIntegration [not null]
+  order Order [not null]
+  contact Contact [not null]
+  company Company [not null]
+  saleorZohoIntegration SaleorZohoIntegration [not null]
+  product Product [not null]
+  productVariant ProductVariant [not null]
+  payment Payment [not null]
+  warehouse Warehouse [not null]
+  invoice Invoice [not null]
+  lineItem LineItem [not null]
+  braintree Braintree [not null]
+  tax Tax [not null]
 }
 
 Table Subscription {
@@ -201,7 +643,8 @@ Table Subscription {
   strapiToZohoIntegration StrapiToZohoIntegration
   logisticsIntegration LogisticsIntegration
   trackingIntegration TrackingIntegration
-  ElasticLogDrainIntegration ElasticLogDrainIntegration [not null]
+  elasticLogDrainIntegration ElasticLogDrainIntegration [not null]
+  saleorZohoIntegration SaleorZohoIntegration [not null]
 }
 
 Table TrackingIntegration {
@@ -228,8 +671,40 @@ Table ProductDataFeedIntegration {
   tenantId String [not null]
   productDataFeedApp ProductDataFeedApp [not null]
   productDataFeedAppId String [unique, not null]
-  saleorApp SaleorApp [not null]
-  saleorAppId String [not null]
+  installedSaleorApp InstalledSaleorApp
+  installedSaleorAppId String
+}
+
+Table CronJobState {
+  id String [pk]
+  lastRun DateTime
+  lastRunStatus CronJobStatus
+}
+
+Table SaleorZohoIntegration {
+  id String [pk]
+  enabled Boolean [not null, default: true]
+  subscription Subscription
+  subscriptionId String [unique]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  zohoApp ZohoApp [not null]
+  zohoAppId String [not null]
+  installedSaleorApp InstalledSaleorApp [not null]
+  installedSaleorAppId String [not null]
+  orderPrefix String [not null, default: 'STORE']
+  syncContacts Boolean [not null, default: false]
+  syncWarehouses Boolean [not null, default: false]
+  syncOrders Boolean [not null, default: false]
+  syncInvoices Boolean [not null, default: false]
+  syncPayments Boolean [not null, default: false]
+  syncProductStocks Boolean [not null, default: false]
+  syncProducts Boolean [not null, default: false]
+  syncTaxes Boolean [not null, default: false]
+  cronScheduleZoho String [not null, default: '0/15 * * * *']
+  cronScheduleSaleor String [not null, default: '0/15 * * * *']
+  cronTimeoutZoho Int [not null, default: 600]
+  cronTimeoutSaleor Int [not null, default: 600]
 }
 
 Table LogisticsIntegration {
@@ -300,6 +775,70 @@ Table SecretKey {
   incomingWebhookId String [unique, not null]
 }
 
+Table InvoiceToPayment {
+  paymentsId String [ref: > Payment.id]
+  invoicesId String [ref: > Invoice.id]
+}
+
+Table InvoiceToOrder {
+  ordersId String [ref: > Order.id]
+  invoicesId String [ref: > Invoice.id]
+}
+
+Table ContactToOrder {
+  ordersId String [ref: > Order.id]
+  contactsId String [ref: > Contact.id]
+}
+
+Enum ZohoSalesOrderStatus {
+  draft
+  confirmed
+  fulfilled
+  shipped
+}
+
+Enum PaymentMethodType {
+  paypal
+  card
+  banktransfer
+  braintree
+  onlinepayment
+  unknown
+}
+
+Enum Currency {
+  EUR
+  USD
+}
+
+Enum OrderStatus {
+  draft
+  unconfirmed
+  confirmed
+  closed
+  canceled
+}
+
+Enum OrderPaymentStatus {
+  unpaid
+  fullyPaid
+  partiallyPaid
+  fullyRefunded
+  partiallyRefunded
+}
+
+Enum OrderShipmentStatus {
+  pending
+  partiallyShipped
+  shipped
+  delivered
+}
+
+Enum BraintreeEnvironment {
+  testing
+  production
+}
+
 Enum PackageState {
   INIT
   INFORMATION_RECEIVED
@@ -322,6 +861,121 @@ Enum Language {
   DE
   EN
 }
+
+Enum SaleorAppType {
+  productdatafeed
+  zohointegration
+  mailchimpintegration
+  paymentgatewaybanktransfer
+  paymentgatewaybraintree
+}
+
+Enum CronJobStatus {
+  success
+  failure
+}
+
+Ref: SaleorOrder.(orderId, orderNumber) > Order.(id, orderNumber) [delete: Cascade]
+
+Ref: SaleorOrder.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
+
+Ref: SaleorLineItem.lineItemId > LineItem.id [delete: Cascade]
+
+Ref: SaleorLineItem.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
+
+Ref: SaleorPayment.saleorOrderId > SaleorOrder.id
+
+Ref: SaleorPayment.paymentId > Payment.id [delete: Cascade]
+
+Ref: SaleorPayment.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
+
+Ref: SaleorProductVariant.productVariantId > ProductVariant.id [delete: Cascade]
+
+Ref: SaleorProductVariant.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
+
+Ref: SaleorWarehouse.warehouseId > Warehouse.id [delete: Cascade]
+
+Ref: SaleorWarehouse.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
+
+Ref: ZohoItem.productVariantId > ProductVariant.id [delete: Cascade]
+
+Ref: ZohoItem.zohoAppId > ZohoApp.id [delete: Cascade]
+
+Ref: ZohoContact.zohoAppId > ZohoApp.id [delete: Cascade]
+
+Ref: ZohoContactPerson.zohoContactId > ZohoContact.id [delete: Cascade]
+
+Ref: ZohoContactPerson.contactId > Contact.id [delete: Cascade]
+
+Ref: ZohoContactPerson.zohoAppId > ZohoApp.id [delete: Cascade]
+
+Ref: ZohoSalesOrder.zohoContactId > ZohoContact.id [delete: Cascade]
+
+Ref: ZohoSalesOrder.orderId > Order.id [delete: Cascade]
+
+Ref: ZohoSalesOrder.zohoAppId > ZohoApp.id [delete: Cascade]
+
+Ref: ZohoSalesOrder.(zohoContactPersonId, zohoContactPersonZohoAppId) > ZohoContactPerson.(id, zohoAppId)
+
+Ref: ZohoInvoice.zohoContactId > ZohoContact.id [delete: Cascade]
+
+Ref: ZohoInvoice.invoiceId > Invoice.id [delete: Cascade]
+
+Ref: ZohoInvoice.zohoAppId > ZohoApp.id [delete: Cascade]
+
+Ref: ZohoInvoice.(zohoContactPersonId, zohoContactPersonZohoAppId) > ZohoContactPerson.(id, zohoAppId)
+
+Ref: ZohoPayment.zohoContactId > ZohoContact.id [delete: Cascade]
+
+Ref: ZohoPayment.paymentId > Payment.id [delete: Cascade]
+
+Ref: ZohoPayment.zohoAppId > ZohoApp.id [delete: Cascade]
+
+Ref: ZohoPayment.(zohoContactPersonId, zohoContactPersonZohoAppId) > ZohoContactPerson.(id, zohoAppId)
+
+Ref: ZohoWarehouse.warehouseId > Warehouse.id [delete: Cascade]
+
+Ref: ZohoWarehouse.zohoAppId > ZohoApp.id [delete: Cascade]
+
+Ref: ZohoTax.taxId > Tax.id [delete: Cascade]
+
+Ref: ZohoTax.zohoAppId > ZohoApp.id [delete: Cascade]
+
+Ref: ZohoLineItem.lineItemId > LineItem.id [delete: Cascade]
+
+Ref: ZohoLineItem.zohoAppId > ZohoApp.id [delete: Cascade]
+
+Ref: Invoice.tenantId > Tenant.id [delete: Cascade]
+
+Ref: Tax.tenantId > Tenant.id [delete: Cascade]
+
+Ref: Payment.orderId > Order.id
+
+Ref: Payment.tenantId > Tenant.id [delete: Cascade]
+
+Ref: Company.tenantId > Tenant.id [delete: Cascade]
+
+Ref: Contact.companyId > Company.id
+
+Ref: Contact.tenantId > Tenant.id [delete: Cascade]
+
+Ref: Warehouse.tenantId > Tenant.id [delete: Cascade]
+
+Ref: LineItem.orderId > Order.id
+
+Ref: LineItem.(productVariantId, sku) > ProductVariant.(id, sku)
+
+Ref: LineItem.tenantId > Tenant.id [delete: Cascade]
+
+Ref: Order.tenantId > Tenant.id [delete: Cascade]
+
+Ref: Product.tenantId > Tenant.id [delete: Cascade]
+
+Ref: ProductVariant.productId > Product.id [delete: Cascade]
+
+Ref: ProductVariant.tenantId > Tenant.id [delete: Cascade]
+
+Ref: Braintree.tenantId > Tenant.id [delete: Cascade]
 
 Ref: ElasticLogDrainIntegration.subscriptionId > Subscription.id
 
@@ -351,7 +1005,7 @@ Ref: ZohoApp.tenantId > Tenant.id [delete: Cascade]
 
 Ref: SaleorApp.tenantId > Tenant.id [delete: Cascade]
 
-Ref: InstalledSaleorApp.saleorAppId - SaleorApp.id [delete: Cascade]
+Ref: InstalledSaleorApp.(saleorAppId, domain) - SaleorApp.(id, domain) [delete: Cascade]
 
 Ref: Subscription.tenantId > Tenant.id [delete: Cascade]
 
@@ -371,7 +1025,15 @@ Ref: ProductDataFeedIntegration.tenantId > Tenant.id [delete: Cascade]
 
 Ref: ProductDataFeedIntegration.productDataFeedAppId - ProductDataFeedApp.id
 
-Ref: ProductDataFeedIntegration.saleorAppId > SaleorApp.id
+Ref: ProductDataFeedIntegration.installedSaleorAppId > InstalledSaleorApp.id
+
+Ref: SaleorZohoIntegration.subscriptionId > Subscription.id
+
+Ref: SaleorZohoIntegration.tenantId > Tenant.id [delete: Cascade]
+
+Ref: SaleorZohoIntegration.zohoAppId > ZohoApp.id
+
+Ref: SaleorZohoIntegration.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
 
 Ref: LogisticsIntegration.subscriptionId - Subscription.id
 

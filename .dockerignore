@@ -1,6 +1,9 @@
-
 Dockerfile
 dist
 helm-chart
 node_modules
 .vscode
+coverage
+tmp
+.next
+.github

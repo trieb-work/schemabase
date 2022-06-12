@@ -1,0 +1,10 @@
+query warehouses($first: Int) {
+  warehouses(first: $first) {
+    edges {
+      node {
+        id
+        name
+      }
+    }
+  }
+}

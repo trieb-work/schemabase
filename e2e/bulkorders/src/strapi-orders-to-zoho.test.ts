@@ -12,7 +12,7 @@ import faker from "faker";
 import { createHash, randomInt } from "crypto";
 import { HttpClient } from "@eci/pkg/http";
 import { id } from "@eci/pkg/ids";
-import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts/dist/v2";
+import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts";
 import { env } from "@eci/pkg/env";
 import { generateAddress, triggerWebhook } from "./util";
 import { OrderEvent } from "@eci/pkg/integration-bulkorders";
@@ -58,6 +58,7 @@ async function generateEvent(
   const { contact_id } = await zoho.contact.create({
     company_name: companyName,
     contact_name: companyName,
+    customer_sub_type: "business",
     // contact_type: "customer",
   });
   // eslint-disable-next-line camelcase
@@ -209,7 +210,7 @@ afterAll(async () => {
     /** Clean up created entries */
     try {
       for (const id of createdContactIds) {
-        await zoho.contact.delete(id);
+        await zoho.contact.delete([id]);
       }
     } catch (err) {
       console.error("Unable to clean up", err);
@@ -275,7 +276,7 @@ describe("with valid webhook", () => {
 
           const salesOrders = await verifySyncedOrders(zoho, event);
 
-          const createdOrder = await zoho.salesOrder.retrieve(
+          const createdOrder = await zoho.salesOrder.get(
             salesOrders[0].salesorder_id,
           );
 
@@ -473,7 +474,7 @@ describe("with valid webhook", () => {
         await triggerWebhook(webhookId, webhookSecret, event);
         await waitForPropagation();
 
-        const contact = await zoho.contact.retrieve(event.entry.zohoCustomerId);
+        const contact = await zoho.contact.get(event.entry.zohoCustomerId);
         if (contact == null) {
           throw new Error(`Contact not found: ${event.entry.zohoCustomerId}`);
         }

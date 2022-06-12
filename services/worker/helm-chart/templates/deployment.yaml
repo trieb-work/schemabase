@@ -1,25 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}
+  name: {{ include "eci-worker.fullname" . }}
+  labels:
+    {{- include "eci-worker.labels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
-      app: eci-worker
-      tier: backend
+      {{- include "eci-worker.selectorLabels" . | nindent 6 }}
   replicas: 1
   template:
     metadata:
       labels:
-        app: eci-worker
-        tier: backend
+        {{- include "eci-worker.selectorLabels" . | nindent 8 }}
     spec:
       {{- if .Values.imagePullSecret }}
       imagePullSecrets: 
         - name: {{ .Values.imagePullSecret }}
       {{- end }}
       containers:
-        - name: eci-worker
+        - name: {{ .Chart.Name }}
           imagePullPolicy: IfNotPresent
           image: "{{ .Values.image.imageName }}"
           env:
@@ -27,7 +27,7 @@ spec:
               value: "{{ .Values.eciEnv }}"
           envFrom:
             - secretRef:
-                name: eci-worker-secrets
+                name: {{ include "eci-worker.fullname" . }}
           resources:
             requests:
               cpu: 50m

@@ -1,5 +1,5 @@
 import { OrderEvent } from "@eci/pkg/integration-bulkorders";
-import { SalesOrder, Zoho } from "@trieb.work/zoho-ts/dist/v2";
+import { SalesOrder, Zoho } from "@trieb.work/zoho-ts";
 import { expect } from "@jest/globals";
 export async function verifySyncedOrders(
   zoho: Zoho,
@@ -39,7 +39,7 @@ export async function verifySyncedOrders(
       );
     }
 
-    const res = await zoho.salesOrder.retrieve(zohoOrder.salesorder_id);
+    const res = await zoho.salesOrder.get(zohoOrder.salesorder_id);
     if (!res || !res.shipping_address) {
       throw new Error(
         `Unable to load order from zoho: ${zohoOrder.salesorder_id}`,

@@ -1,29 +1,655 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider             = "mysql"
+  url                  = env("DATABASE_URL")
+  shadowDatabaseUrl    = env("SHADOW_DATABASE_URL")
+  referentialIntegrity = "prisma"
 }
+
 generator dbml {
   provider = "prisma-dbml-generator"
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity"]
 }
 
+// ------------------------------------------------------------------------------------------------
+//
+//  SALEOR SPECIFIC MODELS
+//
+// ------------------------------------------------------------------------------------------------
+
+// Saleor specific model for orders.
+model SaleorOrder {
+  // Saleor Internal Id
+  id String
+
+  createdAt DateTime
+
+  order   Order  @relation(fields: [orderId, orderNumber], references: [id, orderNumber], onDelete: Cascade)
+  orderId String
+
+  // The Human-Readable order number. Gets
+  // prefixed with something like "STORE-" when moved to Zoho
+  orderNumber String
+
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String
+
+  saleorPayment SaleorPayment[]
+
+  @@unique([id, installedSaleorAppId])
+}
+
+model SaleorLineItem {
+  // Saleor Internal Id
+  id String
+
+  lineItem   LineItem @relation(fields: [lineItemId], references: [id], onDelete: Cascade)
+  lineItemId String
+
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String
+
+  @@unique([id, installedSaleorAppId])
+}
+
+// Saleor specific model for payments.
+model SaleorPayment {
+  // Saleor Internal Id
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  saleorOrder   SaleorOrder? @relation(fields: [saleorOrderId], references: [id])
+  saleorOrderId String?
+
+  payment   Payment? @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  paymentId String?
+
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String
+
+  @@unique([id, installedSaleorAppId])
+}
+
+// Saleor specific model for product variant.
+model SaleorProductVariant {
+  // Saleor internal product variant id
+  id String
+
+  // Saleor internal product Id
+  productId String
+
+  updatedAt DateTime
+
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+  productVariantId String
+
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String
+
+  @@unique([id, installedSaleorAppId])
+}
+
+// Saleor specific model for warehouse.
+model SaleorWarehouse {
+  // Saleor Internal Id
+  id String
+
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  warehouseId String    @unique
+
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String
+
+  @@unique([id, installedSaleorAppId])
+}
+
+// ------------------------------------------------------------------------------------------------
+//
+//  Zoho SPECIFIC MODELS
+//
+// ------------------------------------------------------------------------------------------------
+// Zoho specific model for item metadata. For simplicity, we don't use a seperate product and product variant table.
+model ZohoItem {
+  // Zoho Internal Id
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+  productVariantId String
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId String
+
+
+  @@unique([id, zohoAppId])
+}
+
+model ZohoContact {
+  // Zoho Internal Contact Id
+  id String
+
+  // We set these optional, so that we
+  // can easily upsert ZohoContactPerson
+  createdAt DateTime?
+  updatedAt DateTime?
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId String
+
+  zohoContactPerson ZohoContactPerson[]
+  zohoSalesOrder    ZohoSalesOrder[]
+  zohoInvoice       ZohoInvoice[]
+  zohoPayment       ZohoPayment[]
+
+
+  @@unique([id, zohoAppId])
+
+}
+
+// Zoho knows Contacts and ContactPersons.
+model ZohoContactPerson {
+  // Zoho Internal ContactPerson Id
+  id String
+
+  zohoContact   ZohoContact @relation(fields: [zohoContactId], references: [id], onDelete: Cascade)
+  zohoContactId String
+
+  // For easy look-up directly in the ZohoContact model,
+  // we store the email firstname etc here as well.
+  firstName String?
+  lastName  String?
+  email     String?
+
+  contact   Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  contactId String
+
+  zohoPayments ZohoPayment[]
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId String
+
+  zohoInvoices    ZohoInvoice[]
+  zohoSalesOrders ZohoSalesOrder[]
+
+
+  @@unique([id, zohoAppId])
+}
+
+enum ZohoSalesOrderStatus {
+  draft
+  confirmed
+  fulfilled
+  shipped
+}
+
+// Zoho specific model.
+model ZohoSalesOrder {
+  // Zoho Internal Id
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  // The Zoho Internal sales order number
+  // as complete string: INV-395956
+  number String
+
+  zohoContact   ZohoContact? @relation(fields: [zohoContactId], references: [id], onDelete: Cascade)
+  zohoContactId String?
+
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId String @unique
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId String
+
+
+  @@unique([id, zohoAppId])
+  @@unique([number, zohoAppId])
+  ZohoContactPerson          ZohoContactPerson? @relation(fields: [zohoContactPersonId, zohoContactPersonZohoAppId], references: [id, zohoAppId])
+  zohoContactPersonId        String?
+  zohoContactPersonZohoAppId String?
+}
+
+// Zoho specific model.
+model ZohoInvoice {
+  // Zoho Internal Id
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  // The Zoho Internal Invoice number
+  // as complete string: INV-395956
+  number String
+
+  zohoContact   ZohoContact? @relation(fields: [zohoContactId], references: [id], onDelete: Cascade)
+  zohoContactId String?
+
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId String
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId String
+
+
+  @@unique([id, zohoAppId])
+  @@unique([number, zohoAppId])
+  ZohoContactPerson          ZohoContactPerson? @relation(fields: [zohoContactPersonId, zohoContactPersonZohoAppId], references: [id, zohoAppId])
+  zohoContactPersonId        String?
+  zohoContactPersonZohoAppId String?
+}
+
+// Zoho specific model.
+model ZohoPayment {
+  // Zoho Internal Id
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  zohoContact   ZohoContact? @relation(fields: [zohoContactId], references: [id], onDelete: Cascade)
+  zohoContactId String?
+
+  payment   Payment? @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  paymentId String?  @unique
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId String
+
+
+  @@unique([id, zohoAppId])
+  ZohoContactPerson          ZohoContactPerson? @relation(fields: [zohoContactPersonId, zohoContactPersonZohoAppId], references: [id, zohoAppId])
+  zohoContactPersonId        String?
+  zohoContactPersonZohoAppId String?
+}
+
+model ZohoWarehouse {
+  // Zoho Internal Id
+  id String
+
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  warehouseId String
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId String
+
+
+  @@unique([id, zohoAppId])
+}
+
+model ZohoTax {
+  // Zoho Internal Id
+  id String
+
+  tax   Tax    @relation(fields: [taxId], references: [id], onDelete: Cascade)
+  taxId String
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId String
+
+
+  @@unique([id, zohoAppId])
+}
+
+model ZohoLineItem {
+  // Zoho Internal Id
+  id String
+
+  lineItem   LineItem @relation(fields: [lineItemId], references: [id], onDelete: Cascade)
+  lineItemId String
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId String
+
+
+  @@unique([id, zohoAppId])
+}
+
+// ------------------------------------------------------------------------------------------------
+//
+//  ECI INTERNAL ENTITY MODELS
+//
+// ------------------------------------------------------------------------------------------------
+// categorize payments by payment type
+enum PaymentMethodType {
+  paypal
+  card
+  banktransfer
+  braintree
+  onlinepayment
+  unknown
+}
+
+// The ECI internal invoice model
+model Invoice {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Un-Prefixed Invoice Number (e.g. 30994)
+  // Invoice-Numbers have to be unique per Tenant!
+  // We use them as unique identifier between systems
+  invoiceNumber String
+
+  payments Payment[]
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  orders      Order[]
+  zohoInvoice ZohoInvoice[]
+
+  @@unique([invoiceNumber, tenantId])
+}
+
+// Internal model to save taxes information
+model Tax {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name           String
+  // Lowercase, trim, whitespace remove, special characters remove etc.
+  normalizedName String
+  percentage     Float
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  zohoTaxes ZohoTax[]
+
+
+  @@unique([normalizedName, tenantId])
+}
+
+// The ECI internal payments model
+model Payment {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Unique identifier for a customer payment.
+  // We use the payment gateway id as reference.
+  referenceNumber String
+
+  amount        Float
+  paymentMethod PaymentMethodType
+
+  order   Order?  @relation(fields: [orderId], references: [id])
+  orderId String?
+
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  invoices Invoice[]
+
+  zohoPayment   ZohoPayment[]
+  saleorPayment SaleorPayment[]
+
+
+  @@unique([orderId, tenantId])
+  @@unique([referenceNumber, tenantId])
+}
+
+model Company {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name String
+
+  contacts Contact[]
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  @@unique([name, tenantId])
+}
+
+// The ECI internal contact model. One contact has one E-Mail address only.
+// E-Mail addresses are unique per tenant
+model Contact {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  email     String?
+  orders    Order[]
+
+  // A Contact can be related to one company
+  company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  zohoContactPersons ZohoContactPerson[]
+
+  @@unique([email, tenantId])
+}
+
+// The ECI internal Warehouse model.
+model Warehouse {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name           String
+  // Lowercase, trim, whitespace remove, special characters remove
+  normalizedName String
+
+  tenant          Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId        String
+  zohoWarehouse   ZohoWarehouse[]
+  saleorWarehouse SaleorWarehouse[]
+
+  @@unique([name, tenantId])
+  @@unique([normalizedName, tenantId])
+}
+
+enum Currency {
+  EUR
+  USD
+}
+
+// The ECI internal LineItem model
+model LineItem {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Unique string to identify this LineItem
+  // between different systems
+  // ${orderNumber}${sku}${quantity}
+  uniqueString String
+
+  order   Order  @relation(fields: [orderId], references: [id])
+  orderId String
+
+  quantity      Float
+  sku           String
+  // Tax Percentage as number (19, 7)
+  taxPercentage Float
+
+  // the total price of the line item.
+  // Optional, as we might have just one of the two values
+  // on hand
+  totalPriceNet   Float?
+  totalPriceGross Float?
+
+  // The disount amount, that is applied
+  // to the net price.
+  discountValueNet Float @default(0)
+
+  productVariant   ProductVariant @relation(fields: [productVariantId, sku], references: [id, sku])
+  productVariantId String
+
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  zohoLineItems  ZohoLineItem[]
+  saleorLineItem SaleorLineItem[]
+
+
+  @@unique([uniqueString, tenantId])
+}
+
+enum OrderStatus {
+  draft
+  unconfirmed
+  confirmed
+  // The order is fulfilled + paid -> finished
+  closed
+  canceled
+}
+
+enum OrderPaymentStatus {
+  unpaid
+  fullyPaid
+  partiallyPaid
+  fullyRefunded
+  partiallyRefunded
+}
+
+enum OrderShipmentStatus {
+  pending
+  partiallyShipped
+  shipped
+  delivered
+}
+
+// The ECI internal Order model.
 model Order {
-  // internal id
-  id              String   @id
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  externalOrderId String   @unique
-  // tenant relation
-  // zohoOrderId String? @unique
-  // saleorOrderId String? @unique
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // deprecated!
+  externalOrderId String?
+
+  orderStatus    OrderStatus         @default(draft)
+  paymentStatus  OrderPaymentStatus  @default(unpaid)
+  shipmentStatus OrderShipmentStatus @default(pending)
+
+  // Order-Numbers have to be unique per Tenant!
+  // We use them as unique identifier between systems
+  orderNumber String
+
+  lineItems LineItem[]
+
+  shippingPriceNet           Float?
+  shippingPriceGross         Float?
+  shippingPriceTaxPercentage Float?
+
+  // The disount amount, that is applied
+  // to the net, undiscounted price.
+  // Discounts never get applied on shipping costs
+  discountValueNet Float @default(0)
+
+  // The final, total price
+  totalPriceNet   Float?
+  totalPriceGross Float
 
   // The end customers emails where we send transactional emails to
-  emails   String[]
-  language Language
+  contacts Contact[]
+  language Language  @default(DE)
   packages Package[]
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+  payment  Payment[]
+
+  saleorOrders    SaleorOrder[]
+  zohoSalesOrders ZohoSalesOrder[]
+
+  invoices Invoice[]
+
+
+  @@unique([orderNumber, tenantId])
+}
+
+// The ECI internal Product model
+// We use the ProductVariant more, as only variants have unique identifier like the SKU. Products can be matched only via the product name
+model Product {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name           String?
+  // Lowercase, trim, whitespace remove, special characters remove
+  normalizedName String?
+
+  variants ProductVariant[]
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+
+  @@unique([name, tenantId])
+  @@unique([normalizedName, tenantId])
+}
+
+// The ECI internal ProductVariant Model. One product can have one ore many Product Variants
+model ProductVariant {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sku String
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  lineItem LineItem[]
+
+  zohoItem ZohoItem[]
+
+  saleorProductVariant SaleorProductVariant[]
+
+  @@unique([sku, tenantId])
+}
+
+enum BraintreeEnvironment {
+  testing
+  production
+}
+
+// Internal model to store braintree payment gateway settings for tenants
+model Braintree {
+  id String @id
+
+  environment BraintreeEnvironment @default(production)
+
+  merchantId String
+  publicKey  String
+  // Encrypt before writing to the DB!
+  privateKey String
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
 }
 
 enum PackageState {
@@ -103,6 +729,7 @@ model ElasticLogDrainIntegration {
 
 }
 
+// The ECI Internal Package model
 model Package {
   // internal id
   id                 String         @id
@@ -194,8 +821,6 @@ model ProductDataFeedApp {
   // Graphql endpoint of a saleor app
   productDetailStorefrontURL String
 
-
-
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String @unique
 
@@ -238,13 +863,23 @@ model ZohoApp {
   logisticsIntegrations    LogisticsIntegration[]
   trackingIntegrations     TrackingIntegration[]
 
-  webhooks IncomingWebhook[]
+  webhooks              IncomingWebhook[]
+  saleorZohoIntegration SaleorZohoIntegration[]
+  zohoPayment           ZohoPayment[]
+  zohoItem              ZohoItem[]
+  zohoWarehouse         ZohoWarehouse[]
+  zohoContact           ZohoContact[]
+  zohoInvoice           ZohoInvoice[]
+  zohoSalesOrder        ZohoSalesOrder[]
+  zohoLineItems         ZohoLineItem[]
+  zohoTaxes             ZohoTax[]
+  ZohoContactPerson     ZohoContactPerson[]
 }
 
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor
 // server and receive webhooks with event notifications from Saleor.
 // Every tenant can have multiple saleor apps which correspond to different
-// saleor instances.
+// saleor instances. Per saleor instance and channel we have just one SaleorApp (we use the shop domain as identification)
 model SaleorApp {
 
   id String @id
@@ -257,27 +892,37 @@ model SaleorApp {
 
   name String
 
-  channelSlug String?
-
   installedSaleorApp InstalledSaleorApp?
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  productDataFeedIntegration ProductDataFeedIntegration[]
 
-  @@unique([domain, channelSlug])
+  @@unique([domain, tenantId])
 }
 
+// All ECI Integrations for Saleor should be handled as individual Apps that could be installed via the Marketplace for example
+// And the different AppTypes have different settings / webhooks / permissions
+enum SaleorAppType {
+  productdatafeed
+  zohointegration
+  mailchimpintegration
+  paymentgatewaybanktransfer
+  paymentgatewaybraintree
+}
+
+// We can have different Installed Saleor Apps for the same Saleor instance. We also have one Installed Saleor App per Channel
 model InstalledSaleorApp {
   // The saleor application id
   // This is the id for the app on saleor's side and can be used in queries and
   // mutations to identify the app.
   id String @id
 
+  // should be made mandatory later.
+  type SaleorAppType?
+
   // Every SaleorApp can have multiple webhooks configured.
-  // This is not really necessary because a webhook can fire on multiple events
-  // but let's be on the safe side.
+  // One webhook can fire on multiple events. But for sync webhooks, we need a different one
   webhooks IncomingWebhook[]
 
   // Unlike regular users, Saleor Apps use a bearer token. The token is
@@ -286,9 +931,24 @@ model InstalledSaleorApp {
   // Authorization: Bearer <app-token>
   token String
 
+  channelSlug String?
 
-  saleorApp   SaleorApp @relation(fields: [saleorAppId], references: [id], onDelete: Cascade)
-  saleorAppId String    @unique
+
+  saleorApp   SaleorApp @relation(fields: [saleorAppId, domain], references: [id, domain], onDelete: Cascade)
+  saleorAppId String
+  domain      String
+
+  saleorZohoIntegration SaleorZohoIntegration[]
+
+  productDataFeedIntegration ProductDataFeedIntegration[]
+  saleorPayment              SaleorPayment[]
+  saleorProductVariant       SaleorProductVariant[]
+  saleorWarehouse            SaleorWarehouse[]
+  saleorOrder                SaleorOrder[]
+  saleorLineItem             SaleorLineItem[]
+
+
+  @@unique([domain, channelSlug])
 }
 
 // One tenant per company
@@ -299,7 +959,7 @@ model Tenant {
   // Human readable identifier
   name String
 
-  Subscriptions Subscription[]
+  subscriptions Subscription[]
 
   // App configurations
   saleorApps                  SaleorApp[]
@@ -313,7 +973,19 @@ model Tenant {
   trackingEmailApps           TrackingEmailApp[]
   dpdApps                     DpdApp[]
   trackingIntegrations        TrackingIntegration[]
-  ElasticLogDrainIntegration  ElasticLogDrainIntegration[]
+  elasticLogDrainIntegration  ElasticLogDrainIntegration[]
+  order                       Order[]
+  contact                     Contact[]
+  company                     Company[]
+  saleorZohoIntegration       SaleorZohoIntegration[]
+  product                     Product[]
+  productVariant              ProductVariant[]
+  payment                     Payment[]
+  warehouse                   Warehouse[]
+  invoice                     Invoice[]
+  lineItem                    LineItem[]
+  braintree                   Braintree[]
+  tax                         Tax[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
@@ -330,7 +1002,8 @@ model Subscription {
   strapiToZohoIntegration    StrapiToZohoIntegration?
   logisticsIntegration       LogisticsIntegration?
   trackingIntegration        TrackingIntegration?
-  ElasticLogDrainIntegration ElasticLogDrainIntegration[]
+  elasticLogDrainIntegration ElasticLogDrainIntegration[]
+  saleorZohoIntegration      SaleorZohoIntegration[]
 }
 
 // ----------------------------------------------------------------------------
@@ -371,8 +1044,72 @@ model ProductDataFeedIntegration {
 
   productDataFeedApp   ProductDataFeedApp @relation(fields: [productDataFeedAppId], references: [id])
   productDataFeedAppId String             @unique
-  saleorApp            SaleorApp          @relation(fields: [saleorAppId], references: [id])
-  saleorAppId          String
+
+  installedSaleorApp   InstalledSaleorApp? @relation(fields: [installedSaleorAppId], references: [id])
+  installedSaleorAppId String?
+}
+
+enum CronJobStatus {
+  success
+  failure
+}
+
+// CronJobs / Sync Job model to store the state of synchronisation
+// Use the "cronstate" handler to access data in this model
+model CronJobState {
+
+  // Generated in this schema: TENANTID_APPID_ENTITY -> Entity is contacts / items / ...
+  //                                      ^-- For example the ZohoAppId or the installedSaleorAppId
+  id            String         @id
+  lastRun       DateTime?
+  lastRunStatus CronJobStatus?
+
+
+}
+
+// The saleor zoho integration consists of several, individual sync jobs
+// The code is located in the "integration-entity-sync-saleor" and "integration-entity-sync-zoho"
+// - from both sides to the internal ECI database and from the ECI database to the other system
+// a customer can make settings here.
+model SaleorZohoIntegration {
+  id String @id
+
+  // Allow the user to manually enabled or disable the integration
+  // Regardless of current subscription state.
+  enabled Boolean @default(true)
+
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  subscriptionId String?       @unique
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id])
+  zohoAppId String
+
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String
+
+  // The order prefix we use in Zoho to identify orders coming from Saleor
+  orderPrefix String @default("STORE")
+
+  // We can create the needed bull jobs for every sync entity, that is enabled
+  syncContacts      Boolean @default(false)
+  syncWarehouses    Boolean @default(false)
+  syncOrders        Boolean @default(false)
+  syncInvoices      Boolean @default(false)
+  syncPayments      Boolean @default(false)
+  syncProductStocks Boolean @default(false)
+  syncProducts      Boolean @default(false)
+  syncTaxes         Boolean @default(false)
+
+  // How frequent the synchronisation should run. Default once per hour.
+  cronScheduleZoho   String @default("0/15 * * * *")
+  cronScheduleSaleor String @default("0/15 * * * *")
+  // Time in seconds how long one workflow can run before a timeout occurs.
+  cronTimeoutZoho    Int    @default(600)
+  cronTimeoutSaleor  Int    @default(600)
 }
 
 model LogisticsIntegration {
@@ -436,7 +1173,7 @@ model StrapiApp {
 // ----------------------------------------------------------------------------
 
 model IncomingWebhook {
-  id        String     @id 
+  id        String     @id
   // Human readable name
   name      String?
   createdAt DateTime   @default(now())
