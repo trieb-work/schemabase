@@ -3450,5 +3450,5 @@ describe("Saleor Entity Sync payments Test", () => {
       tenant,
     });
     await xx.syncToECI();
-  });
+  }, 80000);
 });
