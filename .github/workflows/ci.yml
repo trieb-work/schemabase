@@ -155,6 +155,8 @@ jobs:
       # Pull the latest image to build, and avoid caching pull-only images.
       # (docker pull is faster than caching in most cases.)
       - run: docker-compose pull --ignore-pull-failures
+        env: 
+          SALEOR_IMAGE: ${{ matrix.saleor }}
 
       # In this step, this action saves a list of existing images,
       # the cache is created without them in the post run.
