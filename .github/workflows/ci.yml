@@ -146,9 +146,7 @@ jobs:
 
       - name: Load docker images
         run: |
-          docker load -i images/api/api.tar
-          docker load -i images/worker/worker.tar
-
+          docker load -i images/api/api.tar & docker load -i images/worker/worker.tar
 
         # Necesarry to test against the predefined saleor versions
       - name: Use docker-compose ci config
