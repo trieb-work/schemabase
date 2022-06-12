@@ -52,7 +52,7 @@ describe("Zoho Inventory Contact Sync", () => {
             portal_status: "disabled",
             created_time: "2020-11-09T14:01:12+0100",
             created_time_formatted: "09 November 2020",
-            last_modified_time: "2021-10-20T18:55:23+0200",
+            last_modified_time: "2022-06-11T18:55:23+0200",
             last_modified_time_formatted: "20 Oktober 2021",
             custom_fields: [
               {

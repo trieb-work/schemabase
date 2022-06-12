@@ -3,6 +3,7 @@ import { ILogger } from "@eci/pkg/logger";
 import { PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
 import { CronStateHandler } from "@eci/pkg/cronstate";
+import { subDays } from "date-fns";
 
 export interface ZohoContactSyncConfig {
   logger: ILogger;
@@ -54,7 +55,9 @@ export class ZohoContactSyncService {
     } else {
       contactsToBeUpserted = contacts.filter(
         // @ts-ignore: Object is possibly 'null'
-        (contact) => new Date(contact.last_modified_time) > cronState.lastRun,
+        (contact) =>
+          new Date(contact.last_modified_time) >
+          subDays(cronState.lastRun as Date, 1),
       );
     }
 
@@ -123,15 +126,24 @@ export class ZohoContactSyncService {
         },
       });
 
-      await this.db.contact.update({
+      await this.db.contact.upsert({
         where: {
           email_tenantId: {
             tenantId,
             email: lowercaseEmail,
           },
         },
-        data: {
+        update: {
           company: companyCreate,
+        },
+        create: {
+          id: id.id("contact"),
+          company: companyCreate,
+          tenant: {
+            connect: {
+              id: tenantId,
+            },
+          },
         },
       });
     }
@@ -155,10 +167,20 @@ export class ZohoContactSyncService {
         create: {
           id: contactPerson.contact_person_id,
           zohoContact: {
-            connect: {
-              id_zohoAppId: {
-                id: contactPerson.contact_person_id,
-                zohoAppId: this.zohoApp.id,
+            connectOrCreate: {
+              where: {
+                id_zohoAppId: {
+                  id: contactPerson.contact_id,
+                  zohoAppId: this.zohoApp.id,
+                },
+              },
+              create: {
+                id: contactPerson.contact_id,
+                zohoApp: {
+                  connect: {
+                    id: this.zohoApp.id,
+                  },
+                },
               },
             },
           },
