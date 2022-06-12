@@ -16,7 +16,6 @@ services:
 
   # Nextjs Serverless application to receive api from various services
   eci_api:
-    image: eci_api
     build:
       context: .
       dockerfile: ./services/api/Dockerfile
@@ -38,7 +37,6 @@ services:
       - kafka
 
   logdrain:
-    image: logdrain
     build:
       context: .
       dockerfile: ./services/logdrain/Dockerfile
@@ -51,7 +49,6 @@ services:
       - NODE_ENV=production
       - ECI_ENV=dev
   eci_worker:
-    image: eci_worker
     container_name: worker.eci
 
     build:
