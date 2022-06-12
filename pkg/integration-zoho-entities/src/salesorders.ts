@@ -258,4 +258,47 @@ export class ZohoSalesOrdersSyncService {
       lastRunStatus: "success",
     });
   }
+
+  public async syncFromECI(): Promise<void> {
+    const ordersFromEciDb = await this.db.order.findMany({
+      where: {
+        tenant: {
+          id: this.zohoApp.tenantId,
+        },
+        orderStatus: "confirmed",
+        // filter out zohoSalesorders with the current AppId
+        // like this we find the orders, that we do not
+        // yet have a ZohoId in the DB
+        zohoSalesOrders: {
+          none: {
+            zohoAppId: this.zohoApp.id,
+          },
+        },
+      },
+      include: {
+        lineItems: true,
+        contacts: {
+          where: {
+            tenantId: this.zohoApp.tenantId,
+          },
+          include: {
+            zohoContactPersons: true,
+          },
+        },
+      },
+    });
+    this.logger.info(
+      `Received ${ordersFromEciDb.length} orders that are not synced with Zoho`,
+    );
+
+    // for (const order of ordersFromEciDb) {
+    //   // find the corresponding zohoContacts / Contactpersons
+    //   const zohoContact = await this.db.zohoContactPerson.findFirst({
+    //     where: {
+    //       zohoAppId: this.zohoApp.id,
+    //       email: order.contacts,
+    //     },
+    //   });
+    // }
+  }
 }

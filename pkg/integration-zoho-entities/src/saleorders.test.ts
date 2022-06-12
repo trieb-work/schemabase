@@ -12191,7 +12191,7 @@ describe("Zoho Inventory SalesOrders Sync", () => {
     if (!zohoApp) throw new Error("No testing Zoho App found!");
   });
 
-  test("It should work to sync Zoho Sales Order with internal ECI DB", async () => {
+  test("It should work to sync Zoho Sales Order to internal ECI DB", async () => {
     const xx = new ZohoSalesOrdersSyncService({
       zoho: mockedZohoClient,
       logger: new NoopLogger(),
@@ -12199,5 +12199,15 @@ describe("Zoho Inventory SalesOrders Sync", () => {
       zohoApp,
     });
     await xx.syncToECI();
+  }, 90000);
+
+  test("It should work to sync Zoho Sales Order from internal ECI DB", async () => {
+    const xx = new ZohoSalesOrdersSyncService({
+      zoho: mockedZohoClient,
+      logger: new NoopLogger(),
+      db: new PrismaClient(),
+      zohoApp,
+    });
+    await xx.syncFromECI();
   }, 90000);
 });
