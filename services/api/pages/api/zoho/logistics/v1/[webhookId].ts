@@ -7,7 +7,7 @@ import {
 } from "@eci/pkg/webhook-context";
 import { HttpError } from "@eci/pkg/errors";
 import { LogisticStats } from "@eci/pkg/integration-zoho-logistics";
-import { ZohoClientInstance } from "@trieb.work/zoho-ts";
+import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts";
 
 const requestValidation = z.object({
   query: z.object({
@@ -77,11 +77,12 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     throw new HttpError(400, "Zoho connection not enabled");
   }
 
-  const zoho = new ZohoClientInstance({
-    zohoClientId: zohoApp.clientId,
-    zohoClientSecret: zohoApp.clientSecret,
-    zohoOrgId: zohoApp.orgId,
-  });
+  const zoho = new Zoho(
+    await ZohoApiClient.fromOAuth({
+      orgId: zohoApp.orgId,
+      client: { id: zohoApp.clientId, secret: zohoApp.clientSecret },
+    }),
+  );
 
   const customFields = {
     currentOrdersReadyToFulfill: logisticsApp.currentOrdersCustomViewId,
