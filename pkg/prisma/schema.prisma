@@ -436,7 +436,7 @@ model Contact {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  zohoContacts ZohoContactPerson[]
+  zohoContactPersons ZohoContactPerson[]
 
   @@unique([email, tenantId])
 }
@@ -1101,6 +1101,7 @@ model SaleorZohoIntegration {
   syncInvoices      Boolean @default(false)
   syncPayments      Boolean @default(false)
   syncProductStocks Boolean @default(false)
+  syncProducts      Boolean @default(false)
   syncTaxes         Boolean @default(false)
 
   // How frequent the synchronisation should run. Default once per hour.

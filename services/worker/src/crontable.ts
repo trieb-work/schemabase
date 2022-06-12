@@ -6,6 +6,7 @@ import {
 } from "@eci/pkg/scheduler/scheduler";
 import { createWorkflowFactory } from "@eci/pkg/scheduler/workflow";
 import { ZohoContactSyncWorkflow } from "./workflows/zohoContactSync";
+import { ZohoItemSyncWorkflow } from "./workflows/zohoItemSync";
 import { ZohoTaxSyncWorkflow } from "./workflows/zohoTaxSync";
 import { ZohoWarehouseSyncWorkflow } from "./workflows/zohoWarehouseSync";
 
@@ -87,21 +88,17 @@ export class CronTable {
           [tenantId, id],
         );
       }
-
-      // if(enabledZohoIntegration.syncProductStocks){
-      //     this.scheduler.schedule(
-      //         createWorkflowFactory(ZohoSyncProductStocksWorkflow, commonWorkflowClients, commonWorkflowConfig),
-      //         { ...commonCronConfig, offset: 2, },
-      //         [enabledZohoIntegration.tenantId, enabledZohoIntegration.id]
-      //     );
-      // }
-      // if(enabledZohoIntegration.syncPayments){
-      //     this.scheduler.schedule(
-      //         createWorkflowFactory(ZohoSyncPaymentsWorkflow, commonWorkflowClients, commonWorkflowConfig),
-      //         { ...commonCronConfig, offset: 3, },
-      //         [enabledZohoIntegration.tenantId, enabledZohoIntegration.id]
-      //     );
-      // }
+      if (enabledZohoIntegration.syncProducts) {
+        this.scheduler.schedule(
+          createWorkflowFactory(
+            ZohoItemSyncWorkflow,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 1 },
+          [tenantId, id],
+        );
+      }
     }
     this.clients.logger.info("Successfully scheduled all Zoho workflows");
   }

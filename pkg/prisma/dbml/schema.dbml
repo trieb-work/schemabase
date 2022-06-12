@@ -295,7 +295,7 @@ Table Contact {
   companyId String
   tenant Tenant [not null]
   tenantId String [not null]
-  zohoContacts ZohoContactPerson [not null]
+  zohoContactPersons ZohoContactPerson [not null]
 
   indexes {
     (email, tenantId) [unique]
@@ -699,6 +699,7 @@ Table SaleorZohoIntegration {
   syncInvoices Boolean [not null, default: false]
   syncPayments Boolean [not null, default: false]
   syncProductStocks Boolean [not null, default: false]
+  syncProducts Boolean [not null, default: false]
   syncTaxes Boolean [not null, default: false]
   cronScheduleZoho String [not null, default: '0/15 * * * *']
   cronScheduleSaleor String [not null, default: '0/15 * * * *']
