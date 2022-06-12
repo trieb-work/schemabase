@@ -163,7 +163,7 @@ async function main() {
 
 main().catch((err) => {
   const logger = new Logger(/* TODO: */);
-  logger.error("Main dwh failed", err);
+  logger.error("Main process failed", err);
   console.error(err);
   process.exit(1);
 });
