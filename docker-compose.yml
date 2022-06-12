@@ -71,7 +71,6 @@ services:
       - kafka
 
   saleor_api:
-    #image: registry.gitlab.com/trieb.work/saleor:3.0.0-b.13-triebwork1
     image: ghcr.io/saleor/saleor:3.0.0
     container_name: saleor.eci
     ports:
