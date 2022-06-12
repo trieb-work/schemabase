@@ -66,7 +66,7 @@ jobs:
 
       # export docker images to be used in next jobs below
       - name: Upload image ${{ matrix.service }} as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.service }}
           path: /tmp/${{ matrix.service }}.tar
@@ -84,7 +84,7 @@ jobs:
 
     steps:
       - name: Load images from artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           path: images
 
@@ -140,7 +140,7 @@ jobs:
 
       # load docker images from build jobs
       - name: Load images from artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           path: images
 
