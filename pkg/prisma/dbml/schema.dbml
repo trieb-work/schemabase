@@ -87,8 +87,24 @@ Table ZohoItem {
 
 Table ZohoContact {
   id String [not null]
-  createdAt DateTime [not null]
-  updatedAt DateTime [not null]
+  createdAt DateTime
+  updatedAt DateTime
+  zohoApp ZohoApp [not null]
+  zohoAppId String [not null]
+  zohoContactPerson ZohoContactPerson [not null]
+  zohoSalesOrder ZohoSalesOrder [not null]
+  zohoInvoice ZohoInvoice [not null]
+  zohoPayment ZohoPayment [not null]
+
+  indexes {
+    (id, zohoAppId) [unique]
+  }
+}
+
+Table ZohoContactPerson {
+  id String [not null]
+  zohoContact ZohoContact [not null]
+  zohoContactId String [not null]
   firstName String
   lastName String
   email String
@@ -116,6 +132,9 @@ Table ZohoSalesOrder {
   orderId String [unique, not null]
   zohoApp ZohoApp [not null]
   zohoAppId String [not null]
+  ZohoContactPerson ZohoContactPerson
+  zohoContactPersonId String
+  zohoContactPersonZohoAppId String
 
   indexes {
     (id, zohoAppId) [unique]
@@ -134,6 +153,9 @@ Table ZohoInvoice {
   invoiceId String [not null]
   zohoApp ZohoApp [not null]
   zohoAppId String [not null]
+  ZohoContactPerson ZohoContactPerson
+  zohoContactPersonId String
+  zohoContactPersonZohoAppId String
 
   indexes {
     (id, zohoAppId) [unique]
@@ -151,6 +173,9 @@ Table ZohoPayment {
   paymentId String [unique]
   zohoApp ZohoApp [not null]
   zohoAppId String [not null]
+  ZohoContactPerson ZohoContactPerson
+  zohoContactPersonId String
+  zohoContactPersonZohoAppId String
 
   indexes {
     (id, zohoAppId) [unique]
@@ -270,7 +295,7 @@ Table Contact {
   companyId String
   tenant Tenant [not null]
   tenantId String [not null]
-  zohoContacts ZohoContact [not null]
+  zohoContacts ZohoContactPerson [not null]
 
   indexes {
     (email, tenantId) [unique]
@@ -332,6 +357,7 @@ Table Order {
   shippingPriceNet Float
   shippingPriceGross Float
   shippingPriceTaxPercentage Float
+  discountValueNet Float [not null, default: 0]
   totalPriceNet Float
   totalPriceGross Float [not null]
   contacts Contact [not null]
@@ -539,6 +565,7 @@ Table ZohoApp {
   zohoSalesOrder ZohoSalesOrder [not null]
   zohoLineItems ZohoLineItem [not null]
   zohoTaxes ZohoTax [not null]
+  ZohoContactPerson ZohoContactPerson [not null]
 }
 
 Table SaleorApp {
@@ -873,9 +900,13 @@ Ref: ZohoItem.productVariantId > ProductVariant.id [delete: Cascade]
 
 Ref: ZohoItem.zohoAppId > ZohoApp.id [delete: Cascade]
 
-Ref: ZohoContact.contactId > Contact.id [delete: Cascade]
-
 Ref: ZohoContact.zohoAppId > ZohoApp.id [delete: Cascade]
+
+Ref: ZohoContactPerson.zohoContactId > ZohoContact.id [delete: Cascade]
+
+Ref: ZohoContactPerson.contactId > Contact.id [delete: Cascade]
+
+Ref: ZohoContactPerson.zohoAppId > ZohoApp.id [delete: Cascade]
 
 Ref: ZohoSalesOrder.zohoContactId > ZohoContact.id [delete: Cascade]
 
@@ -883,17 +914,23 @@ Ref: ZohoSalesOrder.orderId > Order.id [delete: Cascade]
 
 Ref: ZohoSalesOrder.zohoAppId > ZohoApp.id [delete: Cascade]
 
+Ref: ZohoSalesOrder.(zohoContactPersonId, zohoContactPersonZohoAppId) > ZohoContactPerson.(id, zohoAppId)
+
 Ref: ZohoInvoice.zohoContactId > ZohoContact.id [delete: Cascade]
 
 Ref: ZohoInvoice.invoiceId > Invoice.id [delete: Cascade]
 
 Ref: ZohoInvoice.zohoAppId > ZohoApp.id [delete: Cascade]
 
+Ref: ZohoInvoice.(zohoContactPersonId, zohoContactPersonZohoAppId) > ZohoContactPerson.(id, zohoAppId)
+
 Ref: ZohoPayment.zohoContactId > ZohoContact.id [delete: Cascade]
 
 Ref: ZohoPayment.paymentId > Payment.id [delete: Cascade]
 
 Ref: ZohoPayment.zohoAppId > ZohoApp.id [delete: Cascade]
+
+Ref: ZohoPayment.(zohoContactPersonId, zohoContactPersonZohoAppId) > ZohoContactPerson.(id, zohoAppId)
 
 Ref: ZohoWarehouse.warehouseId > Warehouse.id [delete: Cascade]
 

@@ -132,11 +132,34 @@ model ZohoItem {
 }
 
 model ZohoContact {
-  // Zoho Internal Id
+  // Zoho Internal Contact Id
   id String
 
-  createdAt DateTime
-  updatedAt DateTime
+  // We set these optional, so that we
+  // can easily upsert ZohoContactPerson
+  createdAt DateTime?
+  updatedAt DateTime?
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId String
+
+  zohoContactPerson ZohoContactPerson[]
+  zohoSalesOrder    ZohoSalesOrder[]
+  zohoInvoice       ZohoInvoice[]
+  zohoPayment       ZohoPayment[]
+
+
+  @@unique([id, zohoAppId])
+
+}
+
+// Zoho knows Contacts and ContactPersons.
+model ZohoContactPerson {
+  // Zoho Internal ContactPerson Id
+  id String
+
+  zohoContact   ZohoContact @relation(fields: [zohoContactId], references: [id], onDelete: Cascade)
+  zohoContactId String
 
   // For easy look-up directly in the ZohoContact model,
   // we store the email firstname etc here as well.
@@ -190,6 +213,9 @@ model ZohoSalesOrder {
 
   @@unique([id, zohoAppId])
   @@unique([number, zohoAppId])
+  ZohoContactPerson          ZohoContactPerson? @relation(fields: [zohoContactPersonId, zohoContactPersonZohoAppId], references: [id, zohoAppId])
+  zohoContactPersonId        String?
+  zohoContactPersonZohoAppId String?
 }
 
 // Zoho specific model.
@@ -216,6 +242,9 @@ model ZohoInvoice {
 
   @@unique([id, zohoAppId])
   @@unique([number, zohoAppId])
+  ZohoContactPerson          ZohoContactPerson? @relation(fields: [zohoContactPersonId, zohoContactPersonZohoAppId], references: [id, zohoAppId])
+  zohoContactPersonId        String?
+  zohoContactPersonZohoAppId String?
 }
 
 // Zoho specific model.
@@ -237,6 +266,9 @@ model ZohoPayment {
 
 
   @@unique([id, zohoAppId])
+  ZohoContactPerson          ZohoContactPerson? @relation(fields: [zohoContactPersonId, zohoContactPersonZohoAppId], references: [id, zohoAppId])
+  zohoContactPersonId        String?
+  zohoContactPersonZohoAppId String?
 }
 
 model ZohoWarehouse {
@@ -257,7 +289,7 @@ model ZohoTax {
   // Zoho Internal Id
   id String
 
-  tax   Tax @relation(fields: [taxId], references: [id], onDelete: Cascade)
+  tax   Tax    @relation(fields: [taxId], references: [id], onDelete: Cascade)
   taxId String
 
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
@@ -326,18 +358,18 @@ model Tax {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name       String
+  name           String
   // Lowercase, trim, whitespace remove, special characters remove etc.
   normalizedName String
-  percentage Float
+  percentage     Float
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
   zohoTaxes ZohoTax[]
 
-  @@unique([normalizedName, tenantId])
 
+  @@unique([normalizedName, tenantId])
 }
 
 // The ECI internal payments model
@@ -404,7 +436,7 @@ model Contact {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  zohoContacts ZohoContact[]
+  zohoContacts ZohoContactPerson[]
 
   @@unique([email, tenantId])
 }
@@ -449,24 +481,24 @@ model LineItem {
   order   Order  @relation(fields: [orderId], references: [id])
   orderId String
 
-  quantity Float
-  sku              String
+  quantity      Float
+  sku           String
   // Tax Percentage as number (19, 7)
-  taxPercentage   Float
-  
+  taxPercentage Float
+
   // the total price of the line item.
   // Optional, as we might have just one of the two values
   // on hand
-  totalPriceNet Float?
+  totalPriceNet   Float?
   totalPriceGross Float?
 
   // The disount amount, that is applied
-  // to the net price. 
+  // to the net price.
   discountValueNet Float @default(0)
 
   productVariant   ProductVariant @relation(fields: [productVariantId, sku], references: [id, sku])
   productVariantId String
-  
+
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -486,6 +518,7 @@ enum OrderStatus {
   closed
   canceled
 }
+
 enum OrderPaymentStatus {
   unpaid
   fullyPaid
@@ -493,6 +526,7 @@ enum OrderPaymentStatus {
   fullyRefunded
   partiallyRefunded
 }
+
 enum OrderShipmentStatus {
   pending
   partiallyShipped
@@ -510,8 +544,8 @@ model Order {
   // deprecated!
   externalOrderId String?
 
-  orderStatus   OrderStatus @default(draft)
-  paymentStatus OrderPaymentStatus @default(unpaid)
+  orderStatus    OrderStatus         @default(draft)
+  paymentStatus  OrderPaymentStatus  @default(unpaid)
   shipmentStatus OrderShipmentStatus @default(pending)
 
   // Order-Numbers have to be unique per Tenant!
@@ -520,12 +554,18 @@ model Order {
 
   lineItems LineItem[]
 
-  shippingPriceNet   Float?  
-  shippingPriceGross Float?
+  shippingPriceNet           Float?
+  shippingPriceGross         Float?
   shippingPriceTaxPercentage Float?
 
-  totalPriceNet     Float?
-  totalPriceGross   Float
+  // The disount amount, that is applied
+  // to the net, undiscounted price.
+  // Discounts never get applied on shipping costs
+  discountValueNet Float @default(0)
+
+  // The final, total price
+  totalPriceNet   Float?
+  totalPriceGross Float
 
   // The end customers emails where we send transactional emails to
   contacts Contact[]
@@ -833,6 +873,7 @@ model ZohoApp {
   zohoSalesOrder        ZohoSalesOrder[]
   zohoLineItems         ZohoLineItem[]
   zohoTaxes             ZohoTax[]
+  ZohoContactPerson     ZohoContactPerson[]
 }
 
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor
