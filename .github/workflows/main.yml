@@ -96,7 +96,7 @@ jobs:
           --create-namespace
           --namespace=eci-prod
           --set=imagePullSecret="regcred"
-          --set=image.imageName="${{ env.REGISTRY }}/${{ github.repository }}/worker::$(git rev-parse --short HEAD)"
+          --set=image.imageName="${{ env.REGISTRY }}/${{ github.repository }}/worker:sha-$(git rev-parse --short HEAD)"
           --set=eciEnv="production"
           --set=databaseUrl="${{ secrets.DATABASE_URL }}"
           --set=signingKey="${{ secrets.SIGNING_KEY }}"
@@ -155,7 +155,7 @@ jobs:
           --create-namespace
           --namespace=eci-prod
           --set=imagePullSecret="regcred"
-          --set=image.imageName="${{ env.REGISTRY }}/${{ github.repository }}/logdrain:$(git rev-parse --short HEAD)"
+          --set=image.imageName="${{ env.REGISTRY }}/${{ github.repository }}/logdrain:sha-$(git rev-parse --short HEAD)"
           --set=eciEnv="production"
           --set=databaseUrl="${{ secrets.DATABASE_URL }}"
           --set=redis.host="${{ secrets.REDIS_HOST }}"
