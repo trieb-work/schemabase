@@ -9,7 +9,7 @@ interface SaleorProductSyncServiceConfig {
   saleorClient: {
     saleorEntitySyncProducts: (variables: {
       first: number;
-      channel: string;
+      channel?: string;
       after: string;
     }) => Promise<SaleorEntitySyncProductsQuery>;
   };
@@ -24,7 +24,7 @@ export class SaleorProductSyncService {
   public readonly saleorClient: {
     saleorEntitySyncProducts: (variables: {
       first: number;
-      channel: string;
+      channel?: string;
       after: string;
     }) => Promise<SaleorEntitySyncProductsQuery>;
   };
