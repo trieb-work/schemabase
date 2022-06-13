@@ -1,6 +1,6 @@
 import { ILogger } from "@eci/pkg/logger";
 import { SaleorEntitySyncProductsQuery } from "@eci/pkg/saleor";
-import { InstalledSaleorApp, PrismaClient, Tenant } from "@eci/pkg/prisma";
+import { InstalledSaleorApp, PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
@@ -15,7 +15,7 @@ interface SaleorProductSyncServiceConfig {
   };
   channelSlug: string;
   installedSaleorApp: InstalledSaleorApp;
-  tenant: Tenant;
+  tenantId: string;
   db: PrismaClient;
   logger: ILogger;
 }
@@ -35,7 +35,7 @@ export class SaleorProductSyncService {
 
   public readonly installedSaleorApp: InstalledSaleorApp;
 
-  public readonly tenant: Tenant;
+  public readonly tenantId: string;
 
   private readonly cronState: CronStateHandler;
 
@@ -46,10 +46,10 @@ export class SaleorProductSyncService {
     this.channelSlug = config.channelSlug;
     this.logger = config.logger;
     this.installedSaleorApp = config.installedSaleorApp;
-    this.tenant = config.tenant;
+    this.tenantId = config.tenantId;
     this.db = config.db;
     this.cronState = new CronStateHandler({
-      tenantId: this.tenant.id,
+      tenantId: this.tenantId,
       appId: this.installedSaleorApp.id,
       db: this.db,
       syncEntity: "items",
@@ -136,7 +136,7 @@ export class SaleorProductSyncService {
                 where: {
                   sku_tenantId: {
                     sku: variant.sku,
-                    tenantId: this.tenant.id,
+                    tenantId: this.tenantId,
                   },
                 },
                 create: {
@@ -144,7 +144,7 @@ export class SaleorProductSyncService {
                   sku: variant.sku,
                   tenant: {
                     connect: {
-                      id: this.tenant.id,
+                      id: this.tenantId,
                     },
                   },
                   product: {
@@ -152,14 +152,14 @@ export class SaleorProductSyncService {
                       where: {
                         normalizedName_tenantId: {
                           normalizedName: normalizedProductName,
-                          tenantId: this.tenant.id,
+                          tenantId: this.tenantId,
                         },
                       },
                       create: {
                         id: id.id("product"),
                         tenant: {
                           connect: {
-                            id: this.tenant.id,
+                            id: this.tenantId,
                           },
                         },
                         name: product.name,
