@@ -51,13 +51,11 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     throw new HttpError(500, "No app found");
   }
 
-  /**
-   * TODO: Don't always install a "catch all" webhook.
-   * We should just install the webhook events we really need - and have different webhook events
-   * for different installedSaleorApps
-   */
-  const app = await ctx.prisma.installedSaleorApp.create({
-    data: {
+  const app = await ctx.prisma.installedSaleorApp.upsert({
+    where: {
+      id: idResponse.app.id,
+    },
+    create: {
       id: idResponse.app.id,
       token,
       webhooks: {
@@ -73,12 +71,40 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
         },
       },
       saleorApp: {
-        create: {
-          id: id.id("publicKey"),
-          name: "eCommerce Integration",
-          // channelSlug: "",
-          tenantId,
-          domain,
+        connectOrCreate: {
+          where: {
+            domain_tenantId: {
+              domain,
+              tenantId,
+            },
+          },
+          create: {
+            id: id.id("publicKey"),
+            name: "eCommerce Integration",
+            // channelSlug: "",
+            tenantId,
+            domain,
+          },
+        },
+      },
+    },
+    update: {
+      token,
+      saleorApp: {
+        connectOrCreate: {
+          where: {
+            domain_tenantId: {
+              domain,
+              tenantId,
+            },
+          },
+          create: {
+            id: id.id("publicKey"),
+            name: "eCommerce Integration",
+            // channelSlug: "",
+            tenantId,
+            domain,
+          },
         },
       },
     },
@@ -92,6 +118,11 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
   ctx.logger.info("Added app to db", { app });
 
+  /**
+   * TODO: Don't always install a "catch all" webhook.
+   * We should just install the webhook events we really need - and have different webhook events
+   * for different installedSaleorApps
+   */
   try {
     const saleorWebhook = await saleorClient.webhookCreate({
       input: {
