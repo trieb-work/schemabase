@@ -892,7 +892,7 @@ model SaleorApp {
 
   name String
 
-  installedSaleorApp InstalledSaleorApp?
+  installedSaleorApps InstalledSaleorApp[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String

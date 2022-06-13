@@ -572,7 +572,7 @@ Table SaleorApp {
   id String [pk]
   domain String [not null]
   name String [not null]
-  installedSaleorApp InstalledSaleorApp
+  installedSaleorApps InstalledSaleorApp [not null]
   tenant Tenant [not null]
   tenantId String [not null]
 
@@ -600,7 +600,6 @@ Table InstalledSaleorApp {
 
   indexes {
     (domain, channelSlug) [unique]
-    (saleorAppId, domain) [unique]
   }
 }
 
@@ -1005,7 +1004,7 @@ Ref: ZohoApp.tenantId > Tenant.id [delete: Cascade]
 
 Ref: SaleorApp.tenantId > Tenant.id [delete: Cascade]
 
-Ref: InstalledSaleorApp.(saleorAppId, domain) - SaleorApp.(id, domain) [delete: Cascade]
+Ref: InstalledSaleorApp.(saleorAppId, domain) > SaleorApp.(id, domain) [delete: Cascade]
 
 Ref: Subscription.tenantId > Tenant.id [delete: Cascade]
 
