@@ -22,7 +22,7 @@ specifiers:
   '@trieb.work/eslint-config-base': ^1.10.0
   '@trieb.work/prettier-base': ^0.1.2
   '@trieb.work/tsconfig-base': ^1.6.4
-  '@trieb.work/zoho-ts': ^0.5.3
+  '@trieb.work/zoho-ts': ^0.5.4
   '@types/async': ^3.2.13
   '@types/faker': ^5.5.9
   '@types/html-to-text': ^8.1.0
@@ -91,7 +91,7 @@ dependencies:
   '@elastic/elasticsearch': 7.17.0
   '@geist-ui/react': 2.2.5_sfoxds7t5ydpegc3knd667wn6m
   '@prisma/client': 3.14.0_prisma@3.14.0
-  '@trieb.work/zoho-ts': 0.5.3
+  '@trieb.work/zoho-ts': 0.5.4
   apollo-datasource: 3.3.1
   apollo-server: 3.6.7_graphql@15.8.0
   apollo-server-core: 3.6.7_graphql@15.8.0
@@ -2767,8 +2767,8 @@ packages:
     resolution: {integrity: sha512-DTHkbsRuE9fEl+rwMPNoVXcs/JCSKHIFFluE11MgsMXleOotrw+XdzpQU15xrAFiGHpcY92a3XJwxkr3HBoNqw==}
     dev: true
 
-  /@trieb.work/zoho-ts/0.5.3:
-    resolution: {integrity: sha512-ztiERnhN499Tj53LjezP+/CV0eVMeNdhvGBgRCNsmiAeOXe9MtO4w9WULD+R5yNMGJDhyj984b2+xNaW4GTHkA==}
+  /@trieb.work/zoho-ts/0.5.4:
+    resolution: {integrity: sha512-L4CtVmfdxS5ZJhq0O3WV+sD/qFV/Y8BfPPrvuyuZHd1i5Lo45sOnasHlptMvic2ZyF+pwPDwV2cMJcry2Gwduw==}
     dependencies:
       async-retry: 1.3.3
       await-timeout: 1.1.1
