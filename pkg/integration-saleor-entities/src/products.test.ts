@@ -1035,7 +1035,7 @@ describe("Saleor Entity Sync Products Test", () => {
       logger: new NoopLogger(),
       db: prismaClient,
       installedSaleorApp,
-      tenant,
+      tenantId: tenant.id,
     });
     await xx.syncToECI();
   });
