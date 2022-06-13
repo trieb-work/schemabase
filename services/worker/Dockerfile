@@ -1,16 +1,13 @@
 FROM node:14 as build
 WORKDIR /eci
 
-# RUN apk add make
-RUN npm i -g pnpm
-# RUN apt update
-# RUN apt install openssl
+RUN npm i -g pnpm@^v7.2.1 
 
-COPY package.json pnpm-lock.yaml ./
+COPY pnpm-lock.yaml ./
 
 # The schema.prisma file must be available when running `pnpm install`. Otherwise the prisma binary will not be downloaded
 COPY ./pkg/prisma/* ./pkg/prisma/
-RUN pnpm install --frozen-lockfile
+RUN pnpm fetch --prod
 COPY . .
 RUN make build-worker
 
