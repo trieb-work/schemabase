@@ -2,6 +2,8 @@ import { getSdk, PageInfoMetaFragment, Sdk } from "./generated/graphql";
 import { DocumentNode } from "graphql";
 import { GraphQLClient } from "graphql-request";
 import { ECI_TRACE_HEADER } from "@eci/pkg/constants";
+import { PrismaClient } from "@eci/pkg/prisma";
+import { id } from "@eci/pkg/ids";
 
 export interface SaleorServiceConfig {
   /**
@@ -42,6 +44,34 @@ export function createSaleorClient({
   }
 
   return getSdk(requester);
+}
+
+/**
+ * Get all needed authentication data from the db and create a valid saleor client from it
+ * @param installedSaleorAppId
+ * @param prisma
+ * @returns
+ */
+export async function getSaleorClientAndEntry(
+  installedSaleorAppId: string,
+  prisma: PrismaClient,
+) {
+  const installedSaleorApp = await prisma.installedSaleorApp.findUnique({
+    where: {
+      id: installedSaleorAppId,
+    },
+    include: { saleorApp: true },
+  });
+  if (!installedSaleorApp)
+    throw new Error(
+      `Could not find zoho app with provided id ${installedSaleorAppId}`,
+    );
+  const client = createSaleorClient({
+    graphqlEndpoint: installedSaleorApp.domain,
+    token: installedSaleorApp.token,
+    traceId: id.id("trace"),
+  });
+  return { client, installedSaleorApp };
 }
 
 type PagedSaleorResult<ResultNode, EntryName extends string> = Record<

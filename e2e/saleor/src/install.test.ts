@@ -89,7 +89,7 @@ describe("Saleor app installation", () => {
       include: {
         saleorApps: {
           include: {
-            installedSaleorApp: {
+            installedSaleorApps: {
               include: {
                 webhooks: {
                   include: { secret: true },
@@ -103,7 +103,7 @@ describe("Saleor app installation", () => {
     /**
      * Assert data in our db
      */
-    const appInDatabase = savedTenant?.saleorApps[0].installedSaleorApp;
+    const appInDatabase = savedTenant?.saleorApps[0].installedSaleorApps[0];
     if (appInDatabase == null) {
       throw new Error("Error during setup");
     }

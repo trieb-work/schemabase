@@ -151,12 +151,12 @@ beforeAll(async () => {
    * Upserting because there is a unique constraint on the domain
    */
   await prisma.saleorApp.create({
-    include: { installedSaleorApp: true },
+    include: { installedSaleorApps: true },
     data: {
       id: id.id("test"),
       name: id.id("test"),
       tenantId: tenant.id,
-      installedSaleorApp: {
+      installedSaleorApps: {
         create: {
           id: id.id("test"),
           token: "3545",

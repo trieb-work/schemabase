@@ -6,8 +6,8 @@ ENV DATABASE_URL $DATABASE_URL
 
 RUN npm i -g pnpm
 
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install
+COPY pnpm-lock.yaml ./
+RUN pnpm fetch
 COPY . . 
 
 
