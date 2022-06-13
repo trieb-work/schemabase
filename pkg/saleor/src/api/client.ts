@@ -2,7 +2,7 @@ import { getSdk, PageInfoMetaFragment, Sdk } from "./generated/graphql";
 import { DocumentNode } from "graphql";
 import { GraphQLClient } from "graphql-request";
 import { ECI_TRACE_HEADER } from "@eci/pkg/constants";
-import { Prisma, PrismaClient } from "@eci/pkg/prisma";
+import { PrismaClient } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
 
 export interface SaleorServiceConfig {
