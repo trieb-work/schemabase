@@ -7,6 +7,7 @@ import {
 import { createWorkflowFactory } from "@eci/pkg/scheduler/workflow";
 import { ZohoContactSyncWorkflow } from "./workflows/zohoContactSync";
 import { ZohoItemSyncWorkflow } from "./workflows/zohoItemSync";
+import { ZohoSalesOrderSyncWorkflow } from "./workflows/zohoSalesOrderSync";
 import { ZohoTaxSyncWorkflow } from "./workflows/zohoTaxSync";
 import { ZohoWarehouseSyncWorkflow } from "./workflows/zohoWarehouseSync";
 
@@ -73,7 +74,7 @@ export class CronTable {
             this.clients,
             commonWorkflowConfig,
           ),
-          { ...commonCronConfig, offset: 0 },
+          { ...commonCronConfig, offset: 1 },
           [tenantId, id],
         );
       }
@@ -84,7 +85,7 @@ export class CronTable {
             this.clients,
             commonWorkflowConfig,
           ),
-          { ...commonCronConfig, offset: 0 },
+          { ...commonCronConfig, offset: 2 },
           [tenantId, id],
         );
       }
@@ -95,7 +96,18 @@ export class CronTable {
             this.clients,
             commonWorkflowConfig,
           ),
-          { ...commonCronConfig, offset: 1 },
+          { ...commonCronConfig, offset: 3 },
+          [tenantId, id],
+        );
+      }
+      if (enabledZohoIntegration.syncOrders) {
+        this.scheduler.schedule(
+          createWorkflowFactory(
+            ZohoSalesOrderSyncWorkflow,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 4 },
           [tenantId, id],
         );
       }
