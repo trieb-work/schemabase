@@ -147,7 +147,6 @@ test: build db-push
 #  Output Directory: `dist/apps/api/.next`
 build-api-prod: build
 	pnpm next build ./services/api
-	pnpm prisma migrate deploy
 
 build-logdrain-prod: build
 	pnpm next build ./services/logdrain
