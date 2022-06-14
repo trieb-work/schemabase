@@ -25,7 +25,8 @@ async function main() {
       env: env.require("ECI_ENV"),
     },
     enableElasticLogDrain: env.get("ECI_ENV") === "production",
-  });
+  }).with({ "service.name": "eci" });
+
   logger.info("Starting worker");
 
   let kafkaConnected = false;
