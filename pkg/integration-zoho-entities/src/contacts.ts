@@ -154,6 +154,9 @@ export class ZohoContactSyncService {
     // be run too frequently
     const contactPersons: ContactPerson[] =
       await this.zoho.contactperson.list();
+    this.logger.info(
+      `We have ${contactPersons.length} Zoho ContactPersons to upsert`,
+    );
 
     for (const contactPerson of contactPersons) {
       const lowercaseEmail = contactPerson.email.toLowerCase();
