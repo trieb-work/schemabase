@@ -125,8 +125,6 @@ export class WorkflowScheduler {
             })
             .with({ jobId: job.id, queueName });
 
-          logger.info("Starting job");
-
           const runtimeContext = {
             logger,
           };
