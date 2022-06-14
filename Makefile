@@ -105,7 +105,10 @@ build-logdrain: build
 # Builds the worker service
 build-worker: build
 	pnpm esbuild --platform=node --bundle --outfile=services/worker/dist/main.js services/worker/src/main.ts
-	
+
+build-bullboard: build
+	pnpm esbuild --platform=node --bundle --outfile=services/bullboard/dist/main.js services/bullboard/src/main.ts	
+
 # Utility to stop, rebuild and restart the api in docker 
 rebuild-api:
 	docker compose stop eci_api

@@ -1,0 +1,17 @@
+
+image:
+  imageName: ghcr.io/trieb.work/anwr-qualibet-statistics/bullboard
+
+ingress:
+  enabled: true
+  host:
+  tls:
+    secretName:
+redis:
+  existingSecret:
+    name:
+  service:
+  port: 6379 
+nodeEnv: production
+
+imagePullSecret: github

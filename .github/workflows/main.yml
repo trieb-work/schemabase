@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: ["worker", "logdrain"]
+        service: ["worker", "logdrain", "bullboard"]
     env:
       REGISTRY: ghcr.io
       IMAGE_NAME: ${{ github.repository }}/${{matrix.service}}
