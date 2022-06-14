@@ -24,15 +24,11 @@ spec:
           image: "{{ .Values.image.imageName }}"
           env:  
             - name: REDIS_HOST
-              value: "{{ .Values.redis.service }}"
+              value: "{{ or .Values.redis.service .Values.redis.host }}"
             - name: REDIS_PORT
               value: "{{ .Values.redis.port }}"
             - name: REDIS_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  key: redis-password
-                  name: "{{ .Values.redis.existingSecret.name }}"
-                  optional: false
+              value: "{{ .Values.redis.password }}"
             - name: NODE_ENV
               value: "{{ .Values.nodeEnv }}"
           resources:

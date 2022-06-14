@@ -8,8 +8,8 @@ ingress:
   tls:
     secretName:
 redis:
-  existingSecret:
-    name:
+  password:
+  host: ""
   service:
   port: 6379 
 nodeEnv: production
