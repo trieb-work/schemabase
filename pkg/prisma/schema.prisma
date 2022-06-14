@@ -1105,10 +1105,10 @@ model SaleorZohoIntegration {
   syncTaxes         Boolean @default(false)
 
   // How frequent the synchronisation should run. Default once per hour.
-  cronScheduleZoho   String @default("0/30 * * * *")
-  cronScheduleSaleor String @default("0/30 * * * *")
+  cronScheduleZoho   String @default("*/30 * * * *")
+  cronScheduleSaleor String @default("*/30 * * * *")
   // Time in seconds how long one workflow can run before a timeout occurs.
-  cronTimeoutZoho    Int    @default(600)
+  cronTimeoutZoho    Int    @default(800)
   cronTimeoutSaleor  Int    @default(600)
 }
 
