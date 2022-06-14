@@ -45,8 +45,8 @@ describe("Saleor Entity Sync Warehouses Test", () => {
       saleorClient: mockedSaleorClient,
       logger: new NoopLogger(),
       db: prismaClient,
-      installedSaleorApp,
-      tenant,
+      installedSaleorAppId: installedSaleorApp.id,
+      tenantId: tenant.id,
     });
     await xx.syncToECI();
   });

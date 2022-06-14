@@ -1,6 +1,6 @@
 import { ILogger } from "@eci/pkg/logger";
 import { WarehousesQuery } from "@eci/pkg/saleor";
-import { InstalledSaleorApp, PrismaClient, Tenant } from "@eci/pkg/prisma";
+import { PrismaClient } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
 
@@ -8,8 +8,8 @@ interface SaleorWarehouseSyncServiceConfig {
   saleorClient: {
     warehouses: (variables: { first: number }) => Promise<WarehousesQuery>;
   };
-  installedSaleorApp: InstalledSaleorApp;
-  tenant: Tenant;
+  installedSaleorAppId: string;
+  tenantId: string;
   db: PrismaClient;
   logger: ILogger;
 }
@@ -21,17 +21,17 @@ export class SaleorWarehouseSyncService {
 
   private readonly logger: ILogger;
 
-  public readonly installedSaleorApp: InstalledSaleorApp;
+  public readonly installedSaleorAppId: string;
 
-  public readonly tenant: Tenant;
+  public readonly tenantId: string;
 
   private readonly db: PrismaClient;
 
   public constructor(config: SaleorWarehouseSyncServiceConfig) {
     this.saleorClient = config.saleorClient;
     this.logger = config.logger;
-    this.installedSaleorApp = config.installedSaleorApp;
-    this.tenant = config.tenant;
+    this.installedSaleorAppId = config.installedSaleorAppId;
+    this.tenantId = config.tenantId;
     this.db = config.db;
   }
 
@@ -61,7 +61,7 @@ export class SaleorWarehouseSyncService {
           where: {
             normalizedName_tenantId: {
               normalizedName: normalizedWarehouseName,
-              tenantId: this.tenant.id,
+              tenantId: this.tenantId,
             },
           },
           create: {
@@ -70,7 +70,7 @@ export class SaleorWarehouseSyncService {
             normalizedName: normalizedWarehouseName,
             tenant: {
               connect: {
-                id: this.tenant.id,
+                id: this.tenantId,
               },
             },
           },
@@ -81,14 +81,14 @@ export class SaleorWarehouseSyncService {
         where: {
           id_installedSaleorAppId: {
             id: warehouse.id,
-            installedSaleorAppId: this.installedSaleorApp.id,
+            installedSaleorAppId: this.installedSaleorAppId,
           },
         },
         create: {
           id: warehouse.id,
           installedSaleorApp: {
             connect: {
-              id: this.installedSaleorApp.id,
+              id: this.installedSaleorAppId,
             },
           },
           warehouse: warehouseCreateOrConnect,
