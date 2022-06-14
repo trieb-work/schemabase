@@ -31,6 +31,10 @@ spec:
               value: "{{ .Values.redis.password }}"
             - name: NODE_ENV
               value: "{{ .Values.nodeEnv }}"
+            - name: GOOGLE_OAUTH_ID
+              value: "{{ .Values.google.clientId }}"
+            - name: GOOGLE_OAUTH_SECRET  
+              value: "{{ .Values.google.clientSecret }}"
           resources:
             requests:
               cpu: 150m
