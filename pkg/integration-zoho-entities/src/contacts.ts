@@ -139,6 +139,7 @@ export class ZohoContactSyncService {
         create: {
           id: id.id("contact"),
           company: companyCreate,
+          email: contact.email,
           tenant: {
             connect: {
               id: tenantId,

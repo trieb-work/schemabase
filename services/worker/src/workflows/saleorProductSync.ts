@@ -44,7 +44,7 @@ export class SaleorProductSyncWorkflow implements Workflow {
       saleorClient,
       db: this.prisma,
       tenantId: installedSaleorApp.saleorApp.tenantId,
-      installedSaleorApp,
+      installedSaleorAppId: this.installedSaleorAppId,
       channelSlug: installedSaleorApp.channelSlug || "",
     });
     await zohoContactSyncService.syncToECI();

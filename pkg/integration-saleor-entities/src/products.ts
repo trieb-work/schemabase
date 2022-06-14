@@ -1,6 +1,6 @@
 import { ILogger } from "@eci/pkg/logger";
 import { SaleorEntitySyncProductsQuery } from "@eci/pkg/saleor";
-import { InstalledSaleorApp, PrismaClient } from "@eci/pkg/prisma";
+import { PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
@@ -14,7 +14,7 @@ interface SaleorProductSyncServiceConfig {
     }) => Promise<SaleorEntitySyncProductsQuery>;
   };
   channelSlug: string;
-  installedSaleorApp: InstalledSaleorApp;
+  installedSaleorAppId: string;
   tenantId: string;
   db: PrismaClient;
   logger: ILogger;
@@ -33,7 +33,7 @@ export class SaleorProductSyncService {
 
   private readonly logger: ILogger;
 
-  public readonly installedSaleorApp: InstalledSaleorApp;
+  public readonly installedSaleorAppId: string;
 
   public readonly tenantId: string;
 
@@ -45,12 +45,12 @@ export class SaleorProductSyncService {
     this.saleorClient = config.saleorClient;
     this.channelSlug = config.channelSlug;
     this.logger = config.logger;
-    this.installedSaleorApp = config.installedSaleorApp;
+    this.installedSaleorAppId = config.installedSaleorAppId;
     this.tenantId = config.tenantId;
     this.db = config.db;
     this.cronState = new CronStateHandler({
       tenantId: this.tenantId,
-      appId: this.installedSaleorApp.id,
+      appId: this.installedSaleorAppId,
       db: this.db,
       syncEntity: "items",
     });
@@ -119,7 +119,7 @@ export class SaleorProductSyncService {
           where: {
             id_installedSaleorAppId: {
               id: variant.id,
-              installedSaleorAppId: this.installedSaleorApp.id,
+              installedSaleorAppId: this.installedSaleorAppId,
             },
           },
           create: {
@@ -128,7 +128,7 @@ export class SaleorProductSyncService {
             updatedAt: product.updatedAt,
             installedSaleorApp: {
               connect: {
-                id: this.installedSaleorApp.id,
+                id: this.installedSaleorAppId,
               },
             },
             productVariant: {

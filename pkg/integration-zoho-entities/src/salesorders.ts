@@ -6,13 +6,11 @@ import { format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 
-type ZohoAppWithTenant = ZohoApp;
-
 export interface ZohoSalesOrdersSyncConfig {
   logger: ILogger;
   zoho: Zoho;
   db: PrismaClient;
-  zohoApp: ZohoAppWithTenant;
+  zohoApp: ZohoApp;
 }
 
 export class ZohoSalesOrdersSyncService {
@@ -22,15 +20,18 @@ export class ZohoSalesOrdersSyncService {
 
   private readonly db: PrismaClient;
 
-  private readonly zohoApp: ZohoAppWithTenant;
+  private readonly zohoApp: ZohoApp;
 
   private readonly cronState: CronStateHandler;
+
+  private readonly tenantId: string;
 
   public constructor(config: ZohoSalesOrdersSyncConfig) {
     this.logger = config.logger;
     this.zoho = config.zoho;
     this.db = config.db;
     this.zohoApp = config.zohoApp;
+    this.tenantId = this.zohoApp.tenantId;
     this.cronState = new CronStateHandler({
       tenantId: this.zohoApp.tenantId,
       appId: this.zohoApp.id,
@@ -40,8 +41,6 @@ export class ZohoSalesOrdersSyncService {
   }
 
   public async syncToECI(): Promise<void> {
-    // const tenantId = this.zohoApp.tenantId;
-
     const cronState = await this.cronState.get();
 
     const now = new Date();
@@ -72,8 +71,6 @@ export class ZohoSalesOrdersSyncService {
       return;
     }
 
-    const tenantId = this.zohoApp.tenantId;
-
     for (const salesorder of salesorders) {
       // We first have to check, if we already have a Zoho Customer to be connected to
       // this salesorder
@@ -89,7 +86,7 @@ export class ZohoSalesOrdersSyncService {
           where: {
             orderNumber_tenantId: {
               orderNumber: salesorder.salesorder_number,
-              tenantId,
+              tenantId: this.tenantId,
             },
           },
           create: {
@@ -98,7 +95,7 @@ export class ZohoSalesOrdersSyncService {
             totalPriceGross: salesorder.total,
             tenant: {
               connect: {
-                id: tenantId,
+                id: this.tenantId,
               },
             },
           },
@@ -178,7 +175,7 @@ export class ZohoSalesOrdersSyncService {
             where: {
               sku_tenantId: {
                 sku: lineItem.sku,
-                tenantId: this.zohoApp.tenantId,
+                tenantId: this.tenantId,
               },
             },
           });
@@ -204,7 +201,7 @@ export class ZohoSalesOrdersSyncService {
                   where: {
                     uniqueString_tenantId: {
                       uniqueString,
-                      tenantId,
+                      tenantId: this.tenantId,
                     },
                   },
                   create: {
@@ -226,7 +223,7 @@ export class ZohoSalesOrdersSyncService {
                     },
                     tenant: {
                       connect: {
-                        id: this.zohoApp.id,
+                        id: this.tenantId,
                       },
                     },
                   },
