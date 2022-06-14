@@ -30,6 +30,11 @@ export function createSaleorClient({
   token,
 }: SaleorServiceConfig): SaleorClient {
   async function requester<R, V>(doc: DocumentNode, vars?: V): Promise<R> {
+    if (!graphqlEndpoint.startsWith("http"))
+      throw new Error(
+        // eslint-disable-next-line max-len
+        `The GraphQL endpoint needs to be a full URL starting with http or https. Received: ${graphqlEndpoint}`,
+      );
     const graphqlClient = new GraphQLClient(graphqlEndpoint);
     graphqlClient.setHeader(ECI_TRACE_HEADER, traceId);
     if (token) {
@@ -67,7 +72,7 @@ export async function getSaleorClientAndEntry(
       `Could not find zoho app with provided id ${installedSaleorAppId}`,
     );
   const client = createSaleorClient({
-    graphqlEndpoint: installedSaleorApp.domain,
+    graphqlEndpoint: `https://${installedSaleorApp.domain}/graphql/`,
     token: installedSaleorApp.token,
     traceId: id.id("trace"),
   });
