@@ -17,8 +17,8 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 passport.use(
   new GoogleStrategy(
     {
-      clientID: env.require("GOOGLE_OAUTH_ID="),
-      clientSecret: env.require("GOOGLE_OAUTH_SECRET="),
+      clientID: env.require("GOOGLE_OAUTH_ID"),
+      clientSecret: env.require("GOOGLE_OAUTH_SECRET"),
       callbackURL: "/login/callback",
     },
     // check, that only users with the correct domain can access
