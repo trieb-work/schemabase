@@ -1,0 +1,29 @@
+{{- $fullName := include "bullboard.fullname" . -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/acme-challenge-type: http01
+    cert-manager.io/cluster-issuer: letsencrypt-prod-dns
+  name: {{ .Release.Name }}
+spec:
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: "/"
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{ .Release.Name }}
+                port: 
+                  number: 13000
+            
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      {{- if .Values.ingress.tls.secretName }}  
+      secretName:  {{ .Values.ingress.tls.secretName }}
+      {{- else }}
+      secretName: "{{ $fullName }}-tls-secret"
+      {{- end }}      
