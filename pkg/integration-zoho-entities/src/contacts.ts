@@ -135,11 +135,12 @@ export class ZohoContactSyncService {
         },
         update: {
           company: companyCreate,
+          email: lowercaseEmail,
         },
         create: {
           id: id.id("contact"),
           company: companyCreate,
-          email: contact.email,
+          email: lowercaseEmail,
           tenant: {
             connect: {
               id: tenantId,
