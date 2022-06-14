@@ -426,7 +426,7 @@ model Contact {
   id        String   @id
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  email     String?
+  email     String
   orders    Order[]
 
   // A Contact can be related to one company
