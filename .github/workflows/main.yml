@@ -5,6 +5,9 @@ on:
     branches:
       - "main"
 
+env:
+  NAMESPACE: eci-prod
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -14,7 +17,6 @@ jobs:
     env:
       REGISTRY: ghcr.io
       IMAGE_NAME: ${{ github.repository }}/${{matrix.service}}
-      NAMESPACE: eci-prod
     steps:
       - name: Checkout
         uses: actions/checkout@v2
