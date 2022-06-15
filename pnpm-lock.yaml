@@ -31,7 +31,6 @@ specifiers:
   '@types/connect-ensure-login': ^0.1.7
   '@types/cookie-session': ^2.0.44
   '@types/express': ^4.17.13
-  '@types/express-session': ^1.17.4
   '@types/faker': ^5.5.9
   '@types/html-to-text': ^8.1.0
   '@types/jest': ^27.4.1
@@ -172,7 +171,6 @@ devDependencies:
   '@types/connect-ensure-login': 0.1.7
   '@types/cookie-session': 2.0.44
   '@types/express': 4.17.13
-  '@types/express-session': 1.17.4
   '@types/faker': 5.5.9
   '@types/html-to-text': 8.1.0
   '@types/jest': 27.4.1
@@ -2930,12 +2928,6 @@ packages:
       '@types/node': 17.0.23
       '@types/qs': 6.9.7
       '@types/range-parser': 1.2.4
-
-  /@types/express-session/1.17.4:
-    resolution: {integrity: sha512-7cNlSI8+oOBUHTfPXMwDxF/Lchx5aJ3ho7+p9jJZYVg9dVDJFh3qdMXmJtRsysnvS+C6x46k9DRYmrmCkE+MVg==}
-    dependencies:
-      '@types/express': 4.17.13
-    dev: true
 
   /@types/express/4.17.13:
     resolution: {integrity: sha512-6bSZTPaTIACxn48l50SR+axgrqm6qXFIxrdAKaG6PaJk3+zuUr35hBlgT7vOmJcum+OEaIBLtHV/qloEAFITeA==}
