@@ -8,7 +8,7 @@ import morgan from "morgan";
 import passport from "passport";
 import express from "express";
 import { ensureLoggedIn } from "connect-ensure-login";
-import session from "express-session";
+import session from "cookie-session";
 import bodyParser from "body-parser";
 import * as workflows from "@eci/services/worker/src/workflows";
 import { env } from "@eci/pkg/env";
