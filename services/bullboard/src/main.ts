@@ -10,8 +10,8 @@ import express from "express";
 import { ensureLoggedIn } from "connect-ensure-login";
 import session from "cookie-session";
 import bodyParser from "body-parser";
-import * as workflows from "@eci/services/worker/src/workflows";
 import { env } from "@eci/pkg/env";
+import Redis from "ioredis";
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
 const HOST = process.env.HOST;
@@ -59,14 +59,37 @@ passport.deserializeUser((user: any, cb: (arg0: null, arg1: any) => void) => {
 async function main() {
   const port = parseInt(env.get("PORT", "13000")!);
 
+  const connection = {
+    host: env.require("REDIS_HOST"),
+    port: Number.parseInt(env.require("REDIS_PORT")),
+    password: env.require("REDIS_PASSWORD"),
+  };
+
+  const redis = new Redis(connection);
+
+  /**
+   * A queue name always look like this:
+   * bull:eci:<TenantId>:<IntegrationId>:<queueName>
+   * bull:eci:pk_7f16573fece94114847dc81d3214eef4:id_wrtrgwqrg:SaleorProductSyncWorkflow
+   */
+  const keys = await redis.keys("bull:eci:*");
+  const queues: string[] = [];
+  for (const key of keys) {
+    const [, , tenant, integrationId, topic] = key.split(":");
+    const queueName = `bull:eci:${tenant}:${integrationId}:${topic}`;
+    if (topic && integrationId && !queues.includes(queueName))
+      queues.push(queueName);
+  }
+  console.info(`Using the following queues: ${queues.join(",")}`);
+
   const serverAdapter: any = new ExpressAdapter();
   serverAdapter.setBasePath("/ui");
 
   createBullBoard({
-    queues: Object.values(workflows).map(
+    queues: queues.map(
       (workflow) =>
         new BullMQAdapter(
-          new Queue(["eci", workflow.name].join(":"), {
+          new Queue(workflow, {
             connection: {
               host: env.require("REDIS_HOST"),
               port: parseInt(env.require("REDIS_PORT")),
