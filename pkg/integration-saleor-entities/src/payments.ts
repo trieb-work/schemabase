@@ -212,4 +212,32 @@ export class SaleorPaymentSyncService {
       lastRunStatus: "success",
     });
   }
+
+  /**
+   * Should be run AFTER syncToECI() - all orders with a related SaleorOrder
+   * and related payments. Tries to create these payments in saleor
+   */
+  public async syncFromECI(): Promise<void> {
+    const ordersWithPayments = await this.db.order.findMany({
+      where: {
+        saleorOrders: {
+          some: {
+            installedSaleorAppId: {
+              in: this.installedSaleorApp.id,
+            },
+          },
+        },
+        payment: {
+          some: {
+            tenantId: {
+              in: this.tenant.id,
+            },
+          },
+        },
+      },
+    });
+    console.log(
+      `Received ${ordersWithPayments.length} orders with saleor order and payments`,
+    );
+  }
 }
