@@ -76,7 +76,7 @@ async function main() {
   const queues: string[] = [];
   for (const key of keys) {
     const [, , tenant, integrationId, topic] = key.split(":");
-    const queueName = `bull:eci:${tenant}:${integrationId}:${topic}`;
+    const queueName = `eci:${tenant}:${integrationId}:${topic}`;
     if (topic && integrationId && !queues.includes(queueName))
       queues.push(queueName);
   }
