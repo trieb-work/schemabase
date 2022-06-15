@@ -8,7 +8,7 @@ import morgan from "morgan";
 import passport from "passport";
 import express from "express";
 import { ensureLoggedIn } from "connect-ensure-login";
-import session from "cookie-session";
+import session from "express-session";
 import bodyParser from "body-parser";
 import { env } from "@eci/pkg/env";
 import Redis from "ioredis";
@@ -80,7 +80,6 @@ async function main() {
     if (topic && integrationId && !queues.includes(queueName))
       queues.push(queueName);
   }
-  console.info(`Using the following queues: ${queues.join(",")}`);
 
   const serverAdapter: any = new ExpressAdapter();
   serverAdapter.setBasePath("/ui");
