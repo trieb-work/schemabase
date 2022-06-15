@@ -7,6 +7,6 @@ spec:
   issuerRef: 
     kind: ClusterIssuer
     name: letsencrypt-prod-dns
-  commonName: "*.eci-prod.eu.nbg1.trwrk.xyz"
+  commonName: "*.eci-prod.eu.fsn1.trwrk.xyz"
   dnsNames:
-    - "*.eci-prod.eu.nbg1.trwrk.xyz"
+    - "*.eci-prod.eu.fsn1.trwrk.xyz"
