@@ -14,12 +14,16 @@ import * as workflows from "@eci/services/worker/src/workflows";
 import { env } from "@eci/pkg/env";
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
+const HOST = process.env.HOST;
+if (!HOST)
+  throw new Error("$HOST not set! Can't create the callback URL for google");
+
 passport.use(
   new GoogleStrategy(
     {
       clientID: env.require("GOOGLE_OAUTH_ID"),
       clientSecret: env.require("GOOGLE_OAUTH_SECRET"),
-      callbackURL: "/login/callback",
+      callbackURL: `https://${HOST}/login/callback`,
     },
     // check, that only users with the correct domain can access
     function (

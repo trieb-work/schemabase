@@ -16,6 +16,6 @@ nodeEnv: production
 
 google:
   clientId:
-  clientSecret: 
+  clientSecret:
 
 imagePullSecret: github

@@ -35,6 +35,8 @@ spec:
               value: "{{ .Values.google.clientId }}"
             - name: GOOGLE_OAUTH_SECRET  
               value: "{{ .Values.google.clientSecret }}"
+            - name: HOST
+              value: "{{ .Values.ingress.host }}"  
           resources:
             requests:
               cpu: 150m
