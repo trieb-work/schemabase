@@ -106,6 +106,10 @@ async function main() {
     serverAdapter.getRouter(),
   );
 
+  app.use("/health", (_req, res) => {
+    res.send({ status: "ok" });
+  });
+
   app.use("/", (_req, res) => {
     res.redirect("/ui");
   });
