@@ -63,7 +63,7 @@ export class CronTable {
         orderPrefix,
       };
       if (enabledZohoIntegration.syncWarehouses) {
-        this.scheduler.schedule(
+        new WorkflowScheduler(this.clients).schedule(
           createWorkflowFactory(
             ZohoWarehouseSyncWorkflow,
             this.clients,
@@ -72,7 +72,7 @@ export class CronTable {
           { ...commonCronConfig, offset: 0 },
           [tenantId, id],
         );
-        this.scheduler.schedule(
+        new WorkflowScheduler(this.clients).schedule(
           createWorkflowFactory(
             SaleorWarehouseSyncWorkflow,
             this.clients,
