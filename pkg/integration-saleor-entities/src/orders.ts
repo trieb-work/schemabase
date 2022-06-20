@@ -9,10 +9,7 @@ import {
   PaymentChargeStatusEnum,
 } from "@eci/pkg/saleor";
 import {
-  InstalledSaleorApp,
   PrismaClient,
-  SaleorZohoIntegration,
-  Tenant,
   OrderStatus as InternalOrderStatus,
   OrderPaymentStatus as InternalOrderPaymentStatus,
 } from "@eci/pkg/prisma";
@@ -35,11 +32,11 @@ interface SaleorOrderSyncServiceConfig {
     }) => Promise<SaleorCronOrdersOverviewQuery>;
   };
   channelSlug: string;
-  installedSaleorApp: InstalledSaleorApp;
-  tenant: Tenant;
+  installedSaleorAppId: string;
+  tenantId: string;
   db: PrismaClient;
-  saleorZohoIntegration: SaleorZohoIntegration;
   logger: ILogger;
+  orderPrefix: string;
 }
 
 export class SaleorOrderSyncService {
@@ -59,27 +56,27 @@ export class SaleorOrderSyncService {
 
   private readonly logger: ILogger;
 
-  public readonly installedSaleorApp: InstalledSaleorApp;
+  public readonly installedSaleorAppId: string;
 
-  public readonly tenant: Tenant;
+  public readonly tenantId: string;
 
   private readonly cronState: CronStateHandler;
 
   private readonly db: PrismaClient;
 
-  private readonly saleorZohoIntegration: SaleorZohoIntegration;
+  private readonly orderPrefix: string;
 
   public constructor(config: SaleorOrderSyncServiceConfig) {
     this.saleorClient = config.saleorClient;
     this.channelSlug = config.channelSlug;
     this.logger = config.logger;
-    this.installedSaleorApp = config.installedSaleorApp;
-    this.tenant = config.tenant;
+    this.installedSaleorAppId = config.installedSaleorAppId;
+    this.tenantId = config.tenantId;
     this.db = config.db;
-    this.saleorZohoIntegration = config.saleorZohoIntegration;
+    this.orderPrefix = config.orderPrefix;
     this.cronState = new CronStateHandler({
-      tenantId: this.tenant.id,
-      appId: this.installedSaleorApp.id,
+      tenantId: this.tenantId,
+      appId: this.installedSaleorAppId,
       db: this.db,
       syncEntity: "orders",
     });
@@ -122,7 +119,7 @@ export class SaleorOrderSyncService {
         this.logger.error(`No orderNumber in order ${order.id} - Can't sync`);
         continue;
       }
-      const prefixedOrderNumber = `${this.saleorZohoIntegration.orderPrefix}-${order.number}`;
+      const prefixedOrderNumber = `${this.orderPrefix}-${order.number}`;
 
       const orderStatusMapping: { [key in OrderStatus]: InternalOrderStatus } =
         {
@@ -156,14 +153,14 @@ export class SaleorOrderSyncService {
         where: {
           id_installedSaleorAppId: {
             id: order.id,
-            installedSaleorAppId: this.installedSaleorApp.id,
+            installedSaleorAppId: this.installedSaleorAppId,
           },
         },
         create: {
           id: order.id,
           installedSaleorApp: {
             connect: {
-              id: this.installedSaleorApp.id,
+              id: this.installedSaleorAppId,
             },
           },
           createdAt: order.created,
@@ -172,7 +169,7 @@ export class SaleorOrderSyncService {
               where: {
                 orderNumber_tenantId: {
                   orderNumber: prefixedOrderNumber,
-                  tenantId: this.tenant.id,
+                  tenantId: this.tenantId,
                 },
               },
               create: {
@@ -183,7 +180,7 @@ export class SaleorOrderSyncService {
                 paymentStatus,
                 tenant: {
                   connect: {
-                    id: this.tenant.id,
+                    id: this.tenantId,
                   },
                 },
               },
@@ -223,7 +220,7 @@ export class SaleorOrderSyncService {
           where: {
             sku_tenantId: {
               sku: lineItem.variant.sku,
-              tenantId: this.tenant.id,
+              tenantId: this.tenantId,
             },
           },
         });
@@ -260,7 +257,7 @@ export class SaleorOrderSyncService {
           where: {
             id_installedSaleorAppId: {
               id: lineItem.id,
-              installedSaleorAppId: this.installedSaleorApp.id,
+              installedSaleorAppId: this.installedSaleorAppId,
             },
           },
           create: {
@@ -270,14 +267,14 @@ export class SaleorOrderSyncService {
                 where: {
                   uniqueString_tenantId: {
                     uniqueString,
-                    tenantId: this.tenant.id,
+                    tenantId: this.tenantId,
                   },
                 },
                 create: {
                   id: id.id("lineItem"),
                   tenant: {
                     connect: {
-                      id: this.tenant.id,
+                      id: this.tenantId,
                     },
                   },
                   uniqueString,
@@ -301,7 +298,7 @@ export class SaleorOrderSyncService {
             },
             installedSaleorApp: {
               connect: {
-                id: this.installedSaleorApp.id,
+                id: this.installedSaleorAppId,
               },
             },
           },

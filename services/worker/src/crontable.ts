@@ -5,6 +5,7 @@ import {
   WorkflowScheduler,
 } from "@eci/pkg/scheduler/scheduler";
 import { createWorkflowFactory } from "@eci/pkg/scheduler/workflow";
+import { SaleorOrderSyncWorkflow } from "./workflows/saleorOrderSync";
 import { SaleorProductSyncWorkflow } from "./workflows/saleorProductSync";
 import { SaleorWarehouseSyncWorkflow } from "./workflows/saleorWarehouseSync";
 import { ZohoContactSyncWorkflow } from "./workflows/zohoContactSync";
@@ -50,6 +51,7 @@ export class CronTable {
         id,
         cronScheduleZoho,
         cronTimeoutZoho,
+        orderPrefix,
       } = enabledZohoIntegration;
       const commonCronConfig = {
         cron: cronScheduleZoho,
@@ -58,6 +60,7 @@ export class CronTable {
       const commonWorkflowConfig = {
         zohoAppId,
         installedSaleorAppId,
+        orderPrefix,
       };
       if (enabledZohoIntegration.syncWarehouses) {
         this.scheduler.schedule(
@@ -126,6 +129,15 @@ export class CronTable {
         this.scheduler.schedule(
           createWorkflowFactory(
             ZohoSalesOrderSyncWorkflow,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 4 },
+          [tenantId, id],
+        );
+        this.scheduler.schedule(
+          createWorkflowFactory(
+            SaleorOrderSyncWorkflow,
             this.clients,
             commonWorkflowConfig,
           ),
