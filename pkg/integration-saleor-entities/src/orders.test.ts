@@ -1686,9 +1686,9 @@ describe("Saleor Entity Sync payments Test", () => {
       channelSlug: "storefront",
       logger: new NoopLogger(),
       db: prismaClient,
-      installedSaleorApp,
-      tenant,
-      saleorZohoIntegration,
+      installedSaleorAppId: installedSaleorApp.id,
+      tenantId: tenant.id,
+      orderPrefix: saleorZohoIntegration.orderPrefix,
     });
     await xx.syncToECI();
   }, 1000000);

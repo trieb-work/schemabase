@@ -1,12 +1,7 @@
 /* eslint-disable max-len */
 import { ILogger } from "@eci/pkg/logger";
 import { queryWithPagination, SaleorCronPaymentsQuery } from "@eci/pkg/saleor";
-import {
-  InstalledSaleorApp,
-  PaymentMethodType,
-  PrismaClient,
-  Tenant,
-} from "@eci/pkg/prisma";
+import { PaymentMethodType, PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
@@ -16,14 +11,12 @@ interface SaleorPaymentSyncServiceConfig {
   saleorClient: {
     saleorCronPayments: (variables: {
       first: number;
-      channel: string;
       after: string;
       createdGte: string;
     }) => Promise<SaleorCronPaymentsQuery>;
   };
-  channelSlug: string;
-  installedSaleorApp: InstalledSaleorApp;
-  tenant: Tenant;
+  installedSaleorAppId: string;
+  tenantId: string;
   db: PrismaClient;
   logger: ILogger;
 }
@@ -32,19 +25,16 @@ export class SaleorPaymentSyncService {
   public readonly saleorClient: {
     saleorCronPayments: (variables: {
       first: number;
-      channel: string;
       after: string;
       createdGte: string;
     }) => Promise<SaleorCronPaymentsQuery>;
   };
 
-  public readonly channelSlug: string;
-
   private readonly logger: ILogger;
 
-  public readonly installedSaleorApp: InstalledSaleorApp;
+  public readonly installedSaleorAppId: string;
 
-  public readonly tenant: Tenant;
+  public readonly tenantId: string;
 
   private readonly cronState: CronStateHandler;
 
@@ -52,14 +42,13 @@ export class SaleorPaymentSyncService {
 
   public constructor(config: SaleorPaymentSyncServiceConfig) {
     this.saleorClient = config.saleorClient;
-    this.channelSlug = config.channelSlug;
     this.logger = config.logger;
-    this.installedSaleorApp = config.installedSaleorApp;
-    this.tenant = config.tenant;
+    this.installedSaleorAppId = config.installedSaleorAppId;
+    this.tenantId = config.tenantId;
     this.db = config.db;
     this.cronState = new CronStateHandler({
-      tenantId: this.tenant.id,
-      appId: this.installedSaleorApp.id,
+      tenantId: this.tenantId,
+      appId: this.installedSaleorAppId,
       db: this.db,
       syncEntity: "payments",
     });
@@ -91,7 +80,6 @@ export class SaleorPaymentSyncService {
         first,
         after,
         createdGte,
-        channel: this.channelSlug,
       }),
     );
 
@@ -141,7 +129,7 @@ export class SaleorPaymentSyncService {
           where: {
             referenceNumber_tenantId: {
               referenceNumber: paymentReference,
-              tenantId: this.tenant.id,
+              tenantId: this.tenantId,
             },
           },
           create: {
@@ -150,7 +138,7 @@ export class SaleorPaymentSyncService {
             referenceNumber: paymentReference,
             tenant: {
               connect: {
-                id: this.tenant.id,
+                id: this.tenantId,
               },
             },
             paymentMethod: paymentMethod,
@@ -164,7 +152,7 @@ export class SaleorPaymentSyncService {
         where: {
           id_installedSaleorAppId: {
             id: order.id,
-            installedSaleorAppId: this.installedSaleorApp.id,
+            installedSaleorAppId: this.installedSaleorAppId,
           },
         },
       });
@@ -174,7 +162,7 @@ export class SaleorPaymentSyncService {
           connect: {
             id_installedSaleorAppId: {
               id: existingSaleorOrder?.id,
-              installedSaleorAppId: this.installedSaleorApp.id,
+              installedSaleorAppId: this.installedSaleorAppId,
             },
           },
         };
@@ -183,7 +171,7 @@ export class SaleorPaymentSyncService {
         where: {
           id_installedSaleorAppId: {
             id: payment?.id,
-            installedSaleorAppId: this.installedSaleorApp.id,
+            installedSaleorAppId: this.installedSaleorAppId,
           },
         },
         create: {
@@ -193,7 +181,7 @@ export class SaleorPaymentSyncService {
           saleorOrder: saleorOrderConnect,
           installedSaleorApp: {
             connect: {
-              id: this.installedSaleorApp.id,
+              id: this.installedSaleorAppId,
             },
           },
           payment: paymentCreateOrConnect,
@@ -223,14 +211,14 @@ export class SaleorPaymentSyncService {
         saleorOrders: {
           some: {
             installedSaleorAppId: {
-              in: this.installedSaleorApp.id,
+              in: this.installedSaleorAppId,
             },
           },
         },
         payment: {
           some: {
             tenantId: {
-              in: this.tenant.id,
+              in: this.tenantId,
             },
           },
         },

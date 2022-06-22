@@ -3443,11 +3443,10 @@ describe("Saleor Entity Sync payments Test", () => {
       throw new Error("Testing Tenant or saleor app not found in DB");
     const xx = new SaleorPaymentSyncService({
       saleorClient: mockedSaleorClient,
-      channelSlug: "storefront",
       logger: new NoopLogger(),
       db: prismaClient,
-      installedSaleorApp,
-      tenant,
+      installedSaleorAppId: installedSaleorApp.id,
+      tenantId: tenant.id,
     });
     await xx.syncToECI();
   }, 80000);
