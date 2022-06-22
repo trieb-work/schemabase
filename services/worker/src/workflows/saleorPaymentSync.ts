@@ -44,6 +44,9 @@ export class SaleorPaymentSyncWorkflow implements Workflow {
       tenantId: installedSaleorApp.saleorApp.tenantId,
     });
     await saleorPaymentSyncService.syncToECI();
+
+    await saleorPaymentSyncService.syncFromECI();
+
     this.logger.info("Finished saleor warehouse sync workflow run");
   }
 }
