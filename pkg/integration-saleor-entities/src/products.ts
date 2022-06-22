@@ -1,5 +1,8 @@
 import { ILogger } from "@eci/pkg/logger";
-import { SaleorEntitySyncProductsQuery } from "@eci/pkg/saleor";
+import {
+  queryWithPagination,
+  SaleorEntitySyncProductsQuery,
+} from "@eci/pkg/saleor";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { id } from "@eci/pkg/ids";
@@ -56,38 +59,14 @@ export class SaleorProductSyncService {
     });
   }
 
-  /**
-   * Recursively query saleor for products
-   * @param cursor
-   * @param results
-   * @returns
-   */
-  private async queryWithPagination(
-    cursor: string = "",
-    results: SaleorEntitySyncProductsQuery = {},
-  ): Promise<SaleorEntitySyncProductsQuery> {
-    const result = await this.saleorClient.saleorEntitySyncProducts({
-      first: 10,
-      after: cursor,
-      channel: this.channelSlug,
-    });
-    if (
-      !result.products?.pageInfo.hasNextPage ||
-      !result.products.pageInfo.endCursor
-    ) {
-      return result;
-    }
-    result.products.edges.map((product) =>
-      results.products?.edges.push(product),
-    );
-    return this.queryWithPagination(
-      result.products.pageInfo.endCursor,
-      results,
-    );
-  }
-
   public async syncToECI(): Promise<void> {
-    const response = await this.queryWithPagination();
+    const response = await queryWithPagination(({ first, after }) =>
+      this.saleorClient.saleorEntitySyncProducts({
+        first,
+        after,
+        channel: this.channelSlug,
+      }),
+    );
 
     const products = response.products?.edges.map((x) => x.node);
 
@@ -95,6 +74,8 @@ export class SaleorProductSyncService {
       this.logger.info("No products returned from saleor! Can't sync");
       return;
     }
+
+    this.logger.info(`Syncing ${products.length} products to sync`);
 
     for (const product of products) {
       if (!product.variants) {
