@@ -225,7 +225,7 @@ export class SaleorPaymentSyncService {
       },
     });
     console.log(
-      `Received ${ordersWithPayments.length} orders with saleor order and payments`,
+      `Received ${ordersWithPayments.length} orders that have a payment and are saleor orders`,
     );
   }
 }

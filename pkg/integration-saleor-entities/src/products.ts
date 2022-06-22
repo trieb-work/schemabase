@@ -75,7 +75,7 @@ export class SaleorProductSyncService {
       return;
     }
 
-    this.logger.info(`Syncing ${products.length} products to sync`);
+    this.logger.info(`Syncing ${products.length} products`);
 
     for (const product of products) {
       if (!product.variants) {
