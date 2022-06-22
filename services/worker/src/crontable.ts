@@ -156,7 +156,7 @@ export class CronTable {
           { ...commonCronConfig, offset: 8 },
           [tenantId, id],
         );
-        this.scheduler.schedule(
+        new WorkflowScheduler(this.clients).schedule(
           createWorkflowFactory(
             SaleorPaymentSyncWorkflow,
             this.clients,
