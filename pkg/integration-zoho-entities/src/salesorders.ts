@@ -92,6 +92,31 @@ export class ZohoSalesOrdersSyncService {
         );
       }
 
+      // Connect or create the internal contact using the email address
+      // connected with this salesorder
+      const contactConnectOrCreate = salesorder.email
+        ? {
+            connectOrCreate: {
+              where: {
+                email_tenantId: {
+                  email: salesorder.email.toLowerCase(),
+                  tenantId: this.tenantId,
+                },
+              },
+              create: {
+                id: id.id("contact"),
+                email: salesorder.email.toLowerCase(),
+                tenant: {
+                  connect: {
+                    id: this.tenantId,
+                  },
+                },
+              },
+            },
+          }
+        : undefined;
+
+      // Create or connect the internal order using the salesorder number as identifier
       const orderCreateOrConnect = {
         connectOrCreate: {
           where: {
@@ -109,25 +134,7 @@ export class ZohoSalesOrdersSyncService {
                 id: this.tenantId,
               },
             },
-            contact: {
-              connectOrCreate: {
-                where: {
-                  email_tenantId: {
-                    email: salesorder.email.toLowerCase(),
-                    tenantId: this.tenantId,
-                  },
-                },
-                create: {
-                  id: id.id("contact"),
-                  email: salesorder.email.toLowerCase(),
-                  tenant: {
-                    connect: {
-                      id: this.tenantId,
-                    },
-                  },
-                },
-              },
-            },
+            contact: contactConnectOrCreate,
           },
         },
       };
