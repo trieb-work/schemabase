@@ -124,6 +124,24 @@ export class SaleorPaymentSyncService {
         );
       }
 
+      const orderExist = await this.db.order.findUnique({
+        where: {
+          orderNumber_tenantId: {
+            orderNumber: order.number,
+            tenantId: this.tenantId,
+          },
+        },
+      });
+      const orderConnect = orderExist
+        ? {
+            connect: {
+              where: {
+                id: orderExist.id,
+              },
+            },
+          }
+        : undefined;
+
       const paymentCreateOrConnect = {
         connectOrCreate: {
           where: {
@@ -142,6 +160,7 @@ export class SaleorPaymentSyncService {
               },
             },
             paymentMethod: paymentMethod,
+            order: orderConnect,
           },
         },
       };
@@ -156,16 +175,16 @@ export class SaleorPaymentSyncService {
           },
         },
       });
-      let saleorOrderConnect;
-      if (existingSaleorOrder)
-        saleorOrderConnect = {
-          connect: {
-            id_installedSaleorAppId: {
-              id: existingSaleorOrder?.id,
-              installedSaleorAppId: this.installedSaleorAppId,
+      const saleorOrderConnect = existingSaleorOrder
+        ? {
+            connect: {
+              id_installedSaleorAppId: {
+                id: existingSaleorOrder?.id,
+                installedSaleorAppId: this.installedSaleorAppId,
+              },
             },
-          },
-        };
+          }
+        : undefined;
 
       await this.db.saleorPayment.upsert({
         where: {
