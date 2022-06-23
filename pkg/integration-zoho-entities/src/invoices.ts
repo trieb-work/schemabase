@@ -5,13 +5,11 @@ import { CronStateHandler } from "@eci/pkg/cronstate";
 import { format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 
-type ZohoAppWithTenant = ZohoApp;
-
 export interface ZohoInvoiceSyncConfig {
   logger: ILogger;
   zoho: Zoho;
   db: PrismaClient;
-  zohoApp: ZohoAppWithTenant;
+  zohoApp: ZohoApp;
 }
 
 export class ZohoInvoiceSyncService {
@@ -21,17 +19,20 @@ export class ZohoInvoiceSyncService {
 
   private readonly db: PrismaClient;
 
-  private readonly zohoApp: ZohoAppWithTenant;
+  private readonly zohoApp: ZohoApp;
 
   private readonly cronState: CronStateHandler;
+
+  private readonly tenantId: string;
 
   public constructor(config: ZohoInvoiceSyncConfig) {
     this.logger = config.logger;
     this.zoho = config.zoho;
     this.db = config.db;
     this.zohoApp = config.zohoApp;
+    this.tenantId = this.zohoApp.tenantId;
     this.cronState = new CronStateHandler({
-      tenantId: this.zohoApp.tenantId,
+      tenantId: this.tenantId,
       appId: this.zohoApp.id,
       db: this.db,
       syncEntity: "invoices",
@@ -114,7 +115,7 @@ export class ZohoInvoiceSyncService {
               where: {
                 invoiceNumber_tenantId: {
                   invoiceNumber: invoice.invoice_number,
-                  tenantId: this.zohoApp.tenantId,
+                  tenantId: this.tenantId,
                 },
               },
               create: {
@@ -122,7 +123,7 @@ export class ZohoInvoiceSyncService {
                 invoiceNumber: invoice.invoice_number,
                 tenant: {
                   connect: {
-                    id: this.zohoApp.tenantId,
+                    id: this.tenantId,
                   },
                 },
               },
@@ -138,7 +139,7 @@ export class ZohoInvoiceSyncService {
               where: {
                 invoiceNumber_tenantId: {
                   invoiceNumber: invoice.invoice_number,
-                  tenantId: this.zohoApp.tenantId,
+                  tenantId: this.tenantId,
                 },
               },
               create: {
@@ -146,7 +147,7 @@ export class ZohoInvoiceSyncService {
                 invoiceNumber: invoice.invoice_number,
                 tenant: {
                   connect: {
-                    id: this.zohoApp.tenantId,
+                    id: this.tenantId,
                   },
                 },
               },
