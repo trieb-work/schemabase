@@ -79,11 +79,13 @@ export class ZohoPaymentSyncService {
 
     for (const payment of payments) {
       const referenceNumber =
-        payment.reference_number || payment.cf_gateway_transaction_id;
+        payment.reference_number ||
+        payment.cf_gateway_transaction_id ||
+        payment.payment_number;
       // TODO: maybe add a second option as reference number identifier,
       // if no reference number is given
       if (!referenceNumber) {
-        this.logger.info(
+        this.logger.warn(
           `Can't process payment, as no reference number is given ${payment.payment_id}`,
         );
         continue;
