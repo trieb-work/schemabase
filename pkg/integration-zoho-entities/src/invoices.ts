@@ -82,6 +82,23 @@ export class ZohoInvoiceSyncService {
         },
       });
 
+      // search for a corresponding order using the reference number from the invoice
+      const orderExist = await this.db.order.findUnique({
+        where: {
+          orderNumber_tenantId: {
+            orderNumber: invoice.reference_number,
+            tenantId: this.tenantId,
+          },
+        },
+      });
+      const orderConnect = orderExist
+        ? {
+            connect: {
+              id: orderExist.id,
+            },
+          }
+        : undefined;
+
       const zohoContactConnect = customerExist
         ? {
             connect: {
@@ -126,6 +143,7 @@ export class ZohoInvoiceSyncService {
                     id: this.tenantId,
                   },
                 },
+                orders: orderConnect,
               },
             },
           },
@@ -150,6 +168,7 @@ export class ZohoInvoiceSyncService {
                     id: this.tenantId,
                   },
                 },
+                orders: orderConnect,
               },
             },
           },
