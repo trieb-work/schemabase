@@ -365,7 +365,7 @@ Table Order {
   packages Package [not null]
   tenant Tenant [not null]
   tenantId String [not null]
-  payment Payment [not null]
+  payments Payment [not null]
   saleorOrders SaleorOrder [not null]
   zohoSalesOrders ZohoSalesOrder [not null]
   invoices Invoice [not null]

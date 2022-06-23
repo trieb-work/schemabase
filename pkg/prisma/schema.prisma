@@ -574,7 +574,7 @@ model Order {
 
   tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
-  payment  Payment[]
+  payments  Payment[]
 
   saleorOrders    SaleorOrder[]
   zohoSalesOrders ZohoSalesOrder[]
