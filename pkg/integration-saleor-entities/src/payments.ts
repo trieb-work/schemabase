@@ -224,7 +224,7 @@ export class SaleorPaymentSyncService {
         },
       },
     });
-    console.log(
+    this.logger.info(
       `Received ${ordersWithPayments.length} orders that have a payment and are saleor orders`,
     );
   }

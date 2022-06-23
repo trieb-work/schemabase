@@ -94,6 +94,8 @@ export class CronTable {
           [tenantId, id],
         );
       }
+      // We don't use the standard cron schedule for contacts,
+      // as contacts need too many API calls
       if (enabledZohoIntegration.syncContacts) {
         this.scheduler.schedule(
           createWorkflowFactory(
@@ -101,7 +103,7 @@ export class CronTable {
             this.clients,
             commonWorkflowConfig,
           ),
-          { ...commonCronConfig, offset: 2 },
+          { ...commonCronConfig, offset: 2, cron: "0 * * * *" },
           [tenantId, id],
         );
       }
