@@ -234,7 +234,7 @@ export class SaleorPaymentSyncService {
             },
           },
         },
-        payment: {
+        payments: {
           some: {
             tenantId: {
               in: this.tenantId,
