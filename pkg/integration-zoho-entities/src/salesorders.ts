@@ -178,7 +178,9 @@ export class ZohoSalesOrdersSyncService {
         },
       });
 
-      // LINE ITEMs sync
+      const internalOrderId = createdSalesOrder.orderId;
+
+      // LINE ITEMs sync - pulls the full salesorder from Zoho
       if (
         !cronState.lastRun ||
         new Date(salesorder.last_modified_time) > cronState.lastRun
@@ -247,7 +249,7 @@ export class ZohoSalesOrdersSyncService {
                     uniqueString,
                     order: {
                       connect: {
-                        id: createdSalesOrder.orderId,
+                        id: internalOrderId,
                       },
                     },
                     quantity: lineItem.quantity,
@@ -284,6 +286,39 @@ export class ZohoSalesOrdersSyncService {
               },
             },
           });
+        }
+
+        // if we have payments connected, we can connect them internally as well
+        for (const payment of fullSalesorder.payments) {
+          const zohoPaymentExist = await this.db.zohoPayment.findUnique({
+            where: {
+              id_zohoAppId: {
+                id: payment.payment_id,
+                zohoAppId: this.zohoApp.id,
+              },
+            },
+            include: {
+              payment: true,
+            },
+          });
+          if (zohoPaymentExist && zohoPaymentExist.paymentId) {
+            this.logger.info(
+              // eslint-disable-next-line max-len
+              `Connecting Zoho payment ${zohoPaymentExist.id} with internal order id ${internalOrderId}`,
+            );
+            await this.db.order.update({
+              where: {
+                id: internalOrderId,
+              },
+              data: {
+                payments: {
+                  connect: {
+                    id: zohoPaymentExist.paymentId,
+                  },
+                },
+              },
+            });
+          }
         }
       }
     }
