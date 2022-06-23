@@ -1,6 +1,6 @@
 import type { Zoho } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
-import { PrismaClient, ZohoApp } from "@eci/pkg/prisma";
+import { Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
@@ -94,27 +94,28 @@ export class ZohoSalesOrdersSyncService {
 
       // Connect or create the internal contact using the email address
       // connected with this salesorder
-      const contactConnectOrCreate = salesorder.email
-        ? {
-            connectOrCreate: {
-              where: {
-                email_tenantId: {
-                  email: salesorder.email.toLowerCase(),
-                  tenantId: this.tenantId,
+      const contactConnectOrCreate: Prisma.ContactCreateNestedManyWithoutOrdersInput =
+        salesorder.email
+          ? {
+              connectOrCreate: {
+                where: {
+                  email_tenantId: {
+                    email: salesorder.email.toLowerCase(),
+                    tenantId: this.tenantId,
+                  },
                 },
-              },
-              create: {
-                id: id.id("contact"),
-                email: salesorder.email.toLowerCase(),
-                tenant: {
-                  connect: {
-                    id: this.tenantId,
+                create: {
+                  id: id.id("contact"),
+                  email: salesorder.email.toLowerCase(),
+                  tenant: {
+                    connect: {
+                      id: this.tenantId,
+                    },
                   },
                 },
               },
-            },
-          }
-        : undefined;
+            }
+          : {};
 
       // Create or connect the internal order using the salesorder number as identifier
       const orderCreateOrConnect = {
@@ -134,7 +135,7 @@ export class ZohoSalesOrdersSyncService {
                 id: this.tenantId,
               },
             },
-            contact: contactConnectOrCreate,
+            contacts: contactConnectOrCreate,
           },
         },
       };
