@@ -74,12 +74,23 @@ export class ZohoSalesOrdersSyncService {
     for (const salesorder of salesorders) {
       // We first have to check, if we already have a Zoho Customer to be connected to
       // this salesorder
-      const customerExist = await this.db.zohoContact.findFirst({
+      const zohoCustomerExist = await this.db.zohoContact.findFirst({
         where: {
           id: salesorder.customer_id,
           zohoAppId: this.zohoApp.id,
         },
       });
+      if (zohoCustomerExist) {
+        this.logger.info(
+          // eslint-disable-next-line max-len
+          `ZohoContact ${zohoCustomerExist.id} is related to ZohoSalesOrder ${salesorder.salesorder_id} - Order Number ${salesorder.salesorder_number}`,
+        );
+      } else {
+        this.logger.info(
+          // eslint-disable-next-line max-len
+          `No internal contact found for zoho salesorder id ${salesorder.salesorder_id} - Order Number ${salesorder.salesorder_number}`,
+        );
+      }
 
       const orderCreateOrConnect = {
         connectOrCreate: {
@@ -98,10 +109,29 @@ export class ZohoSalesOrdersSyncService {
                 id: this.tenantId,
               },
             },
+            contact: {
+              connectOrCreate: {
+                where: {
+                  email_tenantId: {
+                    email: salesorder.email.toLowerCase(),
+                    tenantId: this.tenantId,
+                  },
+                },
+                create: {
+                  id: id.id("contact"),
+                  email: salesorder.email.toLowerCase(),
+                  tenant: {
+                    connect: {
+                      id: this.tenantId,
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       };
-      const zohoContactConnect = customerExist
+      const zohoContactConnect = zohoCustomerExist
         ? {
             connect: {
               id_zohoAppId: {
