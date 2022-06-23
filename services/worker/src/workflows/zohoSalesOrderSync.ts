@@ -35,7 +35,7 @@ export class ZohoSalesOrderSyncWorkflow implements Workflow {
    * Sync all zoho invoices into ECI-DB
    */
   public async run(): Promise<void> {
-    this.logger.info("Starting zoho contact sync workflow run");
+    this.logger.info("Starting zoho salesorder sync workflow run");
     const { client: zoho, zohoApp } = await getZohoClientAndEntry(
       this.zohoAppId,
       this.prisma,
@@ -51,6 +51,6 @@ export class ZohoSalesOrderSyncWorkflow implements Workflow {
 
     await zohoSalesOrdersSyncService.syncFromECI();
 
-    this.logger.info("Finished zoho contact sync workflow run");
+    this.logger.info("Finished zoho salesorder sync workflow run");
   }
 }
