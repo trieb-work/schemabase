@@ -81,6 +81,16 @@ export class ZohoInvoiceSyncService {
           zohoAppId: this.zohoApp.id,
         },
       });
+      const zohoContactConnect = customerExist
+        ? {
+            connect: {
+              id_zohoAppId: {
+                id: invoice.customer_id,
+                zohoAppId: this.zohoApp.id,
+              },
+            },
+          }
+        : undefined;
 
       // search for a corresponding order using the reference number from the invoice
       const orderExist = await this.db.order.findUnique({
@@ -98,17 +108,6 @@ export class ZohoInvoiceSyncService {
             },
           }
         : undefined;
-
-      const zohoContactConnect = customerExist
-        ? {
-            connect: {
-              id_zohoAppId: {
-                id: invoice.customer_id,
-                zohoAppId: this.zohoApp.id,
-              },
-            },
-          }
-        : {};
 
       await this.db.zohoInvoice.upsert({
         where: {
