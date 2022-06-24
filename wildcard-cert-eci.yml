@@ -4,7 +4,7 @@ metadata:
   name: eci-trwrk-wildcard
 spec:
   secretName: eci-trwrk-wildcard
-  issuerRef: 
+  issuerRef:
     kind: ClusterIssuer
     name: letsencrypt-prod-dns
   commonName: "*.eci-prod.eu.fsn1.trwrk.xyz"
