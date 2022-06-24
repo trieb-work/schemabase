@@ -127,7 +127,7 @@ export class WorkflowScheduler {
             // },
             //
             // })
-            .with({ jobId: job.id, queueName });
+            .with({ jobId: job.id, queueName, workflow: workflow.name });
 
           const runtimeContext = {
             logger,
