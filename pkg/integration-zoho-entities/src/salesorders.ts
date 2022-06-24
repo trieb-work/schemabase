@@ -1,10 +1,11 @@
 import type { Zoho } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
-import { Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
+import { Language, Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
+import { CustomFieldLabel } from "@eci/pkg/zoho-custom-fields/src/registry";
 
 export interface ZohoSalesOrdersSyncConfig {
   logger: ILogger;
@@ -25,6 +26,20 @@ export class ZohoSalesOrdersSyncService {
   private readonly cronState: CronStateHandler;
 
   private readonly tenantId: string;
+
+  public parseLanguage(language: string | undefined): Language | undefined {
+    if (!language) {
+      return undefined;
+    }
+    switch (language.toLowerCase()) {
+      case "en":
+        return Language.EN;
+      case "de":
+        return Language.DE;
+      default:
+        return undefined;
+    }
+  }
 
   public constructor(config: ZohoSalesOrdersSyncConfig) {
     this.logger = config.logger;
@@ -92,6 +107,12 @@ export class ZohoSalesOrdersSyncService {
         );
       }
 
+      const language = this.parseLanguage(
+        salesorder.custom_fields?.find(
+          (field) => field.label === CustomFieldLabel.PREFERRED_LANGUAGE,
+        )?.value as string | undefined,
+      );
+
       // Connect or create the internal contact using the email address
       // connected with this salesorder
       const contactConnectOrCreate: Prisma.ContactCreateNestedManyWithoutOrdersInput =
@@ -136,6 +157,7 @@ export class ZohoSalesOrdersSyncService {
               },
             },
             contacts: contactConnectOrCreate,
+            language,
           },
         },
       };
