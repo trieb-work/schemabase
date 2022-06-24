@@ -11,6 +11,7 @@ type SyncEntity =
   | "orders"
   | "payments"
   | "invoices"
+  | "packages"
   | "salesorders";
 
 interface CronStateConfig {

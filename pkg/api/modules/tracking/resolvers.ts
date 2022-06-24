@@ -6,7 +6,8 @@ export const resolvers: Resolvers<Context> = {
     packageByTrackingId: async (_parent, { trackingId }, ctx) => {
       await ctx.authorizeUser(["read:package"]);
 
-      return await ctx.dataSources.db.client.package.findUnique({
+      // TODO: change back to findUnique and a the tenant to this query
+      return await ctx.dataSources.db.client.package.findFirst({
         where: { trackingId },
       });
     },
