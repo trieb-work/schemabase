@@ -725,6 +725,7 @@ Table SaleorZohoIntegration {
   syncPayments Boolean [not null, default: false]
   syncProductStocks Boolean [not null, default: false]
   syncProducts Boolean [not null, default: false]
+  syncPackages Boolean [not null, default: false]
   syncTaxes Boolean [not null, default: false]
   cronScheduleZoho String [not null, default: '*/30 * * * *']
   cronScheduleSaleor String [not null, default: '*/30 * * * *']

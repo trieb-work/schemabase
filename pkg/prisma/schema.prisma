@@ -1139,6 +1139,7 @@ model SaleorZohoIntegration {
   syncPayments      Boolean @default(false)
   syncProductStocks Boolean @default(false)
   syncProducts      Boolean @default(false)
+  syncPackages      Boolean @default(false)
   syncTaxes         Boolean @default(false)
 
   // How frequent the synchronisation should run. Default once per hour.

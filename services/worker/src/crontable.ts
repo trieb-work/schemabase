@@ -12,6 +12,7 @@ import { SaleorWarehouseSyncWorkflow } from "./workflows/saleorWarehouseSync";
 import { ZohoContactSyncWorkflow } from "./workflows/zohoContactSync";
 import { ZohoInvoiceSyncWorkflow } from "./workflows/zohoInvoiceSync";
 import { ZohoItemSyncWorkflow } from "./workflows/zohoItemSync";
+import { ZohoPackageSyncWorkflow } from "./workflows/zohoPackageSync";
 import { ZohoPaymentSyncWorkflow } from "./workflows/zohoPaymentSync";
 import { ZohoSalesOrderSyncWorkflow } from "./workflows/zohoSalesOrderSync";
 import { ZohoTaxSyncWorkflow } from "./workflows/zohoTaxSync";
@@ -104,7 +105,7 @@ export class CronTable {
             this.clients,
             commonWorkflowConfig,
           ),
-          { ...commonCronConfig, offset: 2, cron: "0 * * * *" },
+          { ...commonCronConfig, offset: 2, cron: "0 */2 * * *" },
           [tenantId, id],
         );
       }
@@ -177,6 +178,17 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 10 },
+          [tenantId, id],
+        );
+      }
+      if (enabledZohoIntegration.syncPackages) {
+        this.scheduler.schedule(
+          createWorkflowFactory(
+            ZohoPackageSyncWorkflow,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 9 },
           [tenantId, id],
         );
       }
