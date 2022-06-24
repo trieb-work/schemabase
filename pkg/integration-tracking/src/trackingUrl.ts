@@ -9,6 +9,8 @@ export function generateTrackingPortalURL(
   const trackingUrls: Record<Carrier, string> = {
     DPD: `https://tracking.dpd.de/status/${languageCode}/parcel/${trackingId}`,
     UNKNOWN: "",
+    UPS: "",
+    DHL: "",
   };
   return trackingUrls[carrier];
 }

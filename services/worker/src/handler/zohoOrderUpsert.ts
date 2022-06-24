@@ -1,19 +1,19 @@
 import { EventHandler, EventSchemaRegistry, OnSuccess } from "@eci/pkg/events";
 
-import { id } from "@eci/pkg/ids";
+// import { id } from "@eci/pkg/ids";
 import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts";
 import {
   PrismaClient,
   Language,
-  PackageState,
+  // PackageState,
   Carrier,
   Order,
 } from "@eci/pkg/prisma";
 import { ILogger } from "@eci/pkg/logger";
 import { env } from "@eci/pkg/env";
 import { Context } from "@eci/pkg/context";
-import { generateTrackingPortalURL } from "@eci/pkg/integration-tracking";
-import { CustomFieldLabel } from "@eci/pkg/zoho-custom-fields/src/registry";
+// import { generateTrackingPortalURL } from "@eci/pkg/integration-tracking";
+// import { CustomFieldLabel } from "@eci/pkg/zoho-custom-fields/src/registry";
 
 /**
  * OrderUpdater is responsible for updating our internal database with new orders/packages.
@@ -46,15 +46,15 @@ export class OrderUpdater
     this.onSuccess = config.onSuccess;
   }
 
-  private parseCarrier(carrier: string): Carrier | null {
-    switch (carrier.toLowerCase()) {
-      case "dpd":
-        return Carrier.DPD;
+  // private parseCarrier(carrier: string): Carrier | null {
+  //   switch (carrier.toLowerCase()) {
+  //     case "dpd":
+  //       return Carrier.DPD;
 
-      default:
-        return null;
-    }
-  }
+  //     default:
+  //       return null;
+  //   }
+  // }
 
   public parseLanguage(language: string | undefined): Language | null {
     if (!language) {
@@ -107,7 +107,7 @@ export class OrderUpdater
         `Unable to find zoho salesorder: ${message.salesorderId}`,
       );
     }
-    const salesorder = salesorders[0];
+    // const salesorder = salesorders[0];
 
     // const language = this.parseLanguage(
     //   salesorder.custom_fields?.find(
