@@ -109,11 +109,11 @@ export class OrderUpdater
     }
     const salesorder = salesorders[0];
 
-    const language = this.parseLanguage(
-      salesorder.custom_fields?.find(
-        (field) => field.label === CustomFieldLabel.PREFERRED_LANGUAGE,
-      )?.value as string | undefined,
-    );
+    // const language = this.parseLanguage(
+    //   salesorder.custom_fields?.find(
+    //     (field) => field.label === CustomFieldLabel.PREFERRED_LANGUAGE,
+    //   )?.value as string | undefined,
+    // );
 
     this.logger.info("Upserting order", {
       externalOrderId: message.externalOrderId,
@@ -173,40 +173,40 @@ export class OrderUpdater
         p.carrier = packageResponse.carrier;
         p.trackingId = packageResponse.tracking_number;
       }
-      const carrier = this.parseCarrier(p.carrier);
-      await this.db.package.upsert({
-        where: {
-          trackingId: p.trackingId,
-        },
-        update: {},
-        create: {
-          id: id.id("package"),
-          trackingId: p.trackingId,
-          carrier: carrier ?? Carrier.UNKNOWN,
-          state: PackageState.INIT,
-          events: {
-            create: [
-              {
-                id: id.id("event"),
-                state: PackageState.INIT,
-                time: new Date(),
-              },
-            ],
-          },
-          carrierTrackingUrl: carrier
-            ? generateTrackingPortalURL(
-                carrier,
-                language ?? message.defaultLanguage,
-                p.trackingId,
-              )
-            : undefined,
-          order: {
-            connect: {
-              id: order.id,
-            },
-          },
-        },
-      });
+      // const carrier = this.parseCarrier(p.carrier);
+      // await this.db.package.upsert({
+      //   where: {
+      //     trackingId: p.trackingId,
+      //   },
+      //   update: {},
+      //   create: {
+      //     id: id.id("package"),
+      //     trackingId: p.trackingId,
+      //     carrier: carrier ?? Carrier.UNKNOWN,
+      //     state: PackageState.INIT,
+      //     events: {
+      //       create: [
+      //         {
+      //           id: id.id("event"),
+      //           state: PackageState.INIT,
+      //           time: new Date(),
+      //         },
+      //       ],
+      //     },
+      //     carrierTrackingUrl: carrier
+      //       ? generateTrackingPortalURL(
+      //           carrier,
+      //           language ?? message.defaultLanguage,
+      //           p.trackingId,
+      //         )
+      //       : undefined,
+      //     order: {
+      //       connect: {
+      //         id: order.id,
+      //       },
+      //     },
+      //   },
+      // });
     }
 
     await this.onSuccess(ctx, { orderId: order.id });

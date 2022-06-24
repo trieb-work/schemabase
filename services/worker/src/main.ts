@@ -139,27 +139,6 @@ async function main() {
       }),
     }),
   );
-
-  /**
-   * A new order was created in zoho and we received that event via webhooks.
-   * Now we need to sync our database and create or edit the order
-   */
-  const zohoOrderUpserter = await KafkaSubscriber.new<
-    EventSchemaRegistry.OrderUpdate["message"]
-  >({
-    topic: Topic.ORDER_UPDATE,
-    signer,
-    logger,
-    groupId: "zohoOrderUpserter",
-  });
-
-  zohoOrderUpserter.subscribe(
-    new OrderUpdater({
-      db: prisma,
-      onSuccess: publishSuccess(producer, Topic.ORDER_UPDATE_COMPLETE),
-      logger,
-    }),
-  );
 }
 
 main().catch((err) => {
