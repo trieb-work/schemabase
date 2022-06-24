@@ -130,7 +130,7 @@ export class ZohoPackageSyncService {
                 trackingId: parcel.tracking_number,
                 tenant: {
                   connect: {
-                    id: this.zohoApp.id,
+                    id: this.zohoApp.tenantId,
                   },
                 },
                 carrier,
