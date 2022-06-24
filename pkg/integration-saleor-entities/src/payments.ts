@@ -225,26 +225,45 @@ export class SaleorPaymentSyncService {
    * and related payments. Tries to create these payments in saleor
    */
   public async syncFromECI(): Promise<void> {
-    const ordersWithPayments = await this.db.order.findMany({
+    /**
+     * We search all payments that have a related saleor order, but that don't have any related payments in saleor,
+     * but related payment in our DB. This happens, when you charge the customer in a 3rd party system
+     */
+    const paymentsNotYetInSaleor = await this.db.payment.findMany({
       where: {
-        saleorOrders: {
-          some: {
-            installedSaleorAppId: {
-              in: this.installedSaleorAppId,
+        AND: [
+          {
+            order: {
+              saleorOrders: {
+                some: {
+                  installedSaleorAppId: {
+                    contains: this.installedSaleorAppId,
+                  },
+                },
+              },
             },
           },
-        },
-        payments: {
-          some: {
-            tenantId: {
-              in: this.tenantId,
+          {
+            saleorPayment: {
+              none: {
+                installedSaleorAppId: {
+                  contains: this.installedSaleorAppId,
+                },
+              },
             },
           },
-        },
+        ],
       },
     });
     this.logger.info(
-      `Received ${ordersWithPayments.length} orders that have a payment and are saleor orders`,
+      `Received ${paymentsNotYetInSaleor.length} orders that have a payment and are saleor orders`,
     );
+
+    // for (const payment of paymentsNotYetInSaleor) {
+
+    //   // Pull current order data from saleor - only capture payment, if payment
+    //   // does not exit yet. Uses the orderCapture mutation from saleor
+
+    // }
   }
 }
