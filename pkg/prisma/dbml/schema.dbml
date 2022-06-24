@@ -85,6 +85,21 @@ Table ZohoItem {
   }
 }
 
+Table ZohoPackage {
+  id String [not null]
+  shipmentId String
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  package Package [not null]
+  packageId String [not null]
+  zohoApp ZohoApp [not null]
+  zohoAppId String [not null]
+
+  indexes {
+    (id, zohoAppId) [unique]
+  }
+}
+
 Table ZohoContact {
   id String [not null]
   createdAt DateTime
@@ -461,12 +476,21 @@ Table Package {
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   carrier Carrier [not null]
-  state PackageState [not null]
-  trackingId String [unique, not null]
+  state PackageState [not null, default: 'INIT']
+  number String [not null]
+  trackingId String
   carrierTrackingUrl String
   order Order [not null]
   orderId String [not null]
   events PackageEvent [not null]
+  zohoPackage ZohoPackage [not null]
+  tenant Tenant [not null]
+  tenantId String [not null]
+
+  indexes {
+    (trackingId, tenantId) [unique]
+    (number, tenantId) [unique]
+  }
 }
 
 Table PackageEvent {
@@ -557,15 +581,16 @@ Table ZohoApp {
   trackingIntegrations TrackingIntegration [not null]
   webhooks IncomingWebhook [not null]
   saleorZohoIntegration SaleorZohoIntegration [not null]
-  zohoPayment ZohoPayment [not null]
-  zohoItem ZohoItem [not null]
-  zohoWarehouse ZohoWarehouse [not null]
-  zohoContact ZohoContact [not null]
-  zohoInvoice ZohoInvoice [not null]
+  zohoPayments ZohoPayment [not null]
+  zohoItems ZohoItem [not null]
+  zohoWarehouses ZohoWarehouse [not null]
+  zohoContacts ZohoContact [not null]
+  zohoInvoices ZohoInvoice [not null]
   zohoSalesOrder ZohoSalesOrder [not null]
   zohoLineItems ZohoLineItem [not null]
   zohoTaxes ZohoTax [not null]
-  ZohoContactPerson ZohoContactPerson [not null]
+  zohoContactPersons ZohoContactPerson [not null]
+  zohoPackages ZohoPackage [not null]
 }
 
 Table SaleorApp {
@@ -631,6 +656,7 @@ Table Tenant {
   lineItem LineItem [not null]
   braintree Braintree [not null]
   tax Tax [not null]
+  package Package [not null]
 }
 
 Table Subscription {
@@ -853,6 +879,8 @@ Enum PackageState {
 
 Enum Carrier {
   DPD
+  DHL
+  UPS
   UNKNOWN
 }
 
@@ -899,6 +927,10 @@ Ref: SaleorWarehouse.installedSaleorAppId > InstalledSaleorApp.id [delete: Casca
 Ref: ZohoItem.productVariantId > ProductVariant.id [delete: Cascade]
 
 Ref: ZohoItem.zohoAppId > ZohoApp.id [delete: Cascade]
+
+Ref: ZohoPackage.packageId > Package.id [delete: Cascade]
+
+Ref: ZohoPackage.zohoAppId > ZohoApp.id [delete: Cascade]
 
 Ref: ZohoContact.zohoAppId > ZohoApp.id [delete: Cascade]
 
@@ -985,6 +1017,8 @@ Ref: ElasticLogDrainIntegration.logDrainAppId > VercelLogDrainApp.id
 Ref: ElasticLogDrainIntegration.elasticClusterId > ElasticCluster.id
 
 Ref: Package.orderId > Order.id [delete: Cascade]
+
+Ref: Package.tenantId > Tenant.id [delete: Cascade]
 
 Ref: PackageEvent.packageId > Package.id [delete: Cascade]
 

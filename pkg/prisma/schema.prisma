@@ -131,6 +131,27 @@ model ZohoItem {
   @@unique([id, zohoAppId])
 }
 
+model ZohoPackage {
+  // Zoho Internal Id
+  id String
+
+  // Zoho has the entities shipment and package.
+  // we track both in this entity
+  shipmentId String?
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  packageId String
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId String
+
+
+  @@unique([id, zohoAppId])
+}
+
 model ZohoContact {
   // Zoho Internal Contact Id
   id String
@@ -149,8 +170,8 @@ model ZohoContact {
   zohoPayment       ZohoPayment[]
 
 
-  @@unique([id, zohoAppId])
 
+  @@unique([id, zohoAppId])
 }
 
 // Zoho knows Contacts and ContactPersons.
@@ -211,11 +232,11 @@ model ZohoSalesOrder {
   zohoAppId String
 
 
-  @@unique([id, zohoAppId])
-  @@unique([number, zohoAppId])
   ZohoContactPerson          ZohoContactPerson? @relation(fields: [zohoContactPersonId, zohoContactPersonZohoAppId], references: [id, zohoAppId])
   zohoContactPersonId        String?
   zohoContactPersonZohoAppId String?
+  @@unique([id, zohoAppId])
+  @@unique([number, zohoAppId])
 }
 
 // Zoho specific model.
@@ -240,11 +261,11 @@ model ZohoInvoice {
   zohoAppId String
 
 
-  @@unique([id, zohoAppId])
-  @@unique([number, zohoAppId])
   ZohoContactPerson          ZohoContactPerson? @relation(fields: [zohoContactPersonId, zohoContactPersonZohoAppId], references: [id, zohoAppId])
   zohoContactPersonId        String?
   zohoContactPersonZohoAppId String?
+  @@unique([id, zohoAppId])
+  @@unique([number, zohoAppId])
 }
 
 // Zoho specific model.
@@ -265,10 +286,10 @@ model ZohoPayment {
   zohoAppId String
 
 
-  @@unique([id, zohoAppId])
   ZohoContactPerson          ZohoContactPerson? @relation(fields: [zohoContactPersonId, zohoContactPersonZohoAppId], references: [id, zohoAppId])
   zohoContactPersonId        String?
   zohoContactPersonZohoAppId String?
+  @@unique([id, zohoAppId])
 }
 
 model ZohoWarehouse {
@@ -574,7 +595,7 @@ model Order {
 
   tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
-  payments  Payment[]
+  payments Payment[]
 
   saleorOrders    SaleorOrder[]
   zohoSalesOrders ZohoSalesOrder[]
@@ -677,6 +698,8 @@ enum PackageState {
 
 enum Carrier {
   DPD
+  DHL
+  UPS
   UNKNOWN
 }
 
@@ -736,14 +759,26 @@ model Package {
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
   carrier            Carrier
-  state              PackageState
-  // tracking id from the carrier
-  trackingId         String         @unique
+  state              PackageState @default(INIT)
+
+  // A unique identifier for this package like PKG-0034
+  number            String
+  // tracking id from the carrier. Optional, as the package can
+  // exist before we created a tracking number
+  trackingId         String?
   // A link to the carriers tracking page
   carrierTrackingUrl String?
   order              Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId            String
   events             PackageEvent[]
+
+  zohoPackage ZohoPackage[]
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  @@unique([trackingId, tenantId])
+  @@unique([number, tenantId])
 }
 
 model PackageEvent {
@@ -865,15 +900,16 @@ model ZohoApp {
 
   webhooks              IncomingWebhook[]
   saleorZohoIntegration SaleorZohoIntegration[]
-  zohoPayment           ZohoPayment[]
-  zohoItem              ZohoItem[]
-  zohoWarehouse         ZohoWarehouse[]
-  zohoContact           ZohoContact[]
-  zohoInvoice           ZohoInvoice[]
+  zohoPayments          ZohoPayment[]
+  zohoItems             ZohoItem[]
+  zohoWarehouses        ZohoWarehouse[]
+  zohoContacts          ZohoContact[]
+  zohoInvoices          ZohoInvoice[]
   zohoSalesOrder        ZohoSalesOrder[]
   zohoLineItems         ZohoLineItem[]
   zohoTaxes             ZohoTax[]
-  ZohoContactPerson     ZohoContactPerson[]
+  zohoContactPersons    ZohoContactPerson[]
+  zohoPackages          ZohoPackage[]
 }
 
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor
@@ -986,6 +1022,7 @@ model Tenant {
   lineItem                    LineItem[]
   braintree                   Braintree[]
   tax                         Tax[]
+  package                     Package[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
