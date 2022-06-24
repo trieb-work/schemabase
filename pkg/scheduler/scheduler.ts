@@ -114,7 +114,7 @@ export class WorkflowScheduler {
         queueName,
         async (job: Job) => {
           const logger = this.logger
-            // TODO: here we write the whole log to the bullmq log. Unfortunatly, this is 
+            // TODO: here we write the whole log to the bullmq log. Unfortunatly, this is
             // logging everything during this time
             // and is not using the child-logger
             // .withLogDrain({
