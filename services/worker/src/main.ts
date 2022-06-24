@@ -16,7 +16,6 @@ import {
 } from "@eci/pkg/events";
 import * as tracking from "@eci/pkg/integration-tracking";
 import { Sendgrid } from "@eci/pkg/email/src/emailSender";
-import { OrderUpdater } from "./handler/zohoOrderUpsert";
 import { CronTable } from "./crontable";
 
 async function main() {
