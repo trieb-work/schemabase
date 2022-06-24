@@ -98,6 +98,7 @@ export class ZohoPaymentSyncService {
       const paymentMethodMatch: { [key: string]: PaymentMethodType } = {
         braintree: "braintree",
         banküberweisung: "banktransfer",
+        "Bank Geldüberweisung": "banktransfer",
         banktransfer: "banktransfer",
         paypal: "paypal",
         onlinepayment: "onlinepayment",
