@@ -87,7 +87,10 @@ export class ZohoPackageSyncService {
         continue;
       }
 
-      const lowerCaseCarrier = parcel.carrier.toLowerCase();
+      const lowerCaseCarrier =
+        parcel.delivery_method?.toLowerCase() ||
+        parcel.carrier?.toLowerCase() ||
+        "";
       const carrier = lowerCaseCarrier.includes("dhl")
         ? "DHL"
         : lowerCaseCarrier.includes("dpd")
