@@ -95,13 +95,13 @@ export class WorkflowScheduler {
       await queue.add(workflow.name, "RUN", {
         jobId: queueName,
         repeat,
-        attempts: config?.attempts ?? 10,
+        attempts: config?.attempts ?? 1,
         backoff: {
           type: "exponential",
           delay: 60_000, // 1min, 2min, 4min...
         },
         removeOnComplete: {
-          count: env.get("ECI_ENV") === "production" ? 50 : 10,
+          count: env.get("ECI_ENV") === "production" ? 20 : 10,
         },
       }),
     );
