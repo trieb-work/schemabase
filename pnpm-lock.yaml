@@ -25,7 +25,7 @@ specifiers:
   '@trieb.work/eslint-config-base': ^1.10.0
   '@trieb.work/prettier-base': ^0.1.2
   '@trieb.work/tsconfig-base': ^1.6.4
-  '@trieb.work/zoho-ts': ^0.5.8
+  '@trieb.work/zoho-ts': ^0.5.9
   '@types/async': ^3.2.13
   '@types/body-parser': ^1.19.2
   '@types/connect-ensure-login': ^0.1.7
@@ -110,7 +110,7 @@ dependencies:
   '@elastic/elasticsearch': 7.17.0
   '@geist-ui/react': 2.2.5_sfoxds7t5ydpegc3knd667wn6m
   '@prisma/client': 3.14.0_prisma@3.14.0
-  '@trieb.work/zoho-ts': 0.5.8
+  '@trieb.work/zoho-ts': 0.5.9
   apollo-datasource: 3.3.1
   apollo-server: 3.6.7_graphql@15.8.0
   apollo-server-core: 3.6.7_graphql@15.8.0
@@ -2822,8 +2822,8 @@ packages:
     resolution: {integrity: sha512-DTHkbsRuE9fEl+rwMPNoVXcs/JCSKHIFFluE11MgsMXleOotrw+XdzpQU15xrAFiGHpcY92a3XJwxkr3HBoNqw==}
     dev: true
 
-  /@trieb.work/zoho-ts/0.5.8:
-    resolution: {integrity: sha512-iCgxv6EcUrhuBIscYJ3wqxBkq6D2ke5dPuV3E8knc1MmiosXCpulAybC8TjGjrHbnai4hRgd5OJOTBgtDX9Ekg==}
+  /@trieb.work/zoho-ts/0.5.9:
+    resolution: {integrity: sha512-ob5Mr20dBjk2c6D/Eq/yPPX53tWzw4Fdg0bLYT7APCTnelyRN+wVl+GyF+q+VeS8BUZnWqXIHgg+iVA0LcWICQ==}
     dependencies:
       async-retry: 1.3.3
       await-timeout: 1.1.1
@@ -4111,7 +4111,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001359
-      electron-to-chromium: 1.4.169
+      electron-to-chromium: 1.4.170
       node-releases: 2.0.5
       update-browserslist-db: 1.0.4_browserslist@4.21.0
 
@@ -5185,8 +5185,8 @@ packages:
     resolution: {integrity: sha512-Huen6taaVrUrSy8o7mGStByba8PfOWWluHNxSHGBrCgEdFVLtvdQDBr9LBCF9Uci8SYxh28QNNMO0oC17wbGAg==}
     dev: true
 
-  /electron-to-chromium/1.4.169:
-    resolution: {integrity: sha512-Yb7UFva1sLlAaRyCkgoFF3qWvwZacFDtsGKi44rZsk8vnhL0DMhsUdhI4Dz9CCJQfftncDMGSI3AYiDtg8mD/w==}
+  /electron-to-chromium/1.4.170:
+    resolution: {integrity: sha512-rZ8PZLhK4ORPjFqLp9aqC4/S1j4qWFsPPz13xmWdrbBkU/LlxMcok+f+6f8YnQ57MiZwKtOaW15biZZsY5Igvw==}
 
   /elegant-spinner/1.0.1:
     resolution: {integrity: sha1-2wQ1IcldfjA/2PNFvtwzSc+wcp4=}

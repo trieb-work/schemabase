@@ -134,7 +134,7 @@ export class ZohoPaymentSyncService {
 
       // We try to connect existing invoices with this payment using the invoice Ids
       const invoiceConnect =
-        payment.invoice_numbers_array.length > 0
+        payment.invoice_numbers_array?.length > 0
           ? {
               connect: payment.invoice_numbers_array.map((id) => ({
                 invoiceNumber_tenantId: {
