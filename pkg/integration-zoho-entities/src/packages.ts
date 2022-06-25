@@ -87,6 +87,9 @@ export class ZohoPackageSyncService {
         continue;
       }
 
+      this.logger.info(
+        `Upserting Zoho Package ${parcel.package_id} - ${parcel.package_number}`,
+      );
       const lowerCaseCarrier =
         parcel.delivery_method?.toLowerCase() ||
         parcel.carrier?.toLowerCase() ||
