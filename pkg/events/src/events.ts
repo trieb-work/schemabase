@@ -19,6 +19,8 @@ export interface EventProducer<TContent> {
   close: () => Promise<void>;
 }
 
+// TODO: Add a bullMQClient here
+
 export const newKafkaClient = (): kafka.Kafka => {
   const config: kafka.KafkaConfig = {
     brokers: [env.require("KAFKA_BROKER_URL")],
@@ -36,6 +38,7 @@ export const newKafkaClient = (): kafka.Kafka => {
   return new kafka.Kafka(config);
 };
 
+// TODO: Add the bullMQProducer class here
 export class KafkaProducer<TContent> implements EventProducer<TContent> {
   private readonly producer: kafka.Producer;
 
