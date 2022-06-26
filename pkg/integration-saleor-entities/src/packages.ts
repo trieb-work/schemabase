@@ -193,8 +193,8 @@ export class SaleorPackageSyncService {
    */
   public async syncFromECI(): Promise<void> {
     /**
-     * We search all payments that have a related saleor order, but that don't have any related payments in saleor,
-     * but related payment in our DB. This happens, when you charge the customer in a 3rd party system
+     * We search all packages that have a related saleor order, but that don't have any related packages in saleor,
+     * but related packages in our DB.
      */
     const packagesNotYetInSaleor = await this.db.package.findMany({
       where: {

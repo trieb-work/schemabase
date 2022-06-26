@@ -6,6 +6,7 @@ import {
 } from "@eci/pkg/scheduler/scheduler";
 import { createWorkflowFactory } from "@eci/pkg/scheduler/workflow";
 import { SaleorOrderSyncWorkflow } from "./workflows/saleorOrderSync";
+import { SaleorPackageSyncWorkflow } from "./workflows/saleorPackageSync";
 import { SaleorPaymentSyncWorkflow } from "./workflows/saleorPaymentSync";
 import { SaleorProductSyncWorkflow } from "./workflows/saleorProductSync";
 import { SaleorWarehouseSyncWorkflow } from "./workflows/saleorWarehouseSync";
@@ -185,6 +186,15 @@ export class CronTable {
         this.scheduler.schedule(
           createWorkflowFactory(
             ZohoPackageSyncWorkflow,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 9 },
+          [tenantId, id],
+        );
+        this.scheduler.schedule(
+          createWorkflowFactory(
+            SaleorPackageSyncWorkflow,
             this.clients,
             commonWorkflowConfig,
           ),
