@@ -17,6 +17,19 @@ Table SaleorOrder {
   }
 }
 
+Table SaleorPackage {
+  id String [not null]
+  createdAt DateTime [not null]
+  package Package [not null]
+  packageId String [not null]
+  installedSaleorApp InstalledSaleorApp [not null]
+  installedSaleorAppId String [not null]
+
+  indexes {
+    (id, installedSaleorAppId) [unique]
+  }
+}
+
 Table SaleorLineItem {
   id String [not null]
   lineItem LineItem [not null]
@@ -484,6 +497,7 @@ Table Package {
   orderId String [not null]
   events PackageEvent [not null]
   zohoPackage ZohoPackage [not null]
+  saleorPackage SaleorPackage [not null]
   tenant Tenant [not null]
   tenantId String [not null]
 
@@ -621,6 +635,7 @@ Table InstalledSaleorApp {
   saleorWarehouse SaleorWarehouse [not null]
   saleorOrder SaleorOrder [not null]
   saleorLineItem SaleorLineItem [not null]
+  saleorPackage SaleorPackage [not null]
 
   indexes {
     (domain, channelSlug) [unique]
@@ -905,6 +920,10 @@ Enum CronJobStatus {
 Ref: SaleorOrder.(orderId, orderNumber) > Order.(id, orderNumber) [delete: Cascade]
 
 Ref: SaleorOrder.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
+
+Ref: SaleorPackage.packageId > Package.id [delete: Cascade]
+
+Ref: SaleorPackage.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
 
 Ref: SaleorLineItem.lineItemId > LineItem.id [delete: Cascade]
 

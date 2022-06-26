@@ -10209,6 +10209,46 @@ export type SaleorCronPaymentsQuery = {
   } | null;
 };
 
+export type SaleorCronPackagesOverviewQueryVariables = Exact<{
+  createdGte?: InputMaybe<Scalars["Date"]>;
+  after?: InputMaybe<Scalars["String"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+}>;
+
+export type SaleorCronPackagesOverviewQuery = {
+  __typename?: "Query";
+  orders?: {
+    __typename?: "OrderCountableConnection";
+    pageInfo: {
+      __typename?: "PageInfo";
+      hasNextPage: boolean;
+      startCursor?: string | null;
+      endCursor?: string | null;
+    };
+    edges: Array<{
+      __typename?: "OrderCountableEdge";
+      node: {
+        __typename?: "Order";
+        id: string;
+        number?: string | null;
+        fulfillments: Array<{
+          __typename?: "Fulfillment";
+          id: string;
+          created: any;
+          fulfillmentOrder: number;
+          trackingNumber: string;
+          status: FulfillmentStatus;
+          lines?: Array<{
+            __typename?: "FulfillmentLine";
+            quantity: number;
+            orderLine?: { __typename?: "OrderLine"; productSku: string } | null;
+          } | null> | null;
+        } | null>;
+      };
+    }>;
+  } | null;
+};
+
 export type ProductsQueryVariables = Exact<{
   first: Scalars["Int"];
   channel?: InputMaybe<Scalars["String"]>;
@@ -10684,6 +10724,44 @@ export const SaleorCronPaymentsDocument = gql`
     }
   }
 `;
+export const SaleorCronPackagesOverviewDocument = gql`
+  query saleorCronPackagesOverview(
+    $createdGte: Date
+    $after: String
+    $first: Int
+  ) {
+    orders(
+      first: $first
+      after: $after
+      filter: { created: { gte: $createdGte } }
+    ) {
+      pageInfo {
+        hasNextPage
+        startCursor
+        endCursor
+      }
+      edges {
+        node {
+          id
+          number
+          fulfillments {
+            id
+            created
+            fulfillmentOrder
+            lines {
+              quantity
+              orderLine {
+                productSku
+              }
+            }
+            trackingNumber
+            status
+          }
+        }
+      }
+    }
+  }
+`;
 export const ProductsDocument = gql`
   query products($first: Int!, $channel: String) {
     products(first: $first, channel: $channel) {
@@ -10962,6 +11040,15 @@ export function getSdk<C>(requester: Requester<C>) {
         SaleorCronPaymentsQuery,
         SaleorCronPaymentsQueryVariables
       >(SaleorCronPaymentsDocument, variables, options);
+    },
+    saleorCronPackagesOverview(
+      variables?: SaleorCronPackagesOverviewQueryVariables,
+      options?: C,
+    ): Promise<SaleorCronPackagesOverviewQuery> {
+      return requester<
+        SaleorCronPackagesOverviewQuery,
+        SaleorCronPackagesOverviewQueryVariables
+      >(SaleorCronPackagesOverviewDocument, variables, options);
     },
     products(
       variables: ProductsQueryVariables,

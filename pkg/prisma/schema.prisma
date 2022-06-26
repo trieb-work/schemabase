@@ -42,6 +42,21 @@ model SaleorOrder {
   @@unique([id, installedSaleorAppId])
 }
 
+model SaleorPackage {
+  // Saleor Internal Id
+  id String
+
+  createdAt DateTime
+
+  package Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  packageId String
+
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String  
+
+  @@unique([id, installedSaleorAppId])
+}
+
 model SaleorLineItem {
   // Saleor Internal Id
   id String
@@ -772,7 +787,8 @@ model Package {
   orderId            String
   events             PackageEvent[]
 
-  zohoPackage ZohoPackage[]
+  zohoPackage        ZohoPackage[]
+  saleorPackage      SaleorPackage[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -981,6 +997,7 @@ model InstalledSaleorApp {
   saleorWarehouse            SaleorWarehouse[]
   saleorOrder                SaleorOrder[]
   saleorLineItem             SaleorLineItem[]
+  saleorPackage              SaleorPackage[]
 
 
   @@unique([domain, channelSlug])
