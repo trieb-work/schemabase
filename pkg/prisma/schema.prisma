@@ -777,7 +777,6 @@ model Package {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  @@unique([trackingId, tenantId])
   @@unique([number, tenantId])
 }
 

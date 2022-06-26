@@ -488,7 +488,6 @@ Table Package {
   tenantId String [not null]
 
   indexes {
-    (trackingId, tenantId) [unique]
     (number, tenantId) [unique]
   }
 }
