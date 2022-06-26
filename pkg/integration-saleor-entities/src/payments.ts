@@ -19,6 +19,7 @@ interface SaleorPaymentSyncServiceConfig {
   tenantId: string;
   db: PrismaClient;
   logger: ILogger;
+  orderPrefix: string;
 }
 
 export class SaleorPaymentSyncService {
@@ -40,12 +41,15 @@ export class SaleorPaymentSyncService {
 
   private readonly db: PrismaClient;
 
+  private readonly orderPrefix: string;
+
   public constructor(config: SaleorPaymentSyncServiceConfig) {
     this.saleorClient = config.saleorClient;
     this.logger = config.logger;
     this.installedSaleorAppId = config.installedSaleorAppId;
     this.tenantId = config.tenantId;
     this.db = config.db;
+    this.orderPrefix = config.orderPrefix;
     this.cronState = new CronStateHandler({
       tenantId: this.tenantId,
       appId: this.installedSaleorAppId,
@@ -105,6 +109,11 @@ export class SaleorPaymentSyncService {
       const order = payment.order;
       if (typeof order.number !== "string") continue;
 
+      /**
+       * The full order number including prefix
+       */
+      const prefixedOrderNumber = `${this.orderPrefix}-${order.number}`;
+
       const paymentReference = payment.transactions?.[0]?.token;
       if (!paymentReference) {
         this.logger.error(
@@ -127,7 +136,7 @@ export class SaleorPaymentSyncService {
       const orderExist = await this.db.order.findUnique({
         where: {
           orderNumber_tenantId: {
-            orderNumber: order.number,
+            orderNumber: prefixedOrderNumber,
             tenantId: this.tenantId,
           },
         },
