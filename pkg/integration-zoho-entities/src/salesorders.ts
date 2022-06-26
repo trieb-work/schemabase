@@ -5,7 +5,7 @@ import { CronStateHandler } from "@eci/pkg/cronstate";
 import { format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
-import { CustomFieldLabel } from "@eci/pkg/zoho-custom-fields/src/registry";
+import { CustomFieldApiName } from "@eci/pkg/zoho-custom-fields/src/registry";
 
 export interface ZohoSalesOrdersSyncConfig {
   logger: ILogger;
@@ -107,10 +107,12 @@ export class ZohoSalesOrdersSyncService {
         );
       }
 
+      /**
+       * The preferred user language can be set as custom field for the salesorder
+       */
       const language = this.parseLanguage(
-        salesorder.custom_fields?.find(
-          (field) => field.label === CustomFieldLabel.PREFERRED_LANGUAGE,
-        )?.value as string | undefined,
+        (salesorder?.[CustomFieldApiName.PREFERRED_LANGUAGE] as string) ??
+          undefined,
       );
 
       // Connect or create the internal contact using the email address

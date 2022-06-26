@@ -296,7 +296,7 @@ describe("with invalid webhook", () => {
 
       await sleep(10000);
 
-      const storedPackage = await prisma.package.findUnique({
+      const storedPackage = await prisma.package.findFirst({
         where: {
           trackingId,
         },
