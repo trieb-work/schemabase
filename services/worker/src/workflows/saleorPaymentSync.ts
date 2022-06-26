@@ -9,6 +9,7 @@ export type SaleorPaymentSyncWorkflowClients = {
 };
 export type SaleorPaymentSyncWorkflowConfig = {
   installedSaleorAppId: string;
+  orderPrefix: string;
 };
 
 export class SaleorPaymentSyncWorkflow implements Workflow {
@@ -17,6 +18,8 @@ export class SaleorPaymentSyncWorkflow implements Workflow {
   private prisma: PrismaClient;
 
   private installedSaleorAppId: string;
+
+  private orderPrefix: string;
 
   public constructor(
     ctx: RuntimeContext,
@@ -27,6 +30,7 @@ export class SaleorPaymentSyncWorkflow implements Workflow {
       workflow: SaleorPaymentSyncWorkflow.name,
     });
     this.logger = ctx.logger;
+    this.orderPrefix = config.orderPrefix;
     this.prisma = clients.prisma;
     this.installedSaleorAppId = config.installedSaleorAppId;
   }
@@ -42,6 +46,7 @@ export class SaleorPaymentSyncWorkflow implements Workflow {
       db: this.prisma,
       installedSaleorAppId: this.installedSaleorAppId,
       tenantId: installedSaleorApp.saleorApp.tenantId,
+      orderPrefix: this.orderPrefix,
     });
     await saleorPaymentSyncService.syncToECI();
 
