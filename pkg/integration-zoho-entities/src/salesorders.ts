@@ -382,7 +382,11 @@ export class ZohoSalesOrdersSyncService {
       },
     });
     this.logger.info(
-      `Received ${ordersFromEciDb.length} orders that are not synced with Zoho`,
+      `Received ${
+        ordersFromEciDb.length
+      } orders that are not synced with Zoho: ${ordersFromEciDb
+        .map((o) => o.orderNumber)
+        .join(",")}`,
     );
 
     // for (const order of ordersFromEciDb) {
