@@ -184,13 +184,16 @@ export class ZohoPackageSyncService {
       // only pull the full package data if something has changed since the last run
       if (
         !packageBefore ||
-        packageBefore.updatedAt !== currentPackage.updatedAt
+        packageBefore.updatedAt.toISOString() !==
+          currentPackage.updatedAt.toISOString()
       ) {
         this.logger.info(
           `Pulling full package data for ${parcel.package_id} - ${
             parcel.package_number
             // eslint-disable-next-line max-len
-          }. Updated at in DB: ${packageBefore?.updatedAt.toISOString()}. Updated at from Zoho: ${currentPackage.updatedAt.toISOString()}`,
+          }. Updated at in DB: ${
+            packageBefore?.updatedAt.toISOString() || "NOT EXISTING"
+          }. Updated at from Zoho: ${currentPackage.updatedAt.toISOString()}`,
         );
 
         /**
