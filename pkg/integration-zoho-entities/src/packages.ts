@@ -187,7 +187,10 @@ export class ZohoPackageSyncService {
         packageBefore.updatedAt !== currentPackage.updatedAt
       ) {
         this.logger.info(
-          `Pulling full package data for ${parcel.package_id} - ${parcel.package_number}`,
+          `Pulling full package data for ${parcel.package_id} - ${
+            parcel.package_number
+            // eslint-disable-next-line max-len
+          }. Updated at in DB: ${packageBefore?.updatedAt.toISOString()}. Updated at from Zoho: ${currentPackage.updatedAt.toISOString()}`,
         );
 
         /**
