@@ -6,6 +6,7 @@ import { CronStateHandler } from "@eci/pkg/cronstate";
 import { format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { uniqueStringPackageLineItem } from "@eci/pkg/miscHelper/uniqueStringOrderline";
+import { normalizeStrings } from "@eci/pkg/normalization";
 
 export interface ZohoPackageSyncConfig {
   logger: ILogger;
@@ -239,6 +240,16 @@ export class ZohoPackageSyncService {
                   id: orderExist.id,
                 },
               },
+              warehouse: {
+                connect: {
+                  normalizedName_tenantId: {
+                    normalizedName: normalizeStrings.warehouseNames(
+                      lineItem.warehouse_name,
+                    ),
+                    tenantId: this.zohoApp.tenantId,
+                  },
+                },
+              },
               package: {
                 connect: {
                   id: currentPackage.packageId,
@@ -256,6 +267,16 @@ export class ZohoPackageSyncService {
                 connect: {
                   sku_tenantId: {
                     sku: lineItem.sku,
+                    tenantId: this.zohoApp.tenantId,
+                  },
+                },
+              },
+              warehouse: {
+                connect: {
+                  normalizedName_tenantId: {
+                    normalizedName: normalizeStrings.warehouseNames(
+                      lineItem.warehouse_name,
+                    ),
                     tenantId: this.zohoApp.tenantId,
                   },
                 },
