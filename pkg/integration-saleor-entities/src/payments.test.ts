@@ -3447,6 +3447,7 @@ describe("Saleor Entity Sync payments Test", () => {
       db: prismaClient,
       installedSaleorAppId: installedSaleorApp.id,
       tenantId: tenant.id,
+      orderPrefix: "STORE",
     });
     await xx.syncToECI();
   }, 80000);

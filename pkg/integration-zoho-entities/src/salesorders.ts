@@ -6,7 +6,6 @@ import { format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { CustomFieldApiName } from "@eci/pkg/zoho-custom-fields/src/registry";
-import { normalizeStrings } from "@eci/pkg/normalization";
 
 export interface ZohoSalesOrdersSyncConfig {
   logger: ILogger;

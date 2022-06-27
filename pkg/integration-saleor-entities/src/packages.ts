@@ -18,7 +18,7 @@ interface SaleorPackageSyncServiceConfig {
       after: string;
       createdGte: string;
     }) => Promise<SaleorCronPackagesOverviewQuery>;
-    saleorCreatePackageMutation: (variables: {
+    saleorCreatePackage: (variables: {
       order: string;
       input: OrderFulfillInput;
     }) => Promise<SaleorCreatePackageMutation>;
@@ -37,7 +37,7 @@ export class SaleorPackageSyncService {
       after: string;
       createdGte: string;
     }) => Promise<SaleorCronPackagesOverviewQuery>;
-    saleorCreatePackageMutation: (variables: {
+    saleorCreatePackage: (variables: {
       order: string;
       input: OrderFulfillInput;
     }) => Promise<SaleorCreatePackageMutation>;
