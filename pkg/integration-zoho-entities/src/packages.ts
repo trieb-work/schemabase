@@ -6,7 +6,6 @@ import { CronStateHandler } from "@eci/pkg/cronstate";
 import { format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { uniqueStringPackageLineItem } from "@eci/pkg/miscHelper/uniqueStringOrderline";
-import { normalizeStrings } from "@eci/pkg/normalization";
 
 export interface ZohoPackageSyncConfig {
   logger: ILogger;
