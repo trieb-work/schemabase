@@ -190,7 +190,11 @@ export class ZohoPackageSyncService {
           `Pulling full package data for ${parcel.package_id} - ${parcel.package_number}`,
         );
 
+        /**
+         * Full package data pulled from Zoho
+         */
         const fullPackage = await this.zoho.package.get(parcel.package_id);
+
         if (!fullPackage?.line_items) {
           this.logger.error(
             `No line_items returned for Zoho package ${parcel.package_id}!`,
@@ -231,7 +235,7 @@ export class ZohoPackageSyncService {
               },
               package: {
                 connect: {
-                  id: currentPackage.id,
+                  id: currentPackage.packageId,
                 },
               },
               tenant: {
