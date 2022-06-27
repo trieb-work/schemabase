@@ -106,7 +106,7 @@ export class CronTable {
             this.clients,
             commonWorkflowConfig,
           ),
-          { ...commonCronConfig, offset: 2, cron: "0 */2 * * *" },
+          { ...commonCronConfig, offset: 2, cron: "0 */3 * * *" },
           [tenantId, id],
         );
       }
