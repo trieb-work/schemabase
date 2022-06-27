@@ -493,6 +493,8 @@ model Warehouse {
   zohoWarehouse   ZohoWarehouse[]
   saleorWarehouse SaleorWarehouse[]
 
+  lineItem        LineItem[]
+
   @@unique([name, tenantId])
   @@unique([normalizedName, tenantId])
 }
@@ -516,11 +518,14 @@ model LineItem {
   // For packages: ${packageNumber}${sku}${quantity} 
   uniqueString String
 
-  order   Order  @relation(fields: [orderId], references: [id])
-  orderId String
+  order       Order  @relation(fields: [orderId], references: [id])
+  orderId     String
 
-  package   Package? @relation(fields: [packageId], references: [id])
-  packageId String?
+  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
+  warehouseId String?
+
+  package     Package? @relation(fields: [packageId], references: [id])
+  packageId   String?
 
   quantity      Float
   sku           String

@@ -6,6 +6,7 @@ import { format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { CustomFieldApiName } from "@eci/pkg/zoho-custom-fields/src/registry";
+import { normalizeStrings } from "@eci/pkg/normalization";
 
 export interface ZohoSalesOrdersSyncConfig {
   logger: ILogger;
@@ -251,6 +252,15 @@ export class ZohoSalesOrdersSyncService {
             continue;
           }
 
+          const warehouse = await this.db.zohoWarehouse.findUnique({
+            where: {
+              id_zohoAppId: {
+                id: lineItem.warehouse_id,
+                zohoAppId: this.zohoApp.id,
+              },
+            },
+          });
+
           await this.db.zohoLineItem.upsert({
             where: {
               id_zohoAppId: {
@@ -280,6 +290,11 @@ export class ZohoSalesOrdersSyncService {
                     discountValueNet: lineItem.discount,
                     taxPercentage: lineItem.tax_percentage,
                     totalPriceNet: lineItem.item_total,
+                    warehouse: {
+                      connect: {
+                        id: warehouse?.warehouseId,
+                      },
+                    },
                     productVariant: {
                       connect: {
                         id: productVariantLookup.id,

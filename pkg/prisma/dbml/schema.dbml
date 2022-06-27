@@ -340,6 +340,7 @@ Table Warehouse {
   tenantId String [not null]
   zohoWarehouse ZohoWarehouse [not null]
   saleorWarehouse SaleorWarehouse [not null]
+  lineItem LineItem [not null]
 
   indexes {
     (name, tenantId) [unique]
@@ -354,6 +355,8 @@ Table LineItem {
   uniqueString String [not null]
   order Order [not null]
   orderId String [not null]
+  warehouse Warehouse
+  warehouseId String
   package Package
   packageId String
   quantity Float [not null]
@@ -1015,6 +1018,8 @@ Ref: Contact.tenantId > Tenant.id [delete: Cascade]
 Ref: Warehouse.tenantId > Tenant.id [delete: Cascade]
 
 Ref: LineItem.orderId > Order.id
+
+Ref: LineItem.warehouseId > Warehouse.id
 
 Ref: LineItem.packageId > Package.id
 

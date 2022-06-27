@@ -3,6 +3,9 @@ import { ILogger } from "@eci/pkg/logger";
 import {
   queryWithPagination,
   SaleorCronPackagesOverviewQuery,
+  SaleorCreatePackageMutation,
+  OrderFulfillInput,
+  // OrderFulfillLineInput,
 } from "@eci/pkg/saleor";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
@@ -15,6 +18,10 @@ interface SaleorPackageSyncServiceConfig {
       after: string;
       createdGte: string;
     }) => Promise<SaleorCronPackagesOverviewQuery>;
+    saleorCreatePackageMutation: (variables: {
+      order: string;
+      input: OrderFulfillInput;
+    }) => Promise<SaleorCreatePackageMutation>;
   };
   installedSaleorAppId: string;
   tenantId: string;
@@ -30,6 +37,10 @@ export class SaleorPackageSyncService {
       after: string;
       createdGte: string;
     }) => Promise<SaleorCronPackagesOverviewQuery>;
+    saleorCreatePackageMutation: (variables: {
+      order: string;
+      input: OrderFulfillInput;
+    }) => Promise<SaleorCreatePackageMutation>;
   };
 
   private readonly logger: ILogger;
@@ -221,6 +232,9 @@ export class SaleorPackageSyncService {
           },
         ],
       },
+      include: {
+        lineItems: true,
+      },
     });
     this.logger.info(
       `Received ${
@@ -230,11 +244,35 @@ export class SaleorPackageSyncService {
         .join(",")}`,
     );
 
-    // for (const payment of paymentsNotYetInSaleor) {
+    for (const parcel of packagesNotYetInSaleor) {
+      if (!parcel.lineItems) {
+        this.logger.info(
+          `No line_items for package ${parcel.id} - ${parcel.number}. Can't create package in Saleor`,
+        );
+        continue;
+      }
 
-    //   // Pull current order data from saleor - only capture payment, if payment
-    //   // does not exit yet. Uses the orderCapture mutation from saleor
+      const saleorOrder = await this.db.saleorOrder.findFirst({
+        where: {
+          orderId: parcel.orderId,
+          installedSaleorAppId: this.installedSaleorAppId,
+        },
+      });
 
-    // }
+      if (!saleorOrder) {
+        this.logger.error(
+          `Can't create fulfillment for order ${parcel.orderId} as we have no corresponding saleorOrder!`,
+        );
+        continue;
+      }
+
+      // const lines :OrderFulfillLineInput[] = parcel.lineItems.map((line) => ({ stocks: [{ warehouse: }] }))
+      // await this.saleorClient.saleorCreatePackageMutation({
+      //   order: saleorOrder.id,
+      //   input: {
+      //     lines
+      //   }
+      // })
+    }
   }
 }
