@@ -510,17 +510,22 @@ model LineItem {
   updatedAt DateTime @updatedAt
 
   // Unique string to identify this LineItem
-  // between different systems
+  // between different systems. For orders:
   // ${orderNumber}${sku}${quantity}
+  // For invoices: ${invoiceNumber}${sku}${quantity}
+  // For packages: ${packageNumber}${sku}${quantity} 
   uniqueString String
 
   order   Order  @relation(fields: [orderId], references: [id])
   orderId String
 
+  package   Package? @relation(fields: [packageId], references: [id])
+  packageId String?
+
   quantity      Float
   sku           String
   // Tax Percentage as number (19, 7)
-  taxPercentage Float
+  taxPercentage Float @default(19)
 
   // the total price of the line item.
   // Optional, as we might have just one of the two values
@@ -541,6 +546,7 @@ model LineItem {
 
   zohoLineItems  ZohoLineItem[]
   saleorLineItem SaleorLineItem[]
+
 
 
   @@unique([uniqueString, tenantId])
@@ -786,6 +792,9 @@ model Package {
   order              Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId            String
   events             PackageEvent[]
+
+  // Line Items in this package
+  lineItems LineItem[]
 
   zohoPackage        ZohoPackage[]
   saleorPackage      SaleorPackage[]

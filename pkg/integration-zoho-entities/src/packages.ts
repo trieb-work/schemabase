@@ -5,6 +5,7 @@ import { PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
+import { uniqueStringPackageLineItem } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 
 export interface ZohoPackageSyncConfig {
   logger: ILogger;
@@ -102,13 +103,33 @@ export class ZohoPackageSyncService {
         ? "UPS"
         : "UNKNOWN";
 
+      /**
+       * Only try to update the tracking number if we have one..
+       */
       const packageUpdate = parcel.tracking_number
         ? {
             trackingId: parcel.tracking_number,
           }
         : {};
 
-      await this.db.zohoPackage.upsert({
+      /**
+       * The already existing package - if there. We need the data to decide,
+       * if we need to pull the full line items from zoho or not
+       */
+      const packageBefore = await this.db.zohoPackage.findFirst({
+        where: {
+          id: parcel.package_id,
+          zohoAppId: this.zohoApp.id,
+        },
+        select: {
+          updatedAt: true,
+        },
+      });
+
+      /**
+       * The package entity that we just upserted
+       */
+      const currentPackage = await this.db.zohoPackage.upsert({
         where: {
           id_zohoAppId: {
             id: parcel.package_id,
@@ -159,6 +180,80 @@ export class ZohoPackageSyncService {
           },
         },
       });
+
+      // only pull the full package data if something has changed since the last run
+      if (
+        !packageBefore ||
+        packageBefore.updatedAt !== currentPackage.updatedAt
+      ) {
+        this.logger.info(
+          `Pulling full package data for ${parcel.package_id} - ${parcel.package_number}`,
+        );
+
+        const fullPackage = await this.zoho.package.get(parcel.package_id);
+        if (!fullPackage?.line_items) {
+          this.logger.error(
+            `No line_items returned for Zoho package ${parcel.package_id}!`,
+          );
+          continue;
+        }
+
+        for (const lineItem of fullPackage.line_items) {
+          const uniqueString = uniqueStringPackageLineItem(
+            parcel.package_number,
+            lineItem.sku,
+            lineItem.quantity,
+          );
+
+          await this.db.lineItem.upsert({
+            where: {
+              uniqueString_tenantId: {
+                uniqueString,
+                tenantId: this.zohoApp.tenantId,
+              },
+            },
+            create: {
+              id: id.id("lineItem"),
+              uniqueString,
+              quantity: lineItem.quantity,
+              productVariant: {
+                connect: {
+                  sku_tenantId: {
+                    sku: lineItem.sku,
+                    tenantId: this.zohoApp.tenantId,
+                  },
+                },
+              },
+              order: {
+                connect: {
+                  id: orderExist.id,
+                },
+              },
+              package: {
+                connect: {
+                  id: currentPackage.id,
+                },
+              },
+              tenant: {
+                connect: {
+                  id: this.zohoApp.tenantId,
+                },
+              },
+            },
+            update: {
+              quantity: lineItem.quantity,
+              productVariant: {
+                connect: {
+                  sku_tenantId: {
+                    sku: lineItem.sku,
+                    tenantId: this.zohoApp.tenantId,
+                  },
+                },
+              },
+            },
+          });
+        }
+      }
     }
 
     await this.cronState.set({

@@ -354,9 +354,11 @@ Table LineItem {
   uniqueString String [not null]
   order Order [not null]
   orderId String [not null]
+  package Package
+  packageId String
   quantity Float [not null]
   sku String [not null]
-  taxPercentage Float [not null]
+  taxPercentage Float [not null, default: 19]
   totalPriceNet Float
   totalPriceGross Float
   discountValueNet Float [not null, default: 0]
@@ -496,6 +498,7 @@ Table Package {
   order Order [not null]
   orderId String [not null]
   events PackageEvent [not null]
+  lineItems LineItem [not null]
   zohoPackage ZohoPackage [not null]
   saleorPackage SaleorPackage [not null]
   tenant Tenant [not null]
@@ -1012,6 +1015,8 @@ Ref: Contact.tenantId > Tenant.id [delete: Cascade]
 Ref: Warehouse.tenantId > Tenant.id [delete: Cascade]
 
 Ref: LineItem.orderId > Order.id
+
+Ref: LineItem.packageId > Package.id
 
 Ref: LineItem.(productVariantId, sku) > ProductVariant.(id, sku)
 
