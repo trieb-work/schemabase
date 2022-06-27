@@ -209,12 +209,33 @@ export class ZohoPackageSyncService {
           continue;
         }
 
+        /**
+         * All Zoho Warehouses for this Zoho App
+         */
+        const zohoWarehouses = await this.db.zohoWarehouse.findMany({
+          where: {
+            zohoAppId: this.zohoApp.id,
+          },
+        });
+
         for (const lineItem of fullPackage.line_items) {
           const uniqueString = uniqueStringPackageLineItem(
             parcel.package_number,
             lineItem.sku,
             lineItem.quantity,
           );
+
+          const warehouseId = zohoWarehouses.find(
+            (x) => x.id === lineItem.warehouse_id,
+          )?.warehouseId;
+
+          if (!warehouseId) {
+            this.logger.error(
+              // eslint-disable-next-line max-len
+              `Can't find the Zoho Warehouse with id ${lineItem.warehouse_id} internally! Can't upsert line item`,
+            );
+            continue;
+          }
 
           const upsertedLineItem = await this.db.lineItem.upsert({
             where: {
@@ -242,12 +263,7 @@ export class ZohoPackageSyncService {
               },
               warehouse: {
                 connect: {
-                  normalizedName_tenantId: {
-                    normalizedName: normalizeStrings.warehouseNames(
-                      lineItem.warehouse_name,
-                    ),
-                    tenantId: this.zohoApp.tenantId,
-                  },
+                  id: warehouseId,
                 },
               },
               package: {
@@ -273,12 +289,7 @@ export class ZohoPackageSyncService {
               },
               warehouse: {
                 connect: {
-                  normalizedName_tenantId: {
-                    normalizedName: normalizeStrings.warehouseNames(
-                      lineItem.warehouse_name,
-                    ),
-                    tenantId: this.zohoApp.tenantId,
-                  },
+                  id: warehouseId,
                 },
               },
             },
