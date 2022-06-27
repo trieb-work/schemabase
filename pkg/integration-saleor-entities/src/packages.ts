@@ -232,8 +232,22 @@ export class SaleorPackageSyncService {
           },
         ],
       },
+      // include the warehouse information from every line item
+      // but filter the saleor warehouses to just the one we need
       include: {
-        lineItems: true,
+        lineItems: {
+          include: {
+            warehouse: {
+              include: {
+                saleorWarehouse: {
+                  where: {
+                    installedSaleorAppId: this.installedSaleorAppId,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
     this.logger.info(
@@ -264,6 +278,18 @@ export class SaleorPackageSyncService {
           `Can't create fulfillment for order ${parcel.orderId} as we have no corresponding saleorOrder!`,
         );
         continue;
+      }
+
+      const warehouseCheck = parcel.lineItems.some((i) => {
+        if (!i.warehouseId || !i.warehouse?.saleorWarehouse?.[0]?.id) {
+          return false;
+        }
+        return true;
+      });
+      if (!warehouseCheck) {
+        this.logger.error(
+          `Can't create fulfillment in saleor. Warehouse is missing for package ${parcel.id} - ${parcel.number}`,
+        );
       }
 
       // const lines :OrderFulfillLineInput[] = parcel.lineItems.map((line) => ({ stocks: [{ warehouse: }] }))
