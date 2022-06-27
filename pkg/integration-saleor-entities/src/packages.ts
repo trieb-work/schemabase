@@ -223,7 +223,11 @@ export class SaleorPackageSyncService {
       },
     });
     this.logger.info(
-      `Received ${packagesNotYetInSaleor.length} orders that have a payment and are saleor orders`,
+      `Received ${
+        packagesNotYetInSaleor.length
+      } orders that have a package and are saleor orders: ${packagesNotYetInSaleor
+        .map((p) => p.orderId)
+        .join(",")}`,
     );
 
     // for (const payment of paymentsNotYetInSaleor) {
