@@ -75,7 +75,7 @@ Table SaleorProductVariant {
 Table SaleorWarehouse {
   id String [not null]
   warehouse Warehouse [not null]
-  warehouseId String [unique, not null]
+  warehouseId String [not null]
   installedSaleorApp InstalledSaleorApp [not null]
   installedSaleorAppId String [not null]
 

@@ -115,7 +115,7 @@ model SaleorWarehouse {
   id String
 
   warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
-  warehouseId String    @unique
+  warehouseId String
 
   installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
   installedSaleorAppId String
