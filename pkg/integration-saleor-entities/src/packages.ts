@@ -5,7 +5,7 @@ import {
   SaleorCronPackagesOverviewQuery,
   SaleorCreatePackageMutation,
   OrderFulfillInput,
-  // OrderFulfillLineInput,
+  OrderFulfillLineInput,
 } from "@eci/pkg/saleor";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
@@ -288,11 +288,20 @@ export class SaleorPackageSyncService {
       });
       if (!warehouseCheck) {
         this.logger.error(
-          `Can't create fulfillment in saleor. Warehouse is missing for package ${parcel.id} - ${parcel.number}`,
+          `Can't create fulfillment in saleor. Warehouse or SaleorWarehouse is missing for package ${parcel.id} - ${parcel.number}`,
         );
       }
 
-      // const lines :OrderFulfillLineInput[] = parcel.lineItems.map((line) => ({ stocks: [{ warehouse: }] }))
+      const lines: OrderFulfillLineInput[] = parcel.lineItems.map((line) => ({
+        orderLineId: line.uniqueString,
+        stocks: [
+          {
+            warehouse: line.warehouse?.saleorWarehouse[0].id as string,
+            quantity: line.quantity,
+          },
+        ],
+      }));
+      this.logger.debug(`Line Item: ${lines}`);
       // await this.saleorClient.saleorCreatePackageMutation({
       //   order: saleorOrder.id,
       //   input: {
