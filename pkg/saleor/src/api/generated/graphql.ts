@@ -9906,6 +9906,22 @@ export type ChannelCreateMutation = {
   } | null;
 };
 
+export type SaleorCreatePackageMutationVariables = Exact<{
+  order?: InputMaybe<Scalars["ID"]>;
+  input: OrderFulfillInput;
+}>;
+
+export type SaleorCreatePackageMutation = {
+  __typename?: "Mutation";
+  orderFulfill?: {
+    __typename?: "OrderFulfill";
+    fulfillments?: Array<{
+      __typename?: "Fulfillment";
+      id: string;
+    } | null> | null;
+  } | null;
+};
+
 export type ProductChannelListingUpdateMutationVariables = Exact<{
   id: Scalars["ID"];
   input: ProductChannelListingUpdateInput;
@@ -10459,6 +10475,15 @@ export const ChannelCreateDocument = gql`
     }
   }
 `;
+export const SaleorCreatePackageDocument = gql`
+  mutation saleorCreatePackage($order: ID, $input: OrderFulfillInput!) {
+    orderFulfill(order: $order, input: $input) {
+      fulfillments {
+        id
+      }
+    }
+  }
+`;
 export const ProductChannelListingUpdateDocument = gql`
   mutation productChannelListingUpdate(
     $id: ID!
@@ -10940,6 +10965,15 @@ export function getSdk<C>(requester: Requester<C>) {
         variables,
         options,
       );
+    },
+    saleorCreatePackage(
+      variables: SaleorCreatePackageMutationVariables,
+      options?: C,
+    ): Promise<SaleorCreatePackageMutation> {
+      return requester<
+        SaleorCreatePackageMutation,
+        SaleorCreatePackageMutationVariables
+      >(SaleorCreatePackageDocument, variables, options);
     },
     productChannelListingUpdate(
       variables: ProductChannelListingUpdateMutationVariables,

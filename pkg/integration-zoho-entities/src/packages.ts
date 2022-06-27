@@ -205,7 +205,7 @@ export class ZohoPackageSyncService {
             lineItem.quantity,
           );
 
-          await this.db.lineItem.upsert({
+          const upsertedLineItem = await this.db.lineItem.upsert({
             where: {
               uniqueString_tenantId: {
                 uniqueString,
@@ -252,6 +252,9 @@ export class ZohoPackageSyncService {
               },
             },
           });
+          this.logger.info(
+            `Upserted line_item ${upsertedLineItem.id} for package ${parcel.package_number}`,
+          );
         }
       }
     }
