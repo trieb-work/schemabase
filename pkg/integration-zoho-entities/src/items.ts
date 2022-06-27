@@ -30,8 +30,9 @@ export class ZohoItemSyncService {
   }
 
   public async syncToECI() {
-    // Get all active Items from Zoho
-    const items = await this.zoho.item.list({ filterBy: "active" });
+    // Get all Items from Zoho. We don't filter out non-active products, as we
+    // might need them for older orderlines etc.
+    const items = await this.zoho.item.list({});
     const tenantId = this.zohoApp.tenantId;
 
     this.logger.info(`Upserting ${items.length} items with the internal DB`);
