@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import { ILogger } from "@eci/pkg/logger";
 import { queryWithPagination, SaleorCronPaymentsQuery } from "@eci/pkg/saleor";
-import { PaymentMethodType, PrismaClient } from "@eci/pkg/prisma";
+import { PaymentMethodType, Prisma, PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
@@ -106,13 +106,13 @@ export class SaleorPaymentSyncService {
         );
         continue;
       }
-      const order = payment.order;
-      if (typeof order.number !== "string") continue;
+      const saleorOrder = payment.order;
+      if (typeof saleorOrder.number !== "string") continue;
 
       /**
        * The full order number including prefix
        */
-      const prefixedOrderNumber = `${this.orderPrefix}-${order.number}`;
+      const prefixedOrderNumber = `${this.orderPrefix}-${saleorOrder.number}`;
 
       const paymentReference = payment.transactions?.[0]?.token;
       if (!paymentReference) {
@@ -144,42 +144,41 @@ export class SaleorPaymentSyncService {
       const orderConnect = orderExist
         ? {
             connect: {
-              where: {
-                id: orderExist.id,
-              },
+              id: orderExist.id,
             },
           }
         : undefined;
 
-      const paymentCreateOrConnect = {
-        connectOrCreate: {
-          where: {
-            referenceNumber_tenantId: {
-              referenceNumber: paymentReference,
-              tenantId: this.tenantId,
-            },
-          },
-          create: {
-            id: id.id("payment"),
-            amount: payment.total?.amount as number,
-            referenceNumber: paymentReference,
-            tenant: {
-              connect: {
-                id: this.tenantId,
+      const paymentCreateOrConnect: Prisma.PaymentCreateNestedOneWithoutSaleorPaymentInput =
+        {
+          connectOrCreate: {
+            where: {
+              referenceNumber_tenantId: {
+                referenceNumber: paymentReference,
+                tenantId: this.tenantId,
               },
             },
-            paymentMethod: paymentMethod,
-            order: orderConnect,
+            create: {
+              id: id.id("payment"),
+              amount: payment.total?.amount as number,
+              referenceNumber: paymentReference,
+              tenant: {
+                connect: {
+                  id: this.tenantId,
+                },
+              },
+              paymentMethod: paymentMethod,
+              order: orderConnect,
+            },
           },
-        },
-      };
+        };
 
       // check, if we already have this saleor order created, so that we can
       // connect the payment
       const existingSaleorOrder = await this.db.saleorOrder.findUnique({
         where: {
           id_installedSaleorAppId: {
-            id: order.id,
+            id: saleorOrder.id,
             installedSaleorAppId: this.installedSaleorAppId,
           },
         },
