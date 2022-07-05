@@ -36,7 +36,7 @@ export class SaleorPackageSyncWorkflow implements Workflow {
   }
 
   public async run(): Promise<void> {
-    this.logger.info("Starting saleor payment sync workflow run");
+    this.logger.info("Starting saleor package sync workflow run");
     const { client: saleorClient, installedSaleorApp } =
       await getSaleorClientAndEntry(this.installedSaleorAppId, this.prisma);
 
@@ -52,6 +52,6 @@ export class SaleorPackageSyncWorkflow implements Workflow {
 
     await saleorPackageSyncService.syncFromECI();
 
-    this.logger.info("Finished saleor payment sync workflow run");
+    this.logger.info("Finished saleor package sync workflow run");
   }
 }
