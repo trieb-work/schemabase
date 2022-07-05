@@ -288,7 +288,7 @@ export class SaleorPackageSyncService {
       });
       if (!warehouseCheck) {
         this.logger.error(
-          `Can't create fulfillment in saleor. Warehouse or SaleorWarehouse is missing for package ${parcel.id} - ${parcel.number}`,
+          `Can't create fulfillment in saleor. Warehouse or SaleorWarehouse is missing for (some) line items of package ${parcel.id} - ${parcel.number}`,
         );
       }
 
