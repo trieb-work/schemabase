@@ -140,6 +140,7 @@ export class ZohoPackageSyncService {
           id: parcel.package_id,
           createdAt: new Date(parcel.date),
           updatedAt: new Date(parcel.last_modified_time),
+          shipmentId: parcel.shipment_id || null,
           package: {
             connectOrCreate: {
               where: {
@@ -175,6 +176,7 @@ export class ZohoPackageSyncService {
         update: {
           createdAt: new Date(parcel.date),
           updatedAt: new Date(parcel.last_modified_time),
+          shipmentId: parcel.shipment_id || null,
           package: {
             update: packageUpdate,
           },
