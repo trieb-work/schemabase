@@ -191,7 +191,7 @@ export class ZohoPackageSyncService {
           `Pulling full package data for ${parcel.package_id} - ${
             parcel.package_number
             // eslint-disable-next-line max-len
-          }. Updated at in DB: ${
+          }. "UpdatedAt" in DB: ${
             packageBefore?.updatedAt.toISOString() || "NOT EXISTING"
           }. Updated at from Zoho: ${currentPackage.updatedAt.toISOString()}`,
         );
@@ -291,10 +291,16 @@ export class ZohoPackageSyncService {
                   id: warehouseId,
                 },
               },
+              package: {
+                connect: {
+                  id: currentPackage.packageId,
+                },
+              },
             },
           });
           this.logger.info(
-            `Upserted line_item ${upsertedLineItem.id} for package ${parcel.package_number}`,
+            // eslint-disable-next-line max-len
+            `Upserted line_item ${upsertedLineItem.id} for package ${parcel.package_number} - uniqueString: ${uniqueString}`,
           );
         }
       }
