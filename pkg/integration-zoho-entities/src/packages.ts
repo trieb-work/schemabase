@@ -226,6 +226,17 @@ export class ZohoPackageSyncService {
             lineItem.quantity,
           );
 
+          if (!lineItem.warehouse_id) {
+            this.logger.error(
+              `No warehouseId given for line_item ${
+                lineItem.line_item_id
+              } - ${uniqueString}. Can't upsert. Full line item data: ${JSON.stringify(
+                lineItem,
+              )}`,
+            );
+            continue;
+          }
+
           const warehouseId = zohoWarehouses.find(
             (x) => x.id === lineItem.warehouse_id,
           )?.warehouseId;
@@ -233,7 +244,7 @@ export class ZohoPackageSyncService {
           if (!warehouseId) {
             this.logger.error(
               // eslint-disable-next-line max-len
-              `Can't find the Zoho Warehouse with id ${lineItem.warehouse_id} internally! Can't upsert line item`,
+              `Can't find the Zoho Warehouse with id ${lineItem.warehouse_id} internally! Can't upsert line item ${uniqueString}`,
             );
             continue;
           }
@@ -302,7 +313,7 @@ export class ZohoPackageSyncService {
           });
           this.logger.info(
             // eslint-disable-next-line max-len
-            `Upserted line_item ${upsertedLineItem.id} for package ${parcel.package_number} - uniqueString: ${uniqueString}`,
+            `Upserted line_item ${upsertedLineItem.id} for package ${parcel.package_number} ${currentPackage.packageId} - uniqueString: ${uniqueString}`,
           );
         }
       }
