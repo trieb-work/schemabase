@@ -211,6 +211,7 @@ export class SaleorPackageSyncService {
       where: {
         AND: [
           {
+            // Orders, that have a related saleorOrder
             order: {
               saleorOrders: {
                 some: {
