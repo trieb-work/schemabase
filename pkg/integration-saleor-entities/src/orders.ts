@@ -89,10 +89,10 @@ export class SaleorOrderSyncService {
     const yesterdayMidnight = setHours(subDays(now, 1), 0);
     let createdGte = format(yesterdayMidnight, "yyyy-MM-dd");
     if (!cronState.lastRun) {
-      createdGte = format(subYears(now, 1), "yyyy-MM-dd");
+      createdGte = format(subYears(now, 2), "yyyy-MM-dd");
       this.logger.info(
         // eslint-disable-next-line max-len
-        `This seems to be our first sync run. Syncing data from now - 1 Year to: ${createdGte}`,
+        `This seems to be our first sync run. Syncing data from now - 2 Years to: ${createdGte}`,
       );
     } else {
       this.logger.info(`Setting GTE date to ${createdGte}`);
@@ -149,6 +149,15 @@ export class SaleorOrderSyncService {
 
       const paymentStatus = paymentStatusMapping[order.paymentStatus];
 
+      const saleorOrderBefore = await this.db.saleorOrder.findFirst({
+        where: {
+          id: order.id,
+          installedSaleorAppId: this.installedSaleorAppId
+        },
+        include: {
+          order: true,
+        }
+      })
       const upsertedOrder = await this.db.saleorOrder.upsert({
         where: {
           id_installedSaleorAppId: {
@@ -191,6 +200,7 @@ export class SaleorOrderSyncService {
           order: {
             update: {
               totalPriceGross: order.total.gross.amount,
+              orderStatus
             },
           },
         },
