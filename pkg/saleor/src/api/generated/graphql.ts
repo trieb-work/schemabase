@@ -10102,6 +10102,7 @@ export type SaleorCronOrdersOverviewQuery = {
         id: string;
         created: any;
         status: OrderStatus;
+        userEmail?: string | null;
         paymentStatus: PaymentChargeStatusEnum;
         number?: string | null;
         total: {
@@ -10619,6 +10620,7 @@ export const SaleorCronOrdersOverviewDocument = gql`
           id
           created
           status
+          userEmail
           paymentStatus
           number
           total {

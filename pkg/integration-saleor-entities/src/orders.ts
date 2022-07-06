@@ -12,6 +12,7 @@ import {
   PrismaClient,
   OrderStatus as InternalOrderStatus,
   OrderPaymentStatus as InternalOrderPaymentStatus,
+  Prisma,
 } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { setHours, subDays, subYears, format } from "date-fns";
@@ -121,6 +122,33 @@ export class SaleorOrderSyncService {
       }
       const prefixedOrderNumber = `${this.orderPrefix}-${order.number}`;
 
+      if (!order.userEmail) {
+        this.logger.error(`No user email given for order ${prefixedOrderNumber} - ${order.id}. Can't proceed`);
+        continue;
+      }
+
+      const lowerCaseEmail = order.userEmail.toLowerCase();
+
+      const contactCreateOrConnect :Prisma.ContactCreateNestedManyWithoutOrdersInput = {
+        connectOrCreate: {
+          where: {
+            email_tenantId: {
+              email: lowerCaseEmail,
+              tenantId: this.tenantId
+            }
+          },
+          create: {
+            id: id.id("contact"),
+            email: lowerCaseEmail,
+            tenant: {
+              connect: {
+                id: this.tenantId
+              }
+            }
+          }
+        }
+      };
+
       const orderStatusMapping: { [key in OrderStatus]: InternalOrderStatus } =
         {
           [OrderStatus.Canceled]: "canceled",
@@ -149,15 +177,16 @@ export class SaleorOrderSyncService {
 
       const paymentStatus = paymentStatusMapping[order.paymentStatus];
 
-      const saleorOrderBefore = await this.db.saleorOrder.findFirst({
-        where: {
-          id: order.id,
-          installedSaleorAppId: this.installedSaleorAppId
-        },
-        include: {
-          order: true,
-        }
-      })
+      // const saleorOrderBefore = await this.db.saleorOrder.findFirst({
+      //   where: {
+      //     id: order.id,
+      //     installedSaleorAppId: this.installedSaleorAppId
+      //   },
+      //   include: {
+      //     order: true,
+      //   }
+      // });
+
       const upsertedOrder = await this.db.saleorOrder.upsert({
         where: {
           id_installedSaleorAppId: {
@@ -187,6 +216,7 @@ export class SaleorOrderSyncService {
                 totalPriceGross: order.total.gross.amount,
                 orderStatus,
                 paymentStatus,
+                contacts: contactCreateOrConnect,
                 tenant: {
                   connect: {
                     id: this.tenantId,
@@ -200,7 +230,8 @@ export class SaleorOrderSyncService {
           order: {
             update: {
               totalPriceGross: order.total.gross.amount,
-              orderStatus
+              orderStatus,
+              contacts: contactCreateOrConnect,
             },
           },
         },
