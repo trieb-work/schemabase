@@ -123,31 +123,34 @@ export class SaleorOrderSyncService {
       const prefixedOrderNumber = `${this.orderPrefix}-${order.number}`;
 
       if (!order.userEmail) {
-        this.logger.error(`No user email given for order ${prefixedOrderNumber} - ${order.id}. Can't proceed`);
+        this.logger.error(
+          `No user email given for order ${prefixedOrderNumber} - ${order.id}. Can't proceed`,
+        );
         continue;
       }
 
       const lowerCaseEmail = order.userEmail.toLowerCase();
 
-      const contactCreateOrConnect :Prisma.ContactCreateNestedManyWithoutOrdersInput = {
-        connectOrCreate: {
-          where: {
-            email_tenantId: {
+      const contactCreateOrConnect: Prisma.ContactCreateNestedManyWithoutOrdersInput =
+        {
+          connectOrCreate: {
+            where: {
+              email_tenantId: {
+                email: lowerCaseEmail,
+                tenantId: this.tenantId,
+              },
+            },
+            create: {
+              id: id.id("contact"),
               email: lowerCaseEmail,
-              tenantId: this.tenantId
-            }
+              tenant: {
+                connect: {
+                  id: this.tenantId,
+                },
+              },
+            },
           },
-          create: {
-            id: id.id("contact"),
-            email: lowerCaseEmail,
-            tenant: {
-              connect: {
-                id: this.tenantId
-              }
-            }
-          }
-        }
-      };
+        };
 
       const orderStatusMapping: { [key in OrderStatus]: InternalOrderStatus } =
         {
