@@ -448,8 +448,7 @@ model Company {
   name String
 
   // Lowercase, trim, whitespace remove, special characters remove etc.
-  // make mandatory later
-  normalizedName String?
+  normalizedName String
 
   contacts Contact[]
 
