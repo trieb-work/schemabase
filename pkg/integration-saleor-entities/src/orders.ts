@@ -19,6 +19,7 @@ import { setHours, subDays, subYears, format } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { round } from "reliable-round";
+import { normalizeStrings } from "@eci/pkg/normalization";
 
 interface SaleorOrderSyncServiceConfig {
   saleorClient: {
@@ -130,7 +131,28 @@ export class SaleorOrderSyncService {
       }
 
       const lowerCaseEmail = order.userEmail.toLowerCase();
+      const companyName = order.billingAddress?.companyName;
 
+      const companyCreateOrConnect: Prisma.CompanyCreateNestedOneWithoutContactsInput = companyName ? {
+        connectOrCreate: {
+          where: {
+            normalizedName_tenantId: {
+              normalizedName: normalizeStrings.companyNames(companyName),
+              tenantId: this.tenantId,
+            }
+          },
+          create: {
+            id: id.id("company"),
+            name: companyName,
+            normalizedName: normalizeStrings.companyNames(companyName),
+            tenant: {
+              connect: {
+                id: this.tenantId
+              }
+            }
+          }
+        }
+      } : {}
       const contactCreateOrConnect: Prisma.ContactCreateNestedManyWithoutOrdersInput =
         {
           connectOrCreate: {
@@ -143,6 +165,7 @@ export class SaleorOrderSyncService {
             create: {
               id: id.id("contact"),
               email: lowerCaseEmail,
+              company: companyCreateOrConnect,
               tenant: {
                 connect: {
                   id: this.tenantId,

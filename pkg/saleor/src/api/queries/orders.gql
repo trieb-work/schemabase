@@ -15,6 +15,9 @@ query saleorCronOrdersOverview($createdGte: Date, $after: String, $first: Int) {
         created
         status
         userEmail
+        billingAddress {
+          companyName
+        }        
         paymentStatus
         number
         total {

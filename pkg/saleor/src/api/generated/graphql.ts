@@ -10105,6 +10105,7 @@ export type SaleorCronOrdersOverviewQuery = {
         userEmail?: string | null;
         paymentStatus: PaymentChargeStatusEnum;
         number?: string | null;
+        billingAddress?: { __typename?: "Address"; companyName: string } | null;
         total: {
           __typename?: "TaxedMoney";
           currency: string;
@@ -10621,6 +10622,9 @@ export const SaleorCronOrdersOverviewDocument = gql`
           created
           status
           userEmail
+          billingAddress {
+            companyName
+          }
           paymentStatus
           number
           total {
