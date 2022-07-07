@@ -20,6 +20,15 @@ class NormalizationUtility {
     return this.standardNormalize(input);
   }
 
+  /**
+   * Normalize Company Names
+   * @param input
+   * @returns
+   */
+  public companyNames(input: string) {
+    return this.standardNormalize(input);
+  }
+
   public warehouseNames(input: string) {
     return this.standardNormalize(input);
   }
