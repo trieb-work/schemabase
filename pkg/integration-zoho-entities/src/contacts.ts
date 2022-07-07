@@ -1,9 +1,10 @@
 import { Zoho, Contact, ContactPerson } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
-import { PrismaClient, ZohoApp } from "@eci/pkg/prisma";
+import { Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { subDays } from "date-fns";
+import { normalizeStrings } from "@eci/pkg/normalization";
 
 export interface ZohoContactSyncConfig {
   logger: ILogger;
@@ -82,21 +83,23 @@ export class ZohoContactSyncService {
       }
 
       const lowercaseEmail = contact.email.toLowerCase();
+      const companyName = contact?.company_name;
 
       // Only create a company if the contact is marked as "business" in Zoho
-      const companyCreate =
-        contact.customer_sub_type === "business"
+      const companyCreate: Prisma.CompanyCreateNestedOneWithoutContactsInput =
+        contact.customer_sub_type === "business" && companyName
           ? {
               connectOrCreate: {
                 where: {
-                  name_tenantId: {
+                  normalizedName_tenantId: {
                     tenantId,
-                    name: contact.company_name,
+                    normalizedName: normalizeStrings.companyNames(companyName),
                   },
                 },
                 create: {
                   id: id.id("company"),
-                  name: contact.company_name,
+                  name: companyName,
+                  normalizedName: normalizeStrings.companyNames(companyName),
                   tenantId,
                 },
               },
