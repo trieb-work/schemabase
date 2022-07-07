@@ -447,12 +447,17 @@ model Company {
 
   name String
 
+  // Lowercase, trim, whitespace remove, special characters remove etc.
+  // make mandatory later
+  normalizedName String?
+
   contacts Contact[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
   @@unique([name, tenantId])
+  @@unique([normalizedName, tenantId])
 }
 
 // The ECI internal contact model. One contact has one E-Mail address only.
