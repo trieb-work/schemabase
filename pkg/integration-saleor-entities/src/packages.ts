@@ -238,6 +238,14 @@ export class SaleorPackageSyncService {
       include: {
         lineItems: {
           include: {
+            saleorLineItem: {
+              where: {
+                installedSaleorAppId: this.installedSaleorAppId,
+              },
+              select: {
+                id: true,
+              },
+            },
             warehouse: {
               include: {
                 saleorWarehouse: {
@@ -298,7 +306,8 @@ export class SaleorPackageSyncService {
       }
 
       const lines: OrderFulfillLineInput[] = parcel.lineItems.map((line) => ({
-        orderLineId: line.uniqueString,
+        // The OrderLine ID of the saleor order
+        orderLineId: line.saleorLineItem[0].id,
         stocks: [
           {
             warehouse: line.warehouse?.saleorWarehouse[0].id as string,
