@@ -3,5 +3,11 @@ mutation saleorCreatePackage($order: ID, $input: OrderFulfillInput!) {
     fulfillments {
       id
     }
+    errors {
+      field
+      message
+      code
+      orderLines
+    }
   }
 }
