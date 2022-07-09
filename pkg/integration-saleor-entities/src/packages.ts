@@ -305,30 +305,34 @@ export class SaleorPackageSyncService {
         );
       }
 
-      const lines: OrderFulfillLineInput[] = parcel.lineItems.map((line) => ({
-        // The OrderLine ID of the saleor order
-        orderLineId: line.saleorLineItem[0].id,
-        stocks: [
-          {
-            warehouse: line.warehouse?.saleorWarehouse[0].id as string,
-            quantity: line.quantity,
-          },
-        ],
-      }));
-      this.logger.info(`Line Item: ${JSON.stringify(lines)}`);
-      try {
-        const response = await this.saleorClient.saleorCreatePackage({
-          order: saleorOrder.id,
-          input: {
-            lines,
-          },
-        });
-        if (response.orderFulfill?.errors) {
-          this.logger.error(JSON.stringify(response.orderFulfill.errors));
-        }
-      } catch (error) {
-        this.logger.error(JSON.stringify(error));
-      }
+      // TODO: look-up saleorLineItem that match this package orderLine - we need the SaleorOrderLine ID
+      // Search not using the quantity, but maybe just the SKU ?! Because we can have a package with less products
+      // than the order totally has
+
+      // const lines: OrderFulfillLineInput[] = parcel.lineItems.map((line) => ({
+      //   // The OrderLine ID of the saleor order
+      //   orderLineId: line.saleorLineItem[0].id,
+      //   stocks: [
+      //     {
+      //       warehouse: line.warehouse?.saleorWarehouse[0].id as string,
+      //       quantity: line.quantity,
+      //     },
+      //   ],
+      // }));
+      // this.logger.info(`Line Item: ${JSON.stringify(lines)}`);
+      // try {
+      //   const response = await this.saleorClient.saleorCreatePackage({
+      //     order: saleorOrder.id,
+      //     input: {
+      //       lines,
+      //     },
+      //   });
+      //   if (response.orderFulfill?.errors) {
+      //     this.logger.error(JSON.stringify(response.orderFulfill.errors));
+      //   }
+      // } catch (error) {
+      //   this.logger.error(JSON.stringify(error));
+      // }
     }
   }
 }
