@@ -306,13 +306,20 @@ export class SaleorPackageSyncService {
           },
         ],
       }));
-      this.logger.info(`Line Item: ${lines}`);
-      // await this.saleorClient.saleorCreatePackageMutation({
-      //   order: saleorOrder.id,
-      //   input: {
-      //     lines
-      //   }
-      // })
+      this.logger.info(`Line Item: ${JSON.stringify(lines)}`);
+      try {
+        const response = await this.saleorClient.saleorCreatePackage({
+          order: saleorOrder.id,
+          input: {
+            lines,
+          },
+        });
+        if (response.orderFulfill?.errors) {
+          this.logger.error(JSON.stringify(response.orderFulfill.errors));
+        }
+      } catch (error) {
+        this.logger.error(JSON.stringify(error));
+      }
     }
   }
 }
