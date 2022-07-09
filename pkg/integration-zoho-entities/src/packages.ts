@@ -181,13 +181,26 @@ export class ZohoPackageSyncService {
             update: packageUpdate,
           },
         },
+        include: {
+          package: {
+            include: {
+              lineItems: {
+                select: {
+                  id: true,
+                },
+              },
+            },
+          },
+        },
       });
 
       // only pull the full package data if something has changed since the last run
+      // We compare the packageData we got before with the one we got after the update
       if (
         !packageBefore ||
         packageBefore.updatedAt.toISOString() !==
-          currentPackage.updatedAt.toISOString()
+          currentPackage.updatedAt.toISOString() ||
+        currentPackage.package.lineItems.length === 0
       ) {
         this.logger.info(
           `Pulling full package data for ${parcel.package_id} - ${
