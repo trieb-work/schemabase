@@ -196,6 +196,7 @@ export class ZohoPackageSyncService {
 
       // only pull the full package data if something has changed since the last run
       // We compare the packageData we got before with the one we got after the update
+      // We also pull the full package data if the package has no line items
       if (
         !packageBefore ||
         packageBefore.updatedAt.toISOString() !==
@@ -240,27 +241,30 @@ export class ZohoPackageSyncService {
           );
 
           if (!lineItem.warehouse_id) {
-            this.logger.error(
-              `No warehouseId given for line_item ${
-                lineItem.line_item_id
-              } - ${uniqueString}. Can't upsert. Full line item data: ${JSON.stringify(
-                lineItem,
-              )}`,
+            this.logger.warn(
+              // eslint-disable-next-line max-len
+              `No warehouseId given for line_item ${lineItem.line_item_id} - ${uniqueString}. This article has most probably inventory tracking disabled. This might be a problem for other systems`,
             );
-            continue;
           }
 
           const warehouseId = zohoWarehouses.find(
-            (x) => x.id === lineItem.warehouse_id,
+            (x) => x.id === lineItem?.warehouse_id,
           )?.warehouseId;
 
           if (!warehouseId) {
-            this.logger.error(
+            this.logger.warn(
               // eslint-disable-next-line max-len
-              `Can't find the Zoho Warehouse with id ${lineItem.warehouse_id} internally! Can't upsert line item ${uniqueString}`,
+              `Can't find the Zoho Warehouse with id ${lineItem.warehouse_id} internally! Can't connect this line item ${uniqueString} with a warehouse`,
             );
-            continue;
           }
+
+          const warehouseConnect = warehouseId
+            ? {
+                connect: {
+                  id: warehouseId,
+                },
+              }
+            : {};
 
           const upsertedLineItem = await this.db.lineItem.upsert({
             where: {
@@ -286,11 +290,7 @@ export class ZohoPackageSyncService {
                   id: orderExist.id,
                 },
               },
-              warehouse: {
-                connect: {
-                  id: warehouseId,
-                },
-              },
+              warehouse: warehouseConnect,
               package: {
                 connect: {
                   id: currentPackage.packageId,
@@ -312,11 +312,7 @@ export class ZohoPackageSyncService {
                   },
                 },
               },
-              warehouse: {
-                connect: {
-                  id: warehouseId,
-                },
-              },
+              warehouse: warehouseConnect,
               package: {
                 connect: {
                   id: currentPackage.packageId,

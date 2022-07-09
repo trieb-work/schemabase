@@ -261,7 +261,7 @@ export class SaleorPackageSyncService {
 
     for (const parcel of packagesNotYetInSaleor) {
       if (!parcel.lineItems) {
-        this.logger.info(
+        this.logger.error(
           `No line_items for package ${parcel.id} - ${parcel.number}. Can't create package in Saleor`,
         );
         continue;
@@ -281,6 +281,10 @@ export class SaleorPackageSyncService {
         continue;
       }
 
+      /**
+       * False if any of the lineItems of this package are missing the information
+       * on the warehouse.
+       */
       const warehouseCheck = parcel.lineItems.some((i) => {
         if (!i.warehouseId || !i.warehouse?.saleorWarehouse?.[0]?.id) {
           return false;
