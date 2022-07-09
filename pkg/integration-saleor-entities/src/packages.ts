@@ -306,7 +306,7 @@ export class SaleorPackageSyncService {
           },
         ],
       }));
-      this.logger.debug(`Line Item: ${lines}`);
+      this.logger.info(`Line Item: ${lines}`);
       // await this.saleorClient.saleorCreatePackageMutation({
       //   order: saleorOrder.id,
       //   input: {
