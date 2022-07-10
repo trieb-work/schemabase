@@ -238,14 +238,6 @@ export class SaleorPackageSyncService {
       include: {
         lineItems: {
           include: {
-            saleorLineItem: {
-              where: {
-                installedSaleorAppId: this.installedSaleorAppId,
-              },
-              select: {
-                id: true,
-              },
-            },
             warehouse: {
               include: {
                 saleorWarehouse: {
@@ -280,6 +272,26 @@ export class SaleorPackageSyncService {
           orderId: parcel.orderId,
           installedSaleorAppId: this.installedSaleorAppId,
         },
+        include: {
+          order: {
+            include: {
+              lineItems: {
+                include: {
+                  // To create a fulfillment in Saleor, we need the
+                  // ID of the orderLine
+                  saleorLineItem: {
+                    where: {
+                      installedSaleorAppId: this.installedSaleorAppId,
+                    },
+                    select: {
+                      id: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       });
 
       if (!saleorOrder) {
@@ -305,34 +317,48 @@ export class SaleorPackageSyncService {
         );
       }
 
-      // TODO: look-up saleorLineItem that match this package orderLine - we need the SaleorOrderLine ID
-      // Search not using the quantity, but maybe just the SKU ?! Because we can have a package with less products
-      // than the order totally has
+      const lines: OrderFulfillLineInput[] = parcel.lineItems.map((line) => {
+        // Get the corresponding order to this package and lookup the saleor Order Line
+        // using the product SKU
+        const orderLineId = saleorOrder.order.lineItems.find(
+          (item) => item.sku === line.sku,
+        )?.saleorLineItem[0].id;
+        if (!orderLineId) {
+          this.logger.error(
+            `Can't find a saleor orderLine for order ${saleorOrder.orderNumber}, SKU ${line.sku} - Can't create fulfillment in saleor`,
+          );
+        }
+        return {
+          // The OrderLine ID of the saleor order
+          orderLineId,
+          stocks: [
+            {
+              warehouse: line.warehouse?.saleorWarehouse[0].id as string,
+              quantity: line.quantity,
+            },
+          ],
+        };
+      });
+      const fulfillmentLinesCheck = lines.some((i) => {
+        if (!i.orderLineId) return false;
+        return true;
+      });
+      if (!fulfillmentLinesCheck) continue;
 
-      // const lines: OrderFulfillLineInput[] = parcel.lineItems.map((line) => ({
-      //   // The OrderLine ID of the saleor order
-      //   orderLineId: line.saleorLineItem[0].id,
-      //   stocks: [
-      //     {
-      //       warehouse: line.warehouse?.saleorWarehouse[0].id as string,
-      //       quantity: line.quantity,
-      //     },
-      //   ],
-      // }));
-      // this.logger.info(`Line Item: ${JSON.stringify(lines)}`);
-      // try {
-      //   const response = await this.saleorClient.saleorCreatePackage({
-      //     order: saleorOrder.id,
-      //     input: {
-      //       lines,
-      //     },
-      //   });
-      //   if (response.orderFulfill?.errors) {
-      //     this.logger.error(JSON.stringify(response.orderFulfill.errors));
-      //   }
-      // } catch (error) {
-      //   this.logger.error(JSON.stringify(error));
-      // }
+      this.logger.info(`Line Item: ${JSON.stringify(lines)}`);
+      try {
+        const response = await this.saleorClient.saleorCreatePackage({
+          order: saleorOrder.id,
+          input: {
+            lines,
+          },
+        });
+        if (response.orderFulfill?.errors) {
+          this.logger.error(JSON.stringify(response.orderFulfill.errors));
+        }
+      } catch (error) {
+        this.logger.error(JSON.stringify(error));
+      }
     }
   }
 }
