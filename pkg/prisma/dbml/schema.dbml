@@ -160,7 +160,7 @@ Table ZohoSalesOrder {
   orderId String [unique, not null]
   zohoApp ZohoApp [not null]
   zohoAppId String [not null]
-  ZohoContactPerson ZohoContactPerson
+  zohoContactPerson ZohoContactPerson
   zohoContactPersonId String
   zohoContactPersonZohoAppId String
 
@@ -181,7 +181,7 @@ Table ZohoInvoice {
   invoiceId String [not null]
   zohoApp ZohoApp [not null]
   zohoAppId String [not null]
-  ZohoContactPerson ZohoContactPerson
+  zohoContactPerson ZohoContactPerson
   zohoContactPersonId String
   zohoContactPersonZohoAppId String
 
@@ -407,6 +407,7 @@ Table Order {
 
   indexes {
     (orderNumber, tenantId) [unique]
+    (id, orderNumber) [unique]
   }
 }
 
@@ -441,6 +442,7 @@ Table ProductVariant {
 
   indexes {
     (sku, tenantId) [unique]
+    (id, sku) [unique]
   }
 }
 
@@ -624,6 +626,7 @@ Table SaleorApp {
 
   indexes {
     (domain, tenantId) [unique]
+    (id, domain) [unique]
   }
 }
 
@@ -937,7 +940,7 @@ Ref: SaleorLineItem.lineItemId > LineItem.id [delete: Cascade]
 
 Ref: SaleorLineItem.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
 
-Ref: SaleorPayment.saleorOrderId > SaleorOrder.id
+Ref: SaleorPayment.(saleorOrderId, installedSaleorAppId) > SaleorOrder.(id, installedSaleorAppId)
 
 Ref: SaleorPayment.paymentId > Payment.id [delete: Cascade]
 
@@ -961,13 +964,13 @@ Ref: ZohoPackage.zohoAppId > ZohoApp.id [delete: Cascade]
 
 Ref: ZohoContact.zohoAppId > ZohoApp.id [delete: Cascade]
 
-Ref: ZohoContactPerson.zohoContactId > ZohoContact.id [delete: Cascade]
+Ref: ZohoContactPerson.(zohoContactId, zohoAppId) > ZohoContact.(id, zohoAppId) [delete: Cascade]
 
 Ref: ZohoContactPerson.contactId > Contact.id [delete: Cascade]
 
 Ref: ZohoContactPerson.zohoAppId > ZohoApp.id [delete: Cascade]
 
-Ref: ZohoSalesOrder.zohoContactId > ZohoContact.id [delete: Cascade]
+Ref: ZohoSalesOrder.(zohoContactId, zohoAppId) > ZohoContact.(id, zohoAppId) [delete: Cascade]
 
 Ref: ZohoSalesOrder.orderId > Order.id [delete: Cascade]
 
@@ -975,7 +978,7 @@ Ref: ZohoSalesOrder.zohoAppId > ZohoApp.id [delete: Cascade]
 
 Ref: ZohoSalesOrder.(zohoContactPersonId, zohoContactPersonZohoAppId) > ZohoContactPerson.(id, zohoAppId)
 
-Ref: ZohoInvoice.zohoContactId > ZohoContact.id [delete: Cascade]
+Ref: ZohoInvoice.(zohoContactId, zohoAppId) > ZohoContact.(id, zohoAppId) [delete: Cascade]
 
 Ref: ZohoInvoice.invoiceId > Invoice.id [delete: Cascade]
 
@@ -983,7 +986,7 @@ Ref: ZohoInvoice.zohoAppId > ZohoApp.id [delete: Cascade]
 
 Ref: ZohoInvoice.(zohoContactPersonId, zohoContactPersonZohoAppId) > ZohoContactPerson.(id, zohoAppId)
 
-Ref: ZohoPayment.zohoContactId > ZohoContact.id [delete: Cascade]
+Ref: ZohoPayment.(zohoContactId, zohoAppId) > ZohoContact.(id, zohoAppId) [delete: Cascade]
 
 Ref: ZohoPayment.paymentId > Payment.id [delete: Cascade]
 

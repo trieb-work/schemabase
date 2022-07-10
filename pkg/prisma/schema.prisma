@@ -78,7 +78,7 @@ model SaleorPayment {
   createdAt DateTime
   updatedAt DateTime
 
-  saleorOrder   SaleorOrder? @relation(fields: [saleorOrderId], references: [id])
+  saleorOrder   SaleorOrder? @relation(fields: [saleorOrderId, installedSaleorAppId], references: [id, installedSaleorAppId])
   saleorOrderId String?
 
   payment   Payment? @relation(fields: [paymentId], references: [id], onDelete: Cascade)
@@ -194,7 +194,7 @@ model ZohoContactPerson {
   // Zoho Internal ContactPerson Id
   id String
 
-  zohoContact   ZohoContact @relation(fields: [zohoContactId], references: [id], onDelete: Cascade)
+  zohoContact   ZohoContact @relation(fields: [zohoContactId, zohoAppId], references: [id, zohoAppId], onDelete: Cascade)
   zohoContactId String
 
   // For easy look-up directly in the ZohoContact model,
@@ -237,7 +237,7 @@ model ZohoSalesOrder {
   // as complete string: INV-395956
   number String
 
-  zohoContact   ZohoContact? @relation(fields: [zohoContactId], references: [id], onDelete: Cascade)
+  zohoContact   ZohoContact? @relation(fields: [zohoContactId, zohoAppId], references: [id, zohoAppId], onDelete: Cascade)
   zohoContactId String?
 
   order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -247,7 +247,7 @@ model ZohoSalesOrder {
   zohoAppId String
 
 
-  ZohoContactPerson          ZohoContactPerson? @relation(fields: [zohoContactPersonId, zohoContactPersonZohoAppId], references: [id, zohoAppId])
+  zohoContactPerson          ZohoContactPerson? @relation(fields: [zohoContactPersonId, zohoContactPersonZohoAppId], references: [id, zohoAppId])
   zohoContactPersonId        String?
   zohoContactPersonZohoAppId String?
   @@unique([id, zohoAppId])
@@ -266,7 +266,7 @@ model ZohoInvoice {
   // as complete string: INV-395956
   number String
 
-  zohoContact   ZohoContact? @relation(fields: [zohoContactId], references: [id], onDelete: Cascade)
+  zohoContact   ZohoContact? @relation(fields: [zohoContactId, zohoAppId], references: [id, zohoAppId], onDelete: Cascade)
   zohoContactId String?
 
   invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
@@ -276,7 +276,7 @@ model ZohoInvoice {
   zohoAppId String
 
 
-  ZohoContactPerson          ZohoContactPerson? @relation(fields: [zohoContactPersonId, zohoContactPersonZohoAppId], references: [id, zohoAppId])
+  zohoContactPerson          ZohoContactPerson? @relation(fields: [zohoContactPersonId, zohoContactPersonZohoAppId], references: [id, zohoAppId])
   zohoContactPersonId        String?
   zohoContactPersonZohoAppId String?
   @@unique([id, zohoAppId])
@@ -291,7 +291,7 @@ model ZohoPayment {
   createdAt DateTime
   updatedAt DateTime
 
-  zohoContact   ZohoContact? @relation(fields: [zohoContactId], references: [id], onDelete: Cascade)
+  zohoContact   ZohoContact? @relation(fields: [zohoContactId, zohoAppId], references: [id, zohoAppId], onDelete: Cascade)
   zohoContactId String?
 
   payment   Payment? @relation(fields: [paymentId], references: [id], onDelete: Cascade)
@@ -634,6 +634,8 @@ model Order {
 
 
   @@unique([orderNumber, tenantId])
+  // Adding this unique constraint just for relational purposes
+  @@unique([id, orderNumber])
 }
 
 // The ECI internal Product model
@@ -680,6 +682,8 @@ model ProductVariant {
   saleorProductVariant SaleorProductVariant[]
 
   @@unique([sku, tenantId])
+  // Just for relational purposes
+  @@unique([id, sku])
 }
 
 enum BraintreeEnvironment {
@@ -968,6 +972,8 @@ model SaleorApp {
 
 
   @@unique([domain, tenantId])
+  // Just for relational purposes
+  @@unique([id, domain])
 }
 
 // All ECI Integrations for Saleor should be handled as individual Apps that could be installed via the Marketplace for example
