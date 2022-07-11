@@ -163,33 +163,53 @@ export class SaleorPackageSyncService {
       const order = parcel.order;
       if (typeof order.number !== "string") continue;
 
-      /**
-       * The full order number including prefix
-       */
-      const prefixedOrderNumber = `${this.orderPrefix}-${order.number}`;
+      let existingPackageId = "";
 
-      const orderExist = await this.db.order.findUnique({
-        where: {
-          orderNumber_tenantId: {
-            orderNumber: prefixedOrderNumber,
-            tenantId: this.tenantId,
-          },
-        },
-      });
-
-      if (orderExist)
+      if (!parcel.trackingNumber) {
         this.logger.info(
-          `Connecting saleor fulfillment ${parcel.id} with order ${orderExist.orderNumber} - id ${orderExist.id}`,
+          `Saleor fulfillment ${parcel.id} for order ${parcel.order.id} has no tracking number attached. We maybe can't match it correctly`,
         );
+
+        /**
+         * The full order number including prefix
+         */
+        const prefixedOrderNumber = `${this.orderPrefix}-${order.number}`;
+
+        const orderExist = await this.db.order.findUnique({
+          where: {
+            orderNumber_tenantId: {
+              orderNumber: prefixedOrderNumber,
+              tenantId: this.tenantId,
+            },
+          },
+          include: {
+            packages: true,
+          },
+        });
+
+        // If we don't have a tracking number, but an order with just one package attached,
+        // We just assume, that this is the right package and match it
+        if (orderExist && orderExist.packages.length === 1) {
+          const thisPackage = orderExist.packages[0];
+          existingPackageId = thisPackage.id;
+          this.logger.info(
+            `Connecting saleor fulfillment ${parcel.id} with order ${orderExist.orderNumber} - Package number ${thisPackage.id}`,
+          );
+        }
+      }
 
       // look-up packages by tracking number to connect them with this
       // saleor fulfillment.
-      const existingPackage = await this.db.package.findFirst({
-        where: {
-          trackingId: parcel.trackingNumber,
-          tenantId: this.tenantId,
-        },
-      });
+      const existingPackage =
+        existingPackageId ||
+        (
+          await this.db.package.findFirst({
+            where: {
+              trackingId: parcel.trackingNumber,
+              tenantId: this.tenantId,
+            },
+          })
+        )?.id;
       if (!existingPackage) {
         this.logger.info(
           `We can't find an internal Package entity for tracking number ${parcel.trackingNumber} - Skipping creation`,
@@ -199,7 +219,7 @@ export class SaleorPackageSyncService {
 
       await this.upsertSaleorPackage(
         parcel.id,
-        existingPackage.id,
+        existingPackage,
         parcel.created,
       );
     }
