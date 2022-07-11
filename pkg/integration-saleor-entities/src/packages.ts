@@ -118,10 +118,10 @@ export class SaleorPackageSyncService {
     const yesterdayMidnight = setHours(subDays(now, 1), 0);
     let createdGte = format(yesterdayMidnight, "yyyy-MM-dd");
     if (!cronState.lastRun) {
-      createdGte = format(subYears(now, 1), "yyyy-MM-dd");
+      createdGte = format(subYears(now, 2), "yyyy-MM-dd");
       this.logger.info(
         // eslint-disable-next-line max-len
-        `This seems to be our first sync run. Syncing data from now - 1 Year to: ${createdGte}`,
+        `This seems to be our first sync run. Syncing data from: ${createdGte}`,
       );
     } else {
       this.logger.info(`Setting GTE date to ${createdGte}`);
@@ -367,7 +367,10 @@ export class SaleorPackageSyncService {
       });
 
       // Catch all mutation errors and handle them correctly
-      if (response.orderFulfill?.errors) {
+      if (
+        response.orderFulfill?.errors ||
+        !response.orderFulfill?.fulfillments
+      ) {
         response.orderFulfill?.errors.map((e) => {
           if (
             e.code === "FULFILL_ORDER_LINE" &&
@@ -381,20 +384,16 @@ export class SaleorPackageSyncService {
           }
           return true;
         });
-      }
-
-      if (!response.orderFulfill?.fulfillments)
-        throw new Error(
-          `Did not receive expected response from saleor for order fulfill ${saleorOrder.orderNumber}`,
-        );
-      for (const fulfillment of response.orderFulfill?.fulfillments) {
-        if (!fulfillment?.id)
-          throw new Error(`Fulfillment id missing for ${saleorOrder.id}`);
-        await this.upsertSaleorPackage(
-          fulfillment?.id,
-          parcel.id,
-          fulfillment?.created,
-        );
+      } else {
+        for (const fulfillment of response.orderFulfill?.fulfillments) {
+          if (!fulfillment?.id)
+            throw new Error(`Fulfillment id missing for ${saleorOrder.id}`);
+          await this.upsertSaleorPackage(
+            fulfillment?.id,
+            parcel.id,
+            fulfillment?.created,
+          );
+        }
       }
     }
   }
