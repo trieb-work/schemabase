@@ -6,6 +6,7 @@ import {
   SaleorCreatePackageMutation,
   OrderFulfillInput,
   OrderFulfillLineInput,
+  OrderError,
 } from "@eci/pkg/saleor";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
@@ -353,8 +354,22 @@ export class SaleorPackageSyncService {
             lines,
           },
         });
+
+        // Catch all mutation errors and handle them correctly
         if (response.orderFulfill?.errors) {
-          this.logger.error(JSON.stringify(response.orderFulfill.errors));
+          response.orderFulfill?.errors.map((e) => {
+            if (
+              e.code === "FULFILL_ORDER_LINE" &&
+              e.message?.includes("Only 0 items remaining to fulfill")
+            ) {
+              this.logger.info(
+                `Saleor orderline ${e.orderLines} from order ${saleorOrder.orderNumber} - ${saleorOrder.id}  is already fulfilled: ${e.message}`,
+              );
+            } else {
+              this.logger.error(JSON.stringify(e));
+            }
+          });
+          return;
         }
       } catch (error) {
         this.logger.error(JSON.stringify(error));
