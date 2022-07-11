@@ -6,7 +6,6 @@ import {
   SaleorCreatePackageMutation,
   OrderFulfillInput,
   OrderFulfillLineInput,
-  OrderError,
 } from "@eci/pkg/saleor";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
