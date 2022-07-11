@@ -357,7 +357,13 @@ export class SaleorPackageSyncService {
         )?.saleorLineItem[0]?.id;
         if (!orderLineId) {
           this.logger.error(
-            `Can't find a saleor orderLine for order ${saleorOrder.orderNumber}, SKU ${line.sku} - Can't create fulfillment in saleor`,
+            `Can't find a saleor orderLine for order ${
+              saleorOrder.orderNumber
+            }, SKU ${
+              line.sku
+            } - Can't create fulfillment in saleor. Orderlines: ${JSON.stringify(
+              saleorOrder.order.lineItems,
+            )}`,
           );
         }
         return {
