@@ -1,4 +1,4 @@
-import { Zoho, Contact, ContactPerson } from "@trieb.work/zoho-ts";
+import { Zoho, Contact } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
