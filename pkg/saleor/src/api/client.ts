@@ -41,9 +41,10 @@ export function createSaleorClient({
       graphqlClient.setHeader("Authorization", `Bearer ${token}`);
     }
     const res = await graphqlClient.request(doc, vars);
-    if (res.errors) {
-      throw new Error(res.errors.map((e: { message: string }) => e.message));
-    }
+    // If we throw an error here, we can't handle that later
+    // if (res.errors) {
+    //   throw new Error(res.errors.map((e: { message: string }) => e.message));
+    // }
 
     return res;
   }
