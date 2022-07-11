@@ -163,6 +163,8 @@ export class ZohoContactSyncService {
     this.logger.info(`We have ${totalLength} Zoho ContactPersons to upsert`);
 
     for (const contactPerson of contactPersons) {
+      // TODO: only update contactperson, if contact last_update
+      // timestamp is new
       const lowercaseEmail = contactPerson.email.toLowerCase();
 
       await this.db.zohoContactPerson.upsert({
