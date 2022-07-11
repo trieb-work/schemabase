@@ -322,7 +322,7 @@ export class SaleorPackageSyncService {
         // using the product SKU
         const orderLineId = saleorOrder.order.lineItems.find(
           (item) => item.sku === line.sku,
-        )?.saleorLineItem[0].id;
+        )?.saleorLineItem[0]?.id;
         if (!orderLineId) {
           this.logger.error(
             `Can't find a saleor orderLine for order ${saleorOrder.orderNumber}, SKU ${line.sku} - Can't create fulfillment in saleor`,
