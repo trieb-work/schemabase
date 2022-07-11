@@ -151,83 +151,87 @@ export class ZohoContactSyncService {
           },
         },
       });
-    }
 
-    // we get all contact persons now. We can't filter contact persons API calls
-    // by timestamps or anything, so this might take a lot of API calls and should not
-    // be run too frequently
-    const contactPersons: ContactPerson[] =
-      await this.zoho.contactperson.list();
+      const contactId = contact.contact_id;
 
-    const totalLength = contactPersons.length;
-    this.logger.info(`We have ${totalLength} Zoho ContactPersons to upsert`);
+      // get the contact persons for a contact
+      const contactPersons = await this.zoho.contact.listContactPersons(
+        contactId,
+      );
 
-    for (const contactPerson of contactPersons) {
-      // TODO: only update contactperson, if contact last_update
-      // timestamp is new
-      const lowercaseEmail = contactPerson.email.toLowerCase();
+      const totalLength = contactPersons.length;
+      this.logger.info(
+        // eslint-disable-next-line max-len
+        `We have ${totalLength} Zoho ContactPersons to upsert for Zoho Contact ${contactId}`,
+      );
 
-      await this.db.zohoContactPerson.upsert({
-        where: {
-          id_zohoAppId: {
+      for (const contactPerson of contactPersons) {
+        // TODO: only update contactperson, if contact last_update
+        // timestamp is new
+        const lowercaseEmail = contactPerson.email.toLowerCase();
+
+        await this.db.zohoContactPerson.upsert({
+          where: {
+            id_zohoAppId: {
+              id: contactPerson.contact_person_id,
+              zohoAppId: this.zohoApp.id,
+            },
+          },
+          create: {
             id: contactPerson.contact_person_id,
-            zohoAppId: this.zohoApp.id,
-          },
-        },
-        create: {
-          id: contactPerson.contact_person_id,
-          zohoContact: {
-            connectOrCreate: {
-              where: {
-                id_zohoAppId: {
-                  id: contactPerson.contact_id,
-                  zohoAppId: this.zohoApp.id,
+            zohoContact: {
+              connectOrCreate: {
+                where: {
+                  id_zohoAppId: {
+                    id: contactId,
+                    zohoAppId: this.zohoApp.id,
+                  },
                 },
-              },
-              create: {
-                id: contactPerson.contact_id,
-                zohoApp: {
-                  connect: {
-                    id: this.zohoApp.id,
+                create: {
+                  id: contactId,
+                  zohoApp: {
+                    connect: {
+                      id: this.zohoApp.id,
+                    },
                   },
                 },
               },
             },
-          },
-          zohoApp: {
-            connect: {
-              id: this.zohoApp.id,
+            zohoApp: {
+              connect: {
+                id: this.zohoApp.id,
+              },
             },
-          },
-          firstName: contactPerson.first_name,
-          lastName: contactPerson.last_name,
-          email: lowercaseEmail,
-          contact: {
-            connectOrCreate: {
-              where: {
-                email_tenantId: {
-                  tenantId,
+            firstName: contactPerson.first_name,
+            lastName: contactPerson.last_name,
+            email: lowercaseEmail,
+            contact: {
+              connectOrCreate: {
+                where: {
+                  email_tenantId: {
+                    tenantId,
+                    email: lowercaseEmail,
+                  },
+                },
+                create: {
+                  id: id.id("contact"),
                   email: lowercaseEmail,
-                },
-              },
-              create: {
-                id: id.id("contact"),
-                email: lowercaseEmail,
-                tenant: {
-                  connect: {
-                    id: tenantId,
+                  tenant: {
+                    connect: {
+                      id: tenantId,
+                    },
                   },
                 },
               },
             },
           },
-        },
-        update: {
-          firstName: contactPerson.first_name,
-          lastName: contactPerson.last_name,
-          email: lowercaseEmail,
-        },
-      });
+          update: {
+            firstName: contactPerson.first_name,
+            lastName: contactPerson.last_name,
+            email: lowercaseEmail,
+          },
+        });
+      }
     }
 
     await this.cronState.set({
