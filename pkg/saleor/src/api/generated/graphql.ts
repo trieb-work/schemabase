@@ -9918,6 +9918,7 @@ export type SaleorCreatePackageMutation = {
     fulfillments?: Array<{
       __typename?: "Fulfillment";
       id: string;
+      created: any;
     } | null> | null;
     errors: Array<{
       __typename?: "OrderError";
@@ -10489,6 +10490,7 @@ export const SaleorCreatePackageDocument = gql`
     orderFulfill(order: $order, input: $input) {
       fulfillments {
         id
+        created
       }
       errors {
         field

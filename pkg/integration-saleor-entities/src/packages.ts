@@ -71,6 +71,42 @@ export class SaleorPackageSyncService {
     });
   }
 
+  private async upsertSaleorPackage(
+    saleorPackageId: string,
+    internalPackageId: string,
+    createdAt: Date,
+  ): Promise<void> {
+    await this.db.saleorPackage.upsert({
+      where: {
+        id_installedSaleorAppId: {
+          id: saleorPackageId,
+          installedSaleorAppId: this.installedSaleorAppId,
+        },
+      },
+      create: {
+        id: saleorPackageId,
+        createdAt,
+        package: {
+          connect: {
+            id: internalPackageId,
+          },
+        },
+        installedSaleorApp: {
+          connect: {
+            id: this.installedSaleorAppId,
+          },
+        },
+      },
+      update: {
+        package: {
+          connect: {
+            id: internalPackageId,
+          },
+        },
+      },
+    });
+  }
+
   /**
    * Pull payment metadata from braintree
    */
@@ -162,35 +198,11 @@ export class SaleorPackageSyncService {
         continue;
       }
 
-      await this.db.saleorPackage.upsert({
-        where: {
-          id_installedSaleorAppId: {
-            id: parcel.id,
-            installedSaleorAppId: this.installedSaleorAppId,
-          },
-        },
-        create: {
-          id: parcel.id,
-          createdAt: parcel.created,
-          package: {
-            connect: {
-              id: existingPackage.id,
-            },
-          },
-          installedSaleorApp: {
-            connect: {
-              id: this.installedSaleorAppId,
-            },
-          },
-        },
-        update: {
-          package: {
-            connect: {
-              id: existingPackage.id,
-            },
-          },
-        },
-      });
+      await this.upsertSaleorPackage(
+        parcel.id,
+        existingPackage.id,
+        parcel.created,
+      );
     }
 
     await this.cronState.set({
@@ -347,32 +359,43 @@ export class SaleorPackageSyncService {
       if (!fulfillmentLinesCheck) continue;
 
       this.logger.info(`Line Item: ${JSON.stringify(lines)}`);
-      try {
-        const response = await this.saleorClient.saleorCreatePackage({
-          order: saleorOrder.id,
-          input: {
-            lines,
-          },
-        });
 
-        // Catch all mutation errors and handle them correctly
-        if (response.orderFulfill?.errors) {
-          response.orderFulfill?.errors.map((e) => {
-            if (
-              e.code === "FULFILL_ORDER_LINE" &&
-              e.message?.includes("Only 0 items remaining to fulfill")
-            ) {
-              this.logger.info(
-                `Saleor orderline ${e.orderLines} from order ${saleorOrder.orderNumber} - ${saleorOrder.id}  is already fulfilled: ${e.message}`,
-              );
-            } else {
-              this.logger.error(JSON.stringify(e));
-            }
-          });
-          return;
-        }
-      } catch (error) {
-        this.logger.error(JSON.stringify(error));
+      const response = await this.saleorClient.saleorCreatePackage({
+        order: saleorOrder.id,
+        input: {
+          lines,
+        },
+      });
+
+      // Catch all mutation errors and handle them correctly
+      if (response.orderFulfill?.errors) {
+        response.orderFulfill?.errors.map((e) => {
+          if (
+            e.code === "FULFILL_ORDER_LINE" &&
+            e.message?.includes("Only 0 items remaining to fulfill")
+          ) {
+            this.logger.info(
+              `Saleor orderline ${e.orderLines} from order ${saleorOrder.orderNumber} - ${saleorOrder.id}  is already fulfilled: ${e.message}. Continue`,
+            );
+          } else {
+            throw new Error(JSON.stringify(e));
+          }
+          return true;
+        });
+      }
+
+      if (!response.orderFulfill?.fulfillments)
+        throw new Error(
+          `Did not receive expected response from saleor for order fulfill ${saleorOrder.orderNumber}`,
+        );
+      for (const fulfillment of response.orderFulfill?.fulfillments) {
+        if (!fulfillment?.id)
+          throw new Error(`Fulfillment id missing for ${saleorOrder.id}`);
+        await this.upsertSaleorPackage(
+          fulfillment?.id,
+          parcel.id,
+          fulfillment?.created,
+        );
       }
     }
   }
