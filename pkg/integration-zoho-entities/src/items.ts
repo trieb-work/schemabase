@@ -119,10 +119,10 @@ export class ZohoItemSyncService {
             this.logger.error(
               `Prisma unique constrained failed for product ${item.item_id} - SKU ${item.sku}`,
             );
+            continue;
           }
         } else {
-          this.logger.error(JSON.stringify(e));
-          continue;
+          throw new Error(JSON.stringify(e));
         }
       }
     }
