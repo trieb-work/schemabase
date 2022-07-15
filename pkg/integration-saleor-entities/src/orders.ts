@@ -133,26 +133,29 @@ export class SaleorOrderSyncService {
       const lowerCaseEmail = order.userEmail.toLowerCase();
       const companyName = order.billingAddress?.companyName;
 
-      const companyCreateOrConnect: Prisma.CompanyCreateNestedOneWithoutContactsInput = companyName ? {
-        connectOrCreate: {
-          where: {
-            normalizedName_tenantId: {
-              normalizedName: normalizeStrings.companyNames(companyName),
-              tenantId: this.tenantId,
+      const companyCreateOrConnect: Prisma.CompanyCreateNestedOneWithoutContactsInput =
+        companyName
+          ? {
+              connectOrCreate: {
+                where: {
+                  normalizedName_tenantId: {
+                    normalizedName: normalizeStrings.companyNames(companyName),
+                    tenantId: this.tenantId,
+                  },
+                },
+                create: {
+                  id: id.id("company"),
+                  name: companyName,
+                  normalizedName: normalizeStrings.companyNames(companyName),
+                  tenant: {
+                    connect: {
+                      id: this.tenantId,
+                    },
+                  },
+                },
+              },
             }
-          },
-          create: {
-            id: id.id("company"),
-            name: companyName,
-            normalizedName: normalizeStrings.companyNames(companyName),
-            tenant: {
-              connect: {
-                id: this.tenantId
-              }
-            }
-          }
-        }
-      } : {}
+          : {};
       const contactCreateOrConnect: Prisma.ContactCreateNestedManyWithoutOrdersInput =
         {
           connectOrCreate: {
