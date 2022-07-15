@@ -681,6 +681,9 @@ model ProductVariant {
 
   saleorProductVariant SaleorProductVariant[]
 
+  // Available physical stock
+  stockOnHand Int?
+
   @@unique([sku, tenantId])
   // Just for relational purposes
   @@unique([id, sku])

@@ -40,6 +40,8 @@ export class ZohoItemSyncService {
     // Loop through every item and upsert the corresponding
     // product, productVariant and ZohoItem in the DB
     for (const item of items) {
+      const stock = item.stock_on_hand ?? null;
+
       try {
         await this.db.productVariant.upsert({
           where: {
@@ -69,6 +71,7 @@ export class ZohoItemSyncService {
                 },
               },
             },
+            stockOnHand: stock,
           },
           create: {
             id: id.id("variant"),
@@ -86,6 +89,7 @@ export class ZohoItemSyncService {
                 zohoAppId: this.zohoApp.id,
               },
             },
+            stockOnHand: stock,
             // It is a product variant, if we have a "group_name" in Zoho.
             // In this moment, we first have to check, if a product does already exist using the
             // group_name (which is actually a product name)

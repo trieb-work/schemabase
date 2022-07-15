@@ -439,6 +439,7 @@ Table ProductVariant {
   lineItem LineItem [not null]
   zohoItem ZohoItem [not null]
   saleorProductVariant SaleorProductVariant [not null]
+  stockOnHand Int
 
   indexes {
     (sku, tenantId) [unique]
