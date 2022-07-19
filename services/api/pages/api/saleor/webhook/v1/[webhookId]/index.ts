@@ -55,7 +55,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     `Incoming saleor webhook: ${webhookId}, saleor-event: ${saleorEvent}`,
   );
   const webhook =
-    webhookCache[webhookId] ||
+    webhookCache?.[webhookId] ||
     (await ctx.prisma.incomingWebhook.findUnique({
       where: {
         id: webhookId,
