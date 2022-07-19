@@ -18,7 +18,7 @@ export COMPOSE_DOCKER_BUILDKIT=1
 # Installs all dependencies
 install: NODE_ENV=development
 install:
-	pnpm install
+	pnpm install --no-optional
 
 
 # Create a new migration file after you have made changes to the `schema.prisma`.

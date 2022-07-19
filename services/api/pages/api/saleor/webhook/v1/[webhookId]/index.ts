@@ -40,6 +40,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     include: {
       secret: true,
       installedSaleorApp: {
+        select: { id: true },
         include: { saleorApp: true },
       },
     },
@@ -91,11 +92,6 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   }
 
   res.send(req);
-};
-
-// Winston elasticsearch needs "fs" package ..
-export const config = {
-  runtime: "experimental-edge",
 };
 
 export default handleWebhook({
