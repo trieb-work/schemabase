@@ -1,3 +1,4 @@
+import { id } from "@eci/pkg/ids";
 import { ILogger } from "@eci/pkg/logger";
 
 interface PaymentListGatewaysResponse {
@@ -57,7 +58,7 @@ export class VorkassePaymentService implements VorkasseService {
       // action_required_data: {
       // confirmation_url: "https://www.example.com/3ds-confirmation/",
       // },
-      customer_id: "customer-1234",
+      // customer_id: "customer-1234",
       payment_method: {
         brand: "Visa",
         exp_month: "01",
@@ -66,7 +67,7 @@ export class VorkassePaymentService implements VorkasseService {
         name: "John Doe",
         type: "Credit card",
       },
-      transaction_id: "transaction-1234",
+      transaction_id: id.id("payment"),
     };
     return returnObject;
   }
