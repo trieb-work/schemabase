@@ -3,6 +3,7 @@ import { z } from "zod";
 import { HttpError } from "@eci/pkg/errors";
 import { handleWebhook, Webhook } from "@eci/pkg/http";
 import { VorkassePaymentService } from "@eci/pkg/integration-saleor-payment";
+import { IncomingWebhook, SecretKey } from "@eci/pkg/prisma";
 
 const requestValidation = z.object({
   query: z.object({
@@ -13,6 +14,26 @@ const requestValidation = z.object({
     "saleor-event": z.enum(["payment_list_gateways", "payment_process"]),
   }),
 });
+
+/**
+ * Cache responses from Prisma to only query Webhook Metadata for this
+ * webhook once per running lambda.
+ */
+let webhookCache: {
+  [webhookId: string]:
+    | (IncomingWebhook & {
+        secret: SecretKey | null;
+        installedSaleorApp: {
+          id: string;
+          channelSlug: string | null;
+          saleorApp: {
+            id: string;
+            domain: string;
+          };
+        } | null;
+      })
+    | null;
+};
 
 /**
  * The product data feed returns a google standard .csv file from products and
@@ -33,26 +54,30 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   ctx.logger.info(
     `Incoming saleor webhook: ${webhookId}, saleor-event: ${saleorEvent}`,
   );
-  const webhook = await ctx.prisma.incomingWebhook.findUnique({
-    where: {
-      id: webhookId,
-    },
-    include: {
-      secret: true,
-      installedSaleorApp: {
-        select: {
-          id: true,
-          channelSlug: true,
-          saleorApp: { select: { id: true, domain: true } },
+  const webhook =
+    webhookCache[webhookId] ||
+    (await ctx.prisma.incomingWebhook.findUnique({
+      where: {
+        id: webhookId,
+      },
+      include: {
+        secret: true,
+        installedSaleorApp: {
+          select: {
+            id: true,
+            channelSlug: true,
+            saleorApp: { select: { id: true, domain: true } },
+          },
         },
       },
-    },
-  });
+    }));
 
   if (webhook == null) {
     ctx.logger.error(`Webhook not found: ${webhookId}`);
     throw new HttpError(404, `Webhook not found: ${webhookId}`);
   }
+
+  webhookCache[webhookId] = webhook;
 
   const { installedSaleorApp } = webhook;
 
