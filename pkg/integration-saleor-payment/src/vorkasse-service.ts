@@ -54,7 +54,7 @@ export class VorkassePaymentService implements VorkasseService {
     // TODO: generate transaction id
 
     const returnObject = {
-      action_required: false,
+      action_required: true,
       // action_required_data: {
       // confirmation_url: "https://www.example.com/3ds-confirmation/",
       // },
