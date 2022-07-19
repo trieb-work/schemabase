@@ -90,10 +90,13 @@ init-core: down build
 
 # Runs all codegens
 build: install
+	$(MAKE) build-prod
+
+build-prod: 
 	pnpm prisma generate
 	pnpm graphql-codegen -c pkg/api/codegen.yml
 	pnpm graphql-codegen -c pkg/saleor/codegen.yml
-	
+
 # Builds the api service
 build-api: build
 	pnpm next build ./services/api
@@ -145,7 +148,7 @@ test: build db-push
 # Setup on vercel:
 #  Build Command: `make build-api-prod`
 #  Output Directory: `dist/apps/api/.next`
-build-api-prod: build
+build-api-prod: build-prod
 	pnpm next build ./services/api
 
 build-logdrain-prod: build
