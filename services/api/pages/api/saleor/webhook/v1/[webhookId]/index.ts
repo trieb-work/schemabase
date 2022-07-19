@@ -40,8 +40,11 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     include: {
       secret: true,
       installedSaleorApp: {
-        select: { id: true },
-        include: { saleorApp: true },
+        select: {
+          id: true,
+          channelSlug: true,
+          saleorApp: { select: { id: true, domain: true } },
+        },
       },
     },
   });
