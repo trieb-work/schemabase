@@ -19,7 +19,7 @@ const requestValidation = z.object({
  * Cache responses from Prisma to only query Webhook Metadata for this
  * webhook once per running lambda.
  */
-let webhookCache: {
+const webhookCache: {
   [webhookId: string]:
     | (IncomingWebhook & {
         secret: SecretKey | null;
@@ -33,7 +33,7 @@ let webhookCache: {
         } | null;
       })
     | null;
-};
+} = {};
 
 /**
  * The product data feed returns a google standard .csv file from products and
