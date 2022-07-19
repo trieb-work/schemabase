@@ -10,7 +10,7 @@ const requestValidation = z.object({
   }),
   headers: z.object({
     "saleor-domain": z.string(),
-    "saleor-event": z.enum(["payment_list_gateways"]),
+    "saleor-event": z.enum(["payment_list_gateways", "payment_process"]),
   }),
 });
 
@@ -76,8 +76,25 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     ctx.logger.info("Responding with payment gateway list");
     return res.json(paymentGateways);
   }
+  if (saleorEvent === "payment_process") {
+    const vorkassePaymentService = new VorkassePaymentService({
+      logger: ctx.logger.with({
+        saleor: {
+          domain: saleorApp.domain,
+          channel: installedSaleorApp.channelSlug,
+        },
+      }),
+    });
+    const response = await vorkassePaymentService.paymentProcess();
+    ctx.logger.info("Responding with payment process answer");
+    return res.json(response);
+  }
 
   res.send(req);
+};
+
+export const config = {
+  runtime: "experimental-edge",
 };
 
 export default handleWebhook({
