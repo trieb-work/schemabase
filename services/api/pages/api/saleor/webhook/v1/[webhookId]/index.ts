@@ -3,6 +3,7 @@ import { z } from "zod";
 import { HttpError } from "@eci/pkg/errors";
 import { handleWebhook, Webhook } from "@eci/pkg/http";
 import { VorkassePaymentService } from "@eci/pkg/integration-saleor-payment";
+import { IncomingWebhook, SecretKey } from "@eci/pkg/prisma";
 
 const requestValidation = z.object({
   query: z.object({
@@ -10,9 +11,34 @@ const requestValidation = z.object({
   }),
   headers: z.object({
     "saleor-domain": z.string(),
-    "saleor-event": z.enum(["payment_list_gateways"]),
+    "saleor-event": z.enum([
+      "payment_list_gateways",
+      "payment_process",
+      "payment_confirm",
+      "payment_capture",
+    ]),
   }),
 });
+
+/**
+ * Cache responses from Prisma to only query Webhook Metadata for this
+ * webhook once per running lambda.
+ */
+const webhookCache: {
+  [webhookId: string]:
+    | (IncomingWebhook & {
+        secret: SecretKey | null;
+        installedSaleorApp: {
+          id: string;
+          channelSlug: string | null;
+          saleorApp: {
+            id: string;
+            domain: string;
+          };
+        } | null;
+      })
+    | null;
+} = {};
 
 /**
  * The product data feed returns a google standard .csv file from products and
@@ -28,27 +54,41 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     headers: { "saleor-event": saleorEvent },
   } = req;
 
+  const isPaymentWebhook = [
+    "payment_list_gateways",
+    "payment_process",
+    "payment_confirm",
+    "payment_capture",
+  ].includes(saleorEvent);
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
   ctx.logger.info(
     `Incoming saleor webhook: ${webhookId}, saleor-event: ${saleorEvent}`,
   );
-  const webhook = await ctx.prisma.incomingWebhook.findUnique({
-    where: {
-      id: webhookId,
-    },
-    include: {
-      secret: true,
-      installedSaleorApp: {
-        include: { saleorApp: true },
+  const webhook =
+    webhookCache?.[webhookId] ||
+    (await ctx.prisma.incomingWebhook.findUnique({
+      where: {
+        id: webhookId,
       },
-    },
-  });
+      include: {
+        secret: true,
+        installedSaleorApp: {
+          select: {
+            id: true,
+            channelSlug: true,
+            saleorApp: { select: { id: true, domain: true } },
+          },
+        },
+      },
+    }));
 
   if (webhook == null) {
     ctx.logger.error(`Webhook not found: ${webhookId}`);
     throw new HttpError(404, `Webhook not found: ${webhookId}`);
   }
+
+  webhookCache[webhookId] = webhook;
 
   const { installedSaleorApp } = webhook;
 
@@ -61,7 +101,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
   ctx.logger.info("Received valid saleor webhook");
 
-  if (saleorEvent === "payment_list_gateways") {
+  if (isPaymentWebhook) {
     const vorkassePaymentService = new VorkassePaymentService({
       logger: ctx.logger.with({
         saleor: {
@@ -70,11 +110,28 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
         },
       }),
     });
-    const paymentGateways = await vorkassePaymentService.paymentListGateways(
-      "EUR",
-    );
-    ctx.logger.info("Responding with payment gateway list");
-    return res.json(paymentGateways);
+    if (saleorEvent === "payment_list_gateways") {
+      const paymentGateways = await vorkassePaymentService.paymentListGateways(
+        "EUR",
+      );
+      ctx.logger.info("Responding with payment gateway list");
+      return res.json(paymentGateways);
+    }
+    if (saleorEvent === "payment_process") {
+      const response = await vorkassePaymentService.paymentProcess();
+      ctx.logger.info("Responding with payment process answer");
+      return res.json(response);
+    }
+    if (saleorEvent === "payment_confirm") {
+      const response = await vorkassePaymentService.paymentConfirm();
+      ctx.logger.info("Payment confirm request. Responding with confirmation");
+      return res.json(response);
+    }
+    if (saleorEvent === "payment_capture") {
+      const response = await vorkassePaymentService.paymentCapture();
+      ctx.logger.info("Payment capture request. Responding with confirmation");
+      return res.json(response);
+    }
   }
 
   res.send(req);
