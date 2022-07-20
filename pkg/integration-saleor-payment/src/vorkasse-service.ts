@@ -51,24 +51,38 @@ export class VorkassePaymentService implements VorkasseService {
   }
 
   public async paymentProcess() {
-    // TODO: generate transaction id
-
     const returnObject = {
-      action_required: true,
+      action_required: false,
+      kind: "auth",
       // action_required_data: {
       // confirmation_url: "https://www.example.com/3ds-confirmation/",
       // },
       // customer_id: "customer-1234",
-      payment_method: {
-        brand: "Visa",
-        exp_month: "01",
-        exp_year: "2025",
-        last_4: "4242",
-        name: "John Doe",
-        type: "Credit card",
-      },
+      // payment_method: {
+      //   brand: "Visa",
+      //   exp_month: "01",
+      //   exp_year: "2025",
+      //   last_4: "4242",
+      //   name: "John Doe",
+      //   type: "Credit card",
+      // },
+
       transaction_id: id.id("payment"),
     };
     return returnObject;
+  }
+
+  public async paymentConfirm() {
+    return {
+      action_required: false,
+      kind: "capture",
+    };
+  }
+
+  public async paymentCapture() {
+    return {
+      action_required: false,
+      kind: "capture",
+    };
   }
 }

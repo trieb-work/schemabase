@@ -11,7 +11,12 @@ const requestValidation = z.object({
   }),
   headers: z.object({
     "saleor-domain": z.string(),
-    "saleor-event": z.enum(["payment_list_gateways", "payment_process"]),
+    "saleor-event": z.enum([
+      "payment_list_gateways",
+      "payment_process",
+      "payment_confirm",
+      "payment_capture",
+    ]),
   }),
 });
 
@@ -49,6 +54,12 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     headers: { "saleor-event": saleorEvent },
   } = req;
 
+  const isPaymentWebhook = [
+    "payment_list_gateways",
+    "payment_process",
+    "payment_confirm",
+    "payment_capture",
+  ].includes(saleorEvent);
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
   ctx.logger.info(
@@ -90,7 +101,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
   ctx.logger.info("Received valid saleor webhook");
 
-  if (saleorEvent === "payment_list_gateways") {
+  if (isPaymentWebhook) {
     const vorkassePaymentService = new VorkassePaymentService({
       logger: ctx.logger.with({
         saleor: {
@@ -99,24 +110,28 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
         },
       }),
     });
-    const paymentGateways = await vorkassePaymentService.paymentListGateways(
-      "EUR",
-    );
-    ctx.logger.info("Responding with payment gateway list");
-    return res.json(paymentGateways);
-  }
-  if (saleorEvent === "payment_process") {
-    const vorkassePaymentService = new VorkassePaymentService({
-      logger: ctx.logger.with({
-        saleor: {
-          domain: saleorApp.domain,
-          channel: installedSaleorApp.channelSlug,
-        },
-      }),
-    });
-    const response = await vorkassePaymentService.paymentProcess();
-    ctx.logger.info("Responding with payment process answer");
-    return res.json(response);
+    if (saleorEvent === "payment_list_gateways") {
+      const paymentGateways = await vorkassePaymentService.paymentListGateways(
+        "EUR",
+      );
+      ctx.logger.info("Responding with payment gateway list");
+      return res.json(paymentGateways);
+    }
+    if (saleorEvent === "payment_process") {
+      const response = await vorkassePaymentService.paymentProcess();
+      ctx.logger.info("Responding with payment process answer");
+      return res.json(response);
+    }
+    if (saleorEvent === "payment_confirm") {
+      const response = await vorkassePaymentService.paymentConfirm();
+      ctx.logger.info("Payment confirm request. Responding with confirmation");
+      return res.json(response);
+    }
+    if (saleorEvent === "payment_capture") {
+      const response = await vorkassePaymentService.paymentCapture();
+      ctx.logger.info("Payment capture request. Responding with confirmation");
+      return res.json(response);
+    }
   }
 
   res.send(req);
