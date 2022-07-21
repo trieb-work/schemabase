@@ -75,10 +75,12 @@ export class ZohoInvoiceSyncService {
     for (const invoice of invoices) {
       // We first have to check, if we already have a Zoho Customer to be connected to
       // this Invoice
-      const customerExist = await this.db.zohoContact.findFirst({
+      const customerExist = await this.db.zohoContact.findUnique({
         where: {
-          id: invoice.customer_id,
-          zohoAppId: this.zohoApp.id,
+          id_zohoAppId: {
+            id: invoice.customer_id,
+            zohoAppId: this.zohoApp.id,
+          },
         },
       });
       const zohoContactConnect = customerExist

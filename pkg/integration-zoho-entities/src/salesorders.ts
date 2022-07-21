@@ -89,10 +89,12 @@ export class ZohoSalesOrdersSyncService {
     for (const salesorder of salesorders) {
       // We first have to check, if we already have a Zoho Customer to be connected to
       // this salesorder
-      const zohoCustomerExist = await this.db.zohoContact.findFirst({
+      const zohoCustomerExist = await this.db.zohoContact.findUnique({
         where: {
-          id: salesorder.customer_id,
-          zohoAppId: this.zohoApp.id,
+          id_zohoAppId: {
+            id: salesorder.customer_id,
+            zohoAppId: this.zohoApp.id,
+          },
         },
       });
       if (zohoCustomerExist) {

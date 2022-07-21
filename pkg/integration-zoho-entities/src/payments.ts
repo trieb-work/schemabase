@@ -115,10 +115,12 @@ export class ZohoPaymentSyncService {
       }
       // We first have to check, if we already have a Zoho Customer to be connected to
       // this payment
-      const customerExist = await this.db.zohoContact.findFirst({
+      const customerExist = await this.db.zohoContact.findUnique({
         where: {
-          id: payment.customer_id,
-          zohoAppId: this.zohoApp.id,
+          id_zohoAppId: {
+            id: payment.customer_id,
+            zohoAppId: this.zohoApp.id,
+          },
         },
       });
       const zohoContactConnect = customerExist
