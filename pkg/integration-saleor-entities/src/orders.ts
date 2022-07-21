@@ -242,6 +242,7 @@ export class SaleorOrderSyncService {
               create: {
                 id: id.id("order"),
                 orderNumber: prefixedOrderNumber,
+                date: new Date(order.created),
                 totalPriceGross: order.total.gross.amount,
                 orderStatus,
                 paymentStatus,

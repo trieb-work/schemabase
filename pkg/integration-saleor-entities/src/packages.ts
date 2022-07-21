@@ -299,15 +299,22 @@ export class SaleorPackageSyncService {
         continue;
       }
 
-      const saleorOrder = await this.db.saleorOrder.findFirst({
+      const saleorOrder = await this.db.saleorOrder.findUnique({
         where: {
-          orderId: parcel.orderId,
-          installedSaleorAppId: this.installedSaleorAppId,
+          orderId_installedSaleorAppId: {
+            orderId: parcel.orderId,
+            installedSaleorAppId: this.installedSaleorAppId,
+          },
         },
         include: {
           order: {
             include: {
               lineItems: {
+                // We want the line items from the order and filter out
+                // line items from packages
+                where: {
+                  packageId: null,
+                },
                 include: {
                   // To create a fulfillment in Saleor, we need the
                   // ID of the orderLine
@@ -349,35 +356,39 @@ export class SaleorPackageSyncService {
         );
       }
 
-      const lines: OrderFulfillLineInput[] = parcel.lineItems.map((line) => {
-        // Get the corresponding order to this package and lookup the saleor Order Line
-        // using the product SKU
-        const orderLineId = saleorOrder.order.lineItems.find(
-          (item) => item.sku === line.sku,
-        )?.saleorLineItem[0]?.id;
-        if (!orderLineId) {
-          this.logger.error(
-            `Can't find a saleor orderLine for order ${
-              saleorOrder.orderNumber
-            }, SKU ${
-              line.sku
-            } - Can't create fulfillment in saleor. Orderlines: ${JSON.stringify(
-              saleorOrder.order.lineItems,
-            )}`,
-          );
-        }
-        return {
-          // The OrderLine ID of the saleor order
-          orderLineId,
-          stocks: [
-            {
-              warehouse: line.warehouse?.saleorWarehouse[0].id as string,
-              quantity: line.quantity,
-            },
-          ],
-        };
-      });
-      const fulfillmentLinesCheck = lines.some((i) => {
+      const lines: OrderFulfillLineInput[] = parcel.lineItems.map(
+        (packageOrderLine) => {
+          // Get the corresponding order to this package and lookup the saleor Order Line
+          // using the product SKU
+          const orderLineId = saleorOrder.order.lineItems.find(
+            (item) => item.sku === packageOrderLine.sku,
+          )?.saleorLineItem[0]?.id;
+          if (!orderLineId) {
+            this.logger.error(
+              `Can't find a saleor orderLine for order ${
+                saleorOrder.orderNumber
+              }, LineItem SKU ${
+                packageOrderLine.sku
+              } - Can't create fulfillment in saleor. Orderlines: ${JSON.stringify(
+                saleorOrder.order.lineItems,
+              )}`,
+            );
+          }
+          return {
+            // The OrderLine ID of the saleor order
+            orderLineId,
+            stocks: [
+              {
+                warehouse: packageOrderLine.warehouse?.saleorWarehouse[0]
+                  .id as string,
+                quantity: packageOrderLine.quantity,
+              },
+            ],
+          };
+        },
+      );
+      // Continue, if the lines array is missing the orderline Id
+      const fulfillmentLinesCheck = lines.every((i) => {
         if (!i.orderLineId) return false;
         return true;
       });

@@ -114,7 +114,11 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
       const paymentGateways = await vorkassePaymentService.paymentListGateways(
         "EUR",
       );
-      ctx.logger.info("Responding with payment gateway list");
+      ctx.logger.info(
+        `Responding with payment gateway list. Config: ${JSON.stringify(
+          paymentGateways[0].config,
+        )}`,
+      );
       return res.json(paymentGateways);
     }
     if (saleorEvent === "payment_process") {

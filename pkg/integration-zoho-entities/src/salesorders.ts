@@ -141,38 +141,41 @@ export class ZohoSalesOrdersSyncService {
           : {};
 
       // Create or connect the internal order using the salesorder number as identifier
-      const orderCreateOrConnect = {
-        connectOrCreate: {
-          where: {
-            orderNumber_tenantId: {
+      const orderCreateOrConnect: Prisma.OrderUpdateOneRequiredWithoutZohoSalesOrdersNestedInput =
+        {
+          connectOrCreate: {
+            where: {
+              orderNumber_tenantId: {
+                orderNumber: salesorder.salesorder_number,
+                tenantId: this.tenantId,
+              },
+            },
+            create: {
+              id: id.id("order"),
               orderNumber: salesorder.salesorder_number,
-              tenantId: this.tenantId,
+              date: new Date(salesorder.date),
+              totalPriceGross: salesorder.total,
+              tenant: {
+                connect: {
+                  id: this.tenantId,
+                },
+              },
+              contacts: contactConnectOrCreate,
+              language,
             },
           },
-          create: {
-            id: id.id("order"),
-            orderNumber: salesorder.salesorder_number,
-            totalPriceGross: salesorder.total,
-            tenant: {
+        };
+      const zohoContactConnect: Prisma.ZohoContactCreateNestedOneWithoutZohoSalesOrderInput =
+        zohoCustomerExist
+          ? {
               connect: {
-                id: this.tenantId,
+                id_zohoAppId: {
+                  id: salesorder.customer_id,
+                  zohoAppId: this.zohoApp.id,
+                },
               },
-            },
-            contacts: contactConnectOrCreate,
-            language,
-          },
-        },
-      };
-      const zohoContactConnect = zohoCustomerExist
-        ? {
-            connect: {
-              id_zohoAppId: {
-                id: salesorder.customer_id,
-                zohoAppId: this.zohoApp.id,
-              },
-            },
-          }
-        : undefined;
+            }
+          : {};
 
       const createdSalesOrder = await this.db.zohoSalesOrder.upsert({
         where: {

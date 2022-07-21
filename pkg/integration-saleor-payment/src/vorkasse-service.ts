@@ -43,7 +43,7 @@ export class VorkassePaymentService implements VorkasseService {
         id: "triebwork.payments.rechnung",
         name: "Vorkasse",
         currencies: ["EUR"],
-        config: [],
+        config: [{ field: "transaction_id", value: id.id("payment") }],
       },
     ];
 
