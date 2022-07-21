@@ -299,15 +299,22 @@ export class SaleorPackageSyncService {
         continue;
       }
 
-      const saleorOrder = await this.db.saleorOrder.findFirst({
+      const saleorOrder = await this.db.saleorOrder.findUnique({
         where: {
-          orderId: parcel.orderId,
-          installedSaleorAppId: this.installedSaleorAppId,
+          orderId_installedSaleorAppId: {
+            orderId: parcel.orderId,
+            installedSaleorAppId: this.installedSaleorAppId,
+          },
         },
         include: {
           order: {
             include: {
               lineItems: {
+                // We want the line items from the order and filter out
+                // line items from packages
+                where: {
+                  packageId: null,
+                },
                 include: {
                   // To create a fulfillment in Saleor, we need the
                   // ID of the orderLine
@@ -372,7 +379,8 @@ export class SaleorPackageSyncService {
             orderLineId,
             stocks: [
               {
-                warehouse: packageOrderLine.warehouse?.saleorWarehouse[0].id as string,
+                warehouse: packageOrderLine.warehouse?.saleorWarehouse[0]
+                  .id as string,
                 quantity: packageOrderLine.quantity,
               },
             ],
