@@ -14,6 +14,7 @@ Table SaleorOrder {
 
   indexes {
     (id, installedSaleorAppId) [unique]
+    (orderId, installedSaleorAppId) [unique]
   }
 }
 
