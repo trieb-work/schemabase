@@ -126,8 +126,8 @@
     "reliable-round": "^1.0.10",
     "tslog": "^3.3.3",
     "ui": "link:@bull-board/ui",
-    "winston": "^3.7.2",
-    "winston-elasticsearch": "^0.17.1",
+    "winston": "^3.4.0",
+    "winston-elasticsearch": "^0.16.0",
     "zod": "^3.14.4"
   }
 }

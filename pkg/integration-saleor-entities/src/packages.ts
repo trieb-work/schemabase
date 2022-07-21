@@ -394,8 +394,6 @@ export class SaleorPackageSyncService {
       });
       if (!fulfillmentLinesCheck) continue;
 
-      this.logger.info(`Line Item: ${JSON.stringify(lines)}`);
-
       const response = await this.saleorClient.saleorCreatePackage({
         order: saleorOrder.id,
         input: {
