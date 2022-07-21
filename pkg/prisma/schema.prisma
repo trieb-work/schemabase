@@ -590,8 +590,12 @@ enum OrderShipmentStatus {
 model Order {
   // eci internal id
   id        String   @id
+  // Created and updated at the ECI DB
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // the order date
+  date DateTime?
 
   // deprecated!
   externalOrderId String?
