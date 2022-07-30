@@ -2,6 +2,7 @@ import { ILogger } from "@eci/pkg/logger";
 import {
   queryWithPagination,
   SaleorEntitySyncProductsQuery,
+  SaleorProductVariantStocksQuery,
 } from "@eci/pkg/saleor";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
@@ -15,6 +16,9 @@ interface SaleorProductSyncServiceConfig {
       channel?: string;
       after: string;
     }) => Promise<SaleorEntitySyncProductsQuery>;
+    saleorProductVariantStocks: (variables: {
+      id: string;
+    }) => Promise<SaleorProductVariantStocksQuery>;
   };
   channelSlug: string;
   installedSaleorAppId: string;
@@ -30,6 +34,9 @@ export class SaleorProductSyncService {
       channel?: string;
       after: string;
     }) => Promise<SaleorEntitySyncProductsQuery>;
+    saleorProductVariantStocks: (variables: {
+      id: string;
+    }) => Promise<SaleorProductVariantStocksQuery>;
   };
 
   public readonly channelSlug: string;
@@ -164,5 +171,52 @@ export class SaleorProductSyncService {
       lastRun: new Date(),
       lastRunStatus: "success",
     });
+  }
+
+  public async syncFromECI(): Promise<void> {
+    const saleorProducts = await this.db.saleorProductVariant.findMany({
+      where: {
+        installedSaleorApp: {
+          id: this.installedSaleorAppId,
+        },
+      },
+      select: {
+        id: true,
+        productVariant: {
+          include: {
+            stockEntries: true,
+          },
+        },
+      },
+    });
+    if (saleorProducts.length === 0) {
+      this.logger.info(
+        "We have no saleor products in our DB. Returning nothing",
+      );
+      return;
+    }
+
+    this.logger.info(
+      `Setting stock level for ${saleorProducts.length} saleor products`,
+    );
+
+    for (const variant of saleorProducts) {
+      // Get the current commited stock of this product variant from saleor
+      const saleorProductVariant =
+        await this.saleorClient.saleorProductVariantStocks({
+          id: variant.id,
+        });
+      if (!saleorProductVariant || !saleorProductVariant.productVariant?.id) {
+        this.logger.warn(
+          `No product variant returned from saleor for id ${variant.id}! Cant update stocks`,
+        );
+        continue;
+      }
+
+      // loop over all stock entries that we have and bring them to saleor
+      // for (const warehouseEntry of variant.productVariant.stockEntries) {
+
+      // }
+    }
   }
 }

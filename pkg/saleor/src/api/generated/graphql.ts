@@ -10415,6 +10415,44 @@ export type SaleorEntitySyncProductsQuery = {
   } | null;
 };
 
+export type SaleorProductVariantStocksQueryVariables = Exact<{
+  id: Scalars["ID"];
+}>;
+
+export type SaleorProductVariantStocksQuery = {
+  __typename?: "Query";
+  productVariant?: {
+    __typename?: "ProductVariant";
+    id: string;
+    name: string;
+    product: { __typename?: "Product"; id: string; name: string };
+    stocks?: Array<{
+      __typename?: "Stock";
+      quantity: number;
+      quantityAllocated: number;
+      warehouse: { __typename?: "Warehouse"; id: string; name: string };
+    } | null> | null;
+  } | null;
+};
+
+export type ProductVariantStockEntryUpdateMutationVariables = Exact<{
+  variantId: Scalars["ID"];
+  stocks: Array<StockInput> | StockInput;
+}>;
+
+export type ProductVariantStockEntryUpdateMutation = {
+  __typename?: "Mutation";
+  productVariantStocksUpdate?: {
+    __typename?: "ProductVariantStocksUpdate";
+    errors: Array<{
+      __typename?: "BulkStockError";
+      field?: string | null;
+      message?: string | null;
+      code: ProductErrorCode;
+    }>;
+  } | null;
+};
+
 export type WarehousesQueryVariables = Exact<{
   first?: InputMaybe<Scalars["Int"]>;
 }>;
@@ -10928,6 +10966,40 @@ export const SaleorEntitySyncProductsDocument = gql`
     }
   }
 `;
+export const SaleorProductVariantStocksDocument = gql`
+  query saleorProductVariantStocks($id: ID!) {
+    productVariant(id: $id) {
+      id
+      name
+      product {
+        id
+        name
+      }
+      stocks {
+        warehouse {
+          id
+          name
+        }
+        quantity
+        quantityAllocated
+      }
+    }
+  }
+`;
+export const ProductVariantStockEntryUpdateDocument = gql`
+  mutation productVariantStockEntryUpdate(
+    $variantId: ID!
+    $stocks: [StockInput!]!
+  ) {
+    productVariantStocksUpdate(variantId: $variantId, stocks: $stocks) {
+      errors {
+        field
+        message
+        code
+      }
+    }
+  }
+`;
 export const WarehousesDocument = gql`
   query warehouses($first: Int) {
     warehouses(first: $first) {
@@ -11123,6 +11195,24 @@ export function getSdk<C>(requester: Requester<C>) {
         SaleorEntitySyncProductsQuery,
         SaleorEntitySyncProductsQueryVariables
       >(SaleorEntitySyncProductsDocument, variables, options);
+    },
+    saleorProductVariantStocks(
+      variables: SaleorProductVariantStocksQueryVariables,
+      options?: C,
+    ): Promise<SaleorProductVariantStocksQuery> {
+      return requester<
+        SaleorProductVariantStocksQuery,
+        SaleorProductVariantStocksQueryVariables
+      >(SaleorProductVariantStocksDocument, variables, options);
+    },
+    productVariantStockEntryUpdate(
+      variables: ProductVariantStockEntryUpdateMutationVariables,
+      options?: C,
+    ): Promise<ProductVariantStockEntryUpdateMutation> {
+      return requester<
+        ProductVariantStockEntryUpdateMutation,
+        ProductVariantStockEntryUpdateMutationVariables
+      >(ProductVariantStockEntryUpdateDocument, variables, options);
     },
     warehouses(
       variables?: WarehousesQueryVariables,
