@@ -5,6 +5,7 @@ import { id } from "@eci/pkg/ids";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { subDays } from "date-fns";
 import { normalizeStrings } from "@eci/pkg/normalization";
+import { sleep } from "@eci/pkg/miscHelper/time";
 
 export interface ZohoContactSyncConfig {
   logger: ILogger;
@@ -232,6 +233,9 @@ export class ZohoContactSyncService {
           },
         });
       }
+
+      // We sleep here to not get blocked by Zoho
+      await sleep(3000);
     }
 
     await this.cronState.set({
