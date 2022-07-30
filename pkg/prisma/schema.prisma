@@ -499,6 +499,7 @@ model Warehouse {
   saleorWarehouse SaleorWarehouse[]
 
   lineItem        LineItem[]
+  stockEntries    StockEntries[]
 
   @@unique([name, tenantId])
   @@unique([normalizedName, tenantId])
@@ -680,18 +681,48 @@ model ProductVariant {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
+  stockEntries StockEntries[]
+
   lineItem LineItem[]
 
   zohoItem ZohoItem[]
 
   saleorProductVariant SaleorProductVariant[]
 
-  // Available physical stock
+  // Available physical stock over all warehouses
   stockOnHand Int?
 
   @@unique([sku, tenantId])
   // Just for relational purposes
   @@unique([id, sku])
+}
+
+model StockEntries {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  warehouseId String
+
+  productVariant ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+  productVariantId String
+  
+  // Physical stock entries
+  // // Stock, that is commited in not
+  // // finished orders
+  actualCommittedStock  Int @default(0)
+  // // Total stock in this warehouse right now
+  actualAvailableStock Int @default(0)
+  // // Total stock that is not commited and ready for sale
+  actualAvailableForSaleStock Int @default(0)
+
+  @@unique([warehouseId, productVariantId, tenantId])
+
 }
 
 enum BraintreeEnvironment {
@@ -1071,6 +1102,7 @@ model Tenant {
   braintree                   Braintree[]
   tax                         Tax[]
   package                     Package[]
+  stockEntries                StockEntries[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
