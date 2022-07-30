@@ -3,7 +3,7 @@ import { ILogger } from "@eci/pkg/logger";
 import { Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { subDays } from "date-fns";
+import { isAfter, subDays } from "date-fns";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import { sleep } from "@eci/pkg/miscHelper/time";
 
@@ -55,11 +55,15 @@ export class ZohoContactSyncService {
       );
       contactsToBeUpserted = contacts;
     } else {
+      // check if the last_updated timestamp from a contact
+      // is after the last succesfull cron run (-1 day security)
       contactsToBeUpserted = contacts.filter(
         // @ts-ignore: Object is possibly 'null'
         (contact) =>
-          new Date(contact.last_modified_time) >
-          subDays(cronState.lastRun as Date, 1),
+          isAfter(
+            new Date(contact.last_modified_time),
+            subDays(cronState.lastRun as Date, 1),
+          ),
       );
     }
 
