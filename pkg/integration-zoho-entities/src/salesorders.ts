@@ -202,7 +202,11 @@ export class ZohoSalesOrdersSyncService {
         update: {
           createdAt: new Date(salesorder.created_time),
           updatedAt: new Date(salesorder.last_modified_time),
-          order: orderCreateOrConnect,
+          order: {
+            update: {
+              date: new Date(salesorder.date),
+            },
+          },
           zohoContact: zohoContactConnect,
         },
       });
