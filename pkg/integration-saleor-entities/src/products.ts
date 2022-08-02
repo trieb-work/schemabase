@@ -1,8 +1,10 @@
 import { ILogger } from "@eci/pkg/logger";
 import {
+  ProductVariantStockEntryUpdateMutation,
   queryWithPagination,
   SaleorEntitySyncProductsQuery,
   SaleorProductVariantStocksQuery,
+  StockInput,
 } from "@eci/pkg/saleor";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
@@ -19,6 +21,10 @@ interface SaleorProductSyncServiceConfig {
     saleorProductVariantStocks: (variables: {
       id: string;
     }) => Promise<SaleorProductVariantStocksQuery>;
+    saleorProductVariantStocksUpdate: (variables: {
+      variantId: string;
+      stocks: StockInput[];
+    }) => Promise<ProductVariantStockEntryUpdateMutation>;
   };
   channelSlug: string;
   installedSaleorAppId: string;
@@ -37,6 +43,10 @@ export class SaleorProductSyncService {
     saleorProductVariantStocks: (variables: {
       id: string;
     }) => Promise<SaleorProductVariantStocksQuery>;
+    saleorProductVariantStocksUpdate: (variables: {
+      variantId: string;
+      stocks: StockInput[];
+    }) => Promise<ProductVariantStockEntryUpdateMutation>;
   };
 
   public readonly channelSlug: string;
@@ -200,13 +210,30 @@ export class SaleorProductSyncService {
       `Setting stock level for ${saleorProducts.length} saleor products`,
     );
 
+    /**
+     * All warehouses with saleor id and internal ECI id
+     */
+    const warehouses = await this.db.saleorWarehouse.findMany({
+      where: {
+        installedSaleorAppId: this.installedSaleorAppId,
+      },
+      select: {
+        id: true,
+        warehouseId: true,
+      },
+    });
+
     for (const variant of saleorProducts) {
       // Get the current commited stock of this product variant from saleor
       const saleorProductVariant =
         await this.saleorClient.saleorProductVariantStocks({
           id: variant.id,
         });
-      if (!saleorProductVariant || !saleorProductVariant.productVariant?.id) {
+      if (
+        !saleorProductVariant ||
+        !saleorProductVariant.productVariant?.id ||
+        !saleorProductVariant.productVariant.stocks
+      ) {
         this.logger.warn(
           `No product variant returned from saleor for id ${variant.id}! Cant update stocks`,
         );
@@ -214,9 +241,31 @@ export class SaleorProductSyncService {
       }
 
       // loop over all stock entries that we have and bring them to saleor
-      // for (const warehouseEntry of variant.productVariant.stockEntries) {
-
-      // }
+      for (const stockEntry of variant.productVariant.stockEntries) {
+        // Check, if we have a saleor warehouse for this stock entry.
+        // If not continue.
+        const saleorWarehouseId = warehouses.find(
+          (saleorWarehouse) =>
+            saleorWarehouse.warehouseId === stockEntry.warehouseId,
+        )?.id;
+        if (!saleorWarehouseId) {
+          this.logger.info(
+            `No saleor warehouse for ECI warehouse ${stockEntry.warehouseId}`,
+          );
+          continue;
+        }
+        // TODO: add the current commited stock of saleor to the available stock
+        const totalQuantity = stockEntry.actualAvailableForSaleStock;
+        await this.saleorClient.saleorProductVariantStocksUpdate({
+          variantId: variant.id,
+          stocks: [
+            {
+              warehouse: saleorWarehouseId,
+              quantity: totalQuantity,
+            },
+          ],
+        });
+      }
     }
   }
 }
