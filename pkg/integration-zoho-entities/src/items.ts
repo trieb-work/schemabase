@@ -3,7 +3,6 @@ import { ILogger } from "@eci/pkg/logger";
 import { PrismaClient, Prisma, ZohoApp, ProductVariant } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
-import { isAfter, subDays } from "date-fns";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 
 export interface ZohoItemSyncConfig {
@@ -38,8 +37,6 @@ export class ZohoItemSyncService {
   }
 
   public async syncToECI() {
-    const cronState = await this.cronState.get();
-
     // Get all Items from Zoho. We don't filter out non-active products, as we
     // might need them for older orderlines etc.
     const items = await this.zoho.item.list({});
@@ -51,6 +48,23 @@ export class ZohoItemSyncService {
     // product, productVariant and ZohoItem in the DB
     for (const item of items) {
       const stock = item.stock_on_hand ?? null;
+
+      const stockBefore = await this.db.productVariant.findUnique({
+        where: {
+          sku_tenantId: {
+            tenantId,
+            sku: item.sku,
+          },
+        },
+        select: {
+          stockOnHand: true,
+        },
+      });
+
+      /**
+       * If the stockOnHand value is different than the one from Zoho, we pull the full product data
+       */
+      const stockHasChanged = stockBefore?.stockOnHand === stock ?? false;
 
       let eciVariant: ProductVariant | null = null;
 
@@ -142,13 +156,7 @@ export class ZohoItemSyncService {
         }
       }
 
-      if (
-        isAfter(
-          new Date(item.last_modified_time),
-          subDays(cronState.lastRun as Date, 1),
-        ) &&
-        eciVariant
-      ) {
+      if (stockHasChanged && eciVariant) {
         this.logger.info(
           `Pulling full item details for item ${item.name} - ${item.item_id}`,
         );
@@ -222,5 +230,6 @@ export class ZohoItemSyncService {
       }
     }
     this.logger.info(`Sync finished for ${items.length} Zoho Items`);
+    this.cronState.set({ lastRun: new Date(), lastRunStatus: "success" });
   }
 }
