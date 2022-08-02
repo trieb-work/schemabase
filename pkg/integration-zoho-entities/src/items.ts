@@ -1,16 +1,16 @@
 import { Zoho } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
-import { PrismaClient, Prisma, ZohoApp } from "@eci/pkg/prisma";
+import { PrismaClient, Prisma, ZohoApp, ProductVariant } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
-
-type ZohoAppWithTenant = ZohoApp & Prisma.TenantInclude;
+import { isAfter, subDays } from "date-fns";
+import { CronStateHandler } from "@eci/pkg/cronstate";
 
 export interface ZohoItemSyncConfig {
   logger: ILogger;
   zoho: Zoho;
   db: PrismaClient;
-  zohoApp: ZohoAppWithTenant;
+  zohoApp: ZohoApp;
 }
 
 export class ZohoItemSyncService {
@@ -20,16 +20,26 @@ export class ZohoItemSyncService {
 
   private readonly db: PrismaClient;
 
-  private readonly zohoApp: ZohoAppWithTenant;
+  private readonly zohoApp: ZohoApp;
+
+  private readonly cronState: CronStateHandler;
 
   public constructor(config: ZohoItemSyncConfig) {
     this.logger = config.logger;
     this.zoho = config.zoho;
     this.db = config.db;
     this.zohoApp = config.zohoApp;
+    this.cronState = new CronStateHandler({
+      tenantId: this.zohoApp.tenantId,
+      appId: this.zohoApp.id,
+      db: this.db,
+      syncEntity: "items",
+    });
   }
 
   public async syncToECI() {
+    const cronState = await this.cronState.get();
+
     // Get all Items from Zoho. We don't filter out non-active products, as we
     // might need them for older orderlines etc.
     const items = await this.zoho.item.list({});
@@ -42,8 +52,10 @@ export class ZohoItemSyncService {
     for (const item of items) {
       const stock = item.stock_on_hand ?? null;
 
+      let eciVariant: ProductVariant | null = null;
+
       try {
-        await this.db.productVariant.upsert({
+        eciVariant = await this.db.productVariant.upsert({
           where: {
             sku_tenantId: {
               tenantId,
@@ -127,6 +139,83 @@ export class ZohoItemSyncService {
           }
         } else {
           throw new Error(JSON.stringify(e));
+        }
+      }
+
+      if (
+        isAfter(
+          new Date(item.last_modified_time),
+          subDays(cronState.lastRun as Date, 1),
+        ) &&
+        eciVariant
+      ) {
+        this.logger.info(
+          `Pulling full item details for item ${item.name} - ${item.item_id}`,
+        );
+        const fullItem = await this.zoho.item.get(item.item_id);
+
+        if (!fullItem.warehouses) {
+          this.logger.info(
+            `Item ${item.name} - ${item.item_id} has no stock data given. Don't update stocks`,
+          );
+          continue;
+        }
+
+        for (const stocks of fullItem.warehouses) {
+          const zohoWarehouse = await this.db.zohoWarehouse.findUnique({
+            where: {
+              id_zohoAppId: {
+                id: stocks.warehouse_id,
+                zohoAppId: this.zohoApp.id,
+              },
+            },
+          });
+          if (!zohoWarehouse?.id) {
+            this.logger.error(
+              // eslint-disable-next-line max-len
+              `No internal Zoho Warehouse with id ${stocks.warehouse_id} - ${stocks.warehouse_name} found!`,
+            );
+            continue;
+          }
+          const eciWarehouseId = zohoWarehouse?.warehouseId;
+
+          await this.db.stockEntries.upsert({
+            where: {
+              warehouseId_productVariantId_tenantId: {
+                warehouseId: eciWarehouseId,
+                productVariantId: eciVariant.id,
+                tenantId: this.zohoApp.tenantId,
+              },
+            },
+            create: {
+              id: id.id("stockEntry"),
+              warehouse: {
+                connect: {
+                  id: eciWarehouseId,
+                },
+              },
+              // eslint-disable-next-line prettier/prettier
+              actualAvailableForSaleStock: stocks.warehouse_actual_available_for_sale_stock,
+              actualAvailableStock: stocks.warehouse_actual_available_stock,
+              actualCommittedStock: stocks.warehouse_actual_committed_stock,
+              tenant: {
+                connect: {
+                  id: this.zohoApp.tenantId,
+                },
+              },
+              productVariant: {
+                connect: {
+                  id: eciVariant.id,
+                },
+              },
+            },
+            update: {
+              // eslint-disable-next-line prettier/prettier
+              actualAvailableForSaleStock: stocks.warehouse_actual_available_for_sale_stock,
+              actualAvailableStock: stocks.warehouse_actual_available_stock,
+              actualCommittedStock: stocks.warehouse_actual_committed_stock,
+            },
+          });
         }
       }
     }

@@ -28,6 +28,7 @@ const prefixes = {
   test: "test",
   webhook: "wh",
   webhookSecret: "wh_sec",
+  stockEntry: "stock_e",
 };
 
 export const id = new IdGenerator(prefixes);
