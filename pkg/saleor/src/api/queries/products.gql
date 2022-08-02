@@ -130,16 +130,3 @@ query saleorProductVariantStocks($id: ID!) {
     }
   }
 }
-
-mutation productVariantStockEntryUpdate(
-  $variantId: ID!
-  $stocks: [StockInput!]!
-) {
-  productVariantStocksUpdate(variantId: $variantId, stocks: $stocks) {
-    errors {
-      field
-      message
-      code
-    }
-  }
-}

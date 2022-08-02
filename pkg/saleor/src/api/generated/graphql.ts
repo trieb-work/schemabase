@@ -10022,6 +10022,34 @@ export type ProductVariantCreateMutation = {
   } | null;
 };
 
+export type ProductVariantStockEntryUpdateMutationVariables = Exact<{
+  variantId: Scalars["ID"];
+  stocks: Array<StockInput> | StockInput;
+}>;
+
+export type ProductVariantStockEntryUpdateMutation = {
+  __typename?: "Mutation";
+  productVariantStocksUpdate?: {
+    __typename?: "ProductVariantStocksUpdate";
+    productVariant?: {
+      __typename?: "ProductVariant";
+      stocks?: Array<{
+        __typename?: "Stock";
+        id: string;
+        quantity: number;
+        quantityAllocated: number;
+        warehouse: { __typename?: "Warehouse"; id: string; name: string };
+      } | null> | null;
+    } | null;
+    errors: Array<{
+      __typename?: "BulkStockError";
+      field?: string | null;
+      message?: string | null;
+      code: ProductErrorCode;
+    }>;
+  } | null;
+};
+
 export type TokenCreateMutationVariables = Exact<{
   email: Scalars["String"];
   password: Scalars["String"];
@@ -10435,24 +10463,6 @@ export type SaleorProductVariantStocksQuery = {
   } | null;
 };
 
-export type ProductVariantStockEntryUpdateMutationVariables = Exact<{
-  variantId: Scalars["ID"];
-  stocks: Array<StockInput> | StockInput;
-}>;
-
-export type ProductVariantStockEntryUpdateMutation = {
-  __typename?: "Mutation";
-  productVariantStocksUpdate?: {
-    __typename?: "ProductVariantStocksUpdate";
-    errors: Array<{
-      __typename?: "BulkStockError";
-      field?: string | null;
-      message?: string | null;
-      code: ProductErrorCode;
-    }>;
-  } | null;
-};
-
 export type WarehousesQueryVariables = Exact<{
   first?: InputMaybe<Scalars["Int"]>;
 }>;
@@ -10606,6 +10616,31 @@ export const ProductVariantCreateDocument = gql`
       }
       productVariant {
         id
+      }
+    }
+  }
+`;
+export const ProductVariantStockEntryUpdateDocument = gql`
+  mutation productVariantStockEntryUpdate(
+    $variantId: ID!
+    $stocks: [StockInput!]!
+  ) {
+    productVariantStocksUpdate(variantId: $variantId, stocks: $stocks) {
+      productVariant {
+        stocks {
+          warehouse {
+            id
+            name
+          }
+          id
+          quantity
+          quantityAllocated
+        }
+      }
+      errors {
+        field
+        message
+        code
       }
     }
   }
@@ -10986,20 +11021,6 @@ export const SaleorProductVariantStocksDocument = gql`
     }
   }
 `;
-export const ProductVariantStockEntryUpdateDocument = gql`
-  mutation productVariantStockEntryUpdate(
-    $variantId: ID!
-    $stocks: [StockInput!]!
-  ) {
-    productVariantStocksUpdate(variantId: $variantId, stocks: $stocks) {
-      errors {
-        field
-        message
-        code
-      }
-    }
-  }
-`;
 export const WarehousesDocument = gql`
   query warehouses($first: Int) {
     warehouses(first: $first) {
@@ -11114,6 +11135,15 @@ export function getSdk<C>(requester: Requester<C>) {
         ProductVariantCreateMutationVariables
       >(ProductVariantCreateDocument, variables, options);
     },
+    productVariantStockEntryUpdate(
+      variables: ProductVariantStockEntryUpdateMutationVariables,
+      options?: C,
+    ): Promise<ProductVariantStockEntryUpdateMutation> {
+      return requester<
+        ProductVariantStockEntryUpdateMutation,
+        ProductVariantStockEntryUpdateMutationVariables
+      >(ProductVariantStockEntryUpdateDocument, variables, options);
+    },
     tokenCreate(
       variables: TokenCreateMutationVariables,
       options?: C,
@@ -11204,15 +11234,6 @@ export function getSdk<C>(requester: Requester<C>) {
         SaleorProductVariantStocksQuery,
         SaleorProductVariantStocksQueryVariables
       >(SaleorProductVariantStocksDocument, variables, options);
-    },
-    productVariantStockEntryUpdate(
-      variables: ProductVariantStockEntryUpdateMutationVariables,
-      options?: C,
-    ): Promise<ProductVariantStockEntryUpdateMutation> {
-      return requester<
-        ProductVariantStockEntryUpdateMutation,
-        ProductVariantStockEntryUpdateMutationVariables
-      >(ProductVariantStockEntryUpdateDocument, variables, options);
     },
     warehouses(
       variables?: WarehousesQueryVariables,
