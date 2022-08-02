@@ -48,6 +48,7 @@ export class SaleorProductSyncWorkflow implements Workflow {
       channelSlug: installedSaleorApp.channelSlug || "",
     });
     await zohoContactSyncService.syncToECI();
+    await zohoContactSyncService.syncFromECI();
     this.logger.info("Finished saleor product sync workflow run");
   }
 }

@@ -21,7 +21,7 @@ interface SaleorProductSyncServiceConfig {
     saleorProductVariantStocks: (variables: {
       id: string;
     }) => Promise<SaleorProductVariantStocksQuery>;
-    saleorProductVariantStocksUpdate: (variables: {
+    productVariantStockEntryUpdate: (variables: {
       variantId: string;
       stocks: StockInput[];
     }) => Promise<ProductVariantStockEntryUpdateMutation>;
@@ -43,7 +43,7 @@ export class SaleorProductSyncService {
     saleorProductVariantStocks: (variables: {
       id: string;
     }) => Promise<SaleorProductVariantStocksQuery>;
-    saleorProductVariantStocksUpdate: (variables: {
+    productVariantStockEntryUpdate: (variables: {
       variantId: string;
       stocks: StockInput[];
     }) => Promise<ProductVariantStockEntryUpdateMutation>;
@@ -256,7 +256,7 @@ export class SaleorProductSyncService {
         }
         // TODO: add the current commited stock of saleor to the available stock
         const totalQuantity = stockEntry.actualAvailableForSaleStock;
-        await this.saleorClient.saleorProductVariantStocksUpdate({
+        await this.saleorClient.productVariantStockEntryUpdate({
           variantId: variant.id,
           stocks: [
             {
