@@ -195,7 +195,8 @@ export class ZohoItemSyncService {
                 },
               },
               // eslint-disable-next-line prettier/prettier
-              actualAvailableForSaleStock: stocks.warehouse_actual_available_for_sale_stock,
+              actualAvailableForSaleStock:
+                stocks.warehouse_actual_available_for_sale_stock,
               actualAvailableStock: stocks.warehouse_actual_available_stock,
               actualCommittedStock: stocks.warehouse_actual_committed_stock,
               tenant: {
@@ -211,7 +212,8 @@ export class ZohoItemSyncService {
             },
             update: {
               // eslint-disable-next-line prettier/prettier
-              actualAvailableForSaleStock: stocks.warehouse_actual_available_for_sale_stock,
+              actualAvailableForSaleStock:
+                stocks.warehouse_actual_available_for_sale_stock,
               actualAvailableStock: stocks.warehouse_actual_available_stock,
               actualCommittedStock: stocks.warehouse_actual_committed_stock,
             },
