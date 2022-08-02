@@ -64,7 +64,7 @@ export class ZohoItemSyncService {
       /**
        * If the stockOnHand value is different than the one from Zoho, we pull the full product data
        */
-      const stockHasChanged = stockBefore?.stockOnHand === stock ?? false;
+      const stockHasChanged = stockBefore?.stockOnHand !== stock ?? false;
 
       let eciVariant: ProductVariant | null = null;
 
