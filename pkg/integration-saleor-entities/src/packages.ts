@@ -414,6 +414,11 @@ export class SaleorPackageSyncService {
             this.logger.info(
               `Saleor orderline ${e.orderLines} from order ${saleorOrder.orderNumber} - ${saleorOrder.id}  is already fulfilled: ${e.message}. Continue`,
             );
+            // TODO: create internal package for that
+          } else if (e.code === "INSUFFICIENT_STOCK") {
+            this.logger.error(
+              `Saleor has not enough stock to fulfill order ${saleorOrder.id}: ${e.message}`,
+            );
           } else {
             throw new Error(JSON.stringify(e));
           }
