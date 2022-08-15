@@ -339,6 +339,16 @@ export default handleWebhook({
 ```
 
 # Database
+## Connect
+We are using a PlanetScale hosted database. Ig you want to connect to a database with prisma etc. you can use the pscale CLI: 
+```
+pscale connect eci main
+```
+Just make sure, that the following variable is set correctly in your .env: 
+```
+DATABASE_URL="mysql://localhost:3306/eci"
+```
+
 
 ## Tenants, Integrations, Apps
 
