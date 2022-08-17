@@ -49,11 +49,11 @@ model SaleorPackage {
 
   createdAt DateTime
 
-  package Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
   packageId String
 
   installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
-  installedSaleorAppId String  
+  installedSaleorAppId String
 
   @@unique([id, installedSaleorAppId])
 }
@@ -143,7 +143,6 @@ model ZohoItem {
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String
 
-
   @@unique([id, zohoAppId])
 }
 
@@ -164,7 +163,6 @@ model ZohoPackage {
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String
 
-
   @@unique([id, zohoAppId])
 }
 
@@ -184,8 +182,6 @@ model ZohoContact {
   zohoSalesOrder    ZohoSalesOrder[]
   zohoInvoice       ZohoInvoice[]
   zohoPayment       ZohoPayment[]
-
-
 
   @@unique([id, zohoAppId])
 }
@@ -214,7 +210,6 @@ model ZohoContactPerson {
 
   zohoInvoices    ZohoInvoice[]
   zohoSalesOrders ZohoSalesOrder[]
-
 
   @@unique([id, zohoAppId])
 }
@@ -247,10 +242,10 @@ model ZohoSalesOrder {
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String
 
-
   zohoContactPerson          ZohoContactPerson? @relation(fields: [zohoContactPersonId, zohoContactPersonZohoAppId], references: [id, zohoAppId])
   zohoContactPersonId        String?
   zohoContactPersonZohoAppId String?
+
   @@unique([id, zohoAppId])
   @@unique([number, zohoAppId])
 }
@@ -276,10 +271,10 @@ model ZohoInvoice {
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String
 
-
   zohoContactPerson          ZohoContactPerson? @relation(fields: [zohoContactPersonId, zohoContactPersonZohoAppId], references: [id, zohoAppId])
   zohoContactPersonId        String?
   zohoContactPersonZohoAppId String?
+
   @@unique([id, zohoAppId])
   @@unique([number, zohoAppId])
 }
@@ -301,10 +296,10 @@ model ZohoPayment {
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String
 
-
   ZohoContactPerson          ZohoContactPerson? @relation(fields: [zohoContactPersonId, zohoContactPersonZohoAppId], references: [id, zohoAppId])
   zohoContactPersonId        String?
   zohoContactPersonZohoAppId String?
+
   @@unique([id, zohoAppId])
 }
 
@@ -317,7 +312,6 @@ model ZohoWarehouse {
 
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String
-
 
   @@unique([id, zohoAppId])
 }
@@ -332,7 +326,6 @@ model ZohoTax {
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String
 
-
   @@unique([id, zohoAppId])
 }
 
@@ -345,7 +338,6 @@ model ZohoLineItem {
 
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String
-
 
   @@unique([id, zohoAppId])
 }
@@ -405,7 +397,6 @@ model Tax {
 
   zohoTaxes ZohoTax[]
 
-
   @@unique([normalizedName, tenantId])
 }
 
@@ -426,7 +417,6 @@ model Payment {
   order   Order?  @relation(fields: [orderId], references: [id])
   orderId String?
 
-
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
@@ -434,7 +424,6 @@ model Payment {
 
   zohoPayment   ZohoPayment[]
   saleorPayment SaleorPayment[]
-
 
   @@unique([orderId, tenantId])
   @@unique([referenceNumber, tenantId])
@@ -498,8 +487,10 @@ model Warehouse {
   zohoWarehouse   ZohoWarehouse[]
   saleorWarehouse SaleorWarehouse[]
 
-  lineItem        LineItem[]
-  stockEntries    StockEntries[]
+  xentralProxyIntegration XentralProxyIntegration[]
+
+  lineItem     LineItem[]
+  stockEntries StockEntries[]
 
   @@unique([name, tenantId])
   @@unique([normalizedName, tenantId])
@@ -524,19 +515,19 @@ model LineItem {
   // For packages: ${packageNumber}${sku}${quantity} 
   uniqueString String
 
-  order       Order  @relation(fields: [orderId], references: [id])
-  orderId     String
+  order   Order  @relation(fields: [orderId], references: [id])
+  orderId String
 
   warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
   warehouseId String?
 
-  package     Package? @relation(fields: [packageId], references: [id])
-  packageId   String?
+  package   Package? @relation(fields: [packageId], references: [id])
+  packageId String?
 
   quantity      Float
   sku           String
   // Tax Percentage as number (19, 7)
-  taxPercentage Float @default(19)
+  taxPercentage Float  @default(19)
 
   // the total price of the line item.
   // Optional, as we might have just one of the two values
@@ -551,14 +542,11 @@ model LineItem {
   productVariant   ProductVariant @relation(fields: [productVariantId, sku], references: [id, sku])
   productVariantId String
 
-
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
   zohoLineItems  ZohoLineItem[]
   saleorLineItem SaleorLineItem[]
-
-
 
   @@unique([uniqueString, tenantId])
 }
@@ -605,6 +593,8 @@ model Order {
   paymentStatus  OrderPaymentStatus  @default(unpaid)
   shipmentStatus OrderShipmentStatus @default(pending)
 
+  readyToFullfill Boolean @default(false)
+
   // Order-Numbers have to be unique per Tenant!
   // We use them as unique identifier between systems
   orderNumber String
@@ -633,11 +623,11 @@ model Order {
   tenantId String
   payments Payment[]
 
-  saleorOrders    SaleorOrder[]
-  zohoSalesOrders ZohoSalesOrder[]
+  saleorOrders          SaleorOrder[]
+  zohoSalesOrders       ZohoSalesOrder[]
+  xentralProxyAuftraege XentralProxyAuftrag[]
 
   invoices Invoice[]
-
 
   @@unique([orderNumber, tenantId])
   // Adding this unique constraint just for relational purposes
@@ -660,7 +650,6 @@ model Product {
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
-
 
   @@unique([name, tenantId])
   @@unique([normalizedName, tenantId])
@@ -706,23 +695,22 @@ model StockEntries {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  warehouse Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
   warehouseId String
 
-  productVariant ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
   productVariantId String
-  
+
   // Physical stock entries
   // // Stock, that is commited in not
   // // finished orders
-  actualCommittedStock  Int @default(0)
+  actualCommittedStock        Int @default(0)
   // // Total stock in this warehouse right now
-  actualAvailableStock Int @default(0)
+  actualAvailableStock        Int @default(0)
   // // Total stock that is not commited and ready for sale
   actualAvailableForSaleStock Int @default(0)
 
   @@unique([warehouseId, productVariantId, tenantId])
-
 }
 
 enum BraintreeEnvironment {
@@ -743,7 +731,6 @@ model Braintree {
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
-
 }
 
 enum PackageState {
@@ -788,7 +775,6 @@ model ElasticCluster {
   // Send logs to a specific index
   index String?
 
-
   elasticLogDrainIntegrations ElasticLogDrainIntegration[]
 }
 
@@ -796,7 +782,6 @@ model VercelLogDrainApp {
   id        String   @id
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
 
   configurationId String  @unique
   installationId  String  @unique
@@ -822,20 +807,19 @@ model ElasticLogDrainIntegration {
   logDrainAppId    String            @unique
   elasticCluster   ElasticCluster    @relation(fields: [elasticClusterId], references: [id])
   elasticClusterId String            @unique
-
 }
 
 // The ECI Internal Package model
 model Package {
   // internal id
-  id                 String         @id
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
-  carrier            Carrier
-  state              PackageState @default(INIT)
+  id        String       @id
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  carrier   Carrier
+  state     PackageState @default(INIT)
 
   // A unique identifier for this package like PKG-0034
-  number            String
+  number             String
   // tracking id from the carrier. Optional, as the package can
   // exist before we created a tracking number
   trackingId         String?
@@ -848,8 +832,8 @@ model Package {
   // Line Items in this package
   lineItems LineItem[]
 
-  zohoPackage        ZohoPackage[]
-  saleorPackage      SaleorPackage[]
+  zohoPackage   ZohoPackage[]
+  saleorPackage SaleorPackage[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -954,7 +938,6 @@ model LogisticsApp {
   // custom view ID to get all bulk orders for the next days
   nextFiveDaysBulkOrdersCustomViewId String
 
-
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String @unique
 
@@ -993,9 +976,7 @@ model ZohoApp {
 // Every tenant can have multiple saleor apps which correspond to different
 // saleor instances. Per saleor instance and channel we have just one SaleorApp (we use the shop domain as identification)
 model SaleorApp {
-
   id String @id
-
 
   // The domain of a running saleor instance.
   // You can prefix with http:// or https:// if you want.
@@ -1008,7 +989,6 @@ model SaleorApp {
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
-
 
   @@unique([domain, tenantId])
   // Just for relational purposes
@@ -1047,7 +1027,6 @@ model InstalledSaleorApp {
 
   channelSlug String?
 
-
   saleorApp   SaleorApp @relation(fields: [saleorAppId, domain], references: [id, domain], onDelete: Cascade)
   saleorAppId String
   domain      String
@@ -1061,7 +1040,6 @@ model InstalledSaleorApp {
   saleorOrder                SaleorOrder[]
   saleorLineItem             SaleorLineItem[]
   saleorPackage              SaleorPackage[]
-
 
   @@unique([domain, channelSlug])
 }
@@ -1089,6 +1067,8 @@ model Tenant {
   dpdApps                     DpdApp[]
   trackingIntegrations        TrackingIntegration[]
   elasticLogDrainIntegration  ElasticLogDrainIntegration[]
+  xentralProxyIntegration     XentralProxyIntegration[]
+  xentralProxyApp             XentralProxyApp[]
   order                       Order[]
   contact                     Contact[]
   company                     Company[]
@@ -1112,7 +1092,6 @@ model Subscription {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-
   payedUntil DateTime?
 
   productDataFeedIntegration ProductDataFeedIntegration?
@@ -1121,6 +1100,7 @@ model Subscription {
   trackingIntegration        TrackingIntegration?
   elasticLogDrainIntegration ElasticLogDrainIntegration[]
   saleorZohoIntegration      SaleorZohoIntegration[]
+  xentralProxyIntegration    XentralProxyIntegration[]
 }
 
 // ----------------------------------------------------------------------------
@@ -1174,14 +1154,11 @@ enum CronJobStatus {
 // CronJobs / Sync Job model to store the state of synchronisation
 // Use the "cronstate" handler to access data in this model
 model CronJobState {
-
   // Generated in this schema: TENANTID_APPID_ENTITY -> Entity is contacts / items / ...
   //                                      ^-- For example the ZohoAppId or the installedSaleorAppId
   id            String         @id
   lastRun       DateTime?
   lastRunStatus CronJobStatus?
-
-
 }
 
 // The saleor zoho integration consists of several, individual sync jobs
@@ -1200,7 +1177,6 @@ model SaleorZohoIntegration {
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
-
 
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id])
   zohoAppId String
@@ -1258,8 +1234,6 @@ model StrapiToZohoIntegration {
   // The Content type of BulkOrders
   strapiContentType String @default("bulkorder")
 
-
-
   subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
   subscriptionId String?       @unique
 
@@ -1269,7 +1243,6 @@ model StrapiToZohoIntegration {
   strapiAppId String    @unique
   zohoApp     ZohoApp   @relation(fields: [zohoAppId], references: [id])
   zohoAppId   String
-
 }
 
 // Every tenant can have multiple strapi instances
@@ -1282,8 +1255,56 @@ model StrapiApp {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-
   integration StrapiToZohoIntegration?
+}
+
+model XentralProxyApp {
+  id String @id
+
+  username                String
+  password                String
+  url                     String
+  tenant                  Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId                String                    @unique
+  xentralProxyIntegration XentralProxyIntegration[]
+  xentralProxyAuftraege   XentralProxyAuftrag[]
+}
+
+model XentralProxyIntegration {
+  id         String    @id
+  payedUntil DateTime?
+  enabled    Boolean   @default(true)
+
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  subscriptionId String?       @unique
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  warehouseId String
+
+  xentralProxyApp   XentralProxyApp @relation(fields: [xentralProxyAppId], references: [id])
+  xentralProxyAppId String          @unique
+}
+
+model XentralProxyAuftrag {
+  id String @id
+
+  xentralId      Int
+  xentralBelegNr String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  xentralProxyApp   XentralProxyApp @relation(fields: [xentralProxyAppId], references: [id])
+  xentralProxyAppId String
+
+  order   Order  @relation(fields: [orderId], references: [id])
+  orderId String
+
+  @@unique([xentralId, xentralProxyAppId])
+  @@unique([xentralBelegNr, xentralProxyAppId])
 }
 
 // ----------------------------------------------------------------------------
@@ -1297,7 +1318,6 @@ model IncomingWebhook {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   secret    SecretKey?
-
 
   // Webhook Connections
   dpdApp               DpdApp?             @relation(fields: [dpdAppId], references: [id], onDelete: Cascade)
@@ -1314,7 +1334,6 @@ model IncomingWebhook {
   installedSaleorAppId String?
   vercelLogDrainApp    VercelLogDrainApp?  @relation(fields: [vercelLogDrainAppId], references: [id], onDelete: Cascade)
   vercelLogDrainAppId  String?
-
 }
 
 model SecretKey {
@@ -1324,7 +1343,6 @@ model SecretKey {
   name      String?
   secret    String
   createdAt DateTime @default(now())
-
 
   incomingWebhook   IncomingWebhook @relation(fields: [incomingWebhookId], references: [id], onDelete: Cascade)
   incomingWebhookId String          @unique

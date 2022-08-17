@@ -343,6 +343,7 @@ Table Warehouse {
   tenantId String [not null]
   zohoWarehouse ZohoWarehouse [not null]
   saleorWarehouse SaleorWarehouse [not null]
+  xentralProxyIntegration XentralProxyIntegration [not null]
   lineItem LineItem [not null]
   stockEntries StockEntries [not null]
 
@@ -390,6 +391,7 @@ Table Order {
   orderStatus OrderStatus [not null, default: 'draft']
   paymentStatus OrderPaymentStatus [not null, default: 'unpaid']
   shipmentStatus OrderShipmentStatus [not null, default: 'pending']
+  readyToFullfill Boolean [not null, default: false]
   orderNumber String [not null]
   lineItems LineItem [not null]
   shippingPriceNet Float
@@ -406,6 +408,7 @@ Table Order {
   payments Payment [not null]
   saleorOrders SaleorOrder [not null]
   zohoSalesOrders ZohoSalesOrder [not null]
+  xentralProxyAuftraege XentralProxyAuftrag [not null]
   invoices Invoice [not null]
 
   indexes {
@@ -693,6 +696,8 @@ Table Tenant {
   dpdApps DpdApp [not null]
   trackingIntegrations TrackingIntegration [not null]
   elasticLogDrainIntegration ElasticLogDrainIntegration [not null]
+  xentralProxyIntegration XentralProxyIntegration [not null]
+  xentralProxyApp XentralProxyApp [not null]
   order Order [not null]
   contact Contact [not null]
   company Company [not null]
@@ -720,6 +725,7 @@ Table Subscription {
   trackingIntegration TrackingIntegration
   elasticLogDrainIntegration ElasticLogDrainIntegration [not null]
   saleorZohoIntegration SaleorZohoIntegration [not null]
+  xentralProxyIntegration XentralProxyIntegration [not null]
 }
 
 Table TrackingIntegration {
@@ -818,6 +824,48 @@ Table StrapiApp {
   tenant Tenant [not null]
   tenantId String [not null]
   integration StrapiToZohoIntegration
+}
+
+Table XentralProxyApp {
+  id String [pk]
+  username String [not null]
+  password String [not null]
+  url String [not null]
+  tenant Tenant [not null]
+  tenantId String [unique, not null]
+  xentralProxyIntegration XentralProxyIntegration [not null]
+  xentralProxyAuftraege XentralProxyAuftrag [not null]
+}
+
+Table XentralProxyIntegration {
+  id String [pk]
+  payedUntil DateTime
+  enabled Boolean [not null, default: true]
+  subscription Subscription
+  subscriptionId String [unique]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  warehouse Warehouse [not null]
+  warehouseId String [not null]
+  xentralProxyApp XentralProxyApp [not null]
+  xentralProxyAppId String [unique, not null]
+}
+
+Table XentralProxyAuftrag {
+  id String [pk]
+  xentralId Int [not null]
+  xentralBelegNr String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  xentralProxyApp XentralProxyApp [not null]
+  xentralProxyAppId String [not null]
+  order Order [not null]
+  orderId String [not null]
+
+  indexes {
+    (xentralId, xentralProxyAppId) [unique]
+    (xentralBelegNr, xentralProxyAppId) [unique]
+  }
 }
 
 Table IncomingWebhook {
@@ -1150,6 +1198,20 @@ Ref: StrapiToZohoIntegration.strapiAppId - StrapiApp.id
 Ref: StrapiToZohoIntegration.zohoAppId > ZohoApp.id
 
 Ref: StrapiApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: XentralProxyApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: XentralProxyIntegration.subscriptionId > Subscription.id
+
+Ref: XentralProxyIntegration.tenantId > Tenant.id [delete: Cascade]
+
+Ref: XentralProxyIntegration.warehouseId > Warehouse.id [delete: Cascade]
+
+Ref: XentralProxyIntegration.xentralProxyAppId > XentralProxyApp.id
+
+Ref: XentralProxyAuftrag.xentralProxyAppId > XentralProxyApp.id
+
+Ref: XentralProxyAuftrag.orderId > Order.id
 
 Ref: IncomingWebhook.dpdAppId > DpdApp.id [delete: Cascade]
 

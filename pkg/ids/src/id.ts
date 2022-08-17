@@ -2,7 +2,6 @@ import { IdGenerator } from "@chronark/prefixed-id";
 
 const prefixes = {
   message: "m",
-
   trace: "tr",
   secretKey: "sk",
   publicKey: "pk",
@@ -29,6 +28,11 @@ const prefixes = {
   webhook: "wh",
   webhookSecret: "wh_sec",
   stockEntry: "stock_e",
+
+  /**
+   * Xentral Ids
+   */
+  xentralAuftrag: "x_af",
 };
 
 export const id = new IdGenerator(prefixes);
