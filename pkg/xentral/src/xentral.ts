@@ -18,6 +18,7 @@ export class XentralClient {
 
   public async xmlCreate(xml: object, methodName: string): Promise<any> {
     const body = `xml=${encodeURIComponent(this.builder.build({ request: { xml } }))}`;
+    console.log("body", body);
     const xentralRes = await this.client.fetch(`${this.url}/api/${methodName}`, { 
       method: 'POST',
       headers: { 

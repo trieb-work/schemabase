@@ -1,13 +1,35 @@
 export interface AuftragCreateRequest {
     kundennummer: number | "NEW",
-    artikelliste: {
+    /**
+     * Vor- und Nachname
+     */
+    name?: string,
+    typ?: 'firma' | 'herr' | 'frau' | 'sonstige',
+    /**
+     * Straße und Hausnummer
+     */
+    strasse?: string,
+    /**
+     * Adressline 2
+     */
+    adresszusatz?: string, 
+    plz?: string,
+    /**
+     * Stadt oder Dorf. Beispiel: Nürnberg
+     */
+    ort?: string,
+    /**
+     * 2 letter ISO country code
+     */
+    land?: string,
+    artikelliste?: {
         position: {
             /**
-             * SKU oder Artikelname
+             * Artikelname
              */
             artikel?: string,
             /**
-             * Artikelnummer
+             * Artikelnummer oder SKU
              */
             nummer?: number | string, 
             preis?: number, 

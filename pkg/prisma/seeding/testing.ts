@@ -77,6 +77,26 @@ async function main() {
     },
   })
   console.log("created one generic productVariant");
+  const address = await prisma.address.upsert({
+    where: {
+      id: "test"
+    },
+    update: {},
+    create: {
+      id: "test",
+      tenant: {
+        connect: {
+          id: "test"
+        }
+      },
+      city: "Nürnberg",
+      countryCode: "DE",
+      fullname: "Tilman Marquart",
+      plz: "90459",
+      street: "Gabelsbergerstr. 15",
+    }
+  })
+  console.log("created one address for the generic order");
   await prisma.order.upsert({
     where: {
       orderNumber_tenantId: {
@@ -91,6 +111,16 @@ async function main() {
       totalPriceGross: 10.23,
       orderStatus: "confirmed",
       readyToFullfill: true,
+      shippingAddress: {
+        connect: {
+          id: address.id,
+        }
+      },
+      invoiceAddress: {
+        connect: {
+          id: address.id,
+        }
+      },
       tenant: {
         connect: {
           id: "test"

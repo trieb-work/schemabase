@@ -60,24 +60,33 @@ export class XentralProxyOrderSyncService {
             warehouseId: this.warehouseId,
           },
         },
-        xentralProxyAuftraege: true
+        shippingAddress: true,
+        xentralProxyAuftraege: true,
       },
     })
     for (const order of orders) {
       const auftrag: AuftragCreateRequest = {
         kundennummer: "NEW",
+        name: order.shippingAddress.fullname,
+        // typ: 'sonstige', // enum
+        strasse: order.shippingAddress.street,
+        plz: order.shippingAddress.plz,
+        ort: order.shippingAddress.city,
+        land: order.shippingAddress.countryCode,
         artikelliste: {
           position: order.lineItems.map((lineItem) => ({
-            artikel: lineItem.sku,
+            artikel: lineItem.sku+'-artikel',
+            ean: lineItem.sku+'-ean',
+            nummer: lineItem.sku+'-nummer',
             menge: lineItem.quantity,
+            lagerartikel: 0, // 0 = kein tracking vom lagerstand, 1 = lagerstandsüberwachung aktiviert
+            typ: "3_kat" // 3_kat = versandartikel, 6_kat = sonstiges
           }))
         }
       }
       const xentralResData = await xentralClient.AuftragCreate(auftrag);
       const createdXentralAuftrag = await this.db.xentralProxyAuftrag.create({
         data: {
-          createdAt: new Date(),
-          updatedAt: new Date(),
           id: id.id("xentralAuftrag"),
           order: {
             connect: {
