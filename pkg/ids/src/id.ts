@@ -33,6 +33,7 @@ const prefixes = {
    * Xentral Ids
    */
   xentralAuftrag: "x_af",
+  xentralArtikel: "x_at"
 };
 
 export const id = new IdGenerator(prefixes);

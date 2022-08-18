@@ -1,7 +1,7 @@
 import "./index.d.ts";
 import DigestClient from "digest-fetch";
 import { XMLParser, XMLBuilder } from "fast-xml-parser";
-import { AuftragCreateRequest, AuftragCreateResponse, GenericCreateResponse } from "./types";
+import { ArtikelCreateRequest, ArtikelCreateResponse, AuftragCreateRequest, AuftragCreateResponse, GenericCreateResponse } from "./types";
 
 export class XentralClient {
   public readonly client: DigestClient;
@@ -41,5 +41,12 @@ export class XentralClient {
     res.belegnr = String(res.belegnr);
     if(!res?.id) throw new Error("AuftragCreateResponse is missing the belegnr");
     return res as AuftragCreateResponse;
+  }
+  public async ArtikelCreate(artikel: ArtikelCreateRequest): Promise<ArtikelCreateResponse>{
+    const res = await this.xmlCreate(artikel, 'ArtikelCreate') as Partial<ArtikelCreateResponse>;
+    if(!res?.nummer) throw new Error("ArtikelCreateResponse is missing the belegnr");
+    res.nummer = String(res.nummer);
+    if(!res?.id) throw new Error("ArtikelCreateResponse is missing the belegnr");
+    return res as ArtikelCreateResponse;
   }
 }

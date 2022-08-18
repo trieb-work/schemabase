@@ -59,9 +59,13 @@ async function main() {
     create: {
       id: "test",
       sku: "test-1",
+      variantName: "mixed",
+      ean: "123456780123",
       product: {
         create: {
           id: "test",
+          name: "test",
+          normalizedName: "test",
           tenant: {
             connect: {
               id: "test"
@@ -246,6 +250,7 @@ async function main() {
       id: "test",
       username: "testAppName",
       password: "testKey",
+      projectId: 0, // Standard project
       url: "https://62fba42929e58.xentral.biz",
       tenant: {
         connect: {
