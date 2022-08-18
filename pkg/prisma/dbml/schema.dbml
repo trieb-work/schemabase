@@ -429,7 +429,7 @@ Table Address {
   additionalAddressLine String
   plz String [not null]
   city String [not null]
-  countryCode AddressCountryCode [not null]
+  countryCode CountryCode [not null]
   countryArea String
   company String
   phone String
@@ -446,6 +446,8 @@ Table Product {
   updatedAt DateTime [not null]
   name String [not null]
   normalizedName String [not null]
+  hsCode String
+  countryOfOrigin CountryCode
   variants ProductVariant [not null]
   tenant Tenant [not null]
   tenantId String [not null]
@@ -1004,7 +1006,7 @@ Enum OrderShipmentStatus {
   delivered
 }
 
-Enum AddressCountryCode {
+Enum CountryCode {
   AD
   AE
   AF

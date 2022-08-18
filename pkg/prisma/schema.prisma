@@ -639,7 +639,7 @@ model Order {
   @@unique([id, orderNumber])
 }
 
-enum AddressCountryCode {
+enum CountryCode {
   AD
   AE
   AF
@@ -904,7 +904,7 @@ model Address {
   additionalAddressLine String?
   plz                   String
   city                  String
-  countryCode           AddressCountryCode
+  countryCode           CountryCode
   countryArea           String?
   company               String?
   phone                 String?
@@ -931,6 +931,10 @@ model Product {
   name           String
   // Lowercase, trim, whitespace remove, special characters remove
   normalizedName String
+  // the HS-Code (Zolltarifnummer)
+  hsCode         String?
+  // Where the product was produced. Important only for customs/tariffs
+  countryOfOrigin CountryCode?
 
   variants ProductVariant[]
 
