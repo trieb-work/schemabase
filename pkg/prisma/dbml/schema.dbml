@@ -343,6 +343,7 @@ Table Warehouse {
   tenantId String [not null]
   zohoWarehouse ZohoWarehouse [not null]
   saleorWarehouse SaleorWarehouse [not null]
+  xentralProxyIntegration XentralProxyIntegration [not null]
   lineItem LineItem [not null]
   stockEntries StockEntries [not null]
 
@@ -390,6 +391,7 @@ Table Order {
   orderStatus OrderStatus [not null, default: 'draft']
   paymentStatus OrderPaymentStatus [not null, default: 'unpaid']
   shipmentStatus OrderShipmentStatus [not null, default: 'pending']
+  readyToFullfill Boolean [not null, default: false]
   orderNumber String [not null]
   lineItems LineItem [not null]
   shippingPriceNet Float
@@ -401,17 +403,41 @@ Table Order {
   contacts Contact [not null]
   language Language [not null, default: 'DE']
   packages Package [not null]
+  shippingAddress Address [not null]
+  shippingAddressId String [not null]
+  invoiceAddress Address [not null]
+  invoiceAddressId String [not null]
   tenant Tenant [not null]
   tenantId String [not null]
   payments Payment [not null]
   saleorOrders SaleorOrder [not null]
   zohoSalesOrders ZohoSalesOrder [not null]
+  xentralProxyAuftraege XentralProxyAuftrag [not null]
   invoices Invoice [not null]
 
   indexes {
     (orderNumber, tenantId) [unique]
     (id, orderNumber) [unique]
   }
+}
+
+Table Address {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  street String [not null]
+  additionalAddressLine String
+  plz String [not null]
+  city String [not null]
+  countryCode AddressCountryCode [not null]
+  countryArea String
+  company String
+  phone String
+  fullname String [not null]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  orderShippingAddress Order [not null]
+  orderInvoiceAddress Order [not null]
 }
 
 Table Product {
@@ -693,6 +719,8 @@ Table Tenant {
   dpdApps DpdApp [not null]
   trackingIntegrations TrackingIntegration [not null]
   elasticLogDrainIntegration ElasticLogDrainIntegration [not null]
+  xentralProxyIntegration XentralProxyIntegration [not null]
+  xentralProxyApp XentralProxyApp [not null]
   order Order [not null]
   contact Contact [not null]
   company Company [not null]
@@ -707,6 +735,7 @@ Table Tenant {
   tax Tax [not null]
   package Package [not null]
   stockEntries StockEntries [not null]
+  addresses Address [not null]
 }
 
 Table Subscription {
@@ -720,6 +749,7 @@ Table Subscription {
   trackingIntegration TrackingIntegration
   elasticLogDrainIntegration ElasticLogDrainIntegration [not null]
   saleorZohoIntegration SaleorZohoIntegration [not null]
+  xentralProxyIntegration XentralProxyIntegration [not null]
 }
 
 Table TrackingIntegration {
@@ -820,6 +850,48 @@ Table StrapiApp {
   integration StrapiToZohoIntegration
 }
 
+Table XentralProxyApp {
+  id String [pk]
+  username String [not null]
+  password String [not null]
+  url String [not null]
+  tenant Tenant [not null]
+  tenantId String [unique, not null]
+  xentralProxyIntegration XentralProxyIntegration [not null]
+  xentralProxyAuftraege XentralProxyAuftrag [not null]
+}
+
+Table XentralProxyIntegration {
+  id String [pk]
+  payedUntil DateTime
+  enabled Boolean [not null, default: true]
+  subscription Subscription
+  subscriptionId String [unique]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  warehouse Warehouse [not null]
+  warehouseId String [not null]
+  xentralProxyApp XentralProxyApp [not null]
+  xentralProxyAppId String [unique, not null]
+}
+
+Table XentralProxyAuftrag {
+  id String [pk]
+  xentralId Int [not null]
+  xentralBelegNr String [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  xentralProxyApp XentralProxyApp [not null]
+  xentralProxyAppId String [not null]
+  order Order [not null]
+  orderId String [not null]
+
+  indexes {
+    (xentralId, xentralProxyAppId) [unique]
+    (xentralBelegNr, xentralProxyAppId) [unique]
+  }
+}
+
 Table IncomingWebhook {
   id String [pk]
   name String
@@ -908,6 +980,259 @@ Enum OrderShipmentStatus {
   partiallyShipped
   shipped
   delivered
+}
+
+Enum AddressCountryCode {
+  AD
+  AE
+  AF
+  AG
+  AI
+  AL
+  AM
+  AO
+  AQ
+  AR
+  AS
+  AT
+  AU
+  AW
+  AX
+  AZ
+  BA
+  BB
+  BD
+  BE
+  BF
+  BG
+  BH
+  BI
+  BJ
+  BL
+  BM
+  BN
+  BO
+  BQ
+  BR
+  BS
+  BT
+  BV
+  BW
+  BY
+  BZ
+  CA
+  CC
+  CD
+  CF
+  CG
+  CH
+  CI
+  CK
+  CL
+  CM
+  CN
+  CO
+  CR
+  CU
+  CV
+  CW
+  CX
+  CY
+  CZ
+  DE
+  DJ
+  DK
+  DM
+  DO
+  DZ
+  EC
+  EE
+  EG
+  EH
+  ER
+  ES
+  ET
+  EU
+  FI
+  FJ
+  FK
+  FM
+  FO
+  FR
+  GA
+  GB
+  GD
+  GE
+  GF
+  GG
+  GH
+  GI
+  GL
+  GM
+  GN
+  GP
+  GQ
+  GR
+  GS
+  GT
+  GU
+  GW
+  GY
+  HK
+  HM
+  HN
+  HR
+  HT
+  HU
+  ID
+  IE
+  IL
+  IM
+  IN
+  IO
+  IQ
+  IR
+  IS
+  IT
+  JE
+  JM
+  JO
+  JP
+  KE
+  KG
+  KH
+  KI
+  KM
+  KN
+  KP
+  KR
+  KW
+  KY
+  KZ
+  LA
+  LB
+  LC
+  LI
+  LK
+  LR
+  LS
+  LT
+  LU
+  LV
+  LY
+  MA
+  MC
+  MD
+  ME
+  MF
+  MG
+  MH
+  MK
+  ML
+  MM
+  MN
+  MO
+  MP
+  MQ
+  MR
+  MS
+  MT
+  MU
+  MV
+  MW
+  MX
+  MY
+  MZ
+  NA
+  NC
+  NE
+  NF
+  NG
+  NI
+  NL
+  NO
+  NP
+  NR
+  NU
+  NZ
+  OM
+  PA
+  PE
+  PF
+  PG
+  PH
+  PK
+  PL
+  PM
+  PN
+  PR
+  PS
+  PT
+  PW
+  PY
+  QA
+  RE
+  RO
+  RS
+  RU
+  RW
+  SA
+  SB
+  SC
+  SD
+  SE
+  SG
+  SH
+  SI
+  SJ
+  SK
+  SL
+  SM
+  SN
+  SO
+  SR
+  SS
+  ST
+  SV
+  SX
+  SY
+  SZ
+  TC
+  TD
+  TF
+  TG
+  TH
+  TJ
+  TK
+  TL
+  TM
+  TN
+  TO
+  TR
+  TT
+  TV
+  TW
+  TZ
+  UA
+  UG
+  UM
+  US
+  UY
+  UZ
+  VA
+  VC
+  VE
+  VG
+  VI
+  VN
+  VU
+  WF
+  WS
+  YE
+  YT
+  ZA
+  ZM
+  ZW
 }
 
 Enum BraintreeEnvironment {
@@ -1057,7 +1382,13 @@ Ref: LineItem.(productVariantId, sku) > ProductVariant.(id, sku)
 
 Ref: LineItem.tenantId > Tenant.id [delete: Cascade]
 
+Ref: Order.shippingAddressId > Address.id [delete: Cascade]
+
+Ref: Order.invoiceAddressId > Address.id [delete: Cascade]
+
 Ref: Order.tenantId > Tenant.id [delete: Cascade]
+
+Ref: Address.tenantId > Tenant.id [delete: Cascade]
 
 Ref: Product.tenantId > Tenant.id [delete: Cascade]
 
@@ -1150,6 +1481,20 @@ Ref: StrapiToZohoIntegration.strapiAppId - StrapiApp.id
 Ref: StrapiToZohoIntegration.zohoAppId > ZohoApp.id
 
 Ref: StrapiApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: XentralProxyApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: XentralProxyIntegration.subscriptionId > Subscription.id
+
+Ref: XentralProxyIntegration.tenantId > Tenant.id [delete: Cascade]
+
+Ref: XentralProxyIntegration.warehouseId > Warehouse.id [delete: Cascade]
+
+Ref: XentralProxyIntegration.xentralProxyAppId > XentralProxyApp.id
+
+Ref: XentralProxyAuftrag.xentralProxyAppId > XentralProxyApp.id
+
+Ref: XentralProxyAuftrag.orderId > Order.id
 
 Ref: IncomingWebhook.dpdAppId > DpdApp.id [delete: Cascade]
 
