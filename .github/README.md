@@ -391,3 +391,21 @@ They usually follow the same process:
 1. Seed database for test
 2. Run test
 3. Remove test data from 3rd party systems (especially zoho)
+
+
+# Unit tests
+## Helpful DB commands
+Connect to the testing DB (or create a new testing DB for yourself)
+```
+pscale connect eci testing
+```
+
+Reset the DB and seed it with mandatory test data
+```
+pnpm prisma migrate reset
+```
+
+Run specific tests in a folder and not all
+```
+pnpm jest pkg/integration-zoho-entities/src
+```
