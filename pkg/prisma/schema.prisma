@@ -914,8 +914,8 @@ model Address {
   tenantId String
 
   // normalizedFullAddress String // TODO
-  orderShippingAddress  Order[] @relation("orderShippingAddresses")
-  orderInvoiceAddress   Order[] @relation("orderInvoiceAddresses")
+  orderShippingAddress Order[] @relation("orderShippingAddresses")
+  orderInvoiceAddress  Order[] @relation("orderInvoiceAddresses")
 
   // @@unique([normalizedFullAddress, tenantId]) // TODO
 }
@@ -928,9 +928,9 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name           String?
+  name           String
   // Lowercase, trim, whitespace remove, special characters remove
-  normalizedName String?
+  normalizedName String
 
   variants ProductVariant[]
 
@@ -948,7 +948,9 @@ model ProductVariant {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  sku String
+  sku         String
+  variantName String
+  ean         String
 
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String
@@ -962,6 +964,8 @@ model ProductVariant {
 
   zohoItem ZohoItem[]
 
+  xentralArtikel XentralArtikel[]
+
   saleorProductVariant SaleorProductVariant[]
 
   // Available physical stock over all warehouses
@@ -970,6 +974,24 @@ model ProductVariant {
   @@unique([sku, tenantId])
   // Just for relational purposes
   @@unique([id, sku])
+}
+
+model XentralArtikel {
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  xentralId     Int
+  xentralNummer String
+
+  xentralProxyApp   XentralProxyApp @relation(fields: [xentralProxyAppId], references: [id])
+  xentralProxyAppId String
+
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
+  productVariantId String
+
+  @@unique([xentralId, xentralProxyAppId])
+  @@unique([xentralNummer, xentralProxyAppId])
 }
 
 model StockEntries {
@@ -1550,11 +1572,13 @@ model XentralProxyApp {
 
   username                String
   password                String
+  projectId               Int
   url                     String
   tenant                  Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId                String                    @unique
   xentralProxyIntegration XentralProxyIntegration[]
   xentralProxyAuftraege   XentralProxyAuftrag[]
+  xentralArtikel          XentralArtikel[]
 }
 
 model XentralProxyIntegration {

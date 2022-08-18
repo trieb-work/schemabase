@@ -59,6 +59,17 @@ export class XentralProxyOrderSyncService {
           where: {
             warehouseId: this.warehouseId,
           },
+          include: {
+            productVariant: {
+              include: {
+                xentralArtikel: {
+                  where: {
+                    xentralProxyAppId: this.xentralProxyApp.id
+                  }
+                }
+              }
+            }
+          }
         },
         shippingAddress: true,
         xentralProxyAuftraege: true,
@@ -68,20 +79,23 @@ export class XentralProxyOrderSyncService {
       const auftrag: AuftragCreateRequest = {
         kundennummer: "NEW",
         name: order.shippingAddress.fullname,
-        // typ: 'sonstige', // enum
         strasse: order.shippingAddress.street,
         plz: order.shippingAddress.plz,
         ort: order.shippingAddress.city,
         land: order.shippingAddress.countryCode,
         artikelliste: {
-          position: order.lineItems.map((lineItem) => ({
-            artikel: lineItem.sku+'-artikel',
-            ean: lineItem.sku+'-ean',
-            nummer: lineItem.sku+'-nummer',
-            menge: lineItem.quantity,
-            lagerartikel: 0, // 0 = kein tracking vom lagerstand, 1 = lagerstandsüberwachung aktiviert
-            typ: "3_kat" // 3_kat = versandartikel, 6_kat = sonstiges
-          }))
+          position: order.lineItems.map((lineItem) => {
+            if(!lineItem.productVariant.xentralArtikel[0]){
+              throw new Error(`No matching xentral artikel for lineItem (${lineItem.sku}). Please sync new productVariants first to xentral artikel before creating an xentral auftrag.`);
+            }
+            return {
+              nummer: lineItem.productVariant.xentralArtikel[0].xentralNummer,
+              preis: 0,
+              waehrung: "EUR",
+              projekt: this.xentralProxyApp.projectId,
+              menge: lineItem.quantity,
+            }
+          })
         }
       }
       const xentralResData = await xentralClient.AuftragCreate(auftrag);
