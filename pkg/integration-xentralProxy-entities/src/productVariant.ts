@@ -33,6 +33,7 @@ export class XentralProxyProductVariantSyncService {
     this.warehouseId = config.warehouseId;
     this.db = config.db;
   }
+
   public async syncFromECI(): Promise<void> {
     this.logger.info("Starting sync of ECI Orders to XentralProxy Aufträge");
     const xentralClient = new XentralClient(this.xentralProxyApp);
@@ -53,7 +54,7 @@ export class XentralProxyProductVariantSyncService {
       const artikel: ArtikelCreateRequest = {
         name_de: `${productVariant.product.name} (${productVariant.variantName})`,
         artikel: productVariant.sku,
-        ean: productVariant.ean,
+        ean: productVariant.ean || undefined,
         nummer: "NEW",
         aktiv: 1,
         lagerartikel: 0,
@@ -62,9 +63,8 @@ export class XentralProxyProductVariantSyncService {
       const xentralResData = await xentralClient.ArtikelCreate(artikel);
       const createdXentralArtikel = await this.db.xentralArtikel.create({
         data: {
-          id: id.id("xentralArtikel"),
+          id: xentralResData.id.toString(),
           xentralNummer: xentralResData.nummer,
-          xentralId: xentralResData.id,
           xentralProxyApp: {
             connect: {
               id: this.xentralProxyApp.id,
@@ -81,7 +81,7 @@ export class XentralProxyProductVariantSyncService {
         productVariantId: productVariant.id,
         tenantId: this.tenantId,
         productVariantName: productVariant.variantName,
-        xentralArtikelId: createdXentralArtikel.xentralId,
+        xentralArtikelId: createdXentralArtikel.id,
         xentralArtikelNummer: createdXentralArtikel.xentralNummer,
       })
     }

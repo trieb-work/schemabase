@@ -904,7 +904,7 @@ Table XentralProxyIntegration {
 }
 
 Table XentralProxyAuftrag {
-  id String [pk]
+  id String [not null]
   xentralId Int [not null]
   xentralBelegNr String [not null]
   createdAt DateTime [default: `now()`, not null]
@@ -916,6 +916,7 @@ Table XentralProxyAuftrag {
 
   indexes {
     (xentralId, xentralProxyAppId) [unique]
+    (id, xentralProxyAppId) [unique]
     (xentralBelegNr, xentralProxyAppId) [unique]
   }
 }

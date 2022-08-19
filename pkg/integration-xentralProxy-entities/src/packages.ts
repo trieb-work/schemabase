@@ -72,7 +72,7 @@ export class XentralProxyPackageSyncService {
 
   public async syncToECI(): Promise<void> {
     // für alle ECI-Orders ohne package
-    // --> für jede order mit xentralAuftragId 
+    // --> für jede order mit xentralAuftragId
     //    --> request xentralProxy API (to get paket zusammensetzung mit tracking nummern)
     //        --> update packages in ECI-Orders
   }

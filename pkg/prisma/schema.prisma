@@ -1622,7 +1622,8 @@ model XentralProxyIntegration {
 }
 
 model XentralProxyAuftrag {
-  id String @id
+  // Xentral internal ID
+  id String
 
   xentralId      Int
   xentralBelegNr String
@@ -1637,6 +1638,7 @@ model XentralProxyAuftrag {
   orderId String
 
   @@unique([xentralId, xentralProxyAppId])
+  @@unique([id, xentralProxyAppId])
   @@unique([xentralBelegNr, xentralProxyAppId])
 }
 
