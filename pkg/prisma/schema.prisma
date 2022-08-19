@@ -1,7 +1,7 @@
 datasource db {
   provider             = "mysql"
   url                  = env("DATABASE_URL")
-  shadowDatabaseUrl    = env("SHADOW_DATABASE_URL")
+  // shadowDatabaseUrl    = env("SHADOW_DATABASE_URL")
   referentialIntegrity = "prisma"
 }
 
@@ -954,7 +954,7 @@ model ProductVariant {
 
   sku         String
   variantName String
-  ean         String
+  ean         String?
 
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String

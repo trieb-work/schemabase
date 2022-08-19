@@ -464,7 +464,7 @@ Table ProductVariant {
   updatedAt DateTime [not null]
   sku String [not null]
   variantName String [not null]
-  ean String [not null]
+  ean String
   product Product [not null]
   productId String [not null]
   tenant Tenant [not null]
