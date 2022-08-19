@@ -463,7 +463,7 @@ Table ProductVariant {
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   sku String [not null]
-  variantName String [not null]
+  variantName String
   ean String
   product Product [not null]
   productId String [not null]
