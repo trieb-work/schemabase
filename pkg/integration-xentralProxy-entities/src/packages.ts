@@ -1,16 +1,12 @@
 /* eslint-disable max-len */
 import { ILogger } from "@eci/pkg/logger";
 import {
-  queryWithPagination,
   SaleorCronPackagesOverviewQuery,
   SaleorCreatePackageMutation,
   OrderFulfillInput,
-  OrderFulfillLineInput,
 } from "@eci/pkg/saleor";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { format, setHours, subDays, subYears } from "date-fns";
-
 interface XentralProxyPackageSyncServiceConfig {
   saleorClient: {
     saleorCronPackagesOverview: (variables: {
