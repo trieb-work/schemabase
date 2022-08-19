@@ -339,16 +339,20 @@ export default handleWebhook({
 ```
 
 # Database
+
 ## Connect
-We are using a PlanetScale hosted database. Ig you want to connect to a database with prisma etc. you can use the pscale CLI: 
+
+We are using a PlanetScale hosted database. Ig you want to connect to a database with prisma etc. you can use the pscale CLI:
+
 ```
 pscale connect eci main
 ```
-Just make sure, that the following variable is set correctly in your .env: 
+
+Just make sure, that the following variable is set correctly in your .env:
+
 ```
 DATABASE_URL="mysql://localhost:3306/eci"
 ```
-
 
 ## Tenants, Integrations, Apps
 
@@ -392,20 +396,24 @@ They usually follow the same process:
 2. Run test
 3. Remove test data from 3rd party systems (especially zoho)
 
-
 # Unit tests
+
 ## Helpful DB commands
+
 Connect to the testing DB (or create a new testing DB for yourself)
+
 ```
 pscale connect eci testing
 ```
 
 Reset the DB and seed it with mandatory test data
+
 ```
 pnpm prisma migrate reset
 ```
 
 Run specific tests in a folder and not all
+
 ```
 pnpm jest pkg/integration-zoho-entities/src
 ```

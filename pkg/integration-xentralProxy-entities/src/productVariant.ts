@@ -1,9 +1,7 @@
 /* eslint-disable max-len */
 /* eslint-disable prettier/prettier */
 import { ILogger } from "@eci/pkg/logger";
-import {
-  PrismaClient, XentralProxyApp,
-} from "@eci/pkg/prisma";
+import { PrismaClient, XentralProxyApp } from "@eci/pkg/prisma";
 import { XentralClient } from "@eci/pkg/xentral";
 import { ArtikelCreateRequest } from "@eci/pkg/xentral/src/types";
 import { id } from "@eci/pkg/ids";
@@ -41,15 +39,15 @@ export class XentralProxyProductVariantSyncService {
       where: {
         xentralArtikel: {
           none: {
-            xentralProxyAppId: this.xentralProxyApp.id
-          }
-        }
+            xentralProxyAppId: this.xentralProxyApp.id,
+          },
+        },
       },
       include: {
         xentralArtikel: true,
         product: true,
       },
-    })
+    });
     for (const productVariant of productVariants) {
       const artikel: ArtikelCreateRequest = {
         name_de: `${productVariant.product.name} (${productVariant.variantName})`,
@@ -59,7 +57,7 @@ export class XentralProxyProductVariantSyncService {
         aktiv: 1,
         lagerartikel: 0,
         typ: "3_kat",
-      }
+      };
       const xentralResData = await xentralClient.ArtikelCreate(artikel);
       const createdXentralArtikel = await this.db.xentralArtikel.create({
         data: {
@@ -68,22 +66,25 @@ export class XentralProxyProductVariantSyncService {
           xentralProxyApp: {
             connect: {
               id: this.xentralProxyApp.id,
-            }
+            },
           },
           productVariant: {
             connect: {
               id: productVariant.id,
-            }
-          }
-        }
+            },
+          },
+        },
       });
-      this.logger.info("Created new xentralArtikel for current productVariant", {
-        productVariantId: productVariant.id,
-        tenantId: this.tenantId,
-        productVariantName: productVariant.variantName,
-        xentralArtikelId: createdXentralArtikel.id,
-        xentralArtikelNummer: createdXentralArtikel.xentralNummer,
-      })
+      this.logger.info(
+        "Created new xentralArtikel for current productVariant",
+        {
+          productVariantId: productVariant.id,
+          tenantId: this.tenantId,
+          productVariantName: productVariant.variantName,
+          xentralArtikelId: createdXentralArtikel.id,
+          xentralArtikelNummer: createdXentralArtikel.xentralNummer,
+        },
+      );
     }
   }
 }
