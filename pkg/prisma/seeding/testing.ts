@@ -8,18 +8,18 @@ async function main() {
   console.log("Seeding DB started");
   await prisma.tenant.upsert({
     where: {
-      id: "test"
+      id: "test",
     },
     update: {},
     create: {
       id: "test",
       name: "test",
     },
-  })
+  });
   console.log("created tenant");
   await prisma.saleorApp.upsert({
     where: {
-      id: "test"
+      id: "test",
     },
     update: {},
     create: {
@@ -32,11 +32,11 @@ async function main() {
         },
       },
     },
-  })
+  });
   console.log("created saleorApp");
   await prisma.warehouse.upsert({
     where: {
-      id: "test"
+      id: "test",
     },
     update: {},
     create: {
@@ -45,15 +45,15 @@ async function main() {
       name: "test",
       tenant: {
         connect: {
-          id: "test"
-        }
-      }
+          id: "test",
+        },
+      },
     },
-  })
+  });
   console.log("created warehouse");
   await prisma.productVariant.upsert({
     where: {
-      id: "test"
+      id: "test",
     },
     update: {},
     create: {
@@ -68,45 +68,46 @@ async function main() {
           normalizedName: "test",
           tenant: {
             connect: {
-              id: "test"
-            }
-          }
-        }
+              id: "test",
+            },
+          },
+        },
       },
       tenant: {
         connect: {
-          id: "test"
-        }
-      }
+          id: "test",
+        },
+      },
     },
-  })
+  });
   console.log("created one generic productVariant");
   const address = await prisma.address.upsert({
     where: {
-      id: "test"
+      id: "test",
     },
     update: {},
     create: {
       id: "test",
       tenant: {
         connect: {
-          id: "test"
-        }
+          id: "test",
+        },
       },
+      normalizedName: "testtestGabelsberk243i53i5",
       city: "Nürnberg",
       countryCode: "DE",
       fullname: "Tilman Marquart",
       plz: "90459",
       street: "Gabelsbergerstr. 15",
-    }
-  })
+    },
+  });
   console.log("created one address for the generic order");
   await prisma.order.upsert({
     where: {
       orderNumber_tenantId: {
         orderNumber: "STORE-123",
-        tenantId: "test"
-      }
+        tenantId: "test",
+      },
     },
     update: {},
     create: {
@@ -118,97 +119,89 @@ async function main() {
       shippingAddress: {
         connect: {
           id: address.id,
-        }
+        },
       },
       invoiceAddress: {
         connect: {
           id: address.id,
-        }
+        },
       },
       tenant: {
         connect: {
-          id: "test"
-        }
-      }
+          id: "test",
+        },
+      },
     },
-  })
+  });
   console.log("created one generic order");
   await prisma.lineItem.upsert({
     where: {
-      id: "test-l1"
+      id: "test-l1",
     },
     update: {},
     create: {
       id: "test-l1",
       quantity: 10,
-      uniqueString: uniqueStringOrderLine(
-        "STORE-123",
-        "test-1",
-        10,
-      ),
+      uniqueString: uniqueStringOrderLine("STORE-123", "test-1", 10),
       productVariant: {
         connect: {
-          id: "test"
-        }
+          id: "test",
+        },
       },
       order: {
         connect: {
           orderNumber_tenantId: {
             orderNumber: "STORE-123",
-            tenantId: "test"
-          }
-        }
+            tenantId: "test",
+          },
+        },
       },
       tenant: {
         connect: {
-          id: "test"
-        }
-      }
-    }
-  })
+          id: "test",
+        },
+      },
+    },
+  });
   console.log("created one generic lineitem for the order");
   await prisma.lineItem.upsert({
     where: {
-      id: "test-l2"
+      id: "test-l2",
     },
     update: {},
     create: {
       id: "test-l2",
       quantity: 5,
-      uniqueString: uniqueStringOrderLine(
-        "STORE-123",
-        "test-1",
-        5,
-      ),
+      uniqueString: uniqueStringOrderLine("STORE-123", "test-1", 5),
       productVariant: {
         connect: {
-          id: "test"
-        }
+          id: "test",
+        },
       },
       order: {
         connect: {
           orderNumber_tenantId: {
             orderNumber: "STORE-123",
-            tenantId: "test"
-          }
-        }
+            tenantId: "test",
+          },
+        },
       },
       tenant: {
         connect: {
-          id: "test"
-        }
+          id: "test",
+        },
       },
       warehouse: {
         connect: {
-          id: "test"
-        }
-      }
-    }
-  })
+          id: "test",
+        },
+      },
+    },
+  });
   console.log("created second generic lineitem for the order");
   await prisma.installedSaleorApp.upsert({
     where: {
-      id: "test"
+      id: "test",
     },
     update: {},
     create: {
@@ -220,11 +213,11 @@ async function main() {
         },
       },
     },
-  })
+  });
   console.log("created installedSaleorApp");
   await prisma.zohoApp.upsert({
     where: {
-      id: "test"
+      id: "test",
     },
     update: {},
     create: {
@@ -238,12 +231,12 @@ async function main() {
         },
       },
     },
-  })
+  });
   console.log("created zohoApp");
   console.log("created zohoApp");
   await prisma.xentralProxyApp.upsert({
     where: {
-      id: "test"
+      id: "test",
     },
     update: {},
     create: {
@@ -254,15 +247,15 @@ async function main() {
       url: "https://62fba42929e58.xentral.biz",
       tenant: {
         connect: {
-          id: "test"
-        }
-      }
+          id: "test",
+        },
+      },
     },
-  })
+  });
   console.log("created xentralProxyApp");
   await prisma.saleorZohoIntegration.upsert({
     where: {
-      id: "test"
+      id: "test",
     },
     update: {},
     create: {
@@ -283,33 +276,33 @@ async function main() {
         },
       },
     },
-  })
+  });
   console.log("created saleorZohoIntegration");
   await prisma.xentralProxyIntegration.upsert({
     where: {
-      id: "test"
+      id: "test",
     },
     update: {},
     create: {
       id: "test",
       tenant: {
         connect: {
-          id: "test"
-        }
+          id: "test",
+        },
       },
       warehouse: {
         connect: {
-          id: "test"
-        }
+          id: "test",
+        },
       },
       xentralProxyApp: {
         connect: {
-          id: "test"
-        }
-      }
-    }
-  })
-  console.log("created xentralProxyIntegration")
+          id: "test",
+        },
+      },
+    },
+  });
+  console.log("created xentralProxyIntegration");
 }
 
 main()
