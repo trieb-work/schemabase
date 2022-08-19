@@ -4,7 +4,6 @@ import { ILogger } from "@eci/pkg/logger";
 import { PrismaClient, XentralProxyApp } from "@eci/pkg/prisma";
 import { XentralClient } from "@eci/pkg/xentral";
 import { AuftragCreateRequest } from "@eci/pkg/xentral/src/types";
-import { id } from "@eci/pkg/ids";
 
 interface XentralProxyOrderSyncServiceConfig {
   xentralProxyApp: XentralProxyApp;
