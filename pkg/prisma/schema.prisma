@@ -64,12 +64,12 @@ model SaleorLineItem {
 
   lineItem   LineItem @relation(fields: [lineItemId], references: [id], onDelete: Cascade)
   lineItemId String
-  @@index([lineItemId])
 
   installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
   installedSaleorAppId String
 
   @@unique([id, installedSaleorAppId])
+  @@index([lineItemId])
 }
 
 // Saleor specific model for payments.
@@ -85,12 +85,12 @@ model SaleorPayment {
 
   payment   Payment? @relation(fields: [paymentId], references: [id], onDelete: Cascade)
   paymentId String?
-  @@index([paymentId])
 
   installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
   installedSaleorAppId String
 
   @@unique([id, installedSaleorAppId])
+  @@index([paymentId])
 }
 
 // Saleor specific model for product variant.
@@ -105,12 +105,12 @@ model SaleorProductVariant {
 
   productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
   productVariantId String
-  @@index([productVariantId])
 
   installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
   installedSaleorAppId String
 
   @@unique([id, installedSaleorAppId])
+  @@index([productVariantId])
 }
 
 // Saleor specific model for warehouse.
@@ -419,7 +419,6 @@ model Payment {
 
   order   Order?  @relation(fields: [orderId], references: [id])
   orderId String?
-  @@index([orderId])
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -431,6 +430,7 @@ model Payment {
 
   @@unique([orderId, tenantId])
   @@unique([referenceNumber, tenantId])
+  @@index([orderId])
 }
 
 model Company {
@@ -521,15 +521,12 @@ model LineItem {
 
   order   Order  @relation(fields: [orderId], references: [id])
   orderId String
-  @@index([orderId])
-
 
   warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
   warehouseId String?
 
   package   Package? @relation(fields: [packageId], references: [id])
   packageId String?
-  @@index([packageId])
 
   quantity      Float
   sku           String
@@ -556,6 +553,8 @@ model LineItem {
   saleorLineItem SaleorLineItem[]
 
   @@unique([uniqueString, tenantId])
+  @@index([orderId])
+  @@index([packageId])
 }
 
 enum OrderStatus {
@@ -935,11 +934,11 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name           String
+  name            String
   // Lowercase, trim, whitespace remove, special characters remove
-  normalizedName String
+  normalizedName  String
   // the HS-Code (Zolltarifnummer)
-  hsCode         String?
+  hsCode          String?
   // Where the product was produced. Important only for customs/tariffs
   countryOfOrigin CountryCode?
 
