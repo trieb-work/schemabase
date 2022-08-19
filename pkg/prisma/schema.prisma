@@ -251,6 +251,7 @@ model ZohoSalesOrder {
 
   @@unique([id, zohoAppId])
   @@unique([number, zohoAppId])
+  @@index([orderId])
 }
 
 // Zoho specific model.
@@ -304,6 +305,7 @@ model ZohoPayment {
   zohoContactPersonZohoAppId String?
 
   @@unique([id, zohoAppId])
+  @@index([paymentId])
 }
 
 model ZohoWarehouse {
@@ -343,6 +345,7 @@ model ZohoLineItem {
   zohoAppId String
 
   @@unique([id, zohoAppId])
+  @@index([lineItemId])
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -625,10 +628,10 @@ model Order {
   language Language  @default(DE)
   packages Package[]
 
-  shippingAddress   Address @relation("orderShippingAddresses", fields: [shippingAddressId], references: [id], onDelete: Cascade)
-  shippingAddressId String
-  invoiceAddress    Address @relation("orderInvoiceAddresses", fields: [invoiceAddressId], references: [id], onDelete: Cascade)
-  invoiceAddressId  String
+  shippingAddress   Address? @relation("orderShippingAddresses", fields: [shippingAddressId], references: [id], onDelete: Cascade)
+  shippingAddressId String?
+  invoiceAddress    Address? @relation("orderInvoiceAddresses", fields: [invoiceAddressId], references: [id], onDelete: Cascade)
+  invoiceAddressId  String?
 
   tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -643,6 +646,8 @@ model Order {
   @@unique([orderNumber, tenantId])
   // Adding this unique constraint just for relational purposes
   @@unique([id, orderNumber])
+  @@index([shippingAddressId])
+  @@index([invoiceAddressId])
 }
 
 enum CountryCode {
@@ -919,11 +924,14 @@ model Address {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  // normalizedFullAddress String // TODO
+  // A unique string identifying this address for easy lookup
+  normalizedName  String
+ 
   orderShippingAddress Order[] @relation("orderShippingAddresses")
   orderInvoiceAddress  Order[] @relation("orderInvoiceAddresses")
 
-  // @@unique([normalizedFullAddress, tenantId]) // TODO
+  @@unique([normalizedName, tenantId])
+  @@index([tenantId])
 }
 
 // The ECI internal Product model
@@ -989,11 +997,11 @@ model ProductVariant {
 }
 
 model XentralArtikel {
-  id        String   @id
+  // Xentral Internal ID
+  id        String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  xentralId     Int
   xentralNummer String
 
   xentralProxyApp   XentralProxyApp @relation(fields: [xentralProxyAppId], references: [id])
@@ -1002,8 +1010,10 @@ model XentralArtikel {
   productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
   productVariantId String
 
-  @@unique([xentralId, xentralProxyAppId])
+  @@unique([id, xentralProxyAppId])
   @@unique([xentralNummer, xentralProxyAppId])
+  @@index([xentralProxyAppId])
+  @@index([productVariantId])
 }
 
 model StockEntries {
