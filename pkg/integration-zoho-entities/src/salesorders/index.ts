@@ -261,14 +261,16 @@ export class ZohoSalesOrdersSyncService {
             continue;
           }
 
-          const warehouse = await this.db.zohoWarehouse.findUnique({
-            where: {
-              id_zohoAppId: {
-                id: lineItem.warehouse_id,
-                zohoAppId: this.zohoApp.id,
-              },
-            },
-          });
+          const warehouse = lineItem.warehouse_id
+            ? await this.db.zohoWarehouse.findUnique({
+                where: {
+                  id_zohoAppId: {
+                    id: lineItem.warehouse_id,
+                    zohoAppId: this.zohoApp.id,
+                  },
+                },
+              })
+            : null;
 
           await this.db.zohoLineItem.upsert({
             where: {
