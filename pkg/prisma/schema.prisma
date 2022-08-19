@@ -346,6 +346,7 @@ model ZohoLineItem {
 
   @@unique([id, zohoAppId])
   @@index([lineItemId])
+  @@index([zohoAppId])
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -558,6 +559,7 @@ model LineItem {
   @@unique([uniqueString, tenantId])
   @@index([orderId])
   @@index([packageId])
+  @@index([warehouseId]) 
 }
 
 enum OrderStatus {

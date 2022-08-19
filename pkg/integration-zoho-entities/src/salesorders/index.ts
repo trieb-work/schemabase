@@ -270,7 +270,7 @@ export class ZohoSalesOrdersSyncService {
                   },
                 },
               })
-            : null;
+            : undefined;
 
           await this.db.zohoLineItem.upsert({
             where: {
