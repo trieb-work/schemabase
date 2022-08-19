@@ -3,7 +3,7 @@ class NormalizationUtility {
    * Removes whitespace, trim, lowercase, remove special characters
    * @param input
    */
-  private standardNormalize(input: string) {
+  public standardNormalize(input: string) {
     return input
       .trim()
       .toLowerCase()

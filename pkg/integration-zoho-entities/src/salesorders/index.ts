@@ -6,6 +6,7 @@ import { format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { CustomFieldApiName } from "@eci/pkg/zoho-custom-fields/src/registry";
+import addresses from "./addresses";
 
 export interface ZohoSalesOrdersSyncConfig {
   logger: ILogger;
@@ -367,6 +368,15 @@ export class ZohoSalesOrdersSyncService {
             });
           }
         }
+
+        /**
+         * Update the order addresses
+         */
+        await addresses(this.db, internalOrderId, this.tenantId).sync(
+          fullSalesorder.shipping_address,
+          fullSalesorder.billing_address,
+          fullSalesorder.contact_person_details,
+        );
       }
     }
 
