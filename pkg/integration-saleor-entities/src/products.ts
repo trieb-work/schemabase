@@ -113,6 +113,8 @@ export class SaleorProductSyncService {
           );
         }
 
+        // TODO: pull ean from metadata
+
         await this.db.saleorProductVariant.upsert({
           where: {
             id_installedSaleorAppId: {
