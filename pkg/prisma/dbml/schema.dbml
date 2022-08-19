@@ -894,13 +894,13 @@ Table XentralProxyIntegration {
   payedUntil DateTime
   enabled Boolean [not null, default: true]
   subscription Subscription
-  subscriptionId String [unique]
+  subscriptionId String
   tenant Tenant [not null]
   tenantId String [not null]
   warehouse Warehouse [not null]
   warehouseId String [not null]
   xentralProxyApp XentralProxyApp [not null]
-  xentralProxyAppId String [unique, not null]
+  xentralProxyAppId String [not null]
 }
 
 Table XentralProxyAuftrag {

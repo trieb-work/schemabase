@@ -1601,6 +1601,8 @@ model XentralProxyApp {
   xentralProxyIntegration XentralProxyIntegration[]
   xentralProxyAuftraege   XentralProxyAuftrag[]
   xentralArtikel          XentralArtikel[]
+
+  @@index([tenantId])
 }
 
 model XentralProxyIntegration {
@@ -1609,7 +1611,7 @@ model XentralProxyIntegration {
   enabled    Boolean   @default(true)
 
   subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
-  subscriptionId String?       @unique
+  subscriptionId String?
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -1618,7 +1620,9 @@ model XentralProxyIntegration {
   warehouseId String
 
   xentralProxyApp   XentralProxyApp @relation(fields: [xentralProxyAppId], references: [id])
-  xentralProxyAppId String          @unique
+  xentralProxyAppId String
+  @@index([tenantId])
+  @@index([warehouseId])
 }
 
 model XentralProxyAuftrag {
