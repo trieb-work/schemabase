@@ -27,6 +27,11 @@ class Addresses {
     address: AddressWithoutAddressId,
     customerName: string,
   ) {
+    // TODO: check the country_code for validity. Just two letters or other
+    const countryCodeValid = Object.values(CountryCode).includes(
+      address.country_code as any,
+    );
+
     /**
      * The address object - we first try to use the Zoho "attention" field
      * to use as the customer fullname. If not set, we construct
@@ -38,7 +43,9 @@ class Addresses {
       additionalAddressLine: address.street2,
       plz: address.zip,
       city: address.city,
-      countryCode: address.country_code as CountryCode,
+      countryCode: countryCodeValid
+        ? (address.country_code as CountryCode)
+        : "XX",
     };
     const uniqueString = uniqueStringAddress(addObj);
 
