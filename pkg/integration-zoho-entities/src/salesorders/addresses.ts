@@ -45,7 +45,7 @@ class Addresses {
       city: address.city,
       countryCode: countryCodeValid
         ? (address.country_code as CountryCode)
-        : "XX",
+        : CountryCode.DE,
     };
     const uniqueString = uniqueStringAddress(addObj);
 
