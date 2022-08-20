@@ -1,4 +1,5 @@
 import { id } from "@eci/pkg/ids";
+import { ILogger } from "@eci/pkg/logger";
 import { uniqueStringAddress } from "@eci/pkg/miscHelper/uniqueStringAddress";
 import { CountryCode, PrismaClient } from "@eci/pkg/prisma";
 import { ContactPersonShortList } from "@trieb.work/zoho-ts";
@@ -8,6 +9,7 @@ interface AddressesConfig {
   db: PrismaClient;
   eciOrderId: string;
   tenantId: string;
+  logger: ILogger;
 }
 
 class Addresses {
@@ -17,10 +19,13 @@ class Addresses {
 
   private tenantId: string;
 
+  private logger: ILogger;
+
   constructor(config: AddressesConfig) {
     this.db = config.db;
     this.eciOrderId = config.eciOrderId;
     this.tenantId = config.tenantId;
+    this.logger = config.logger;
   }
 
   private createObjectAndUniqueString(
@@ -31,6 +36,11 @@ class Addresses {
     const countryCodeValid = Object.values(CountryCode).includes(
       address.country_code as any,
     );
+
+    if (!countryCodeValid)
+      this.logger.error(
+        `Received non valid country code: ${address.country_code}`,
+      );
 
     /**
      * The address object - we first try to use the Zoho "attention" field
@@ -117,10 +127,16 @@ class Addresses {
     });
   }
 }
-const addresses = (db: PrismaClient, eciOrderId: string, tenantId: string) =>
+const addresses = (
+  db: PrismaClient,
+  eciOrderId: string,
+  tenantId: string,
+  logger: ILogger,
+) =>
   new Addresses({
     db,
     eciOrderId,
     tenantId,
+    logger,
   });
 export default addresses;

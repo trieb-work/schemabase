@@ -378,7 +378,12 @@ export class ZohoSalesOrdersSyncService {
         /**
          * Update the order addresses
          */
-        await addresses(this.db, internalOrderId, this.tenantId).sync(
+        await addresses(
+          this.db,
+          internalOrderId,
+          this.tenantId,
+          this.logger,
+        ).sync(
           fullSalesorder.shipping_address,
           fullSalesorder.billing_address,
           fullSalesorder.contact_person_details,
