@@ -376,7 +376,7 @@ export class ZohoSalesOrdersSyncService {
         }
 
         /**
-         * Update the order addresses
+         * Update the order addresses in our internal db
          */
         await addresses(
           this.db,
@@ -387,6 +387,7 @@ export class ZohoSalesOrdersSyncService {
           fullSalesorder.shipping_address,
           fullSalesorder.billing_address,
           fullSalesorder.contact_person_details,
+          fullSalesorder.customer_name,
         );
       }
     }

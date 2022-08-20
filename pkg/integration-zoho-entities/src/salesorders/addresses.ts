@@ -67,23 +67,26 @@ class Addresses {
    * @param shippingAddress
    * @param billingAddress
    * @param contactPersonDetails The customer name we use, if the attention field is not set.
+   * @param customerName fallback customer name, if no attention and no contact person details exist
    */
   public async sync(
     shippingAddress: AddressWithoutAddressId,
     billingAddress: AddressWithoutAddressId,
     contactPersonDetails: ContactPersonShortList[],
+    customerName: string,
   ) {
-    const customerName =
-      contactPersonDetails[0].first_name +
-      " " +
-      contactPersonDetails[0].last_name;
+    const contactPerson = contactPersonDetails?.[0];
+    const fullName =
+      contactPerson?.first_name && contactPerson?.last_name
+        ? contactPerson.first_name + " " + contactPerson.last_name
+        : customerName;
     const shippingAddr = this.createObjectAndUniqueString(
       shippingAddress,
-      customerName,
+      fullName,
     );
     const billingAddr = this.createObjectAndUniqueString(
       billingAddress,
-      customerName,
+      fullName,
     );
 
     await this.db.order.update({
