@@ -270,7 +270,15 @@ export class ZohoSalesOrdersSyncService {
                   },
                 },
               })
-            : undefined;
+            : null;
+
+          /**
+           * Only try to connect a warehouse, if we have one related to
+           * this line item.
+           */
+          const warehouseConnect = warehouse?.warehouseId
+            ? { connect: { id: warehouse.warehouseId } }
+            : {};
 
           await this.db.zohoLineItem.upsert({
             where: {
@@ -301,11 +309,7 @@ export class ZohoSalesOrdersSyncService {
                     discountValueNet: lineItem.discount,
                     taxPercentage: lineItem.tax_percentage,
                     totalPriceNet: lineItem.item_total,
-                    warehouse: {
-                      connect: {
-                        id: warehouse?.warehouseId,
-                      },
-                    },
+                    warehouse: warehouseConnect,
                     productVariant: {
                       connect: {
                         id: productVariantLookup.id,
