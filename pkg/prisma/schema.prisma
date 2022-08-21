@@ -479,6 +479,7 @@ model Contact {
   zohoContactPersons ZohoContactPerson[]
 
   @@unique([email, tenantId])
+  @@index([companyId])
 }
 
 // The ECI internal Warehouse model.
