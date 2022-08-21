@@ -389,6 +389,7 @@ export class SaleorOrderSyncService {
         });
       }
 
+      // Sync the order's addresses with the internal DB
       if (
         orderDetails.order?.shippingAddress &&
         orderDetails.order.billingAddress
