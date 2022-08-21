@@ -113,7 +113,10 @@ export class SaleorProductSyncService {
           );
         }
 
-        // TODO: pull ean from metadata
+        /**
+         * The product variants EAN-13 number. Stored as metadata field in Saleor
+         */
+        const ean = variant.metadata.find((meta) => meta?.key === "EAN")?.value;
 
         await this.db.saleorProductVariant.upsert({
           where: {
@@ -142,6 +145,7 @@ export class SaleorProductSyncService {
                 create: {
                   id: id.id("variant"),
                   sku: variant.sku,
+                  ean,
                   tenant: {
                     connect: {
                       id: this.tenantId,
@@ -174,6 +178,11 @@ export class SaleorProductSyncService {
           update: {
             updatedAt: product.updatedAt,
             productId: product.id,
+            productVariant: {
+              update: {
+                ean,
+              },
+            },
           },
         });
       }
