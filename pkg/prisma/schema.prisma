@@ -41,6 +41,7 @@ model SaleorOrder {
 
   @@unique([id, installedSaleorAppId])
   @@unique([orderId, installedSaleorAppId])
+  @@index([orderId])
 }
 
 model SaleorPackage {
@@ -56,6 +57,7 @@ model SaleorPackage {
   installedSaleorAppId String
 
   @@unique([id, installedSaleorAppId])
+  @@index([packageId])
 }
 
 model SaleorLineItem {
@@ -1171,6 +1173,8 @@ model Package {
   tenantId String
 
   @@unique([number, tenantId])
+  @@index([trackingId])
+  @@index([orderId])
 }
 
 model PackageEvent {
