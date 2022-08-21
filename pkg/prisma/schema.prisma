@@ -562,7 +562,7 @@ model LineItem {
   @@unique([uniqueString, tenantId])
   @@index([orderId])
   @@index([packageId])
-  @@index([warehouseId]) 
+  @@index([warehouseId])
 }
 
 enum OrderStatus {
@@ -930,8 +930,8 @@ model Address {
   tenantId String
 
   // A unique string identifying this address for easy lookup
-  normalizedName  String
- 
+  normalizedName String
+
   orderShippingAddress Order[] @relation("orderShippingAddresses")
   orderInvoiceAddress  Order[] @relation("orderInvoiceAddresses")
 
@@ -996,9 +996,50 @@ model ProductVariant {
   // Available physical stock over all warehouses
   stockOnHand Int?
 
+  // if this product variant is a bundle / composite product
+  isBundleProduct       Boolean                 @default(false)
+  // A product variant can be a bundle product and can
+  // have just one Bill of Material related
+  billOfMaterial        BillOfMaterial?
+  BillOfMaterialEntries BillOfMaterialEntries[]
+
   @@unique([sku, tenantId])
   // Just for relational purposes
   @@unique([id, sku])
+}
+
+model BillOfMaterial {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // The product variant this BOM is related to
+  productVariant   ProductVariant @relation(references: [id], fields: [productVariantId], onDelete: Cascade)
+  productVariantId String         @unique
+
+  billOfMaterialEntries BillOfMaterialEntries[]
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  @@unique([productVariantId, tenantId])
+  @@index([productVariantId])
+}
+
+model BillOfMaterialEntries {
+  // eci internal id
+  id               String         @id
+  billOfMaterial   BillOfMaterial @relation(references: [id], fields: [billOfMaterialId], onDelete: Cascade)
+  billOfMaterialId String
+
+  // The product variant
+  part   ProductVariant @relation(references: [id], fields: [partId], onDelete: Cascade)
+  partId String
+
+  quantity Int
+
+  @@index([billOfMaterialId])
 }
 
 model XentralArtikel {
@@ -1046,6 +1087,8 @@ model StockEntries {
   actualAvailableForSaleStock Int @default(0)
 
   @@unique([warehouseId, productVariantId, tenantId])
+  @@index([productVariantId])
+  @@index([warehouseId])
 }
 
 enum BraintreeEnvironment {
@@ -1421,6 +1464,7 @@ model Tenant {
   package                     Package[]
   stockEntries                StockEntries[]
   addresses                   Address[]
+  billOfMaterial              BillOfMaterial[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
@@ -1628,6 +1672,7 @@ model XentralProxyIntegration {
 
   xentralProxyApp   XentralProxyApp @relation(fields: [xentralProxyAppId], references: [id])
   xentralProxyAppId String
+
   @@index([tenantId])
   @@index([warehouseId])
 }

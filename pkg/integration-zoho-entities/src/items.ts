@@ -97,11 +97,13 @@ export class ZohoItemSyncService {
                 },
               },
             },
+            isBundleProduct: item.is_combo_product || false,
             stockOnHand: stock,
           },
           create: {
             id: id.id("variant"),
             sku: item.sku,
+            isBundleProduct: item.is_combo_product || false,
             tenant: {
               connect: {
                 id: tenantId,

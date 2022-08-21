@@ -480,11 +480,38 @@ Table ProductVariant {
   xentralArtikel XentralArtikel [not null]
   saleorProductVariant SaleorProductVariant [not null]
   stockOnHand Int
+  isBundleProduct Boolean [not null, default: false]
+  billOfMaterial BillOfMaterial
+  BillOfMaterialEntries BillOfMaterialEntries [not null]
 
   indexes {
     (sku, tenantId) [unique]
     (id, sku) [unique]
   }
+}
+
+Table BillOfMaterial {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  productVariant ProductVariant [not null]
+  productVariantId String [unique, not null]
+  billOfMaterialEntries BillOfMaterialEntries [not null]
+  tenant Tenant [not null]
+  tenantId String [not null]
+
+  indexes {
+    (productVariantId, tenantId) [unique]
+  }
+}
+
+Table BillOfMaterialEntries {
+  id String [pk]
+  billOfMaterial BillOfMaterial [not null]
+  billOfMaterialId String [not null]
+  part ProductVariant [not null]
+  partId String [not null]
+  quantity Int [not null]
 }
 
 Table XentralArtikel {
@@ -762,6 +789,7 @@ Table Tenant {
   package Package [not null]
   stockEntries StockEntries [not null]
   addresses Address [not null]
+  billOfMaterial BillOfMaterial [not null]
 }
 
 Table Subscription {
@@ -1424,6 +1452,14 @@ Ref: Product.tenantId > Tenant.id [delete: Cascade]
 Ref: ProductVariant.productId > Product.id [delete: Cascade]
 
 Ref: ProductVariant.tenantId > Tenant.id [delete: Cascade]
+
+Ref: BillOfMaterial.productVariantId - ProductVariant.id [delete: Cascade]
+
+Ref: BillOfMaterial.tenantId > Tenant.id [delete: Cascade]
+
+Ref: BillOfMaterialEntries.billOfMaterialId > BillOfMaterial.id [delete: Cascade]
+
+Ref: BillOfMaterialEntries.partId > ProductVariant.id [delete: Cascade]
 
 Ref: XentralArtikel.xentralProxyAppId > XentralProxyApp.id
 
