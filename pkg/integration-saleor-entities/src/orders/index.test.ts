@@ -2,7 +2,7 @@ import { NoopLogger } from "@eci/pkg/logger";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { createSaleorClient, SaleorClient } from "@eci/pkg/saleor";
 import { beforeEach, describe, jest, test } from "@jest/globals";
-import { SaleorOrderSyncService } from "./orders";
+import { SaleorOrderSyncService } from ".";
 
 beforeEach(() => {
   jest.clearAllMocks();

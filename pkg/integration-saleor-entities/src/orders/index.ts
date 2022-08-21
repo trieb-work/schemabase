@@ -20,6 +20,7 @@ import { id } from "@eci/pkg/ids";
 import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { round } from "reliable-round";
 import { normalizeStrings } from "@eci/pkg/normalization";
+import addresses from "./addresses";
 
 interface SaleorOrderSyncServiceConfig {
   saleorClient: {
@@ -206,16 +207,6 @@ export class SaleorOrderSyncService {
 
       const paymentStatus = paymentStatusMapping[order.paymentStatus];
 
-      // const saleorOrderBefore = await this.db.saleorOrder.findFirst({
-      //   where: {
-      //     id: order.id,
-      //     installedSaleorAppId: this.installedSaleorAppId
-      //   },
-      //   include: {
-      //     order: true,
-      //   }
-      // });
-
       const upsertedOrder = await this.db.saleorOrder.upsert({
         where: {
           id_installedSaleorAppId: {
@@ -397,6 +388,15 @@ export class SaleorOrderSyncService {
           },
         });
       }
+
+      if (
+        orderDetails.order?.shippingAddress &&
+        orderDetails.order.billingAddress
+      )
+        await addresses(this.db, order.id, this.tenantId, this.logger).sync(
+          orderDetails.order?.shippingAddress,
+          orderDetails.order?.billingAddress,
+        );
     }
 
     await this.cronState.set({

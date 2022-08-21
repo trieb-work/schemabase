@@ -10152,6 +10152,19 @@ export type SaleorCronOrdersOverviewQuery = {
   } | null;
 };
 
+export type StandardAddressValuesFragment = {
+  __typename?: "Address";
+  firstName: string;
+  lastName: string;
+  phone?: string | null;
+  postalCode: string;
+  streetAddress1: string;
+  streetAddress2: string;
+  city: string;
+  companyName: string;
+  country: { __typename?: "CountryDisplay"; code: string };
+};
+
 export type SaleorCronOrderDetailsQueryVariables = Exact<{
   id: Scalars["ID"];
 }>;
@@ -10164,6 +10177,30 @@ export type SaleorCronOrderDetailsQuery = {
     created: any;
     number?: string | null;
     paymentStatus: PaymentChargeStatusEnum;
+    billingAddress?: {
+      __typename?: "Address";
+      firstName: string;
+      lastName: string;
+      phone?: string | null;
+      postalCode: string;
+      streetAddress1: string;
+      streetAddress2: string;
+      city: string;
+      companyName: string;
+      country: { __typename?: "CountryDisplay"; code: string };
+    } | null;
+    shippingAddress?: {
+      __typename?: "Address";
+      firstName: string;
+      lastName: string;
+      phone?: string | null;
+      postalCode: string;
+      streetAddress1: string;
+      streetAddress2: string;
+      city: string;
+      companyName: string;
+      country: { __typename?: "CountryDisplay"; code: string };
+    } | null;
     voucher?: {
       __typename?: "Voucher";
       id: string;
@@ -10490,6 +10527,21 @@ export const PageInfoMetaFragmentDoc = gql`
     endCursor
   }
 `;
+export const StandardAddressValuesFragmentDoc = gql`
+  fragment standardAddressValues on Address {
+    firstName
+    lastName
+    phone
+    postalCode
+    streetAddress1
+    streetAddress2
+    city
+    companyName
+    country {
+      code
+    }
+  }
+`;
 export const AppInstallDocument = gql`
   mutation appInstall($input: AppInstallInput!) {
     appInstall(input: $input) {
@@ -10737,6 +10789,12 @@ export const SaleorCronOrderDetailsDocument = gql`
       id
       created
       number
+      billingAddress {
+        ...standardAddressValues
+      }
+      shippingAddress {
+        ...standardAddressValues
+      }
       voucher {
         id
         code
@@ -10802,6 +10860,7 @@ export const SaleorCronOrderDetailsDocument = gql`
       paymentStatus
     }
   }
+  ${StandardAddressValuesFragmentDoc}
 `;
 export const SaleorCronPaymentsDocument = gql`
   query saleorCronPayments($createdGte: Date, $after: String) {
