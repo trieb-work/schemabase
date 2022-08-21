@@ -2,7 +2,7 @@ import type { Zoho } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { Language, Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { format, setHours, subDays, subYears } from "date-fns";
+import { format, isAfter, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { CustomFieldApiName } from "@eci/pkg/zoho-custom-fields/src/registry";
@@ -72,8 +72,13 @@ export class ZohoSalesOrdersSyncService {
       this.logger.info(`Setting GTE date to ${gteDate}`);
     }
 
+    /**
+     * All salesorder as overview. Sorted by salesorder date ascending
+     */
     const salesorders = await this.zoho.salesOrder.list({
       createdDateStart: gteDate,
+      sortColumn: "date",
+      sortOrder: "ascending",
     });
 
     this.logger.info(
@@ -210,15 +215,34 @@ export class ZohoSalesOrdersSyncService {
           },
           zohoContact: zohoContactConnect,
         },
+        include: {
+          order: {
+            include: {
+              _count: {
+                select: {
+                  lineItems: true,
+                },
+              },
+            },
+          },
+        },
       });
 
       const internalOrderId = createdSalesOrder.orderId;
 
-      // LINE ITEMs sync - pulls the full salesorder from Zoho
+      // LINE ITEMs and addresses sync - pulls the full salesorder from Zoho only
+      // if something has changed or if we are missing data internally
       if (
-        !cronState.lastRun ||
-        new Date(salesorder.last_modified_time) > cronState.lastRun
+        isAfter(
+          new Date(salesorder.last_modified_time),
+          createdSalesOrder.updatedAt,
+        ) ||
+        createdSalesOrder.order._count.lineItems === 0
       ) {
+        this.logger.info(
+          // eslint-disable-next-line max-len
+          `Pulling full salesorder ${salesorder.salesorder_id} from Zoho - ${salesorder.salesorder_number}`,
+        );
         const fullSalesorder = await this.zoho.salesOrder.get(
           salesorder.salesorder_id,
         );
