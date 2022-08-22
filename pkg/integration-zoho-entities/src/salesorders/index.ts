@@ -64,7 +64,7 @@ export class ZohoSalesOrdersSyncService {
     let gteDate = format(yesterdayMidnight, "yyyy-MM-dd");
 
     if (cronState.lastRun === null) {
-      gteDate = format(subYears(now, 1), "yyyy-MM-dd");
+      gteDate = format(subYears(now, 2), "yyyy-MM-dd");
       this.logger.info(
         `This seems to be our first sync run. Setting GTE date to ${gteDate}`,
       );
