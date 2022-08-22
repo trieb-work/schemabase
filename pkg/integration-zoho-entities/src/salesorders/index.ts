@@ -330,7 +330,7 @@ export class ZohoSalesOrdersSyncService {
                       },
                     },
                     quantity: lineItem.quantity,
-                    discountValueNet: lineItem.discount,
+                    discountValueNet: lineItem.discount_amount,
                     taxPercentage: lineItem.tax_percentage,
                     totalPriceNet: lineItem.item_total,
                     warehouse: warehouseConnect,
@@ -357,7 +357,7 @@ export class ZohoSalesOrdersSyncService {
               lineItem: {
                 update: {
                   quantity: lineItem.quantity,
-                  discountValueNet: lineItem.discount,
+                  discountValueNet: lineItem.discount_amount,
                   taxPercentage: lineItem.tax_percentage,
                   totalPriceNet: lineItem.item_total,
                 },
