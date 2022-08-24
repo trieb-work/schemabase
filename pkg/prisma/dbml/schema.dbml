@@ -322,6 +322,7 @@ Table Contact {
   updatedAt DateTime [not null]
   email String [not null]
   orders Order [not null]
+  mainOrder Order [not null]
   company Company
   companyId String
   tenant Tenant [not null]
@@ -401,6 +402,8 @@ Table Order {
   totalPriceNet Float
   totalPriceGross Float [not null]
   contacts Contact [not null]
+  mainContact Contact
+  mainContactId String
   language Language [not null, default: 'DE']
   packages Package [not null]
   shippingAddress Address
@@ -1438,6 +1441,8 @@ Ref: LineItem.packageId > Package.id
 Ref: LineItem.(productVariantId, sku) > ProductVariant.(id, sku)
 
 Ref: LineItem.tenantId > Tenant.id [delete: Cascade]
+
+Ref: Order.mainContactId > Contact.id
 
 Ref: Order.shippingAddressId > Address.id [delete: Cascade]
 
