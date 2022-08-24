@@ -222,9 +222,9 @@ async function main() {
     update: {},
     create: {
       id: "test",
-      orgId: "test",
-      clientId: "test",
-      clientSecret: "test",
+      orgId: "20070434578",
+      clientId: "1000.O4V6IZ9VXZ0FE3INNQ8HKLILJBAM0R",
+      clientSecret: "7380507184e37a8df4b4074ed2cf7bd8d84b9dca5e",
       tenant: {
         connect: {
           id: "test",
