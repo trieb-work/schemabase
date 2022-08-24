@@ -1,4 +1,4 @@
-import type { Zoho } from "@trieb.work/zoho-ts";
+import type { CreateSalesOrder, Zoho } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { Language, Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
@@ -428,6 +428,7 @@ export class ZohoSalesOrdersSyncService {
         tenant: {
           id: this.zohoApp.tenantId,
         },
+        // TODO: filter out orders that are cancled (for example in saleor)
         orderStatus: "confirmed",
         // filter out zohoSalesorders with the current AppId
         // like this we find the orders, that we do not
@@ -458,14 +459,24 @@ export class ZohoSalesOrdersSyncService {
         .join(",")}`,
     );
 
-    // for (const order of ordersFromEciDb) {
-    //   // find the corresponding zohoContacts / Contactpersons
-    //   const zohoContact = await this.db.zohoContactPerson.findFirst({
-    //     where: {
-    //       zohoAppId: this.zohoApp.id,
-    //       email: order.contacts,
-    //     },
-    //   });
-    // }
+    for (const order of ordersFromEciDb) {
+      const mainContact = order.contacts[0].zohoContactPersons[0].contactId;
+      console.log(mainContact);
+
+      // Create a salesorder in Zoho:
+      // We need one main contact and a contact person to be related to the order.
+      // We need to check if we have discounts on line item level or on salesorder level
+      // We need to call create and check, if the returned total gross values matches the
+      // order gross from our DB
+      // const object: CreateSalesOrder = {
+      //   salesorder_number: order.orderNumber,
+      //   customer_id: mainContact,
+      //   line_items: [{}],
+      //   discount_type: ""
+
+      // }
+
+      // const create = await this.zoho.salesOrder.create({})
+    }
   }
 }
