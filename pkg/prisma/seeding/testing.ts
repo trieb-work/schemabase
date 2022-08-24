@@ -59,7 +59,7 @@ async function main() {
     create: {
       id: "test",
       sku: "test-1",
-      variantName: "mixed",
+      variantName: "mixed NEU1",
       ean: "123456780123",
       product: {
         create: {
