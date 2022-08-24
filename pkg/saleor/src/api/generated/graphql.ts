@@ -10152,6 +10152,19 @@ export type SaleorCronOrdersOverviewQuery = {
   } | null;
 };
 
+export type StandardAddressValuesFragment = {
+  __typename?: "Address";
+  firstName: string;
+  lastName: string;
+  phone?: string | null;
+  postalCode: string;
+  streetAddress1: string;
+  streetAddress2: string;
+  city: string;
+  companyName: string;
+  country: { __typename?: "CountryDisplay"; code: string };
+};
+
 export type SaleorCronOrderDetailsQueryVariables = Exact<{
   id: Scalars["ID"];
 }>;
@@ -10164,6 +10177,30 @@ export type SaleorCronOrderDetailsQuery = {
     created: any;
     number?: string | null;
     paymentStatus: PaymentChargeStatusEnum;
+    billingAddress?: {
+      __typename?: "Address";
+      firstName: string;
+      lastName: string;
+      phone?: string | null;
+      postalCode: string;
+      streetAddress1: string;
+      streetAddress2: string;
+      city: string;
+      companyName: string;
+      country: { __typename?: "CountryDisplay"; code: string };
+    } | null;
+    shippingAddress?: {
+      __typename?: "Address";
+      firstName: string;
+      lastName: string;
+      phone?: string | null;
+      postalCode: string;
+      streetAddress1: string;
+      streetAddress2: string;
+      city: string;
+      companyName: string;
+      country: { __typename?: "CountryDisplay"; code: string };
+    } | null;
     voucher?: {
       __typename?: "Voucher";
       id: string;
@@ -10428,6 +10465,11 @@ export type SaleorEntitySyncProductsQuery = {
           id: string;
           name: string;
           sku: string;
+          metadata: Array<{
+            __typename?: "MetadataItem";
+            key: string;
+            value: string;
+          } | null>;
           variantAttributes: Array<{
             __typename?: "SelectedAttribute";
             attribute: { __typename?: "Attribute"; name?: string | null };
@@ -10483,6 +10525,21 @@ export const PageInfoMetaFragmentDoc = gql`
     hasNextPage
     startCursor
     endCursor
+  }
+`;
+export const StandardAddressValuesFragmentDoc = gql`
+  fragment standardAddressValues on Address {
+    firstName
+    lastName
+    phone
+    postalCode
+    streetAddress1
+    streetAddress2
+    city
+    companyName
+    country {
+      code
+    }
   }
 `;
 export const AppInstallDocument = gql`
@@ -10732,6 +10789,12 @@ export const SaleorCronOrderDetailsDocument = gql`
       id
       created
       number
+      billingAddress {
+        ...standardAddressValues
+      }
+      shippingAddress {
+        ...standardAddressValues
+      }
       voucher {
         id
         code
@@ -10797,6 +10860,7 @@ export const SaleorCronOrderDetailsDocument = gql`
       paymentStatus
     }
   }
+  ${StandardAddressValuesFragmentDoc}
 `;
 export const SaleorCronPaymentsDocument = gql`
   query saleorCronPayments($createdGte: Date, $after: String) {
@@ -10986,6 +11050,10 @@ export const SaleorEntitySyncProductsDocument = gql`
             id
             name
             sku
+            metadata {
+              key
+              value
+            }
             variantAttributes: attributes(variantSelection: VARIANT_SELECTION) {
               attribute {
                 name

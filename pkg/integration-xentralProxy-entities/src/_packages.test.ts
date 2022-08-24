@@ -2,7 +2,7 @@ import { NoopLogger } from "@eci/pkg/logger";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { SaleorClient } from "@eci/pkg/saleor";
 import { beforeEach, describe, jest, test } from "@jest/globals";
-import { SaleorPackageSyncService } from "./packages";
+import { XentralProxyPackageSyncService } from "./packages";
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -29,7 +29,7 @@ describe("Saleor Entity Sync Packages Test", () => {
     });
     if (!installedSaleorApp || !tenant)
       throw new Error("Testing Tenant or saleor app not found in DB");
-    const xx = new SaleorPackageSyncService({
+    const xx = new XentralProxyPackageSyncService({
       saleorClient: mockedSaleorClient,
       logger: new NoopLogger(),
       db: prismaClient,
@@ -37,6 +37,6 @@ describe("Saleor Entity Sync Packages Test", () => {
       tenantId: tenant.id,
       orderPrefix: "STORE",
     });
-    await xx.syncFromECI();
+    await xx.syncToECI();
   }, 80000);
 });

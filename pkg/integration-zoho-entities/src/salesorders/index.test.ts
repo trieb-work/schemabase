@@ -3,7 +3,7 @@ import { NoopLogger } from "@eci/pkg/logger";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { beforeEach, describe, jest, test, beforeAll } from "@jest/globals";
 import { Zoho, ZohoApiClient, SalesOrder } from "@trieb.work/zoho-ts";
-import { ZohoSalesOrdersSyncService } from "./salesorders";
+import { ZohoSalesOrdersSyncService } from ".";
 
 let zohoApp: any;
 

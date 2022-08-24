@@ -11,7 +11,7 @@ COPY . .
 
 RUN pnpm install --offline
 
-RUN pnpm esbuild --platform=node --bundle --outfile=services/bullboard/dist/main.js services/bullboard/src/main.ts	
+RUN pnpm esbuild --platform=node --target=node14 --bundle --outfile=services/bullboard/dist/main.js services/bullboard/src/main.ts	
 
 
 WORKDIR /eci/services/bullboard/dist

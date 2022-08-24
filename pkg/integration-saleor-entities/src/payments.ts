@@ -236,6 +236,8 @@ export class SaleorPaymentSyncService {
     /**
      * We search all payments that have a related saleor order, but that don't have any related payments in saleor,
      * but related payment in our DB. This happens, when you charge the customer in a 3rd party system
+     *
+     * This query is expensive right now! It uses many to many relation, which is not possible to improve / index
      */
     const paymentsNotYetInSaleor = await this.db.payment.findMany({
       where: {

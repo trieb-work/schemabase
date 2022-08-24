@@ -97,6 +97,10 @@ query saleorEntitySyncProducts($first: Int!, $channel: String, $after: String) {
           id
           name
           sku
+          metadata {
+            key
+            value
+          }
           variantAttributes: attributes(variantSelection: VARIANT_SELECTION) {
             attribute {
               name

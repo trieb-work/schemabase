@@ -2,10 +2,11 @@ import type { Zoho } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { Language, Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { format, setHours, subDays, subYears } from "date-fns";
+import { format, isAfter, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { CustomFieldApiName } from "@eci/pkg/zoho-custom-fields/src/registry";
+import addresses from "./addresses";
 
 export interface ZohoSalesOrdersSyncConfig {
   logger: ILogger;
@@ -63,7 +64,7 @@ export class ZohoSalesOrdersSyncService {
     let gteDate = format(yesterdayMidnight, "yyyy-MM-dd");
 
     if (cronState.lastRun === null) {
-      gteDate = format(subYears(now, 1), "yyyy-MM-dd");
+      gteDate = format(subYears(now, 2), "yyyy-MM-dd");
       this.logger.info(
         `This seems to be our first sync run. Setting GTE date to ${gteDate}`,
       );
@@ -71,8 +72,13 @@ export class ZohoSalesOrdersSyncService {
       this.logger.info(`Setting GTE date to ${gteDate}`);
     }
 
+    /**
+     * All salesorder as overview. Sorted by salesorder date ascending
+     */
     const salesorders = await this.zoho.salesOrder.list({
       createdDateStart: gteDate,
+      sortColumn: "date",
+      sortOrder: "ascending",
     });
 
     this.logger.info(
@@ -209,15 +215,34 @@ export class ZohoSalesOrdersSyncService {
           },
           zohoContact: zohoContactConnect,
         },
+        include: {
+          order: {
+            include: {
+              _count: {
+                select: {
+                  lineItems: true,
+                },
+              },
+            },
+          },
+        },
       });
 
       const internalOrderId = createdSalesOrder.orderId;
 
-      // LINE ITEMs sync - pulls the full salesorder from Zoho
+      // LINE ITEMs and addresses sync - pulls the full salesorder from Zoho only
+      // if something has changed or if we are missing data internally
       if (
-        !cronState.lastRun ||
-        new Date(salesorder.last_modified_time) > cronState.lastRun
+        isAfter(
+          new Date(salesorder.last_modified_time),
+          createdSalesOrder.updatedAt,
+        ) ||
+        createdSalesOrder.order._count.lineItems === 0
       ) {
+        this.logger.info(
+          // eslint-disable-next-line max-len
+          `Pulling full salesorder ${salesorder.salesorder_id} from Zoho - ${salesorder.salesorder_number}`,
+        );
         const fullSalesorder = await this.zoho.salesOrder.get(
           salesorder.salesorder_id,
         );
@@ -260,14 +285,24 @@ export class ZohoSalesOrdersSyncService {
             continue;
           }
 
-          const warehouse = await this.db.zohoWarehouse.findUnique({
-            where: {
-              id_zohoAppId: {
-                id: lineItem.warehouse_id,
-                zohoAppId: this.zohoApp.id,
-              },
-            },
-          });
+          const warehouse = lineItem.warehouse_id
+            ? await this.db.zohoWarehouse.findUnique({
+                where: {
+                  id_zohoAppId: {
+                    id: lineItem.warehouse_id,
+                    zohoAppId: this.zohoApp.id,
+                  },
+                },
+              })
+            : null;
+
+          /**
+           * Only try to connect a warehouse, if we have one related to
+           * this line item.
+           */
+          const warehouseConnect = warehouse?.warehouseId
+            ? { connect: { id: warehouse.warehouseId } }
+            : {};
 
           await this.db.zohoLineItem.upsert({
             where: {
@@ -295,14 +330,10 @@ export class ZohoSalesOrdersSyncService {
                       },
                     },
                     quantity: lineItem.quantity,
-                    discountValueNet: lineItem.discount,
+                    discountValueNet: lineItem.discount_amount,
                     taxPercentage: lineItem.tax_percentage,
                     totalPriceNet: lineItem.item_total,
-                    warehouse: {
-                      connect: {
-                        id: warehouse?.warehouseId,
-                      },
-                    },
+                    warehouse: warehouseConnect,
                     productVariant: {
                       connect: {
                         id: productVariantLookup.id,
@@ -326,7 +357,7 @@ export class ZohoSalesOrdersSyncService {
               lineItem: {
                 update: {
                   quantity: lineItem.quantity,
-                  discountValueNet: lineItem.discount,
+                  discountValueNet: lineItem.discount_amount,
                   taxPercentage: lineItem.tax_percentage,
                   totalPriceNet: lineItem.item_total,
                 },
@@ -367,6 +398,21 @@ export class ZohoSalesOrdersSyncService {
             });
           }
         }
+
+        /**
+         * Update the order addresses in our internal db
+         */
+        await addresses(
+          this.db,
+          internalOrderId,
+          this.tenantId,
+          this.logger,
+        ).sync(
+          fullSalesorder.shipping_address,
+          fullSalesorder.billing_address,
+          fullSalesorder.contact_person_details,
+          fullSalesorder.customer_name,
+        );
       }
     }
 

@@ -1,7 +1,7 @@
 datasource db {
   provider             = "mysql"
   url                  = env("DATABASE_URL")
-  shadowDatabaseUrl    = env("SHADOW_DATABASE_URL")
+  // shadowDatabaseUrl    = env("SHADOW_DATABASE_URL")
   referentialIntegrity = "prisma"
 }
 
@@ -41,6 +41,7 @@ model SaleorOrder {
 
   @@unique([id, installedSaleorAppId])
   @@unique([orderId, installedSaleorAppId])
+  @@index([orderId])
 }
 
 model SaleorPackage {
@@ -56,6 +57,7 @@ model SaleorPackage {
   installedSaleorAppId String
 
   @@unique([id, installedSaleorAppId])
+  @@index([packageId])
 }
 
 model SaleorLineItem {
@@ -69,6 +71,7 @@ model SaleorLineItem {
   installedSaleorAppId String
 
   @@unique([id, installedSaleorAppId])
+  @@index([lineItemId])
 }
 
 // Saleor specific model for payments.
@@ -89,6 +92,7 @@ model SaleorPayment {
   installedSaleorAppId String
 
   @@unique([id, installedSaleorAppId])
+  @@index([paymentId])
 }
 
 // Saleor specific model for product variant.
@@ -108,6 +112,7 @@ model SaleorProductVariant {
   installedSaleorAppId String
 
   @@unique([id, installedSaleorAppId])
+  @@index([productVariantId])
 }
 
 // Saleor specific model for warehouse.
@@ -248,6 +253,7 @@ model ZohoSalesOrder {
 
   @@unique([id, zohoAppId])
   @@unique([number, zohoAppId])
+  @@index([orderId])
 }
 
 // Zoho specific model.
@@ -301,6 +307,7 @@ model ZohoPayment {
   zohoContactPersonZohoAppId String?
 
   @@unique([id, zohoAppId])
+  @@index([paymentId])
 }
 
 model ZohoWarehouse {
@@ -340,6 +347,8 @@ model ZohoLineItem {
   zohoAppId String
 
   @@unique([id, zohoAppId])
+  @@index([lineItemId])
+  @@index([zohoAppId])
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -427,6 +436,7 @@ model Payment {
 
   @@unique([orderId, tenantId])
   @@unique([referenceNumber, tenantId])
+  @@index([orderId])
 }
 
 model Company {
@@ -469,6 +479,7 @@ model Contact {
   zohoContactPersons ZohoContactPerson[]
 
   @@unique([email, tenantId])
+  @@index([companyId])
 }
 
 // The ECI internal Warehouse model.
@@ -549,6 +560,9 @@ model LineItem {
   saleorLineItem SaleorLineItem[]
 
   @@unique([uniqueString, tenantId])
+  @@index([orderId])
+  @@index([packageId])
+  @@index([warehouseId])
 }
 
 enum OrderStatus {
@@ -619,10 +633,10 @@ model Order {
   language Language  @default(DE)
   packages Package[]
 
-  shippingAddress   Address @relation("orderShippingAddresses", fields: [shippingAddressId], references: [id], onDelete: Cascade)
-  shippingAddressId String
-  invoiceAddress    Address @relation("orderInvoiceAddresses", fields: [invoiceAddressId], references: [id], onDelete: Cascade)
-  invoiceAddressId  String
+  shippingAddress   Address? @relation("orderShippingAddresses", fields: [shippingAddressId], references: [id], onDelete: Cascade)
+  shippingAddressId String?
+  invoiceAddress    Address? @relation("orderInvoiceAddresses", fields: [invoiceAddressId], references: [id], onDelete: Cascade)
+  invoiceAddressId  String?
 
   tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -637,9 +651,11 @@ model Order {
   @@unique([orderNumber, tenantId])
   // Adding this unique constraint just for relational purposes
   @@unique([id, orderNumber])
+  @@index([shippingAddressId])
+  @@index([invoiceAddressId])
 }
 
-enum AddressCountryCode {
+enum CountryCode {
   AD
   AE
   AF
@@ -904,7 +920,7 @@ model Address {
   additionalAddressLine String?
   plz                   String
   city                  String
-  countryCode           AddressCountryCode
+  countryCode           CountryCode
   countryArea           String?
   company               String?
   phone                 String?
@@ -913,11 +929,14 @@ model Address {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  // normalizedFullAddress String // TODO
+  // A unique string identifying this address for easy lookup
+  normalizedName String
+
   orderShippingAddress Order[] @relation("orderShippingAddresses")
   orderInvoiceAddress  Order[] @relation("orderInvoiceAddresses")
 
-  // @@unique([normalizedFullAddress, tenantId]) // TODO
+  @@unique([normalizedName, tenantId])
+  @@index([tenantId])
 }
 
 // The ECI internal Product model
@@ -928,9 +947,13 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name           String
+  name            String
   // Lowercase, trim, whitespace remove, special characters remove
-  normalizedName String
+  normalizedName  String
+  // the HS-Code (Zolltarifnummer)
+  hsCode          String?
+  // Where the product was produced. Important only for customs/tariffs
+  countryOfOrigin CountryCode?
 
   variants ProductVariant[]
 
@@ -949,8 +972,10 @@ model ProductVariant {
   updatedAt DateTime @updatedAt
 
   sku         String
-  variantName String
-  ean         String
+  // Some systems don't have a specific variant name
+  // but just a single variant. Variant Name is therefore optional
+  variantName String?
+  ean         String?
 
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String
@@ -971,17 +996,58 @@ model ProductVariant {
   // Available physical stock over all warehouses
   stockOnHand Int?
 
+  // if this product variant is a bundle / composite product
+  isBundleProduct       Boolean                 @default(false)
+  // A product variant can be a bundle product and can
+  // have just one Bill of Material related
+  billOfMaterial        BillOfMaterial?
+  BillOfMaterialEntries BillOfMaterialEntries[]
+
   @@unique([sku, tenantId])
   // Just for relational purposes
   @@unique([id, sku])
 }
 
-model XentralArtikel {
+model BillOfMaterial {
+  // eci internal id
   id        String   @id
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  xentralId     Int
+  // The product variant this BOM is related to
+  productVariant   ProductVariant @relation(references: [id], fields: [productVariantId], onDelete: Cascade)
+  productVariantId String         @unique
+
+  billOfMaterialEntries BillOfMaterialEntries[]
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  @@unique([productVariantId, tenantId])
+  @@index([productVariantId])
+}
+
+model BillOfMaterialEntries {
+  // eci internal id
+  id               String         @id
+  billOfMaterial   BillOfMaterial @relation(references: [id], fields: [billOfMaterialId], onDelete: Cascade)
+  billOfMaterialId String
+
+  // The product variant
+  part   ProductVariant @relation(references: [id], fields: [partId], onDelete: Cascade)
+  partId String
+
+  quantity Int
+
+  @@index([billOfMaterialId])
+}
+
+model XentralArtikel {
+  // Xentral Internal ID
+  id        String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   xentralNummer String
 
   xentralProxyApp   XentralProxyApp @relation(fields: [xentralProxyAppId], references: [id])
@@ -990,8 +1056,10 @@ model XentralArtikel {
   productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
   productVariantId String
 
-  @@unique([xentralId, xentralProxyAppId])
+  @@unique([id, xentralProxyAppId])
   @@unique([xentralNummer, xentralProxyAppId])
+  @@index([xentralProxyAppId])
+  @@index([productVariantId])
 }
 
 model StockEntries {
@@ -1019,6 +1087,8 @@ model StockEntries {
   actualAvailableForSaleStock Int @default(0)
 
   @@unique([warehouseId, productVariantId, tenantId])
+  @@index([productVariantId])
+  @@index([warehouseId])
 }
 
 enum BraintreeEnvironment {
@@ -1147,6 +1217,8 @@ model Package {
   tenantId String
 
   @@unique([number, tenantId])
+  @@index([trackingId])
+  @@index([orderId])
 }
 
 model PackageEvent {
@@ -1392,6 +1464,7 @@ model Tenant {
   package                     Package[]
   stockEntries                StockEntries[]
   addresses                   Address[]
+  billOfMaterial              BillOfMaterial[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
@@ -1579,6 +1652,8 @@ model XentralProxyApp {
   xentralProxyIntegration XentralProxyIntegration[]
   xentralProxyAuftraege   XentralProxyAuftrag[]
   xentralArtikel          XentralArtikel[]
+
+  @@index([tenantId])
 }
 
 model XentralProxyIntegration {
@@ -1587,7 +1662,7 @@ model XentralProxyIntegration {
   enabled    Boolean   @default(true)
 
   subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
-  subscriptionId String?       @unique
+  subscriptionId String?
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -1596,11 +1671,15 @@ model XentralProxyIntegration {
   warehouseId String
 
   xentralProxyApp   XentralProxyApp @relation(fields: [xentralProxyAppId], references: [id])
-  xentralProxyAppId String          @unique
+  xentralProxyAppId String
+
+  @@index([tenantId])
+  @@index([warehouseId])
 }
 
 model XentralProxyAuftrag {
-  id String @id
+  // Xentral internal ID
+  id String
 
   xentralId      Int
   xentralBelegNr String
@@ -1615,6 +1694,7 @@ model XentralProxyAuftrag {
   orderId String
 
   @@unique([xentralId, xentralProxyAppId])
+  @@unique([id, xentralProxyAppId])
   @@unique([xentralBelegNr, xentralProxyAppId])
 }
 

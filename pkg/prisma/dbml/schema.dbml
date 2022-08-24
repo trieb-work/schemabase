@@ -403,10 +403,10 @@ Table Order {
   contacts Contact [not null]
   language Language [not null, default: 'DE']
   packages Package [not null]
-  shippingAddress Address [not null]
-  shippingAddressId String [not null]
-  invoiceAddress Address [not null]
-  invoiceAddressId String [not null]
+  shippingAddress Address
+  shippingAddressId String
+  invoiceAddress Address
+  invoiceAddressId String
   tenant Tenant [not null]
   tenantId String [not null]
   payments Payment [not null]
@@ -429,15 +429,20 @@ Table Address {
   additionalAddressLine String
   plz String [not null]
   city String [not null]
-  countryCode AddressCountryCode [not null]
+  countryCode CountryCode [not null]
   countryArea String
   company String
   phone String
   fullname String [not null]
   tenant Tenant [not null]
   tenantId String [not null]
+  normalizedName String [not null]
   orderShippingAddress Order [not null]
   orderInvoiceAddress Order [not null]
+
+  indexes {
+    (normalizedName, tenantId) [unique]
+  }
 }
 
 Table Product {
@@ -446,6 +451,8 @@ Table Product {
   updatedAt DateTime [not null]
   name String [not null]
   normalizedName String [not null]
+  hsCode String
+  countryOfOrigin CountryCode
   variants ProductVariant [not null]
   tenant Tenant [not null]
   tenantId String [not null]
@@ -461,8 +468,8 @@ Table ProductVariant {
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   sku String [not null]
-  variantName String [not null]
-  ean String [not null]
+  variantName String
+  ean String
   product Product [not null]
   productId String [not null]
   tenant Tenant [not null]
@@ -473,6 +480,9 @@ Table ProductVariant {
   xentralArtikel XentralArtikel [not null]
   saleorProductVariant SaleorProductVariant [not null]
   stockOnHand Int
+  isBundleProduct Boolean [not null, default: false]
+  billOfMaterial BillOfMaterial
+  BillOfMaterialEntries BillOfMaterialEntries [not null]
 
   indexes {
     (sku, tenantId) [unique]
@@ -480,11 +490,34 @@ Table ProductVariant {
   }
 }
 
-Table XentralArtikel {
+Table BillOfMaterial {
   id String [pk]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-  xentralId Int [not null]
+  productVariant ProductVariant [not null]
+  productVariantId String [unique, not null]
+  billOfMaterialEntries BillOfMaterialEntries [not null]
+  tenant Tenant [not null]
+  tenantId String [not null]
+
+  indexes {
+    (productVariantId, tenantId) [unique]
+  }
+}
+
+Table BillOfMaterialEntries {
+  id String [pk]
+  billOfMaterial BillOfMaterial [not null]
+  billOfMaterialId String [not null]
+  part ProductVariant [not null]
+  partId String [not null]
+  quantity Int [not null]
+}
+
+Table XentralArtikel {
+  id String [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
   xentralNummer String [not null]
   xentralProxyApp XentralProxyApp [not null]
   xentralProxyAppId String [not null]
@@ -492,7 +525,7 @@ Table XentralArtikel {
   productVariantId String [not null]
 
   indexes {
-    (xentralId, xentralProxyAppId) [unique]
+    (id, xentralProxyAppId) [unique]
     (xentralNummer, xentralProxyAppId) [unique]
   }
 }
@@ -756,6 +789,7 @@ Table Tenant {
   package Package [not null]
   stockEntries StockEntries [not null]
   addresses Address [not null]
+  billOfMaterial BillOfMaterial [not null]
 }
 
 Table Subscription {
@@ -888,17 +922,17 @@ Table XentralProxyIntegration {
   payedUntil DateTime
   enabled Boolean [not null, default: true]
   subscription Subscription
-  subscriptionId String [unique]
+  subscriptionId String
   tenant Tenant [not null]
   tenantId String [not null]
   warehouse Warehouse [not null]
   warehouseId String [not null]
   xentralProxyApp XentralProxyApp [not null]
-  xentralProxyAppId String [unique, not null]
+  xentralProxyAppId String [not null]
 }
 
 Table XentralProxyAuftrag {
-  id String [pk]
+  id String [not null]
   xentralId Int [not null]
   xentralBelegNr String [not null]
   createdAt DateTime [default: `now()`, not null]
@@ -910,6 +944,7 @@ Table XentralProxyAuftrag {
 
   indexes {
     (xentralId, xentralProxyAppId) [unique]
+    (id, xentralProxyAppId) [unique]
     (xentralBelegNr, xentralProxyAppId) [unique]
   }
 }
@@ -1004,7 +1039,7 @@ Enum OrderShipmentStatus {
   delivered
 }
 
-Enum AddressCountryCode {
+Enum CountryCode {
   AD
   AE
   AF
@@ -1417,6 +1452,14 @@ Ref: Product.tenantId > Tenant.id [delete: Cascade]
 Ref: ProductVariant.productId > Product.id [delete: Cascade]
 
 Ref: ProductVariant.tenantId > Tenant.id [delete: Cascade]
+
+Ref: BillOfMaterial.productVariantId - ProductVariant.id [delete: Cascade]
+
+Ref: BillOfMaterial.tenantId > Tenant.id [delete: Cascade]
+
+Ref: BillOfMaterialEntries.billOfMaterialId > BillOfMaterial.id [delete: Cascade]
+
+Ref: BillOfMaterialEntries.partId > ProductVariant.id [delete: Cascade]
 
 Ref: XentralArtikel.xentralProxyAppId > XentralProxyApp.id
 
