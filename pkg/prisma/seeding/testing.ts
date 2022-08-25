@@ -73,6 +73,26 @@ async function main() {
           },
         },
       },
+      zohoItem: {
+        connectOrCreate: {
+          where: {
+            id_zohoAppId: {
+              id: "116240000000203041",
+              zohoAppId: "test"
+            }
+          },
+          create: {
+            id: "116240000000203041",
+            createdAt: "1970-01-01T00:00:00.000Z",
+            updatedAt: "1970-01-01T00:00:00.000Z",
+            zohoApp: {
+              connect: {
+                id: "test",
+              }
+            }
+          }
+        }
+      },
       tenant: {
         connect: {
           id: "test",
@@ -121,7 +141,7 @@ async function main() {
           id: address.id,
         },
       },
-      invoiceAddress: {
+      billingAddress: {
         connect: {
           id: address.id,
         },

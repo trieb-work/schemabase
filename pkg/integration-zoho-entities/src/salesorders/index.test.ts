@@ -1747,4 +1747,17 @@ describe("Zoho Inventory SalesOrders Sync", () => {
     });
     await xx.syncFromECI();
   }, 90000);
+
+  // TODO first test: it should fail if zoho item is not synced
+  // 1.) delete all orders in eci db
+  // 2.) create an order with product variant
+  // 3.) call syncFromEci
+
+  // TODO second test: it should succeed after zoho item is synced
+  // 1.) update eci db directly with test zohoItem. Get test data from zoho directly
+  // 2.) call syncFromEci
+
+  // TODO third tests --> same procedure as for zoho item for other zoho entities: zohoContact, zohoAddress, 
+
+  // TODO forth test --> test if salesorder was deleted in ECI db and is created again
 });

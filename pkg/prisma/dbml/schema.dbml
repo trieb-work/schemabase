@@ -154,7 +154,6 @@ Table ZohoSalesOrder {
   id String [not null]
   createdAt DateTime [not null]
   updatedAt DateTime [not null]
-  number String [not null]
   zohoContact ZohoContact
   zohoContactId String
   order Order [not null]
@@ -167,7 +166,6 @@ Table ZohoSalesOrder {
 
   indexes {
     (id, zohoAppId) [unique]
-    (number, zohoAppId) [unique]
   }
 }
 
@@ -393,7 +391,9 @@ Table Order {
   paymentStatus OrderPaymentStatus [not null, default: 'unpaid']
   shipmentStatus OrderShipmentStatus [not null, default: 'pending']
   readyToFullfill Boolean [not null, default: false]
-  orderNumber String [not null]
+  orderNumber String [not null, note: 'Order-Numbers have to be unique per Tenant!
+We use them as unique identifier between systems']
+  referenceNumber String [note: 'if source system has a second ID which is benefitial to the user, we can provide it here']
   lineItems LineItem [not null]
   shippingPriceNet Float
   shippingPriceGross Float
@@ -408,8 +408,8 @@ Table Order {
   packages Package [not null]
   shippingAddress Address
   shippingAddressId String
-  invoiceAddress Address
-  invoiceAddressId String
+  billingAddress Address
+  billingAddressId String
   tenant Tenant [not null]
   tenantId String [not null]
   payments Payment [not null]
@@ -441,7 +441,7 @@ Table Address {
   tenantId String [not null]
   normalizedName String [not null]
   orderShippingAddress Order [not null]
-  orderInvoiceAddress Order [not null]
+  orderBillingAddress Order [not null]
 
   indexes {
     (normalizedName, tenantId) [unique]
@@ -519,7 +519,7 @@ Table BillOfMaterialEntries {
 
 Table XentralArtikel {
   id String [not null]
-  createdAt DateTime [default: `now()`, not null]
+  createdAt DateTime [not null]
   updatedAt DateTime [not null]
   xentralNummer String [not null]
   xentralProxyApp XentralProxyApp [not null]
@@ -938,7 +938,7 @@ Table XentralProxyAuftrag {
   id String [not null]
   xentralId Int [not null]
   xentralBelegNr String [not null]
-  createdAt DateTime [default: `now()`, not null]
+  createdAt DateTime [not null]
   updatedAt DateTime [not null]
   xentralProxyApp XentralProxyApp [not null]
   xentralProxyAppId String [not null]
@@ -1446,7 +1446,7 @@ Ref: Order.mainContactId > Contact.id
 
 Ref: Order.shippingAddressId > Address.id [delete: Cascade]
 
-Ref: Order.invoiceAddressId > Address.id [delete: Cascade]
+Ref: Order.billingAddressId > Address.id [delete: Cascade]
 
 Ref: Order.tenantId > Tenant.id [delete: Cascade]
 

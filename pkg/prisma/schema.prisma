@@ -234,10 +234,6 @@ model ZohoSalesOrder {
   createdAt DateTime
   updatedAt DateTime
 
-  // The Zoho Internal sales order number
-  // as complete string: INV-395956
-  number String
-
   zohoContact   ZohoContact? @relation(fields: [zohoContactId, zohoAppId], references: [id, zohoAppId], onDelete: Cascade)
   zohoContactId String?
 
@@ -252,7 +248,6 @@ model ZohoSalesOrder {
   zohoContactPersonZohoAppId String?
 
   @@unique([id, zohoAppId])
-  @@unique([number, zohoAppId])
   @@index([orderId])
 }
 
@@ -614,9 +609,11 @@ model Order {
 
   readyToFullfill Boolean @default(false)
 
-  // Order-Numbers have to be unique per Tenant!
-  // We use them as unique identifier between systems
+  /// Order-Numbers have to be unique per Tenant!
+  /// We use them as unique identifier between systems
   orderNumber String
+  /// if source system has a second ID which is benefitial to the user, we can provide it here
+  referenceNumber String?
 
   lineItems LineItem[]
 
@@ -645,8 +642,8 @@ model Order {
 
   shippingAddress   Address? @relation("orderShippingAddresses", fields: [shippingAddressId], references: [id], onDelete: Cascade)
   shippingAddressId String?
-  invoiceAddress    Address? @relation("orderInvoiceAddresses", fields: [invoiceAddressId], references: [id], onDelete: Cascade)
-  invoiceAddressId  String?
+  billingAddress    Address? @relation("orderBillingAddresses", fields: [billingAddressId], references: [id], onDelete: Cascade)
+  billingAddressId  String?
 
   tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -662,7 +659,7 @@ model Order {
   // Adding this unique constraint just for relational purposes
   @@unique([id, orderNumber])
   @@index([shippingAddressId])
-  @@index([invoiceAddressId])
+  @@index([billingAddressId])
 }
 
 enum CountryCode {
@@ -918,7 +915,7 @@ enum CountryCode {
   ZW
 }
 
-// The ECI internal Order model.
+// The ECI internal Address model.
 model Address {
   // eci internal id
   id        String   @id
@@ -943,7 +940,7 @@ model Address {
   normalizedName String
 
   orderShippingAddress Order[] @relation("orderShippingAddresses")
-  orderInvoiceAddress  Order[] @relation("orderInvoiceAddresses")
+  orderBillingAddress  Order[] @relation("orderBillingAddresses")
 
   @@unique([normalizedName, tenantId])
   @@index([tenantId])
@@ -1055,8 +1052,8 @@ model BillOfMaterialEntries {
 model XentralArtikel {
   // Xentral Internal ID
   id        String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime
+  updatedAt DateTime
 
   xentralNummer String
 
@@ -1694,8 +1691,8 @@ model XentralProxyAuftrag {
   xentralId      Int
   xentralBelegNr String
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime
+  updatedAt DateTime
 
   xentralProxyApp   XentralProxyApp @relation(fields: [xentralProxyAppId], references: [id])
   xentralProxyAppId String

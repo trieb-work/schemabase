@@ -94,7 +94,7 @@ class Addresses {
         id: this.eciOrderId,
       },
       data: {
-        invoiceAddress: {
+        billingAddress: {
           connectOrCreate: {
             where: {
               normalizedName_tenantId: {
@@ -107,6 +107,7 @@ class Addresses {
               ...billingAddr.addObj,
               normalizedName: billingAddr.uniqueString,
               tenantId: this.tenantId,
+              // TODO create zohoAddress
             },
           },
         },
