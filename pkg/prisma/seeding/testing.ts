@@ -88,18 +88,18 @@ async function main() {
             id_zohoAppId: {
               id: "116240000000067007",
               zohoAppId: "test",
-            }
+            },
           },
           create: {
             id: "116240000000067007",
             zohoApp: {
               connect: {
                 id: "test",
-              }
-            }
-          }
+              },
+            },
+          },
         },
-      }
+      },
     },
   });
   console.log("created warehouse");
@@ -130,8 +130,8 @@ async function main() {
           where: {
             id_zohoAppId: {
               id: "116240000000203041",
-              zohoAppId: "test"
-            }
+              zohoAppId: "test",
+            },
           },
           create: {
             id: "116240000000203041",
@@ -140,10 +140,10 @@ async function main() {
             zohoApp: {
               connect: {
                 id: "test",
-              }
-            }
-          }
-        }
+              },
+            },
+          },
+        },
       },
       tenant: {
         connect: {
@@ -153,6 +153,60 @@ async function main() {
     },
   });
   console.log("created one generic productVariant");
+
+  console.log("created one address for the generic order");
+  await prisma.contact.upsert({
+    where: {
+      id: "test",
+    },
+    update: {},
+    create: {
+      id: "test",
+      email: "tilman@trieb.work",
+      tenant: {
+        connect: {
+          id: "test",
+        },
+      },
+      zohoContactPersons: {
+        connectOrCreate: {
+          where: {
+            id_zohoAppId: {
+              id: "116240000001504004",
+              zohoAppId: "test",
+            },
+          },
+          create: {
+            email: "jannik@trieb.work",
+            id: "116240000001504004",
+            zohoApp: {
+              connect: {
+                id: "test",
+              },
+            },
+            zohoContact: {
+              connectOrCreate: {
+                where: {
+                  id_zohoAppId: {
+                    id: "116240000001504002",
+                    zohoAppId: "test",
+                  },
+                },
+                create: {
+                  id: "116240000001504002",
+                  zohoApp: {
+                    connect: {
+                      id: "test",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
   await prisma.address.upsert({
     where: {
       id: "test",
@@ -177,75 +231,25 @@ async function main() {
             id_zohoAppId: {
               id: "116240000001504007",
               zohoAppId: "test",
-            }
+            },
           },
           create: {
-            createdAt: "1970-01-01T00:00:00.000Z",
-            updatedAt: "1970-01-01T00:00:00.000Z",
             id: "116240000001504007",
             zohoApp: {
               connect: {
-                id: "test"
-              }
-            }
-          }
-        }
-      }
-    },
-  });
-  console.log("created one address for the generic order");
-  await prisma.contact.upsert({
-    where: {
-      id: "test"
-    },
-    update: {},
-    create: {
-      id: "test",
-      email: "tilman@trieb.work",
-      tenant: {
+                id: "test",
+              },
+            },
+          },
+        },
+      },
+      contact: {
         connect: {
           id: "test",
-        }
+        },
       },
-      zohoContactPersons: {
-        connectOrCreate: {
-          where: {
-            id_zohoAppId: {
-              id: "116240000001504004",
-              zohoAppId: "test"
-            }
-          },
-          create: {
-            email: "jannik@trieb.work",
-            id: "116240000001504004",
-            zohoApp: {
-              connect: {
-                id: "test"
-              }
-            },
-            zohoContact: {
-              connectOrCreate: {
-                where: {
-                  id_zohoAppId: {
-                    id: "116240000001504002",
-                    zohoAppId: "test",
-                  }
-                },
-                create: {
-                  id: "116240000001504002",
-                  zohoApp: {
-                    connect: {
-                      id: "test"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  })
+    },
+  });
   await prisma.order.upsert({
     where: {
       orderNumber_tenantId: {
@@ -279,11 +283,11 @@ async function main() {
       mainContact: {
         connect: {
           id: "test",
-        }
+        },
       },
       contacts: {
         connect: {
-          id: "test"
+          id: "test",
         },
       },
     },
@@ -318,9 +322,9 @@ async function main() {
       },
       warehouse: {
         connect: {
-          id: "test"
-        }
-      }
+          id: "test",
+        },
+      },
     },
   });
   console.log("created one generic lineitem for the order");
