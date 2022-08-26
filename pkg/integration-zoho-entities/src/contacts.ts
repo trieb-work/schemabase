@@ -1,4 +1,4 @@
-import { Zoho, Contact } from "@trieb.work/zoho-ts";
+import { Zoho, Contact, Address } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
@@ -239,11 +239,11 @@ export class ZohoContactSyncService {
         });
       }
 
-      const addressArray = contact.addresses;
+      const addressArray: Address[] = contact?.addresses || [];
       if (contact.billing_address) addressArray.push(contact.billing_address);
       if (contact.shipping_address) addressArray.push(contact.shipping_address);
 
-      if (addressArray.length > 0)
+      if (addressArray?.length > 0)
         await addresses(
           this.db,
           this.zohoApp.tenantId,
