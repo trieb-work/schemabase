@@ -10115,6 +10115,19 @@ export type PageInfoMetaFragment = {
   endCursor?: string | null;
 };
 
+export type StandardAddressValuesFragment = {
+  __typename?: "Address";
+  firstName: string;
+  lastName: string;
+  phone?: string | null;
+  postalCode: string;
+  streetAddress1: string;
+  streetAddress2: string;
+  city: string;
+  companyName: string;
+  country: { __typename?: "CountryDisplay"; code: string };
+};
+
 export type SaleorCronOrdersOverviewQueryVariables = Exact<{
   createdGte?: InputMaybe<Scalars["Date"]>;
   after?: InputMaybe<Scalars["String"]>;
@@ -10141,7 +10154,30 @@ export type SaleorCronOrdersOverviewQuery = {
         userEmail?: string | null;
         paymentStatus: PaymentChargeStatusEnum;
         number?: string | null;
-        billingAddress?: { __typename?: "Address"; companyName: string } | null;
+        billingAddress?: {
+          __typename?: "Address";
+          firstName: string;
+          lastName: string;
+          phone?: string | null;
+          postalCode: string;
+          streetAddress1: string;
+          streetAddress2: string;
+          city: string;
+          companyName: string;
+          country: { __typename?: "CountryDisplay"; code: string };
+        } | null;
+        shippingAddress?: {
+          __typename?: "Address";
+          firstName: string;
+          lastName: string;
+          phone?: string | null;
+          postalCode: string;
+          streetAddress1: string;
+          streetAddress2: string;
+          city: string;
+          companyName: string;
+          country: { __typename?: "CountryDisplay"; code: string };
+        } | null;
         total: {
           __typename?: "TaxedMoney";
           currency: string;
@@ -10150,19 +10186,6 @@ export type SaleorCronOrdersOverviewQuery = {
       };
     }>;
   } | null;
-};
-
-export type StandardAddressValuesFragment = {
-  __typename?: "Address";
-  firstName: string;
-  lastName: string;
-  phone?: string | null;
-  postalCode: string;
-  streetAddress1: string;
-  streetAddress2: string;
-  city: string;
-  companyName: string;
-  country: { __typename?: "CountryDisplay"; code: string };
 };
 
 export type SaleorCronOrderDetailsQueryVariables = Exact<{
@@ -10177,30 +10200,6 @@ export type SaleorCronOrderDetailsQuery = {
     created: any;
     number?: string | null;
     paymentStatus: PaymentChargeStatusEnum;
-    billingAddress?: {
-      __typename?: "Address";
-      firstName: string;
-      lastName: string;
-      phone?: string | null;
-      postalCode: string;
-      streetAddress1: string;
-      streetAddress2: string;
-      city: string;
-      companyName: string;
-      country: { __typename?: "CountryDisplay"; code: string };
-    } | null;
-    shippingAddress?: {
-      __typename?: "Address";
-      firstName: string;
-      lastName: string;
-      phone?: string | null;
-      postalCode: string;
-      streetAddress1: string;
-      streetAddress2: string;
-      city: string;
-      companyName: string;
-      country: { __typename?: "CountryDisplay"; code: string };
-    } | null;
     voucher?: {
       __typename?: "Voucher";
       id: string;
@@ -10222,6 +10221,10 @@ export type SaleorCronOrderDetailsQuery = {
       unitDiscountValue: any;
       taxRate: number;
       variant?: { __typename?: "ProductVariant"; sku: string } | null;
+      allocations?: Array<{
+        __typename?: "Allocation";
+        warehouse: { __typename?: "Warehouse"; id: string; name: string };
+      }> | null;
       undiscountedUnitPrice: {
         __typename?: "TaxedMoney";
         currency: string;
@@ -10768,7 +10771,10 @@ export const SaleorCronOrdersOverviewDocument = gql`
           status
           userEmail
           billingAddress {
-            companyName
+            ...standardAddressValues
+          }
+          shippingAddress {
+            ...standardAddressValues
           }
           paymentStatus
           number
@@ -10782,6 +10788,7 @@ export const SaleorCronOrdersOverviewDocument = gql`
       }
     }
   }
+  ${StandardAddressValuesFragmentDoc}
 `;
 export const SaleorCronOrderDetailsDocument = gql`
   query saleorCronOrderDetails($id: ID!) {
@@ -10789,12 +10796,6 @@ export const SaleorCronOrderDetailsDocument = gql`
       id
       created
       number
-      billingAddress {
-        ...standardAddressValues
-      }
-      shippingAddress {
-        ...standardAddressValues
-      }
       voucher {
         id
         code
@@ -10816,6 +10817,12 @@ export const SaleorCronOrderDetailsDocument = gql`
         id
         variant {
           sku
+        }
+        allocations {
+          warehouse {
+            id
+            name
+          }
         }
         quantity
         unitDiscountType
@@ -10860,7 +10867,6 @@ export const SaleorCronOrderDetailsDocument = gql`
       paymentStatus
     }
   }
-  ${StandardAddressValuesFragmentDoc}
 `;
 export const SaleorCronPaymentsDocument = gql`
   query saleorCronPayments($createdGte: Date, $after: String) {

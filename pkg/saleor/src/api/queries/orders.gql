@@ -1,3 +1,17 @@
+fragment standardAddressValues on Address {
+  firstName
+  lastName
+  phone
+  postalCode
+  streetAddress1
+  streetAddress2
+  city
+  companyName
+  country {
+    code
+  }
+}
+
 query saleorCronOrdersOverview($createdGte: Date, $after: String, $first: Int) {
   orders(
     first: $first
@@ -16,8 +30,11 @@ query saleorCronOrdersOverview($createdGte: Date, $after: String, $first: Int) {
         status
         userEmail
         billingAddress {
-          companyName
+          ...standardAddressValues
         }
+        shippingAddress {
+          ...standardAddressValues
+        }  
         paymentStatus
         number
         total {
@@ -31,31 +48,13 @@ query saleorCronOrdersOverview($createdGte: Date, $after: String, $first: Int) {
   }
 }
 
-fragment standardAddressValues on Address {
-  firstName
-  lastName
-  phone
-  postalCode
-  streetAddress1
-  streetAddress2
-  city
-  companyName
-  country {
-    code
-  }
-}
+
 
 query saleorCronOrderDetails($id: ID!) {
   order(id: $id) {
     id
     created
-    number
-    billingAddress {
-      ...standardAddressValues
-    }
-    shippingAddress {
-      ...standardAddressValues
-    }    
+    number  
     voucher {
       id
       code
@@ -77,6 +76,12 @@ query saleorCronOrderDetails($id: ID!) {
       id
       variant {
         sku
+      }
+      allocations {
+        warehouse {
+          id
+          name
+        }
       }
       quantity
       unitDiscountType
