@@ -9,6 +9,7 @@ interface AddressesConfig {
   eciOrderId: string;
   tenantId: string;
   logger: ILogger;
+  contactId: string;
 }
 
 class Addresses {
@@ -20,11 +21,18 @@ class Addresses {
 
   private logger: ILogger;
 
+  /**
+   * ECI internal contact Id -
+   * addresses need to be related to a contact
+   */
+  private contactId: string;
+
   constructor(config: AddressesConfig) {
     this.db = config.db;
     this.eciOrderId = config.eciOrderId;
     this.tenantId = config.tenantId;
     this.logger = config.logger;
+    this.contactId = config.contactId;
   }
 
   private createObjectAndUniqueString(address: StandardAddressValuesFragment) {
@@ -87,7 +95,16 @@ class Addresses {
               id: id.id("address"),
               ...billingAddr.addObj,
               normalizedName: billingAddr.uniqueString,
-              tenantId: this.tenantId,
+              tenant: {
+                connect: {
+                  id: this.tenantId,
+                },
+              },
+              contact: {
+                connect: {
+                  id: this.contactId,
+                },
+              },
             },
           },
         },
@@ -103,7 +120,16 @@ class Addresses {
               id: id.id("address"),
               ...shippingAddr.addObj,
               normalizedName: shippingAddr.uniqueString,
-              tenantId: this.tenantId,
+              tenant: {
+                connect: {
+                  id: this.tenantId,
+                },
+              },
+              contact: {
+                connect: {
+                  id: this.contactId,
+                },
+              },
             },
           },
         },
@@ -116,11 +142,13 @@ const addresses = (
   eciOrderId: string,
   tenantId: string,
   logger: ILogger,
+  contactId: string,
 ) =>
   new Addresses({
     db,
     eciOrderId,
     tenantId,
     logger,
+    contactId,
   });
 export default addresses;

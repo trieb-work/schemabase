@@ -10,25 +10,33 @@ import {
 
 interface AddressesConfig {
   db: PrismaClient;
-  eciOrderId: string;
   tenantId: string;
+  zohoAppId: string;
   logger: ILogger;
+  contactId: string;
 }
 
 class Addresses {
   private db: PrismaClient;
 
-  private eciOrderId: string;
-
   private tenantId: string;
 
   private logger: ILogger;
 
+  private zohoAppId: string;
+
+  /**
+   * ECI internal contact Id -
+   * addresses need to be related to a contact
+   */
+  private contactId: string;
+
   constructor(config: AddressesConfig) {
     this.db = config.db;
-    this.eciOrderId = config.eciOrderId;
     this.tenantId = config.tenantId;
     this.logger = config.logger;
+    this.zohoAppId = config.zohoAppId;
+    this.contactId = config.contactId;
   }
 
   private createECIObjectAndUniqueStringFromZohoAddress(
@@ -64,42 +72,101 @@ class Addresses {
       countryCode: countryCodeValid
         ? (address.country_code as CountryCode)
         : CountryCode.DE,
+      normalizedName: "",
     };
     const uniqueString = uniqueStringAddress(addObj);
+    addObj.normalizedName = uniqueString;
 
     return { addObj, uniqueString };
   }
 
   // TODO:
   // Function, that works the other way around and creates a create address object
-  // private createZohoAddressFromECI () {
+  // private createZohoAddressFromECI() {
+  //   const zohoAddr: AddressWithoutAddressId = {
+  //     attention: "",
+  //   };
 
+  //   return zohoAddr;
   // }
 
   // Takes Zoho Addresses for a contact and sync them with the ECI DB
   public async eciContactAddAddresses(addresses: Address[]) {
     for (const zohoAddress of addresses) {
-      const uniqueString =
+      const addressObj =
         this.createECIObjectAndUniqueStringFromZohoAddress(zohoAddress);
 
-      if (!zohoAddress.address_id) throw new Error(`Zoho Address ID missing. Can't sync`)
-      
-      await this.db.zohoa
+      if (!zohoAddress.address_id)
+        throw new Error(`Zoho Address ID missing. Can't sync`);
+
+      await this.db.zohoAddress.upsert({
+        where: {
+          id_zohoAppId: {
+            id: zohoAddress.address_id,
+            zohoAppId: this.zohoAppId,
+          },
+        },
+        create: {
+          id: zohoAddress.address_id,
+          zohoApp: {
+            connect: {
+              id: this.zohoAppId,
+            },
+          },
+          address: {
+            connectOrCreate: {
+              where: {
+                normalizedName_tenantId: {
+                  normalizedName: addressObj.uniqueString,
+                  tenantId: this.tenantId,
+                },
+              },
+              create: {
+                id: id.id("address"),
+                ...addressObj.addObj,
+                tenant: {
+                  connect: {
+                    id: this.tenantId,
+                  },
+                },
+                contact: {
+                  connect: {
+                    id: this.contactId,
+                  },
+                },
+              },
+            },
+          },
+        },
+        update: {
+          address: {
+            update: {
+              ...addressObj.addObj,
+            },
+          },
+        },
+      });
     }
   }
 
   /**
    * Sync Zoho Addresses with ECI DB and connect them to an ECI order
    * @param shippingAddress
+   * @param shippingAddressId
    * @param billingAddress
+   * @param billingAddressId
    * @param contactPersonDetails The customer name we use, if the attention field is not set.
    * @param customerName fallback customer name, if no attention and no contact person details exist
+   * @param eciOrderId
    */
   public async eciOrderAddAddresses(
     shippingAddress: AddressWithoutAddressId,
+    shippingAddressId: string,
     billingAddress: AddressWithoutAddressId,
+    billingAddressId: string,
     contactPersonDetails: ContactPersonShortList[],
     customerName: string,
+    eciOrderId: string,
   ) {
     const contactPerson = contactPersonDetails?.[0];
     const fullName =
@@ -115,9 +182,15 @@ class Addresses {
       fullName,
     );
 
+    const tenant = {
+      connect: {
+        id: this.tenantId,
+      },
+    };
+
     await this.db.order.update({
       where: {
-        id: this.eciOrderId,
+        id: eciOrderId,
       },
       data: {
         billingAddress: {
@@ -131,9 +204,24 @@ class Addresses {
             create: {
               id: id.id("address"),
               ...billingAddr.addObj,
-              normalizedName: billingAddr.uniqueString,
               tenantId: this.tenantId,
-              // TODO create zohoAddress
+              contactId: this.contactId,
+              zohoAddress: {
+                connectOrCreate: [
+                  {
+                    where: {
+                      id_zohoAppId: {
+                        id: billingAddressId,
+                        zohoAppId: this.zohoAppId,
+                      },
+                    },
+                    create: {
+                      id: billingAddressId,
+                      zohoAppId: this.zohoAppId,
+                    },
+                  },
+                ],
+              },
             },
           },
         },
@@ -148,8 +236,28 @@ class Addresses {
             create: {
               id: id.id("address"),
               ...shippingAddr.addObj,
-              normalizedName: shippingAddr.uniqueString,
-              tenantId: this.tenantId,
+              tenant,
+              contact: {
+                connect: {
+                  id: this.contactId,
+                },
+              },
+              zohoAddress: {
+                connectOrCreate: [
+                  {
+                    where: {
+                      id_zohoAppId: {
+                        id: shippingAddressId,
+                        zohoAppId: this.zohoAppId,
+                      },
+                    },
+                    create: {
+                      id: shippingAddressId,
+                      zohoAppId: this.zohoAppId,
+                    },
+                  },
+                ],
+              },
             },
           },
         },
@@ -159,14 +267,16 @@ class Addresses {
 }
 const addresses = (
   db: PrismaClient,
-  eciOrderId: string,
   tenantId: string,
+  zohoAppId: string,
   logger: ILogger,
+  contactId: string,
 ) =>
   new Addresses({
     db,
-    eciOrderId,
     tenantId,
+    zohoAppId,
     logger,
+    contactId,
   });
 export default addresses;

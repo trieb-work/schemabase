@@ -20,6 +20,7 @@ import { orderToMainContactId } from "./mainContact";
 import { addressToZohoAddressId } from "./address";
 
 export class Warning extends Error {
+  // eslint-disable-next-line no-useless-constructor
   constructor(msg: string) {
     super(msg);
   }
@@ -422,17 +423,30 @@ export class ZohoSalesOrdersSyncService {
         /**
          * Update the order addresses in our internal db
          */
-        await addresses(
-          this.db,
-          internalOrderId,
-          this.tenantId,
-          this.logger,
-        ).eciOrderAddAddresses(
-          fullSalesorder.shipping_address,
-          fullSalesorder.billing_address,
-          fullSalesorder.contact_person_details,
-          fullSalesorder.customer_name,
-        );
+        if (
+          !fullSalesorder.shipping_address_id ||
+          !fullSalesorder.billing_address_id
+        ) {
+          this.logger.warn(
+            `Shipping address id or billing address id missing for ${fullSalesorder.salesorder_id} - Can't sync addresses`,
+          );
+        } else {
+          await addresses(
+            this.db,
+            this.tenantId,
+            this.zohoApp.id,
+            this.logger,
+            fullSalesorder.customer_id,
+          ).eciOrderAddAddresses(
+            fullSalesorder.shipping_address,
+            fullSalesorder.shipping_address_id,
+            fullSalesorder.billing_address,
+            fullSalesorder.billing_address_id,
+            fullSalesorder.contact_person_details,
+            fullSalesorder.customer_name,
+            internalOrderId,
+          );
+        }
       }
     }
 

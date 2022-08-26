@@ -131,7 +131,7 @@ export class SaleorOrderSyncService {
         continue;
       }
 
-      const lowerCaseEmail = order.userEmail.toLowerCase();
+      const email = order.userEmail.toLowerCase();
       const companyName = order.billingAddress?.companyName;
 
       const companyCreateOrConnect: Prisma.CompanyCreateNestedOneWithoutContactsInput =
@@ -162,13 +162,13 @@ export class SaleorOrderSyncService {
           connectOrCreate: {
             where: {
               email_tenantId: {
-                email: lowerCaseEmail,
+                email,
                 tenantId: this.tenantId,
               },
             },
             create: {
               id: id.id("contact"),
-              email: lowerCaseEmail,
+              email,
               company: companyCreateOrConnect,
               tenant: {
                 connect: {
@@ -238,6 +238,27 @@ export class SaleorOrderSyncService {
                 orderStatus,
                 paymentStatus,
                 contacts: contactCreateOrConnect,
+                mainContact: {
+                  connectOrCreate: {
+                    where: {
+                      email_tenantId: {
+                        email,
+                        tenantId: this.tenantId,
+                      },
+                    },
+                    create: {
+                      id: id.id("contact"),
+                      email,
+                      tenant: {
+                        connect: {
+                          id: this.tenantId,
+                        },
+                      },
+                    },
+                  },
+                },
+                shippingAddress: {},
+                billingAddress: {},
                 tenant: {
                   connect: {
                     id: this.tenantId,
@@ -256,6 +277,9 @@ export class SaleorOrderSyncService {
             },
           },
         },
+        include: {
+          order: true,
+        },
       });
 
       const orderDetails = await this.saleorClient.saleorCronOrderDetails({
@@ -273,10 +297,18 @@ export class SaleorOrderSyncService {
         continue;
       }
 
+      const saleorWarehouses = await this.db.saleorWarehouse.findMany({
+        where: {
+          installedSaleorAppId: this.installedSaleorAppId,
+        },
+      });
+
       // loop through all line items and upsert them in the DB
       for (const lineItem of lineItems) {
         if (!lineItem?.id) continue;
         if (!lineItem?.variant?.sku) continue;
+
+        // const warehouse = saleorWarehouses.find((wh) => wh.id === )
 
         const productSku = await this.db.productVariant.findUnique({
           where: {
@@ -391,13 +423,17 @@ export class SaleorOrderSyncService {
 
       // Sync the order's addresses with the internal DB
       if (
-        orderDetails.order?.shippingAddress &&
-        orderDetails.order.billingAddress
+        order.shippingAddress &&
+        order.billingAddress &&
+        upsertedOrder.order.mainContactId
       )
-        await addresses(this.db, order.id, this.tenantId, this.logger).sync(
-          orderDetails.order?.shippingAddress,
-          orderDetails.order?.billingAddress,
-        );
+        await addresses(
+          this.db,
+          order.id,
+          this.tenantId,
+          this.logger,
+          upsertedOrder.order.mainContactId,
+        ).sync(order.shippingAddress, order.billingAddress);
     }
 
     await this.cronState.set({
