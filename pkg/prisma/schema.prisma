@@ -223,9 +223,6 @@ model ZohoAddress {
   /// Zoho internal Address id
   id String
 
-  createdAt DateTime
-  updatedAt DateTime
-
   address   Address @relation(fields: [addressId], references: [id], onDelete: Cascade)
   addressId String
 
