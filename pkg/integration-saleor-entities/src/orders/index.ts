@@ -308,7 +308,30 @@ export class SaleorOrderSyncService {
         if (!lineItem?.id) continue;
         if (!lineItem?.variant?.sku) continue;
 
-        // const warehouse = saleorWarehouses.find((wh) => wh.id === )
+        if (!lineItem.allocations || lineItem.allocations.length === 0) {
+          this.logger.error(
+            `No warehouse allocations given for this lineItem ${lineItem.id} - ${order.number}`,
+          );
+          continue;
+        }
+        if (lineItem.allocations.length > 1) {
+          this.logger.error(
+            `More than one warehouse allocation given for ${lineItem.id} - ${order.number}`,
+          );
+          continue;
+        }
+        const warehouse = saleorWarehouses.find(
+          (wh) => wh.id === lineItem?.allocations?.[0].warehouse.id,
+        )?.warehouseId;
+
+        if (!warehouse) {
+          this.logger.error(
+            `No saleor warehouse found internally for saleor warehouse Id ${JSON.stringify(
+              lineItem.allocations,
+            )}`,
+          );
+          continue;
+        }
 
         const productSku = await this.db.productVariant.findUnique({
           where: {
@@ -387,6 +410,11 @@ export class SaleorOrderSyncService {
                       id: productSku.id,
                     },
                   },
+                  warehouse: {
+                    connect: {
+                      id: warehouse,
+                    },
+                  },
                 },
               },
             },
@@ -413,6 +441,11 @@ export class SaleorOrderSyncService {
                   update: {
                     shippingPriceGross:
                       orderDetails.order?.shippingPrice.gross.amount,
+                  },
+                },
+                warehouse: {
+                  connect: {
+                    id: warehouse,
                   },
                 },
               },
