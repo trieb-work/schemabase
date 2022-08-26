@@ -421,10 +421,10 @@ We use them as unique identifier between systems']
   mainContactId String
   language Language [not null, default: 'DE']
   packages Package [not null]
-  shippingAddress Address [not null]
-  shippingAddressId String [not null]
-  billingAddress Address [not null]
-  billingAddressId String [not null]
+  shippingAddress Address
+  shippingAddressId String
+  billingAddress Address
+  billingAddressId String
   tenant Tenant [not null]
   tenantId String [not null]
   payments Payment [not null]

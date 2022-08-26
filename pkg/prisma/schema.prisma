@@ -654,10 +654,10 @@ model Order {
   language Language  @default(DE)
   packages Package[]
 
-  shippingAddress   Address @relation("orderShippingAddresses", fields: [shippingAddressId], references: [id], onDelete: Cascade)
-  shippingAddressId String
-  billingAddress    Address @relation("orderBillingAddresses", fields: [billingAddressId], references: [id], onDelete: Cascade)
-  billingAddressId  String
+  shippingAddress   Address? @relation("orderShippingAddresses", fields: [shippingAddressId], references: [id], onDelete: Cascade)
+  shippingAddressId String?
+  billingAddress    Address? @relation("orderBillingAddresses", fields: [billingAddressId], references: [id], onDelete: Cascade)
+  billingAddressId  String?
 
   tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
