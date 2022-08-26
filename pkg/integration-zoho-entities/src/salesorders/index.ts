@@ -555,6 +555,9 @@ export class ZohoSalesOrdersSyncService {
             "IMPORTANT: Neither order totalPriceNet or totalPriceGross is set. Please check and correct it manually in ECI db",
           );
         }
+        if (!order.billingAddress || !order.shippingAddress) {
+          throw new Error("Billing and Shipping address need both to be set!");
+        }
         // eslint-disable-next-line camelcase
         const discount_type = order.discountValueNet
           ? "entity_level"
