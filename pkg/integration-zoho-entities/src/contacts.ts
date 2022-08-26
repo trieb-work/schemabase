@@ -243,13 +243,14 @@ export class ZohoContactSyncService {
       if (contact.billing_address) addressArray.push(contact.billing_address);
       if (contact.shipping_address) addressArray.push(contact.shipping_address);
 
-      await addresses(
-        this.db,
-        this.zohoApp.tenantId,
-        this.zohoApp.id,
-        this.logger,
-        eciContact.id,
-      ).eciContactAddAddresses(addressArray);
+      if (addressArray.length > 0)
+        await addresses(
+          this.db,
+          this.zohoApp.tenantId,
+          this.zohoApp.id,
+          this.logger,
+          eciContact.id,
+        ).eciContactAddAddresses(addressArray);
 
       // We sleep here to not get blocked by Zoho
       await sleep(3000);
