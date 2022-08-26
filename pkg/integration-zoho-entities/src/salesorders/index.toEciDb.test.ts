@@ -2,7 +2,7 @@
 import { NoopLogger } from "@eci/pkg/logger";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { beforeEach, describe, jest, test, beforeAll } from "@jest/globals";
-import { Zoho, ZohoApiClient, SalesOrder } from "@trieb.work/zoho-ts";
+import { SalesOrder, Zoho, ZohoApiClient } from "@trieb.work/zoho-ts";
 import { ZohoSalesOrdersSyncService } from ".";
 
 let zohoApp: any;
@@ -1729,22 +1729,4 @@ describe("Zoho Inventory SalesOrders Sync", () => {
     await xx.syncToECI();
   }, 90000);
 
-  test("It should work to sync Zoho Sales Order from internal ECI DB", async () => {
-    /**
-     * This test is running against the Test Instance of Zoho
-     */
-    const realTestingZohoClient = new Zoho(
-      await ZohoApiClient.fromOAuth({
-        orgId: zohoApp.orgId,
-        client: { id: zohoApp.clientId, secret: zohoApp.clientSecret },
-      }),
-    );
-    const xx = new ZohoSalesOrdersSyncService({
-      zoho: realTestingZohoClient,
-      logger: new NoopLogger(),
-      db: new PrismaClient(),
-      zohoApp,
-    });
-    await xx.syncFromECI();
-  }, 90000);
 });

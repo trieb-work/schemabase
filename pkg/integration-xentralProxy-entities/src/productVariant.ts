@@ -54,7 +54,8 @@ export class XentralProxyProductVariantSyncService {
         ean: productVariant.ean || undefined,
         nummer: "NEW",
         aktiv: 1,
-        lagerartikel: 0,
+        // lagerartikel: 0,
+        lagerartikel: 1, // TODO: muss lagerartikel sein sonst kann auftrag nicht fortgeführt werden
         typ: "3_kat",
       };
       const xentralResData = await xentralClient.ArtikelCreate(artikel);

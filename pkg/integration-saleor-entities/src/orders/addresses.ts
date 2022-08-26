@@ -75,7 +75,7 @@ class Addresses {
         id: this.eciOrderId,
       },
       data: {
-        invoiceAddress: {
+        billingAddress: {
           connectOrCreate: {
             where: {
               normalizedName_tenantId: {
