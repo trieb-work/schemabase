@@ -309,7 +309,7 @@ export class SaleorOrderSyncService {
         if (!lineItem?.variant?.sku) continue;
 
         if (!lineItem.allocations || lineItem.allocations.length === 0) {
-          this.logger.error(
+          this.logger.warn(
             `No warehouse allocations given for this lineItem ${lineItem.id} - ${order.number}`,
           );
           continue;

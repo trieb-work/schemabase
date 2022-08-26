@@ -65,11 +65,9 @@ class Addresses {
   }
 
   /**
-   * Sync Zoho Addresses with ECI DB and connect them to an ECI order
+   * Sync Saleor Addresses with ECI DB and connect them to an ECI order
    * @param shippingAddress
    * @param billingAddress
-   * @param contactPersonDetails The customer name we use, if the attention field is not set.
-   * @param customerName fallback customer name, if no attention and no contact person details exist
    */
   public async sync(
     shippingAddress: StandardAddressValuesFragment,
