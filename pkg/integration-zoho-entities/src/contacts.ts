@@ -240,8 +240,8 @@ export class ZohoContactSyncService {
       }
 
       const addressArray = contact.addresses;
-      addressArray.push(contact.billing_address);
-      addressArray.push(contact.shipping_address);
+      if (contact.billing_address) addressArray.push(contact.billing_address);
+      if (contact.shipping_address) addressArray.push(contact.shipping_address);
 
       await addresses(
         this.db,
