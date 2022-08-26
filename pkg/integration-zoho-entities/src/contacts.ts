@@ -6,6 +6,7 @@ import { CronStateHandler } from "@eci/pkg/cronstate";
 import { isAfter, subDays } from "date-fns";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import { sleep } from "@eci/pkg/miscHelper/time";
+import addresses from "./addresses";
 
 export interface ZohoContactSyncConfig {
   logger: ILogger;
@@ -134,7 +135,7 @@ export class ZohoContactSyncService {
         },
       });
 
-      await this.db.contact.upsert({
+      const eciContact = await this.db.contact.upsert({
         where: {
           email_tenantId: {
             tenantId,
@@ -239,7 +240,17 @@ export class ZohoContactSyncService {
       }
 
       // TODO: sync addresses
-      // const addresses = contact.addresses;
+      const addressArray = contact.addresses;
+      addressArray.push(contact.billing_address);
+      addressArray.push(contact.shipping_address);
+
+      await addresses(
+        this.db,
+        this.zohoApp.tenantId,
+        this.zohoApp.id,
+        this.logger,
+        eciContact.id,
+      ).eciContactAddAddresses(addressArray);
 
       // We sleep here to not get blocked by Zoho
       await sleep(3000);
