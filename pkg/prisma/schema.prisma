@@ -219,6 +219,22 @@ model ZohoContactPerson {
   @@unique([id, zohoAppId])
 }
 
+model ZohoAddress {
+  /// Zoho internal Address id
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  address   Address @relation(fields: [addressId], references: [id], onDelete: Cascade)
+  addressId String
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId String
+
+  @@unique([id, zohoAppId])
+}
+
 enum ZohoSalesOrderStatus {
   draft
   confirmed
@@ -464,7 +480,7 @@ model Contact {
   email     String
   orders    Order[]
   // A contact can be the "main" contact for an order
-  mainOrder     Order[] @relation("mainContact")
+  mainOrder Order[]  @relation("mainContact")
 
   // A Contact can be related to one company
   company   Company? @relation(fields: [companyId], references: [id])
@@ -526,8 +542,8 @@ model LineItem {
   order   Order  @relation(fields: [orderId], references: [id])
   orderId String
 
-  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
-  warehouseId String?
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+  warehouseId String
 
   package   Package? @relation(fields: [packageId], references: [id])
   packageId String?
@@ -537,10 +553,11 @@ model LineItem {
   // Tax Percentage as number (19, 7)
   taxPercentage Float  @default(19)
 
-  // the total price of the line item.
-  // Optional, as we might have just one of the two values
-  // on hand
+  /// The total net price (price excluding taxes) of all line item.
+  /// Optional, as we might have just one of the two values on hand
   totalPriceNet   Float?
+  /// The total gross price (price including taxes) of all line item.
+  /// Optional, as we might have just one of the two values on hand
   totalPriceGross Float?
 
   // The disount amount, that is applied
@@ -588,8 +605,6 @@ enum OrderShipmentStatus {
 
 // The ECI internal Order model.
 
-
-
 model Order {
   // eci internal id
   id        String   @id
@@ -611,7 +626,7 @@ model Order {
 
   /// Order-Numbers have to be unique per Tenant!
   /// We use them as unique identifier between systems
-  orderNumber String
+  orderNumber     String
   /// if source system has a second ID which is benefitial to the user, we can provide it here
   referenceNumber String?
 
@@ -631,19 +646,19 @@ model Order {
   totalPriceGross Float
 
   // The end customers emails where we send transactional emails to
-  contacts Contact[]
+  contacts      Contact[]
   // There can be several contacts related to an order.
   // We need one main contact id
-  mainContact Contact? @relation("mainContact", references: [id], fields: [mainContactId])
+  mainContact   Contact?  @relation("mainContact", references: [id], fields: [mainContactId])
   mainContactId String?
-  
+
   language Language  @default(DE)
   packages Package[]
 
-  shippingAddress   Address? @relation("orderShippingAddresses", fields: [shippingAddressId], references: [id], onDelete: Cascade)
-  shippingAddressId String?
-  billingAddress    Address? @relation("orderBillingAddresses", fields: [billingAddressId], references: [id], onDelete: Cascade)
-  billingAddressId  String?
+  shippingAddress   Address @relation("orderShippingAddresses", fields: [shippingAddressId], references: [id], onDelete: Cascade)
+  shippingAddressId String
+  billingAddress    Address @relation("orderBillingAddresses", fields: [billingAddressId], references: [id], onDelete: Cascade)
+  billingAddressId  String
 
   tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -936,11 +951,16 @@ model Address {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  // A unique string identifying this address for easy lookup
+  /// A unique string identifying this address for easy lookup
   normalizedName String
 
-  orderShippingAddress Order[] @relation("orderShippingAddresses")
-  orderBillingAddress  Order[] @relation("orderBillingAddresses")
+  /// An array of zoho addresses. Can be multiple if the same address is synced to different zoho apps
+  zohoAddress ZohoAddress[]
+
+  /// An array of orders where this address is used as the shipping address
+  shippingAddressInOrders Order[] @relation("orderShippingAddresses")
+  /// An array of orders where this address is used as the billing address
+  billingAddressInOrders Order[] @relation("orderBillingAddresses")
 
   @@unique([normalizedName, tenantId])
   @@index([tenantId])
@@ -1355,6 +1375,7 @@ model ZohoApp {
   zohoLineItems         ZohoLineItem[]
   zohoTaxes             ZohoTax[]
   zohoContactPersons    ZohoContactPerson[]
+  zohoAddresses         ZohoAddress[]
   zohoPackages          ZohoPackage[]
 }
 
