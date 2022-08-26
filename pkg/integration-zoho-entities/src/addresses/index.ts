@@ -37,6 +37,8 @@ class Addresses {
     this.logger = config.logger;
     this.zohoAppId = config.zohoAppId;
     this.contactId = config.contactId;
+
+    if (!config.contactId) throw new Error("No contactId! Can't sync address");
   }
 
   private createECIObjectAndUniqueStringFromZohoAddress(

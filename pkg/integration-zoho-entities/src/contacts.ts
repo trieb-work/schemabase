@@ -239,7 +239,6 @@ export class ZohoContactSyncService {
         });
       }
 
-      // TODO: sync addresses
       const addressArray = contact.addresses;
       addressArray.push(contact.billing_address);
       addressArray.push(contact.shipping_address);
@@ -261,4 +260,8 @@ export class ZohoContactSyncService {
       lastRunStatus: "success",
     });
   }
+
+  // public async syncFromECI(): Promise<void> {
+
+  // }
 }
