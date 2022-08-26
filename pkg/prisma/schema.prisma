@@ -575,6 +575,7 @@ model LineItem {
   @@index([orderId])
   @@index([packageId])
   @@index([warehouseId])
+  @@index([productVariantId])
 }
 
 enum OrderStatus {
@@ -1035,6 +1036,7 @@ model ProductVariant {
   @@unique([sku, tenantId])
   // Just for relational purposes
   @@unique([id, sku])
+  @@index([productId])
 }
 
 model BillOfMaterial {
