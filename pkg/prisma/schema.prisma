@@ -479,6 +479,7 @@ model Contact {
   tenantId String
 
   zohoContactPersons ZohoContactPerson[]
+  addresses         Address[]
 
   @@unique([email, tenantId])
   @@index([companyId])
@@ -936,6 +937,9 @@ model Address {
   phone                 String?
   fullname              String
 
+  contact  Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  contactId String
+
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
@@ -947,6 +951,7 @@ model Address {
 
   @@unique([normalizedName, tenantId])
   @@index([tenantId])
+  @@index([contactId])
 }
 
 // The ECI internal Product model

@@ -238,6 +238,9 @@ export class ZohoContactSyncService {
         });
       }
 
+      // TODO: sync addresses
+      // const addresses = contact.addresses;
+
       // We sleep here to not get blocked by Zoho
       await sleep(3000);
     }

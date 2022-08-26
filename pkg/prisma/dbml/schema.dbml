@@ -328,6 +328,7 @@ Table Contact {
   tenant Tenant [not null]
   tenantId String [not null]
   zohoContactPersons ZohoContactPerson [not null]
+  addresses Address [not null]
 
   indexes {
     (email, tenantId) [unique]
@@ -437,6 +438,8 @@ Table Address {
   company String
   phone String
   fullname String [not null]
+  contact Contact [not null]
+  contactId String [not null]
   tenant Tenant [not null]
   tenantId String [not null]
   normalizedName String [not null]
@@ -1449,6 +1452,8 @@ Ref: Order.shippingAddressId > Address.id [delete: Cascade]
 Ref: Order.invoiceAddressId > Address.id [delete: Cascade]
 
 Ref: Order.tenantId > Tenant.id [delete: Cascade]
+
+Ref: Address.contactId > Contact.id [delete: Cascade]
 
 Ref: Address.tenantId > Tenant.id [delete: Cascade]
 
