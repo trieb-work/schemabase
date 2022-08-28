@@ -93,6 +93,8 @@ model SaleorPayment {
 
   @@unique([id, installedSaleorAppId])
   @@index([paymentId])
+  @@index([installedSaleorAppId])
+  @@index([saleorOrderId])  
 }
 
 // Saleor specific model for product variant.

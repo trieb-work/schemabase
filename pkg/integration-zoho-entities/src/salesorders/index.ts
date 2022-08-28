@@ -238,7 +238,7 @@ export class ZohoSalesOrdersSyncService {
         },
         include: {
           order: {
-            include: {
+            select: {
               _count: {
                 select: {
                   lineItems: true,
