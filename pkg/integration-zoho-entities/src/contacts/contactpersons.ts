@@ -1,7 +1,6 @@
 import { id } from "@eci/pkg/ids";
 import { ILogger } from "@eci/pkg/logger";
 import { PrismaClient } from "@eci/pkg/prisma";
-import { ContactPerson } from "@trieb.work/zoho-ts";
 import { ContactPersonFromContactGet } from "@trieb.work/zoho-ts/dist/types/contactPerson";
 
 interface ContactPersonsSyncConfig {
