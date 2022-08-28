@@ -431,6 +431,16 @@ export class ZohoSalesOrdersSyncService {
             `Shipping address id or billing address id missing for ${fullSalesorder.salesorder_id} - Can't sync addresses`,
           );
         } else {
+          /**
+           * We can use a custom field to manually store the shipping address company
+           * name for a salesorder
+           */
+          const shippingAddressCompanyName =
+            this.zohoApp.cfShippingAddressCompany &&
+            salesorder?.[this.zohoApp.cfShippingAddressCompany]
+              ? (salesorder?.[this.zohoApp.cfShippingAddressCompany] as string)
+              : salesorder?.company_name;
+          const billingAddressCompanyName = salesorder?.company_name;
           await addresses(
             this.db,
             this.tenantId,
@@ -440,8 +450,10 @@ export class ZohoSalesOrdersSyncService {
           ).eciOrderAddAddresses(
             fullSalesorder.shipping_address,
             fullSalesorder.shipping_address_id,
+            shippingAddressCompanyName,
             fullSalesorder.billing_address,
             fullSalesorder.billing_address_id,
+            billingAddressCompanyName,
             fullSalesorder.contact_person_details,
             fullSalesorder.customer_name,
             internalOrderId,

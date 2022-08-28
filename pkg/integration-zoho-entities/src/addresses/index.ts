@@ -44,6 +44,7 @@ class Addresses {
   private createECIObjectAndUniqueStringFromZohoAddress(
     address: AddressWithoutAddressId,
     customerName?: string,
+    companyName?: string,
   ) {
     // TODO: check the country_code for validity. Just two letters or other
     const countryCodeValid = Object.values(CountryCode).includes(
@@ -67,6 +68,7 @@ class Addresses {
      */
     const addObj = {
       fullname: address.attention || (customerName as string),
+      companyName,
       street: address.address,
       additionalAddressLine: address.street2,
       plz: address.zip,
@@ -158,8 +160,10 @@ class Addresses {
    * Sync Zoho Addresses with ECI DB and connect them to an ECI order
    * @param shippingAddress
    * @param shippingAddressId
+   * @param shippingAddressCompanyName
    * @param billingAddress
    * @param billingAddressId
+   * @param billingAddressCompanyName
    * @param contactPersonDetails The customer name we use, if the attention field is not set.
    * @param customerName fallback customer name, if no attention and no contact person details exist
    * @param eciOrderId
@@ -167,8 +171,10 @@ class Addresses {
   public async eciOrderAddAddresses(
     shippingAddress: AddressWithoutAddressId,
     shippingAddressId: string,
+    shippingAddressCompanyName: string | undefined,
     billingAddress: AddressWithoutAddressId,
     billingAddressId: string,
+    billingAddressCompanyName: string | undefined,
     contactPersonDetails: ContactPersonShortList[],
     customerName: string,
     eciOrderId: string,
@@ -181,10 +187,12 @@ class Addresses {
     const shippingAddr = this.createECIObjectAndUniqueStringFromZohoAddress(
       shippingAddress,
       fullName,
+      shippingAddressCompanyName,
     );
     const billingAddr = this.createECIObjectAndUniqueStringFromZohoAddress(
       billingAddress,
       fullName,
+      billingAddressCompanyName,
     );
 
     const tenant = {

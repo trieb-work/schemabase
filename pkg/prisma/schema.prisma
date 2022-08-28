@@ -1368,6 +1368,10 @@ model ZohoApp {
   logisticsIntegrations    LogisticsIntegration[]
   trackingIntegrations     TrackingIntegration[]
 
+  /// Custom field name, that can be used in an order to 
+  /// store a different company name for the shipping address
+  cfShippingAddressCompany String?
+
   webhooks              IncomingWebhook[]
   saleorZohoIntegration SaleorZohoIntegration[]
   zohoPayments          ZohoPayment[]

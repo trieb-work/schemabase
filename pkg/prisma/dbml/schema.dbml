@@ -726,6 +726,8 @@ Table ZohoApp {
   strapiToZohoIntegrations StrapiToZohoIntegration [not null]
   logisticsIntegrations LogisticsIntegration [not null]
   trackingIntegrations TrackingIntegration [not null]
+  cfShippingAddressCompany String [note: 'Custom field name, that can be used in an order to 
+store a different company name for the shipping address']
   webhooks IncomingWebhook [not null]
   saleorZohoIntegration SaleorZohoIntegration [not null]
   zohoPayments ZohoPayment [not null]
