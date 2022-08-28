@@ -94,6 +94,9 @@ class Addresses {
 
   // Takes Zoho Addresses for a contact and sync them with the ECI DB
   public async eciContactAddAddresses(addresses: Address[]) {
+    this.logger.info(
+      `Upserting ${addresses.length} addresses for Zoho contact ${this.contactId}`,
+    );
     for (const zohoAddress of addresses) {
       const addressObj =
         this.createECIObjectAndUniqueStringFromZohoAddress(zohoAddress);

@@ -6,7 +6,8 @@ import { CronStateHandler } from "@eci/pkg/cronstate";
 import { isAfter, subDays } from "date-fns";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import { sleep } from "@eci/pkg/miscHelper/time";
-import addresses from "./addresses";
+import addresses from "../addresses";
+import contactPersonSync from "./contactpersons";
 
 export interface ZohoContactSyncConfig {
   logger: ILogger;
@@ -160,90 +161,27 @@ export class ZohoContactSyncService {
 
       const contactId = contact.contact_id;
 
-      // get the contact persons for a contact
-      const contactPersons = await this.zoho.contact.listContactPersons(
-        contactId,
-      );
+      // get the full contact, including contact persons and addresses
+      const fullContact = await this.zoho.contact.get(contactId);
+      const contactPersons = fullContact?.contact_persons;
 
-      const totalLength = contactPersons.length;
-      this.logger.info(
-        // eslint-disable-next-line max-len
-        `We have ${totalLength} Zoho ContactPersons to upsert for Zoho Contact ${contactId}`,
-      );
-
-      for (const contactPerson of contactPersons) {
-        // TODO: only update contactperson, if contact last_update
-        // timestamp is new
-        const lowercaseEmail = contactPerson.email.toLowerCase();
-
-        await this.db.zohoContactPerson.upsert({
-          where: {
-            id_zohoAppId: {
-              id: contactPerson.contact_person_id,
-              zohoAppId: this.zohoApp.id,
-            },
-          },
-          create: {
-            id: contactPerson.contact_person_id,
-            zohoContact: {
-              connectOrCreate: {
-                where: {
-                  id_zohoAppId: {
-                    id: contactId,
-                    zohoAppId: this.zohoApp.id,
-                  },
-                },
-                create: {
-                  id: contactId,
-                  zohoApp: {
-                    connect: {
-                      id: this.zohoApp.id,
-                    },
-                  },
-                },
-              },
-            },
-            zohoApp: {
-              connect: {
-                id: this.zohoApp.id,
-              },
-            },
-            firstName: contactPerson.first_name,
-            lastName: contactPerson.last_name,
-            email: lowercaseEmail,
-            contact: {
-              connectOrCreate: {
-                where: {
-                  email_tenantId: {
-                    tenantId,
-                    email: lowercaseEmail,
-                  },
-                },
-                create: {
-                  id: id.id("contact"),
-                  email: lowercaseEmail,
-                  tenant: {
-                    connect: {
-                      id: tenantId,
-                    },
-                  },
-                },
-              },
-            },
-          },
-          update: {
-            firstName: contactPerson.first_name,
-            lastName: contactPerson.last_name,
-            email: lowercaseEmail,
-          },
-        });
+      // Start the contact person logic
+      const totalLength = contactPersons?.length;
+      if (totalLength && totalLength > 0) {
+        await contactPersonSync(
+          this.db,
+          this.zohoApp.tenantId,
+          this.zohoApp.id,
+          contactId,
+          this.logger,
+        ).syncWithECI(contactPersons);
       }
 
       const addressArray: Address[] = contact?.addresses || [];
       if (contact.billing_address) addressArray.push(contact.billing_address);
       if (contact.shipping_address) addressArray.push(contact.shipping_address);
 
-      if (addressArray?.length > 0)
+      if (addressArray?.length > 0) {
         await addresses(
           this.db,
           this.zohoApp.tenantId,
@@ -251,6 +189,12 @@ export class ZohoContactSyncService {
           this.logger,
           eciContact.id,
         ).eciContactAddAddresses(addressArray);
+      } else {
+        this.logger.info(
+          // eslint-disable-next-line max-len
+          `Contact ${eciContact.id} - Zoho Contact ${contact.contact_id} has no related addresses to update`,
+        );
+      }
 
       // We sleep here to not get blocked by Zoho
       await sleep(3000);
@@ -262,7 +206,10 @@ export class ZohoContactSyncService {
     });
   }
 
-  // public async syncFromECI(): Promise<void> {
-
-  // }
+  public async syncFromECI(): Promise<void> {
+    // TODO: get all contacts from our DB, that don't have
+    // a Zoho ID yes
+    // const newContacts
+    // TODO: get all addresses, that don't have a Zoho ID yet
+  }
 }
