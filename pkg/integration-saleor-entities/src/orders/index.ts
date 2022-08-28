@@ -485,7 +485,7 @@ export class SaleorOrderSyncService {
         );
         await addresses(
           this.db,
-          order.id,
+          upsertedOrder.orderId,
           this.tenantId,
           this.logger,
           upsertedOrder.order.mainContactId,
