@@ -53,6 +53,7 @@ class Addresses {
      */
     const addObj = {
       fullname: `${address.firstName} ${address.lastName}`,
+      company: address.companyName,
       street: address.streetAddress1,
       additionalAddressLine: address.streetAddress2,
       plz: address.postalCode,
