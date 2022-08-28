@@ -274,6 +274,25 @@ export class SaleorOrderSyncService {
               totalPriceGross: order.total.gross.amount,
               orderStatus,
               contacts: contactCreateOrConnect,
+              mainContact: {
+                connectOrCreate: {
+                  where: {
+                    email_tenantId: {
+                      email,
+                      tenantId: this.tenantId,
+                    },
+                  },
+                  create: {
+                    id: id.id("contact"),
+                    email,
+                    tenant: {
+                      connect: {
+                        id: this.tenantId,
+                      },
+                    },
+                  },
+                },
+              }
             },
           },
         },
@@ -454,12 +473,16 @@ export class SaleorOrderSyncService {
         });
       }
 
+      if (upsertedOrder.order?.mainContactId == null) this.logger.error(`Order ${upsertedOrder.orderNumber} has no main contact Id set! Can't sync addressess`)
       // Sync the order's addresses with the internal DB
       if (
         order.shippingAddress &&
         order.billingAddress &&
-        upsertedOrder.order.mainContactId
-      )
+        upsertedOrder.order?.mainContactId !== null
+      ) {
+        this.logger.info(
+          `Upserting addresses for ${upsertedOrder.orderNumber} - contact ${upsertedOrder.order.mainContactId}`,
+        );
         await addresses(
           this.db,
           order.id,
@@ -467,6 +490,7 @@ export class SaleorOrderSyncService {
           this.logger,
           upsertedOrder.order.mainContactId,
         ).sync(order.shippingAddress, order.billingAddress);
+      }
     }
 
     await this.cronState.set({
