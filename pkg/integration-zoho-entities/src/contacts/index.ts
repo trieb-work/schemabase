@@ -89,7 +89,7 @@ export class ZohoContactSyncService {
         continue;
       }
 
-      const lowercaseEmail = contact.email.toLowerCase();
+      const email = contact.email.toLowerCase();
       const companyName = contact?.company_name;
 
       // Only create a company if the contact is marked as "business" in Zoho
@@ -140,17 +140,17 @@ export class ZohoContactSyncService {
         where: {
           email_tenantId: {
             tenantId,
-            email: lowercaseEmail,
+            email,
           },
         },
         update: {
           company: companyCreate,
-          email: lowercaseEmail,
+          email,
         },
         create: {
           id: id.id("contact"),
           company: companyCreate,
-          email: lowercaseEmail,
+          email,
           tenant: {
             connect: {
               id: tenantId,
