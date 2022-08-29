@@ -80,126 +80,131 @@ export class ZohoContactSyncService {
       return;
     }
 
-    for (const contact of contactsToBeUpserted) {
-      if (!contact.email) {
-        this.logger.warn(
-          // eslint-disable-next-line max-len
-          `Contact ${contact.contact_name}, Id ${contact.contact_id} has no email address - skipping sync`,
-        );
-        continue;
-      }
+    try {
+      for (const contact of contactsToBeUpserted) {
+        if (!contact.email) {
+          this.logger.warn(
+            // eslint-disable-next-line max-len
+            `Contact ${contact.contact_name}, Id ${contact.contact_id} has no email address - skipping sync`,
+          );
+          continue;
+        }
 
-      const email = contact.email.toLowerCase();
-      const companyName = contact?.company_name;
+        const email = contact.email.toLowerCase();
+        const companyName = contact?.company_name;
 
-      // Only create a company if the contact is marked as "business" in Zoho
-      const companyCreate: Prisma.CompanyCreateNestedOneWithoutContactsInput =
-        contact.customer_sub_type === "business" && companyName
-          ? {
-              connectOrCreate: {
-                where: {
-                  normalizedName_tenantId: {
-                    tenantId,
+        // Only create a company if the contact is marked as "business" in Zoho
+        const companyCreate: Prisma.CompanyCreateNestedOneWithoutContactsInput =
+          contact.customer_sub_type === "business" && companyName
+            ? {
+                connectOrCreate: {
+                  where: {
+                    normalizedName_tenantId: {
+                      tenantId,
+                      normalizedName:
+                        normalizeStrings.companyNames(companyName),
+                    },
+                  },
+                  create: {
+                    id: id.id("company"),
+                    name: companyName,
                     normalizedName: normalizeStrings.companyNames(companyName),
+                    tenantId,
                   },
                 },
-                create: {
-                  id: id.id("company"),
-                  name: companyName,
-                  normalizedName: normalizeStrings.companyNames(companyName),
-                  tenantId,
-                },
-              },
-            }
-          : {};
+              }
+            : {};
 
-      await this.db.zohoContact.upsert({
-        where: {
-          id_zohoAppId: {
-            zohoAppId: this.zohoApp.id,
-            id: contact.contact_id,
-          },
-        },
-        create: {
-          id: contact.contact_id,
-          createdAt: new Date(contact.created_time),
-          updatedAt: new Date(contact.last_modified_time),
-          zohoApp: {
-            connect: {
-              id: this.zohoApp.id,
+        await this.db.zohoContact.upsert({
+          where: {
+            id_zohoAppId: {
+              zohoAppId: this.zohoApp.id,
+              id: contact.contact_id,
             },
           },
-        },
-        update: {
-          createdAt: new Date(contact.created_time),
-          updatedAt: new Date(contact.last_modified_time),
-        },
-      });
+          create: {
+            id: contact.contact_id,
+            createdAt: new Date(contact.created_time),
+            updatedAt: new Date(contact.last_modified_time),
+            zohoApp: {
+              connect: {
+                id: this.zohoApp.id,
+              },
+            },
+          },
+          update: {
+            createdAt: new Date(contact.created_time),
+            updatedAt: new Date(contact.last_modified_time),
+          },
+        });
 
-      const eciContact = await this.db.contact.upsert({
-        where: {
-          email_tenantId: {
-            tenantId,
+        const eciContact = await this.db.contact.upsert({
+          where: {
+            email_tenantId: {
+              tenantId,
+              email,
+            },
+          },
+          update: {
+            company: companyCreate,
             email,
           },
-        },
-        update: {
-          company: companyCreate,
-          email,
-        },
-        create: {
-          id: id.id("contact"),
-          company: companyCreate,
-          email,
-          tenant: {
-            connect: {
-              id: tenantId,
+          create: {
+            id: id.id("contact"),
+            company: companyCreate,
+            email,
+            tenant: {
+              connect: {
+                id: tenantId,
+              },
             },
           },
-        },
-      });
+        });
 
-      const contactId = contact.contact_id;
+        const contactId = contact.contact_id;
 
-      // get the full contact, including contact persons and addresses
-      const fullContact = await this.zoho.contact.get(contactId);
-      const contactPersons = fullContact?.contact_persons;
+        // get the full contact, including contact persons and addresses
+        const fullContact = await this.zoho.contact.get(contactId);
+        const contactPersons = fullContact?.contact_persons;
 
-      // Start the contact person logic
-      const totalLength = contactPersons?.length;
-      if (totalLength && totalLength > 0) {
-        await contactPersonSync(
-          this.db,
-          this.zohoApp.tenantId,
-          this.zohoApp.id,
-          contactId,
-          this.logger,
-        ).syncWithECI(contactPersons);
+        // Start the contact person logic
+        const totalLength = contactPersons?.length;
+        if (totalLength && totalLength > 0) {
+          await contactPersonSync(
+            this.db,
+            this.zohoApp.tenantId,
+            this.zohoApp.id,
+            contactId,
+            this.logger,
+          ).syncWithECI(contactPersons);
+        }
+
+        const addressArray: Address[] = fullContact?.addresses || [];
+        if (fullContact?.billing_address)
+          addressArray.push(fullContact.billing_address);
+        if (fullContact?.shipping_address)
+          addressArray.push(fullContact.shipping_address);
+
+        if (addressArray?.length > 0) {
+          await addresses(
+            this.db,
+            this.zohoApp.tenantId,
+            this.zohoApp.id,
+            this.logger,
+            eciContact.id,
+          ).eciContactAddAddresses(addressArray);
+        } else {
+          this.logger.info(
+            // eslint-disable-next-line max-len
+            `Contact ${eciContact.id} - Zoho Contact ${contact.contact_id} has no related addresses to update`,
+          );
+        }
+
+        // We sleep here to not get blocked by Zoho
+        await sleep(3000);
       }
-
-      const addressArray: Address[] = fullContact?.addresses || [];
-      if (fullContact?.billing_address)
-        addressArray.push(fullContact.billing_address);
-      if (fullContact?.shipping_address)
-        addressArray.push(fullContact.shipping_address);
-
-      if (addressArray?.length > 0) {
-        await addresses(
-          this.db,
-          this.zohoApp.tenantId,
-          this.zohoApp.id,
-          this.logger,
-          eciContact.id,
-        ).eciContactAddAddresses(addressArray);
-      } else {
-        this.logger.info(
-          // eslint-disable-next-line max-len
-          `Contact ${eciContact.id} - Zoho Contact ${contact.contact_id} has no related addresses to update`,
-        );
-      }
-
-      // We sleep here to not get blocked by Zoho
-      await sleep(3000);
+    } catch (error) {
+      this.logger.error((error as any).toString());
     }
 
     await this.cronState.set({
