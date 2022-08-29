@@ -177,9 +177,11 @@ export class ZohoContactSyncService {
         ).syncWithECI(contactPersons);
       }
 
-      const addressArray: Address[] = contact?.addresses || [];
-      if (contact.billing_address) addressArray.push(contact.billing_address);
-      if (contact.shipping_address) addressArray.push(contact.shipping_address);
+      const addressArray: Address[] = fullContact?.addresses || [];
+      if (fullContact?.billing_address)
+        addressArray.push(fullContact.billing_address);
+      if (fullContact?.shipping_address)
+        addressArray.push(fullContact.shipping_address);
 
       if (addressArray?.length > 0) {
         await addresses(
