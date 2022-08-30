@@ -134,8 +134,6 @@ Table ZohoContactPerson {
   id String [not null]
   zohoContact ZohoContact [not null]
   zohoContactId String [not null]
-  firstName String
-  lastName String
   email String
   contact Contact [not null]
   contactId String [not null]
@@ -331,6 +329,8 @@ Table Contact {
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   email String [not null]
+  firstName String
+  lastName String
   orders Order [not null]
   company Company [note: 'A Contact can be related to one company']
   companyId String

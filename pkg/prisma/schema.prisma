@@ -201,10 +201,7 @@ model ZohoContactPerson {
   zohoContact   ZohoContact @relation(fields: [zohoContactId, zohoAppId], references: [id, zohoAppId], onDelete: Cascade)
   zohoContactId String
 
-  // For easy look-up directly in the ZohoContact model,
-  // we store the email firstname etc here as well.
-  firstName String?
-  lastName  String?
+  // For easy look-up directly in the ZohoContact model
   email     String?
 
   contact   Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
@@ -481,6 +478,9 @@ model Contact {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   email     String
+
+  firstName String?
+  lastName  String?
 
   orders Order[]
 
