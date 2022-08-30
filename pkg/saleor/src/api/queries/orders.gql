@@ -34,7 +34,7 @@ query saleorCronOrdersOverview($createdGte: Date, $after: String, $first: Int) {
         }
         shippingAddress {
           ...standardAddressValues
-        }  
+        }
         paymentStatus
         number
         total {
@@ -48,13 +48,11 @@ query saleorCronOrdersOverview($createdGte: Date, $after: String, $first: Int) {
   }
 }
 
-
-
 query saleorCronOrderDetails($id: ID!) {
   order(id: $id) {
     id
     created
-    number  
+    number
     voucher {
       id
       code

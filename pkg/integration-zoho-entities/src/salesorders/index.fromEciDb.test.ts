@@ -52,7 +52,7 @@ describe("Zoho Inventory SalesOrders Sync", () => {
   // 1.) update eci db directly with test zohoItem. Get test data from zoho directly
   // 2.) call syncFromEci
 
-  // TODO third tests --> same procedure as for zoho item for other zoho entities: zohoContact, zohoAddress, 
+  // TODO third tests --> same procedure as for zoho item for other zoho entities: zohoContact, zohoAddress,
 
   // TODO forth test --> test if salesorder was deleted in ECI db and is created again
 });

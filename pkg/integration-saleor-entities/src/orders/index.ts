@@ -157,27 +157,26 @@ export class SaleorOrderSyncService {
               },
             }
           : {};
-      const contactCreateOrConnect =
-        {
-          connectOrCreate: {
-            where: {
-              email_tenantId: {
-                email,
-                tenantId: this.tenantId,
-              },
-            },
-            create: {
-              id: id.id("contact"),
+      const contactCreateOrConnect = {
+        connectOrCreate: {
+          where: {
+            email_tenantId: {
               email,
-              company: companyCreateOrConnect,
-              tenant: {
-                connect: {
-                  id: this.tenantId,
-                },
+              tenantId: this.tenantId,
+            },
+          },
+          create: {
+            id: id.id("contact"),
+            email,
+            company: companyCreateOrConnect,
+            tenant: {
+              connect: {
+                id: this.tenantId,
               },
             },
           },
-        };
+        },
+      };
 
       const orderStatusMapping: { [key in OrderStatus]: InternalOrderStatus } =
         {
@@ -254,7 +253,7 @@ export class SaleorOrderSyncService {
             update: {
               totalPriceGross: order.total.gross.amount,
               orderStatus,
-              mainContact: contactCreateOrConnect
+              mainContact: contactCreateOrConnect,
             },
           },
         },
@@ -435,7 +434,10 @@ export class SaleorOrderSyncService {
         });
       }
 
-      if (upsertedOrder.order?.mainContactId == null) this.logger.error(`Order ${upsertedOrder.orderNumber} has no main contact Id set! Can't sync addressess`)
+      if (upsertedOrder.order?.mainContactId == null)
+        this.logger.error(
+          `Order ${upsertedOrder.orderNumber} has no main contact Id set! Can't sync addressess`,
+        );
       // Sync the order's addresses with the internal DB
       if (
         order.shippingAddress &&

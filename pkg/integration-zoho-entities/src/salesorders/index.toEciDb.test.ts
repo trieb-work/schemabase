@@ -1728,5 +1728,4 @@ describe("Zoho Inventory SalesOrders Sync", () => {
     });
     await xx.syncToECI();
   }, 90000);
-
 });
