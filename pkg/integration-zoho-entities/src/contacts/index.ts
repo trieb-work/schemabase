@@ -256,12 +256,40 @@ export class ZohoContactSyncService {
           },
         },
       },
+      include: {
+        contact: {
+          select: {
+            zohoContactPersons: {
+              where: {
+                zohoAppId: this.zohoApp.id,
+              },
+              select: {
+                zohoContactId: true,
+              },
+            },
+          },
+        },
+      },
     });
     this.logger.info(
       `We have ${newAddresses.length} addresses that need to be synced with Zoho`,
     );
-    for (const newAddress of newAddresses) {
-      this.logger.info(JSON.stringify(newAddress));
-    }
+    // for (const newAddress of newAddresses) {
+    //   const zohoContactId =
+    //     newAddress.contact.zohoContactPersons?.[0]?.zohoContactId;
+    //   if (!zohoContactId) {
+    //     this.logger.error(`No Zoho ContactId given for ${newAddress}`);
+    //   }
+
+    //   const zohoAddrObj = addresses(
+    //     this.db,
+    //     this.zohoApp.tenantId,
+    //     this.zohoApp.id,
+    //     this.logger,
+    //     zohoContactId,
+    //   ).createZohoAddressFromECI(newAddress);
+
+    //   await this.zoho.contact.addAddress(zohoContactId, zohoAddrObj);
+    // }
   }
 }
