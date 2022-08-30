@@ -96,11 +96,16 @@ class Addresses {
 
     if (!countryCodeValid)
       this.logger.error(
-        `Received non valid country code: ${address.country_code}`,
+        `Received non valid country code: ${
+          address.country_code
+        } - address obj: ${JSON.stringify(address)}`,
       );
     if (!(address.attention || customerName)) {
       throw new Error(
-        `No attention and no customer name given! We need minimum one of it`,
+        // eslint-disable-next-line max-len
+        `No attention and no customer name given! We need minimum one of it. - address obj:${JSON.stringify(
+          address,
+        )}`,
       );
     }
 

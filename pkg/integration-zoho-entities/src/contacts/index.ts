@@ -258,7 +258,10 @@ export class ZohoContactSyncService {
       },
     });
     this.logger.info(
-      `We have ${newAddresses.length} that need to be synced with Zoho`,
+      `We have ${newAddresses.length} addresses that need to be synced with Zoho`,
     );
+    for (const newAddress of newAddresses) {
+      this.logger.info(JSON.stringify(newAddress));
+    }
   }
 }
