@@ -228,8 +228,11 @@ export class ZohoContactSyncService {
       select: {
         id: true,
         email: true,
+        firstName: true,
+        lastName: true,
         addresses: true,
         company: true,
+        companyId: true,
       },
     });
 
@@ -237,15 +240,55 @@ export class ZohoContactSyncService {
       `We have ${newContacts.length} contacts that we need to create in Zoho`,
     );
 
-    // for (const newContact of newContacts) {
+    for (const newContact of newContacts) {
+      if (newContact.firstName == null || newContact.lastName == null) {
+        this.logger.error(
+          `First and Last Name not set for contact ${newContact.id} - They are mandatory for Zoho`,
+        );
+        continue;
+      }
 
-    //   await this.zoho.contact.create({
-    //     contact_persons: [{
-    //       first_name: newContact,
-    //       email: newContact.email,
-    //     }]
-    //   })
-    // }
+      // Possible improvement: we can set the address of an contact
+      // directly as shipping and billing address without more API calls
+      const zohoContact = await this.zoho.contact.create({
+        contact_name: `${newContact.firstName} ${newContact.lastName}`,
+        customer_sub_type: newContact?.companyId ? "business" : "individual",
+        contact_persons: [
+          {
+            first_name: newContact.firstName,
+            last_name: newContact.lastName,
+            email: newContact.email,
+          },
+        ],
+      });
+      await this.db.contact.update({
+        where: {
+          id: newContact.id,
+        },
+        data: {
+          zohoContactPersons: {
+            create: {
+              id: zohoContact.contact_persons[0].contact_person_id,
+              zohoApp: {
+                connect: {
+                  id: this.zohoApp.id,
+                },
+              },
+              zohoContact: {
+                create: {
+                  id: zohoContact.contact_id,
+                  zohoApp: {
+                    connect: {
+                      id: this.zohoApp.id,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+    }
     // TODO: get all addresses, that don't have a Zoho ID yet
     const newAddresses = await this.db.address.findMany({
       where: {
@@ -274,22 +317,43 @@ export class ZohoContactSyncService {
     this.logger.info(
       `We have ${newAddresses.length} addresses that need to be synced with Zoho`,
     );
-    // for (const newAddress of newAddresses) {
-    //   const zohoContactId =
-    //     newAddress.contact.zohoContactPersons?.[0]?.zohoContactId;
-    //   if (!zohoContactId) {
-    //     this.logger.error(`No Zoho ContactId given for ${newAddress}`);
-    //   }
+    for (const newAddress of newAddresses) {
+      const zohoContactId =
+        newAddress.contact.zohoContactPersons?.[0]?.zohoContactId;
+      if (!zohoContactId) {
+        this.logger.error(`No Zoho ContactId given for ${newAddress}`);
+        continue;
+      }
 
-    //   const zohoAddrObj = addresses(
-    //     this.db,
-    //     this.zohoApp.tenantId,
-    //     this.zohoApp.id,
-    //     this.logger,
-    //     zohoContactId,
-    //   ).createZohoAddressFromECI(newAddress);
+      const zohoAddrObj = addresses(
+        this.db,
+        this.zohoApp.tenantId,
+        this.zohoApp.id,
+        this.logger,
+        zohoContactId,
+      ).createZohoAddressFromECI(newAddress);
 
-    //   await this.zoho.contact.addAddress(zohoContactId, zohoAddrObj);
-    // }
+      const zohoAddr = await this.zoho.contact.addAddress(
+        zohoContactId,
+        zohoAddrObj,
+      );
+      await this.db.address.update({
+        where: {
+          id: newAddress.id,
+        },
+        data: {
+          zohoAddress: {
+            create: {
+              id: zohoAddr,
+              zohoApp: {
+                connect: {
+                  id: this.zohoApp.id,
+                },
+              },
+            },
+          },
+        },
+      });
+    }
   }
 }
