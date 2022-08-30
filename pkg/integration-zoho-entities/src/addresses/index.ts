@@ -65,16 +65,16 @@ class Addresses {
    */
   private companyFromStreet2(street2String: string): {
     street2?: string;
-    companyName?: string;
+    company?: string;
   } {
     if (!street2String) return {};
 
     const splitted = street2String.split("\n");
     if (splitted.length === 1) return { street2: splitted[0] };
-    const company = splitted[0];
+
     const addressLine2 = splitted[1];
     return {
-      companyName: this.unescapeLine(company),
+      company: this.unescapeLine(splitted[0]),
       street2: this.unescapeLine(addressLine2),
     };
   }
@@ -104,9 +104,7 @@ class Addresses {
       );
     }
 
-    const { companyName, street2 } = this.companyFromStreet2(
-      address.street2 || "",
-    );
+    const { company, street2 } = this.companyFromStreet2(address.street2 || "");
 
     /**
      * The address object - we first try to use the Zoho "attention" field
@@ -115,7 +113,7 @@ class Addresses {
      */
     const addObj = {
       fullname: address.attention || (customerName as string),
-      companyName,
+      company,
       street: address.address,
       additionalAddressLine: street2,
       plz: address.zip,
