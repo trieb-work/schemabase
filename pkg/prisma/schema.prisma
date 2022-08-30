@@ -1363,13 +1363,11 @@ model ZohoApp {
   clientSecret             String
   tenant                   Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId                 String                    @unique
+  /// The language, that this org is set to. Some API fields like the country name work with translated names, so we need to know the orgs language
+  orgLanguage              Language @default(DE)
   strapiToZohoIntegrations StrapiToZohoIntegration[]
   logisticsIntegrations    LogisticsIntegration[]
   trackingIntegrations     TrackingIntegration[]
-
-  /// Custom field name, that can be used in an order to 
-  /// store a different company name for the shipping address
-  cfShippingAddressCompany String?
 
   webhooks              IncomingWebhook[]
   saleorZohoIntegration SaleorZohoIntegration[]

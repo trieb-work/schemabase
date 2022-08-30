@@ -332,8 +332,7 @@ Table Contact {
   updatedAt DateTime [not null]
   email String [not null]
   orders Order [not null]
-  mainOrder Order [not null]
-  company Company
+  company Company [note: 'A Contact can be related to one company']
   companyId String
   tenant Tenant [not null]
   tenantId String [not null]
@@ -343,6 +342,10 @@ Table Contact {
   indexes {
     (email, tenantId) [unique]
   }
+
+  Note: 'The ECI internal contact model. One contact has one E-Mail address only.
+E-Mail addresses are unique per tenant
+In some systems the Contact is equal to Users or Accounts'
 }
 
 Table Warehouse {
@@ -416,9 +419,8 @@ We use them as unique identifier between systems']
   discountValueNet Float [not null, default: 0]
   totalPriceNet Float
   totalPriceGross Float [not null]
-  contacts Contact [not null]
-  mainContact Contact
-  mainContactId String
+  mainContact Contact [not null, note: 'The person who has created this Order (In other systems this can also be a Useraccount)']
+  mainContactId String [not null]
   language Language [not null, default: 'DE']
   packages Package [not null]
   shippingAddress Address
@@ -723,11 +725,10 @@ Table ZohoApp {
   clientSecret String [not null]
   tenant Tenant [not null]
   tenantId String [unique, not null]
+  orgLanguage Language [not null, default: 'DE', note: 'The language, that this org is set to. Some API fields like the country name work with translated names, so we need to know the orgs language']
   strapiToZohoIntegrations StrapiToZohoIntegration [not null]
   logisticsIntegrations LogisticsIntegration [not null]
   trackingIntegrations TrackingIntegration [not null]
-  cfShippingAddressCompany String [note: 'Custom field name, that can be used in an order to 
-store a different company name for the shipping address']
   webhooks IncomingWebhook [not null]
   saleorZohoIntegration SaleorZohoIntegration [not null]
   zohoPayments ZohoPayment [not null]
@@ -1012,11 +1013,6 @@ Table InvoiceToPayment {
 Table InvoiceToOrder {
   ordersId String [ref: > Order.id]
   invoicesId String [ref: > Invoice.id]
-}
-
-Table ContactToOrder {
-  ordersId String [ref: > Order.id]
-  contactsId String [ref: > Contact.id]
 }
 
 Enum ZohoSalesOrderStatus {
