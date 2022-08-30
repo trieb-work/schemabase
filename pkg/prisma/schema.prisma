@@ -469,19 +469,19 @@ model Company {
   @@unique([normalizedName, tenantId])
 }
 
-// The ECI internal contact model. One contact has one E-Mail address only.
-// E-Mail addresses are unique per tenant
+/// The ECI internal contact model. One contact has one E-Mail address only.
+/// E-Mail addresses are unique per tenant
+/// In some systems the Contact is equal to Users or Accounts
 model Contact {
   // eci internal id
   id        String   @id
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   email     String
-  orders    Order[]
-  // A contact can be the "main" contact for an order
-  mainOrder Order[]  @relation("mainContact")
 
-  // A Contact can be related to one company
+  orders Order[]
+
+  /// A Contact can be related to one company
   company   Company? @relation(fields: [companyId], references: [id])
   companyId String?
 
@@ -646,12 +646,9 @@ model Order {
   totalPriceNet   Float?
   totalPriceGross Float
 
-  // The end customers emails where we send transactional emails to
-  contacts      Contact[]
-  // There can be several contacts related to an order.
-  // We need one main contact id
-  mainContact   Contact?  @relation("mainContact", references: [id], fields: [mainContactId])
-  mainContactId String?
+  /// The person who has created this Order (In other systems this can also be a Useraccount)
+  mainContact   Contact  @relation(references: [id], fields: [mainContactId])
+  mainContactId String
 
   language Language  @default(DE)
   packages Package[]
