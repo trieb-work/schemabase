@@ -216,7 +216,49 @@ export class ZohoContactSyncService {
   public async syncFromECI(): Promise<void> {
     // TODO: get all contacts from our DB, that don't have
     // a Zoho ID yes
-    // const newContacts
+    const newContacts = await this.db.contact.findMany({
+      where: {
+        tenantId: this.zohoApp.tenantId,
+        zohoContactPersons: {
+          none: {
+            zohoAppId: this.zohoApp.id,
+          },
+        },
+      },
+      select: {
+        id: true,
+        email: true,
+        addresses: true,
+        company: true,
+      },
+    });
+
+    this.logger.info(
+      `We have ${newContacts.length} contacts that we need to create in Zoho`,
+    );
+
+    // for (const newContact of newContacts) {
+
+    //   await this.zoho.contact.create({
+    //     contact_persons: [{
+    //       first_name: newContact,
+    //       email: newContact.email,
+    //     }]
+    //   })
+    // }
     // TODO: get all addresses, that don't have a Zoho ID yet
+    const newAddresses = await this.db.address.findMany({
+      where: {
+        tenantId: this.zohoApp.tenantId,
+        zohoAddress: {
+          none: {
+            zohoAppId: this.zohoApp.id,
+          },
+        },
+      },
+    });
+    this.logger.info(
+      `We have ${newAddresses.length} that need to be synced with Zoho`,
+    );
   }
 }

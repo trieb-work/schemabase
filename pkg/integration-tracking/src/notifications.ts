@@ -8,7 +8,7 @@ import { id } from "@eci/pkg/ids";
 
 export interface CustomerNotifierConfig {
   db: PrismaClient;
-  onSuccess: OnSuccess<{ emailIds: string[] }>;
+  onSuccess: OnSuccess<{ emailId: string }>;
   logger: ILogger;
   emailTemplateSender: EmailTemplateSender;
 }
@@ -27,7 +27,7 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
 {
   private readonly db: PrismaClient;
 
-  private readonly onSuccess: OnSuccess<{ emailIds: string[] }>;
+  private readonly onSuccess: OnSuccess<{ emailId: string }>;
 
   private readonly logger: ILogger;
 
@@ -52,7 +52,7 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
       include: {
         sentEmail: true,
         package: {
-          include: { order: { include: { contacts: true } }, events: true },
+          include: { order: { include: { mainContact: true } }, events: true },
         },
       },
     });
@@ -102,41 +102,39 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
         throw new Error("No matching language for this template found");
       }
 
-      const emailIds = await Promise.all(
-        packageEvent.package.order.contacts
-          .filter((contact) => contact.email)
-          ?.map(async (contact) => {
-            if (!contact.email) {
-              this.logger.warn(`No Email Address found for contact ${contact}`);
-              return "";
-            }
-            const res = await this.emailTemplateSender.sendTemplate(
-              template.templateId,
-              "test@trieb.work",
-              {
-                time: packageEvent.time.toLocaleString(
-                  packageEvent.package.order.language,
-                ),
-                newState: packageEvent.state,
-                message: packageEvent.message,
-                location: packageEvent.location,
-                trackingId: packageEvent.package.trackingId,
-              },
-            );
+      const send = async () => {
+        const contact = packageEvent.package.order.mainContact;
+        if (!contact.email) {
+          this.logger.warn(`No Email Address found for contact ${contact}`);
+          return "";
+        }
+        const res = await this.emailTemplateSender.sendTemplate(
+          template.templateId,
+          "test@trieb.work",
+          {
+            time: packageEvent.time.toLocaleString(
+              packageEvent.package.order.language,
+            ),
+            newState: packageEvent.state,
+            message: packageEvent.message,
+            location: packageEvent.location,
+            trackingId: packageEvent.package.trackingId,
+          },
+        );
 
-            await this.db.transactionalEmail.create({
-              data: {
-                id: id.id("email"),
-                time: new Date(),
-                email: contact.email,
-                packageEventId: event.packageEventId,
-                sentEmailId: res.id,
-              },
-            });
-            return res.id;
-          }),
-      );
-      await this.onSuccess(ctx, { emailIds });
+        await this.db.transactionalEmail.create({
+          data: {
+            id: id.id("email"),
+            time: new Date(),
+            email: contact.email,
+            packageEventId: event.packageEventId,
+            sentEmailId: res.id,
+          },
+        });
+        return res.id;
+      };
+      const emailId = await send();
+      await this.onSuccess(ctx, { emailId });
     }
   }
 }

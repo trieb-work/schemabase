@@ -285,11 +285,6 @@ async function main() {
           id: "test",
         },
       },
-      contacts: {
-        connect: {
-          id: "test",
-        },
-      },
     },
   });
   console.log("created one generic order");

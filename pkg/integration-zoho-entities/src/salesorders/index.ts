@@ -141,30 +141,33 @@ export class ZohoSalesOrdersSyncService {
           undefined,
       );
 
+      if (!salesorder.email) {
+        this.logger.error(
+          `Salesorder ${salesorder.salesorder_number} - ${salesorder.salesorder_id} has no related email address. Can't sync`,
+        );
+        continue;
+      }
       // Connect or create the internal contact using the email address
       // connected with this salesorder
-      const contactConnectOrCreate: Prisma.ContactCreateNestedManyWithoutOrdersInput =
-        salesorder.email
-          ? {
-              connectOrCreate: {
-                where: {
-                  email_tenantId: {
-                    email: salesorder.email.toLowerCase(),
-                    tenantId: this.tenantId,
-                  },
-                },
-                create: {
-                  id: id.id("contact"),
-                  email: salesorder.email.toLowerCase(),
-                  tenant: {
-                    connect: {
-                      id: this.tenantId,
-                    },
-                  },
-                },
+      const contactConnectOrCreate = {
+        connectOrCreate: {
+          where: {
+            email_tenantId: {
+              email: salesorder.email.toLowerCase(),
+              tenantId: this.tenantId,
+            },
+          },
+          create: {
+            id: id.id("contact"),
+            email: salesorder.email.toLowerCase(),
+            tenant: {
+              connect: {
+                id: this.tenantId,
               },
-            }
-          : {};
+            },
+          },
+        },
+      };
 
       // Create or connect the internal order using the salesorder number as identifier
       const orderCreateOrConnect: Prisma.OrderUpdateOneRequiredWithoutZohoSalesOrdersNestedInput =
@@ -181,6 +184,7 @@ export class ZohoSalesOrdersSyncService {
               orderNumber: salesorder.salesorder_number,
               date: new Date(salesorder.date),
               totalPriceGross: salesorder.total,
+              mainContact: contactConnectOrCreate,
               tenant: {
                 connect: {
                   id: this.tenantId,
@@ -190,7 +194,6 @@ export class ZohoSalesOrdersSyncService {
               shippingAddress: {},
               // TODO connectOrCreate billingAddress in salesorder sync to eci
               billingAddress: {},
-              contacts: contactConnectOrCreate,
               language,
             },
           },
@@ -431,16 +434,6 @@ export class ZohoSalesOrdersSyncService {
             `Shipping address id or billing address id missing for ${fullSalesorder.salesorder_id} - Can't sync addresses`,
           );
         } else {
-          /**
-           * We can use a custom field to manually store the shipping address company
-           * name for a salesorder
-           */
-          const shippingAddressCompanyName =
-            this.zohoApp.cfShippingAddressCompany &&
-            salesorder?.[this.zohoApp.cfShippingAddressCompany]
-              ? (salesorder?.[this.zohoApp.cfShippingAddressCompany] as string)
-              : salesorder?.company_name;
-          const billingAddressCompanyName = salesorder?.company_name;
           await addresses(
             this.db,
             this.tenantId,
@@ -450,10 +443,8 @@ export class ZohoSalesOrdersSyncService {
           ).eciOrderAddAddresses(
             fullSalesorder.shipping_address,
             fullSalesorder.shipping_address_id,
-            shippingAddressCompanyName,
             fullSalesorder.billing_address,
             fullSalesorder.billing_address_id,
-            billingAddressCompanyName,
             fullSalesorder.contact_person_details,
             fullSalesorder.customer_name,
             internalOrderId,
@@ -521,18 +512,6 @@ export class ZohoSalesOrdersSyncService {
             },
           },
         },
-        contacts: {
-          where: {
-            tenantId: this.zohoApp.tenantId,
-          },
-          include: {
-            zohoContactPersons: {
-              where: {
-                zohoAppId: this.zohoApp.id,
-              },
-            },
-          },
-        },
         shippingAddress: {
           include: {
             zohoAddress: true,
@@ -578,13 +557,11 @@ export class ZohoSalesOrdersSyncService {
           salesorder_number: order.orderNumber,
           reference_number: order.referenceNumber ?? undefined,
           line_items: orderToZohoLineItems(order, discount_type),
-          customer_id: await orderToMainContactId(order, this.db, this.logger), // TODO remove fallback after first run in prod
-          contact_persons: order.contacts.flatMap((eciContact) =>
-            eciContact.zohoContactPersons.map(
-              (zohoContactPerson) => zohoContactPerson.id,
-            ),
-          ), // TODO: add checks like in lineItems
+          customer_id: await orderToMainContactId(order), // TODO remove fallback after first run in prod
           discount_type,
+          contact_persons: order.mainContact.zohoContactPersons.map(
+            (zohoContactPerson) => zohoContactPerson.id,
+          ),
           discount: calculateDiscount(order.discountValueNet, "fixed"),
           // TODO: create sync job: addresses.syncFromECI
           billing_address_id: addressToZohoAddressId(order.billingAddress),

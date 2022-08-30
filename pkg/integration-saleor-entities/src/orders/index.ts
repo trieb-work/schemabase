@@ -157,7 +157,7 @@ export class SaleorOrderSyncService {
               },
             }
           : {};
-      const contactCreateOrConnect: Prisma.ContactCreateNestedManyWithoutOrdersInput =
+      const contactCreateOrConnect =
         {
           connectOrCreate: {
             where: {
@@ -237,26 +237,7 @@ export class SaleorOrderSyncService {
                 totalPriceGross: order.total.gross.amount,
                 orderStatus,
                 paymentStatus,
-                contacts: contactCreateOrConnect,
-                mainContact: {
-                  connectOrCreate: {
-                    where: {
-                      email_tenantId: {
-                        email,
-                        tenantId: this.tenantId,
-                      },
-                    },
-                    create: {
-                      id: id.id("contact"),
-                      email,
-                      tenant: {
-                        connect: {
-                          id: this.tenantId,
-                        },
-                      },
-                    },
-                  },
-                },
+                mainContact: contactCreateOrConnect,
                 shippingAddress: {},
                 billingAddress: {},
                 tenant: {
@@ -273,26 +254,7 @@ export class SaleorOrderSyncService {
             update: {
               totalPriceGross: order.total.gross.amount,
               orderStatus,
-              contacts: contactCreateOrConnect,
-              mainContact: {
-                connectOrCreate: {
-                  where: {
-                    email_tenantId: {
-                      email,
-                      tenantId: this.tenantId,
-                    },
-                  },
-                  create: {
-                    id: id.id("contact"),
-                    email,
-                    tenant: {
-                      connect: {
-                        id: this.tenantId,
-                      },
-                    },
-                  },
-                },
-              }
+              mainContact: contactCreateOrConnect
             },
           },
         },

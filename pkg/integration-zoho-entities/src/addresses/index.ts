@@ -1,11 +1,16 @@
 import { id } from "@eci/pkg/ids";
 import { ILogger } from "@eci/pkg/logger";
 import { uniqueStringAddress } from "@eci/pkg/miscHelper/uniqueStringAddress";
-import { CountryCode, PrismaClient } from "@eci/pkg/prisma";
+import {
+  CountryCode,
+  PrismaClient,
+  Address as ECIAddress,
+} from "@eci/pkg/prisma";
 import { ContactPersonShortList } from "@trieb.work/zoho-ts";
 import {
   Address,
   AddressWithoutAddressId,
+  CreateAddress,
 } from "@trieb.work/zoho-ts/dist/types/address";
 
 interface AddressesConfig {
@@ -41,10 +46,48 @@ class Addresses {
     if (!config.contactId) throw new Error("No contactId! Can't sync address");
   }
 
+  private companyToStreet2(companyName: string, street2?: string) {
+    return this.escapeLine(companyName) + "\n" + this.escapeLine(street2 || "");
+  }
+
+  private unescapeLine(line: string) {
+    return line.replace(",  ", "\n");
+  }
+
+  private escapeLine(line: string) {
+    return line.replace(/, [ ]*/g, ", ").replace(/\n/g, ",  ");
+  }
+
+  /**
+   * We save the company name in the street 2 field in Zoho.
+   * This function returns the street2 and company name from a mixed street2 field
+   * @param street2String
+   */
+  private companyFromStreet2(street2String: string): {
+    street2?: string;
+    companyName?: string;
+  } {
+    if (!street2String) return {};
+
+    const splitted = street2String.split("\n");
+    if (splitted.length === 1) return { street2: splitted[0] };
+    const company = splitted[0];
+    const addressLine2 = splitted[1];
+    return {
+      companyName: this.unescapeLine(company),
+      street2: this.unescapeLine(addressLine2),
+    };
+  }
+
+  /**
+   * Bring the Zoho data to our internal data schema.
+   * @param address The Zoho Address Object
+   * @param customerName
+   * @returns
+   */
   private createECIObjectAndUniqueStringFromZohoAddress(
     address: AddressWithoutAddressId,
     customerName?: string,
-    companyName?: string,
   ) {
     // TODO: check the country_code for validity. Just two letters or other
     const countryCodeValid = Object.values(CountryCode).includes(
@@ -61,6 +104,10 @@ class Addresses {
       );
     }
 
+    const { companyName, street2 } = this.companyFromStreet2(
+      address.street2 || "",
+    );
+
     /**
      * The address object - we first try to use the Zoho "attention" field
      * to use as the customer fullname. If not set, we construct
@@ -70,7 +117,7 @@ class Addresses {
       fullname: address.attention || (customerName as string),
       companyName,
       street: address.address,
-      additionalAddressLine: address.street2,
+      additionalAddressLine: street2,
       plz: address.zip,
       city: address.city,
       countryCode: countryCodeValid
@@ -86,13 +133,26 @@ class Addresses {
 
   // TODO:
   // Function, that works the other way around and creates a create address object
-  // private createZohoAddressFromECI() {
-  //   const zohoAddr: AddressWithoutAddressId = {
-  //     attention: "",
-  //   };
+  public createZohoAddressFromECI(eciAddr: ECIAddress) {
+    const street2WithCompanyName = this.companyToStreet2(
+      eciAddr.company || "",
+      eciAddr.additionalAddressLine || "",
+    );
 
-  //   return zohoAddr;
-  // }
+    // TODO: create the country name in the corresponding
+    // language of the Org
+    const country = "";
+    const zohoAddr: CreateAddress = {
+      attention: "",
+      address: eciAddr.street,
+      street2: street2WithCompanyName,
+      city: eciAddr.city,
+      zip: eciAddr.plz,
+      country,
+    };
+
+    return zohoAddr;
+  }
 
   // Takes Zoho Addresses for a contact and sync them with the ECI DB
   public async eciContactAddAddresses(addresses: Address[]) {
@@ -160,10 +220,8 @@ class Addresses {
    * Sync Zoho Addresses with ECI DB and connect them to an ECI order
    * @param shippingAddress
    * @param shippingAddressId
-   * @param shippingAddressCompanyName
    * @param billingAddress
    * @param billingAddressId
-   * @param billingAddressCompanyName
    * @param contactPersonDetails The customer name we use, if the attention field is not set.
    * @param customerName fallback customer name, if no attention and no contact person details exist
    * @param eciOrderId
@@ -171,10 +229,8 @@ class Addresses {
   public async eciOrderAddAddresses(
     shippingAddress: AddressWithoutAddressId,
     shippingAddressId: string,
-    shippingAddressCompanyName: string | undefined,
     billingAddress: AddressWithoutAddressId,
     billingAddressId: string,
-    billingAddressCompanyName: string | undefined,
     contactPersonDetails: ContactPersonShortList[],
     customerName: string,
     eciOrderId: string,
@@ -187,12 +243,10 @@ class Addresses {
     const shippingAddr = this.createECIObjectAndUniqueStringFromZohoAddress(
       shippingAddress,
       fullName,
-      shippingAddressCompanyName,
     );
     const billingAddr = this.createECIObjectAndUniqueStringFromZohoAddress(
       billingAddress,
       fullName,
-      billingAddressCompanyName,
     );
 
     const tenant = {
