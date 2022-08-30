@@ -192,7 +192,7 @@ export class ZohoContactSyncService {
             this.zohoApp.id,
             this.logger,
             eciContact.id,
-          ).eciContactAddAddresses(addressArray);
+          ).eciContactAddAddresses(addressArray, fullContact?.contact_name);
         } else {
           this.logger.info(
             // eslint-disable-next-line max-len

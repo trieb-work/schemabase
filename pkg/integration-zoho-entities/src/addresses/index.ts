@@ -156,13 +156,18 @@ class Addresses {
   }
 
   // Takes Zoho Addresses for a contact and sync them with the ECI DB
-  public async eciContactAddAddresses(addresses: Address[]) {
+  public async eciContactAddAddresses(
+    addresses: Address[],
+    customerName?: string,
+  ) {
     this.logger.info(
       `Upserting ${addresses.length} addresses for Zoho contact ${this.contactId}`,
     );
     for (const zohoAddress of addresses) {
-      const addressObj =
-        this.createECIObjectAndUniqueStringFromZohoAddress(zohoAddress);
+      const addressObj = this.createECIObjectAndUniqueStringFromZohoAddress(
+        zohoAddress,
+        customerName,
+      );
 
       if (!zohoAddress.address_id)
         throw new Error(`Zoho Address ID missing. Can't sync`);
