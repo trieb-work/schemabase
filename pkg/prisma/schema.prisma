@@ -219,6 +219,9 @@ model ZohoContactPerson {
   zohoSalesOrders ZohoSalesOrder[]
 
   @@unique([id, zohoAppId])
+  @@index([contactId])
+  @@index([zohoContactId])
+  @@index([zohoAppId])
 }
 
 model ZohoAddress {
