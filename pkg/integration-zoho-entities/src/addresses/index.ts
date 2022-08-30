@@ -129,8 +129,6 @@ class Addresses {
     return { addObj, uniqueString };
   }
 
-  // TODO:
-  // Function, that works the other way around and creates a create address object
   public createZohoAddressFromECI(eciAddr: ECIAddress) {
     const street2WithCompanyName = this.companyToStreet2(
       eciAddr.company || "",

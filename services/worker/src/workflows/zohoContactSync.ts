@@ -48,6 +48,7 @@ export class ZohoContactSyncWorkflow implements Workflow {
       zohoApp,
     });
     await zohoContactSyncService.syncToECI();
+    await zohoContactSyncService.syncFromECI();
     this.logger.info("Finished zoho contact sync workflow run");
   }
 }
