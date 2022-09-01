@@ -59,6 +59,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     "payment_process",
     "payment_confirm",
     "payment_capture",
+    "payment_void",
   ].includes(saleorEvent);
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
@@ -134,6 +135,11 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     if (saleorEvent === "payment_capture") {
       const response = await vorkassePaymentService.paymentCapture();
       ctx.logger.info("Payment capture request. Responding with confirmation");
+      return res.json(response);
+    }
+    if (saleorEvent === "payment_void") {
+      const response = await vorkassePaymentService.paymentVoid();
+      ctx.logger.info("Payment void request. Responding with confirmation");
       return res.json(response);
     }
   }

@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import { id } from "@eci/pkg/ids";
 import { ILogger } from "@eci/pkg/logger";
 
@@ -11,6 +12,25 @@ interface PaymentListGatewaysResponse {
         value: string;
       }[]
     | [];
+}
+
+interface PaymentProcess {
+  action_required: boolean;
+  kind:
+    | "action_to_confirm"
+    | "auth"
+    | "cancel"
+    | "capture"
+    | "capture_failed"
+    | "confirm"
+    | "external"
+    | "pending"
+    | "refund"
+    | "refund_failed"
+    | "refund_ongoing"
+    | "refund_reversed"
+    | "void";
+  transaction_id?: string;
 }
 
 export interface VorkasseService {
@@ -50,8 +70,8 @@ export class VorkassePaymentService implements VorkasseService {
     return vorkasseReturnObject;
   }
 
-  public async paymentProcess() {
-    const returnObject = {
+  public async paymentProcess(): Promise<PaymentProcess> {
+    const returnObject: PaymentProcess = {
       action_required: false,
       kind: "auth",
       // action_required_data: {
@@ -72,14 +92,21 @@ export class VorkassePaymentService implements VorkasseService {
     return returnObject;
   }
 
-  public async paymentConfirm() {
+  public async paymentConfirm(): Promise<PaymentProcess> {
     return {
       action_required: false,
       kind: "capture",
     };
   }
 
-  public async paymentCapture() {
+  public async paymentVoid(): Promise<PaymentProcess> {
+    return {
+      action_required: false,
+      kind: "void",
+    };
+  }
+
+  public async paymentCapture(): Promise<PaymentProcess> {
     return {
       action_required: false,
       kind: "capture",
