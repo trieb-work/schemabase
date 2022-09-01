@@ -16,6 +16,7 @@ const requestValidation = z.object({
       "payment_process",
       "payment_confirm",
       "payment_capture",
+      "payment_void",
     ]),
   }),
 });
