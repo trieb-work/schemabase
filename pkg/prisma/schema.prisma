@@ -581,6 +581,7 @@ model LineItem {
   @@index([packageId])
   @@index([warehouseId])
   @@index([productVariantId])
+  @@index([uniqueString])
 }
 
 enum OrderStatus {
