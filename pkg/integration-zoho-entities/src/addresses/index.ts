@@ -12,6 +12,7 @@ import {
   AddressWithoutAddressId,
   CreateAddress,
 } from "@trieb.work/zoho-ts/dist/types/address";
+import countries from "i18n-iso-countries";
 
 interface AddressesConfig {
   db: PrismaClient;
@@ -134,15 +135,30 @@ class Addresses {
     return { addObj, uniqueString };
   }
 
-  public createZohoAddressFromECI(eciAddr: ECIAddress) {
+  /**
+   * Create a valid Zoho address object from an ECI address object
+   * @param eciAddr
+   * @param orgLanguageCode the ISO language code we need to create the right country name
+   * @returns
+   */
+  public createZohoAddressFromECI(
+    eciAddr: ECIAddress,
+    orgLanguageCode: "en" | "de",
+  ) {
     const street2WithCompanyName = this.companyToStreet2(
       eciAddr.company || "",
       eciAddr.additionalAddressLine || "",
     );
 
+    const country = countries.getName(eciAddr.countryCode, orgLanguageCode);
+    if (!country)
+      throw new Error(
+        `Could not create valid country name. Can't sync address`,
+      );
+
     // TODO: create the country name in the corresponding
     // language of the Org
-    const country = "";
+
     const zohoAddr: CreateAddress = {
       attention: "",
       address: eciAddr.street,

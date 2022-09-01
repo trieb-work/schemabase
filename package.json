@@ -116,6 +116,7 @@
     "graphql-request": "^3.7.0",
     "graphql-tag": "^2.12.6",
     "html-to-text": "^8.2.0",
+    "i18n-iso-countries": "^7.5.0",
     "ioredis": "^5.0.6",
     "jsonwebtoken": "^8.5.1",
     "kafkajs": "^1.16.0",
