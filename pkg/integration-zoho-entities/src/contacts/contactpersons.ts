@@ -64,8 +64,6 @@ class ContactPersonsSync {
               id: this.zohoAppId,
             },
           },
-          firstName: contactPerson.first_name,
-          lastName: contactPerson.last_name,
           email: lowercaseEmail,
           contact: {
             connectOrCreate: {
@@ -78,6 +76,8 @@ class ContactPersonsSync {
               create: {
                 id: id.id("contact"),
                 email: lowercaseEmail,
+                firstName: contactPerson.first_name,
+                lastName: contactPerson.last_name,
                 tenant: {
                   connect: {
                     id: this.tenantId,
@@ -88,8 +88,6 @@ class ContactPersonsSync {
           },
         },
         update: {
-          firstName: contactPerson.first_name,
-          lastName: contactPerson.last_name,
           email: lowercaseEmail,
         },
       });
