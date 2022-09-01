@@ -156,11 +156,8 @@ class Addresses {
         `Could not create valid country name. Can't sync address`,
       );
 
-    // TODO: create the country name in the corresponding
-    // language of the Org
-
     const zohoAddr: CreateAddress = {
-      attention: "",
+      attention: eciAddr.fullname,
       address: eciAddr.street,
       street2: street2WithCompanyName,
       city: eciAddr.city,
