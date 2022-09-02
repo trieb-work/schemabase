@@ -25,6 +25,7 @@ ENV GIT_COMMIT_SHA=$commit_sha
 COPY --from=build /eci/services/worker/dist/* ./
 COPY --from=build /eci/node_modules/winston-elasticsearch/index-template-mapping.json .
 COPY --from=build  /eci/node_modules/.pnpm/bullmq*/node_modules/bullmq/dist/cjs/commands /commands
+COPY --from=build  /eci/node_modules/.pnpm/i18n-iso-countries*/node_modules/i18n-iso-countries/langs /langs
 
 
 CMD [ "node", "main.js" ]

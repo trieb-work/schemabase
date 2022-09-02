@@ -375,8 +375,8 @@ Table LineItem {
   uniqueString String [not null]
   order Order [not null]
   orderId String [not null]
-  warehouse Warehouse [not null]
-  warehouseId String [not null]
+  warehouse Warehouse
+  warehouseId String
   package Package
   packageId String
   quantity Float [not null]
