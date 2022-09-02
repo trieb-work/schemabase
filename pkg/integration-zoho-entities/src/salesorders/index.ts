@@ -190,10 +190,6 @@ export class ZohoSalesOrdersSyncService {
                   id: this.tenantId,
                 },
               },
-              // TODO connectOrCreate shippingAddress in salesorder sync to eci
-              shippingAddress: {},
-              // TODO connectOrCreate billingAddress in salesorder sync to eci
-              billingAddress: {},
               language,
             },
           },
@@ -235,6 +231,7 @@ export class ZohoSalesOrdersSyncService {
           order: {
             update: {
               date: new Date(salesorder.date),
+              mainContact: contactConnectOrCreate,
             },
           },
           zohoContact: zohoContactConnect,
