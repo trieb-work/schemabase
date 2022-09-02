@@ -167,7 +167,7 @@ Table ZohoSalesOrder {
   zohoContact ZohoContact
   zohoContactId String
   order Order [not null]
-  orderId String [unique, not null]
+  orderId String [not null, note: 'The ECI internal order ID ']
   zohoApp ZohoApp [not null]
   zohoAppId String [not null]
   zohoContactPerson ZohoContactPerson

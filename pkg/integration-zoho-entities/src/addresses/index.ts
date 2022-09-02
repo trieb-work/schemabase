@@ -161,7 +161,7 @@ class Addresses {
     const country = eciAddr?.countryCode
       ? countries.getName(eciAddr?.countryCode, orgLanguageCode)
       : "";
-    if (!country) this.logger.warn(`Could not create valid country name. `);
+    if (!country) this.logger.warn(`Could not create valid country name.`);
 
     const zohoAddr: CreateAddress = {
       attention: eciAddr.fullname || "",
