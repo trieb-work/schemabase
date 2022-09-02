@@ -150,25 +150,25 @@ class Addresses {
    */
   public createZohoAddressFromECI(
     eciAddr: ECIAddress,
-    orgLanguageCode: "en" | "de",
+    // Lowercase iso code "de" | "en"
+    orgLanguageCode: string,
   ) {
     const street2WithCompanyName = this.companyToStreet2(
       eciAddr.company || "",
       eciAddr.additionalAddressLine || "",
     );
 
-    const country = countries.getName(eciAddr.countryCode, orgLanguageCode);
-    if (!country)
-      throw new Warning(
-        `Could not create valid country name. Can't sync address`,
-      );
+    const country = eciAddr?.countryCode
+      ? countries.getName(eciAddr?.countryCode, orgLanguageCode)
+      : "";
+    if (!country) this.logger.warn(`Could not create valid country name. `);
 
     const zohoAddr: CreateAddress = {
-      attention: eciAddr.fullname,
-      address: eciAddr.street,
+      attention: eciAddr.fullname || "",
+      address: eciAddr.street || "",
       street2: street2WithCompanyName,
-      city: eciAddr.city,
-      zip: eciAddr.plz,
+      city: eciAddr.city || "",
+      zip: eciAddr.plz || "",
       country,
     };
 

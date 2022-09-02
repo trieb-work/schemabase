@@ -331,7 +331,10 @@ export class ZohoContactSyncService {
         this.zohoApp.id,
         this.logger,
         zohoContactId,
-      ).createZohoAddressFromECI(newAddress);
+      ).createZohoAddressFromECI(
+        newAddress,
+        this.zohoApp.orgLanguage.toLowerCase(),
+      );
 
       const zohoAddr = await this.zoho.contact.addAddress(
         zohoContactId,

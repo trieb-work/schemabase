@@ -496,6 +496,7 @@ model Contact {
 
   @@unique([email, tenantId])
   @@index([companyId])
+  @@index([tenantId])
 }
 
 // The ECI internal Warehouse model.
@@ -932,7 +933,8 @@ enum CountryCode {
   ZW
 }
 
-// The ECI internal Address model.
+// The ECI internal Address model. Most values are optional, as we can have
+// addresses like "ABHOLUNG" or others
 model Address {
   // eci internal id
   id        String   @id
@@ -940,15 +942,15 @@ model Address {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  street                String
+  street                String?
   additionalAddressLine String?
-  plz                   String
-  city                  String
-  countryCode           CountryCode
+  plz                   String?
+  city                  String?
+  countryCode           CountryCode?
   countryArea           String?
   company               String?
   phone                 String?
-  fullname              String
+  fullname              String?
 
   contact  Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
   contactId String
