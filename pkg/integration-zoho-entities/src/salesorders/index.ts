@@ -434,21 +434,28 @@ export class ZohoSalesOrdersSyncService {
             `Shipping address id or billing address id missing for ${fullSalesorder.salesorder_id} - Can't sync addresses`,
           );
         } else {
-          await addresses(
-            this.db,
-            this.tenantId,
-            this.zohoApp.id,
-            this.logger,
-            fullSalesorder.customer_id,
-          ).eciOrderAddAddresses(
-            fullSalesorder.shipping_address,
-            fullSalesorder.shipping_address_id,
-            fullSalesorder.billing_address,
-            fullSalesorder.billing_address_id,
-            fullSalesorder.contact_person_details,
-            fullSalesorder.customer_name,
-            internalOrderId,
-          );
+          try {
+            await addresses(
+              this.db,
+              this.tenantId,
+              this.zohoApp.id,
+              this.logger,
+              fullSalesorder.customer_id,
+            ).eciOrderAddAddresses(
+              fullSalesorder.shipping_address,
+              fullSalesorder.shipping_address_id,
+              fullSalesorder.billing_address,
+              fullSalesorder.billing_address_id,
+              fullSalesorder.contact_person_details,
+              fullSalesorder.customer_name,
+              internalOrderId,
+            );
+          } catch (err) {
+            if (err instanceof Warning) {
+              this.logger.warn(err.message);
+              continue;
+            }
+          }
         }
       }
     }

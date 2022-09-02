@@ -21,6 +21,12 @@ interface AddressesConfig {
   logger: ILogger;
   contactId: string;
 }
+class Warning extends Error {
+  // eslint-disable-next-line no-useless-constructor
+  constructor(msg: string) {
+    super(msg);
+  }
+}
 
 class Addresses {
   private db: PrismaClient;
@@ -44,7 +50,8 @@ class Addresses {
     this.zohoAppId = config.zohoAppId;
     this.contactId = config.contactId;
 
-    if (!config.contactId) throw new Error("No contactId! Can't sync address");
+    if (!config.contactId)
+      throw new Warning("No contactId! Can't sync address");
   }
 
   private companyToStreet2(companyName: string, street2?: string) {
@@ -96,13 +103,13 @@ class Addresses {
     );
 
     if (!countryCodeValid)
-      this.logger.error(
+      throw new Warning(
         `Received non valid country code: ${
           address.country_code
         } - address obj: ${JSON.stringify(address)}`,
       );
     if (!(address.attention || customerName)) {
-      throw new Error(
+      throw new Warning(
         // eslint-disable-next-line max-len
         `No attention and no customer name given! We need minimum one of it. - address obj:${JSON.stringify(
           address,
@@ -152,7 +159,7 @@ class Addresses {
 
     const country = countries.getName(eciAddr.countryCode, orgLanguageCode);
     if (!country)
-      throw new Error(
+      throw new Warning(
         `Could not create valid country name. Can't sync address`,
       );
 
@@ -183,7 +190,7 @@ class Addresses {
       );
 
       if (!zohoAddress.address_id)
-        throw new Error(`Zoho Address ID missing. Can't sync`);
+        throw new Warning(`Zoho Address ID missing. Can't sync`);
 
       await this.db.zohoAddress.upsert({
         where: {
