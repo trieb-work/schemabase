@@ -321,7 +321,9 @@ export class ZohoContactSyncService {
       const zohoContactId =
         newAddress.contact.zohoContactPersons?.[0]?.zohoContactId;
       if (!zohoContactId) {
-        this.logger.error(`No Zoho ContactId given for ${newAddress}`);
+        this.logger.error(
+          `No Zoho ContactId given for ${JSON.stringify(newAddress)}`,
+        );
         continue;
       }
 
