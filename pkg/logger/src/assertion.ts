@@ -52,22 +52,22 @@ export class AssertionLogger implements ILogger {
 
   public debug(message: string, fields: AnyFields = {}): void {
     this.messages.debug.push({message, fields});
-    console.debug(LOG_PREFIX+message, fields);
+    console.debug("\x1b[1m"+LOG_PREFIX+message, "\x1b[2m", fields, "\x1b[0m");
   }
 
   public info(message: string, fields: AnyFields = {}): void {
     this.messages.info.push({message, fields});
-    console.info(LOG_PREFIX+message, fields);
+    console.info("\x1b[1m"+LOG_PREFIX+message, "\x1b[2m", fields, "\x1b[0m");
   }
 
   public warn(message: string, fields: AnyFields = {}): void {
     this.messages.warn.push({message, fields});
-    console.warn(LOG_PREFIX+message, fields);
+    console.warn("\x1b[1m"+LOG_PREFIX+message, "\x1b[2m", fields, "\x1b[0m");
   }
 
   public error(message: string, fields: AnyFields = {}): void {
     this.messages.error.push({message, fields});
-    console.error(LOG_PREFIX+message, fields);
+    console.error("\x1b[1m"+LOG_PREFIX+message, "\x1b[2m", fields, "\x1b[0m");
   }
 
   public flush(): Promise<void> {
