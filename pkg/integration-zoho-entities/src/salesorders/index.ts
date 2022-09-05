@@ -1,5 +1,10 @@
 /* eslint-disable max-len */
-import { CreateSalesOrder, SalesOrder, Zoho, ZohoApiError } from "@trieb.work/zoho-ts";
+import {
+  CreateSalesOrder,
+  SalesOrder,
+  Zoho,
+  ZohoApiError,
+} from "@trieb.work/zoho-ts";
 
 import { ILogger } from "@eci/pkg/logger";
 import { Language, Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
@@ -239,17 +244,6 @@ export class ZohoSalesOrdersSyncService {
           },
           zohoContact: zohoContactConnect,
         },
-        include: {
-          order: {
-            select: {
-              _count: {
-                select: {
-                  lineItems: true,
-                },
-              },
-            },
-          },
-        },
       });
 
       /**
@@ -267,8 +261,7 @@ export class ZohoSalesOrdersSyncService {
         isAfter(
           new Date(salesorder.last_modified_time),
           createdSalesOrder.updatedAt,
-        ) ||
-        createdSalesOrder.order._count.lineItems === 0
+        )
       ) {
         this.logger.info(
           // eslint-disable-next-line max-len
@@ -372,10 +365,12 @@ export class ZohoSalesOrdersSyncService {
                     tax: {
                       connect: {
                         normalizedName_tenantId: {
-                          normalizedName: normalizeStrings.taxNames(lineItem.tax_name),
+                          normalizedName: normalizeStrings.taxNames(
+                            lineItem.tax_name,
+                          ),
                           tenantId: this.tenantId,
-                        }
-                      }
+                        },
+                      },
                     },
                     totalPriceNet: lineItem.item_total,
                     warehouse: warehouseConnect,
@@ -406,10 +401,12 @@ export class ZohoSalesOrdersSyncService {
                   tax: {
                     connect: {
                       normalizedName_tenantId: {
-                        normalizedName: normalizeStrings.taxNames(lineItem.tax_name),
+                        normalizedName: normalizeStrings.taxNames(
+                          lineItem.tax_name,
+                        ),
                         tenantId: this.tenantId,
-                      }
-                    }
+                      },
+                    },
                   },
                   totalPriceNet: lineItem.item_total,
                 },
@@ -532,9 +529,9 @@ export class ZohoSalesOrdersSyncService {
                 zohoTaxes: {
                   where: {
                     zohoAppId: this.zohoApp.id,
-                  }
-                }
-              }
+                  },
+                },
+              },
             },
             warehouse: {
               include: {
@@ -561,9 +558,9 @@ export class ZohoSalesOrdersSyncService {
             zohoTaxes: {
               where: {
                 zohoAppId: this.zohoApp.id,
-              }
-            }
-          }
+              },
+            },
+          },
         },
         shippingAddress: {
           include: {
@@ -602,7 +599,7 @@ export class ZohoSalesOrdersSyncService {
           : "item_level";
         const mainContactPerson = orderToMainContactPerson(order);
         const createSalesOrderBody: CreateSalesOrder = {
-          date: order.date?.toISOString() ?? undefined,
+          date: format(order.date, "yyyy-MM-dd") ?? undefined,
           salesorder_number: order.orderNumber,
           reference_number: order.referenceNumber ?? undefined,
           line_items: orderToZohoLineItems(order, discount_type),
@@ -613,7 +610,9 @@ export class ZohoSalesOrdersSyncService {
           shipping_address_id: addressToZohoAddressId(order.shippingAddress),
           contact_persons: [mainContactPerson.id],
           shipping_charge: order.shippingPriceGross ?? undefined,
-          shipping_charge_tax_id: order.shippingPriceTax ? taxToZohoTaxId(order.shippingPriceTax) : undefined,
+          shipping_charge_tax_id: order.shippingPriceTax
+            ? taxToZohoTaxId(order.shippingPriceTax)
+            : undefined,
           // TODO:
           // shipment_date?
         };
@@ -655,8 +654,8 @@ export class ZohoSalesOrdersSyncService {
           createdSalesOrder.sub_total !== order.totalPriceNet
         ) {
           throw new Error(
-            "IMPORTANT: Order net totals from saleor and ECI do not match. The Order was therefore not "+
-            "confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
+            "IMPORTANT: Order net totals from saleor and ECI do not match. The Order was therefore not " +
+              "confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
           );
         }
         if (
@@ -664,8 +663,8 @@ export class ZohoSalesOrdersSyncService {
           createdSalesOrder.total !== order.totalPriceGross
         ) {
           throw new Error(
-            "IMPORTANT: Order gross totals from saleor and ECI do not match. The Order was therefore not "+
-            "confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
+            "IMPORTANT: Order gross totals from saleor and ECI do not match. The Order was therefore not " +
+              "confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
           );
         }
         salesordersToConfirm.push(createdSalesOrder);
@@ -676,15 +675,24 @@ export class ZohoSalesOrdersSyncService {
         } else if (err instanceof Error) {
           // TODO zoho-ts package: add enum for error codes . like this:
           // if(err as ZohoApiError).code === require(zoho-ts).apiErrorCodes.SalesOrderAlreadyExists){
-          if((err as ZohoApiError).code === 36004){ // 36004 = This sales order number already exists.
+          if ((err as ZohoApiError).code === 36004) {
+            // 36004 = This sales order number already exists.
             this.logger.warn(err.message, { eciOrderId: order.id });
-            const searchedSalesOrders = await this.zoho.salesOrder.search(order.orderNumber);
-            if(searchedSalesOrders.length === 0){
-              this.logger.error("Salesorder was already created and search with order.orderNumber returned no results. Aborting sync of this order.", { eciOrderId: order.id });
+            const searchedSalesOrders = await this.zoho.salesOrder.search(
+              order.orderNumber,
+            );
+            if (searchedSalesOrders.length === 0) {
+              this.logger.error(
+                "Salesorder was already created and search with order.orderNumber returned no results. Aborting sync of this order.",
+                { eciOrderId: order.id },
+              );
               continue;
             }
-            if(searchedSalesOrders.length > 1){
-              this.logger.error("Salesorder was already created and search with order.orderNumber returned multiple results. Aborting sync of this order.", { eciOrderId: order.id });
+            if (searchedSalesOrders.length > 1) {
+              this.logger.error(
+                "Salesorder was already created and search with order.orderNumber returned multiple results. Aborting sync of this order.",
+                { eciOrderId: order.id },
+              );
               continue;
             }
             const matchingSalesOrder = searchedSalesOrders[0];
@@ -723,9 +731,9 @@ export class ZohoSalesOrdersSyncService {
               matchingSalesOrder.sub_total !== order.totalPriceNet
             ) {
               this.logger.error(
-                "IMPORTANT: Order net totals from saleor and ECI do not match. The Order was therefore not "+
-                "confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
-                { eciOrderId: order.id }
+                "IMPORTANT: Order net totals from saleor and ECI do not match. The Order was therefore not " +
+                  "confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
+                { eciOrderId: order.id },
               );
             }
             if (
@@ -733,13 +741,18 @@ export class ZohoSalesOrdersSyncService {
               matchingSalesOrder.total !== order.totalPriceGross
             ) {
               this.logger.error(
-                "IMPORTANT: Order gross totals from saleor and ECI do not match. The Order was therefore not "+
-                "confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
-                { eciOrderId: order.id }
+                "IMPORTANT: Order gross totals from saleor and ECI do not match. The Order was therefore not " +
+                  "confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
+                { eciOrderId: order.id },
               );
             }
+<<<<<<< HEAD
             if(matchingSalesOrder.status === "draft"){
               salesordersToConfirm.push(matchingSalesOrder);
+=======
+            if (matchingSalesOrder.status === "draft") {
+              salesorderToConfirm.push(matchingSalesOrder);
+>>>>>>> 45bd931ff83538ff72671f03f34f0926c36961a0
             }
           } else {
             this.logger.error(err.message, { eciOrderId: order.id });
@@ -763,7 +776,10 @@ export class ZohoSalesOrdersSyncService {
           }
         );
       } catch (err) {
-        const errorMsg = err instanceof Error ? `${err.name}:\n${err.message}` : JSON.stringify(err);
+        const errorMsg =
+          err instanceof Error
+            ? `${err.name}:\n${err.message}`
+            : JSON.stringify(err);
         this.logger.error(
           "Could not confirm all salesorders after creating them. Please check Zoho and confirm them manually.",
           {
