@@ -365,10 +365,10 @@ async function main() {
     update: {},
     create: {
       id: "test",
-      username: "testAppName",
-      password: "testKey",
-      projectId: 0, // Standard project
-      url: "https://62fba42929e58.xentral.biz",
+      username: "protonea",
+      password: "2b995033dd61455591ce",
+      projectId: 2,
+      url: "https://62fb63a4bdbf9.xentral.biz",
       tenant: {
         connect: {
           id: "test",

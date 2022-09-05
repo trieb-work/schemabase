@@ -49,6 +49,7 @@ export class XentralProxyProductVariantSyncService {
     });
     for (const productVariant of productVariants) {
       const artikel: ArtikelCreateRequest = {
+        projekt: this.xentralProxyApp.projectId,
         name_de: `${productVariant.product.name} (${productVariant.variantName})`,
         artikel: productVariant.sku,
         ean: productVariant.ean || undefined,
