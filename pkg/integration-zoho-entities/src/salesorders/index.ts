@@ -578,11 +578,10 @@ export class ZohoSalesOrdersSyncService {
       },
     });
     this.logger.info(
-      `Received ${
-        ordersFromEciDb.length
-      } orders that are not synced with Zoho: ${ordersFromEciDb
-        .map((o) => o.orderNumber)
-        .join(",")}`,
+      `Received ${ordersFromEciDb.length} orders that are not synced with Zoho.`,
+      {
+        orderIds: ordersFromEciDb.map((o) => o.orderNumber)
+      }
     );
 
     const salesorderToConfirm: SalesOrder[] = [];

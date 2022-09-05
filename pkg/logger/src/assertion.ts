@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { AssertionError } from "assert";
 import { Fields, ILogger, LogDrain } from "./logger";
 
 type ConsoleLevel = 'debug' | 'log' | 'info' | 'warn' | 'error';
+type AnyFields = Fields & {
+  [x: string]: any;
+}
 type LogEntry = {
   message: string,
-  fields: Fields,
+  fields: AnyFields,
 }
 
 export class AssertionLogger implements ILogger {
@@ -20,21 +22,14 @@ export class AssertionLogger implements ILogger {
   public assertOneLogMessageMatches(level: ConsoleLevel, message: string | RegExp) {
     const match = this.messages[level].find((logEntry) => logEntry.message.match(message));
     if (!match) {
-      throw new AssertionError({
-        message: `No message found on loglevel ${level} that includes "${message}"`,
-        operator: "includes",
-        expected: message,
-        actual: this.messages[level],
-      });
+      throw new Error(`No message found on loglevel ${level} that includes "${message}"`);
     }
   }
 
   public assertOneLogEntryMatches(level: ConsoleLevel, validator: (logEntry: LogEntry) => boolean ) {
     const match = this.messages[level].find(validator);
     if (!match) {
-      throw new AssertionError({
-        message: `No valid logEntry found on loglevel ${level}`,
-      });
+      throw new Error(`No valid logEntry found on loglevel ${level} for validator ${validator} in messages ${this.messages[level]}`);
     }
   }
 
@@ -48,28 +43,28 @@ export class AssertionLogger implements ILogger {
     return new AssertionLogger();
   }
 
-  public with(_additionalMeta: Fields): ILogger {
+  public with(_additionalMeta: AnyFields): ILogger {
     return new AssertionLogger();
   }
 
-  public debug(message: string, fields: Fields): void {
+  public debug(message: string, fields: AnyFields = {}): void {
     this.messages.debug.push({message, fields});
-    console.debug(message);
+    console.debug(message, fields);
   }
 
-  public info(message: string, fields: Fields): void {
+  public info(message: string, fields: AnyFields = {}): void {
     this.messages.info.push({message, fields});
-    console.info(message);
+    console.info(message, fields);
   }
 
-  public warn(message: string, fields: Fields): void {
+  public warn(message: string, fields: AnyFields = {}): void {
     this.messages.warn.push({message, fields});
-    console.warn(message);
+    console.warn(message, fields);
   }
 
-  public error(message: string, fields: Fields): void {
+  public error(message: string, fields: AnyFields = {}): void {
     this.messages.error.push({message, fields});
-    console.error(message);
+    console.error(message, fields);
   }
 
   public flush(): Promise<void> {
