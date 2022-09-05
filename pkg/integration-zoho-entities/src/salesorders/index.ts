@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
-import type { CreateSalesOrder, SalesOrder, Zoho } from "@trieb.work/zoho-ts";
+import { CreateSalesOrder, SalesOrder, Zoho, ZohoApiError } from "@trieb.work/zoho-ts";
+
 import { ILogger } from "@eci/pkg/logger";
 import { Language, Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
@@ -16,8 +17,10 @@ import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline
 import { CustomFieldApiName } from "@eci/pkg/zoho-custom-fields/src/registry";
 import addresses from "@eci/pkg/integration-zoho-entities/src/addresses";
 import { calculateDiscount, orderToZohoLineItems } from "./lineItems";
-import { orderToMainContactId } from "./mainContact";
+import { orderToMainContactPerson } from "./contacts";
 import { addressToZohoAddressId } from "./address";
+import { taxToZohoTaxId } from "./taxes";
+import { normalizeStrings } from "@eci/pkg/normalization";
 
 export class Warning extends Error {
   // eslint-disable-next-line no-useless-constructor
@@ -366,7 +369,14 @@ export class ZohoSalesOrdersSyncService {
                     },
                     quantity: lineItem.quantity,
                     discountValueNet: lineItem.discount_amount,
-                    taxPercentage: lineItem.tax_percentage,
+                    tax: {
+                      connect: {
+                        normalizedName_tenantId: {
+                          normalizedName: normalizeStrings.taxNames(lineItem.tax_name),
+                          tenantId: this.tenantId,
+                        }
+                      }
+                    },
                     totalPriceNet: lineItem.item_total,
                     warehouse: warehouseConnect,
                     productVariant: {
@@ -393,7 +403,14 @@ export class ZohoSalesOrdersSyncService {
                 update: {
                   quantity: lineItem.quantity,
                   discountValueNet: lineItem.discount_amount,
-                  taxPercentage: lineItem.tax_percentage,
+                  tax: {
+                    connect: {
+                      normalizedName_tenantId: {
+                        normalizedName: normalizeStrings.taxNames(lineItem.tax_name),
+                        tenantId: this.tenantId,
+                      }
+                    }
+                  },
                   totalPriceNet: lineItem.item_total,
                 },
               },
@@ -510,6 +527,15 @@ export class ZohoSalesOrdersSyncService {
                 },
               },
             },
+            tax: {
+              include: {
+                zohoTaxes: {
+                  where: {
+                    zohoAppId: this.zohoApp.id,
+                  }
+                }
+              }
+            },
             warehouse: {
               include: {
                 zohoWarehouse: {
@@ -529,6 +555,15 @@ export class ZohoSalesOrdersSyncService {
               },
             },
           },
+        },
+        shippingPriceTax: {
+          include: {
+            zohoTaxes: {
+              where: {
+                zohoAppId: this.zohoApp.id,
+              }
+            }
+          }
         },
         shippingAddress: {
           include: {
@@ -552,10 +587,6 @@ export class ZohoSalesOrdersSyncService {
 
     const salesorderToConfirm: SalesOrder[] = [];
     for (const order of ordersFromEciDb) {
-      // Create a salesorder in Zoho:
-      // We need one main contact and a contact person to be related to the order.
-      // We need to check if we have discounts on line item level or on salesorder level
-      // We need to call create and check, if the returned total gross values matches the order gross from our DB
       // TODO create test with mocked client
       try {
         // Order validation
@@ -571,24 +602,26 @@ export class ZohoSalesOrdersSyncService {
         const discount_type = order.discountValueNet
           ? "entity_level"
           : "item_level";
+        const mainContactPerson = orderToMainContactPerson(order);
         const createSalesOrderBody: CreateSalesOrder = {
+          date: order.date?.toISOString() ?? undefined,
           salesorder_number: order.orderNumber,
           reference_number: order.referenceNumber ?? undefined,
           line_items: orderToZohoLineItems(order, discount_type),
-          customer_id: await orderToMainContactId(order), // TODO remove fallback after first run in prod
+          customer_id: mainContactPerson.zohoContactId,
           discount_type,
-          contact_persons: order.mainContact.zohoContactPersons.map(
-            (zohoContactPerson) => zohoContactPerson.id,
-          ),
           discount: calculateDiscount(order.discountValueNet, "fixed"),
-          // TODO: create sync job: addresses.syncFromECI
           billing_address_id: addressToZohoAddressId(order.billingAddress),
           shipping_address_id: addressToZohoAddressId(order.shippingAddress),
+          contact_persons: [mainContactPerson.id],
+          shipping_charge: order.shippingPriceGross ?? undefined,
+          shipping_charge_tax_id: order.shippingPriceTax ? taxToZohoTaxId(order.shippingPriceTax) : undefined,
+          // TODO:
+          // shipment_date?
         };
         const createdSalesOrder = await this.zoho.salesOrder.create(
           createSalesOrderBody,
         );
-        // TODO: add logic for handling the case where a salesorder was already created but no zohosalesorder was set in eci db
         await this.db.zohoSalesOrder.create({
           data: {
             id: createdSalesOrder.salesorder_id,
@@ -624,8 +657,8 @@ export class ZohoSalesOrdersSyncService {
           createdSalesOrder.sub_total !== order.totalPriceNet
         ) {
           throw new Error(
-            // eslint-disable-next-line max-len
-            "IMPORTANT: Order net totals from saleor and ECI do not match. The Order was therefore not confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
+            "IMPORTANT: Order net totals from saleor and ECI do not match. The Order was therefore not "+
+            "confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
           );
         }
         if (
@@ -633,7 +666,8 @@ export class ZohoSalesOrdersSyncService {
           createdSalesOrder.total !== order.totalPriceGross
         ) {
           throw new Error(
-            "IMPORTANT: Order gross totals from saleor and ECI do not match. The Order was therefore not confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
+            "IMPORTANT: Order gross totals from saleor and ECI do not match. The Order was therefore not "+
+            "confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
           );
         }
         salesorderToConfirm.push(createdSalesOrder);
@@ -642,7 +676,76 @@ export class ZohoSalesOrdersSyncService {
           // TODO make an update on Order and increase Warning counter, if warning counter over threshold 5 -> log an error instead
           this.logger.warn(err.message, { eciOrderId: order.id });
         } else if (err instanceof Error) {
-          this.logger.error(err.message, { eciOrderId: order.id });
+          // TODO zoho-ts package: add enum for error codes . like this:
+          // if(err as ZohoApiError).code === require(zoho-ts).apiErrorCodes.SalesOrderAlreadyExists){
+          if((err as ZohoApiError).code === 36004){ // 36004 = This sales order number already exists.
+            this.logger.warn(err.message, { eciOrderId: order.id });
+            const searchedSalesOrders = await this.zoho.salesOrder.search(order.orderNumber);
+            if(searchedSalesOrders.length === 0){
+              this.logger.error("Salesorder was already created and search with order.orderNumber returned no results. Aborting sync of this order.", { eciOrderId: order.id });
+              continue;
+            }
+            if(searchedSalesOrders.length > 1){
+              this.logger.error("Salesorder was already created and search with order.orderNumber returned multiple results. Aborting sync of this order.", { eciOrderId: order.id });
+              continue;
+            }
+            const matchingSalesOrder = searchedSalesOrders[0];
+            await this.db.zohoSalesOrder.create({
+              data: {
+                id: matchingSalesOrder.salesorder_id,
+                order: {
+                  connect: {
+                    id: order.id,
+                  },
+                },
+                zohoApp: {
+                  connect: {
+                    id: this.zohoApp.id,
+                  },
+                },
+                createdAt: new Date(matchingSalesOrder.created_time),
+                updatedAt: new Date(matchingSalesOrder.last_modified_time),
+                // zohoContact // TODO is this needed? --> remove it from the schema if it is really not needed
+                // zohoContactPerson // TODO is this needed? --> remove it from the schema if it is really not needed
+              },
+            });
+            this.logger.info(
+              `Successfully attached zoho salesorder ${matchingSalesOrder.salesorder_number} from search request to the current order`,
+              {
+                orderId: order.id,
+                mainContactId: order.mainContactId,
+                orderNumber: order.orderNumber,
+                referenceNumber: order.referenceNumber,
+                zohoAppId: this.zohoApp.id,
+                tenantId: this.tenantId,
+              },
+            );
+            if (
+              order.totalPriceNet &&
+              matchingSalesOrder.sub_total !== order.totalPriceNet
+            ) {
+              this.logger.error(
+                "IMPORTANT: Order net totals from saleor and ECI do not match. The Order was therefore not "+
+                "confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
+                { eciOrderId: order.id }
+              );
+            }
+            if (
+              order.totalPriceGross &&
+              matchingSalesOrder.total !== order.totalPriceGross
+            ) {
+              this.logger.error(
+                "IMPORTANT: Order gross totals from saleor and ECI do not match. The Order was therefore not "+
+                "confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
+                { eciOrderId: order.id }
+              );
+            }
+            if(matchingSalesOrder.status === "draft"){
+              salesorderToConfirm.push(matchingSalesOrder);
+            }
+          } else {
+            this.logger.error(err.message, { eciOrderId: order.id });
+          }
         } else {
           this.logger.error(
             "An unknown Error occured: " + (err as any)?.toString(),
@@ -662,20 +765,12 @@ export class ZohoSalesOrdersSyncService {
             .join(",")}`,
         );
       } catch (err) {
-        const errorMsg =
-          err instanceof Error
-            ? `${err.name}:\n${err.message}`
-            : JSON.stringify(err);
+        const errorMsg = err instanceof Error ? `${err.name}:\n${err.message}` : JSON.stringify(err);
         this.logger.error(
-          // eslint-disable-next-line max-len
           "Could not confirm all salesorders after creating them. Please check Zoho and confirm them manually.",
           {
-            submitedSalesorderIds: salesorderToConfirm.map(
-              (so) => so.salesorder_id,
-            ),
-            submitedSalesorderNumbers: salesorderToConfirm.map(
-              (so) => so.salesorder_number,
-            ),
+            submitedSalesorderIds: salesorderToConfirm.map((so) => so.salesorder_id),
+            submitedSalesorderNumbers: salesorderToConfirm.map((so) => so.salesorder_number),
             zohoClientErrorMessage: errorMsg,
           },
         );

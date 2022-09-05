@@ -10,17 +10,18 @@ import {
   ZohoItem,
 } from "@prisma/client";
 import { Warning } from ".";
-// import type { LineItem as ZohoClientLineItem } from "@trieb.work/zoho-ts/dist/types/lineItem";
+import { ExtendedTax, taxToZohoTaxId } from "./taxes";
 
 type ExtendedLineItem = LineItem & {
   productVariant: ProductVariant & {
     zohoItem: ZohoItem[];
   };
   warehouse:
-    | (Warehouse & {
+    (Warehouse & {
         zohoWarehouse: ZohoWarehouse[];
-      })
+    })
     | null;
+  tax: ExtendedTax;
 };
 
 type OrderWithZohoItemsAndZohoWarehouse = Order & {
@@ -98,11 +99,7 @@ export function orderToZohoLineItems(
         quantity: lineItem.quantity,
         warehouse_id: warehouses[0],
         discount: calculateLineItemDiscount(lineItem, discount_type),
-        // tax_id TODO --> maybe default is enough --> test this carefully
-        // "discount": { // TODO add to zoholib together with calculateDiscount function
-        //     type: 'fixed',
-        //     value: 23
-        // }
+        tax_id: taxToZohoTaxId(lineItem.tax),
       },
     ];
   }, [] as CreateSalesOrder["line_items"]);

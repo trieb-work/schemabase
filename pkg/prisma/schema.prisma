@@ -336,10 +336,11 @@ model ZohoWarehouse {
 }
 
 model ZohoTax {
-  // Zoho Internal Id
+  /// internal ID of tax in Zoho
   id String
 
   tax   Tax    @relation(fields: [taxId], references: [id], onDelete: Cascade)
+  /// ID of eci internal Tax Object
   taxId String
 
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
@@ -412,6 +413,12 @@ model Tax {
   // Lowercase, trim, whitespace remove, special characters remove etc.
   normalizedName String
   percentage     Float
+
+
+  /// An array of orders where this tax is used as the tax for the shipping method
+  shippingTaxInOrders Order[]
+  /// An array of lineitems where this tax is used as the tax for the line item
+  taxInLineItems LineItem[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -545,7 +552,7 @@ model LineItem {
   // For packages: ${packageNumber}${sku}${quantity} 
   uniqueString String
 
-  order   Order  @relation(fields: [orderId], references: [id])
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId String
 
   // Warehouse, this line item corresponds to.
@@ -558,8 +565,8 @@ model LineItem {
 
   quantity      Float
   sku           String
-  // Tax Percentage as number (19, 7)
-  taxPercentage Float  @default(19)
+  tax   Tax     @relation(fields: [taxId], references: [id], onDelete: Cascade)
+  taxId String
 
   /// The total net price (price excluding taxes) of all line item.
   /// Optional, as we might have just one of the two values on hand
@@ -644,7 +651,8 @@ model Order {
 
   shippingPriceNet           Float?
   shippingPriceGross         Float?
-  shippingPriceTaxPercentage Float?
+  shippingPriceTax   Tax?    @relation(fields: [shippingPriceTaxId], references: [id], onDelete: Cascade)
+  shippingPriceTaxId String?
 
   // The disount amount, that is applied
   // to the net, undiscounted price.
