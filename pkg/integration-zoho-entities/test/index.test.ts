@@ -1,9 +1,9 @@
 /* eslint-disable max-len */
 import { NoopLogger } from "@eci/pkg/logger";
 import { PrismaClient } from "@eci/pkg/prisma";
-import { beforeEach, describe, jest, test, beforeAll } from "@jest/globals";
+import { beforeEach, describe, jest, test } from "@jest/globals";
 import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts";
-import { ZohoSalesOrdersSyncService } from ".";
+import { ZohoSalesOrdersSyncService } from "../src/salesorders";
 import {
   deleteZohoSalesOrder,
   upsertAddress,
@@ -14,7 +14,7 @@ import {
   upsertProductVariant,
   upsertTax,
   upsertZohoItem
-} from "../../test/utils";
+} from "./utils";
 
 let zohoApp: any;
 
@@ -25,36 +25,26 @@ beforeEach(() => {
 describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
   const prismaClient = new PrismaClient();
 
-  beforeAll(async () => {
-    zohoApp = await prismaClient.zohoApp.findUnique({
-      where: {
-        id: "test",
-      },
-      include: { tenant: true },
-    });
-    if (!zohoApp) throw new Error("No testing Zoho App found!");
-  });
-
   test("It should sync a SalesOrders correctly", async () => {
     /**
      * This test is running against the Test Instance of Zoho
      */
-    const realTestingZohoClient = new Zoho(
+    const zoho = new Zoho(
       await ZohoApiClient.fromOAuth({
         orgId: zohoApp.orgId,
         client: { id: zohoApp.clientId, secret: zohoApp.clientSecret },
       }),
     );
     const zohoSalesOrdersSyncService = new ZohoSalesOrdersSyncService({
-      zoho: realTestingZohoClient,
+      zoho,
       logger: new NoopLogger(),
       db: new PrismaClient(),
       zohoApp,
     });
 
-    // INFO: Multiple tests listed in single test since we have to run them sequentlially!
+    // INFO: All tests listed here since we have to run them sequentlially!
     console.log('First test: "It should abort sync of orders if product variants of lineitems are not synced with zoho items"');
-    const newOrderNumber = `SO-DATE-${Math.round((Number(new Date) - 1662000000000)/1000)}`;
+    const newOrderNumber = `SO-DATE-${Math.round((Number(new Date) - 1662000000000) / 1000)}`;
     console.log("newOrderNumber", newOrderNumber);
     await Promise.all([
       upsertTax(prismaClient),
