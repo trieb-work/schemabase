@@ -386,7 +386,14 @@ export class SaleorOrderSyncService {
                   discountValueNet,
                   totalPriceNet: lineItem.totalPrice.net.amount,
                   totalPriceGross: lineItem.totalPrice.gross.amount,
-                  taxPercentage: lineItem.taxRate * 100,
+                  tax: {
+                    connect: {
+                      percentage_tenantId: {
+                        percentage: lineItem.taxRate * 100,
+                        tenantId: this.tenantId,
+                      }
+                    }
+                  },
                   productVariant: {
                     connect: {
                       id: productSku.id,

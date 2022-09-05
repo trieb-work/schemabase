@@ -19,7 +19,7 @@ async function deleteZohoSalesOrder(prisma: PrismaClient, orderNumber: string) {
       AND: {
         orderNumber,
         tenantId: "test",
-      }
+      },
     },
   });
   console.log("deleted zohoSalesOrder", delRes.count);
@@ -70,7 +70,7 @@ async function upsertZohoItem(prisma: PrismaClient) {
       id_zohoAppId: {
         id: "116240000000203041",
         zohoAppId: "test",
-      }
+      },
     },
     update: {},
     create: {
@@ -85,8 +85,8 @@ async function upsertZohoItem(prisma: PrismaClient) {
       productVariant: {
         connect: {
           id: "test",
-        }
-      }
+        },
+      },
     },
   });
   console.log("created zohoItem");
@@ -240,6 +240,7 @@ async function upsertOrder(prisma: PrismaClient, orderNumber: string) {
     create: {
       id: id.id("order"),
       createdAt: "1970-01-01T00:00:00.000Z",
+      date: new Date("1970-01-01T00:00:00.000Z"),
       orderNumber,
       totalPriceGross: 234.68,
       orderStatus: "confirmed",
@@ -278,11 +279,15 @@ async function upsertLineItem1(prisma: PrismaClient, orderNumber: string) {
     create: {
       id: `test-l1-${orderNumber}`,
       quantity: 10,
-      uniqueString: uniqueStringOrderLine(orderNumber, `test-l1-${orderNumber}`, 10),
+      uniqueString: uniqueStringOrderLine(
+        orderNumber,
+        `test-l1-${orderNumber}`,
+        10,
+      ),
       tax: {
         connect: {
-          id: "test"
-        }
+          id: "test",
+        },
       },
       productVariant: {
         connect: {
@@ -321,11 +326,15 @@ async function upsertLineItem2(prisma: PrismaClient, orderNumber: string) {
     create: {
       id: `test-l2-${orderNumber}`,
       quantity: 5,
-      uniqueString: uniqueStringOrderLine(orderNumber, `test-l2-${orderNumber}`, 5),
+      uniqueString: uniqueStringOrderLine(
+        orderNumber,
+        `test-l2-${orderNumber}`,
+        5,
+      ),
       tax: {
         connect: {
-          id: "test"
-        }
+          id: "test",
+        },
       },
       productVariant: {
         connect: {
@@ -386,8 +395,12 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
     });
 
     // INFO: All tests listed here since we have to run them sequentlially!
-    console.log('First test: "It should abort sync of orders if product variants of lineitems are not synced with zoho items"');
-    const newOrderNumber = `SO-DATE-${Math.round((Number(new Date) - 1662000000000)/1000)}`;
+    console.log(
+      'First test: "It should abort sync of orders if product variants of lineitems are not synced with zoho items"',
+    );
+    const newOrderNumber = `SO-DATE-${Math.round(
+      (Number(new Date()) - 1662000000000) / 1000,
+    )}`;
     console.log("newOrderNumber", newOrderNumber);
     await Promise.all([
       upsertTax(prismaClient),
@@ -403,10 +416,14 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
     await zohoSalesOrdersSyncService.syncFromECI();
 
     await upsertZohoItem(prismaClient);
-    console.log('Second test: "It should sync a SalesOrders if not synced already"');
+    console.log(
+      'Second test: "It should sync a SalesOrders if not synced already"',
+    );
     await zohoSalesOrdersSyncService.syncFromECI();
 
-    console.log('Third test: "It should attach the Zoho SalesOrder if it is created in saleor but has no record in eci db"');
+    console.log(
+      'Third test: "It should attach the Zoho SalesOrder if it is created in saleor but has no record in eci db"',
+    );
     // NOTE: If this test fails make sure that the order TEST-1234 does exist in zoho
     const existingOrderNumber = "TEST-1234";
     console.log("existingOrderNumber", existingOrderNumber);
