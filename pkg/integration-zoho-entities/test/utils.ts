@@ -2,8 +2,9 @@
 import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { id } from "@eci/pkg/ids";
 import { PrismaClient } from "@prisma/client";
+import { AssertionError } from "assert";
 
-export async function deleteZohoSalesOrder(prisma: PrismaClient, orderNumber: string) {
+export async function deleteOrder(prisma: PrismaClient, orderNumber: string) {
     const delRes = await prisma.order.deleteMany({
         where: {
             AND: {
@@ -12,10 +13,10 @@ export async function deleteZohoSalesOrder(prisma: PrismaClient, orderNumber: st
             }
         },
     });
-    console.log("deleted zohoSalesOrder", delRes.count);
+    console.log("deleted Order", delRes.count);
 }
 
-export async function upsertTax(prisma: PrismaClient) {
+export async function upsertTaxWithZohoTax(prisma: PrismaClient) {
     await prisma.tax.upsert({
         where: {
             id: "test",
@@ -115,7 +116,7 @@ export async function upsertProductVariant(prisma: PrismaClient) {
     console.log("created one generic productVariant");
 }
 
-export async function upsertContact(prisma: PrismaClient) {
+export async function upsertContactWithZohoContactPersonsAndZohoContact(prisma: PrismaClient) {
     await prisma.contact.upsert({
         where: {
             id: "test",
@@ -171,7 +172,7 @@ export async function upsertContact(prisma: PrismaClient) {
     console.log("created contact");
 }
 
-export async function upsertAddress(prisma: PrismaClient) {
+export async function upsertAddressWithZohoAddress(prisma: PrismaClient) {
     await prisma.address.upsert({
         where: {
             id: "test",
@@ -343,4 +344,65 @@ export async function upsertLineItem2(prisma: PrismaClient, orderNumber: string)
         },
     });
     console.log("created second generic lineitem for the order");
+}
+export function mockedConsole() {
+    type ConsoleLevel = 'debug' | 'log' | 'info' | 'warn' | 'error';
+    const orignalConsole: Record<ConsoleLevel, typeof console.log> = {
+        debug: console.debug,
+        log: console.log,
+        info: console.info,
+        warn: console.warn,
+        error: console.error,
+    }
+    let messages: Record<ConsoleLevel, any[][]> = {
+        debug: [],
+        log: [],
+        info: [],
+        warn: [],
+        error: [],
+    };
+
+    for(const level of Object.keys(orignalConsole) as ConsoleLevel[]){
+        console[level] = (...args: any[]) => {
+            messages[level].push(args);
+            orignalConsole[level](...args);
+        }
+    }
+
+    const restoreConsole = () => {
+        for(const level of Object.keys(orignalConsole) as ConsoleLevel[]){
+            console[level] = orignalConsole[level]
+        }
+    }
+
+    const assertOneLogMessageMatches = (level: ConsoleLevel, message: string | RegExp) => {
+        const match = messages[level].find(
+            (messageParams) => messageParams.some(
+                (messageParam) => typeof messageParam === "string" && messageParam.match(message)
+            )
+        );
+        orignalConsole.log("match", match);
+        if(!match) {
+            throw new AssertionError({
+                message: `No message found on loglevel ${level} that includes "${message}"`,
+                operator: "includes",
+                expected: message,
+                actual: messages[level],
+            });
+        }
+    }
+
+    const clearMessages = () => {
+        for(const level of Object.keys(orignalConsole) as ConsoleLevel[]){
+            messages[level] = [];
+        }
+    }
+
+    return {
+        restoreConsole,
+        clearMessages,
+        assertOneLogMessageMatches,
+        messages,
+        orignalConsole,
+    }
 }

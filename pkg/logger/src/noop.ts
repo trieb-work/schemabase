@@ -2,6 +2,7 @@
 import { Fields, ILogger, LogDrain } from "./logger";
 
 export class NoopLogger implements ILogger {
+  
   public withLogDrain(_logDrain: LogDrain): ILogger {
     return new NoopLogger();
   }
@@ -11,19 +12,19 @@ export class NoopLogger implements ILogger {
   }
 
   public debug(message: string, _fields: Fields): void {
-    console.log(message);
+    console.debug(message);
   }
 
   public info(message: string, _fields: Fields): void {
-    console.log(message);
+    console.info(message);
   }
 
   public warn(message: string, _fields: Fields): void {
-    console.log(message);
+    console.warn(message);
   }
 
   public error(message: string, _fields: Fields): void {
-    console.log(message);
+    console.error(message);
   }
 
   public flush(): Promise<void> {

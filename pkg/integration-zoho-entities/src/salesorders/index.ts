@@ -587,9 +587,8 @@ export class ZohoSalesOrdersSyncService {
 
     const salesorderToConfirm: SalesOrder[] = [];
     for (const order of ordersFromEciDb) {
-      // TODO create test with mocked client
       try {
-        // Order validation
+        // Minimal Order validation
         if (!order.totalPriceGross && !order.totalPriceNet) {
           throw new Error(
             "IMPORTANT: Neither order totalPriceNet or totalPriceGross is set. Please check and correct it manually in ECI db",

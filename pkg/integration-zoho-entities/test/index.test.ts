@@ -1,18 +1,18 @@
 /* eslint-disable max-len */
 import { NoopLogger } from "@eci/pkg/logger";
 import { PrismaClient } from "@eci/pkg/prisma";
-import { beforeEach, describe, jest, test } from "@jest/globals";
+import { beforeEach, describe, jest, test, beforeAll } from "@jest/globals";
 import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts";
 import { ZohoSalesOrdersSyncService } from "../src/salesorders";
 import {
-  deleteZohoSalesOrder,
-  upsertAddress,
-  upsertContact,
+  deleteOrder,
+  upsertAddressWithZohoAddress,
+  upsertContactWithZohoContactPersonsAndZohoContact,
   upsertLineItem1,
   upsertLineItem2,
   upsertOrder,
   upsertProductVariant,
-  upsertTax,
+  upsertTaxWithZohoTax,
   upsertZohoItem
 } from "./utils";
 
@@ -25,33 +25,43 @@ beforeEach(() => {
 describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
   const prismaClient = new PrismaClient();
 
+  beforeAll(async () => {
+    zohoApp = await prismaClient.zohoApp.findUnique({
+      where: {
+        id: "test",
+      },
+      include: { tenant: true },
+    });
+    if (!zohoApp) throw new Error("No testing Zoho App found!");
+  });
+
   test("It should sync a SalesOrders correctly", async () => {
     /**
      * This test is running against the Test Instance of Zoho
      */
-    const zoho = new Zoho(
+    const realTestingZohoClient = new Zoho(
       await ZohoApiClient.fromOAuth({
         orgId: zohoApp.orgId,
         client: { id: zohoApp.clientId, secret: zohoApp.clientSecret },
       }),
     );
     const zohoSalesOrdersSyncService = new ZohoSalesOrdersSyncService({
-      zoho,
+      zoho: realTestingZohoClient,
       logger: new NoopLogger(),
       db: new PrismaClient(),
       zohoApp,
     });
 
-    // INFO: All tests listed here since we have to run them sequentlially!
+    // INFO: Multiple tests listed in single test since we have to run them sequentlially!
     console.log('First test: "It should abort sync of orders if product variants of lineitems are not synced with zoho items"');
-    const newOrderNumber = `SO-DATE-${Math.round((Number(new Date) - 1662000000000) / 1000)}`;
+    const newOrderNumber = `SO-DATE-${Math.round((Number(new Date) - 1662000000000)/1000)}`;
     console.log("newOrderNumber", newOrderNumber);
     await Promise.all([
-      upsertTax(prismaClient),
+      upsertTaxWithZohoTax(prismaClient),
       upsertProductVariant(prismaClient),
-      upsertContact(prismaClient),
+      upsertContactWithZohoContactPersonsAndZohoContact(prismaClient),
     ]);
-    await upsertAddress(prismaClient);
+    await upsertAddressWithZohoAddress(prismaClient);
     await upsertOrder(prismaClient, newOrderNumber);
     await Promise.all([
       upsertLineItem1(prismaClient, newOrderNumber),
@@ -67,7 +77,7 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
     // NOTE: If this test fails make sure that the order TEST-1234 does exist in zoho
     const existingOrderNumber = "TEST-1234";
     console.log("existingOrderNumber", existingOrderNumber);
-    await deleteZohoSalesOrder(prismaClient, existingOrderNumber);
+    await deleteOrder(prismaClient, existingOrderNumber);
     await upsertOrder(prismaClient, existingOrderNumber);
     await Promise.all([
       upsertLineItem1(prismaClient, existingOrderNumber),
