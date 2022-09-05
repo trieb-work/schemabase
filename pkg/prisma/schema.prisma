@@ -426,6 +426,8 @@ model Tax {
   zohoTaxes ZohoTax[]
 
   @@unique([normalizedName, tenantId])
+  @@unique([percentage, tenantId])
+  @@index([percentage])
 }
 
 // The ECI internal payments model
@@ -630,7 +632,7 @@ model Order {
   updatedAt DateTime @updatedAt
 
   // the order date
-  date DateTime?
+  date DateTime
 
   // deprecated!
   externalOrderId String?
