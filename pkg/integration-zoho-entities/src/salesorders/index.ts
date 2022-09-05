@@ -239,17 +239,6 @@ export class ZohoSalesOrdersSyncService {
           },
           zohoContact: zohoContactConnect,
         },
-        include: {
-          order: {
-            select: {
-              _count: {
-                select: {
-                  lineItems: true,
-                },
-              },
-            },
-          },
-        },
       });
 
       /**
@@ -267,8 +256,7 @@ export class ZohoSalesOrdersSyncService {
         isAfter(
           new Date(salesorder.last_modified_time),
           createdSalesOrder.updatedAt,
-        ) ||
-        createdSalesOrder.order._count.lineItems === 0
+        )
       ) {
         this.logger.info(
           // eslint-disable-next-line max-len
