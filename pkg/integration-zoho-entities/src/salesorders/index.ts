@@ -578,8 +578,8 @@ export class ZohoSalesOrdersSyncService {
     this.logger.info(
       `Received ${ordersFromEciDb.length} orders that are not synced with Zoho.`,
       {
-        orderIds: ordersFromEciDb.map((o) => o.orderNumber)
-      }
+        orderIds: ordersFromEciDb.map((o) => o.orderNumber),
+      },
     );
 
     const salesordersToConfirm: SalesOrder[] = [];
@@ -747,13 +747,8 @@ export class ZohoSalesOrdersSyncService {
                 { eciOrderId: order.id },
               );
             }
-<<<<<<< HEAD
-            if(matchingSalesOrder.status === "draft"){
-              salesordersToConfirm.push(matchingSalesOrder);
-=======
             if (matchingSalesOrder.status === "draft") {
-              salesorderToConfirm.push(matchingSalesOrder);
->>>>>>> 45bd931ff83538ff72671f03f34f0926c36961a0
+              salesordersToConfirm.push(matchingSalesOrder);
             }
           } else {
             this.logger.error(err.message, { eciOrderId: order.id });
@@ -772,9 +767,13 @@ export class ZohoSalesOrdersSyncService {
         this.logger.info(
           `Successfully confirmed ${salesordersToConfirm.length} order(s).`,
           {
-            salesorderNumbersToConfirm: salesordersToConfirm.map((o) => o.salesorder_number),
-            salesorderIDsToConfirm: salesordersToConfirm.map((o) => o.salesorder_id),
-          }
+            salesorderNumbersToConfirm: salesordersToConfirm.map(
+              (o) => o.salesorder_number,
+            ),
+            salesorderIDsToConfirm: salesordersToConfirm.map(
+              (o) => o.salesorder_id,
+            ),
+          },
         );
       } catch (err) {
         const errorMsg =
@@ -784,8 +783,12 @@ export class ZohoSalesOrdersSyncService {
         this.logger.error(
           "Could not confirm all salesorders after creating them. Please check Zoho and confirm them manually.",
           {
-            submitedSalesorderIds: salesordersToConfirm.map((so) => so.salesorder_id),
-            submitedSalesorderNumbers: salesordersToConfirm.map((so) => so.salesorder_number),
+            submitedSalesorderIds: salesordersToConfirm.map(
+              (so) => so.salesorder_id,
+            ),
+            submitedSalesorderNumbers: salesordersToConfirm.map(
+              (so) => so.salesorder_number,
+            ),
             zohoClientErrorMessage: errorMsg,
           },
         );
