@@ -216,7 +216,7 @@ export class ZohoContactSyncService {
 
   public async syncFromECI(): Promise<void> {
     // TODO: get all contacts from our DB, that don't have
-    // a Zoho ID yes
+    // a Zoho ID yet
     const newContacts = await this.db.contact.findMany({
       where: {
         tenantId: this.zohoApp.tenantId,

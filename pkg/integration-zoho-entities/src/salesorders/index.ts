@@ -576,18 +576,16 @@ export class ZohoSalesOrdersSyncService {
       },
     });
     this.logger.info(
-      `Received ${
-        ordersFromEciDb.length
-      } orders that are not synced with Zoho: ${ordersFromEciDb
-        .map((o) => o.orderNumber)
-        .join(",")}`,
+      `Received ${ordersFromEciDb.length} orders that are not synced with Zoho.`,
+      {
+        orderIds: ordersFromEciDb.map((o) => o.orderNumber)
+      }
     );
 
-    const salesorderToConfirm: SalesOrder[] = [];
+    const salesordersToConfirm: SalesOrder[] = [];
     for (const order of ordersFromEciDb) {
-      // TODO create test with mocked client
       try {
-        // Order validation
+        // Minimal Order validation
         if (!order.totalPriceGross && !order.totalPriceNet) {
           throw new Error(
             "IMPORTANT: Neither order totalPriceNet or totalPriceGross is set. Please check and correct it manually in ECI db",
@@ -670,7 +668,7 @@ export class ZohoSalesOrdersSyncService {
               "confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
           );
         }
-        salesorderToConfirm.push(createdSalesOrder);
+        salesordersToConfirm.push(createdSalesOrder);
       } catch (err) {
         if (err instanceof Warning) {
           // TODO make an update on Order and increase Warning counter, if warning counter over threshold 5 -> log an error instead
@@ -749,8 +747,13 @@ export class ZohoSalesOrdersSyncService {
                 { eciOrderId: order.id },
               );
             }
+<<<<<<< HEAD
+            if(matchingSalesOrder.status === "draft"){
+              salesordersToConfirm.push(matchingSalesOrder);
+=======
             if (matchingSalesOrder.status === "draft") {
               salesorderToConfirm.push(matchingSalesOrder);
+>>>>>>> 45bd931ff83538ff72671f03f34f0926c36961a0
             }
           } else {
             this.logger.error(err.message, { eciOrderId: order.id });
@@ -764,14 +767,14 @@ export class ZohoSalesOrdersSyncService {
       }
       try {
         await this.zoho.salesOrder.confirm(
-          salesorderToConfirm.map((so) => so.salesorder_id),
+          salesordersToConfirm.map((so) => so.salesorder_id),
         );
         this.logger.info(
-          `Successfully confirmed ${
-            salesorderToConfirm.length
-          } orders: ${salesorderToConfirm
-            .map((o) => o.salesorder_number)
-            .join(",")}`,
+          `Successfully confirmed ${salesordersToConfirm.length} order(s).`,
+          {
+            salesorderNumbersToConfirm: salesordersToConfirm.map((o) => o.salesorder_number),
+            salesorderIDsToConfirm: salesordersToConfirm.map((o) => o.salesorder_id),
+          }
         );
       } catch (err) {
         const errorMsg =
@@ -781,12 +784,8 @@ export class ZohoSalesOrdersSyncService {
         this.logger.error(
           "Could not confirm all salesorders after creating them. Please check Zoho and confirm them manually.",
           {
-            submitedSalesorderIds: salesorderToConfirm.map(
-              (so) => so.salesorder_id,
-            ),
-            submitedSalesorderNumbers: salesorderToConfirm.map(
-              (so) => so.salesorder_number,
-            ),
+            submitedSalesorderIds: salesordersToConfirm.map((so) => so.salesorder_id),
+            submitedSalesorderNumbers: salesordersToConfirm.map((so) => so.salesorder_number),
             zohoClientErrorMessage: errorMsg,
           },
         );
