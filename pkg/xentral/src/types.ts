@@ -1,4 +1,5 @@
 export interface ArtikelCreateRequest {
+  projekt: number;
   name_de?: string;
   artikel?: string;
   ean?: string;

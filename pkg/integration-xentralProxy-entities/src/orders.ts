@@ -108,9 +108,6 @@ export class XentralProxyOrderSyncService {
               id: order.id,
             },
           },
-          // TODO: check if we have these dates
-          createdAt: new Date(),
-          updatedAt: new Date(),
           xentralBelegNr: xentralResData.belegnr,
           xentralId: xentralResData.id,
           xentralProxyApp: {

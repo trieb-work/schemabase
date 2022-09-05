@@ -49,6 +49,7 @@ export class XentralProxyProductVariantSyncService {
     });
     for (const productVariant of productVariants) {
       const artikel: ArtikelCreateRequest = {
+        projekt: this.xentralProxyApp.projectId,
         name_de: `${productVariant.product.name} (${productVariant.variantName})`,
         artikel: productVariant.sku,
         ean: productVariant.ean || undefined,
@@ -68,9 +69,6 @@ export class XentralProxyProductVariantSyncService {
               id: this.xentralProxyApp.id,
             },
           },
-          // TODO: check if we have these dates
-          createdAt: new Date(),
-          updatedAt: new Date(),
           productVariant: {
             connect: {
               id: productVariant.id,
