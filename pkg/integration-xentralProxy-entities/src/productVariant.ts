@@ -69,9 +69,6 @@ export class XentralProxyProductVariantSyncService {
               id: this.xentralProxyApp.id,
             },
           },
-          // TODO: check if we have these dates
-          createdAt: new Date(),
-          updatedAt: new Date(),
           productVariant: {
             connect: {
               id: productVariant.id,

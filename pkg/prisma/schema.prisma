@@ -1079,8 +1079,6 @@ model BillOfMaterialEntries {
 model XentralArtikel {
   // Xentral Internal ID
   id        String
-  createdAt DateTime
-  updatedAt DateTime
 
   xentralNummer String
 
@@ -1720,9 +1718,6 @@ model XentralProxyAuftrag {
 
   xentralId      Int
   xentralBelegNr String
-
-  createdAt DateTime
-  updatedAt DateTime
 
   xentralProxyApp   XentralProxyApp @relation(fields: [xentralProxyAppId], references: [id])
   xentralProxyAppId String

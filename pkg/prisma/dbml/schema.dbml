@@ -539,8 +539,6 @@ Table BillOfMaterialEntries {
 
 Table XentralArtikel {
   id String [not null]
-  createdAt DateTime [not null]
-  updatedAt DateTime [not null]
   xentralNummer String [not null]
   xentralProxyApp XentralProxyApp [not null]
   xentralProxyAppId String [not null]
@@ -960,8 +958,6 @@ Table XentralProxyAuftrag {
   id String [not null]
   xentralId Int [not null]
   xentralBelegNr String [not null]
-  createdAt DateTime [not null]
-  updatedAt DateTime [not null]
   xentralProxyApp XentralProxyApp [not null]
   xentralProxyAppId String [not null]
   order Order [not null]
