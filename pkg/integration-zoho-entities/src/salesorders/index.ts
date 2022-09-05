@@ -549,6 +549,7 @@ export class ZohoSalesOrdersSyncService {
             zohoContactPersons: {
               where: {
                 zohoAppId: this.zohoApp.id,
+                active: true,
               },
             },
           },

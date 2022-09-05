@@ -167,6 +167,7 @@ export class ZohoContactSyncService {
         const fullContact = await this.zoho.contact.get(contactId);
         const contactPersons = fullContact?.contact_persons;
 
+        const contactActive = fullContact?.status === "active";
         // Start the contact person logic
         const totalLength = contactPersons?.length;
         if (totalLength && totalLength > 0) {
@@ -176,7 +177,7 @@ export class ZohoContactSyncService {
             this.zohoApp.id,
             contactId,
             this.logger,
-          ).syncWithECI(contactPersons);
+          ).syncWithECI(contactPersons, contactActive);
         }
 
         const addressArray: Address[] = fullContact?.addresses || [];

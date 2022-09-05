@@ -131,12 +131,13 @@ Table ZohoContact {
 }
 
 Table ZohoContactPerson {
-  id String [not null]
+  id String [not null, note: 'Zoho Internal ContactPerson Id']
+  active Boolean [not null, default: true, note: 'Contacts/Contactpersons can be disabled to filter out merged contacts']
   zohoContact ZohoContact [not null]
   zohoContactId String [not null]
-  email String
   contact Contact [not null]
   contactId String [not null]
+  email String
   zohoPayments ZohoPayment [not null]
   zohoApp ZohoApp [not null]
   zohoAppId String [not null]
