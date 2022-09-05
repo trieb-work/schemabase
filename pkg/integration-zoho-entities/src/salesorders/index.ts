@@ -584,7 +584,7 @@ export class ZohoSalesOrdersSyncService {
       }
     );
 
-    const salesorderToConfirm: SalesOrder[] = [];
+    const salesordersToConfirm: SalesOrder[] = [];
     for (const order of ordersFromEciDb) {
       try {
         // Minimal Order validation
@@ -668,7 +668,7 @@ export class ZohoSalesOrdersSyncService {
             "confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
           );
         }
-        salesorderToConfirm.push(createdSalesOrder);
+        salesordersToConfirm.push(createdSalesOrder);
       } catch (err) {
         if (err instanceof Warning) {
           // TODO make an update on Order and increase Warning counter, if warning counter over threshold 5 -> log an error instead
@@ -739,7 +739,7 @@ export class ZohoSalesOrdersSyncService {
               );
             }
             if(matchingSalesOrder.status === "draft"){
-              salesorderToConfirm.push(matchingSalesOrder);
+              salesordersToConfirm.push(matchingSalesOrder);
             }
           } else {
             this.logger.error(err.message, { eciOrderId: order.id });
@@ -753,22 +753,22 @@ export class ZohoSalesOrdersSyncService {
       }
       try {
         await this.zoho.salesOrder.confirm(
-          salesorderToConfirm.map((so) => so.salesorder_id),
+          salesordersToConfirm.map((so) => so.salesorder_id),
         );
         this.logger.info(
-          `Successfully confirmed ${
-            salesorderToConfirm.length
-          } orders: ${salesorderToConfirm
-            .map((o) => o.salesorder_number)
-            .join(",")}`,
+          `Successfully confirmed ${salesordersToConfirm.length} order(s).`,
+          {
+            salesorderNumbersToConfirm: salesordersToConfirm.map((o) => o.salesorder_number),
+            salesorderIDsToConfirm: salesordersToConfirm.map((o) => o.salesorder_id),
+          }
         );
       } catch (err) {
         const errorMsg = err instanceof Error ? `${err.name}:\n${err.message}` : JSON.stringify(err);
         this.logger.error(
           "Could not confirm all salesorders after creating them. Please check Zoho and confirm them manually.",
           {
-            submitedSalesorderIds: salesorderToConfirm.map((so) => so.salesorder_id),
-            submitedSalesorderNumbers: salesorderToConfirm.map((so) => so.salesorder_number),
+            submitedSalesorderIds: salesordersToConfirm.map((so) => so.salesorder_id),
+            submitedSalesorderNumbers: salesordersToConfirm.map((so) => so.salesorder_number),
             zohoClientErrorMessage: errorMsg,
           },
         );

@@ -10,6 +10,8 @@ type LogEntry = {
   fields: AnyFields,
 }
 
+const LOG_PREFIX = "  TEST-LOGGER: ";
+
 export class AssertionLogger implements ILogger {
   private messages: Record<ConsoleLevel, LogEntry[]> = {
     debug: [],
@@ -20,16 +22,17 @@ export class AssertionLogger implements ILogger {
   };
 
   public assertOneLogMessageMatches(level: ConsoleLevel, message: string | RegExp) {
-    const match = this.messages[level].find((logEntry) => logEntry.message.match(message));
+    const match = this.messages[level].find((logEntry) => typeof message === "string" ? logEntry.message.includes(message) : logEntry.message.match(message));
     if (!match) {
-      throw new Error(`No message found on loglevel ${level} that includes "${message}"`);
+      throw new Error(`No message found on loglevel ${level} that includes message: \n    "${message}"\n  in messages: ${JSON.stringify(this.messages[level], null, 2)}`);
     }
   }
 
   public assertOneLogEntryMatches(level: ConsoleLevel, validator: (logEntry: LogEntry) => boolean ) {
+    // console.log("this.messages[level]", level, this.messages[level]);
     const match = this.messages[level].find(validator);
     if (!match) {
-      throw new Error(`No valid logEntry found on loglevel ${level} for validator ${validator} in messages ${this.messages[level]}`);
+      throw new Error(`No valid logEntry found on loglevel ${level} for validator:\n    ${validator}\n  in messages: ${JSON.stringify(this.messages[level], null, 2)}`);
     }
   }
 
@@ -49,22 +52,22 @@ export class AssertionLogger implements ILogger {
 
   public debug(message: string, fields: AnyFields = {}): void {
     this.messages.debug.push({message, fields});
-    console.debug(message, fields);
+    console.debug(LOG_PREFIX+message, fields);
   }
 
   public info(message: string, fields: AnyFields = {}): void {
     this.messages.info.push({message, fields});
-    console.info(message, fields);
+    console.info(LOG_PREFIX+message, fields);
   }
 
   public warn(message: string, fields: AnyFields = {}): void {
     this.messages.warn.push({message, fields});
-    console.warn(message, fields);
+    console.warn(LOG_PREFIX+message, fields);
   }
 
   public error(message: string, fields: AnyFields = {}): void {
     this.messages.error.push({message, fields});
-    console.error(message, fields);
+    console.error(LOG_PREFIX+message, fields);
   }
 
   public flush(): Promise<void> {

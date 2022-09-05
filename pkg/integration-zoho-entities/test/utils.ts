@@ -1,7 +1,21 @@
 
 import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { id } from "@eci/pkg/ids";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
+
+const LOGGING = true;
+
+export async function deleteOrders(prisma: PrismaClient, orderNumber: string | Prisma.StringFilter) {
+    const delRes = await prisma.order.deleteMany({
+        where: {
+            AND: {
+                orderNumber,
+                tenantId: "test",
+            }
+        },
+    });
+    if(LOGGING) console.log("deleted Order", delRes.count);
+}
 
 export async function deleteOrder(prisma: PrismaClient, orderNumber: string) {
     const delRes = await prisma.order.deleteMany({
@@ -12,7 +26,7 @@ export async function deleteOrder(prisma: PrismaClient, orderNumber: string) {
             }
         },
     });
-    console.log("deleted Order", delRes.count);
+    if(LOGGING) console.log("deleted Order", delRes.count);
 }
 
 export async function upsertTaxWithZohoTax(prisma: PrismaClient) {
@@ -51,9 +65,18 @@ export async function upsertTaxWithZohoTax(prisma: PrismaClient) {
             },
         },
     });
-    console.log("created tax");
+    if(LOGGING) console.log("created tax");
 }
 
+export async function deleteZohoItem(prisma: PrismaClient) {
+    const delRes = await prisma.zohoItem.deleteMany({
+        where: {
+            id: "116240000000203041",
+            zohoAppId: "test",
+        }
+    });
+    if(LOGGING) console.log("deleted zohoItem", delRes.count);
+};
 export async function upsertZohoItem(prisma: PrismaClient) {
     await prisma.zohoItem.upsert({
         where: {
@@ -79,7 +102,7 @@ export async function upsertZohoItem(prisma: PrismaClient) {
             }
         },
     });
-    console.log("created zohoItem");
+    if(LOGGING) console.log("created zohoItem");
 }
 
 export async function upsertProductVariant(prisma: PrismaClient) {
@@ -112,7 +135,7 @@ export async function upsertProductVariant(prisma: PrismaClient) {
             },
         },
     });
-    console.log("created one generic productVariant");
+    if(LOGGING) console.log("created one generic productVariant");
 }
 
 export async function upsertContactWithZohoContactPersonsAndZohoContact(prisma: PrismaClient) {
@@ -168,7 +191,7 @@ export async function upsertContactWithZohoContactPersonsAndZohoContact(prisma: 
             },
         },
     });
-    console.log("created contact");
+    if(LOGGING) console.log("created contact");
 }
 
 export async function upsertAddressWithZohoAddress(prisma: PrismaClient) {
@@ -215,7 +238,7 @@ export async function upsertAddressWithZohoAddress(prisma: PrismaClient) {
             },
         },
     });
-    console.log("created one address for the generic order");
+    if(LOGGING) console.log("created one address for the generic order");
 }
 
 export async function upsertOrder(prisma: PrismaClient, orderNumber: string) {
@@ -256,7 +279,7 @@ export async function upsertOrder(prisma: PrismaClient, orderNumber: string) {
             },
         },
     });
-    console.log("created one generic order");
+    if(LOGGING) console.log("created one generic order");
 }
 
 export async function upsertLineItem1(prisma: PrismaClient, orderNumber: string) {
@@ -299,7 +322,7 @@ export async function upsertLineItem1(prisma: PrismaClient, orderNumber: string)
             },
         },
     });
-    console.log("created one generic lineitem for the order");
+    if(LOGGING) console.log("created one generic lineitem for the order");
 }
 
 export async function upsertLineItem2(prisma: PrismaClient, orderNumber: string) {
@@ -342,5 +365,5 @@ export async function upsertLineItem2(prisma: PrismaClient, orderNumber: string)
             },
         },
     });
-    console.log("created second generic lineitem for the order");
+    if(LOGGING) console.log("created second generic lineitem for the order");
 }
