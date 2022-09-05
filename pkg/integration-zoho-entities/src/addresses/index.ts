@@ -12,6 +12,7 @@ import {
   AddressWithoutAddressId,
   CreateAddress,
 } from "@trieb.work/zoho-ts/dist/types/address";
+import countries from "i18n-iso-countries";
 
 interface AddressesConfig {
   db: PrismaClient;
@@ -19,6 +20,12 @@ interface AddressesConfig {
   zohoAppId: string;
   logger: ILogger;
   contactId: string;
+}
+class Warning extends Error {
+  // eslint-disable-next-line no-useless-constructor
+  constructor(msg: string) {
+    super(msg);
+  }
 }
 
 class Addresses {
@@ -43,7 +50,8 @@ class Addresses {
     this.zohoAppId = config.zohoAppId;
     this.contactId = config.contactId;
 
-    if (!config.contactId) throw new Error("No contactId! Can't sync address");
+    if (!config.contactId)
+      throw new Warning("No contactId! Can't sync address");
   }
 
   private companyToStreet2(companyName: string, street2?: string) {
@@ -95,13 +103,13 @@ class Addresses {
     );
 
     if (!countryCodeValid)
-      this.logger.error(
+      throw new Warning(
         `Received non valid country code: ${
           address.country_code
         } - address obj: ${JSON.stringify(address)}`,
       );
     if (!(address.attention || customerName)) {
-      throw new Error(
+      throw new Warning(
         // eslint-disable-next-line max-len
         `No attention and no customer name given! We need minimum one of it. - address obj:${JSON.stringify(
           address,
@@ -134,21 +142,33 @@ class Addresses {
     return { addObj, uniqueString };
   }
 
-  public createZohoAddressFromECI(eciAddr: ECIAddress) {
+  /**
+   * Create a valid Zoho address object from an ECI address object
+   * @param eciAddr
+   * @param orgLanguageCode the ISO language code we need to create the right country name
+   * @returns
+   */
+  public createZohoAddressFromECI(
+    eciAddr: ECIAddress,
+    // Lowercase iso code "de" | "en"
+    orgLanguageCode: string,
+  ) {
     const street2WithCompanyName = this.companyToStreet2(
       eciAddr.company || "",
       eciAddr.additionalAddressLine || "",
     );
 
-    // TODO: create the country name in the corresponding
-    // language of the Org
-    const country = "";
+    const country = eciAddr?.countryCode
+      ? countries.getName(eciAddr?.countryCode, orgLanguageCode)
+      : "";
+    if (!country) this.logger.warn(`Could not create valid country name.`);
+
     const zohoAddr: CreateAddress = {
-      attention: "",
-      address: eciAddr.street,
+      attention: eciAddr.fullname || "",
+      address: eciAddr.street || "",
       street2: street2WithCompanyName,
-      city: eciAddr.city,
-      zip: eciAddr.plz,
+      city: eciAddr.city || "",
+      zip: eciAddr.plz || "",
       country,
     };
 
@@ -170,7 +190,7 @@ class Addresses {
       );
 
       if (!zohoAddress.address_id)
-        throw new Error(`Zoho Address ID missing. Can't sync`);
+        throw new Warning(`Zoho Address ID missing. Can't sync`);
 
       await this.db.zohoAddress.upsert({
         where: {

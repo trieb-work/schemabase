@@ -77,11 +77,11 @@ export class XentralProxyOrderSyncService {
       if (!order.shippingAddress) continue;
       const auftrag: AuftragCreateRequest = {
         kundennummer: "NEW",
-        name: order.shippingAddress.fullname,
-        strasse: order.shippingAddress.street,
-        plz: order.shippingAddress.plz,
-        ort: order.shippingAddress.city,
-        land: order.shippingAddress.countryCode,
+        name: order.shippingAddress?.fullname || "",
+        strasse: order.shippingAddress?.street || "",
+        plz: order.shippingAddress?.plz || "",
+        ort: order.shippingAddress?.city || "",
+        land: order.shippingAddress?.countryCode || "",
         artikelliste: {
           position: order.lineItems.map((lineItem) => {
             if (!lineItem.productVariant.xentralArtikel[0]) {

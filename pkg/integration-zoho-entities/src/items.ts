@@ -69,78 +69,138 @@ export class ZohoItemSyncService {
       let eciVariant: ProductVariant | null = null;
 
       try {
-        eciVariant = await this.db.productVariant.upsert({
+        const zohoItem = await this.db.zohoItem.upsert({
           where: {
-            sku_tenantId: {
-              tenantId,
-              sku: item.sku,
+            id_zohoAppId: {
+              id: item.item_id,
+              zohoAppId: this.zohoApp.id,
+            },
+          },
+          create: {
+            id: item.item_id,
+            createdAt: new Date(item.created_time),
+            updatedAt: new Date(item.last_modified_time),
+            zohoApp: {
+              connect: {
+                id: this.zohoApp.id,
+              },
+            },
+            productVariant: {
+              connectOrCreate: {
+                where: {
+                  sku_tenantId: {
+                    sku: item.sku,
+                    tenantId: this.zohoApp.tenantId,
+                  },
+                },
+                create: {
+                  id: id.id("variant"),
+                  sku: item.sku,
+                  isBundleProduct: item.is_combo_product || false,
+                  tenant: {
+                    connect: {
+                      id: tenantId,
+                    },
+                  },
+                  stockOnHand: stock,
+                  // It is a product variant, if we have a "group_name" in Zoho.
+                  // In this moment, we first have to check, if a product does already
+                  // exist using the group_name (which is actually a product name)
+                  product: {
+                    connectOrCreate: {
+                      where: {
+                        normalizedName_tenantId: {
+                          tenantId,
+                          normalizedName: normalizeStrings.productNames(
+                            item?.group_name || "",
+                          ),
+                        },
+                      },
+                      create: {
+                        id: id.id("product"),
+                        tenantId,
+                        // If this is a single variant product, we set the variant name as
+                        // the product name
+                        name: item?.group_name || item.name,
+                        normalizedName: normalizeStrings.productNames(
+                          item?.group_name || item.name,
+                        ),
+                      },
+                    },
+                  },
+                },
+              },
             },
           },
           update: {
-            zohoItem: {
-              upsert: {
-                where: {
-                  id_zohoAppId: {
-                    id: item.item_id,
-                    zohoAppId: this.zohoApp.id,
-                  },
-                },
-                create: {
-                  id: item.item_id,
-                  zohoAppId: this.zohoApp.id,
-                  createdAt: new Date(item.created_time),
-                  updatedAt: new Date(item.last_modified_time),
-                },
-                update: {
-                  createdAt: new Date(item.created_time),
-                  updatedAt: new Date(item.last_modified_time),
-                },
-              },
-            },
-            isBundleProduct: item.is_combo_product || false,
-            stockOnHand: stock,
-          },
-          create: {
-            id: id.id("variant"),
-            sku: item.sku,
-            isBundleProduct: item.is_combo_product || false,
-            tenant: {
-              connect: {
-                id: tenantId,
-              },
-            },
-            zohoItem: {
-              create: {
-                id: item.item_id,
-                createdAt: new Date(item.created_time),
-                updatedAt: new Date(item.last_modified_time),
-                zohoAppId: this.zohoApp.id,
-              },
-            },
-            stockOnHand: stock,
-            // It is a product variant, if we have a "group_name" in Zoho.
-            // In this moment, we first have to check, if a product does already exist using the
-            // group_name (which is actually a product name)
-            product: {
+            createdAt: new Date(item.created_time),
+            updatedAt: new Date(item.last_modified_time),
+            productVariant: {
               connectOrCreate: {
                 where: {
-                  normalizedName_tenantId: {
-                    tenantId,
-                    normalizedName: normalizeStrings.productNames(
-                      item?.group_name || "",
-                    ),
+                  sku_tenantId: {
+                    sku: item.sku,
+                    tenantId: this.zohoApp.tenantId,
                   },
                 },
                 create: {
-                  id: id.id("product"),
-                  tenantId,
-                  // If this is a single variant product, we set the variant name as
-                  // the product name
-                  name: item?.group_name || item.name,
-                  normalizedName: normalizeStrings.productNames(
-                    item?.group_name || item.name,
-                  ),
+                  id: id.id("variant"),
+                  sku: item.sku,
+                  isBundleProduct: item.is_combo_product || false,
+                  tenant: {
+                    connect: {
+                      id: tenantId,
+                    },
+                  },
+                  stockOnHand: stock,
+                  // It is a product variant, if we have a "group_name" in Zoho.
+                  // In this moment, we first have to check, if a product does already
+                  // exist using the group_name (which is actually a product name)
+                  product: {
+                    connectOrCreate: {
+                      where: {
+                        normalizedName_tenantId: {
+                          tenantId,
+                          normalizedName: normalizeStrings.productNames(
+                            item?.group_name || "",
+                          ),
+                        },
+                      },
+                      create: {
+                        id: id.id("product"),
+                        tenantId,
+                        // If this is a single variant product, we set the variant name as
+                        // the product name
+                        name: item?.group_name || item.name,
+                        normalizedName: normalizeStrings.productNames(
+                          item?.group_name || item.name,
+                        ),
+                      },
+                    },
+                  },
                 },
+              },
+            },
+          },
+          include: {
+            productVariant: true,
+          },
+        });
+
+        eciVariant = zohoItem.productVariant;
+
+        await this.db.productVariant.update({
+          where: {
+            id: eciVariant.id,
+          },
+          data: {
+            stockOnHand: item.stock_on_hand,
+            product: {
+              update: {
+                name: item?.group_name || item.name,
+                normalizedName: normalizeStrings.productNames(
+                  item?.group_name || item.name,
+                ),
               },
             },
           },

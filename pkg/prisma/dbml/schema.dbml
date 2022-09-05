@@ -167,7 +167,7 @@ Table ZohoSalesOrder {
   zohoContact ZohoContact
   zohoContactId String
   order Order [not null]
-  orderId String [unique, not null]
+  orderId String [not null, note: 'The ECI internal order ID ']
   zohoApp ZohoApp [not null]
   zohoAppId String [not null]
   zohoContactPerson ZohoContactPerson
@@ -375,8 +375,8 @@ Table LineItem {
   uniqueString String [not null]
   order Order [not null]
   orderId String [not null]
-  warehouse Warehouse [not null]
-  warehouseId String [not null]
+  warehouse Warehouse
+  warehouseId String
   package Package
   packageId String
   quantity Float [not null]
@@ -445,15 +445,15 @@ Table Address {
   id String [pk]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-  street String [not null]
+  street String
   additionalAddressLine String
-  plz String [not null]
-  city String [not null]
-  countryCode CountryCode [not null]
+  plz String
+  city String
+  countryCode CountryCode
   countryArea String
   company String
   phone String
-  fullname String [not null]
+  fullname String
   contact Contact [not null]
   contactId String [not null]
   tenant Tenant [not null]

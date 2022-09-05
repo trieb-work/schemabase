@@ -179,6 +179,44 @@ export class SaleorProductSyncService {
             updatedAt: product.updatedAt,
             productId: product.id,
             productVariant: {
+              connectOrCreate: {
+                where: {
+                  sku_tenantId: {
+                    sku: variant.sku,
+                    tenantId: this.tenantId,
+                  },
+                },
+                create: {
+                  id: id.id("variant"),
+                  sku: variant.sku,
+                  ean,
+                  tenant: {
+                    connect: {
+                      id: this.tenantId,
+                    },
+                  },
+                  product: {
+                    connectOrCreate: {
+                      where: {
+                        normalizedName_tenantId: {
+                          normalizedName: normalizedProductName,
+                          tenantId: this.tenantId,
+                        },
+                      },
+                      create: {
+                        id: id.id("product"),
+                        tenant: {
+                          connect: {
+                            id: this.tenantId,
+                          },
+                        },
+                        name: product.name,
+                        normalizedName: normalizedProductName,
+                      },
+                    },
+                  },
+                },
+              },
               update: {
                 ean,
               },

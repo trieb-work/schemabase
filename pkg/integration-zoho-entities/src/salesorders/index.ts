@@ -190,10 +190,6 @@ export class ZohoSalesOrdersSyncService {
                   id: this.tenantId,
                 },
               },
-              // TODO connectOrCreate shippingAddress in salesorder sync to eci
-              shippingAddress: {},
-              // TODO connectOrCreate billingAddress in salesorder sync to eci
-              billingAddress: {},
               language,
             },
           },
@@ -235,6 +231,7 @@ export class ZohoSalesOrdersSyncService {
           order: {
             update: {
               date: new Date(salesorder.date),
+              mainContact: contactConnectOrCreate,
             },
           },
           zohoContact: zohoContactConnect,
@@ -252,10 +249,17 @@ export class ZohoSalesOrdersSyncService {
         },
       });
 
+      /**
+       * ECI internal Order ID
+       */
       const internalOrderId = createdSalesOrder.orderId;
+      if (!internalOrderId)
+        throw new Error(
+          `No order id returned for ${salesorder.salesorder_id} - this should never happen!`,
+        );
 
       // LINE ITEMs and addresses sync - pulls the full salesorder from Zoho only
-      // if something has changed or if we are missing data internally
+      // if something has changed or if we don't have any line items internally
       if (
         isAfter(
           new Date(salesorder.last_modified_time),
@@ -290,6 +294,9 @@ export class ZohoSalesOrdersSyncService {
             salesorder.salesorder_number,
             lineItem.sku,
             lineItem.quantity,
+          );
+          this.logger.info(
+            `Upserting line_item with uniqueString ${uniqueString} and Zoho ID ${lineItem.line_item_id}`,
           );
 
           // Lookup of the product variant SKU in our internal DB
@@ -328,6 +335,10 @@ export class ZohoSalesOrdersSyncService {
             ? { connect: { id: warehouse.warehouseId } }
             : {};
 
+          if (!warehouse)
+            this.logger.info(
+              `This line item has no warehouse attached. ${lineItem.line_item_id}`,
+            );
           await this.db.zohoLineItem.upsert({
             where: {
               id_zohoAppId: {
@@ -434,21 +445,28 @@ export class ZohoSalesOrdersSyncService {
             `Shipping address id or billing address id missing for ${fullSalesorder.salesorder_id} - Can't sync addresses`,
           );
         } else {
-          await addresses(
-            this.db,
-            this.tenantId,
-            this.zohoApp.id,
-            this.logger,
-            fullSalesorder.customer_id,
-          ).eciOrderAddAddresses(
-            fullSalesorder.shipping_address,
-            fullSalesorder.shipping_address_id,
-            fullSalesorder.billing_address,
-            fullSalesorder.billing_address_id,
-            fullSalesorder.contact_person_details,
-            fullSalesorder.customer_name,
-            internalOrderId,
-          );
+          try {
+            await addresses(
+              this.db,
+              this.tenantId,
+              this.zohoApp.id,
+              this.logger,
+              fullSalesorder.customer_id,
+            ).eciOrderAddAddresses(
+              fullSalesorder.shipping_address,
+              fullSalesorder.shipping_address_id,
+              fullSalesorder.billing_address,
+              fullSalesorder.billing_address_id,
+              fullSalesorder.contact_person_details,
+              fullSalesorder.customer_name,
+              internalOrderId,
+            );
+          } catch (err) {
+            if (err instanceof Warning) {
+              this.logger.warn(err.message);
+              continue;
+            }
+          }
         }
       }
     }

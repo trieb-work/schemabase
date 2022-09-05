@@ -168,6 +168,8 @@ export class SaleorOrderSyncService {
           create: {
             id: id.id("contact"),
             email,
+            firstName: order.billingAddress?.firstName,
+            lastName: order.billingAddress?.lastName,
             company: companyCreateOrConnect,
             tenant: {
               connect: {
