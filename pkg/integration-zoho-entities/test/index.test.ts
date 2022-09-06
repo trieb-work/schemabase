@@ -1,22 +1,22 @@
 /* eslint-disable max-len */
-import { NoopLogger } from "@eci/pkg/logger";
+import { AssertionLogger } from "@eci/pkg/logger";
 import { PrismaClient } from "@eci/pkg/prisma";
-import { beforeEach, describe, jest, test, beforeAll } from "@jest/globals";
+import { beforeEach, describe, jest, test, beforeAll, afterAll } from "@jest/globals";
 import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts";
 import { ZohoSalesOrdersSyncService } from "../src/salesorders";
 import {
-  deleteOrder,
-  upsertAddressWithZohoAddress,
-  upsertContactWithZohoContactPersonsAndZohoContact,
+  deleteOrders,
+  deleteZohoItem,
+  upsertAddress,
+  upsertContact,
   upsertLineItem1,
   upsertLineItem2,
   upsertOrder,
   upsertProductVariant,
-  upsertTaxWithZohoTax,
-  upsertZohoItem
+  upsertTax,
 } from "./utils";
 
-let zohoApp: any;
+const ORDERNR_DATE_PREFIX = "SO-DATE-";
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -24,65 +24,109 @@ beforeEach(() => {
 
 describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
   const prismaClient = new PrismaClient();
+  let zoho: Zoho;
+  let zohoSalesOrdersSyncService: ZohoSalesOrdersSyncService;
+  let zohoSalesOrdersLogger: AssertionLogger;
+  let newOrderNumber: string;
 
   beforeAll(async () => {
-    zohoApp = await prismaClient.zohoApp.findUnique({
+    const zohoApp = await prismaClient.zohoApp.findUnique({
       where: {
         id: "test",
       },
       include: { tenant: true },
     });
     if (!zohoApp) throw new Error("No testing Zoho App found!");
-  });
-
-  test("It should sync a SalesOrders correctly", async () => {
-    /**
-     * This test is running against the Test Instance of Zoho
-     */
-    const realTestingZohoClient = new Zoho(
+    zoho = new Zoho(
       await ZohoApiClient.fromOAuth({
         orgId: zohoApp.orgId,
         client: { id: zohoApp.clientId, secret: zohoApp.clientSecret },
       }),
     );
-    const zohoSalesOrdersSyncService = new ZohoSalesOrdersSyncService({
-      zoho: realTestingZohoClient,
-      logger: new NoopLogger(),
+    zohoSalesOrdersLogger = new AssertionLogger();
+    zohoSalesOrdersSyncService = new ZohoSalesOrdersSyncService({
+      zoho,
+      logger: zohoSalesOrdersLogger,
       db: new PrismaClient(),
       zohoApp,
     });
+  });
+  afterAll(async () => {
+    await deleteOrders(prismaClient, { startsWith: ORDERNR_DATE_PREFIX });
+    const zohoIds = (await zoho.salesOrder.search(ORDERNR_DATE_PREFIX)).map((so) => so.salesorder_id);
+    console.log("zohoIds for deletion", zohoIds);
+    console.log("zoho delete res", await zoho.salesOrder.delete(zohoIds));
+  });
 
-    // INFO: Multiple tests listed in single test since we have to run them sequentlially!
-    console.log('First test: "It should abort sync of orders if product variants of lineitems are not synced with zoho items"');
-    const newOrderNumber = `SO-DATE-${Math.round((Number(new Date) - 1662000000000)/1000)}`;
+  test("Test 1: It should abort sync of orders if product variants of lineitems are not synced with zoho items", async () => {
+    console.info("Test 1 started");
+    newOrderNumber = `${ORDERNR_DATE_PREFIX}${Math.round((Number(new Date) - 1662000000000) / 1000)}`;
     console.log("newOrderNumber", newOrderNumber);
     await Promise.all([
-      upsertTaxWithZohoTax(prismaClient),
       upsertProductVariant(prismaClient),
-      upsertContactWithZohoContactPersonsAndZohoContact(prismaClient),
+      deleteZohoItem(prismaClient),
+      upsertTax(prismaClient),
+      upsertContact(prismaClient),
     ]);
-    await upsertAddressWithZohoAddress(prismaClient);
+    await upsertAddress(prismaClient);
     await upsertOrder(prismaClient, newOrderNumber);
     await Promise.all([
       upsertLineItem1(prismaClient, newOrderNumber),
       upsertLineItem2(prismaClient, newOrderNumber),
     ]);
+    zohoSalesOrdersLogger.clearMessages();
     await zohoSalesOrdersSyncService.syncFromECI();
+    zohoSalesOrdersLogger.assertOneLogEntryMatches("info", ({ message, fields }) =>
+      !!message.match(/Received [\d]+ orders that are not synced with Zoho/) && (fields?.orderIds as string[])?.includes(newOrderNumber)
+    );
+    zohoSalesOrdersLogger.assertOneLogMessageMatches("warn", `No zohoItem set for the productVariant of this lineItem. Aborting sync of this order. Try again after zoho items sync.`);
+    zohoSalesOrdersLogger.assertOneLogMessageMatches("info", `Successfully confirmed 0 order(s).`);
 
-    await upsertZohoItem(prismaClient);
-    console.log('Second test: "It should sync a SalesOrders if not synced already"');
-    await zohoSalesOrdersSyncService.syncFromECI();
 
-    console.log('Third test: "It should attach the Zoho SalesOrder if it is created in saleor but has no record in eci db"');
-    // NOTE: If this test fails make sure that the order TEST-1234 does exist in zoho
-    const existingOrderNumber = "TEST-1234";
-    console.log("existingOrderNumber", existingOrderNumber);
-    await deleteOrder(prismaClient, existingOrderNumber);
-    await upsertOrder(prismaClient, existingOrderNumber);
-    await Promise.all([
-      upsertLineItem1(prismaClient, existingOrderNumber),
-      upsertLineItem2(prismaClient, existingOrderNumber),
-    ]);
-    await zohoSalesOrdersSyncService.syncFromECI();
+    // TODO: sync and check zohoSalesOrdersSyncService
+    // upsertContact
+    // upsertAddress
+    // upsertTax
+
+    console.info("Test 1 completed");
   }, 90000);
+
+
+
+
+
+  
+  // test("Test 2: It should sync a SalesOrders if all it's entities are also synced", async () => {
+  //   console.info("Test 2 started");
+  //   await upsertZohoItem(prismaClient);
+  //   zohoSalesOrdersLogger.clearMessages();
+  //   await zohoSalesOrdersSyncService.syncFromECI();
+  //   zohoSalesOrdersLogger.assertOneLogEntryMatches("info", ({ message, fields }) =>
+  //     !!message.match(/Received [\d]+ orders that are not synced with Zoho/) && (fields?.orderIds as string[])?.includes(newOrderNumber)
+  //   );
+  //   zohoSalesOrdersLogger.assertOneLogMessageMatches("info", `Successfully created zoho salesorder ${newOrderNumber}`);
+  //   zohoSalesOrdersLogger.assertOneLogEntryMatches("info", ({ message, fields }) =>
+  //     !!message.match(/Successfully confirmed [1-9]+[0]* order\(s\)./) && (fields?.salesorderNumbersToConfirm as string[])?.includes(newOrderNumber)
+  //   )
+  //   console.info("Test 2 completed");
+  // }, 90000);
+
+  // test("Test 3: It should attach the Zoho SalesOrder if it is created in saleor but has no record in eci db", async () => {
+  //   console.info("Test 3 started");
+  //   await deleteOrder(prismaClient, newOrderNumber);
+  //   await upsertOrder(prismaClient, newOrderNumber);
+  //   await Promise.all([
+  //     upsertLineItem1(prismaClient, newOrderNumber),
+  //     upsertLineItem2(prismaClient, newOrderNumber),
+  //   ]);
+  //   zohoSalesOrdersLogger.clearMessages();
+  //   await zohoSalesOrdersSyncService.syncFromECI();
+  //   zohoSalesOrdersLogger.assertOneLogEntryMatches("info", ({ message, fields }) =>
+  //     !!message.match(/Received [\d]+ orders that are not synced with Zoho/) && (fields?.orderIds as string[])?.includes(newOrderNumber)
+  //   );
+  //   zohoSalesOrdersLogger.assertOneLogMessageMatches("warn", `This sales order number already exists.`);
+  //   zohoSalesOrdersLogger.assertOneLogMessageMatches("info", `Successfully attached zoho salesorder ${newOrderNumber} from search request to the current order`);
+  //   zohoSalesOrdersLogger.assertOneLogMessageMatches("info", /Successfully confirmed [0-9]+ order\(s\)./);
+  //   console.info("Test 3 completed");
+  // }, 90000);
 });

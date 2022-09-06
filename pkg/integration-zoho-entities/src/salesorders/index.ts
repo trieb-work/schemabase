@@ -599,7 +599,7 @@ export class ZohoSalesOrdersSyncService {
           : "item_level";
         const mainContactPerson = orderToMainContactPerson(order);
         const createSalesOrderBody: CreateSalesOrder = {
-          date: format(order.date, "yyyy-MM-dd") ?? undefined,
+          date: order.date ? format(order.date, "yyyy-MM-dd") : undefined,
           salesorder_number: order.orderNumber,
           reference_number: order.referenceNumber ?? undefined,
           line_items: orderToZohoLineItems(order, discount_type),
@@ -746,13 +746,8 @@ export class ZohoSalesOrdersSyncService {
                 { eciOrderId: order.id },
               );
             }
-<<<<<<< HEAD
             if(matchingSalesOrder.status === "draft"){
               salesordersToConfirm.push(matchingSalesOrder);
-=======
-            if (matchingSalesOrder.status === "draft") {
-              salesorderToConfirm.push(matchingSalesOrder);
->>>>>>> 45bd931ff83538ff72671f03f34f0926c36961a0
             }
           } else {
             this.logger.error(err.message, { eciOrderId: order.id });
