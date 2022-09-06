@@ -24,6 +24,8 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
+const CLEANUP_ORDERS = false;
+
 describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
   const prismaClient = new PrismaClient();
   let zoho: Zoho;
@@ -62,10 +64,12 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
     zohoTaxSyncService = new ZohoTaxSyncService({ logger: zohoTaxSyncLogger, ...commonParamms });
   });
   afterAll(async () => {
-    await deleteOrders(prismaClient, { startsWith: ORDERNR_DATE_PREFIX });
-    const zohoIds = (await zoho.salesOrder.search(ORDERNR_DATE_PREFIX)).map((so) => so.salesorder_id);
-    console.log("zohoIds for deletion", zohoIds);
-    console.log("zoho delete res", await zoho.salesOrder.delete(zohoIds));
+    if(CLEANUP_ORDERS){
+      await deleteOrders(prismaClient, { startsWith: ORDERNR_DATE_PREFIX });
+      const zohoIds = (await zoho.salesOrder.search(ORDERNR_DATE_PREFIX)).map((so) => so.salesorder_id);
+      console.log("zohoIds for deletion", zohoIds);
+      console.log("zoho delete res", await zoho.salesOrder.delete(zohoIds));
+    }
   });
 
   test("Test 1: It should abort sync of orders if contacts are not synced to zoho yet", async () => {
