@@ -25,7 +25,10 @@ class ContactPersonsSync {
     this.logger = config.logger;
   }
 
-  public async syncWithECI(contactPersons: ContactPersonFromContactGet[]) {
+  public async syncWithECI(
+    contactPersons: ContactPersonFromContactGet[],
+    active: boolean,
+  ) {
     this.logger.info(
       `Syncing ${contactPersons.length} contactpersons for ${this.contactId}`,
     );
@@ -59,6 +62,7 @@ class ContactPersonsSync {
               },
             },
           },
+          active,
           zohoApp: {
             connect: {
               id: this.zohoAppId,

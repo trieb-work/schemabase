@@ -195,17 +195,19 @@ model ZohoContact {
 
 // Zoho knows Contacts and ContactPersons.
 model ZohoContactPerson {
-  // Zoho Internal ContactPerson Id
+  /// Zoho Internal ContactPerson Id
   id String
+
+  /// Contacts/Contactpersons can be disabled to filter out merged contacts
+  active    Boolean @default(true)
 
   zohoContact   ZohoContact @relation(fields: [zohoContactId, zohoAppId], references: [id, zohoAppId], onDelete: Cascade)
   zohoContactId String
 
-  // For easy look-up directly in the ZohoContact model
-  email     String?
-
   contact   Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
   contactId String
+  // For easy look-up directly in the ZohoContact model. Is set automatically from related contact 
+  email     String?
 
   zohoPayments ZohoPayment[]
 
@@ -219,6 +221,7 @@ model ZohoContactPerson {
   @@index([contactId])
   @@index([zohoContactId])
   @@index([zohoAppId])
+  @@index([active]) 
 }
 
 model ZohoAddress {
@@ -488,6 +491,7 @@ model Contact {
   id        String   @id
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   email     String
 
   firstName String?
