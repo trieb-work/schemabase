@@ -102,7 +102,7 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
     console.info("Test 2 completed");
   }, 90000);
 
-  test("Test 3: It should attach the Zoho SalesOrder if it is created in saleor but has no record in eci db", async () => {
+  test("Test 3: It should attach the Zoho SalesOrder if it is created in zoho but has no record in eci db", async () => {
     console.info("Test 3 started");
     await deleteOrder(prismaClient, newOrderNumber);
     await upsertOrder(prismaClient, newOrderNumber);

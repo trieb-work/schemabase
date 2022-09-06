@@ -24,7 +24,7 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
-const CLEANUP_ORDERS = false;
+const CLEANUP_ORDERS = true;
 
 describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
   const prismaClient = new PrismaClient();
