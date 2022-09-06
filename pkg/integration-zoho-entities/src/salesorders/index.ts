@@ -26,13 +26,7 @@ import { orderToMainContactPerson } from "./contacts";
 import { addressToZohoAddressId } from "./address";
 import { taxToZohoTaxId } from "./taxes";
 import { normalizeStrings } from "@eci/pkg/normalization";
-
-export class Warning extends Error {
-  // eslint-disable-next-line no-useless-constructor
-  constructor(msg: string) {
-    super(msg);
-  }
-}
+import { Warning } from "../utils";
 
 export interface ZohoSalesOrdersSyncConfig {
   logger: ILogger;
@@ -500,7 +494,7 @@ export class ZohoSalesOrdersSyncService {
         // filter out orders that are cancled (for example in saleor)
         orderStatus: "confirmed",
         // filter out zohoSalesorders with the current AppId like this we find the orders,
-        // that we do not yet have a ZohoId in the DB
+        // for which we do not yet have a ZohoId in the DB
         zohoSalesOrders: {
           none: {
             zohoAppId: this.zohoApp.id,

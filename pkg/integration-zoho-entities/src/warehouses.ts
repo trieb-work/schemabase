@@ -30,12 +30,11 @@ export class ZohoWarehouseSyncService {
   }
 
   public async syncToECI() {
-    // Get all active Items from Zoho
+    // Get all active Warehouses from Zoho
     const warehouses = await this.zoho.warehouse.list();
     const tenantId = this.zohoApp.tenantId;
 
-    // Loop through every item and upsert the corresponding
-    // product, productVariant and ZohoItem in the DB
+    // Loop through every warehouse and upsert the corresponding warehouse
     for (const warehouse of warehouses) {
       const normalizedWarehouseName = normalizeStrings.warehouseNames(
         warehouse.warehouse_name,

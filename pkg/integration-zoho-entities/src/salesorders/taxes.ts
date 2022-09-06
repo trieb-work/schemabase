@@ -2,7 +2,7 @@ import {
   ZohoTax,
   Tax,
 } from "@prisma/client";
-import { Warning } from ".";
+import { Warning } from "../utils";
 
 export type ExtendedTax = Tax & {
   zohoTaxes: ZohoTax[];

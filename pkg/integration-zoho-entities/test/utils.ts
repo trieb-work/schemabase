@@ -2,6 +2,7 @@
 import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { id } from "@eci/pkg/ids";
 import { Prisma, PrismaClient } from "@prisma/client";
+import { normalizeStrings } from "@eci/pkg/normalization";
 
 const LOGGING = true;
 
@@ -62,7 +63,7 @@ export async function upsertProductVariant(prisma: PrismaClient) {
   if (LOGGING) console.log("created one generic productVariant");
 }
 
-export async function upsertOrder(prisma: PrismaClient, orderNumber: string) {
+export async function upsertOrder(prisma: PrismaClient, orderNumber: string, totalPriceGross = 234.68) {
   await prisma.order.upsert({
     where: {
       orderNumber_tenantId: {
@@ -76,7 +77,7 @@ export async function upsertOrder(prisma: PrismaClient, orderNumber: string) {
       createdAt: "1970-01-01T00:00:00.000Z",
       date: "2022-01-01T00:00:00.000Z",
       orderNumber,
-      totalPriceGross: 234.68,
+      totalPriceGross,
       orderStatus: "confirmed",
       readyToFullfill: true,
       shippingAddress: {
@@ -122,6 +123,52 @@ export async function upsertLineItem1(prisma: PrismaClient, orderNumber: string)
       productVariant: {
         connect: {
           id: "test",
+        },
+      },
+      order: {
+        connect: {
+          orderNumber_tenantId: {
+            orderNumber,
+            tenantId: "test",
+          },
+        },
+      },
+      tenant: {
+        connect: {
+          id: "test",
+        },
+      },
+      warehouse: {
+        connect: {
+          id: "test",
+        },
+      },
+    },
+  });
+  if (LOGGING) console.log("created one generic lineitem for the order");
+}
+
+export async function upsertLineItemWithRealProductVariantFromZoho(prisma: PrismaClient, orderNumber: string) {
+  await prisma.lineItem.upsert({
+    where: {
+      id: `test-l1-1-${orderNumber}`,
+    },
+    update: {},
+    create: {
+      id: `test-l1-1-${orderNumber}`,
+      quantity: 10,
+      uniqueString: uniqueStringOrderLine(orderNumber, `test-l1-1-${orderNumber}`, 10),
+      tax: {
+        connect: {
+          id: "test"
+        }
+      },
+      productVariant: {
+        connect: {
+          sku_tenantId: {
+            sku: "pf-leb-5-gemischt",
+            tenantId: "test",
+          }
         },
       },
       order: {
@@ -196,6 +243,16 @@ export async function upsertLineItem2(prisma: PrismaClient, orderNumber: string)
 
 
 
+export async function recreateContact(prisma: PrismaClient) {
+  const delRes = await prisma.contact.deleteMany({
+    where: {
+      id: "test",
+    },
+  });
+  if (LOGGING) console.log("deleted contact", delRes.count);
+  await upsertContact(prisma);
+}
+
 export async function upsertContact(prisma: PrismaClient) {
   await prisma.contact.upsert({
     where: {
@@ -205,6 +262,8 @@ export async function upsertContact(prisma: PrismaClient) {
     create: {
       id: "test",
       email: "tilman@trieb.work",
+      firstName: "Tilman",
+      lastName: "Marquart",
       tenant: {
         connect: {
           id: "test",
@@ -214,7 +273,15 @@ export async function upsertContact(prisma: PrismaClient) {
   });
   if (LOGGING) console.log("created contact");
 }
-
+export async function recreateAddress(prisma: PrismaClient) {
+  const delRes = await prisma.address.deleteMany({
+    where: {
+      id: "test",
+    },
+  });
+  if (LOGGING) console.log("deleted address", delRes.count);
+  await upsertAddress(prisma);
+}
 export async function upsertAddress(prisma: PrismaClient) {
   await prisma.address.upsert({
     where: {
@@ -244,6 +311,16 @@ export async function upsertAddress(prisma: PrismaClient) {
   if (LOGGING) console.log("created one address for the generic order");
 }
 
+export async function recreateTax(prisma: PrismaClient) {
+  await prisma.tax.deleteMany({
+    where: {
+      id: "test",
+    },
+  });
+  if (LOGGING) console.log("deleted tax");
+  await upsertTax(prisma)
+}
+
 export async function upsertTax(prisma: PrismaClient) {
   await prisma.tax.upsert({
     where: {
@@ -252,9 +329,9 @@ export async function upsertTax(prisma: PrismaClient) {
     update: {},
     create: {
       id: "test",
-      normalizedName: "test",
-      name: "test",
-      percentage: 19,
+      name: "Reduziert - Temp",
+      normalizedName: normalizeStrings.taxNames("Reduziert - Temp"),
+      percentage: 5,
       tenant: {
         connect: {
           id: "test",
@@ -445,10 +522,14 @@ export async function upsertZohoItem(prisma: PrismaClient) {
   if (LOGGING) console.log("created zohoItem");
 }
 
+/**
+ * 
+ * this deletes pf-leb-5-gemischt
+ */
 export async function deleteZohoItem(prisma: PrismaClient) {
   const delRes = await prisma.zohoItem.deleteMany({
     where: {
-      id: "116240000000203041",
+      id: "116240000000203041", // = pf-leb-5-gemischt
       zohoAppId: "test",
     }
   });

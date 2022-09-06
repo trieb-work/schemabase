@@ -9,7 +9,7 @@ import {
   ProductVariant,
   ZohoItem,
 } from "@prisma/client";
-import { Warning } from ".";
+import { Warning } from "../utils";
 import { ExtendedTax, taxToZohoTaxId } from "./taxes";
 
 type ExtendedLineItem = LineItem & {

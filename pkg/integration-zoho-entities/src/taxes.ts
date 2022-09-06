@@ -79,6 +79,7 @@ export class ZohoTaxSyncService {
           tax: taxCreateOrConnect,
         },
       });
+      this.logger.info(`Synced tax ${tax.tax_name} (${tax.tax_percentage}%)`)
     }
     this.logger.info(`Sync finished for ${taxes.length} Zoho Taxes`);
   }

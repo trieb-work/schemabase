@@ -13,6 +13,7 @@ import {
   CreateAddress,
 } from "@trieb.work/zoho-ts/dist/types/address";
 import countries from "i18n-iso-countries";
+import { Warning } from "../utils";
 
 interface AddressesConfig {
   db: PrismaClient;
@@ -20,12 +21,6 @@ interface AddressesConfig {
   zohoAppId: string;
   logger: ILogger;
   contactId: string;
-}
-class Warning extends Error {
-  // eslint-disable-next-line no-useless-constructor
-  constructor(msg: string) {
-    super(msg);
-  }
 }
 
 class Addresses {

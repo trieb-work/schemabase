@@ -1,5 +1,5 @@
 import { Order, ZohoContactPerson, Contact } from "@prisma/client";
-import { Warning } from ".";
+import { Warning } from "../utils";
 
 type OrderWithZohoContacts = Order & {
   mainContact:

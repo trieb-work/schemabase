@@ -1,7 +1,7 @@
 import { NoopLogger } from "@eci/pkg/logger";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { beforeEach, describe, jest, test, beforeAll } from "@jest/globals";
-import { Zoho } from "@trieb.work/zoho-ts";
+import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts";
 import { ZohoItemSyncService } from "./items";
 
 let zohoApp: any;
@@ -12,7 +12,7 @@ beforeEach(() => {
 
 describe("Zoho Inventory Item Sync", () => {
   const prismaClient = new PrismaClient();
-
+  let zoho: Zoho;
   const mockedZohoClient = {
     item: {
       list: async () =>
@@ -1597,9 +1597,16 @@ describe("Zoho Inventory Item Sync", () => {
       include: { tenant: true },
     });
     if (!zohoApp) throw new Error("No testing Zoho App found!");
+
+    zoho = new Zoho(
+      await ZohoApiClient.fromOAuth({
+        orgId: zohoApp.orgId,
+        client: { id: zohoApp.clientId, secret: zohoApp.clientSecret },
+      }),
+    );
   });
 
-  test("It should work to sync Zoho Items with internal ECI DB", async () => {
+  test("It should work to sync Zoho Items to internal ECI DB", async () => {
     const xx = new ZohoItemSyncService({
       zoho: mockedZohoClient,
       logger: new NoopLogger(),
@@ -1608,4 +1615,14 @@ describe("Zoho Inventory Item Sync", () => {
     });
     await xx.syncToECI();
   }, 90000);
+
+  // test("It should work to sync Zoho Items from internal ECI DB", async () => {
+  //   const xx = new ZohoItemSyncService({
+  //     zoho: mockedZohoClient,
+  //     logger: new NoopLogger(),
+  //     db: new PrismaClient(),
+  //     zohoApp,
+  //   });
+  //   await xx.syncFromECI();
+  // }, 90000);
 });

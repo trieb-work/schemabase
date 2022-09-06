@@ -1,5 +1,5 @@
 import { Address, ZohoAddress } from "@prisma/client";
-import { Warning } from ".";
+import { Warning } from "../utils";
 
 type AddressWithZohoAddress = Address & {
   zohoAddress: ZohoAddress[];

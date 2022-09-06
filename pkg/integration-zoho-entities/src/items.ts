@@ -36,7 +36,7 @@ export class ZohoItemSyncService {
     });
   }
 
-  public async syncToECI() {
+  public async syncToECI(): Promise<void> {
     // Get all Items from Zoho. We don't filter out non-active products, as we
     // might need them for older orderlines etc.
     const items = await this.zoho.item.list({});
@@ -294,4 +294,114 @@ export class ZohoItemSyncService {
     this.logger.info(`Sync finished for ${items.length} Zoho Items`);
     this.cronState.set({ lastRun: new Date(), lastRunStatus: "success" });
   }
+
+  /**
+   * create new zohoItems from ECI productVariants, 
+   * this sync does not sync stock information and only creates the ZohoItems once with the current stock info
+   * 
+   * --> INFO: stopped working on it, maybe this is not really needed @Jannik ?
+   */
+  // public async syncFromECI(): Promise<void> {
+  //   const productVariantsFromEciDb = await this.db.productVariant.findMany({
+  //     where: {
+  //       tenant: {
+  //         id: this.zohoApp.tenantId,
+  //       },
+  //       // filter out zohoItem with the current AppId like this we find the productVariants,
+  //       // for which we do not yet have a ZohoId in the DB
+  //       zohoItem: {
+  //         none: {
+  //           zohoAppId: this.zohoApp.id,
+  //         },
+  //       }
+  //     },
+  //     include: {
+  //       product: true
+  //     },
+  //   });
+  //
+  //   this.logger.info(
+  //     `Received ${productVariantsFromEciDb.length} productVariants that are not synced with Zoho.`,
+  //     {
+  //       productVariantSkus: productVariantsFromEciDb.map((pv) => pv.sku),
+  //     },
+  //   );
+  //
+  //   for (const productVariant of productVariantsFromEciDb) {
+  //     await this.zoho.item.create({
+  //       group_name: productVariant.product.name,
+  //       stock_on_hand: productVariant.stockOnHand ?? 0,
+  //       ean: Number(productVariant.ean),
+  //     });
+  //     try {
+  //       // TODO
+  //     } catch (err) {
+  //       if (err instanceof Warning) {
+  //         this.logger.warn(err.message, { productVariantId: productVariant.id });
+  //       } else if (err instanceof Error) {
+  //         // TODO zoho-ts package: add enum for error codes . like this:
+  //         // if(err as ZohoApiError).code === require(zoho-ts).apiErrorCodes.SalesOrderAlreadyExists){
+  //         if ((err as ZohoApiError).code === 36004) {
+  //           // 36004 = This sales order number already exists.
+  //           this.logger.warn(err.message, { productVariantId: productVariant.id });
+  //           // const searchedSalesOrders = await this.zoho.salesOrder.search(
+  //           //   order.orderNumber,
+  //           // );
+  //           // if (searchedSalesOrders.length === 0) {
+  //           //   this.logger.error(
+  //           //     "Salesorder was already created and search with order.orderNumber returned no results. Aborting sync of this order.",
+  //           //     { productVariantId: productVariant.id },
+  //           //   );
+  //           //   continue;
+  //           // }
+  //           // if (searchedSalesOrders.length > 1) {
+  //           //   this.logger.error(
+  //           //     "Salesorder was already created and search with order.orderNumber returned multiple results. Aborting sync of this order.",
+  //           //     { productVariantId: productVariant.id },
+  //           //   );
+  //           //   continue;
+  //           // }
+  //           // const matchingSalesOrder = searchedSalesOrders[0];
+  //           // await this.db.zohoSalesOrder.create({
+  //           //   data: {
+  //           //     id: matchingSalesOrder.salesorder_id,
+  //           //     order: {
+  //           //       connect: {
+  //           //         id: order.id,
+  //           //       },
+  //           //     },
+  //           //     zohoApp: {
+  //           //       connect: {
+  //           //         id: this.zohoApp.id,
+  //           //       },
+  //           //     },
+  //           //     createdAt: new Date(matchingSalesOrder.created_time),
+  //           //     updatedAt: new Date(matchingSalesOrder.last_modified_time),
+  //           //     // zohoContact // TODO is this needed? --> remove it from the schema if it is really not needed
+  //           //     // zohoContactPerson // TODO is this needed? --> remove it from the schema if it is really not needed
+  //           //   },
+  //           // });
+  //           // this.logger.info(
+  //           //   `Successfully attached zoho salesorder ${matchingSalesOrder.salesorder_number} from search request to the current order`,
+  //           //   {
+  //           //     orderId: order.id,
+  //           //     mainContactId: order.mainContactId,
+  //           //     orderNumber: order.orderNumber,
+  //           //     referenceNumber: order.referenceNumber,
+  //           //     zohoAppId: this.zohoApp.id,
+  //           //     tenantId: this.tenantId,
+  //           //   },
+  //           // );
+  //         } else {
+  //           this.logger.error(err.message, { productVariantId: productVariant.id });
+  //         }
+  //       } else {
+  //         this.logger.error(
+  //           "An unknown Error occured: " + (err as any)?.toString(),
+  //           { productVariantId: productVariant.id },
+  //         );
+  //       }
+  //     }
+  //   }
+  // }
 }
