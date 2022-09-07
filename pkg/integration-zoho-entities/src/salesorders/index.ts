@@ -505,6 +505,12 @@ export class ZohoSalesOrdersSyncService {
         createdAt: {
           lte: addMinutes(new Date(), -10),
         },
+        // TODO enhance where clause so we filter out the orders for which some data is missing so we can delte the throw Warning stuff
+        // order.lineItems.productVariant.zohoItem,
+        // order.lineItems.tax.zohoTaxes,
+        // order.lineItems.warehouse.zohoWarehous,
+        // order.mainContact.zohoContactPerson,
+        // ...
       },
       include: {
         lineItems: {
@@ -572,7 +578,8 @@ export class ZohoSalesOrdersSyncService {
     this.logger.info(
       `Received ${ordersFromEciDb.length} orders that are not synced with Zoho.`,
       {
-        orderIds: ordersFromEciDb.map((o) => o.orderNumber),
+        orderIds: ordersFromEciDb.map((o) => o.id),
+        orderNumbers: ordersFromEciDb.map((o) => o.orderNumber),
       },
     );
 
@@ -664,27 +671,27 @@ export class ZohoSalesOrdersSyncService {
       } catch (err) {
         if (err instanceof Warning) {
           // TODO make an update on Order and increase Warning counter, if warning counter over threshold 5 -> log an error instead
-          this.logger.warn(err.message, { eciOrderId: order.id });
+          this.logger.warn(err.message, { eciOrderId: order.id, eciOrderNumber: order.orderNumber });
         } else if (err instanceof Error) {
           // TODO zoho-ts package: add enum for error codes . like this:
           // if(err as ZohoApiError).code === require(zoho-ts).apiErrorCodes.SalesOrderAlreadyExists){
           if ((err as ZohoApiError).code === 36004) {
             // 36004 = This sales order number already exists.
-            this.logger.warn(err.message, { eciOrderId: order.id });
+            this.logger.warn(err.message, { eciOrderId: order.id, eciOrderNumber: order.orderNumber });
             const searchedSalesOrders = await this.zoho.salesOrder.search(
               order.orderNumber,
             );
             if (searchedSalesOrders.length === 0) {
               this.logger.error(
                 "Salesorder was already created and search with order.orderNumber returned no results. Aborting sync of this order.",
-                { eciOrderId: order.id },
+                { eciOrderId: order.id, eciOrderNumber: order.orderNumber },
               );
               continue;
             }
             if (searchedSalesOrders.length > 1) {
               this.logger.error(
                 "Salesorder was already created and search with order.orderNumber returned multiple results. Aborting sync of this order.",
-                { eciOrderId: order.id },
+                { eciOrderId: order.id, eciOrderNumber: order.orderNumber },
               );
               continue;
             }
@@ -726,7 +733,7 @@ export class ZohoSalesOrdersSyncService {
               this.logger.error(
                 "IMPORTANT: Order net totals from saleor and ECI do not match. The Order was therefore not " +
                 "confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
-                { eciOrderId: order.id },
+                { eciOrderId: order.id, eciOrderNumber: order.orderNumber },
               );
             }
             if (
@@ -736,19 +743,19 @@ export class ZohoSalesOrdersSyncService {
               this.logger.error(
                 "IMPORTANT: Order gross totals from saleor and ECI do not match. The Order was therefore not " +
                 "confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
-                { eciOrderId: order.id },
+                { eciOrderId: order.id, eciOrderNumber: order.orderNumber },
               );
             }
             if (matchingSalesOrder.status === "draft") {
               salesordersToConfirm.push(matchingSalesOrder);
             }
           } else {
-            this.logger.error(err.message, { eciOrderId: order.id });
+            this.logger.error(err.message, { eciOrderId: order.id, eciOrderNumber: order.orderNumber });
           }
         } else {
           this.logger.error(
             "An unknown Error occured: " + (err as any)?.toString(),
-            { eciOrderId: order.id },
+            { eciOrderId: order.id, eciOrderNumber: order.orderNumber },
           );
         }
       }

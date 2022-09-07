@@ -88,7 +88,7 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
     zohoSalesOrdersLogger.clearMessages();
     await zohoSalesOrdersSyncService.syncFromECI();
     zohoSalesOrdersLogger.assertOneLogEntryMatches("info", ({ message, fields }) =>
-      !!message.match(/Received [\d]+ orders that are not synced with Zoho/) && (fields?.orderIds as string[])?.includes(newOrderNumber)
+      !!message.match(/Received [\d]+ orders that are not synced with Zoho/) && (fields?.orderNumbers as string[])?.includes(newOrderNumber)
     );
     zohoSalesOrdersLogger.assertOneLogMessageMatches("warn", `No zohoContactPersons set for the mainContact of this order. Aborting sync of this order. Try again after zoho contacts sync.`);
     zohoSalesOrdersLogger.assertOneLogMessageMatches("info", `Successfully confirmed 0 order(s).`);
@@ -104,7 +104,7 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
     zohoSalesOrdersLogger.clearMessages();
     await zohoSalesOrdersSyncService.syncFromECI();
     zohoSalesOrdersLogger.assertOneLogEntryMatches("info", ({ message, fields }) =>
-      !!message.match(/Received [\d]+ orders that are not synced with Zoho/) && (fields?.orderIds as string[])?.includes(newOrderNumber)
+      !!message.match(/Received [\d]+ orders that are not synced with Zoho/) && (fields?.orderNumbers as string[])?.includes(newOrderNumber)
     );
     zohoSalesOrdersLogger.assertOneLogMessageMatches("warn", `No zohoItem set for the productVariant of this lineItem. Aborting sync of this order. Try again after zoho items sync.`);
     zohoSalesOrdersLogger.assertOneLogMessageMatches("info", `Successfully confirmed 0 order(s).`);
@@ -119,7 +119,7 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
     zohoSalesOrdersLogger.clearMessages();
     await zohoSalesOrdersSyncService.syncFromECI();
     zohoSalesOrdersLogger.assertOneLogEntryMatches("info", ({ message, fields }) =>
-      !!message.match(/Received [\d]+ orders that are not synced with Zoho/) && (fields?.orderIds as string[])?.includes(newOrderNumber)
+      !!message.match(/Received [\d]+ orders that are not synced with Zoho/) && (fields?.orderNumbers as string[])?.includes(newOrderNumber)
     );
     zohoSalesOrdersLogger.assertOneLogMessageMatches("warn", `No zohoTaxes set for this tax. Aborting sync of this order. Try again after zoho taxes sync.`);
     zohoSalesOrdersLogger.assertOneLogMessageMatches("info", `Successfully confirmed 0 order(s).`);
@@ -134,7 +134,7 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
     zohoSalesOrdersLogger.clearMessages();
     await zohoSalesOrdersSyncService.syncFromECI();
     zohoSalesOrdersLogger.assertOneLogEntryMatches("info", ({ message, fields }) =>
-      !!message.match(/Received [\d]+ orders that are not synced with Zoho/) && (fields?.orderIds as string[])?.includes(newOrderNumber)
+      !!message.match(/Received [\d]+ orders that are not synced with Zoho/) && (fields?.orderNumbers as string[])?.includes(newOrderNumber)
     );
     zohoSalesOrdersLogger.assertOneLogMessageMatches("info", `Successfully created zoho salesorder ${newOrderNumber}`);
     zohoSalesOrdersLogger.assertOneLogEntryMatches("info", ({ message, fields }) =>

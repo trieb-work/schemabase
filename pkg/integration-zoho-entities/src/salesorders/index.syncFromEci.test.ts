@@ -19,7 +19,7 @@ import {
 } from "../../test/utils";
 import "../../test/consoleFormatter";
 
-const ORDERNR_DATE_PREFIX = "SO-DATE-";
+const ORDERNR_DATE_PREFIX = "SO-DATE-SO-";
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -80,7 +80,7 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
     zohoSalesOrdersLogger.clearMessages();
     await zohoSalesOrdersSyncService.syncFromECI();
     zohoSalesOrdersLogger.assertOneLogEntryMatches("info", ({ message, fields }) =>
-      !!message.match(/Received [\d]+ orders that are not synced with Zoho/) && (fields?.orderIds as string[])?.includes(newOrderNumber)
+      !!message.match(/Received [\d]+ orders that are not synced with Zoho/) && (fields?.orderNumbers as string[])?.includes(newOrderNumber)
     );
     zohoSalesOrdersLogger.assertOneLogMessageMatches("warn", `No zohoItem set for the productVariant of this lineItem. Aborting sync of this order. Try again after zoho items sync.`);
     zohoSalesOrdersLogger.assertOneLogMessageMatches("info", `Successfully confirmed 0 order(s).`);
@@ -93,7 +93,7 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
     zohoSalesOrdersLogger.clearMessages();
     await zohoSalesOrdersSyncService.syncFromECI();
     zohoSalesOrdersLogger.assertOneLogEntryMatches("info", ({ message, fields }) =>
-      !!message.match(/Received [\d]+ orders that are not synced with Zoho/) && (fields?.orderIds as string[])?.includes(newOrderNumber)
+      !!message.match(/Received [\d]+ orders that are not synced with Zoho/) && (fields?.orderNumbers as string[])?.includes(newOrderNumber)
     );
     zohoSalesOrdersLogger.assertOneLogMessageMatches("info", `Successfully created zoho salesorder ${newOrderNumber}`);
     zohoSalesOrdersLogger.assertOneLogEntryMatches("info", ({ message, fields }) =>
@@ -113,7 +113,7 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
     zohoSalesOrdersLogger.clearMessages();
     await zohoSalesOrdersSyncService.syncFromECI();
     zohoSalesOrdersLogger.assertOneLogEntryMatches("info", ({ message, fields }) =>
-      !!message.match(/Received [\d]+ orders that are not synced with Zoho/) && (fields?.orderIds as string[])?.includes(newOrderNumber)
+      !!message.match(/Received [\d]+ orders that are not synced with Zoho/) && (fields?.orderNumbers as string[])?.includes(newOrderNumber)
     );
     zohoSalesOrdersLogger.assertOneLogMessageMatches("warn", `This sales order number already exists.`);
     zohoSalesOrdersLogger.assertOneLogMessageMatches("info", `Successfully attached zoho salesorder ${newOrderNumber} from search request to the current order`);

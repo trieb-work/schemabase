@@ -6,6 +6,21 @@ import { normalizeStrings } from "@eci/pkg/normalization";
 
 const LOGGING = true;
 
+export async function deleteInvoices(prisma: PrismaClient, orderNumber: string | Prisma.StringFilter) {
+  const delRes = await prisma.invoice.deleteMany({
+    where: {
+      orders: {
+        some: {
+          AND: {
+            orderNumber,
+            tenantId: "test",
+          }
+        }
+      }
+    },
+  });
+  if (LOGGING) console.log("deleted Invoice", delRes.count);
+}
 export async function deleteOrders(prisma: PrismaClient, orderNumber: string | Prisma.StringFilter) {
   const delRes = await prisma.order.deleteMany({
     where: {
