@@ -26,7 +26,7 @@ specifiers:
   '@trieb.work/eslint-config-base': ^1.10.0
   '@trieb.work/prettier-base': ^0.1.2
   '@trieb.work/tsconfig-base': ^1.6.4
-  '@trieb.work/zoho-ts': ^0.5.37
+  '@trieb.work/zoho-ts': ^0.5.38
   '@types/async': ^3.2.13
   '@types/body-parser': ^1.19.2
   '@types/connect-ensure-login': ^0.1.7
@@ -115,7 +115,7 @@ dependencies:
   '@geist-ui/react': 2.2.5_sfoxds7t5ydpegc3knd667wn6m
   '@jest/console': 29.0.2
   '@prisma/client': 4.3.1_prisma@4.3.1
-  '@trieb.work/zoho-ts': 0.5.37
+  '@trieb.work/zoho-ts': 0.5.38
   apollo-datasource: 3.3.1
   apollo-server: 3.6.7_graphql@15.8.0
   apollo-server-core: 3.6.7_graphql@15.8.0
@@ -2939,8 +2939,8 @@ packages:
     resolution: {integrity: sha512-DTHkbsRuE9fEl+rwMPNoVXcs/JCSKHIFFluE11MgsMXleOotrw+XdzpQU15xrAFiGHpcY92a3XJwxkr3HBoNqw==}
     dev: true
 
-  /@trieb.work/zoho-ts/0.5.37:
-    resolution: {integrity: sha512-goziXdLG7UaaMiki/x7L6Fmrgz8J/XPju8tHbbxbrsAvDvqYdrOyM7hpdGlMhTSb6ZCanuyoi4/rKupzsRvC6Q==}
+  /@trieb.work/zoho-ts/0.5.38:
+    resolution: {integrity: sha512-Zhy5BHwaxCorJl1xsghKJ49RKaafBcrdkIxDx+CzOHFZYwtl+XjY2MtpW2dJQr47f15K8yHm8tUglA6ZcNxHJw==}
     dependencies:
       async-retry: 1.3.3
       await-timeout: 1.1.1
@@ -4230,8 +4230,8 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001390
-      electron-to-chromium: 1.4.241
+      caniuse-lite: 1.0.30001393
+      electron-to-chromium: 1.4.246
       node-releases: 2.0.6
       update-browserslist-db: 1.0.7_browserslist@4.21.3
 
@@ -4343,8 +4343,8 @@ packages:
   /caniuse-lite/1.0.30001367:
     resolution: {integrity: sha512-XDgbeOHfifWV3GEES2B8rtsrADx4Jf+juKX2SICJcaUhjYBO3bR96kvEIHa15VU6ohtOhBZuPGGYGbXMRn0NCw==}
 
-  /caniuse-lite/1.0.30001390:
-    resolution: {integrity: sha512-sS4CaUM+/+vqQUlCvCJ2WtDlV81aWtHhqeEVkLokVJJa3ViN4zDxAGfq9R8i1m90uGHxo99cy10Od+lvn3hf0g==}
+  /caniuse-lite/1.0.30001393:
+    resolution: {integrity: sha512-N/od11RX+Gsk+1qY/jbPa0R6zJupEa0lxeBG598EbrtblxVCTJsQwbRBm6+V+rxpc5lHKdsXb9RY83cZIPLseA==}
 
   /capital-case/1.0.4:
     resolution: {integrity: sha512-ds37W8CytHgwnhGGTi88pcPyR15qoNkOpYwmMMfnWqqWgESapLqvDx6huFjQ5vqWSn2Z06173XNA7LtMOeUh1A==}
@@ -5335,8 +5335,8 @@ packages:
     resolution: {integrity: sha512-Huen6taaVrUrSy8o7mGStByba8PfOWWluHNxSHGBrCgEdFVLtvdQDBr9LBCF9Uci8SYxh28QNNMO0oC17wbGAg==}
     dev: true
 
-  /electron-to-chromium/1.4.241:
-    resolution: {integrity: sha512-e7Wsh4ilaioBZ5bMm6+F4V5c11dh56/5Jwz7Hl5Tu1J7cnB+Pqx5qIF2iC7HPpfyQMqGSvvLP5bBAIDd2gAtGw==}
+  /electron-to-chromium/1.4.246:
+    resolution: {integrity: sha512-/wFCHUE+Hocqr/LlVGsuKLIw4P2lBWwFIDcNMDpJGzyIysQV4aycpoOitAs32FT94EHKnNqDR/CVZJFbXEufJA==}
 
   /elegant-spinner/1.0.1:
     resolution: {integrity: sha1-2wQ1IcldfjA/2PNFvtwzSc+wcp4=}
