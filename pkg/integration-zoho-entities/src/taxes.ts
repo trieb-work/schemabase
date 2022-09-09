@@ -1,6 +1,6 @@
 import { Zoho } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
-import { PrismaClient, ZohoApp } from "@eci/pkg/prisma";
+import { Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
 
@@ -33,31 +33,31 @@ export class ZohoTaxSyncService {
     const tenantId = this.zohoApp.tenantId;
 
     // Loop through every item and upsert the corresponding
-    // product, productVariant and ZohoItem in the DB
     for (const tax of taxes) {
       const normalizedTaxName = normalizeStrings.taxNames(tax.tax_name);
 
-      const taxCreateOrConnect = {
-        connectOrCreate: {
-          where: {
-            normalizedName_tenantId: {
-              tenantId,
-              normalizedName: normalizedTaxName,
+      const taxCreateOrConnect: Prisma.TaxCreateNestedOneWithoutZohoTaxesInput =
+        {
+          connectOrCreate: {
+            where: {
+              percentage_tenantId: {
+                percentage: tax.tax_percentage,
+                tenantId: this.zohoApp.tenantId,
+              },
             },
-          },
-          create: {
-            id: id.id("tax"),
-            name: tax.tax_name,
-            normalizedName: normalizedTaxName,
-            percentage: tax.tax_percentage,
-            tenant: {
-              connect: {
-                id: tenantId,
+            create: {
+              id: id.id("tax"),
+              name: tax.tax_name,
+              normalizedName: normalizedTaxName,
+              percentage: tax.tax_percentage,
+              tenant: {
+                connect: {
+                  id: tenantId,
+                },
               },
             },
           },
-        },
-      };
+        };
 
       await this.db.zohoTax.upsert({
         where: {
@@ -79,8 +79,32 @@ export class ZohoTaxSyncService {
           tax: taxCreateOrConnect,
         },
       });
-      this.logger.info(`Synced tax ${tax.tax_name} (${tax.tax_percentage}%)`)
+      this.logger.info(`Synced tax ${tax.tax_name} (${tax.tax_percentage}%)`);
     }
+
+    // The taxes cleanup logic
+    const allInternalTaxes = await this.db.zohoTax.findMany({
+      where: {
+        zohoAppId: this.zohoApp.id,
+      },
+    });
+    // Filters the internal taxes for taxes, that are currently not active in Zoho
+    const toBeDeleted = allInternalTaxes.filter(
+      (tx) => !taxes.find((zohoActiveTax) => zohoActiveTax.tax_id === tx.id),
+    );
+    if (toBeDeleted.length > 0) {
+      this.logger.info(
+        `We have to cleanup ${toBeDeleted.length} Zoho taxes in our DB`,
+      );
+      await this.db.zohoTax.deleteMany({
+        where: {
+          id: {
+            in: toBeDeleted.map((d) => d.id),
+          },
+        },
+      });
+    }
+
     this.logger.info(`Sync finished for ${taxes.length} Zoho Taxes`);
   }
 }

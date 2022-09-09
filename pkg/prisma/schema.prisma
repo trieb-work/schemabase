@@ -350,6 +350,8 @@ model ZohoTax {
   zohoAppId String
 
   @@unique([id, zohoAppId])
+  @@index([id])
+  @@index([zohoAppId])
 }
 
 model ZohoLineItem {
