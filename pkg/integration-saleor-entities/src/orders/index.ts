@@ -391,8 +391,8 @@ export class SaleorOrderSyncService {
                       percentage_tenantId: {
                         percentage: lineItem.taxRate * 100,
                         tenantId: this.tenantId,
-                      }
-                    }
+                      },
+                    },
                   },
                   productVariant: {
                     connect: {
@@ -425,8 +425,8 @@ export class SaleorOrderSyncService {
                     percentage_tenantId: {
                       percentage: lineItem.taxRate * 100,
                       tenantId: this.tenantId,
-                    }
-                  }
+                    },
+                  },
                 },
                 productVariant: {
                   connect: {

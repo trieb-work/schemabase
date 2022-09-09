@@ -13,7 +13,7 @@ import {
   upsertLineItemWithRealProductVariantFromZoho,
   upsertOrder,
 } from "./utils";
-import "./consoleFormatter";
+import "../../jest-utils/consoleFormatter";
 import { ZohoItemSyncService } from "../src/items";
 import { ZohoContactSyncService } from "../src/contacts";
 import { ZohoTaxSyncService } from "../src/taxes";
