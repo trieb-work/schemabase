@@ -632,6 +632,7 @@ model OrderLineItem {
   @@index([warehouseId])
   @@index([productVariantId])
   @@index([uniqueString])
+  @@index([tenantId])
 }
 
 model PackageLineItem {
@@ -674,6 +675,7 @@ model PackageLineItem {
   @@index([warehouseId])
   @@index([productVariantId])
   @@index([uniqueString])
+  @@index([tenantId])
 }
 
 enum OrderStatus {
@@ -771,6 +773,7 @@ model Order {
   @@unique([id, orderNumber])
   @@index([shippingAddressId])
   @@index([billingAddressId])
+  @@index([shippingPriceTaxId])
 }
 
 enum CountryCode {
@@ -1090,6 +1093,7 @@ model Product {
 
   @@unique([name, tenantId])
   @@unique([normalizedName, tenantId])
+  @@index([tenantId])
 }
 
 // The ECI internal ProductVariant Model. One product can have one ore many Product Variants
@@ -1137,6 +1141,7 @@ model ProductVariant {
   // Just for relational purposes
   @@unique([id, sku])
   @@index([productId])
+  @@index([tenantId])
 }
 
 model BillOfMaterial {
