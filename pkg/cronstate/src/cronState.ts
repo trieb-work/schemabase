@@ -12,7 +12,8 @@ type SyncEntity =
   | "payments"
   | "invoices"
   | "packages"
-  | "salesorders";
+  | "salesorders"
+  | "braintreeTransactions";
 
 interface CronStateConfig {
   db: PrismaClient;

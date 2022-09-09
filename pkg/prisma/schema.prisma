@@ -479,7 +479,6 @@ model Payment {
   referenceNumber String
 
   amount        Float
-  paymentMethod PaymentMethodType
 
   order   Order?  @relation(fields: [orderId], references: [id])
   orderId String?
@@ -491,6 +490,7 @@ model Payment {
 
   zohoPayment   ZohoPayment[]
   saleorPayment SaleorPayment[]
+  braintreeTransactions BraintreeTransaction[]
 
   @@unique([orderId, tenantId])
   @@unique([referenceNumber, tenantId])
@@ -1231,7 +1231,7 @@ enum BraintreeEnvironment {
 }
 
 // Internal model to store braintree payment gateway settings for tenants
-model Braintree {
+model BraintreeApp {
   id String @id
 
   environment BraintreeEnvironment @default(production)
@@ -1243,6 +1243,25 @@ model Braintree {
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
+
+  braintreeTransactions BraintreeTransaction[]
+}
+
+model BraintreeTransaction {
+  /// The Braintree internal ID
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  braintreeApp BraintreeApp @relation(fields: [braintreeAppId], references: [id], onDelete: Cascade)
+  braintreeAppId String
+
+  payment     Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  paymentId   String
+
+  @@unique([id, braintreeAppId])
+  @@index([braintreeAppId])
 }
 
 enum PackageState {
@@ -1599,7 +1618,7 @@ model Tenant {
   invoice                     Invoice[]
   orderLineItem               OrderLineItem[]
   packageLineItem             PackageLineItem[]
-  braintree                   Braintree[]
+  braintree                   BraintreeApp[]
   tax                         Tax[]
   package                     Package[]
   stockEntries                StockEntries[]

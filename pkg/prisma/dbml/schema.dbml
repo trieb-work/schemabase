@@ -323,7 +323,6 @@ Table Payment {
   updatedAt DateTime [not null]
   referenceNumber String [not null]
   amount Float [not null]
-  paymentMethod PaymentMethodType [not null]
   order Order
   orderId String
   tenant Tenant [not null]
@@ -331,6 +330,7 @@ Table Payment {
   invoices Invoice [not null]
   zohoPayment ZohoPayment [not null]
   saleorPayment SaleorPayment [not null]
+  braintreeTransactions BraintreeTransaction [not null]
 
   indexes {
     (orderId, tenantId) [unique]
@@ -629,7 +629,7 @@ Table StockEntries {
   }
 }
 
-Table Braintree {
+Table BraintreeApp {
   id String [pk]
   environment BraintreeEnvironment [not null, default: 'production']
   merchantId String [not null]
@@ -637,6 +637,21 @@ Table Braintree {
   privateKey String [not null]
   tenant Tenant [not null]
   tenantId String [not null]
+  braintreeTransactions BraintreeTransaction [not null]
+}
+
+Table BraintreeTransaction {
+  id String [not null, note: 'The Braintree internal ID']
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  braintreeApp BraintreeApp [not null]
+  braintreeAppId String [not null]
+  payment Payment [not null]
+  paymentId String [not null]
+
+  indexes {
+    (id, braintreeAppId) [unique]
+  }
 }
 
 Table ElasticCluster {
@@ -869,7 +884,7 @@ Table Tenant {
   invoice Invoice [not null]
   orderLineItem OrderLineItem [not null]
   packageLineItem PackageLineItem [not null]
-  braintree Braintree [not null]
+  braintree BraintreeApp [not null]
   tax Tax [not null]
   package Package [not null]
   stockEntries StockEntries [not null]
@@ -1579,7 +1594,11 @@ Ref: StockEntries.warehouseId > Warehouse.id [delete: Cascade]
 
 Ref: StockEntries.productVariantId > ProductVariant.id [delete: Cascade]
 
-Ref: Braintree.tenantId > Tenant.id [delete: Cascade]
+Ref: BraintreeApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: BraintreeTransaction.braintreeAppId > BraintreeApp.id [delete: Cascade]
+
+Ref: BraintreeTransaction.paymentId > Payment.id [delete: Cascade]
 
 Ref: ElasticLogDrainIntegration.subscriptionId > Subscription.id
 
