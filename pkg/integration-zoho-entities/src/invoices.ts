@@ -267,9 +267,6 @@ export class ZohoInvoiceSyncService {
             "(Change this to a WARNING if it is okay)"
           );
         }
-
-        // TODO: handle case if invoice was already created in zoho but does not exist in DB
-        // TODO: handle case for a salesorder without any lineitems / 100% discount / 0€ total
         await this.db.invoice.create({
           data: {
             id: id.id("invoice"),
@@ -344,58 +341,12 @@ export class ZohoInvoiceSyncService {
           this.logger.warn(err.message, { eciOrderId: ordersWithoutZohoInvoice.id, eciOrderNumber: ordersWithoutZohoInvoice.orderNumber });
         } else if (err instanceof Error) {
           // TODO zoho-ts package: add enum for error codes . like this:
-          // if(err as ZohoApiError).code === require(zoho-ts).apiErrorCodes.SalesOrderAlreadyExists){
-          if ((err as ZohoApiError).code === 36004) {
-            // 36004 = This sales order number already exists.
-            this.logger.warn(err.message, { eciOrderId: ordersWithoutZohoInvoice.id, eciOrderNumber: ordersWithoutZohoInvoice.orderNumber });
-            // const searchedSalesOrders = await this.zoho.salesOrder.search(
-            //   order.orderNumber,
-            // );
-            // if (searchedSalesOrders.length === 0) {
-            //   this.logger.error(
-            //     "Salesorder was already created and search with order.orderNumber returned no results. Aborting sync of this order.",
-            //     { eciOrderId: ordersWithoutZohoInvoice.id, eciOrderNumber: ordersWithoutZohoInvoice.orderNumber },
-            //   );
-            //   continue;
-            // }
-            // if (searchedSalesOrders.length > 1) {
-            //   this.logger.error(
-            //     "Salesorder was already created and search with order.orderNumber returned multiple results. Aborting sync of this order.",
-            //     { eciOrderId: ordersWithoutZohoInvoice.id, eciOrderNumber: ordersWithoutZohoInvoice.orderNumber },
-            //   );
-            //   continue;
-            // }
-            // const matchingSalesOrder = searchedSalesOrders[0];
-            // await this.db.zohoSalesOrder.create({
-            //   data: {
-            //     id: matchingSalesOrder.salesorder_id,
-            //     order: {
-            //       connect: {
-            //         id: order.id,
-            //       },
-            //     },
-            //     zohoApp: {
-            //       connect: {
-            //         id: this.zohoApp.id,
-            //       },
-            //     },
-            //     createdAt: new Date(matchingSalesOrder.created_time),
-            //     updatedAt: new Date(matchingSalesOrder.last_modified_time),
-            //     // zohoContact // TODO is this needed? --> remove it from the schema if it is really not needed
-            //     // zohoContactPerson // TODO is this needed? --> remove it from the schema if it is really not needed
-            //   },
-            // });
-            // this.logger.info(
-            //   `Successfully attached zoho salesorder ${matchingSalesOrder.salesorder_number} from search request to the current order`,
-            //   {
-            //     orderId: order.id,
-            //     mainContactId: order.mainContactId,
-            //     orderNumber: order.orderNumber,
-            //     referenceNumber: order.referenceNumber,
-            //     zohoAppId: this.zohoApp.id,
-            //     tenantId: this.tenantId,
-            //   },
-            // );
+          // if(err as ZohoApiError).code === require(zoho-ts).apiErrorCodes.NoItemsToBeInvoiced){
+          if ((err as ZohoApiError).code === 36026) {
+            this.logger.warn(
+              "Aborting sync of this invoice since it was already created. The syncToEci will handle this. Original Error: "+err.message,
+              { eciOrderId: ordersWithoutZohoInvoice.id, eciOrderNumber: ordersWithoutZohoInvoice.orderNumber }
+            );
           } else {
             this.logger.error(err.message, { eciOrderId: ordersWithoutZohoInvoice.id, eciOrderNumber: ordersWithoutZohoInvoice.orderNumber });
           }

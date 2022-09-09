@@ -87,6 +87,7 @@ export async function upsertOrder(
   prisma: PrismaClient,
   orderNumber: string,
   totalPriceGross = 234.68,
+  discountValueNet: number | undefined = undefined,
 ) {
   await prisma.order.upsert({
     where: {
@@ -102,6 +103,7 @@ export async function upsertOrder(
       date: "2022-01-01T00:00:00.000Z",
       orderNumber,
       totalPriceGross,
+      ...(discountValueNet ? {discountValueNet} : {}),
       orderStatus: "confirmed",
       readyToFullfill: true,
       shippingAddress: {
@@ -132,6 +134,7 @@ export async function upsertOrder(
 export async function upsertLineItem1(
   prisma: PrismaClient,
   orderNumber: string,
+  discountValueNet: number | undefined = undefined,
 ) {
   await prisma.orderLineItem.upsert({
     where: {
@@ -141,6 +144,7 @@ export async function upsertLineItem1(
     create: {
       id: `test-l1-${orderNumber}`,
       quantity: 10,
+      ...(discountValueNet ? {discountValueNet} : {}),
       uniqueString: uniqueStringOrderLine(
         orderNumber,
         `test-l1-${orderNumber}`,

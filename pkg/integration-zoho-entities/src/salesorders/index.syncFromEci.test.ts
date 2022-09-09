@@ -120,4 +120,32 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
     zohoSalesOrdersLogger.assertOneLogMessageMatches("info", /Successfully confirmed [0-9]+ order\(s\)./);
     console.info("Test 3 completed");
   }, 90000);
+
+  test("It should not work to create an discount on lineitem and on order level", async () => {
+    const newOrderNumber3 = `${ORDERNR_DATE_PREFIX}${Math.round((Number(new Date) - 1662000000000) / 1000)}`;
+    console.log("newOrderNumber3", newOrderNumber3);
+    await Promise.all([
+      upsertTaxWithZohoTax(prismaClient),
+      upsertProductVariant(prismaClient),
+      upsertContactWithZohoContactPersonsAndZohoContact(prismaClient),
+    ]);
+    await Promise.all([
+      upsertZohoItem(prismaClient),
+      upsertAddressWithZohoAddress(prismaClient)
+    ]);
+    await upsertOrder(prismaClient, newOrderNumber3, 145.95, 10); // 10€ discount
+    await upsertLineItem1(prismaClient, newOrderNumber3, 10),
+    zohoSalesOrdersLogger.clearMessages();
+    // For preparation create the salesorder in ECI and sync it back
+    await zohoSalesOrdersSyncService.syncFromECI();
+    zohoSalesOrdersLogger.assertOneLogEntryMatches("info", ({ message, fields }) =>
+      !!message.match(/Received [\d]+ orders that are not synced with Zoho/) && (fields?.orderNumbers as string[])?.includes(newOrderNumber3)
+    );
+    zohoSalesOrdersLogger.assertOneLogMessageMatches("error", 
+      `Failed during Salesorder sync loop. Orgiginal Error: ECI Order is having a discountValueNet and therefore is `+
+      `from discount_type entity_level but lineItem also has a discountValueNet. This is not supported. It is only allowed `+
+      `to set discountValueNet on the ECI Order or on the ECI lineItems but not both`
+    );
+    zohoSalesOrdersLogger.assertOneLogMessageMatches("info", `Successfully confirmed 0 order(s).`);
+  }, 90000);
 });
