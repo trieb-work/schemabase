@@ -1,9 +1,10 @@
 This integration is used to handle synchronous webhook requests from saleor for payments. It can be used to add additional payment gateways and to handle payments in general.
 This is a blocking service! So we should respond to these requests as fast as possible.
 
+# Install Payment Webhook in Saleor
 
-# Install PAyment Webhook in Saleor
 We need to add a seperate "Synchronuous Webhook" in saleor for payment purposes. Here is the GraphQL mutation:
+
 ```
 mutation {
   webhookCreate(
