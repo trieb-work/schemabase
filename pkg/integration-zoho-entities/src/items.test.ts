@@ -1604,6 +1604,7 @@ describe("Zoho Inventory Item Sync", () => {
         client: { id: zohoApp.clientId, secret: zohoApp.clientSecret },
       }),
     );
+    zoho.util.getUnprefixedNumber("INV-4556");
   });
 
   test("It should work to sync Zoho Items to internal ECI DB", async () => {
