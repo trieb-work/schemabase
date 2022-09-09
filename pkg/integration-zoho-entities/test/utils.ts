@@ -3,7 +3,7 @@ import { id } from "@eci/pkg/ids";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { normalizeStrings } from "@eci/pkg/normalization";
 
-const LOGGING = true;
+const LOGGING = false;
 
 export async function deleteInvoices(
   prisma: PrismaClient,
