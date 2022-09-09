@@ -375,7 +375,7 @@ export async function upsertContactWithZohoContactPersonsAndZohoContact(prisma: 
     update: {},
     create: {
       id: "test",
-      email: "tilman@trieb.work",
+      email: "tilman+zohoContactTest@trieb.work",
       tenant: {
         connect: {
           id: "test",
@@ -385,13 +385,13 @@ export async function upsertContactWithZohoContactPersonsAndZohoContact(prisma: 
         connectOrCreate: {
           where: {
             id_zohoAppId: {
-              id: "116240000001504004",
+              id: "116240000001668125",
               zohoAppId: "test",
             },
           },
           create: {
-            email: "jannik@trieb.work",
-            id: "116240000001504004",
+            email: "tilman+zohoContactTest@trieb.work",
+            id: "116240000001668125",
             zohoApp: {
               connect: {
                 id: "test",
@@ -401,12 +401,12 @@ export async function upsertContactWithZohoContactPersonsAndZohoContact(prisma: 
               connectOrCreate: {
                 where: {
                   id_zohoAppId: {
-                    id: "116240000001504002",
+                    id: "116240000001558532",
                     zohoAppId: "test",
                   },
                 },
                 create: {
-                  id: "116240000001504002",
+                  id: "116240000001558532",
                   zohoApp: {
                     connect: {
                       id: "test",
@@ -446,12 +446,12 @@ export async function upsertAddressWithZohoAddress(prisma: PrismaClient) {
         connectOrCreate: {
           where: {
             id_zohoAppId: {
-              id: "116240000001504007",
+              id: "116240000001558534",
               zohoAppId: "test",
             },
           },
           create: {
-            id: "116240000001504007",
+            id: "116240000001558534",
             zohoApp: {
               connect: {
                 id: "test",

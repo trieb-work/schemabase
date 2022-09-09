@@ -17,7 +17,7 @@ import {
   deleteZohoItem,
   deleteOrder,
 } from "../../test/utils";
-import "../../test/consoleFormatter";
+import "../../../jest-utils/consoleFormatter";
 
 const ORDERNR_DATE_PREFIX = "SO-DATE-SO-";
 
