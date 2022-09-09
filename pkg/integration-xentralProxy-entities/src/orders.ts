@@ -53,7 +53,7 @@ export class XentralProxyOrderSyncService {
          * only include these lineItems for each order which are from the same warehouse as the
          * current xentral integration
          */
-        lineItems: {
+        orderLineItems: {
           where: {
             warehouseId: this.warehouseId,
           },
@@ -83,7 +83,7 @@ export class XentralProxyOrderSyncService {
         ort: order.shippingAddress?.city || "",
         land: order.shippingAddress?.countryCode || "",
         artikelliste: {
-          position: order.lineItems.map((lineItem) => {
+          position: order.orderLineItems.map((lineItem) => {
             if (!lineItem.productVariant.xentralArtikel[0]) {
               throw new Error(
                 `No matching xentral artikel for lineItem (${lineItem.sku}). Please sync new productVariants first to xentral artikel before creating an xentral auftrag.`,

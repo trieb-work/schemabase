@@ -181,17 +181,6 @@ export class ZohoPackageSyncService {
             update: packageUpdate,
           },
         },
-        include: {
-          package: {
-            include: {
-              lineItems: {
-                select: {
-                  id: true,
-                },
-              },
-            },
-          },
-        },
       });
 
       // only pull the full package data if something has changed since the last run
@@ -200,8 +189,7 @@ export class ZohoPackageSyncService {
       if (
         !packageBefore ||
         packageBefore.updatedAt.toISOString() !==
-          currentPackage.updatedAt.toISOString() ||
-        currentPackage.package.lineItems.length === 0
+          currentPackage.updatedAt.toISOString()
       ) {
         this.logger.info(
           `Pulling full package data for ${parcel.package_id} - ${
@@ -266,7 +254,7 @@ export class ZohoPackageSyncService {
               }
             : {};
 
-          const upsertedLineItem = await this.db.lineItem.upsert({
+          const upsertedLineItem = await this.db.packageLineItem.upsert({
             where: {
               uniqueString_tenantId: {
                 uniqueString,

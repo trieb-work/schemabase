@@ -140,7 +140,7 @@ export class ZohoSalesOrdersSyncService {
        */
       const language = this.parseLanguage(
         (salesorder?.[CustomFieldApiName.PREFERRED_LANGUAGE] as string) ??
-        undefined,
+          undefined,
       );
 
       if (!salesorder.email) {
@@ -173,39 +173,39 @@ export class ZohoSalesOrdersSyncService {
 
       // Create or connect the internal order using the salesorder number as identifier
       const orderCreateOrConnect: Prisma.OrderUpdateOneRequiredWithoutZohoSalesOrdersNestedInput =
-      {
-        connectOrCreate: {
-          where: {
-            orderNumber_tenantId: {
-              orderNumber: salesorder.salesorder_number,
-              tenantId: this.tenantId,
-            },
-          },
-          create: {
-            id: id.id("order"),
-            orderNumber: salesorder.salesorder_number,
-            date: new Date(salesorder.date),
-            totalPriceGross: salesorder.total,
-            mainContact: contactConnectOrCreate,
-            tenant: {
-              connect: {
-                id: this.tenantId,
+        {
+          connectOrCreate: {
+            where: {
+              orderNumber_tenantId: {
+                orderNumber: salesorder.salesorder_number,
+                tenantId: this.tenantId,
               },
             },
-            language,
+            create: {
+              id: id.id("order"),
+              orderNumber: salesorder.salesorder_number,
+              date: new Date(salesorder.date),
+              totalPriceGross: salesorder.total,
+              mainContact: contactConnectOrCreate,
+              tenant: {
+                connect: {
+                  id: this.tenantId,
+                },
+              },
+              language,
+            },
           },
-        },
-      };
+        };
       const zohoContactConnect: Prisma.ZohoContactCreateNestedOneWithoutZohoSalesOrderInput =
         zohoCustomerExist
           ? {
-            connect: {
-              id_zohoAppId: {
-                id: salesorder.customer_id,
-                zohoAppId: this.zohoApp.id,
+              connect: {
+                id_zohoAppId: {
+                  id: salesorder.customer_id,
+                  zohoAppId: this.zohoApp.id,
+                },
               },
-            },
-          }
+            }
           : {};
 
       const createdSalesOrder = await this.db.zohoSalesOrder.upsert({
@@ -308,13 +308,13 @@ export class ZohoSalesOrdersSyncService {
 
           const warehouse = lineItem.warehouse_id
             ? await this.db.zohoWarehouse.findUnique({
-              where: {
-                id_zohoAppId: {
-                  id: lineItem.warehouse_id,
-                  zohoAppId: this.zohoApp.id,
+                where: {
+                  id_zohoAppId: {
+                    id: lineItem.warehouse_id,
+                    zohoAppId: this.zohoApp.id,
+                  },
                 },
-              },
-            })
+              })
             : null;
 
           /**
@@ -329,7 +329,7 @@ export class ZohoSalesOrdersSyncService {
             this.logger.info(
               `This line item has no warehouse attached. ${lineItem.line_item_id}`,
             );
-          await this.db.zohoLineItem.upsert({
+          await this.db.zohoOrderLineItem.upsert({
             where: {
               id_zohoAppId: {
                 id: lineItem.line_item_id,
@@ -338,7 +338,7 @@ export class ZohoSalesOrdersSyncService {
             },
             create: {
               id: lineItem.line_item_id,
-              lineItem: {
+              orderLineItem: {
                 connectOrCreate: {
                   where: {
                     uniqueString_tenantId: {
@@ -388,7 +388,7 @@ export class ZohoSalesOrdersSyncService {
               },
             },
             update: {
-              lineItem: {
+              orderLineItem: {
                 update: {
                   quantity: lineItem.quantity,
                   discountValueNet: lineItem.discount_amount,
@@ -513,7 +513,7 @@ export class ZohoSalesOrdersSyncService {
         // ...
       },
       include: {
-        lineItems: {
+        orderLineItems: {
           include: {
             productVariant: {
               include: {
@@ -612,7 +612,9 @@ export class ZohoSalesOrdersSyncService {
           shipping_address_id: addressToZohoAddressId(order.shippingAddress),
           contact_persons: [mainContactPerson.id],
           shipping_charge: order.shippingPriceGross ?? undefined,
-          shipping_charge_tax_id: order.shippingPriceTax ? taxToZohoTaxId(order.shippingPriceTax) : undefined,
+          shipping_charge_tax_id: order.shippingPriceTax
+            ? taxToZohoTaxId(order.shippingPriceTax)
+            : undefined,
           // TODO:
           // shipment_date?
         };
@@ -655,7 +657,7 @@ export class ZohoSalesOrdersSyncService {
         ) {
           throw new Error(
             "IMPORTANT: Order net totals from saleor and ECI do not match. The Order was therefore not " +
-            "confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
+              "confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
           );
         }
         if (
@@ -664,20 +666,26 @@ export class ZohoSalesOrdersSyncService {
         ) {
           throw new Error(
             "IMPORTANT: Order gross totals from saleor and ECI do not match. The Order was therefore not " +
-            "confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
+              "confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
           );
         }
         salesordersToConfirm.push(createdSalesOrder);
       } catch (err) {
         if (err instanceof Warning) {
           // TODO make an update on Order and increase Warning counter, if warning counter over threshold 5 -> log an error instead
-          this.logger.warn(err.message, { eciOrderId: order.id, eciOrderNumber: order.orderNumber });
+          this.logger.warn(err.message, {
+            eciOrderId: order.id,
+            eciOrderNumber: order.orderNumber,
+          });
         } else if (err instanceof Error) {
           // TODO zoho-ts package: add enum for error codes . like this:
           // if(err as ZohoApiError).code === require(zoho-ts).apiErrorCodes.SalesOrderAlreadyExists){
           if ((err as ZohoApiError).code === 36004) {
             // 36004 = This sales order number already exists.
-            this.logger.warn(err.message, { eciOrderId: order.id, eciOrderNumber: order.orderNumber });
+            this.logger.warn(err.message, {
+              eciOrderId: order.id,
+              eciOrderNumber: order.orderNumber,
+            });
             const searchedSalesOrders = await this.zoho.salesOrder.search(
               order.orderNumber,
             );
@@ -732,7 +740,7 @@ export class ZohoSalesOrdersSyncService {
             ) {
               this.logger.error(
                 "IMPORTANT: Order net totals from saleor and ECI do not match. The Order was therefore not " +
-                "confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
+                  "confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
                 { eciOrderId: order.id, eciOrderNumber: order.orderNumber },
               );
             }
@@ -742,7 +750,7 @@ export class ZohoSalesOrdersSyncService {
             ) {
               this.logger.error(
                 "IMPORTANT: Order gross totals from saleor and ECI do not match. The Order was therefore not " +
-                "confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
+                  "confirmed automatically in Zoho, please check them manually and confirm the order in Zoho.",
                 { eciOrderId: order.id, eciOrderNumber: order.orderNumber },
               );
             }
@@ -750,7 +758,10 @@ export class ZohoSalesOrdersSyncService {
               salesordersToConfirm.push(matchingSalesOrder);
             }
           } else {
-            this.logger.error(err.message, { eciOrderId: order.id, eciOrderNumber: order.orderNumber });
+            this.logger.error(err.message, {
+              eciOrderId: order.id,
+              eciOrderNumber: order.orderNumber,
+            });
           }
         } else {
           this.logger.error(

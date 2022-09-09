@@ -60,18 +60,34 @@ model SaleorPackage {
   @@index([packageId])
 }
 
-model SaleorLineItem {
+// model for saleor fulfillment line items
+model SaleorFulfillmentLine {
   // Saleor Internal Id
   id String
 
-  lineItem   LineItem @relation(fields: [lineItemId], references: [id], onDelete: Cascade)
-  lineItemId String
+  packagelineItem   PackageLineItem @relation(fields: [packageLineItemId], references: [id], onDelete: Cascade)
+  packageLineItemId String
 
   installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
   installedSaleorAppId String
 
   @@unique([id, installedSaleorAppId])
-  @@index([lineItemId])
+  @@index([packageLineItemId])
+  @@index([installedSaleorAppId])
+}
+
+model SaleorOrderLineItem {
+  // Saleor Internal Id
+  id String
+
+  orderLineItem   OrderLineItem @relation(fields: [orderLineItemId], references: [id], onDelete: Cascade)
+  orderLineItemId String
+
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String
+
+  @@unique([id, installedSaleorAppId])
+  @@index([orderLineItemId])
 }
 
 // Saleor specific model for payments.
@@ -94,7 +110,7 @@ model SaleorPayment {
   @@unique([id, installedSaleorAppId])
   @@index([paymentId])
   @@index([installedSaleorAppId])
-  @@index([saleorOrderId])  
+  @@index([saleorOrderId])
 }
 
 // Saleor specific model for product variant.
@@ -199,7 +215,7 @@ model ZohoContactPerson {
   id String
 
   /// Contacts/Contactpersons can be disabled to filter out merged contacts
-  active    Boolean @default(true)
+  active Boolean @default(true)
 
   zohoContact   ZohoContact @relation(fields: [zohoContactId, zohoAppId], references: [id, zohoAppId], onDelete: Cascade)
   zohoContactId String
@@ -221,7 +237,7 @@ model ZohoContactPerson {
   @@index([contactId])
   @@index([zohoContactId])
   @@index([zohoAppId])
-  @@index([active]) 
+  @@index([active])
 }
 
 model ZohoAddress {
@@ -354,18 +370,35 @@ model ZohoTax {
   @@index([zohoAppId])
 }
 
-model ZohoLineItem {
+model ZohoOrderLineItem {
   // Zoho Internal Id
   id String
 
-  lineItem   LineItem @relation(fields: [lineItemId], references: [id], onDelete: Cascade)
-  lineItemId String
+  orderLineItem   OrderLineItem @relation(fields: [orderLineItemId], references: [id], onDelete: Cascade)
+  orderLineItemId String
 
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String
 
   @@unique([id, zohoAppId])
-  @@index([lineItemId])
+  @@index([orderLineItemId])
+  @@index([zohoAppId])
+}
+
+model ZohoPackageLineItem {
+  // Zoho Internal Id
+  id String
+
+  packagelineItem   PackageLineItem @relation(fields: [packagelineItemId], references: [id], onDelete: Cascade)
+  packagelineItemId String
+
+  zohoApp         ZohoApp        @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId       String
+  orderLineItem   OrderLineItem? @relation(fields: [orderLineItemId], references: [id])
+  orderLineItemId String?
+
+  @@unique([id, zohoAppId])
+  @@index([packagelineItemId])
   @@index([zohoAppId])
 }
 
@@ -419,11 +452,10 @@ model Tax {
   normalizedName String
   percentage     Float
 
-
   /// An array of orders where this tax is used as the tax for the shipping method
   shippingTaxInOrders Order[]
   /// An array of lineitems where this tax is used as the tax for the line item
-  taxInLineItems LineItem[]
+  taxInLineItems      OrderLineItem[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -494,7 +526,7 @@ model Contact {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  email     String
+  email String
 
   firstName String?
   lastName  String?
@@ -509,7 +541,7 @@ model Contact {
   tenantId String
 
   zohoContactPersons ZohoContactPerson[]
-  addresses         Address[]
+  addresses          Address[]
 
   @@unique([email, tenantId])
   @@index([companyId])
@@ -534,8 +566,9 @@ model Warehouse {
 
   xentralProxyIntegration XentralProxyIntegration[]
 
-  lineItem     LineItem[]
-  stockEntries StockEntries[]
+  orderLineItems   OrderLineItem[]
+  packageLineItems PackageLineItem[]
+  stockEntries     StockEntries[]
 
   @@unique([name, tenantId])
   @@unique([normalizedName, tenantId])
@@ -547,7 +580,7 @@ enum Currency {
 }
 
 // The ECI internal LineItem model
-model LineItem {
+model OrderLineItem {
   // eci internal id
   id        String   @id
   createdAt DateTime @default(now())
@@ -568,13 +601,10 @@ model LineItem {
   warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
   warehouseId String?
 
-  package   Package? @relation(fields: [packageId], references: [id])
-  packageId String?
-
-  quantity      Float
-  sku           String
-  tax   Tax     @relation(fields: [taxId], references: [id], onDelete: Cascade)
-  taxId String
+  quantity Float
+  sku      String
+  tax      Tax    @relation(fields: [taxId], references: [id], onDelete: Cascade)
+  taxId    String
 
   /// The total net price (price excluding taxes) of all line item.
   /// Optional, as we might have just one of the two values on hand
@@ -593,8 +623,50 @@ model LineItem {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  zohoLineItems  ZohoLineItem[]
-  saleorLineItem SaleorLineItem[]
+  zohoPackageLineItems ZohoPackageLineItem[]
+  saleorOrderLineItems SaleorOrderLineItem[]
+  zohoOrderLineItems   ZohoOrderLineItem[]
+
+  @@unique([uniqueString, tenantId])
+  @@index([orderId])
+  @@index([warehouseId])
+  @@index([productVariantId])
+  @@index([uniqueString])
+}
+
+model PackageLineItem {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Unique string to identify this LineItem
+  // between different systems.
+  // For packages: ${packageNumber}${sku}${quantity} 
+  uniqueString String
+
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId String
+
+  // Warehouse, this line item corresponds to.
+  // Warehouse can be undefined, as we have non-inventory products as well.
+  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
+  warehouseId String?
+
+  package   Package? @relation(fields: [packageId], references: [id])
+  packageId String?
+
+  quantity Float
+  sku      String
+
+  productVariant   ProductVariant @relation(fields: [productVariantId, sku], references: [id, sku])
+  productVariantId String
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  zohoPackageLineItems    ZohoPackageLineItem[]
+  saleorFulfillmentsLines SaleorFulfillmentLine[]
 
   @@unique([uniqueString, tenantId])
   @@index([orderId])
@@ -655,10 +727,11 @@ model Order {
   /// if source system has a second ID which is benefitial to the user, we can provide it here
   referenceNumber String?
 
-  lineItems LineItem[]
+  orderLineItems   OrderLineItem[]
+  packageLineItems PackageLineItem[]
 
-  shippingPriceNet           Float?
-  shippingPriceGross         Float?
+  shippingPriceNet   Float?
+  shippingPriceGross Float?
   shippingPriceTax   Tax?    @relation(fields: [shippingPriceTaxId], references: [id], onDelete: Cascade)
   shippingPriceTaxId String?
 
@@ -672,7 +745,7 @@ model Order {
   totalPriceGross Float
 
   /// The person who has created this Order (In other systems this can also be a Useraccount)
-  mainContact   Contact  @relation(references: [id], fields: [mainContactId])
+  mainContact   Contact @relation(references: [id], fields: [mainContactId])
   mainContactId String
 
   language Language  @default(DE)
@@ -972,7 +1045,7 @@ model Address {
   phone                 String?
   fullname              String?
 
-  contact  Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  contact   Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
   contactId String
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -987,7 +1060,7 @@ model Address {
   /// An array of orders where this address is used as the shipping address
   shippingAddressInOrders Order[] @relation("orderShippingAddresses")
   /// An array of orders where this address is used as the billing address
-  billingAddressInOrders Order[] @relation("orderBillingAddresses")
+  billingAddressInOrders  Order[] @relation("orderBillingAddresses")
 
   @@unique([normalizedName, tenantId])
   @@index([tenantId])
@@ -1040,7 +1113,9 @@ model ProductVariant {
 
   stockEntries StockEntries[]
 
-  lineItem LineItem[]
+  orderLineItem OrderLineItem[]
+
+  packagelineItem PackageLineItem[]
 
   zohoItem ZohoItem[]
 
@@ -1100,7 +1175,7 @@ model BillOfMaterialEntries {
 
 model XentralArtikel {
   // Xentral Internal ID
-  id        String
+  id String
 
   xentralNummer String
 
@@ -1262,7 +1337,7 @@ model Package {
   events             PackageEvent[]
 
   // Line Items in this package
-  lineItems LineItem[]
+  packageLineItems PackageLineItem[]
 
   zohoPackage   ZohoPackage[]
   saleorPackage SaleorPackage[]
@@ -1388,7 +1463,7 @@ model ZohoApp {
   tenant                   Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId                 String                    @unique
   /// The language, that this org is set to. Some API fields like the country name work with translated names, so we need to know the orgs language
-  orgLanguage              Language @default(DE)
+  orgLanguage              Language                  @default(DE)
   strapiToZohoIntegrations StrapiToZohoIntegration[]
   logisticsIntegrations    LogisticsIntegration[]
   trackingIntegrations     TrackingIntegration[]
@@ -1401,7 +1476,8 @@ model ZohoApp {
   zohoContacts          ZohoContact[]
   zohoInvoices          ZohoInvoice[]
   zohoSalesOrder        ZohoSalesOrder[]
-  zohoLineItems         ZohoLineItem[]
+  zohoPackageLineItems  ZohoPackageLineItem[]
+  zohoOrderLineItems    ZohoOrderLineItem[]
   zohoTaxes             ZohoTax[]
   zohoContactPersons    ZohoContactPerson[]
   zohoAddresses         ZohoAddress[]
@@ -1475,7 +1551,8 @@ model InstalledSaleorApp {
   saleorProductVariant       SaleorProductVariant[]
   saleorWarehouse            SaleorWarehouse[]
   saleorOrder                SaleorOrder[]
-  saleorLineItem             SaleorLineItem[]
+  saleorOrderLineItem        SaleorOrderLineItem[]
+  saleorFulfilmentLines      SaleorFulfillmentLine[]
   saleorPackage              SaleorPackage[]
 
   @@unique([domain, channelSlug])
@@ -1515,7 +1592,8 @@ model Tenant {
   payment                     Payment[]
   warehouse                   Warehouse[]
   invoice                     Invoice[]
-  lineItem                    LineItem[]
+  orderLineItem               OrderLineItem[]
+  packageLineItem             PackageLineItem[]
   braintree                   Braintree[]
   tax                         Tax[]
   package                     Package[]

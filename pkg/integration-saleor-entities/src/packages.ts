@@ -268,7 +268,7 @@ export class SaleorPackageSyncService {
       // include the warehouse information from every line item
       // but filter the saleor warehouses to just the one we need
       include: {
-        lineItems: {
+        packageLineItems: {
           include: {
             warehouse: {
               include: {
@@ -292,7 +292,7 @@ export class SaleorPackageSyncService {
     );
 
     for (const parcel of packagesNotYetInSaleor) {
-      if (!parcel.lineItems) {
+      if (!parcel.packageLineItems) {
         this.logger.error(
           `No line_items for package ${parcel.id} - ${parcel.number}. Can't create package in Saleor`,
         );
@@ -309,16 +309,11 @@ export class SaleorPackageSyncService {
         include: {
           order: {
             include: {
-              lineItems: {
-                // We want the line items from the order and filter out
-                // line items from packages
-                where: {
-                  packageId: null,
-                },
+              orderLineItems: {
                 include: {
                   // To create a fulfillment in Saleor, we need the
                   // ID of the orderLine
-                  saleorLineItem: {
+                  saleorOrderLineItems: {
                     where: {
                       installedSaleorAppId: this.installedSaleorAppId,
                     },
@@ -344,7 +339,7 @@ export class SaleorPackageSyncService {
        * False if any of the lineItems of this package are missing the information
        * on the warehouse.
        */
-      const warehouseCheck = parcel.lineItems.some((i) => {
+      const warehouseCheck = parcel.packageLineItems.some((i) => {
         if (!i.warehouseId || !i.warehouse?.saleorWarehouse?.[0]?.id) {
           return false;
         }
@@ -356,13 +351,13 @@ export class SaleorPackageSyncService {
         );
       }
 
-      const lines: OrderFulfillLineInput[] = parcel.lineItems.map(
+      const lines: OrderFulfillLineInput[] = parcel.packageLineItems.map(
         (packageOrderLine) => {
           // Get the corresponding order to this package and lookup the saleor Order Line
           // using the product SKU
-          const orderLineId = saleorOrder.order.lineItems.find(
+          const orderLineId = saleorOrder.order.orderLineItems.find(
             (item) => item.sku === packageOrderLine.sku,
-          )?.saleorLineItem[0]?.id;
+          )?.saleorOrderLineItems[0]?.id;
           if (!orderLineId) {
             this.logger.error(
               `Can't find a saleor orderLine for order ${
@@ -370,7 +365,7 @@ export class SaleorPackageSyncService {
               }, LineItem SKU ${
                 packageOrderLine.sku
               } - Can't create fulfillment in saleor. Orderlines: ${JSON.stringify(
-                saleorOrder.order.lineItems,
+                saleorOrder.order.orderLineItems,
               )}`,
             );
           }

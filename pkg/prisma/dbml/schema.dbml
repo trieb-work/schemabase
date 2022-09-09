@@ -31,10 +31,22 @@ Table SaleorPackage {
   }
 }
 
-Table SaleorLineItem {
+Table SaleorFulfillmentLine {
   id String [not null]
-  lineItem LineItem [not null]
-  lineItemId String [not null]
+  packagelineItem PackageLineItem [not null]
+  packageLineItemId String [not null]
+  installedSaleorApp InstalledSaleorApp [not null]
+  installedSaleorAppId String [not null]
+
+  indexes {
+    (id, installedSaleorAppId) [unique]
+  }
+}
+
+Table SaleorOrderLineItem {
+  id String [not null]
+  orderLineItem OrderLineItem [not null]
+  orderLineItemId String [not null]
   installedSaleorApp InstalledSaleorApp [not null]
   installedSaleorAppId String [not null]
 
@@ -244,12 +256,26 @@ Table ZohoTax {
   }
 }
 
-Table ZohoLineItem {
+Table ZohoOrderLineItem {
   id String [not null]
-  lineItem LineItem [not null]
-  lineItemId String [not null]
+  orderLineItem OrderLineItem [not null]
+  orderLineItemId String [not null]
   zohoApp ZohoApp [not null]
   zohoAppId String [not null]
+
+  indexes {
+    (id, zohoAppId) [unique]
+  }
+}
+
+Table ZohoPackageLineItem {
+  id String [not null]
+  packagelineItem PackageLineItem [not null]
+  packagelineItemId String [not null]
+  zohoApp ZohoApp [not null]
+  zohoAppId String [not null]
+  orderLineItem OrderLineItem
+  orderLineItemId String
 
   indexes {
     (id, zohoAppId) [unique]
@@ -280,7 +306,7 @@ Table Tax {
   normalizedName String [not null]
   percentage Float [not null]
   shippingTaxInOrders Order [not null, note: 'An array of orders where this tax is used as the tax for the shipping method']
-  taxInLineItems LineItem [not null, note: 'An array of lineitems where this tax is used as the tax for the line item']
+  taxInLineItems OrderLineItem [not null, note: 'An array of lineitems where this tax is used as the tax for the line item']
   tenant Tenant [not null]
   tenantId String [not null]
   zohoTaxes ZohoTax [not null]
@@ -363,7 +389,8 @@ Table Warehouse {
   zohoWarehouse ZohoWarehouse [not null]
   saleorWarehouse SaleorWarehouse [not null]
   xentralProxyIntegration XentralProxyIntegration [not null]
-  lineItem LineItem [not null]
+  orderLineItems OrderLineItem [not null]
+  packageLineItems PackageLineItem [not null]
   stockEntries StockEntries [not null]
 
   indexes {
@@ -372,7 +399,7 @@ Table Warehouse {
   }
 }
 
-Table LineItem {
+Table OrderLineItem {
   id String [pk]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
@@ -381,8 +408,6 @@ Table LineItem {
   orderId String [not null]
   warehouse Warehouse
   warehouseId String
-  package Package
-  packageId String
   quantity Float [not null]
   sku String [not null]
   tax Tax [not null]
@@ -396,8 +421,34 @@ Optional, as we might have just one of the two values on hand']
   productVariantId String [not null]
   tenant Tenant [not null]
   tenantId String [not null]
-  zohoLineItems ZohoLineItem [not null]
-  saleorLineItem SaleorLineItem [not null]
+  zohoPackageLineItems ZohoPackageLineItem [not null]
+  saleorOrderLineItems SaleorOrderLineItem [not null]
+  zohoOrderLineItems ZohoOrderLineItem [not null]
+
+  indexes {
+    (uniqueString, tenantId) [unique]
+  }
+}
+
+Table PackageLineItem {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  uniqueString String [not null]
+  order Order [not null]
+  orderId String [not null]
+  warehouse Warehouse
+  warehouseId String
+  package Package
+  packageId String
+  quantity Float [not null]
+  sku String [not null]
+  productVariant ProductVariant [not null]
+  productVariantId String [not null]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  zohoPackageLineItems ZohoPackageLineItem [not null]
+  saleorFulfillmentsLines SaleorFulfillmentLine [not null]
 
   indexes {
     (uniqueString, tenantId) [unique]
@@ -417,7 +468,8 @@ Table Order {
   orderNumber String [not null, note: 'Order-Numbers have to be unique per Tenant!
 We use them as unique identifier between systems']
   referenceNumber String [note: 'if source system has a second ID which is benefitial to the user, we can provide it here']
-  lineItems LineItem [not null]
+  orderLineItems OrderLineItem [not null]
+  packageLineItems PackageLineItem [not null]
   shippingPriceNet Float
   shippingPriceGross Float
   shippingPriceTax Tax
@@ -504,7 +556,8 @@ Table ProductVariant {
   tenant Tenant [not null]
   tenantId String [not null]
   stockEntries StockEntries [not null]
-  lineItem LineItem [not null]
+  orderLineItem OrderLineItem [not null]
+  packagelineItem PackageLineItem [not null]
   zohoItem ZohoItem [not null]
   xentralArtikel XentralArtikel [not null]
   saleorProductVariant SaleorProductVariant [not null]
@@ -635,7 +688,7 @@ Table Package {
   order Order [not null]
   orderId String [not null]
   events PackageEvent [not null]
-  lineItems LineItem [not null]
+  packageLineItems PackageLineItem [not null]
   zohoPackage ZohoPackage [not null]
   saleorPackage SaleorPackage [not null]
   tenant Tenant [not null]
@@ -741,7 +794,8 @@ Table ZohoApp {
   zohoContacts ZohoContact [not null]
   zohoInvoices ZohoInvoice [not null]
   zohoSalesOrder ZohoSalesOrder [not null]
-  zohoLineItems ZohoLineItem [not null]
+  zohoPackageLineItems ZohoPackageLineItem [not null]
+  zohoOrderLineItems ZohoOrderLineItem [not null]
   zohoTaxes ZohoTax [not null]
   zohoContactPersons ZohoContactPerson [not null]
   zohoAddresses ZohoAddress [not null]
@@ -777,7 +831,8 @@ Table InstalledSaleorApp {
   saleorProductVariant SaleorProductVariant [not null]
   saleorWarehouse SaleorWarehouse [not null]
   saleorOrder SaleorOrder [not null]
-  saleorLineItem SaleorLineItem [not null]
+  saleorOrderLineItem SaleorOrderLineItem [not null]
+  saleorFulfilmentLines SaleorFulfillmentLine [not null]
   saleorPackage SaleorPackage [not null]
 
   indexes {
@@ -812,7 +867,8 @@ Table Tenant {
   payment Payment [not null]
   warehouse Warehouse [not null]
   invoice Invoice [not null]
-  lineItem LineItem [not null]
+  orderLineItem OrderLineItem [not null]
+  packageLineItem PackageLineItem [not null]
   braintree Braintree [not null]
   tax Tax [not null]
   package Package [not null]
@@ -1365,9 +1421,13 @@ Ref: SaleorPackage.packageId > Package.id [delete: Cascade]
 
 Ref: SaleorPackage.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
 
-Ref: SaleorLineItem.lineItemId > LineItem.id [delete: Cascade]
+Ref: SaleorFulfillmentLine.packageLineItemId > PackageLineItem.id [delete: Cascade]
 
-Ref: SaleorLineItem.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
+Ref: SaleorFulfillmentLine.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
+
+Ref: SaleorOrderLineItem.orderLineItemId > OrderLineItem.id [delete: Cascade]
+
+Ref: SaleorOrderLineItem.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
 
 Ref: SaleorPayment.(saleorOrderId, installedSaleorAppId) > SaleorOrder.(id, installedSaleorAppId)
 
@@ -1435,9 +1495,15 @@ Ref: ZohoTax.taxId > Tax.id [delete: Cascade]
 
 Ref: ZohoTax.zohoAppId > ZohoApp.id [delete: Cascade]
 
-Ref: ZohoLineItem.lineItemId > LineItem.id [delete: Cascade]
+Ref: ZohoOrderLineItem.orderLineItemId > OrderLineItem.id [delete: Cascade]
 
-Ref: ZohoLineItem.zohoAppId > ZohoApp.id [delete: Cascade]
+Ref: ZohoOrderLineItem.zohoAppId > ZohoApp.id [delete: Cascade]
+
+Ref: ZohoPackageLineItem.packagelineItemId > PackageLineItem.id [delete: Cascade]
+
+Ref: ZohoPackageLineItem.zohoAppId > ZohoApp.id [delete: Cascade]
+
+Ref: ZohoPackageLineItem.orderLineItemId > OrderLineItem.id
 
 Ref: Invoice.tenantId > Tenant.id [delete: Cascade]
 
@@ -1455,17 +1521,25 @@ Ref: Contact.tenantId > Tenant.id [delete: Cascade]
 
 Ref: Warehouse.tenantId > Tenant.id [delete: Cascade]
 
-Ref: LineItem.orderId > Order.id [delete: Cascade]
+Ref: OrderLineItem.orderId > Order.id [delete: Cascade]
 
-Ref: LineItem.warehouseId > Warehouse.id
+Ref: OrderLineItem.warehouseId > Warehouse.id
 
-Ref: LineItem.packageId > Package.id
+Ref: OrderLineItem.taxId > Tax.id [delete: Cascade]
 
-Ref: LineItem.taxId > Tax.id [delete: Cascade]
+Ref: OrderLineItem.(productVariantId, sku) > ProductVariant.(id, sku)
 
-Ref: LineItem.(productVariantId, sku) > ProductVariant.(id, sku)
+Ref: OrderLineItem.tenantId > Tenant.id [delete: Cascade]
 
-Ref: LineItem.tenantId > Tenant.id [delete: Cascade]
+Ref: PackageLineItem.orderId > Order.id [delete: Cascade]
+
+Ref: PackageLineItem.warehouseId > Warehouse.id
+
+Ref: PackageLineItem.packageId > Package.id
+
+Ref: PackageLineItem.(productVariantId, sku) > ProductVariant.(id, sku)
+
+Ref: PackageLineItem.tenantId > Tenant.id [delete: Cascade]
 
 Ref: Order.shippingPriceTaxId > Tax.id [delete: Cascade]
 

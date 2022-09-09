@@ -352,7 +352,7 @@ export class SaleorOrderSyncService {
             `Calculated saleor discount is negative: ${discountValueNet}! This can never be. Failing..`,
           );
 
-        await this.db.saleorLineItem.upsert({
+        await this.db.saleorOrderLineItem.upsert({
           where: {
             id_installedSaleorAppId: {
               id: lineItem.id,
@@ -361,7 +361,7 @@ export class SaleorOrderSyncService {
           },
           create: {
             id: lineItem.id,
-            lineItem: {
+            orderLineItem: {
               connectOrCreate: {
                 where: {
                   uniqueString_tenantId: {
@@ -414,7 +414,7 @@ export class SaleorOrderSyncService {
             },
           },
           update: {
-            lineItem: {
+            orderLineItem: {
               update: {
                 quantity: lineItem.quantity,
                 discountValueNet,

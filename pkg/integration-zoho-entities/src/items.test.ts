@@ -10,9 +10,9 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
+let zoho: Zoho;
 describe("Zoho Inventory Item Sync", () => {
   const prismaClient = new PrismaClient();
-  let zoho: Zoho;
   const mockedZohoClient = {
     item: {
       list: async () =>

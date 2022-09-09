@@ -3,7 +3,7 @@
 import type { CreateSalesOrder } from "@trieb.work/zoho-ts";
 import {
   Order,
-  LineItem,
+  OrderLineItem,
   Warehouse,
   ZohoWarehouse,
   ProductVariant,
@@ -12,20 +12,20 @@ import {
 import { Warning } from "../utils";
 import { ExtendedTax, taxToZohoTaxId } from "./taxes";
 
-type ExtendedLineItem = LineItem & {
+type ExtendedLineItem = OrderLineItem & {
   productVariant: ProductVariant & {
     zohoItem: ZohoItem[];
   };
   warehouse:
-    (Warehouse & {
+    | (Warehouse & {
         zohoWarehouse: ZohoWarehouse[];
-    })
+      })
     | null;
   tax: ExtendedTax;
 };
 
 type OrderWithZohoItemsAndZohoWarehouse = Order & {
-  lineItems: ExtendedLineItem[];
+  orderLineItems: ExtendedLineItem[];
 };
 
 export function calculateDiscount(
@@ -56,7 +56,7 @@ export function orderToZohoLineItems(
   order: OrderWithZohoItemsAndZohoWarehouse,
   discount_type: CreateSalesOrder["discount_type"],
 ): CreateSalesOrder["line_items"] {
-  return order.lineItems.reduce((akku, lineItem) => {
+  return order.orderLineItems.reduce((akku, lineItem) => {
     if (!lineItem?.productVariant) {
       throw new Error(
         "No productVariant set for this lineItem. Aborting sync of this order.",
