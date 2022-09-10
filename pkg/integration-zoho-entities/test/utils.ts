@@ -103,7 +103,7 @@ export async function upsertOrder(
       date: "2022-01-01T00:00:00.000Z",
       orderNumber,
       totalPriceGross,
-      ...(discountValueNet ? {discountValueNet} : {}),
+      ...(discountValueNet ? { discountValueNet } : {}),
       orderStatus: "confirmed",
       readyToFullfill: true,
       shippingAddress: {
@@ -144,7 +144,7 @@ export async function upsertLineItem1(
     create: {
       id: `test-l1-${orderNumber}`,
       quantity: 10,
-      ...(discountValueNet ? {discountValueNet} : {}),
+      ...(discountValueNet ? { discountValueNet } : {}),
       uniqueString: uniqueStringOrderLine(
         orderNumber,
         `test-l1-${orderNumber}`,
