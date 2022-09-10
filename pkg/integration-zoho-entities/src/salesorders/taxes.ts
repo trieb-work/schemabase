@@ -1,7 +1,4 @@
-import {
-  ZohoTax,
-  Tax,
-} from "@prisma/client";
+import { ZohoTax, Tax } from "@prisma/client";
 import { Warning } from "../utils";
 
 export type ExtendedTax = Tax & {
@@ -9,12 +6,9 @@ export type ExtendedTax = Tax & {
 };
 
 export function taxToZohoTaxId(tax: ExtendedTax): string {
-  if (
-    !tax?.zohoTaxes ||
-    tax.zohoTaxes.length === 0
-  ) {
+  if (!tax?.zohoTaxes || tax.zohoTaxes.length === 0) {
     throw new Warning(
-      "No zohoTaxes set for this tax. Aborting sync of this order. Try again after zoho taxes sync."
+      "No zohoTaxes set for this tax. Aborting sync of this order. Try again after zoho taxes sync.",
     );
   }
   if (tax.zohoTaxes.length > 1) {

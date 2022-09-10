@@ -1,7 +1,14 @@
 /* eslint-disable max-len */
 import { AssertionLogger } from "@eci/pkg/logger/src/assertion";
 import { PrismaClient } from "@eci/pkg/prisma";
-import { beforeEach, describe, jest, test, beforeAll, afterAll } from "@jest/globals";
+import {
+  beforeEach,
+  describe,
+  jest,
+  test,
+  beforeAll,
+  afterAll,
+} from "@jest/globals";
 import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts";
 import { ZohoSalesOrdersSyncService } from ".";
 import {
@@ -56,14 +63,18 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
   });
   afterAll(async () => {
     await deleteOrders(prismaClient, { startsWith: ORDERNR_DATE_PREFIX });
-    const zohoIds = (await zoho.salesOrder.search(ORDERNR_DATE_PREFIX)).map((so) => so.salesorder_id);
+    const zohoIds = (await zoho.salesOrder.search(ORDERNR_DATE_PREFIX)).map(
+      (so) => so.salesorder_id,
+    );
     console.log("zohoIds for deletion", zohoIds);
     console.log("zoho delete res", await zoho.salesOrder.delete(zohoIds));
   });
 
   test("Test 1: It should abort sync of orders if product variants of lineitems are not synced with zoho items", async () => {
     console.info("Test 1 started");
-    newOrderNumber = `${ORDERNR_DATE_PREFIX}${Math.round((Number(new Date) - 1662000000000) / 1000)}`;
+    newOrderNumber = `${ORDERNR_DATE_PREFIX}${Math.round(
+      (Number(new Date()) - 1662000000000) / 1000,
+    )}`;
     console.log("newOrderNumber", newOrderNumber);
     await Promise.all([
       upsertTaxWithZohoTax(prismaClient),
@@ -79,11 +90,21 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
     ]);
     zohoSalesOrdersLogger.clearMessages();
     await zohoSalesOrdersSyncService.syncFromECI();
-    zohoSalesOrdersLogger.assertOneLogEntryMatches("info", ({ message, fields }) =>
-      !!message.match(/Received [\d]+ orders that are not synced with Zoho/) && (fields?.orderNumbers as string[])?.includes(newOrderNumber)
+    zohoSalesOrdersLogger.assertOneLogEntryMatches(
+      "info",
+      ({ message, fields }) =>
+        !!message.match(
+          /Received [\d]+ orders that are not synced with Zoho/,
+        ) && (fields?.orderNumbers as string[])?.includes(newOrderNumber),
     );
-    zohoSalesOrdersLogger.assertOneLogMessageMatches("warn", `No zohoItem set for the productVariant of this lineItem. Aborting sync of this order. Try again after zoho items sync.`);
-    zohoSalesOrdersLogger.assertOneLogMessageMatches("info", `Successfully confirmed 0 order(s).`);
+    zohoSalesOrdersLogger.assertOneLogMessageMatches(
+      "warn",
+      `No zohoItem set for the productVariant of this lineItem. Aborting sync of this order. Try again after zoho items sync.`,
+    );
+    zohoSalesOrdersLogger.assertOneLogMessageMatches(
+      "info",
+      `Successfully confirmed 0 order(s).`,
+    );
     console.info("Test 1 completed");
   }, 90000);
 
@@ -92,13 +113,25 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
     await upsertZohoItem(prismaClient);
     zohoSalesOrdersLogger.clearMessages();
     await zohoSalesOrdersSyncService.syncFromECI();
-    zohoSalesOrdersLogger.assertOneLogEntryMatches("info", ({ message, fields }) =>
-      !!message.match(/Received [\d]+ orders that are not synced with Zoho/) && (fields?.orderNumbers as string[])?.includes(newOrderNumber)
+    zohoSalesOrdersLogger.assertOneLogEntryMatches(
+      "info",
+      ({ message, fields }) =>
+        !!message.match(
+          /Received [\d]+ orders that are not synced with Zoho/,
+        ) && (fields?.orderNumbers as string[])?.includes(newOrderNumber),
     );
-    zohoSalesOrdersLogger.assertOneLogMessageMatches("info", `Successfully created zoho salesorder ${newOrderNumber}`);
-    zohoSalesOrdersLogger.assertOneLogEntryMatches("info", ({ message, fields }) =>
-      !!message.match(/Successfully confirmed [1-9]+[0]* order\(s\)./) && (fields?.salesorderNumbersToConfirm as string[])?.includes(newOrderNumber)
-    )
+    zohoSalesOrdersLogger.assertOneLogMessageMatches(
+      "info",
+      `Successfully created zoho salesorder ${newOrderNumber}`,
+    );
+    zohoSalesOrdersLogger.assertOneLogEntryMatches(
+      "info",
+      ({ message, fields }) =>
+        !!message.match(/Successfully confirmed [1-9]+[0]* order\(s\)./) &&
+        (fields?.salesorderNumbersToConfirm as string[])?.includes(
+          newOrderNumber,
+        ),
+    );
     console.info("Test 2 completed");
   }, 90000);
 
@@ -112,12 +145,25 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
     ]);
     zohoSalesOrdersLogger.clearMessages();
     await zohoSalesOrdersSyncService.syncFromECI();
-    zohoSalesOrdersLogger.assertOneLogEntryMatches("info", ({ message, fields }) =>
-      !!message.match(/Received [\d]+ orders that are not synced with Zoho/) && (fields?.orderNumbers as string[])?.includes(newOrderNumber)
+    zohoSalesOrdersLogger.assertOneLogEntryMatches(
+      "info",
+      ({ message, fields }) =>
+        !!message.match(
+          /Received [\d]+ orders that are not synced with Zoho/,
+        ) && (fields?.orderNumbers as string[])?.includes(newOrderNumber),
     );
-    zohoSalesOrdersLogger.assertOneLogMessageMatches("warn", `This sales order number already exists.`);
-    zohoSalesOrdersLogger.assertOneLogMessageMatches("info", `Successfully attached zoho salesorder ${newOrderNumber} from search request to the current order`);
-    zohoSalesOrdersLogger.assertOneLogMessageMatches("info", /Successfully confirmed [0-9]+ order\(s\)./);
+    zohoSalesOrdersLogger.assertOneLogMessageMatches(
+      "warn",
+      `This sales order number already exists.`,
+    );
+    zohoSalesOrdersLogger.assertOneLogMessageMatches(
+      "info",
+      `Successfully attached zoho salesorder ${newOrderNumber} from search request to the current order`,
+    );
+    zohoSalesOrdersLogger.assertOneLogMessageMatches(
+      "info",
+      /Successfully confirmed [0-9]+ order\(s\)./,
+    );
     console.info("Test 3 completed");
   }, 90000);
 });

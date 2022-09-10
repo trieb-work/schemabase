@@ -1,6 +1,13 @@
 import { AssertionLogger } from "@eci/pkg/logger";
 import { PrismaClient, ZohoApp } from "@eci/pkg/prisma";
-import { beforeEach, describe, jest, test, beforeAll, afterAll } from "@jest/globals";
+import {
+  beforeEach,
+  describe,
+  jest,
+  test,
+  beforeAll,
+  afterAll,
+} from "@jest/globals";
 import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts";
 import { ZohoInvoiceSyncService } from "./invoices";
 import {
@@ -26900,7 +26907,8 @@ describe("Zoho Inventory Invoice Sync", () => {
       include: { tenant: true },
     })) as ZohoApp;
     if (!zohoApp) throw new Error("No testing Zoho App found!");
-    if (!zohoApp.tenantId) throw new Error("No tenant configured for Zoho App!");
+    if (!zohoApp.tenantId)
+      throw new Error("No tenant configured for Zoho App!");
     zoho = new Zoho(
       await ZohoApiClient.fromOAuth({
         orgId: zohoApp.orgId,
@@ -26925,10 +26933,15 @@ describe("Zoho Inventory Invoice Sync", () => {
   afterAll(async () => {
     await deleteInvoices(prismaClient, { startsWith: ORDERNR_DATE_PREFIX });
     await deleteOrders(prismaClient, { startsWith: ORDERNR_DATE_PREFIX });
-    const zohoIds = (await zoho.salesOrder.search(ORDERNR_DATE_PREFIX)).map((so) => so.salesorder_id);
+    const zohoIds = (await zoho.salesOrder.search(ORDERNR_DATE_PREFIX)).map(
+      (so) => so.salesorder_id,
+    );
     console.log("zohoIds for deletion", zohoIds);
     console.log("invoicesToDeleteAfterTest", invoicesToDeleteAfterTest);
-    console.log("invoice delete res", await zoho.invoice.delete(invoicesToDeleteAfterTest));
+    console.log(
+      "invoice delete res",
+      await zoho.invoice.delete(invoicesToDeleteAfterTest),
+    );
     console.log("zoho delete res", await zoho.salesOrder.delete(zohoIds));
   });
 
@@ -26944,7 +26957,9 @@ describe("Zoho Inventory Invoice Sync", () => {
   // }, 90000);
 
   test("It should work to create Invoices and ZohoInvoices from ECI Orders with attached ZohoSalesorders", async () => {
-    newOrderNumber = `${ORDERNR_DATE_PREFIX}${Math.round((Number(new Date) - 1662000000000) / 1000)}`;
+    newOrderNumber = `${ORDERNR_DATE_PREFIX}${Math.round(
+      (Number(new Date()) - 1662000000000) / 1000,
+    )}`;
     console.log("newOrderNumber", newOrderNumber);
     await Promise.all([
       upsertTaxWithZohoTax(prismaClient),
@@ -26953,7 +26968,7 @@ describe("Zoho Inventory Invoice Sync", () => {
     ]);
     await Promise.all([
       upsertZohoItem(prismaClient),
-      upsertAddressWithZohoAddress(prismaClient)
+      upsertAddressWithZohoAddress(prismaClient),
     ]);
     await upsertOrder(prismaClient, newOrderNumber);
     await Promise.all([
@@ -26963,29 +26978,53 @@ describe("Zoho Inventory Invoice Sync", () => {
     zohoSalesOrdersLogger.clearMessages();
     // For preparation create the salesorder in ECI and sync it back
     await zohoSalesOrdersSyncService.syncFromECI();
-    zohoSalesOrdersLogger.assertOneLogEntryMatches("info", ({ message, fields }) =>
-      !!message.match(/Received [\d]+ orders that are not synced with Zoho/) && (fields?.orderNumbers as string[])?.includes(newOrderNumber)
+    zohoSalesOrdersLogger.assertOneLogEntryMatches(
+      "info",
+      ({ message, fields }) =>
+        !!message.match(
+          /Received [\d]+ orders that are not synced with Zoho/,
+        ) && (fields?.orderNumbers as string[])?.includes(newOrderNumber),
     );
-    zohoSalesOrdersLogger.assertOneLogMessageMatches("info", `Successfully created zoho salesorder ${newOrderNumber}`);
-    zohoSalesOrdersLogger.assertOneLogEntryMatches("info", ({ message, fields }) =>
-      !!message.match(/Successfully confirmed [1-9]+[0]* order\(s\)./) && (fields?.salesorderNumbersToConfirm as string[])?.includes(newOrderNumber)
-    )
-    console.log("Preparation complete (Creation of ZohoSalesOrder in Zoho and ECI DB)");
+    zohoSalesOrdersLogger.assertOneLogMessageMatches(
+      "info",
+      `Successfully created zoho salesorder ${newOrderNumber}`,
+    );
+    zohoSalesOrdersLogger.assertOneLogEntryMatches(
+      "info",
+      ({ message, fields }) =>
+        !!message.match(/Successfully confirmed [1-9]+[0]* order\(s\)./) &&
+        (fields?.salesorderNumbersToConfirm as string[])?.includes(
+          newOrderNumber,
+        ),
+    );
+    console.log(
+      "Preparation complete (Creation of ZohoSalesOrder in Zoho and ECI DB)",
+    );
     zohoInvoiceLogger.clearMessages();
     await zohoInvoiceSyncService.syncFromECI_autocreateInvoiceFromSalesorder();
-    zohoInvoiceLogger.assertOneLogEntryMatches("info", ({ message, fields }) =>
-      !!message.match(/Received [\d]+ orders without a zohoInvoice. Creating zohoInvoices from them./) && (fields?.orderNumbers as string[])?.includes(newOrderNumber)
+    zohoInvoiceLogger.assertOneLogEntryMatches(
+      "info",
+      ({ message, fields }) =>
+        !!message.match(
+          /Received [\d]+ orders without a zohoInvoice. Creating zohoInvoices from them./,
+        ) && (fields?.orderNumbers as string[])?.includes(newOrderNumber),
     );
-    zohoInvoiceLogger.assertOneLogEntryMatches("info", ({ message, fields }) => {
-      if(!!message.match(/Successfully created a zoho Invoice /)){
-        if(fields?.invoiceNumber && fields?.invoiceId && (fields?.orderNumber as string) === newOrderNumber){
-          invoicesToDeleteAfterTest.push(fields?.invoiceId);
-          return true;
-        };
+    zohoInvoiceLogger.assertOneLogEntryMatches(
+      "info",
+      ({ message, fields }) => {
+        if (!!message.match(/Successfully created a zoho Invoice /)) {
+          if (
+            fields?.invoiceNumber &&
+            fields?.invoiceId &&
+            (fields?.orderNumber as string) === newOrderNumber
+          ) {
+            invoicesToDeleteAfterTest.push(fields?.invoiceId);
+            return true;
+          }
+          return false;
+        }
         return false;
-      }
-      return false;
-    }
+      },
     );
 
     // TODO: handle case if invoice was already created in zoho but does not exist in DB

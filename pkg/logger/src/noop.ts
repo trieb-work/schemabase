@@ -2,7 +2,6 @@
 import { Fields, ILogger, LogDrain } from "./logger";
 
 export class NoopLogger implements ILogger {
-  
   public withLogDrain(_logDrain: LogDrain): ILogger {
     return new NoopLogger();
   }
