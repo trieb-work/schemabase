@@ -1,9 +1,9 @@
 // import { PrismaClient } from "@eci/pkg/prisma";
-import BraintreeTS, { BraintreeTransaction } from "./braintree";
+import { BraintreeTransaction, BraintreeClient } from "./braintree";
 import { describe, test, beforeAll, expect } from "@jest/globals";
 
 // const prismaClient = new PrismaClient();
-let braintree: BraintreeTS;
+let braintree: BraintreeClient;
 
 const merchantIdTest = "83xhsc8ghngkhp7q";
 const publicKeyTest = "f66g4gs2pcqxx3rx";
@@ -18,7 +18,7 @@ describe("Braintree Class Unit Test", () => {
     // });
     // if (!braintreeConf || !braintreeConf.merchantId)
     //   throw new Error("No braintree config with id `test` found!");
-    braintree = new BraintreeTS({
+    braintree = new BraintreeClient({
       merchantId: merchantIdTest,
       privateKey: privateKeyTest,
       publicKey: publicKeyTest,
