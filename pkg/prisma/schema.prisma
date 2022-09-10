@@ -1268,6 +1268,8 @@ model BraintreeTransaction {
   /// If this braintree transaction is a paypal payment, we store the paypal transaction id as well
   payPalTransactionId   String?
 
+  status        String?
+
   braintreeApp BraintreeApp @relation(fields: [braintreeAppId], references: [id], onDelete: Cascade)
   braintreeAppId String
 

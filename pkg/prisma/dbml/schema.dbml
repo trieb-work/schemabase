@@ -649,6 +649,7 @@ Table BraintreeTransaction {
   createdAt DateTime [not null]
   updatedAt DateTime [not null]
   payPalTransactionId String [note: 'If this braintree transaction is a paypal payment, we store the paypal transaction id as well']
+  status String
   braintreeApp BraintreeApp [not null]
   braintreeAppId String [not null]
   payment Payment [not null]

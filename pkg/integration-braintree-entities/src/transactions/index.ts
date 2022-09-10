@@ -119,6 +119,11 @@ export class BraintreeTransactionSyncService {
           },
         },
       });
+
+      await this.cronState.set({
+        lastRun: new Date(),
+        lastRunStatus: "success",
+      });
     }
   }
 }
