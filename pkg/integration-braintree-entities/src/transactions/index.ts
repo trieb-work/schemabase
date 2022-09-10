@@ -61,6 +61,16 @@ export class BraintreeTransactionSyncService {
     for await (const chunk of transactionsStream) {
       const transaction: BraintreeTransaction = chunk;
 
+      const payPalTransactionId = transaction?.paypalAccount?.authorizationId;
+      const payPalTransactionFee = payPalTransactionId
+        ? parseFloat(
+            transaction?.paypalAccount?.transactionFeeAmount.replace(
+              /,/g,
+              ".",
+            ) || "0",
+          )
+        : undefined;
+
       await this.db.braintreeTransaction.upsert({
         where: {
           id_braintreeAppId: {
@@ -72,6 +82,7 @@ export class BraintreeTransactionSyncService {
           id: transaction.id,
           createdAt: transaction.createdAt,
           updatedAt: transaction.updatedAt,
+          payPalTransactionId,
           payment: {
             connectOrCreate: {
               where: {
@@ -84,6 +95,7 @@ export class BraintreeTransactionSyncService {
                 id: id.id("payment"),
                 referenceNumber: transaction.id,
                 amount: Number(transaction.amount),
+                transactionFee: payPalTransactionFee,
                 tenant: {
                   connect: {
                     id: this.tenantId,
@@ -100,6 +112,11 @@ export class BraintreeTransactionSyncService {
         },
         update: {
           updatedAt: new Date(transaction.updatedAt),
+          payment: {
+            update: {
+              transactionFee: payPalTransactionFee,
+            },
+          },
         },
       });
     }
