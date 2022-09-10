@@ -27,3 +27,5 @@ kafka:
   password: kafka
 
 sendgridApiKey: abc
+
+secretKey:
