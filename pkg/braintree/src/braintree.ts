@@ -10,7 +10,7 @@ type Config = {
 
 export type BraintreeTransaction = Transaction;
 
-export default class BraintreeTS {
+export class BraintreeClient {
   private merchantId: string;
 
   private publicKey: string;

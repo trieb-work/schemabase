@@ -1,11 +1,6 @@
 import { Zoho } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
-import {
-  PrismaClient,
-  Prisma,
-  ZohoApp,
-  PaymentMethodType,
-} from "@eci/pkg/prisma";
+import { PrismaClient, Prisma, ZohoApp } from "@eci/pkg/prisma";
 // import { id } from "@eci/pkg/ids";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { format, setHours, subDays, subYears } from "date-fns";

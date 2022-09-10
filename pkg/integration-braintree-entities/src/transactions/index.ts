@@ -3,12 +3,12 @@ import { id } from "@eci/pkg/ids";
 import { ILogger } from "@eci/pkg/logger";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { setHours, subDays, subYears } from "date-fns";
-import BraintreeTS, { BraintreeTransaction } from "./braintree";
+import { BraintreeTransaction, BraintreeClient } from "@eci/pkg/braintree";
 
 interface BraintreeTransactionSyncServiceConfig {
   db: PrismaClient;
   logger: ILogger;
-  braintreeClient: BraintreeTS;
+  braintreeClient: BraintreeClient;
   tenantId: string;
   braintreeAppId: string;
 }
@@ -18,7 +18,7 @@ export class BraintreeTransactionSyncService {
 
   private readonly db: PrismaClient;
 
-  private readonly braintreeClient: BraintreeTS;
+  private readonly braintreeClient: BraintreeClient;
 
   private readonly cronState: CronStateHandler;
 
@@ -89,8 +89,12 @@ export class BraintreeTransactionSyncService {
                     id: this.tenantId,
                   },
                 },
-                p,
               },
+            },
+          },
+          braintreeApp: {
+            connect: {
+              id: this.braintreeAppId,
             },
           },
         },
