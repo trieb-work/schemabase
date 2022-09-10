@@ -13,6 +13,7 @@ pnpm cloak generate
 ```
 
 ## Encrypt a string
+
 ```
 echo "STRING TO ENCRYPT" | pnpm cloak encrypt SECRET_KEY
 ```
