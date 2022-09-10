@@ -83,6 +83,7 @@ export class BraintreeTransactionSyncService {
           createdAt: transaction.createdAt,
           updatedAt: transaction.updatedAt,
           payPalTransactionId,
+          status: transaction.status,
           payment: {
             connectOrCreate: {
               where: {
@@ -112,6 +113,7 @@ export class BraintreeTransactionSyncService {
         },
         update: {
           updatedAt: new Date(transaction.updatedAt),
+          status: transaction.status,
           payment: {
             update: {
               transactionFee: payPalTransactionFee,
