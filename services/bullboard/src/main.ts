@@ -73,13 +73,15 @@ async function main() {
    * bull:eci:pk_7f16573fece94114847dc81d3214eef4:id_wrtrgwqrg:SaleorProductSyncWorkflow
    */
   const keys = await redis.keys("bull:eci:*");
-  const queues: string[] = [];
+  const queuesUnsorted: string[] = [];
   for (const key of keys) {
     const [, , tenant, integrationId, topic] = key.split(":");
     const queueName = `eci:${tenant}:${integrationId}:${topic}`;
-    if (topic && integrationId && !queues.includes(queueName))
-      queues.push(queueName);
+    if (topic && integrationId && !queuesUnsorted.includes(queueName))
+      queuesUnsorted.push(queueName);
   }
+
+  const queues = queuesUnsorted.sort((a, b) => a.localeCompare(b));
 
   const serverAdapter: any = new ExpressAdapter();
   serverAdapter.setBasePath("/ui");
