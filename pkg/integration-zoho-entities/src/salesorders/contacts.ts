@@ -23,14 +23,14 @@ export function orderToMainContactPerson(
     order.mainContact.zohoContactPersons.length === 0
   ) {
     throw new Warning(
-      "No zohoContactPersons set for the mainContact of this order. "+
-      "Aborting sync of this order. Try again after zoho contacts sync.",
+      "No zohoContactPersons set for the mainContact of this order. " +
+        "Aborting sync of this order. Try again after zoho contacts sync.",
     );
   }
   if (order.mainContact.zohoContactPersons.length > 1) {
     throw new Error(
-      "Multiple zohoContactPersons set for the mainContact of this order. "+
-      "Aborting sync of this order.",
+      "Multiple zohoContactPersons set for the mainContact of this order. " +
+        "Aborting sync of this order.",
     );
   }
   return order.mainContact.zohoContactPersons[0];

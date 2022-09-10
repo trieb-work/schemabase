@@ -62,11 +62,11 @@ module.exports = {
 
   // A set of global variables that need to be available in all test environments
   globals: {
-    'ts-jest': {
+    "ts-jest": {
       diagnostics: {
-        warnOnly: true
-      }
-    }
+        warnOnly: true,
+      },
+    },
   },
 
   // The maximum amount of workers used to run your tests. Can be specified as %

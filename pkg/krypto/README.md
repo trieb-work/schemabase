@@ -11,3 +11,9 @@ The secret key needs to be of a specific format and can be generated easily with
 ```
 pnpm cloak generate
 ```
+
+## Encrypt a string
+
+```
+echo "STRING TO ENCRYPT" | pnpm cloak encrypt SECRET_KEY
+```

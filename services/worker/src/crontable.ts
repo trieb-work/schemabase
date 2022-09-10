@@ -5,6 +5,7 @@ import {
   WorkflowScheduler,
 } from "@eci/pkg/scheduler/scheduler";
 import { createWorkflowFactory } from "@eci/pkg/scheduler/workflow";
+import { BraintreeTransactionSyncWorkflow } from "./workflows";
 import { SaleorOrderSyncWorkflow } from "./workflows/saleorOrderSync";
 import { SaleorPackageSyncWorkflow } from "./workflows/saleorPackageSync";
 import { SaleorPaymentSyncWorkflow } from "./workflows/saleorPaymentSync";
@@ -38,7 +39,7 @@ export class CronTable {
   public async scheduleTenantWorkflows(): Promise<void> {
     this.clients.logger.info("Starting the scheduling of all workflows...");
     /**
-     * Scheduling of Zoho Workflows
+     * Scheduling of Zoho + Saleor Workflows
      */
     const enabledZohoIntegrations =
       await this.clients.prisma.saleorZohoIntegration.findMany({
@@ -203,6 +204,29 @@ export class CronTable {
         );
       }
     }
-    this.clients.logger.info("Successfully scheduled all Zoho workflows");
+
+    /**
+     * Schedule all braintree workflows
+     */
+    const enabledBraintreeApps =
+      await this.clients.prisma.braintreeApp.findMany({
+        where: {
+          enabled: true,
+        },
+      });
+    for (const app of enabledBraintreeApps) {
+      const { tenantId, cronSchedule, cronTimeout, id } = app;
+      const commonCronConfig = {
+        cron: cronSchedule,
+        timeout: cronTimeout,
+      };
+      new WorkflowScheduler(this.clients).schedule(
+        createWorkflowFactory(BraintreeTransactionSyncWorkflow, this.clients, {
+          braintreeAppId: app.id,
+        }),
+        { ...commonCronConfig, offset: 0 },
+        [tenantId, id],
+      );
+    }
   }
 }
