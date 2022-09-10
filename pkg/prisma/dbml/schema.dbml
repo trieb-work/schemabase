@@ -631,12 +631,15 @@ Table StockEntries {
 
 Table BraintreeApp {
   id String [pk]
+  enabled Boolean [not null, default: true]
   sandbox Boolean [not null, default: false]
   merchantId String [not null]
   publicKey String [not null]
   privateKey String [not null]
   tenant Tenant [not null]
   tenantId String [not null]
+  cronSchedule String [not null, default: '*/30 * * * *']
+  cronTimeout Int [not null, default: 800]
   braintreeTransactions BraintreeTransaction [not null]
 }
 

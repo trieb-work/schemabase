@@ -1229,6 +1229,8 @@ model StockEntries {
 model BraintreeApp {
   id String @id
 
+  enabled Boolean @default(true)
+
   sandbox Boolean @default(false)
 
   merchantId String
@@ -1239,7 +1241,14 @@ model BraintreeApp {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
+  cronSchedule String @default("*/30 * * * *")
+  // Time in seconds how long one workflow can run before a timeout occurs.
+  cronTimeout    Int    @default(800)
+
   braintreeTransactions BraintreeTransaction[]
+
+  @@index([enabled])
+  @@index([tenantId])
 }
 
 model BraintreeTransaction {
@@ -1740,6 +1749,8 @@ model SaleorZohoIntegration {
   // Time in seconds how long one workflow can run before a timeout occurs.
   cronTimeoutZoho    Int    @default(800)
   cronTimeoutSaleor  Int    @default(600)
+
+  @@index([enabled])
 }
 
 model LogisticsIntegration {
