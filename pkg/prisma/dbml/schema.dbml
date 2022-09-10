@@ -323,6 +323,7 @@ Table Payment {
   updatedAt DateTime [not null]
   referenceNumber String [not null]
   amount Float [not null]
+  transactionFee Float [not null, default: 0, note: 'Costs for this transaction, for example bank charges, gateway charges, paypal charges']
   order Order
   orderId String
   tenant Tenant [not null]
@@ -647,6 +648,7 @@ Table BraintreeTransaction {
   id String [not null, note: 'The Braintree internal ID']
   createdAt DateTime [not null]
   updatedAt DateTime [not null]
+  payPalTransactionId String [note: 'If this braintree transaction is a paypal payment, we store the paypal transaction id as well']
   braintreeApp BraintreeApp [not null]
   braintreeAppId String [not null]
   payment Payment [not null]

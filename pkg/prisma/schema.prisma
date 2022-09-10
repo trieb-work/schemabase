@@ -42,6 +42,7 @@ model SaleorOrder {
   @@unique([id, installedSaleorAppId])
   @@unique([orderId, installedSaleorAppId])
   @@index([orderId])
+  @@index([installedSaleorAppId])
 }
 
 model SaleorPackage {
@@ -251,6 +252,8 @@ model ZohoAddress {
   zohoAppId String
 
   @@unique([id, zohoAppId])
+  @@index([zohoAppId])
+  @@index([addressId])
 }
 
 enum ZohoSalesOrderStatus {
@@ -479,6 +482,9 @@ model Payment {
   referenceNumber String
 
   amount        Float
+
+  /// Costs for this transaction, for example bank charges, gateway charges, paypal charges
+  transactionFee Float @default(0)
 
   order   Order?  @relation(fields: [orderId], references: [id])
   orderId String?
@@ -774,6 +780,7 @@ model Order {
   @@index([shippingAddressId])
   @@index([billingAddressId])
   @@index([shippingPriceTaxId])
+  @@index([orderNumber])
 }
 
 enum CountryCode {
@@ -1257,6 +1264,9 @@ model BraintreeTransaction {
 
   createdAt DateTime
   updatedAt DateTime
+
+  /// If this braintree transaction is a paypal payment, we store the paypal transaction id as well
+  payPalTransactionId   String?
 
   braintreeApp BraintreeApp @relation(fields: [braintreeAppId], references: [id], onDelete: Cascade)
   braintreeAppId String
