@@ -631,7 +631,7 @@ Table StockEntries {
 
 Table BraintreeApp {
   id String [pk]
-  environment BraintreeEnvironment [not null, default: 'production']
+  sandbox Boolean [not null, default: false]
   merchantId String [not null]
   publicKey String [not null]
   privateKey String [not null]
@@ -1383,11 +1383,6 @@ Enum CountryCode {
   ZA
   ZM
   ZW
-}
-
-Enum BraintreeEnvironment {
-  testing
-  production
 }
 
 Enum PackageState {

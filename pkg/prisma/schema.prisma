@@ -1225,16 +1225,11 @@ model StockEntries {
   @@index([warehouseId])
 }
 
-enum BraintreeEnvironment {
-  testing
-  production
-}
-
 // Internal model to store braintree payment gateway settings for tenants
 model BraintreeApp {
   id String @id
 
-  environment BraintreeEnvironment @default(production)
+  sandbox Boolean @default(false)
 
   merchantId String
   publicKey  String
