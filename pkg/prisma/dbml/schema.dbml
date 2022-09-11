@@ -126,6 +126,17 @@ Table ZohoPackage {
   }
 }
 
+Table ZohoBankAccount {
+  id String [not null, note: 'Zoho Internal Bankacount Id']
+  active Boolean [not null, default: true]
+  zohoApp ZohoApp [not null]
+  zohoAppId String [not null]
+
+  indexes {
+    (id, zohoAppId) [unique]
+  }
+}
+
 Table ZohoContact {
   id String [not null]
   createdAt DateTime
@@ -821,6 +832,7 @@ Table ZohoApp {
   zohoContactPersons ZohoContactPerson [not null]
   zohoAddresses ZohoAddress [not null]
   zohoPackages ZohoPackage [not null]
+  zohoBankAccounts ZohoBankAccount [not null]
 }
 
 Table SaleorApp {
@@ -1466,6 +1478,8 @@ Ref: ZohoItem.zohoAppId > ZohoApp.id [delete: Cascade]
 Ref: ZohoPackage.packageId > Package.id [delete: Cascade]
 
 Ref: ZohoPackage.zohoAppId > ZohoApp.id [delete: Cascade]
+
+Ref: ZohoBankAccount.zohoAppId > ZohoApp.id [delete: Cascade]
 
 Ref: ZohoContact.zohoAppId > ZohoApp.id [delete: Cascade]
 

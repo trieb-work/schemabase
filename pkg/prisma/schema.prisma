@@ -190,6 +190,19 @@ model ZohoPackage {
   @@unique([id, zohoAppId])
 }
 
+model ZohoBankAccount {
+  /// Zoho Internal Bankacount Id
+  id String 
+
+  active Boolean @default(true)
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId String
+
+  @@unique([id, zohoAppId])  
+  @@index([zohoAppId])  
+}
+
 model ZohoContact {
   // Zoho Internal Contact Id
   id String
@@ -208,6 +221,7 @@ model ZohoContact {
   zohoPayment       ZohoPayment[]
 
   @@unique([id, zohoAppId])
+  @@index([zohoAppId])  
 }
 
 // Zoho knows Contacts and ContactPersons.
@@ -1522,6 +1536,7 @@ model ZohoApp {
   zohoContactPersons    ZohoContactPerson[]
   zohoAddresses         ZohoAddress[]
   zohoPackages          ZohoPackage[]
+  zohoBankAccounts      ZohoBankAccount[]
 }
 
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor
