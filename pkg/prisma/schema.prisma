@@ -132,6 +132,7 @@ model SaleorProductVariant {
 
   @@unique([id, installedSaleorAppId])
   @@index([productVariantId])
+  @@index([installedSaleorAppId])
 }
 
 // Saleor specific model for warehouse.
@@ -146,6 +147,7 @@ model SaleorWarehouse {
   installedSaleorAppId String
 
   @@unique([id, installedSaleorAppId])
+  @@index([installedSaleorAppId])
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -168,6 +170,8 @@ model ZohoItem {
   zohoAppId String
 
   @@unique([id, zohoAppId])
+  @@index([zohoAppId])
+  @@index([productVariantId])
 }
 
 model ZohoPackage {
@@ -188,6 +192,8 @@ model ZohoPackage {
   zohoAppId String
 
   @@unique([id, zohoAppId])
+  @@index([zohoAppId])
+  @@index([packageId])
 }
 
 model ZohoBankAccount {
@@ -302,6 +308,7 @@ model ZohoSalesOrder {
   @@unique([id, zohoAppId])
   @@index([orderId])
   @@index([zohoAppId])
+  @@index([id])
 }
 
 // Zoho specific model.
@@ -331,6 +338,8 @@ model ZohoInvoice {
 
   @@unique([id, zohoAppId])
   @@unique([number, zohoAppId])
+  @@index([zohoAppId])
+  @@index([invoiceId])
 }
 
 // Zoho specific model.
@@ -356,6 +365,7 @@ model ZohoPayment {
 
   @@unique([id, zohoAppId])
   @@index([paymentId])
+  @@index([zohoAppId])
 }
 
 model ZohoWarehouse {
@@ -369,6 +379,8 @@ model ZohoWarehouse {
   zohoAppId String
 
   @@unique([id, zohoAppId])
+  @@index([zohoAppId])
+  @@index([warehouseId])
 }
 
 model ZohoTax {
@@ -417,6 +429,7 @@ model ZohoPackageLineItem {
   @@unique([id, zohoAppId])
   @@index([packagelineItemId])
   @@index([zohoAppId])
+  @@index([orderLineItemId])
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -455,6 +468,7 @@ model Invoice {
   zohoInvoice ZohoInvoice[]
 
   @@unique([invoiceNumber, tenantId])
+  @@index([tenantId])
 }
 
 // Internal model to save taxes information
@@ -515,6 +529,7 @@ model Payment {
   @@unique([orderId, tenantId])
   @@unique([referenceNumber, tenantId])
   @@index([orderId])
+  @@index([tenantId])
 }
 
 model Company {
@@ -535,6 +550,7 @@ model Company {
 
   @@unique([name, tenantId])
   @@unique([normalizedName, tenantId])
+  @@index([tenantId])
 }
 
 /// The ECI internal contact model. One contact has one E-Mail address only.
@@ -566,6 +582,7 @@ model Contact {
   @@unique([email, tenantId])
   @@index([companyId])
   @@index([tenantId])
+  @@index([email])
 }
 
 // The ECI internal Warehouse model.
@@ -795,6 +812,7 @@ model Order {
   @@index([billingAddressId])
   @@index([shippingPriceTaxId])
   @@index([orderNumber])
+  @@index([orderStatus])
 }
 
 enum CountryCode {
