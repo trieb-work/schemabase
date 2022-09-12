@@ -114,6 +114,7 @@ jobs:
           --set=kafka.username="${{ secrets.PROD_KAFKA_USERNAME }}"
           --set=kafka.password="${{ secrets.PROD_KAFKA_PASSWORD }}"
           --set=sendgridApiKey=${{ secrets.SENDGRID_API_KEY }}
+          --set=secretKey=${{ secrets.SECRET_KEY_PROD }}
 
 
   deploy-logdrain:

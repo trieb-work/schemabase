@@ -296,9 +296,9 @@ export class ZohoItemSyncService {
   }
 
   /**
-   * create new zohoItems from ECI productVariants, 
+   * create new zohoItems from ECI productVariants,
    * this sync does not sync stock information and only creates the ZohoItems once with the current stock info
-   * 
+   *
    * --> INFO: stopped working on it, maybe this is not really needed @Jannik ?
    */
   // public async syncFromECI(): Promise<void> {

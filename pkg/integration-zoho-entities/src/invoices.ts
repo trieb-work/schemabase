@@ -72,27 +72,6 @@ export class ZohoInvoiceSyncService {
     }
 
     for (const invoice of invoices) {
-      // We first have to check, if we already have a Zoho Customer to be connected to
-      // this Invoice
-      const customerExist = await this.db.zohoContact.findUnique({
-        where: {
-          id_zohoAppId: {
-            id: invoice.customer_id,
-            zohoAppId: this.zohoApp.id,
-          },
-        },
-      });
-      const zohoContactConnect = customerExist
-        ? {
-          connect: {
-            id_zohoAppId: {
-              id: invoice.customer_id,
-              zohoAppId: this.zohoApp.id,
-            },
-          },
-        }
-        : undefined;
-
       // search for a corresponding order using the reference number from the invoice
       const orderExist = await this.db.order.findUnique({
         where: {
@@ -104,10 +83,10 @@ export class ZohoInvoiceSyncService {
       });
       const orderConnect = orderExist
         ? {
-          connect: {
-            id: orderExist.id,
-          },
-        }
+            connect: {
+              id: orderExist.id,
+            },
+          }
         : undefined;
 
       await this.db.zohoInvoice.upsert({
@@ -147,7 +126,6 @@ export class ZohoInvoiceSyncService {
               },
             },
           },
-          zohoContact: zohoContactConnect,
         },
         update: {
           createdAt: new Date(invoice.created_time),
@@ -172,7 +150,6 @@ export class ZohoInvoiceSyncService {
               },
             },
           },
-          zohoContact: zohoContactConnect,
         },
       });
     }
@@ -210,7 +187,7 @@ export class ZohoInvoiceSyncService {
         zohoSalesOrders: {
           where: {
             zohoAppId: this.zohoApp.id,
-          }
+          },
         },
         invoices: {
           where: {
@@ -220,10 +197,10 @@ export class ZohoInvoiceSyncService {
             zohoInvoice: {
               where: {
                 zohoAppId: this.zohoApp.id,
-              }
-            }
-          }
-        }
+              },
+            },
+          },
+        },
       },
     });
 
@@ -231,17 +208,20 @@ export class ZohoInvoiceSyncService {
       `Received ${ordersWithoutZohoInvoicesFromEciDb.length} orders without a zohoInvoice. Creating zohoInvoices from them.`,
       {
         orderIds: ordersWithoutZohoInvoicesFromEciDb.map((o) => o.id),
-        orderNumbers: ordersWithoutZohoInvoicesFromEciDb.map((o) => o.orderNumber),
+        orderNumbers: ordersWithoutZohoInvoicesFromEciDb.map(
+          (o) => o.orderNumber,
+        ),
       },
     );
     const invoicesToConfirm: Invoice[] = [];
     for (const ordersWithoutZohoInvoice of ordersWithoutZohoInvoicesFromEciDb) {
-      try {  
+      try {
         if (
-          !ordersWithoutZohoInvoice?.zohoSalesOrders || ordersWithoutZohoInvoice?.zohoSalesOrders.length === 0
+          !ordersWithoutZohoInvoice?.zohoSalesOrders ||
+          ordersWithoutZohoInvoice?.zohoSalesOrders.length === 0
         ) {
           throw new Warning(
-            "No zohoSalesOrders set for this order. Aborting sync of this order. Try again after zoho salesorder sync."
+            "No zohoSalesOrders set for this order. Aborting sync of this order. Try again after zoho salesorder sync.",
           );
         }
         if (ordersWithoutZohoInvoice?.zohoSalesOrders.length > 1) {
@@ -250,19 +230,21 @@ export class ZohoInvoiceSyncService {
           );
         }
         const zohoSalesOrder = ordersWithoutZohoInvoice.zohoSalesOrders[0];
-        const createdInvoice = await this.zoho.invoice.createFromSalesOrder(zohoSalesOrder.id);
+        const createdInvoice = await this.zoho.invoice.createFromSalesOrder(
+          zohoSalesOrder.id,
+        );
 
-        if(createdInvoice.contact_persons.length === 0) {
+        if (createdInvoice.contact_persons.length === 0) {
           this.logger.warn(
-            "No contact person is set in invoice. Therefore zohoInvoice will be created without a zohoContactPerson"
+            "No contact person is set in invoice. Therefore zohoInvoice will be created without a zohoContactPerson",
           );
         }
-        if(createdInvoice.contact_persons.length > 1) {
+        if (createdInvoice.contact_persons.length > 1) {
           // not sure how big this problem is, if its okay than may change this log-level to WARNING
           this.logger.error(
-            "Multiple contact persons connected to one invoice but only one zohoContactPerson can be set for an zohoInvoice. "+
-            "Therefore we just use the first contact person for the internal DB, please check this manually if thats okay. "+
-            "(Change this to a WARNING if it is okay)"
+            "Multiple contact persons connected to one invoice but only one zohoContactPerson can be set for an zohoInvoice. " +
+              "Therefore we just use the first contact person for the internal DB, please check this manually if thats okay. " +
+              "(Change this to a WARNING if it is okay)",
           );
         }
         await this.db.invoice.create({
@@ -285,7 +267,7 @@ export class ZohoInvoiceSyncService {
                   id_zohoAppId: {
                     id: createdInvoice.invoice_id,
                     zohoAppId: this.zohoApp.id,
-                  }
+                  },
                 },
                 create: {
                   id: createdInvoice.invoice_id,
@@ -295,28 +277,11 @@ export class ZohoInvoiceSyncService {
                   zohoApp: {
                     connect: {
                       id: this.zohoApp.id,
-                    }
-                  },
-                  zohoContact: {
-                    connect: {
-                      id_zohoAppId:{
-                        id: createdInvoice.customer_id,
-                        zohoAppId: this.zohoApp.id,
-                      }
                     },
                   },
-                  // TODO: should we change this in ECI db to also be able to connect multiple contact persons?
-                  ...(createdInvoice.contact_persons?.[0] ? {zohoContactPerson:{
-                    connect: {
-                      id_zohoAppId: {
-                        id: createdInvoice.contact_persons?.[0], // TODO add check if 
-                        zohoAppId: this.zohoApp.id,
-                      }
-                    }
-                  }} : {}),
-                }
-              }
-            }
+                },
+              },
+            },
           },
         });
         this.logger.info(
@@ -336,22 +301,35 @@ export class ZohoInvoiceSyncService {
         invoicesToConfirm.push(createdInvoice);
       } catch (err) {
         if (err instanceof Warning) {
-          this.logger.warn(err.message, { eciOrderId: ordersWithoutZohoInvoice.id, eciOrderNumber: ordersWithoutZohoInvoice.orderNumber });
+          this.logger.warn(err.message, {
+            eciOrderId: ordersWithoutZohoInvoice.id,
+            eciOrderNumber: ordersWithoutZohoInvoice.orderNumber,
+          });
         } else if (err instanceof Error) {
           // TODO zoho-ts package: add enum for error codes . like this:
           // if(err as ZohoApiError).code === require(zoho-ts).apiErrorCodes.NoItemsToBeInvoiced){
           if ((err as ZohoApiError).code === 36026) {
             this.logger.warn(
-              "Aborting sync of this invoice since it was already created. The syncToEci will handle this. Original Error: "+err.message,
-              { eciOrderId: ordersWithoutZohoInvoice.id, eciOrderNumber: ordersWithoutZohoInvoice.orderNumber }
+              "Aborting sync of this invoice since it was already created. The syncToEci will handle this. Original Error: " +
+                err.message,
+              {
+                eciOrderId: ordersWithoutZohoInvoice.id,
+                eciOrderNumber: ordersWithoutZohoInvoice.orderNumber,
+              },
             );
           } else {
-            this.logger.error(err.message, { eciOrderId: ordersWithoutZohoInvoice.id, eciOrderNumber: ordersWithoutZohoInvoice.orderNumber });
+            this.logger.error(err.message, {
+              eciOrderId: ordersWithoutZohoInvoice.id,
+              eciOrderNumber: ordersWithoutZohoInvoice.orderNumber,
+            });
           }
         } else {
           this.logger.error(
             "An unknown Error occured: " + (err as any)?.toString(),
-            { eciOrderId: ordersWithoutZohoInvoice.id, eciOrderNumber: ordersWithoutZohoInvoice.orderNumber },
+            {
+              eciOrderId: ordersWithoutZohoInvoice.id,
+              eciOrderNumber: ordersWithoutZohoInvoice.orderNumber,
+            },
           );
         }
       }
@@ -365,9 +343,7 @@ export class ZohoInvoiceSyncService {
             invoiceNumbersToConfirm: invoicesToConfirm.map(
               (inv) => inv.invoice_number,
             ),
-            invoiceIDsToConfirm: invoicesToConfirm.map(
-              (inv) => inv.invoice_id,
-            ),
+            invoiceIDsToConfirm: invoicesToConfirm.map((inv) => inv.invoice_id),
           },
         );
       } catch (err) {
@@ -378,9 +354,7 @@ export class ZohoInvoiceSyncService {
         this.logger.error(
           "Could not confirm all invoices after creating them. Please check Zoho and confirm them manually.",
           {
-            submitedinvoiceIds: invoicesToConfirm.map(
-              (inv) => inv.invoice_id,
-            ),
+            submitedinvoiceIds: invoicesToConfirm.map((inv) => inv.invoice_id),
             submitedinvoiceNumbers: invoicesToConfirm.map(
               (inv) => inv.invoice_number,
             ),

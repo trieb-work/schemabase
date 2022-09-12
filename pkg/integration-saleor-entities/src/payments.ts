@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import { ILogger } from "@eci/pkg/logger";
 import { queryWithPagination, SaleorCronPaymentsQuery } from "@eci/pkg/saleor";
-import { PaymentMethodType, Prisma, PrismaClient } from "@eci/pkg/prisma";
+import { Prisma, PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
@@ -121,17 +121,17 @@ export class SaleorPaymentSyncService {
         );
         continue;
       }
-      const paymentMethod: PaymentMethodType =
-        payment.paymentMethodType === "card"
-          ? "card"
-          : payment.paymentMethodType === "paypal"
-          ? "paypal"
-          : "unknown";
-      if (paymentMethod === "unknown") {
-        this.logger.warn(
-          `Can't match the payment method with our internal type! ${payment.id}. Received type ${payment.paymentMethodType}`,
-        );
-      }
+      // const paymentMethod: PaymentMethodType =
+      //   payment.paymentMethodType === "card"
+      //     ? "card"
+      //     : payment.paymentMethodType === "paypal"
+      //     ? "paypal"
+      //     : "unknown";
+      // if (paymentMethod === "unknown") {
+      //   this.logger.warn(
+      //     `Can't match the payment method with our internal type! ${payment.id}. Received type ${payment.paymentMethodType}`,
+      //   );
+      // }
 
       const orderExist = await this.db.order.findUnique({
         where: {
@@ -167,7 +167,6 @@ export class SaleorPaymentSyncService {
                   id: this.tenantId,
                 },
               },
-              paymentMethod: paymentMethod,
               order: orderConnect,
             },
           },

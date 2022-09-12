@@ -170,6 +170,30 @@ async function main() {
     },
   });
   console.log("created xentralProxyIntegration");
+
+  await prisma.braintreeApp.upsert({
+    where: {
+      id: "test",
+    },
+    create: {
+      id: "test",
+      merchantId:
+        "v1.aesgcm256.39f74810.Fr-96izv6IBnZuMN.GpEKApLL0yFyyfxY_LHrUUbdDeJAPQBnBaIeOTFyZSZt",
+      publicKey:
+        "v1.aesgcm256.39f74810.MNCmQiIZ9VlCmPwo.JwHa8jIqOgHcBRi7WTk9iCbqaNMAlDWyyWwYj4JRfhBc",
+      privateKey:
+        // eslint-disable-next-line max-len
+        "v1.aesgcm256.39f74810.6Kbq4jddRRF2SOg6.PDtnEAdjC0VWNMfoVptyODEUoQGRVFGXwohIFEBa6_wISZHR7MMzOSkdWkKiNdj5og==",
+      sandbox: true,
+      tenant: {
+        connect: {
+          id: "test",
+        },
+      },
+    },
+    update: {},
+  });
+  console.log("created Braintree App");
 }
 
 main()

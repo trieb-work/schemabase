@@ -758,14 +758,19 @@ export class ZohoSalesOrdersSyncService {
               salesordersToConfirm.push(matchingSalesOrder);
             }
           } else {
-            this.logger.error("Failed during Salesorder sync loop. Orgiginal Error: "+err.message, {
-              eciOrderId: order.id,
-              eciOrderNumber: order.orderNumber,
-            });
+            this.logger.error(
+              "Failed during Salesorder sync loop. Orgiginal Error: " +
+                err.message,
+              {
+                eciOrderId: order.id,
+                eciOrderNumber: order.orderNumber,
+              },
+            );
           }
         } else {
           this.logger.error(
-            "An unknown Error occured during sync loop: " + (err as any)?.toString(),
+            "An unknown Error occured during sync loop: " +
+              (err as any)?.toString(),
             { eciOrderId: order.id, eciOrderNumber: order.orderNumber },
           );
         }

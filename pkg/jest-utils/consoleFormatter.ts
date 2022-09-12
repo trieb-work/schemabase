@@ -1,4 +1,4 @@
-import { CustomConsole, LogType, LogMessage } from '@jest/console';
+import { CustomConsole, LogType, LogMessage } from "@jest/console";
 
 const color = {
   reset: "\x1b[0m",
@@ -18,7 +18,7 @@ const color = {
     magenta: "\x1b[35m",
     cyan: "\x1b[36m",
     white: "\x1b[37m",
-    crimson: "\x1b[38m" // Scarlet
+    crimson: "\x1b[38m", // Scarlet
   },
   bg: {
     black: "\x1b[40m",
@@ -29,12 +29,12 @@ const color = {
     magenta: "\x1b[45m",
     cyan: "\x1b[46m",
     white: "\x1b[47m",
-    crimson: "\x1b[48m"
-  }
+    crimson: "\x1b[48m",
+  },
 };
 
 function simpleFormatter(type: LogType, message: LogMessage): string {
-  const CONSOLE_INDENT = ' ';
+  const CONSOLE_INDENT = " ";
   const TYPE = type.toLocaleUpperCase().padStart(4).padEnd(5);
   let bg = color.bg.white;
   switch (type) {
@@ -53,7 +53,16 @@ function simpleFormatter(type: LogType, message: LogMessage): string {
   }
   return message
     .split(/\n/)
-    .map((line: string, i) => `${bg}${color.fg.black}${CONSOLE_INDENT}${i === 0 ? TYPE : '  '}${color.reset} ${line}`)
-    .join('\n');
+    .map(
+      (line: string, i) =>
+        `${bg}${color.fg.black}${CONSOLE_INDENT}${i === 0 ? TYPE : "  "}${
+          color.reset
+        } ${line}`,
+    )
+    .join("\n");
 }
-global.console = new CustomConsole(process.stdout, process.stderr, simpleFormatter);
+global.console = new CustomConsole(
+  process.stdout,
+  process.stderr,
+  simpleFormatter,
+);

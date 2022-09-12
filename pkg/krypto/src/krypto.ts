@@ -22,7 +22,7 @@ class Encrypt {
 
   public async decrypt(string: string, secretKey?: string) {
     this.checkSecretKey(secretKey);
-    return decryptString(string, secretKey || this.secretKey);
+    return (await decryptString(string, secretKey || this.secretKey)).trim();
   }
 }
 /**

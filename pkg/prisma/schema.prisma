@@ -42,6 +42,7 @@ model SaleorOrder {
   @@unique([id, installedSaleorAppId])
   @@unique([orderId, installedSaleorAppId])
   @@index([orderId])
+  @@index([installedSaleorAppId])
 }
 
 model SaleorPackage {
@@ -219,6 +220,7 @@ model ZohoContact {
   // zohoPayment       ZohoPayment[]
 
   @@unique([id, zohoAppId])
+  @@index([zohoAppId])
 }
 
 // Zoho knows Contacts and ContactPersons.
@@ -263,6 +265,8 @@ model ZohoAddress {
   zohoAppId String
 
   @@unique([id, zohoAppId])
+  @@index([zohoAppId])
+  @@index([addressId])
 }
 
 enum ZohoSalesOrderStatus {
@@ -346,16 +350,19 @@ model ZohoPayment {
   @@index([paymentId])
 }
 
-model ZohoAccount {
-  /// Zoho internal id
+model ZohoBankAccount {
+  /// Zoho Internal Bankacount Id
   id String
+
+  active Boolean @default(true)
+
+  paymentMethods PaymentMethod[]
 
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String
 
-  paymentMethods PaymentMethod[]
-
   @@unique([id, zohoAppId])
+  @@index([zohoAppId])
 }
 
 model ZohoWarehouse {
@@ -488,6 +495,9 @@ model Payment {
 
   amount Float
 
+  /// Costs for this transaction, for example bank charges, gateway charges, paypal charges
+  transactionFee Float @default(0)
+
   order   Order?  @relation(fields: [orderId], references: [id])
   orderId String?
 
@@ -499,8 +509,9 @@ model Payment {
 
   invoices Invoice[]
 
-  zohoPayment   ZohoPayment[]
-  saleorPayment SaleorPayment[]
+  zohoPayment           ZohoPayment[]
+  saleorPayment         SaleorPayment[]
+  braintreeTransactions BraintreeTransaction[]
 
   @@unique([orderId, tenantId])
   @@unique([referenceNumber, tenantId])
@@ -536,9 +547,9 @@ model PaymentMethod {
   saleorPaymentGateway                     SaleorPaymentGateway? @relation(fields: [saleorPaymentGatewayId, saleorPaymentGatewayInstalledSaleorAppId], references: [id, installedSaleorAppId], onDelete: Cascade)
   saleorPaymentGatewayId                   String?
   saleorPaymentGatewayInstalledSaleorAppId String?
-  zohoAccount                              ZohoAccount?          @relation(fields: [zohoAccountId, zohoAccountZohoAppId], references: [id, zohoAppId], onDelete: Cascade)
-  zohoAccountId                            String?
-  zohoAccountZohoAppId                     String?
+  zohoBankAccount                          ZohoBankAccount?      @relation(fields: [zohoBankAccountId, zohoBankAccountZohoAppId], references: [id, zohoAppId], onDelete: Cascade)
+  zohoBankAccountId                        String?
+  zohoBankAccountZohoAppId                 String?
 
   payments Payment[]
 
@@ -825,6 +836,7 @@ model Order {
   @@index([shippingAddressId])
   @@index([billingAddressId])
   @@index([shippingPriceTaxId])
+  @@index([orderNumber])
 }
 
 enum CountryCode {
@@ -1276,16 +1288,13 @@ model StockEntries {
   @@index([warehouseId])
 }
 
-enum BraintreeEnvironment {
-  testing
-  production
-}
-
 // Internal model to store braintree payment gateway settings for tenants
-model Braintree {
+model BraintreeApp {
   id String @id
 
-  environment BraintreeEnvironment @default(production)
+  enabled Boolean @default(true)
+
+  sandbox Boolean @default(false)
 
   merchantId String
   publicKey  String
@@ -1294,6 +1303,37 @@ model Braintree {
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
+
+  cronSchedule String @default("*/30 * * * *")
+  // Time in seconds how long one workflow can run before a timeout occurs.
+  cronTimeout  Int    @default(800)
+
+  braintreeTransactions BraintreeTransaction[]
+
+  @@index([enabled])
+  @@index([tenantId])
+}
+
+model BraintreeTransaction {
+  /// The Braintree internal ID
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  /// If this braintree transaction is a paypal payment, we store the paypal transaction id as well
+  payPalTransactionId String?
+
+  status String?
+
+  braintreeApp   BraintreeApp @relation(fields: [braintreeAppId], references: [id], onDelete: Cascade)
+  braintreeAppId String
+
+  payment   Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  paymentId String
+
+  @@unique([id, braintreeAppId])
+  @@index([braintreeAppId])
 }
 
 enum PackageState {
@@ -1538,7 +1578,7 @@ model ZohoApp {
   zohoContactPersons    ZohoContactPerson[]
   zohoAddresses         ZohoAddress[]
   zohoPackages          ZohoPackage[]
-  zohoAccounts          ZohoAccount[]
+  zohoAccounts          ZohoBankAccount[]
 }
 
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor
@@ -1653,7 +1693,7 @@ model Tenant {
   invoice                     Invoice[]
   orderLineItem               OrderLineItem[]
   packageLineItem             PackageLineItem[]
-  braintree                   Braintree[]
+  braintree                   BraintreeApp[]
   tax                         Tax[]
   package                     Package[]
   stockEntries                StockEntries[]
@@ -1780,6 +1820,8 @@ model SaleorZohoIntegration {
   // Time in seconds how long one workflow can run before a timeout occurs.
   cronTimeoutZoho    Int    @default(800)
   cronTimeoutSaleor  Int    @default(600)
+
+  @@index([enabled])
 }
 
 model LogisticsIntegration {
