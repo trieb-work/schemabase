@@ -221,10 +221,10 @@ export class ZohoPaymentSyncService {
             zohoInvoice: {
               where: {
                 zohoAppId: this.zohoApp.id,
-              }
-            }
-          }
-        }
+              },
+            },
+          },
+        },
       },
     });
 
@@ -232,14 +232,16 @@ export class ZohoPaymentSyncService {
       `Received ${paymentsWithoutZohoPaymentFromEciDb.length} orders without a zohoInvoice. Creating zohoInvoices from them.`,
       {
         paymentIds: paymentsWithoutZohoPaymentFromEciDb.map((p) => p.id),
-        paymentReferenceNumber: paymentsWithoutZohoPaymentFromEciDb.map((p) => p.referenceNumber),
+        paymentReferenceNumber: paymentsWithoutZohoPaymentFromEciDb.map(
+          (p) => p.referenceNumber,
+        ),
       },
     );
     for (const payment of paymentsWithoutZohoPaymentFromEciDb) {
-      try {  
+      try {
         const createdPayment = await this.zoho.payment.create({
-          "amount": payment.amount,
-          "account_id": payment.paymentMethod
+          amount: payment.amount,
+          account_id: payment.paymentMethod,
         });
 
         // await this.db.payment.create({
@@ -286,7 +288,7 @@ export class ZohoPaymentSyncService {
         //           ...(createdPayment.contact_persons?.[0] ? {zohoContactPerson:{
         //             connect: {
         //               id_zohoAppId: {
-        //                 id: createdPayment.contact_persons?.[0], // TODO add check if 
+        //                 id: createdPayment.contact_persons?.[0], // TODO add check if
         //                 zohoAppId: this.zohoApp.id,
         //               }
         //             }
@@ -312,17 +314,24 @@ export class ZohoPaymentSyncService {
         // );
       } catch (err) {
         if (err instanceof Warning) {
-          this.logger.warn(err.message, { eciOrderId: payment.id, eciOrderNumber: payment.orderNumber });
+          this.logger.warn(err.message, {
+            eciOrderId: payment.id,
+            eciOrderNumber: payment.orderNumber,
+          });
         } else if (err instanceof Error) {
           // TODO zoho-ts package: add enum for error codes . like this:
           // if(err as ZohoApiError).code === require(zoho-ts).apiErrorCodes.NoItemsToBepaymentd){
           if ((err as ZohoApiError).code === 36026) {
             this.logger.warn(
-              "Aborting sync of this payment since it was already created. The syncToEci will handle this. Original Error: "+err.message,
-              { eciOrderId: payment.id, eciOrderNumber: payment.orderNumber }
+              "Aborting sync of this payment since it was already created. The syncToEci will handle this. Original Error: " +
+                err.message,
+              { eciOrderId: payment.id, eciOrderNumber: payment.orderNumber },
             );
           } else {
-            this.logger.error(err.message, { eciOrderId: payment.id, eciOrderNumber: payment.orderNumber });
+            this.logger.error(err.message, {
+              eciOrderId: payment.id,
+              eciOrderNumber: payment.orderNumber,
+            });
           }
         } else {
           this.logger.error(

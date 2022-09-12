@@ -14,24 +14,20 @@ describe("Saleor Entity Sync payments Test", () => {
   const mockedSaleorClient = {
     paymentGateways: async () =>
       await Promise.resolve({
-        "shop": {
-          "availablePaymentGateways": [
+        shop: {
+          availablePaymentGateways: [
             {
-              "id": "app:17:triebwork.payments.rechnung",
-              "name": "Vorkasse",
-              "currencies": [
-                "EUR"
-              ]
+              id: "app:17:triebwork.payments.rechnung",
+              name: "Vorkasse",
+              currencies: ["EUR"],
             },
             {
-              "id": "mirumee.payments.braintree",
-              "name": "Braintree",
-              "currencies": [
-                "EUR"
-              ]
-            }
-          ]
-        }
+              id: "mirumee.payments.braintree",
+              name: "Braintree",
+              currencies: ["EUR"],
+            },
+          ],
+        },
       }),
   } as unknown as SaleorClient;
 

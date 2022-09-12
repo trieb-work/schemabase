@@ -36,53 +36,71 @@ export class SaleorPaymentGatewaySyncService {
 
     const gateways = response?.shop?.availablePaymentGateways;
     if (!gateways || gateways?.length === 0) {
-      this.logger.warn("Got no available payment gateways from saleor. Can't sync");
+      this.logger.warn(
+        "Got no available payment gateways from saleor. Can't sync",
+      );
       return;
     }
-    this.logger.info(`Syncing ${gateways?.length} gateway(s) to internal ECI DB`);
+    this.logger.info(
+      `Syncing ${gateways?.length} gateway(s) to internal ECI DB`,
+    );
 
     for (const gateway of gateways) {
       const connectOrCreatePaymentMethods: Prisma.Enumerable<Prisma.PaymentMethodCreateOrConnectWithoutSaleorPaymentGatewayInput> =
-        gateway.currencies.flatMap((uncheckedCurrency): Omit<Prisma.PaymentMethodCreateWithoutSaleorPaymentGatewayInput, "tenant" | "id">[] => {
-          const currency = checkCurrency(uncheckedCurrency);
-          switch (gateway?.name?.toLowerCase()) {
-            case "vorkasse": {
-              return [{
-                currency,
-                methodType: "banktransfer",
-                gatewayType: "banktransfer",
-              }]
-            }
-            case "braintree": {
-              return [{
-                currency,
-                methodType: "braintree",
-                gatewayType: "card",
-              }, {
-                currency,
-                methodType: "braintree",
-                gatewayType: "paypal",
-              }]
-            }
-          }
-          return [];
-        }).map((paymentMethodData) => ({
-          where: {
-            gatewayType_methodType_currency_tenantId: {
-              ...paymentMethodData,
-              tenantId: this.tenantId,
-            }
-          },
-          create: {
-            ...paymentMethodData,
-            id: id.id("paymentMethod"),
-            tenant: {
-              connect: {
-                id: this.tenantId,
+        gateway.currencies
+          .flatMap(
+            (
+              uncheckedCurrency,
+            ): Omit<
+              Prisma.PaymentMethodCreateWithoutSaleorPaymentGatewayInput,
+              "tenant" | "id"
+            >[] => {
+              const currency = checkCurrency(uncheckedCurrency);
+              switch (gateway?.name?.toLowerCase()) {
+                case "vorkasse": {
+                  return [
+                    {
+                      currency,
+                      methodType: "banktransfer",
+                      gatewayType: "banktransfer",
+                    },
+                  ];
+                }
+                case "braintree": {
+                  return [
+                    {
+                      currency,
+                      methodType: "braintree",
+                      gatewayType: "card",
+                    },
+                    {
+                      currency,
+                      methodType: "braintree",
+                      gatewayType: "paypal",
+                    },
+                  ];
+                }
               }
-            }
-          }
-        }));
+              return [];
+            },
+          )
+          .map((paymentMethodData) => ({
+            where: {
+              gatewayType_methodType_currency_tenantId: {
+                ...paymentMethodData,
+                tenantId: this.tenantId,
+              },
+            },
+            create: {
+              ...paymentMethodData,
+              id: id.id("paymentMethod"),
+              tenant: {
+                connect: {
+                  id: this.tenantId,
+                },
+              },
+            },
+          }));
 
       await this.db.saleorPaymentGateway.upsert({
         where: {
@@ -100,15 +118,17 @@ export class SaleorPaymentGatewaySyncService {
           },
           paymentMethods: {
             connectOrCreate: connectOrCreatePaymentMethods,
-          }
+          },
         },
         update: {
           paymentMethods: {
             connectOrCreate: connectOrCreatePaymentMethods,
           },
-        }
+        },
       });
-      this.logger.info(`Updated saleor payment gateway ${gateway.id} with ${connectOrCreatePaymentMethods.length} payment method(s).`);
+      this.logger.info(
+        `Updated saleor payment gateway ${gateway.id} with ${connectOrCreatePaymentMethods.length} payment method(s).`,
+      );
     }
   }
 }

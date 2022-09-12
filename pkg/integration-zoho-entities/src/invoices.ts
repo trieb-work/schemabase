@@ -259,7 +259,7 @@ export class ZohoInvoiceSyncService {
             tenant: {
               connect: {
                 id: this.zohoApp.tenantId,
-              }
+              },
             },
             zohoInvoice: {
               connectOrCreate: {
