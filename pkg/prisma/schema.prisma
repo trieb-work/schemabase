@@ -354,7 +354,9 @@ model ZohoBankAccount {
   /// Zoho Internal Bankacount Id
   id String
 
-  active Boolean @default(true)
+  name     String
+  currency Currency
+  active   Boolean  @default(true)
 
   paymentMethods PaymentMethod[]
 
@@ -518,7 +520,7 @@ model Payment {
   @@index([orderId])
 }
 
-/// categorize payments by payment type
+/// categorize payments by payment method type
 enum PaymentMethodType {
   braintree
   paypal

@@ -26946,7 +26946,7 @@ describe("Zoho Inventory Invoice Sync", () => {
     console.log("zoho delete res", await zoho.salesOrder.delete(zohoIds));
   });
 
-  test("It should work to sync Zoho invoices with internal ECI DB", async () => {
+  test("It should work to sync Zoho invoices to internal ECI DB", async () => {
     const xx = new ZohoInvoiceSyncService({
       zoho: mockedZohoClient,
       logger: new NoopLogger(),

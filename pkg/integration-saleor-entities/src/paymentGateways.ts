@@ -1,7 +1,8 @@
 import { ILogger } from "@eci/pkg/logger";
 import { SaleorClient } from "@eci/pkg/saleor";
-import { Currency, Prisma, PrismaClient } from "@eci/pkg/prisma";
+import { Prisma, PrismaClient } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
+import { checkCurrency } from "@eci/pkg/normalization/src/currency";
 
 interface SaleorPaymentGatewaySyncServiceConfig {
   saleorClient: SaleorClient;
@@ -9,18 +10,6 @@ interface SaleorPaymentGatewaySyncServiceConfig {
   tenantId: string;
   db: PrismaClient;
   logger: ILogger;
-}
-
-function checkCurrency(val: string | null): Currency {
-  if (!val) {
-    throw new Error(`Currency is ${val}`);
-  }
-  const matchingCurrency = Object.values(Currency).find((cur) => cur.toLowerCase() === val.toLowerCase());
-  if (matchingCurrency) {
-    return matchingCurrency;
-  } else {
-    throw new Error(`No matching currency found in ${Object.keys(Currency).join(',')} for value ${val}`);
-  }
 }
 
 export class SaleorPaymentGatewaySyncService {
@@ -53,9 +42,6 @@ export class SaleorPaymentGatewaySyncService {
     this.logger.info(`Syncing ${gateways?.length} gateway(s) to internal ECI DB`);
 
     for (const gateway of gateways) {
-      // const normalizedWarehouseName = normalizeStrings.warehouseNames(
-      //   warehouse.name,
-      // );
       const connectOrCreatePaymentMethods: Prisma.Enumerable<Prisma.PaymentMethodCreateOrConnectWithoutSaleorPaymentGatewayInput> =
         gateway.currencies.flatMap((uncheckedCurrency): Omit<Prisma.PaymentMethodCreateWithoutSaleorPaymentGatewayInput, "tenant" | "id">[] => {
           const currency = checkCurrency(uncheckedCurrency);
@@ -120,8 +106,9 @@ export class SaleorPaymentGatewaySyncService {
           paymentMethods: {
             connectOrCreate: connectOrCreatePaymentMethods,
           },
-        },
+        }
       });
+      this.logger.info(`Updated saleor payment gateway ${gateway.id} with ${connectOrCreatePaymentMethods.length} payment method(s).`);
     }
   }
 }

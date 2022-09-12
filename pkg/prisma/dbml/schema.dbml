@@ -233,6 +233,8 @@ Table ZohoPayment {
 
 Table ZohoBankAccount {
   id String [not null, note: 'Zoho Internal Bankacount Id']
+  name String [not null]
+  currency Currency [not null]
   active Boolean [not null, default: true]
   paymentMethods PaymentMethod [not null]
   zohoApp ZohoApp [not null]

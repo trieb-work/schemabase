@@ -16,18 +16,18 @@ describe("Saleor Entity Sync payments Test", () => {
       await Promise.resolve({
         "shop": {
           "availablePaymentGateways": [
-            // {
-            //   "id": "app:17:triebwork.payments.rechnung",
-            //   "name": "Vorkasse",
-            //   "currencies": [
-            //     "EUR"
-            //   ]
-            // },
+            {
+              "id": "app:17:triebwork.payments.rechnung",
+              "name": "Vorkasse",
+              "currencies": [
+                "EUR"
+              ]
+            },
             {
               "id": "mirumee.payments.braintree",
               "name": "Braintree",
               "currencies": [
-                "EUR", "USD"
+                "EUR"
               ]
             }
           ]
