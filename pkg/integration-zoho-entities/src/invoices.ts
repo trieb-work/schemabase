@@ -159,6 +159,7 @@ export class ZohoInvoiceSyncService {
       lastRunStatus: "success",
     });
   }
+
   // TODO2: syncFromECI (standard syncs invoice object) (lower prio for the future)
   // TODO1: syncFromECIAutocreateFromSalesorder (creates an zohoinvoice and eci invoice from an zohosalesorder)
   public async syncFromECI_autocreateInvoiceFromSalesorder(): Promise<void> {

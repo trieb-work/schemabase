@@ -72,6 +72,7 @@ export class XentralClient {
       throw new Error("AuftragCreateResponse is missing the belegnr");
     return res as AuftragCreateResponse;
   }
+
   public async ArtikelCreate(
     artikel: ArtikelCreateRequest,
   ): Promise<ArtikelCreateResponse> {

@@ -26897,7 +26897,7 @@ describe("Zoho Inventory Invoice Sync", () => {
   let newOrderNumber: string;
   let zohoInvoiceLogger: AssertionLogger;
   let zohoInvoiceSyncService: ZohoInvoiceSyncService;
-  let invoicesToDeleteAfterTest: string[] = [];
+  const invoicesToDeleteAfterTest: string[] = [];
 
   beforeAll(async () => {
     zohoApp = (await prismaClient.zohoApp.findUnique({
@@ -27012,7 +27012,7 @@ describe("Zoho Inventory Invoice Sync", () => {
     zohoInvoiceLogger.assertOneLogEntryMatches(
       "info",
       ({ message, fields }) => {
-        if (!!message.match(/Successfully created a zoho Invoice /)) {
+        if (message.match(/Successfully created a zoho Invoice /)) {
           if (
             fields?.invoiceNumber &&
             fields?.invoiceId &&
@@ -27101,7 +27101,7 @@ describe("Zoho Inventory Invoice Sync", () => {
     zohoInvoiceLogger.assertOneLogEntryMatches(
       "info",
       ({ message, fields }) => {
-        if (!!message.match(/Successfully created a zoho Invoice /)) {
+        if (message.match(/Successfully created a zoho Invoice /)) {
           if (
             fields?.invoiceNumber &&
             fields?.invoiceId &&
@@ -27186,7 +27186,7 @@ describe("Zoho Inventory Invoice Sync", () => {
     zohoInvoiceLogger.assertOneLogEntryMatches(
       "info",
       ({ message, fields }) => {
-        if (!!message.match(/Successfully created a zoho Invoice /)) {
+        if (message.match(/Successfully created a zoho Invoice /)) {
           if (
             fields?.invoiceNumber &&
             fields?.invoiceId &&
