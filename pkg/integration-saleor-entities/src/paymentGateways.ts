@@ -1,0 +1,127 @@
+import { ILogger } from "@eci/pkg/logger";
+import { SaleorClient } from "@eci/pkg/saleor";
+import { Currency, Prisma, PrismaClient } from "@eci/pkg/prisma";
+import { id } from "@eci/pkg/ids";
+
+interface SaleorPaymentGatewaySyncServiceConfig {
+  saleorClient: SaleorClient;
+  installedSaleorAppId: string;
+  tenantId: string;
+  db: PrismaClient;
+  logger: ILogger;
+}
+
+function checkCurrency(val: string | null): Currency {
+  if (!val) {
+    throw new Error(`Currency is ${val}`);
+  }
+  const matchingCurrency = Object.values(Currency).find((cur) => cur.toLowerCase() === val.toLowerCase());
+  if (matchingCurrency) {
+    return matchingCurrency;
+  } else {
+    throw new Error(`No matching currency found in ${Object.keys(Currency).join(',')} for value ${val}`);
+  }
+}
+
+export class SaleorPaymentGatewaySyncService {
+  public readonly saleorClient: SaleorClient;
+
+  private readonly logger: ILogger;
+
+  public readonly installedSaleorAppId: string;
+
+  public readonly tenantId: string;
+
+  private readonly db: PrismaClient;
+
+  public constructor(config: SaleorPaymentGatewaySyncServiceConfig) {
+    this.saleorClient = config.saleorClient;
+    this.logger = config.logger;
+    this.installedSaleorAppId = config.installedSaleorAppId;
+    this.tenantId = config.tenantId;
+    this.db = config.db;
+  }
+
+  public async syncToECI(): Promise<void> {
+    const response = await this.saleorClient.paymentGateways();
+
+    const gateways = response?.shop?.availablePaymentGateways;
+    if (!gateways || gateways?.length === 0) {
+      this.logger.warn("Got no available payment gateways from saleor. Can't sync");
+      return;
+    }
+    this.logger.info(`Syncing ${gateways?.length} gateway(s) to internal ECI DB`);
+
+    for (const gateway of gateways) {
+      // const normalizedWarehouseName = normalizeStrings.warehouseNames(
+      //   warehouse.name,
+      // );
+      const connectOrCreatePaymentMethods: Prisma.Enumerable<Prisma.PaymentMethodCreateOrConnectWithoutSaleorPaymentGatewayInput> =
+        gateway.currencies.flatMap((uncheckedCurrency): Omit<Prisma.PaymentMethodCreateWithoutSaleorPaymentGatewayInput, "tenant" | "id">[] => {
+          const currency = checkCurrency(uncheckedCurrency);
+          switch (gateway?.name?.toLowerCase()) {
+            case "vorkasse": {
+              return [{
+                currency,
+                methodType: "banktransfer",
+                gatewayType: "banktransfer",
+              }]
+            }
+            case "braintree": {
+              return [{
+                currency,
+                methodType: "braintree",
+                gatewayType: "card",
+              }, {
+                currency,
+                methodType: "braintree",
+                gatewayType: "paypal",
+              }]
+            }
+          }
+          return [];
+        }).map((paymentMethodData) => ({
+          where: {
+            gatewayType_methodType_currency_tenantId: {
+              ...paymentMethodData,
+              tenantId: this.tenantId,
+            }
+          },
+          create: {
+            ...paymentMethodData,
+            id: id.id("paymentMethod"),
+            tenant: {
+              connect: {
+                id: this.tenantId,
+              }
+            }
+          }
+        }));
+
+      await this.db.saleorPaymentGateway.upsert({
+        where: {
+          id_installedSaleorAppId: {
+            id: gateway.id,
+            installedSaleorAppId: this.installedSaleorAppId,
+          },
+        },
+        create: {
+          id: gateway.id,
+          installedSaleorApp: {
+            connect: {
+              id: this.installedSaleorAppId,
+            },
+          },
+          paymentMethods: {
+            connectOrCreate: connectOrCreatePaymentMethods,
+          }
+        },
+        update: {
+          paymentMethods: {
+            connectOrCreate: connectOrCreatePaymentMethods,
+          },
+        },
+      });
+    }
+  }
+}

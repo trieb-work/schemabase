@@ -15,7 +15,7 @@ import {
   upsertTaxWithZohoTax,
   upsertZohoItem,
 } from "../test/utils";
-import "../../jest-utils/consoleFormatter";
+import "@eci/pkg/jest-utils/consoleFormatter";
 import { ZohoSalesOrdersSyncService } from "./salesorders";
 
 const ORDERNR_DATE_PREFIX = "SO-DATE-INV-";

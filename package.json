@@ -83,7 +83,8 @@
     "seed": "pnpm prisma-seed"
   },
   "scripts": {
-    "prisma-seed": "pnpm esbuild --bundle --platform=node ./pkg/prisma/seeding/testing.ts | node"
+    "prisma-seed": "pnpm esbuild --bundle --platform=node ./pkg/prisma/seeding/testing.ts | node",
+    "codegen:saleor": "pnpm graphql-codegen -c ./pkg/saleor/codegen.yml"
   },
   "dependencies": {
     "@47ng/cloak": "^1.1.0",

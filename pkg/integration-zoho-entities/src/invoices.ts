@@ -24,16 +24,14 @@ export class ZohoInvoiceSyncService {
 
   private readonly cronState: CronStateHandler;
 
-  private readonly tenantId: string;
-
   public constructor(config: ZohoInvoiceSyncConfig) {
     this.logger = config.logger;
     this.zoho = config.zoho;
     this.db = config.db;
     this.zohoApp = config.zohoApp;
-    this.tenantId = this.zohoApp.tenantId;
+    this.zohoApp.tenantId = this.zohoApp.tenantId;
     this.cronState = new CronStateHandler({
-      tenantId: this.tenantId,
+      tenantId: this.zohoApp.tenantId,
       appId: this.zohoApp.id,
       db: this.db,
       syncEntity: "invoices",
@@ -100,7 +98,7 @@ export class ZohoInvoiceSyncService {
         where: {
           orderNumber_tenantId: {
             orderNumber: invoice.reference_number,
-            tenantId: this.tenantId,
+            tenantId: this.zohoApp.tenantId,
           },
         },
       });
@@ -134,7 +132,7 @@ export class ZohoInvoiceSyncService {
               where: {
                 invoiceNumber_tenantId: {
                   invoiceNumber: invoice.invoice_number,
-                  tenantId: this.tenantId,
+                  tenantId: this.zohoApp.tenantId,
                 },
               },
               create: {
@@ -142,7 +140,7 @@ export class ZohoInvoiceSyncService {
                 invoiceNumber: invoice.invoice_number,
                 tenant: {
                   connect: {
-                    id: this.tenantId,
+                    id: this.zohoApp.tenantId,
                   },
                 },
                 orders: orderConnect,
@@ -159,7 +157,7 @@ export class ZohoInvoiceSyncService {
               where: {
                 invoiceNumber_tenantId: {
                   invoiceNumber: invoice.invoice_number,
-                  tenantId: this.tenantId,
+                  tenantId: this.zohoApp.tenantId,
                 },
               },
               create: {
@@ -167,7 +165,7 @@ export class ZohoInvoiceSyncService {
                 invoiceNumber: invoice.invoice_number,
                 tenant: {
                   connect: {
-                    id: this.tenantId,
+                    id: this.zohoApp.tenantId,
                   },
                 },
                 orders: orderConnect,
@@ -198,7 +196,7 @@ export class ZohoInvoiceSyncService {
             zohoAppId: this.zohoApp.id,
           },
         },
-        invoices: { // TODO test/validate this with ECI db
+        invoices: {
           none: {
             zohoInvoice: {
               some: {
@@ -216,7 +214,7 @@ export class ZohoInvoiceSyncService {
         },
         invoices: {
           where: {
-            tenantId: this.tenantId,
+            tenantId: this.zohoApp.tenantId,
           },
           include: {
             zohoInvoice: {
@@ -278,7 +276,7 @@ export class ZohoInvoiceSyncService {
             invoiceNumber: createdInvoice.invoice_number,
             tenant: {
               connect: {
-                id: this.tenantId,
+                id: this.zohoApp.tenantId,
               }
             },
             zohoInvoice: {
@@ -332,7 +330,7 @@ export class ZohoInvoiceSyncService {
             invoiceId: createdInvoice.invoice_id,
             referenceNumber: createdInvoice.reference_number,
             zohoAppId: this.zohoApp.id,
-            tenantId: this.tenantId,
+            tenantId: this.zohoApp.tenantId,
           },
         );
         invoicesToConfirm.push(createdInvoice);

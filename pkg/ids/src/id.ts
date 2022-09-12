@@ -6,14 +6,15 @@ const prefixes = {
   secretKey: "sk",
   publicKey: "pk",
   event: "evt",
-  package: "p",
+  package: "pa",
   email: "em",
   order: "o",
   lineItem: "li",
   contact: "c",
   invoice: "i",
   tax: "tx",
-  payment: "p",
+  payment: "pay",
+  paymentMethod: "paym",
   /**
    * Product Variant
    */

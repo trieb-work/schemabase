@@ -22,7 +22,7 @@ generator client {
 
 // Saleor specific model for orders.
 model SaleorOrder {
-  // Saleor Internal Id
+  /// Saleor Internal Id
   id String
 
   createdAt DateTime
@@ -45,7 +45,7 @@ model SaleorOrder {
 }
 
 model SaleorPackage {
-  // Saleor Internal Id
+  /// Saleor Internal Id
   id String
 
   createdAt DateTime
@@ -62,7 +62,7 @@ model SaleorPackage {
 
 // model for saleor fulfillment line items
 model SaleorFulfillmentLine {
-  // Saleor Internal Id
+  /// Saleor Internal Id
   id String
 
   packagelineItem   PackageLineItem @relation(fields: [packageLineItemId], references: [id], onDelete: Cascade)
@@ -77,7 +77,7 @@ model SaleorFulfillmentLine {
 }
 
 model SaleorOrderLineItem {
-  // Saleor Internal Id
+  /// Saleor Internal Id
   id String
 
   orderLineItem   OrderLineItem @relation(fields: [orderLineItemId], references: [id], onDelete: Cascade)
@@ -92,7 +92,7 @@ model SaleorOrderLineItem {
 
 // Saleor specific model for payments.
 model SaleorPayment {
-  // Saleor Internal Id
+  /// Saleor Internal Id
   id String
 
   createdAt DateTime
@@ -115,10 +115,10 @@ model SaleorPayment {
 
 // Saleor specific model for product variant.
 model SaleorProductVariant {
-  // Saleor internal product variant id
+  /// Saleor internal product variant id
   id String
 
-  // Saleor internal product Id
+  /// Saleor internal product Id
   productId String
 
   updatedAt DateTime
@@ -135,7 +135,7 @@ model SaleorProductVariant {
 
 // Saleor specific model for warehouse.
 model SaleorWarehouse {
-  // Saleor Internal Id
+  /// Saleor Internal Id
   id String
 
   warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
@@ -147,6 +147,18 @@ model SaleorWarehouse {
   @@unique([id, installedSaleorAppId])
 }
 
+model SaleorPaymentGateway {
+  /// Saleor Internal Id
+  id String
+
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String
+
+  paymentMethods PaymentMethod[]
+
+  @@unique([id, installedSaleorAppId])
+}
+
 // ------------------------------------------------------------------------------------------------
 //
 //  Zoho SPECIFIC MODELS
@@ -154,7 +166,7 @@ model SaleorWarehouse {
 // ------------------------------------------------------------------------------------------------
 // Zoho specific model for item metadata. For simplicity, we don't use a seperate product and product variant table.
 model ZohoItem {
-  // Zoho Internal Id
+  /// Zoho Internal Id
   id String
 
   createdAt DateTime
@@ -170,7 +182,7 @@ model ZohoItem {
 }
 
 model ZohoPackage {
-  // Zoho Internal Id
+  /// Zoho Internal Id
   id String
 
   // Zoho has the entities shipment and package.
@@ -203,8 +215,8 @@ model ZohoContact {
 
   zohoContactPerson ZohoContactPerson[]
   zohoSalesOrder    ZohoSalesOrder[]
-  zohoInvoice       ZohoInvoice[]
-  zohoPayment       ZohoPayment[]
+  // zohoInvoice       ZohoInvoice[]
+  // zohoPayment       ZohoPayment[]
 
   @@unique([id, zohoAppId])
 }
@@ -225,12 +237,12 @@ model ZohoContactPerson {
   // For easy look-up directly in the ZohoContact model. Is set automatically from related contact 
   email     String?
 
-  zohoPayments ZohoPayment[]
+  // zohoPayments ZohoPayment[]
 
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String
 
-  zohoInvoices    ZohoInvoice[]
+  // zohoInvoices    ZohoInvoice[]
   zohoSalesOrders ZohoSalesOrder[]
 
   @@unique([id, zohoAppId])
@@ -262,7 +274,7 @@ enum ZohoSalesOrderStatus {
 
 // Zoho specific model.
 model ZohoSalesOrder {
-  // Zoho Internal Id
+  /// Zoho Internal Id
   id String
 
   createdAt DateTime
@@ -289,7 +301,7 @@ model ZohoSalesOrder {
 
 // Zoho specific model.
 model ZohoInvoice {
-  // Zoho Internal Id
+  /// Zoho Internal Id
   id String
 
   createdAt DateTime
@@ -299,8 +311,8 @@ model ZohoInvoice {
   // as complete string: INV-395956
   number String
 
-  zohoContact   ZohoContact? @relation(fields: [zohoContactId, zohoAppId], references: [id, zohoAppId], onDelete: Cascade)
-  zohoContactId String?
+  // zohoContact   ZohoContact? @relation(fields: [zohoContactId, zohoAppId], references: [id, zohoAppId], onDelete: Cascade)
+  // zohoContactId String?
 
   invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   invoiceId String
@@ -308,24 +320,21 @@ model ZohoInvoice {
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String
 
-  zohoContactPerson          ZohoContactPerson? @relation(fields: [zohoContactPersonId, zohoContactPersonZohoAppId], references: [id, zohoAppId])
-  zohoContactPersonId        String?
-  zohoContactPersonZohoAppId String?
+  // zohoContactPerson          ZohoContactPerson? @relation(fields: [zohoContactPersonId, zohoContactPersonZohoAppId], references: [id, zohoAppId])
+  // zohoContactPersonId        String?
+  // zohoContactPersonZohoAppId String?
 
   @@unique([id, zohoAppId])
   @@unique([number, zohoAppId])
 }
 
-// Zoho specific model.
+/// Zoho specific model.
 model ZohoPayment {
-  // Zoho Internal Id
+  /// Zoho Internal Id
   id String
 
   createdAt DateTime
   updatedAt DateTime
-
-  zohoContact   ZohoContact? @relation(fields: [zohoContactId, zohoAppId], references: [id, zohoAppId], onDelete: Cascade)
-  zohoContactId String?
 
   payment   Payment? @relation(fields: [paymentId], references: [id], onDelete: Cascade)
   paymentId String?  @unique
@@ -333,16 +342,24 @@ model ZohoPayment {
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String
 
-  ZohoContactPerson          ZohoContactPerson? @relation(fields: [zohoContactPersonId, zohoContactPersonZohoAppId], references: [id, zohoAppId])
-  zohoContactPersonId        String?
-  zohoContactPersonZohoAppId String?
-
   @@unique([id, zohoAppId])
   @@index([paymentId])
 }
 
+model ZohoAccount {
+  /// Zoho internal id
+  id String
+
+  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
+  zohoAppId String
+
+  paymentMethods PaymentMethod[]
+
+  @@unique([id, zohoAppId])
+}
+
 model ZohoWarehouse {
-  // Zoho Internal Id
+  /// Zoho Internal Id
   id String
 
   warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
@@ -371,7 +388,7 @@ model ZohoTax {
 }
 
 model ZohoOrderLineItem {
-  // Zoho Internal Id
+  /// Zoho Internal Id
   id String
 
   orderLineItem   OrderLineItem @relation(fields: [orderLineItemId], references: [id], onDelete: Cascade)
@@ -386,7 +403,7 @@ model ZohoOrderLineItem {
 }
 
 model ZohoPackageLineItem {
-  // Zoho Internal Id
+  /// Zoho Internal Id
   id String
 
   packagelineItem   PackageLineItem @relation(fields: [packagelineItemId], references: [id], onDelete: Cascade)
@@ -407,15 +424,6 @@ model ZohoPackageLineItem {
 //  ECI INTERNAL ENTITY MODELS
 //
 // ------------------------------------------------------------------------------------------------
-// categorize payments by payment type
-enum PaymentMethodType {
-  paypal
-  card
-  banktransfer
-  braintree
-  onlinepayment
-  unknown
-}
 
 // The ECI internal invoice model
 model Invoice {
@@ -478,14 +486,16 @@ model Payment {
   // We use the payment gateway id as reference.
   referenceNumber String
 
-  amount        Float
-  paymentMethod PaymentMethodType
+  amount Float
 
   order   Order?  @relation(fields: [orderId], references: [id])
   orderId String?
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
+
+  paymentMethod   PaymentMethod @relation(fields: [paymentMethodId], references: [id])
+  paymentMethodId String
 
   invoices Invoice[]
 
@@ -495,6 +505,47 @@ model Payment {
   @@unique([orderId, tenantId])
   @@unique([referenceNumber, tenantId])
   @@index([orderId])
+}
+
+/// categorize payments by payment type
+enum PaymentMethodType {
+  braintree
+  paypal
+  stripe
+  /// banktransfer = Vorkasse
+  banktransfer
+}
+
+/// categorize payments by gateway type
+enum GatewayType {
+  paypal
+  card
+  /// banktransfer = Vorkasse
+  banktransfer
+}
+
+model PaymentMethod {
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  gatewayType GatewayType
+  methodType  PaymentMethodType
+  currency    Currency
+
+  saleorPaymentGateway                     SaleorPaymentGateway? @relation(fields: [saleorPaymentGatewayId, saleorPaymentGatewayInstalledSaleorAppId], references: [id, installedSaleorAppId], onDelete: Cascade)
+  saleorPaymentGatewayId                   String?
+  saleorPaymentGatewayInstalledSaleorAppId String?
+  zohoAccount                              ZohoAccount?          @relation(fields: [zohoAccountId, zohoAccountZohoAppId], references: [id, zohoAppId], onDelete: Cascade)
+  zohoAccountId                            String?
+  zohoAccountZohoAppId                     String?
+
+  payments Payment[]
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  @@unique([gatewayType, methodType, currency, tenantId])
 }
 
 model Company {
@@ -1487,6 +1538,7 @@ model ZohoApp {
   zohoContactPersons    ZohoContactPerson[]
   zohoAddresses         ZohoAddress[]
   zohoPackages          ZohoPackage[]
+  zohoAccounts          ZohoAccount[]
 }
 
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor
@@ -1553,6 +1605,7 @@ model InstalledSaleorApp {
 
   productDataFeedIntegration ProductDataFeedIntegration[]
   saleorPayment              SaleorPayment[]
+  saleorPaymentGateway       SaleorPaymentGateway[]
   saleorProductVariant       SaleorProductVariant[]
   saleorWarehouse            SaleorWarehouse[]
   saleorOrder                SaleorOrder[]
@@ -1595,6 +1648,7 @@ model Tenant {
   product                     Product[]
   productVariant              ProductVariant[]
   payment                     Payment[]
+  paymentMethods              PaymentMethod[]
   warehouse                   Warehouse[]
   invoice                     Invoice[]
   orderLineItem               OrderLineItem[]

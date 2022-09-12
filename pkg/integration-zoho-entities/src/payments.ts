@@ -10,6 +10,7 @@ import {
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
+import { Warning } from "./utils";
 
 type ZohoAppWithTenant = ZohoApp & Prisma.TenantInclude;
 
@@ -203,5 +204,140 @@ export class ZohoPaymentSyncService {
       lastRun: new Date(),
       lastRunStatus: "success",
     });
+  }
+
+  public async syncFromECI(): Promise<void> {
+    const paymentsWithoutZohoPaymentFromEciDb = await this.db.payment.findMany({
+      where: {
+        tenant: {
+          id: this.zohoApp.tenantId,
+        },
+        // filter out payments which does have a zohoPayment set with the current zohoAppId
+        zohoPayment: {
+          some: {
+            zohoAppId: this.zohoApp.id,
+          },
+        },
+      },
+      include: {
+        invoices: {
+          where: {
+            tenantId: this.zohoApp.tenantId,
+          },
+          include: {
+            zohoInvoice: {
+              where: {
+                zohoAppId: this.zohoApp.id,
+              }
+            }
+          }
+        }
+      },
+    });
+
+    this.logger.info(
+      `Received ${paymentsWithoutZohoPaymentFromEciDb.length} orders without a zohoInvoice. Creating zohoInvoices from them.`,
+      {
+        paymentIds: paymentsWithoutZohoPaymentFromEciDb.map((p) => p.id),
+        paymentReferenceNumber: paymentsWithoutZohoPaymentFromEciDb.map((p) => p.referenceNumber),
+      },
+    );
+    for (const payment of paymentsWithoutZohoPaymentFromEciDb) {
+      try {  
+        const createdPayment = await this.zoho.payment.create({
+          "amount": payment.amount,
+          "account_id": payment.paymentMethod
+        });
+
+        // await this.db.payment.create({
+        //   data: {
+        //     id: id.id("payment"),
+        //     orders: {
+        //       connect: {
+        //         id: payment.id,
+        //       },
+        //     },
+        //     paymentNumber: createdPayment.payment_number,
+        //     tenant: {
+        //       connect: {
+        //         id: this.tenantId,
+        //       }
+        //     },
+        //     zohopayment: {
+        //       connectOrCreate: {
+        //         where: {
+        //           id_zohoAppId: {
+        //             id: createdPayment.payment_id,
+        //             zohoAppId: this.zohoApp.id,
+        //           }
+        //         },
+        //         create: {
+        //           id: createdPayment.payment_id,
+        //           createdAt: new Date(createdPayment.created_time),
+        //           updatedAt: new Date(createdPayment.last_modified_time),
+        //           number: createdPayment.payment_number,
+        //           zohoApp: {
+        //             connect: {
+        //               id: this.zohoApp.id,
+        //             }
+        //           },
+        //           zohoContact: {
+        //             connect: {
+        //               id_zohoAppId:{
+        //                 id: createdPayment.customer_id,
+        //                 zohoAppId: this.zohoApp.id,
+        //               }
+        //             },
+        //           },
+        //           // TODO: should we change this in ECI db to also be able to connect multiple contact persons?
+        //           ...(createdPayment.contact_persons?.[0] ? {zohoContactPerson:{
+        //             connect: {
+        //               id_zohoAppId: {
+        //                 id: createdPayment.contact_persons?.[0], // TODO add check if 
+        //                 zohoAppId: this.zohoApp.id,
+        //               }
+        //             }
+        //           }} : {}),
+        //         }
+        //       }
+        //     }
+        //   },
+        // });
+        // this.logger.info(
+        //   `Successfully created a zoho payment ${createdPayment.payment_number}`,
+        //   {
+        //     orderId: payment.id,
+        //     orderNumber: payment.orderNumber,
+        //     orderMainContactId: payment.mainContactId,
+        //     paymentMainContactId: createdPayment.customer_id,
+        //     paymentNumber: createdPayment.payment_number,
+        //     paymentId: createdPayment.payment_id,
+        //     referenceNumber: createdPayment.reference_number,
+        //     zohoAppId: this.zohoApp.id,
+        //     tenantId: this.tenantId,
+        //   },
+        // );
+      } catch (err) {
+        if (err instanceof Warning) {
+          this.logger.warn(err.message, { eciOrderId: payment.id, eciOrderNumber: payment.orderNumber });
+        } else if (err instanceof Error) {
+          // TODO zoho-ts package: add enum for error codes . like this:
+          // if(err as ZohoApiError).code === require(zoho-ts).apiErrorCodes.NoItemsToBepaymentd){
+          if ((err as ZohoApiError).code === 36026) {
+            this.logger.warn(
+              "Aborting sync of this payment since it was already created. The syncToEci will handle this. Original Error: "+err.message,
+              { eciOrderId: payment.id, eciOrderNumber: payment.orderNumber }
+            );
+          } else {
+            this.logger.error(err.message, { eciOrderId: payment.id, eciOrderNumber: payment.orderNumber });
+          }
+        } else {
+          this.logger.error(
+            "An unknown Error occured: " + (err as any)?.toString(),
+            { eciOrderId: payment.id, eciOrderNumber: payment.orderNumber },
+          );
+        }
+      }
+    }
   }
 }

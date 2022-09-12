@@ -10343,6 +10343,21 @@ export type SaleorCronPackagesOverviewQuery = {
   } | null;
 };
 
+export type PaymentGatewaysQueryVariables = Exact<{ [key: string]: never }>;
+
+export type PaymentGatewaysQuery = {
+  __typename?: "Query";
+  shop: {
+    __typename?: "Shop";
+    availablePaymentGateways: Array<{
+      __typename?: "PaymentGateway";
+      id: string;
+      name: string;
+      currencies: Array<string | null>;
+    }>;
+  };
+};
+
 export type ProductsQueryVariables = Exact<{
   first: Scalars["Int"];
   channel?: InputMaybe<Scalars["String"]>;
@@ -10951,6 +10966,17 @@ export const SaleorCronPackagesOverviewDocument = gql`
     }
   }
 `;
+export const PaymentGatewaysDocument = gql`
+  query paymentGateways {
+    shop {
+      availablePaymentGateways {
+        id
+        name
+        currencies
+      }
+    }
+  }
+`;
 export const ProductsDocument = gql`
   query products($first: Int!, $channel: String) {
     products(first: $first, channel: $channel) {
@@ -11280,6 +11306,16 @@ export function getSdk<C>(requester: Requester<C>) {
         SaleorCronPackagesOverviewQuery,
         SaleorCronPackagesOverviewQueryVariables
       >(SaleorCronPackagesOverviewDocument, variables, options);
+    },
+    paymentGateways(
+      variables?: PaymentGatewaysQueryVariables,
+      options?: C,
+    ): Promise<PaymentGatewaysQuery> {
+      return requester<PaymentGatewaysQuery, PaymentGatewaysQueryVariables>(
+        PaymentGatewaysDocument,
+        variables,
+        options,
+      );
     },
     products(
       variables: ProductsQueryVariables,
