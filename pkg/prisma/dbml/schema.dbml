@@ -236,7 +236,7 @@ Table ZohoBankAccount {
   name String [not null]
   currency Currency [not null]
   active Boolean [not null, default: true]
-  paymentMethods PaymentMethod [not null]
+  paymentMethod PaymentMethod
   zohoApp ZohoApp [not null]
   zohoAppId String [not null]
 
@@ -372,6 +372,7 @@ Table PaymentMethod {
   tenantId String [not null]
 
   indexes {
+    (zohoBankAccountId, zohoBankAccountZohoAppId) [unique]
     (gatewayType, methodType, currency, tenantId) [unique]
   }
 }
@@ -1573,7 +1574,7 @@ Ref: Payment.paymentMethodId > PaymentMethod.id
 
 Ref: PaymentMethod.(saleorPaymentGatewayId, saleorPaymentGatewayInstalledSaleorAppId) > SaleorPaymentGateway.(id, installedSaleorAppId) [delete: Cascade]
 
-Ref: PaymentMethod.(zohoBankAccountId, zohoBankAccountZohoAppId) > ZohoBankAccount.(id, zohoAppId) [delete: Cascade]
+Ref: PaymentMethod.(zohoBankAccountId, zohoBankAccountZohoAppId) - ZohoBankAccount.(id, zohoAppId)
 
 Ref: PaymentMethod.tenantId > Tenant.id [delete: Cascade]
 

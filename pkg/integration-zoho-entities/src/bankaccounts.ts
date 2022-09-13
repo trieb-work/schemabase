@@ -78,41 +78,34 @@ export class ZohoBankAccountsSyncService {
         zohoAppId: this.zohoApp.id,
       },
       include: {
-        paymentMethods: true,
+        paymentMethod: true,
       },
     });
-    const zohoBankAccountsWithoutPaymentMethods = zohoBankAccounts.filter(
-      (zba) => zba.paymentMethods?.length === 0,
-    );
-    if (zohoBankAccountsWithoutPaymentMethods.length > 0) {
+    const zohoBankAccountsWithoutPaymentMethod = zohoBankAccounts.filter((zba) => !zba.paymentMethod);
+    if (zohoBankAccountsWithoutPaymentMethod.length > 0) {
       this.logger.warn(
-        `We have ${zohoBankAccountsWithoutPaymentMethods.length} zohoBankAccount(s) without payment method(s)`,
+        `We have ${zohoBankAccountsWithoutPaymentMethod.length} zohoBankAccount(s) without payment method(s)`,
         {
-          zohoBankAccountNamessWithoutPaymentMethods:
-            zohoBankAccountsWithoutPaymentMethods.map((zba) => zba.name),
-          zohoBankAccountIDsWithoutPaymentMethods:
-            zohoBankAccountsWithoutPaymentMethods.map((zba) => zba.id),
+          zohoBankAccountNamessWithoutPaymentMethod:
+            zohoBankAccountsWithoutPaymentMethod.map((zba) => zba.name),
+          zohoBankAccountIDsWithoutPaymentMethod:
+            zohoBankAccountsWithoutPaymentMethod.map((zba) => zba.id),
         },
       );
     }
-    const zohoBankAccountsWitWrongCurrency = zohoBankAccounts.filter(
-      (zba) =>
-        !zba.paymentMethods ||
-        zba.paymentMethods?.filter((pm) => pm.currency !== zba.currency)
-          .length > 0,
-    );
-    if (zohoBankAccountsWitWrongCurrency.length > 0) {
+    const zohoBankAccountsWithWrongCurrency = zohoBankAccounts.filter((zba) => zba?.paymentMethod && zba?.paymentMethod?.currency != zba?.currency);
+    if (zohoBankAccountsWithWrongCurrency.length > 0) {
       this.logger.error(
-        `We have ${zohoBankAccountsWitWrongCurrency.length} zohoBankAccount(s) with wrong currency`,
+        `We have ${zohoBankAccountsWithWrongCurrency.length} zohoBankAccount(s) with wrong currency`,
         {
-          zohoBankAccountNamessWithoutPaymentMethods:
-            zohoBankAccountsWitWrongCurrency.map((zba) => zba.name),
-          zohoBankAccountIDsWithoutPaymentMethods:
-            zohoBankAccountsWitWrongCurrency.map((zba) => zba.id),
+          zohoBankAccountNamessWithoutPaymentMethod:
+            zohoBankAccountsWithWrongCurrency.map((zba) => zba.name),
+          zohoBankAccountIDsWithoutPaymentMethod:
+            zohoBankAccountsWithWrongCurrency.map((zba) => zba.id),
         },
       );
     }
-    const paymentMethods = await this.db.paymentMethod.findMany({
+    const paymentMethod = await this.db.paymentMethod.findMany({
       where: {
         tenantId: this.tenantId,
       },
@@ -120,40 +113,35 @@ export class ZohoBankAccountsSyncService {
         zohoBankAccount: true,
       },
     });
-    const paymentMethodsWithoutZohoBankAccounts = paymentMethods.filter(
-      (pm) => !pm.zohoBankAccount,
-    );
-    if (paymentMethodsWithoutZohoBankAccounts.length > 0) {
+    const paymentMethodWithoutZohoBankAccounts = paymentMethod.filter((pm) => !pm.zohoBankAccount);
+    if (paymentMethodWithoutZohoBankAccounts.length > 0) {
       this.logger.warn(
-        `We have ${paymentMethodsWithoutZohoBankAccounts.length} payment method(s) without zoho bank accounts attached. This will potentially make problems in Payments Sync.`,
+        `We have ${paymentMethodWithoutZohoBankAccounts.length} payment method(s) without zoho bank accounts attached. This will potentially make problems in Payments Sync.`,
         {
-          zohoBankAccountGatewayTypeWithoutPaymentMethods:
-            paymentMethodsWithoutZohoBankAccounts.map((pm) => pm.gatewayType),
-          zohoBankAccountMethodTypeWithoutPaymentMethods:
-            paymentMethodsWithoutZohoBankAccounts.map((pm) => pm.methodType),
-          zohoBankAccountCurrenciesWithoutPaymentMethods:
-            paymentMethodsWithoutZohoBankAccounts.map((pm) => pm.currency),
-          zohoBankAccountIDsWithoutPaymentMethods:
-            paymentMethodsWithoutZohoBankAccounts.map((pm) => pm.id),
+          zohoBankAccountGatewayTypeWithoutPaymentMethod:
+            paymentMethodWithoutZohoBankAccounts.map((pm) => pm.gatewayType),
+          zohoBankAccountMethodTypeWithoutPaymentMethod:
+            paymentMethodWithoutZohoBankAccounts.map((pm) => pm.methodType),
+          zohoBankAccountCurrenciesWithoutPaymentMethod:
+            paymentMethodWithoutZohoBankAccounts.map((pm) => pm.currency),
+          zohoBankAccountIDsWithoutPaymentMethod:
+            paymentMethodWithoutZohoBankAccounts.map((pm) => pm.id),
         },
       );
     }
-    const paymentMethodsWithWrongCurrency = paymentMethods.filter(
-      (pm) =>
-        pm.zohoBankAccount && pm.zohoBankAccount?.currency !== pm.currency,
-    );
-    if (paymentMethodsWithWrongCurrency.length > 0) {
+    const paymentMethodWithWrongCurrency = paymentMethod.filter((pm) => pm?.zohoBankAccount && pm?.zohoBankAccount?.currency !== pm?.currency);
+    if (paymentMethodWithWrongCurrency.length > 0) {
       this.logger.error(
-        `We have ${paymentMethodsWithWrongCurrency.length} payment method(s) with wrong currency`,
+        `We have ${paymentMethodWithWrongCurrency.length} payment method(s) with wrong currency`,
         {
-          zohoBankAccountGatewayTypeWithoutPaymentMethods:
-            paymentMethodsWithWrongCurrency.map((pm) => pm.gatewayType),
-          zohoBankAccountMethodTypeWithoutPaymentMethods:
-            paymentMethodsWithWrongCurrency.map((pm) => pm.methodType),
-          zohoBankAccountCurrenciesWithoutPaymentMethods:
-            paymentMethodsWithWrongCurrency.map((pm) => pm.currency),
-          zohoBankAccountIDsWithoutPaymentMethods:
-            paymentMethodsWithWrongCurrency.map((pm) => pm.id),
+          zohoBankAccountGatewayTypeWithoutPaymentMethod:
+            paymentMethodWithWrongCurrency.map((pm) => pm.gatewayType),
+          zohoBankAccountMethodTypeWithoutPaymentMethod:
+            paymentMethodWithWrongCurrency.map((pm) => pm.methodType),
+          zohoBankAccountCurrenciesWithoutPaymentMethod:
+            paymentMethodWithWrongCurrency.map((pm) => pm.currency),
+          zohoBankAccountIDsWithoutPaymentMethod:
+            paymentMethodWithWrongCurrency.map((pm) => pm.id),
         },
       );
     }

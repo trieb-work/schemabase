@@ -358,7 +358,7 @@ model ZohoBankAccount {
   currency Currency
   active   Boolean  @default(true)
 
-  paymentMethods PaymentMethod[]
+  paymentMethod PaymentMethod?
 
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String
@@ -549,7 +549,7 @@ model PaymentMethod {
   saleorPaymentGateway                     SaleorPaymentGateway? @relation(fields: [saleorPaymentGatewayId, saleorPaymentGatewayInstalledSaleorAppId], references: [id, installedSaleorAppId], onDelete: Cascade)
   saleorPaymentGatewayId                   String?
   saleorPaymentGatewayInstalledSaleorAppId String?
-  zohoBankAccount                          ZohoBankAccount?      @relation(fields: [zohoBankAccountId, zohoBankAccountZohoAppId], references: [id, zohoAppId], onDelete: Cascade)
+  zohoBankAccount                          ZohoBankAccount?      @relation(fields: [zohoBankAccountId, zohoBankAccountZohoAppId], references: [id, zohoAppId])
   zohoBankAccountId                        String?
   zohoBankAccountZohoAppId                 String?
 
@@ -558,6 +558,7 @@ model PaymentMethod {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
+  @@unique([zohoBankAccountId, zohoBankAccountZohoAppId])
   @@unique([gatewayType, methodType, currency, tenantId])
 }
 
