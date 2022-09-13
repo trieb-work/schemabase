@@ -46,9 +46,7 @@ export class SaleorPaymentGatewaySyncService {
     );
 
     for (const gateway of gateways) {
-      const connectOrCreatePaymentMethods: Prisma.Enumerable<
-        Prisma.PaymentMethodCreateOrConnectWithoutSaleorPaymentGatewayInput
-      > =
+      const connectOrCreatePaymentMethods: Prisma.Enumerable<Prisma.PaymentMethodCreateOrConnectWithoutSaleorPaymentGatewayInput> =
         gateway.currencies
           .flatMap(
             (

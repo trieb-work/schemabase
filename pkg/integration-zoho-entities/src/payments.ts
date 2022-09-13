@@ -214,7 +214,6 @@ export class ZohoPaymentSyncService {
       },
       include: {
         paymentMethod: {
-          
           // include: {
           //   saleorPaymentGateway: true,
           //   zohoBankAccount: true,
@@ -247,22 +246,28 @@ export class ZohoPaymentSyncService {
     for (const payment of paymentsWithoutZohoPaymentFromEciDb) {
       try {
         const zba = payment.paymentMethod.zohoBankAccount;
-        if(!zba) {
-          throw new Error(`No Zohobankaccount attached to the current payment method ${payment.paymentMethod.id}`);
+        if (!zba) {
+          throw new Error(
+            `No Zohobankaccount attached to the current payment method ${payment.paymentMethod.id}`,
+          );
         }
-        if(zba.zohoAppId !== this.zohoApp.id) {
-          throw new Error(`Zohobankaccount attached to the current payment method ${payment.paymentMethod.id}`);
+        if (zba.zohoAppId !== this.zohoApp.id) {
+          throw new Error(
+            `Zohobankaccount attached to the current payment method ${payment.paymentMethod.id}`,
+          );
         }
-        if(payment.paymentMethod.methodType === "stripe"){
-          throw new Error(`Payment method stripe is currenctly unsuported, please extend and test zoho-ts client (zoho.payment.create) with stripe first.`);
+        if (payment.paymentMethod.methodType === "stripe") {
+          throw new Error(
+            `Payment method stripe is currenctly unsuported, please extend and test zoho-ts client (zoho.payment.create) with stripe first.`,
+          );
         }
         const createdPayment = await this.zoho.payment.create({
           amount: payment.amount,
           account_id: zba.id,
-          date: payment.createdAt.toISOString().substring(0,10),
+          date: payment.createdAt.toISOString().substring(0, 10),
           payment_mode: payment.paymentMethod.methodType,
           // customer_id: payment.
-          invoices: payment.invoices.map((inv) => inv.zohoInvoice)
+          invoices: payment.invoices.map((inv) => inv.zohoInvoice),
         });
 
         // await this.db.payment.create({
@@ -334,7 +339,10 @@ export class ZohoPaymentSyncService {
         //   },
         // );
       } catch (err) {
-        const defaultLogFields = { eciPaymentId: payment.id, eciOrderId: payment.orderId };
+        const defaultLogFields = {
+          eciPaymentId: payment.id,
+          eciOrderId: payment.orderId,
+        };
         if (err instanceof Warning) {
           this.logger.warn(err.message, defaultLogFields);
         } else if (err instanceof Error) {
@@ -342,14 +350,18 @@ export class ZohoPaymentSyncService {
           // if(err as ZohoApiError).code === require(zoho-ts).apiErrorCodes.NoItemsToBepaymentd){
           if ((err as ZohoApiError).code === 36026) {
             this.logger.warn(
-              "Aborting sync of this payment since it was already created. The syncToEci will handle this. Original Error: " + err.message,
+              "Aborting sync of this payment since it was already created. The syncToEci will handle this. Original Error: " +
+                err.message,
               defaultLogFields,
             );
           } else {
             this.logger.error(err.message, defaultLogFields);
           }
         } else {
-          this.logger.error("An unknown Error occured: " + (err as any)?.toString(), defaultLogFields);
+          this.logger.error(
+            "An unknown Error occured: " + (err as any)?.toString(),
+            defaultLogFields,
+          );
         }
       }
     }

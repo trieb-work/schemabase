@@ -81,7 +81,9 @@ export class ZohoBankAccountsSyncService {
         paymentMethod: true,
       },
     });
-    const zohoBankAccountsWithoutPaymentMethod = zohoBankAccounts.filter((zba) => !zba.paymentMethod);
+    const zohoBankAccountsWithoutPaymentMethod = zohoBankAccounts.filter(
+      (zba) => !zba.paymentMethod,
+    );
     if (zohoBankAccountsWithoutPaymentMethod.length > 0) {
       this.logger.warn(
         `We have ${zohoBankAccountsWithoutPaymentMethod.length} zohoBankAccount(s) without payment method(s)`,
@@ -93,7 +95,10 @@ export class ZohoBankAccountsSyncService {
         },
       );
     }
-    const zohoBankAccountsWithWrongCurrency = zohoBankAccounts.filter((zba) => zba?.paymentMethod && zba?.paymentMethod?.currency != zba?.currency);
+    const zohoBankAccountsWithWrongCurrency = zohoBankAccounts.filter(
+      (zba) =>
+        zba?.paymentMethod && zba?.paymentMethod?.currency != zba?.currency,
+    );
     if (zohoBankAccountsWithWrongCurrency.length > 0) {
       this.logger.error(
         `We have ${zohoBankAccountsWithWrongCurrency.length} zohoBankAccount(s) with wrong currency`,
@@ -113,10 +118,13 @@ export class ZohoBankAccountsSyncService {
         zohoBankAccount: true,
       },
     });
-    const paymentMethodWithoutZohoBankAccounts = paymentMethod.filter((pm) => !pm.zohoBankAccount);
+    const paymentMethodWithoutZohoBankAccounts = paymentMethod.filter(
+      (pm) => !pm.zohoBankAccount,
+    );
     if (paymentMethodWithoutZohoBankAccounts.length > 0) {
       this.logger.warn(
-        `We have ${paymentMethodWithoutZohoBankAccounts.length} payment method(s) without zoho bank accounts attached. This will potentially make problems in Payments Sync.`,
+        `We have ${paymentMethodWithoutZohoBankAccounts.length} payment method(s) without zoho `+
+        `bank accounts attached. This will potentially make problems in Payments Sync.`,
         {
           zohoBankAccountGatewayTypeWithoutPaymentMethod:
             paymentMethodWithoutZohoBankAccounts.map((pm) => pm.gatewayType),
@@ -129,7 +137,10 @@ export class ZohoBankAccountsSyncService {
         },
       );
     }
-    const paymentMethodWithWrongCurrency = paymentMethod.filter((pm) => pm?.zohoBankAccount && pm?.zohoBankAccount?.currency !== pm?.currency);
+    const paymentMethodWithWrongCurrency = paymentMethod.filter(
+      (pm) =>
+        pm?.zohoBankAccount && pm?.zohoBankAccount?.currency !== pm?.currency,
+    );
     if (paymentMethodWithWrongCurrency.length > 0) {
       this.logger.error(
         `We have ${paymentMethodWithWrongCurrency.length} payment method(s) with wrong currency`,
