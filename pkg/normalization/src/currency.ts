@@ -1,6 +1,6 @@
 import { Currency } from "@eci/pkg/prisma";
 
-export function checkCurrency(val: string | null): Currency {
+export function checkCurrency(val: string | null | undefined): Currency {
   if (!val) {
     throw new Error(`Currency is ${val}`);
   }

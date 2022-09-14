@@ -1143,15 +1143,15 @@ Enum ZohoSalesOrderStatus {
 }
 
 Enum PaymentMethodType {
-  braintree
   paypal
-  stripe
+  card
   banktransfer
 }
 
 Enum GatewayType {
+  braintree
   paypal
-  card
+  stripe
   banktransfer
 }
 

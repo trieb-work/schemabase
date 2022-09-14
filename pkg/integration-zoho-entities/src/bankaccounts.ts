@@ -123,8 +123,8 @@ export class ZohoBankAccountsSyncService {
     );
     if (paymentMethodWithoutZohoBankAccounts.length > 0) {
       this.logger.warn(
-        `We have ${paymentMethodWithoutZohoBankAccounts.length} payment method(s) without zoho `+
-        `bank accounts attached. This will potentially make problems in Payments Sync.`,
+        `We have ${paymentMethodWithoutZohoBankAccounts.length} payment method(s) without zoho ` +
+          `bank accounts attached. This will potentially make problems in Payments Sync.`,
         {
           zohoBankAccountGatewayTypeWithoutPaymentMethod:
             paymentMethodWithoutZohoBankAccounts.map((pm) => pm.gatewayType),

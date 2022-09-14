@@ -2,7 +2,7 @@ import type { Invoice, Zoho, ZohoApiError } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { format, setHours, subDays, subYears } from "date-fns";
+import { addMinutes, format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { Warning } from "./utils";
 
@@ -173,6 +173,11 @@ export class ZohoInvoiceSyncService {
           some: {
             zohoAppId: this.zohoApp.id,
           },
+        },
+        // filter out orders which are newer than 20min to increase the likelihood that the
+        // zoho order was created
+        createdAt: {
+          lte: addMinutes(new Date(), -20),
         },
         invoices: {
           none: {

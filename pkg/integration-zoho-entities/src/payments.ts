@@ -2,9 +2,10 @@ import { Zoho, ZohoApiError } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { PrismaClient, Prisma, ZohoApp } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { format, setHours, subDays, subYears } from "date-fns";
+import { addMinutes, format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { Warning } from "./utils";
+import { CreatePayment } from "@trieb.work/zoho-ts/dist/types/payment";
 
 type ZohoAppWithTenant = ZohoApp & Prisma.TenantInclude;
 
@@ -202,6 +203,7 @@ export class ZohoPaymentSyncService {
   public async syncFromECI(): Promise<void> {
     const paymentsWithoutZohoPaymentFromEciDb = await this.db.payment.findMany({
       where: {
+        // TODO: make sure order and then invoice is created before this job runs
         tenant: {
           id: this.zohoApp.tenantId,
         },
@@ -211,19 +213,52 @@ export class ZohoPaymentSyncService {
             zohoAppId: this.zohoApp.id,
           },
         },
+        // filter out orders which are newer than 30min to increase the likelihood that the
+        // zoho invoice was created
+        createdAt: {
+          lte: addMinutes(new Date(), -30),
+        },
+        // TEST this out: make sure braintree sync runs before this sync
+        NOT: {
+          AND: {
+            braintreeTransactions: {
+              none: {
+                braintreeApp: {
+                  tenantId: this.zohoApp.tenantId,
+                }
+              },
+            },
+            paymentMethod: {
+              AND: {
+                gatewayType: "braintree",
+                methodType: "paypal",
+              }
+            }
+          }
+        }
       },
       include: {
         paymentMethod: {
-          // include: {
-          //   saleorPaymentGateway: true,
-          //   zohoBankAccount: true,
-          // },
+          include: {
+            saleorPaymentGateway: true,
+            zohoBankAccount: true,
+          },
+        },
+        braintreeTransactions: {
+          include: {
+            braintreeApp: true
+          }
         },
         invoices: {
           where: {
             tenantId: this.zohoApp.tenantId,
           },
           include: {
+            orders: {
+              where: {
+                tenantId: this.zohoApp.tenantId,
+              },
+            },
             zohoInvoice: {
               where: {
                 zohoAppId: this.zohoApp.id,
@@ -235,7 +270,7 @@ export class ZohoPaymentSyncService {
     });
 
     this.logger.info(
-      `Received ${paymentsWithoutZohoPaymentFromEciDb.length} orders without a zohoInvoice. Creating zohoInvoices from them.`,
+      `Received ${paymentsWithoutZohoPaymentFromEciDb.length} payment(s) without a zohoInvoice. Creating zohoInvoices from them.`,
       {
         paymentIds: paymentsWithoutZohoPaymentFromEciDb.map((p) => p.id),
         paymentReferenceNumber: paymentsWithoutZohoPaymentFromEciDb.map(
@@ -253,12 +288,45 @@ export class ZohoPaymentSyncService {
         }
         if (zba.zohoAppId !== this.zohoApp.id) {
           throw new Error(
-            `Zohobankaccount attached to the current payment method ${payment.paymentMethod.id}`,
+            `the ZohoAppId (${zba.zohoAppId}) from the Zohobankaccountattached attached to the current payment method `+
+            `(${payment.paymentMethod.id}) does not equal the zohoAppId of the current workflow run (${this.zohoApp.id})`,
           );
         }
         if (payment.paymentMethod.methodType === "stripe") {
           throw new Error(
-            `Payment method stripe is currenctly unsuported, please extend and test zoho-ts client (zoho.payment.create) with stripe first.`,
+            `Payment method stripe is currenctly unsuported, please extend and test zoho-ts client (zoho.payment.create)`+
+            ` with stripe first.`,
+          );
+        }
+        if (payment.invoices.some((inv) => inv.zohoInvoice.length > 0)){
+          throw new Error(`Some invoices have more then one zohoInvoice attached for the current ZohoAppId`);
+        }
+        if (payment.invoices.some((inv) => inv.zohoInvoice.length === 0)){
+          throw new Warning(
+            `Some invoices have no zohoInvoice attached for the current ZohoAppId. Aborting`+
+            ` sync and retry after Zoho Invoice creation.`
+          );
+        }
+        if (payment.invoices.some((inv) => inv.orders.length > 0)){
+          throw new Warning(
+            `Some invoices have multiple orders attached for the current TenantId, therefore `+
+            `we use the sum of all order.totalPriceGross as the amount applied, please double check this anomalie.`
+          );
+        }
+        if (payment.invoices.some((inv) => inv.orders.length === 0)){
+          throw new Error(
+            `Some invoices have no order attached for the current TenantId, therefore `+
+            `we do not know the amount_applied for the invoices. Aborting sync.`
+          );
+        }
+        const invoices: CreatePayment["invoices"] = payment.invoices.map((inv) => ({
+          invoice_id: inv.zohoInvoice?.[0]?.invoiceId,
+          amount_applied: inv.orders.reduce((sum, order) => sum + order.totalPriceGross, 0),
+        }));
+        const totalInvoicedAmount = invoices.reduce((sum, {amount_applied}) => sum + amount_applied, 0);
+        if(payment.amount !== totalInvoicedAmount){
+          throw new Error(
+            `The sum of all invoice totals (${totalInvoicedAmount}) is not equeal to the payment amount. Aborting sync.`
           );
         }
         const createdPayment = await this.zoho.payment.create({
@@ -266,9 +334,12 @@ export class ZohoPaymentSyncService {
           account_id: zba.id,
           date: payment.createdAt.toISOString().substring(0, 10),
           payment_mode: payment.paymentMethod.methodType,
-          // customer_id: payment.
-          invoices: payment.invoices.map((inv) => inv.zohoInvoice),
+          bank_charges: payment.transactionFee,
+          reference_number: payment.referenceNumber,
+          customer_id: "TODO", // TODO
+          invoices,
         });
+        console.log("createdPayment", createdPayment);
 
         // await this.db.payment.create({
         //   data: {
@@ -366,4 +437,8 @@ export class ZohoPaymentSyncService {
       }
     }
   }
+
+  // only runs once a month, should run after current braintree "Transaction Fee Report" is uploaded and attached to the payments
+  // public async syncFromECI_updateBankCharges(): Promise<void> {
+  // }
 }

@@ -1,10 +1,11 @@
 /* eslint-disable max-len */
 import { ILogger } from "@eci/pkg/logger";
 import { queryWithPagination, SaleorCronPaymentsQuery } from "@eci/pkg/saleor";
-import { Prisma, PrismaClient } from "@eci/pkg/prisma";
+import { GatewayType, PaymentMethodType, Prisma, PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
+import { checkCurrency } from "@eci/pkg/normalization/src/currency";
 // import { id } from "@eci/pkg/ids";
 
 interface SaleorPaymentSyncServiceConfig {
@@ -133,6 +134,43 @@ export class SaleorPaymentSyncService {
       //   );
       // }
 
+      // TODO include payment status failed, fully charged etc. somehow!!
+      // TODO test failed payments etc.
+
+      let gatewayType: GatewayType;
+      let methodType: PaymentMethodType;
+      if(payment.gateway === "mirumee.payments.braintree"){
+        if(payment.paymentMethodType === "card"){
+          // new braintree implementation has a bug and classifies PayPal payments as card payment
+          if(payment.creditCard){
+            methodType = "card";
+          } else {
+            methodType = "paypal";
+          }
+        } else if(payment.paymentMethodType === "paypal"){
+          methodType = "paypal";
+        }
+      } else if(payment.gateway === "triebwork.payments.rechnung"){
+        methodType = "banktransfer";
+        gatewayType = "banktransfer";
+      }
+      if(!gatewayType!) {
+        throw new Error(
+          `Could not determine gatewayType for payment ${payment.id} with gateway `+
+          `${payment.gateway} and paymentMethodType ${payment.paymentMethodType}.`
+        );
+      }
+      
+      const paymentMethodConnect: Prisma.PaymentMethodCreateNestedOneWithoutPaymentsInput = {
+        connect: {
+          gatewayType_methodType_currency_tenantId: {
+            gatewayType: "braintree",
+            methodType: "card",
+            currency: checkCurrency(payment.total?.currency),
+            tenantId: this.tenantId,
+          }
+        }
+      };
       const orderExist = await this.db.order.findUnique({
         where: {
           orderNumber_tenantId: {
@@ -141,7 +179,7 @@ export class SaleorPaymentSyncService {
           },
         },
       });
-      const orderConnect = orderExist
+      const orderConnect: Prisma.OrderCreateNestedOneWithoutPaymentsInput | undefined = orderExist
         ? {
             connect: {
               id: orderExist.id,
@@ -167,6 +205,7 @@ export class SaleorPaymentSyncService {
                   id: this.tenantId,
                 },
               },
+              paymentMethod: paymentMethodConnect,
               order: orderConnect,
             },
           },

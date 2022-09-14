@@ -522,17 +522,17 @@ model Payment {
 
 /// categorize payments by payment method type
 enum PaymentMethodType {
-  braintree
   paypal
-  stripe
+  card
   /// banktransfer = Vorkasse
   banktransfer
 }
 
 /// categorize payments by gateway type
 enum GatewayType {
+  braintree
   paypal
-  card
+  stripe
   /// banktransfer = Vorkasse
   banktransfer
 }

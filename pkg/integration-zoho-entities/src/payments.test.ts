@@ -1,10 +1,9 @@
-import { NoopLogger } from "@eci/pkg/logger";
-import { PrismaClient } from "@eci/pkg/prisma";
+import { AssertionLogger, NoopLogger } from "@eci/pkg/logger";
+import { PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { beforeEach, describe, jest, test, beforeAll } from "@jest/globals";
-import { Zoho } from "@trieb.work/zoho-ts";
+import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts";
 import { ZohoPaymentSyncService } from "./payments";
-
-let zohoApp: any;
+import "@eci/pkg/jest-utils/consoleFormatter";
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -12,6 +11,11 @@ beforeEach(() => {
 
 describe("Zoho Inventory payment Sync", () => {
   const prismaClient = new PrismaClient();
+
+  let zoho: Zoho;
+  let zohoApp: ZohoApp;
+  let zohoPaymentSyncService: ZohoPaymentSyncService;
+  let zohoPaymentLogger: AssertionLogger;
 
   const mockedZohoClient = {
     payment: {
@@ -1128,36 +1132,41 @@ describe("Zoho Inventory payment Sync", () => {
   } as unknown as Zoho;
 
   beforeAll(async () => {
-    // clean products in DB - this breaks tests, if you let it run in
-    // parallel with Saleor payment tests
-    // await prismaClient.product.deleteMany({
-    //   where: {
-    //     tenantId: "test",
-    //   },
-    // });
-    // await prismaClient.productVariant.deleteMany({
-    //   where: {
-    //     tenantId: "test",
-    //   },
-    // });
-    // console.log("Cleaned all existing products from the DB");
-
-    zohoApp = await prismaClient.zohoApp.findUnique({
+    zohoApp = (await prismaClient.zohoApp.findUnique({
       where: {
         id: "test",
       },
       include: { tenant: true },
-    });
+    }))!;
     if (!zohoApp) throw new Error("No testing Zoho App found!");
-  });
-
-  test("It should work to sync Zoho Payments with internal ECI DB", async () => {
-    const xx = new ZohoPaymentSyncService({
-      zoho: mockedZohoClient,
-      logger: new NoopLogger(),
+    if (!zohoApp.tenantId)
+      throw new Error("No tenant configured for Zoho App!");
+    zoho = new Zoho(
+      await ZohoApiClient.fromOAuth({
+        orgId: zohoApp.orgId,
+        client: { id: zohoApp.clientId, secret: zohoApp.clientSecret },
+      }),
+    );
+    zohoPaymentLogger = new AssertionLogger();
+    zohoPaymentSyncService = new ZohoPaymentSyncService({
+      zoho,
+      logger: zohoPaymentLogger,
       db: new PrismaClient(),
       zohoApp,
     });
-    await xx.syncToECI();
+  });
+
+  // test("It should work to sync Zoho Payments with internal ECI DB", async () => {
+  //   const xx = new ZohoPaymentSyncService({
+  //     zoho: mockedZohoClient,
+  //     logger: new NoopLogger(),
+  //     db: new PrismaClient(),
+  //     zohoApp,
+  //   });
+  //   await xx.syncToECI();
+  // }, 90000);
+
+  test("It should work to sync Zoho Payments with internal ECI DB", async () => {
+    await zohoPaymentSyncService.syncFromECI();
   }, 90000);
 });
