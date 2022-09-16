@@ -486,15 +486,14 @@ model Tax {
   @@index([percentage])
 }
 
-// The ECI internal payments model
+/// The ECI internal payments model
 model Payment {
-  // eci internal id
+  /// eci internal id
   id        String   @id
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Unique identifier for a customer payment.
-  // We use the payment gateway id as reference.
+  /// Unique identifier for a customer payment. We use the payment gateway id as reference.
   referenceNumber String
 
   amount Float

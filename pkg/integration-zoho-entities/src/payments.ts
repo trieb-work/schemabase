@@ -298,7 +298,7 @@ export class ZohoPaymentSyncService {
     });
 
     this.logger.info(
-      `Received ${paymentsWithoutZohoPaymentFromEciDb.length} payment(s) without a zohoInvoice. Creating zohoInvoices from them.`,
+      `Received ${paymentsWithoutZohoPaymentFromEciDb.length} payment(s) without a zohoPayment. Creating zohoPayments from them.`,
       {
         paymentIds: paymentsWithoutZohoPaymentFromEciDb.map((p) => p.id),
         paymentReferenceNumber: paymentsWithoutZohoPaymentFromEciDb.map(
@@ -386,7 +386,6 @@ export class ZohoPaymentSyncService {
           customer_id: orderToMainContactPerson(payment.order).zohoContactId,
           invoices,
         });
-        // console.log("createdPayment", createdPayment);
         await this.db.zohoPayment.create({
           data: {
             id: createdPayment.payment_id,

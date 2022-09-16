@@ -271,12 +271,34 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
     console.info("Test 5 completed");
   }, 90000);
 
-  test("Test 6: It should create a ZohoPayment for the Payment and attach it to the Invoice", async () => {
+  test("Test 6: It should not create a zohopayoment if the braintree transaction fee is not synced yet.", async () => {
     console.info("Test 6 started: create ZohoPayment from Payment");
+    await Promise.all([deletePayment(prismaClient), await upsertPaymentMethods(prismaClient)]);
+    await Promise.all([upsertZohoBankAccounts(prismaClient), await upsertPayment(prismaClient, newOrderNumber, 156.45, "braintree", "paypal")]);
+    await zohoPaymentSyncService.syncFromECI();
+    // zohoPaymentSyncLogger.assertOneLogMessageMatches("info", /Received [1-9]+[0-9]* payment(s) without a zohoPayment. Creating zohoPayments from them./);
+    // zohoInvoiceSyncLogger.assertOneLogEntryMatches(
+    //   "info",
+    //   ({ message, fields }) =>
+    //     !!message.match(
+    //       /Successfully created a zoho payment/,
+    //     ) && fields?.orderNumber as string === newOrderNumber,
+    // );
+    console.info("Test 6 completed");
+  }, 90000);
+  test("Test 7: It should create a ZohoPayment for the Payment and attach it to the Invoice", async () => {
+    console.info("Test 7 started: create ZohoPayment from Payment");
     await Promise.all([deletePayment(prismaClient), await upsertPaymentMethods(prismaClient)]);
     await Promise.all([upsertZohoBankAccounts(prismaClient), await upsertPayment(prismaClient, newOrderNumber)]);
     await zohoPaymentSyncService.syncFromECI();
-    // zohoPaymentSyncLogger.assertOneLogMessageMatches("info", /Synced tax/);
-    console.info("Test 6 completed");
+    zohoPaymentSyncLogger.assertOneLogMessageMatches("info", /Received [1-9]+[0-9]* payment(s) without a zohoPayment. Creating zohoPayments from them./);
+    zohoInvoiceSyncLogger.assertOneLogEntryMatches(
+      "info",
+      ({ message, fields }) =>
+        !!message.match(
+          /Successfully created a zoho payment/,
+        ) && fields?.orderNumber as string === newOrderNumber,
+    );
+    console.info("Test 7 completed");
   }, 90000);
 });
