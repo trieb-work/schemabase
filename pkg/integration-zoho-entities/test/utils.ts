@@ -1,9 +1,10 @@
 import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { id } from "@eci/pkg/ids";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { GatewayType, PaymentMethodType, Prisma, PrismaClient } from "@prisma/client";
 import { normalizeStrings } from "@eci/pkg/normalization";
+import { checkCurrency } from "@eci/pkg/normalization/src/currency";
 
-const LOGGING = false;
+const LOGGING = true;
 
 export async function deleteInvoices(
   prisma: PrismaClient,
@@ -129,6 +130,54 @@ export async function upsertOrder(
     },
   });
   if (LOGGING) console.log("created one generic order");
+}
+
+export async function upsertPayment(
+  prisma: PrismaClient,
+  orderNumber: string,
+  totalPriceGross = 234.68,
+  gatewayType: GatewayType = "braintree",
+  methodType: PaymentMethodType = "card",
+  referenceNumber: string = "11068bv7", // ist eig. ne paypal ref nr
+) {
+  await prisma.payment.upsert({
+    where: {
+      referenceNumber_tenantId: {
+        referenceNumber,
+        tenantId: "test",
+      },
+    },
+    update: {},
+    create: {
+      id: "test",
+      amount: totalPriceGross,
+      referenceNumber,
+      tenant: {
+        connect: {
+          id: "test",
+        },
+      },
+      paymentMethod: {
+        connect: {
+          gatewayType_methodType_currency_tenantId: {
+            gatewayType,
+            methodType,
+            currency: checkCurrency("EUR"),
+            tenantId: "test",
+          }
+        }
+      },
+      order: {
+        connect: {
+          orderNumber_tenantId: {
+            tenantId: "test",
+            orderNumber
+          }
+        },
+      },
+    }
+  });
+  if (LOGGING) console.log("created one generic payment");
 }
 
 export async function upsertLineItem1(

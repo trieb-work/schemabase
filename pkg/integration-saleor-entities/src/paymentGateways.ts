@@ -70,13 +70,13 @@ export class SaleorPaymentGatewaySyncService {
                   return [
                     {
                       currency,
-                      methodType: "braintree",
-                      gatewayType: "card",
+                      methodType: "card",
+                      gatewayType: "braintree",
                     },
                     {
                       currency,
-                      methodType: "braintree",
-                      gatewayType: "paypal",
+                      methodType: "paypal",
+                      gatewayType: "braintree",
                     },
                   ];
                 }

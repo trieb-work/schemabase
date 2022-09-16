@@ -10335,6 +10335,7 @@ export type SaleorCronPaymentsQuery = {
           gateway: string;
           created: any;
           modified: any;
+          isActive: boolean;
           paymentMethodType: string;
           creditCard?: {
             __typename?: "CreditCard";
@@ -10350,6 +10351,7 @@ export type SaleorCronPaymentsQuery = {
           transactions?: Array<{
             __typename?: "Transaction";
             id: string;
+            isSuccess: boolean;
             token: string;
           } | null> | null;
           total?: {
@@ -10962,6 +10964,7 @@ export const SaleorCronPaymentsDocument = gql`
             gateway
             created
             modified
+            isActive
             creditCard {
               brand
               lastDigits
@@ -10974,6 +10977,7 @@ export const SaleorCronPaymentsDocument = gql`
             paymentMethodType
             transactions {
               id
+              isSuccess
               token
             }
             total {

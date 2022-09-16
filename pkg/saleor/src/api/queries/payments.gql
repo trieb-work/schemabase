@@ -19,6 +19,7 @@ query saleorCronPayments($createdGte: Date, $after: String) {
           gateway
           created
           modified
+          isActive
           creditCard{
             brand
             lastDigits
@@ -31,6 +32,7 @@ query saleorCronPayments($createdGte: Date, $after: String) {
           paymentMethodType
           transactions {
             id
+            isSuccess
             # token is the Braintree Transaction ID
             token
           }

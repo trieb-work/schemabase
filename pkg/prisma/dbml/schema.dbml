@@ -413,9 +413,7 @@ Table Contact {
     (email, tenantId) [unique]
   }
 
-  Note: 'The ECI internal contact model. One contact has one E-Mail address only.
-E-Mail addresses are unique per tenant
-In some systems the Contact is equal to Users or Accounts'
+  Note: 'The ECI internal contact model. One contact has one E-Mail address only. E-Mail addresses are unique per tenant. In some systems the Contact is equal to Users or Accounts'
 }
 
 Table Warehouse {

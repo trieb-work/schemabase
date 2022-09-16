@@ -210,7 +210,7 @@ export class ZohoPaymentSyncService {
         },
         // filter out payments which does have a zohoPayment set with the current zohoAppId
         zohoPayment: {
-          some: {
+          none: {
             zohoAppId: this.zohoApp.id,
           },
         },
@@ -254,11 +254,11 @@ export class ZohoPaymentSyncService {
             zohoBankAccount: true,
           },
         },
-        braintreeTransactions: {
-          include: {
-            braintreeApp: true
-          }
-        },
+        // braintreeTransactions: {
+        //   include: {
+        //     braintreeApp: true
+        //   }
+        // },
         invoices: {
           where: {
             tenantId: this.zohoApp.tenantId,
@@ -278,6 +278,9 @@ export class ZohoPaymentSyncService {
         },
       },
     });
+
+    // TODO for debug purpose only take first three:
+    paymentsWithoutZohoPaymentFromEciDb.splice(3);
 
     this.logger.info(
       `Received ${paymentsWithoutZohoPaymentFromEciDb.length} payment(s) without a zohoInvoice. Creating zohoInvoices from them.`,
@@ -351,7 +354,7 @@ export class ZohoPaymentSyncService {
           payment_mode: payment.paymentMethod.gatewayType,
           bank_charges: payment.transactionFee,
           reference_number: payment.referenceNumber,
-          // customer_id: orderToMainContactPerson(payment.order), // TODO
+          // customer_id: orderToMainContactPerson(payment.order).zohoContactId, // TODO
           // customer_id: undefined!,
           invoices,
         });
