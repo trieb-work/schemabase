@@ -107,21 +107,42 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
       // TODO: delete ECI Payments & Invoices
       await deleteOrders(prismaClient, { startsWith: ORDERNR_DATE_PREFIX });
 
-      const zohoPaymentIds = (await zoho.payment.list({})).filter(
-        (pay) => pay.reference_number.startsWith(ORDERNR_DATE_PREFIX),
-      ).map((pay) => pay.payment_id);
+      const zohoPaymentIds = (await zoho.payment.list({}))
+        .filter((pay) => pay.reference_number.startsWith(ORDERNR_DATE_PREFIX))
+        .map((pay) => pay.payment_id);
       console.log("zohoPaymentIds for deletion", zohoPaymentIds);
-      console.log("zoho payment delete res", await zoho.invoice.delete(zohoPaymentIds).catch((err) => console.error("Payment Cleanup failed: "+err.message)));
-      const zohoInvoiceIds = (await zoho.invoice.list({})).filter(
-        (so) => so.reference_number.startsWith(ORDERNR_DATE_PREFIX),
-      ).map((inv) => inv.invoice_id);
-      console.log("zohoInvoiceIds for deletion", zohoInvoiceIds);
-      console.log("zoho invoice delete res", await zoho.invoice.delete(zohoInvoiceIds).catch((err) => console.error("Invoice Cleanup failed: "+err.message)));
-      const zohoSalesOrderIds = (await zoho.salesOrder.search(ORDERNR_DATE_PREFIX)).map(
-        (so) => so.salesorder_id,
+      console.log(
+        "zoho payment delete res",
+        await zoho.invoice
+          .delete(zohoPaymentIds)
+          .catch((err) =>
+            console.error("Payment Cleanup failed: " + err.message),
+          ),
       );
+      const zohoInvoiceIds = (await zoho.invoice.list({}))
+        .filter((so) => so.reference_number.startsWith(ORDERNR_DATE_PREFIX))
+        .map((inv) => inv.invoice_id);
+      console.log("zohoInvoiceIds for deletion", zohoInvoiceIds);
+      console.log(
+        "zoho invoice delete res",
+        await zoho.invoice
+          .delete(zohoInvoiceIds)
+          .catch((err) =>
+            console.error("Invoice Cleanup failed: " + err.message),
+          ),
+      );
+      const zohoSalesOrderIds = (
+        await zoho.salesOrder.search(ORDERNR_DATE_PREFIX)
+      ).map((so) => so.salesorder_id);
       console.log("zohoSalesOrderIds for deletion", zohoSalesOrderIds);
-      console.log("zoho salesOrder delete res", await zoho.salesOrder.delete(zohoSalesOrderIds).catch((err) => console.error("SalesOrder Cleanup failed: "+err.message)));
+      console.log(
+        "zoho salesOrder delete res",
+        await zoho.salesOrder
+          .delete(zohoSalesOrderIds)
+          .catch((err) =>
+            console.error("SalesOrder Cleanup failed: " + err.message),
+          ),
+      );
     }
   });
 
@@ -260,44 +281,64 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
   test("Test 5: It should create an Invoice from an Order and referenceNumber should be set to Order Number", async () => {
     console.info("Test 5 started: autocreate zohoInvoices from salesOrder");
     await zohoInvoiceSyncService.syncFromECI_autocreateInvoiceFromSalesorder();
-    zohoInvoiceSyncLogger.assertOneLogMessageMatches("info", /Received [1-9]+[0-9]* orders without a zohoInvoice. Creating zohoInvoices from them./);
+    zohoInvoiceSyncLogger.assertOneLogMessageMatches(
+      "info",
+      /Received [1-9]+[0-9]* orders without a zohoInvoice. Creating zohoInvoices from them./,
+    );
     zohoInvoiceSyncLogger.assertOneLogEntryMatches(
       "info",
       ({ message, fields }) =>
-        !!message.match(
-          /Successfully created a zoho Invoice/,
-        ) && fields?.referenceNumber as string === newOrderNumber,
+        !!message.match(/Successfully created a zoho Invoice/) &&
+        (fields?.referenceNumber as string) === newOrderNumber,
     );
     console.info("Test 5 completed");
   }, 90000);
 
   test("Test 6: It should not create a zohopayoment if the braintree transaction fee is not synced yet.", async () => {
     console.info("Test 6 started: create ZohoPayment from Payment");
-    await Promise.all([deletePayment(prismaClient), await upsertPaymentMethods(prismaClient)]);
-    await Promise.all([upsertZohoBankAccounts(prismaClient), await upsertPayment(prismaClient, newOrderNumber, 156.45, "braintree", "paypal")]);
+    await Promise.all([
+      deletePayment(prismaClient),
+      await upsertPaymentMethods(prismaClient),
+    ]);
+    await Promise.all([
+      upsertZohoBankAccounts(prismaClient),
+      await upsertPayment(
+        prismaClient,
+        newOrderNumber,
+        156.45,
+        "braintree",
+        "paypal",
+      ),
+    ]);
     await zohoPaymentSyncService.syncFromECI();
-    // zohoPaymentSyncLogger.assertOneLogMessageMatches("info", /Received [1-9]+[0-9]* payment(s) without a zohoPayment. Creating zohoPayments from them./);
-    // zohoInvoiceSyncLogger.assertOneLogEntryMatches(
-    //   "info",
-    //   ({ message, fields }) =>
-    //     !!message.match(
-    //       /Successfully created a zoho payment/,
-    //     ) && fields?.orderNumber as string === newOrderNumber,
-    // );
+    zohoPaymentSyncLogger.assertOneLogMessageMatches(
+      "info",
+      /Received 0 payment\(s\) without a zohoPayment. Creating zohoPayments from them./,
+    );
     console.info("Test 6 completed");
   }, 90000);
+
   test("Test 7: It should create a ZohoPayment for the Payment and attach it to the Invoice", async () => {
     console.info("Test 7 started: create ZohoPayment from Payment");
-    await Promise.all([deletePayment(prismaClient), await upsertPaymentMethods(prismaClient)]);
-    await Promise.all([upsertZohoBankAccounts(prismaClient), await upsertPayment(prismaClient, newOrderNumber)]);
+    zohoPaymentSyncLogger.clearMessages();
+    await Promise.all([
+      deletePayment(prismaClient),
+      await upsertPaymentMethods(prismaClient),
+    ]);
+    await Promise.all([
+      upsertZohoBankAccounts(prismaClient),
+      await upsertPayment(prismaClient, newOrderNumber),
+    ]);
     await zohoPaymentSyncService.syncFromECI();
-    zohoPaymentSyncLogger.assertOneLogMessageMatches("info", /Received [1-9]+[0-9]* payment(s) without a zohoPayment. Creating zohoPayments from them./);
-    zohoInvoiceSyncLogger.assertOneLogEntryMatches(
+    zohoPaymentSyncLogger.assertOneLogMessageMatches(
+      "info",
+      /Received [1-9]+[0-9]* payment\(s\) without a zohoPayment. Creating zohoPayments from them./,
+    );
+    zohoPaymentSyncLogger.assertOneLogEntryMatches(
       "info",
       ({ message, fields }) =>
-        !!message.match(
-          /Successfully created a zoho payment/,
-        ) && fields?.orderNumber as string === newOrderNumber,
+        !!message.match(/Successfully created a zoho payment/) &&
+        (fields?.orderNumber as string) === newOrderNumber,
     );
     console.info("Test 7 completed");
   }, 90000);

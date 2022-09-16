@@ -134,7 +134,9 @@ export class ZohoPaymentSyncService {
       //   : {};
 
       // We try to connect existing invoices with this payment using the invoice Ids
-      const invoiceConnect: Prisma.InvoiceCreateNestedManyWithoutPaymentsInput | undefined =
+      const invoiceConnect:
+        | Prisma.InvoiceCreateNestedManyWithoutPaymentsInput
+        | undefined =
         payment.invoice_numbers_array?.length > 0
           ? {
               connect: payment.invoice_numbers_array.map((id) => ({
@@ -147,35 +149,36 @@ export class ZohoPaymentSyncService {
           : undefined;
 
       // connect or create the Zoho Payment with our internal payment entity
-      const paymentConnectOrCreate: Prisma.PaymentCreateNestedOneWithoutZohoPaymentInput = {
-        connectOrCreate: {
-          where: {
-            referenceNumber_tenantId: {
-              referenceNumber,
-              tenantId: this.zohoApp.tenantId,
-            },
-          },
-          create: {
-            id: id.id("payment"),
-            amount: payment.amount,
-            referenceNumber,
-            paymentMethod: {
-              connect: {
-                zohoBankAccountId_zohoBankAccountZohoAppId: {
-                  zohoBankAccountId: payment.account_id,
-                  zohoBankAccountZohoAppId: this.zohoApp.id
-                }
-              }
-            },
-            tenant: {
-              connect: {
-                id: this.zohoApp.tenantId,
+      const paymentConnectOrCreate: Prisma.PaymentCreateNestedOneWithoutZohoPaymentInput =
+        {
+          connectOrCreate: {
+            where: {
+              referenceNumber_tenantId: {
+                referenceNumber,
+                tenantId: this.zohoApp.tenantId,
               },
             },
-            invoices: invoiceConnect,
+            create: {
+              id: id.id("payment"),
+              amount: payment.amount,
+              referenceNumber,
+              paymentMethod: {
+                connect: {
+                  zohoBankAccountId_zohoBankAccountZohoAppId: {
+                    zohoBankAccountId: payment.account_id,
+                    zohoBankAccountZohoAppId: this.zohoApp.id,
+                  },
+                },
+              },
+              tenant: {
+                connect: {
+                  id: this.zohoApp.tenantId,
+                },
+              },
+              invoices: invoiceConnect,
+            },
           },
-        },
-      };
+        };
 
       await this.db.zohoPayment.upsert({
         where: {
@@ -236,7 +239,7 @@ export class ZohoPaymentSyncService {
               none: {
                 braintreeApp: {
                   tenantId: this.zohoApp.tenantId,
-                }
+                },
               },
             },
             paymentMethod: {
@@ -258,7 +261,7 @@ export class ZohoPaymentSyncService {
                     zohoAppId: this.zohoApp.id,
                   },
                 },
-              }
+              },
             },
             invoices: {
               include: {
@@ -268,7 +271,7 @@ export class ZohoPaymentSyncService {
                   },
                 },
               },
-            }
+            },
           },
         },
         paymentMethod: {
@@ -316,15 +319,15 @@ export class ZohoPaymentSyncService {
         }
         if (zba.zohoAppId !== this.zohoApp.id) {
           throw new Error(
-            `the ZohoAppId (${zba.zohoAppId}) from the Zohobankaccountattached attached to the current payment method `+
-            `(${payment.paymentMethod.id}) does not equal the zohoAppId of the current workflow run (${this.zohoApp.id})`,
+            `the ZohoAppId (${zba.zohoAppId}) from the Zohobankaccountattached attached to the current payment method ` +
+              `(${payment.paymentMethod.id}) does not equal the zohoAppId of the current workflow run (${this.zohoApp.id})`,
           );
         }
         if (payment.paymentMethod.gatewayType === "stripe") {
           // maybe it also works with stripe but this is untested so we throw an error first (also we need stripe payment fee sync)
           throw new Error(
-            `Gateway Type stripe is currenctly unsuported, please extend and test zoho-ts client (zoho.payment.create)`+
-            ` with stripe first.`,
+            `Gateway Type stripe is currenctly unsuported, please extend and test zoho-ts client (zoho.payment.create)` +
+              ` with stripe first.`,
           );
         }
         // Moved to another logic of using the payment.order and not payment.invoices
@@ -354,14 +357,18 @@ export class ZohoPaymentSyncService {
         //   invoice_id: inv.zohoInvoice?.[0]?.invoiceId,
         //   amount_applied: inv.orders.reduce((sum, order) => sum + order.totalPriceGross, 0),
         // }))
-        
-        if(!payment.order){
-          throw new Error("Can only sync payments to zoho if the payment is accociated to an Order. Otherwise it is not possible to connect the zoho payment to a zoho customer.")
+
+        if (!payment.order) {
+          throw new Error(
+            "Can only sync payments to zoho if the payment is accociated to an Order. Otherwise it is not possible to connect the zoho payment to a zoho customer.",
+          );
         }
         const invoices: CreatePayment["invoices"] = [];
-        for(const inv of payment.order.invoices){
-          if(inv.zohoInvoice.length !== 1) {
-            throw new Error(`None or Multiple Zoho Invoices exist for Invoice ${inv.invoiceNumber}/${inv.id}.`)
+        for (const inv of payment.order.invoices) {
+          if (inv.zohoInvoice.length !== 1) {
+            throw new Error(
+              `None or Multiple Zoho Invoices exist for Invoice ${inv.invoiceNumber}/${inv.id}.`,
+            );
           }
           invoices.push({
             invoice_id: inv.zohoInvoice?.[0].id,
@@ -369,10 +376,13 @@ export class ZohoPaymentSyncService {
           });
         }
 
-        const totalInvoicedAmount = invoices.reduce((sum, {amount_applied}) => sum + amount_applied, 0);
-        if(payment.amount !== totalInvoicedAmount){
+        const totalInvoicedAmount = invoices.reduce(
+          (sum, { amount_applied }) => sum + amount_applied,
+          0,
+        );
+        if (payment.amount !== totalInvoicedAmount) {
           throw new Error(
-            `The sum of all invoice totals (${totalInvoicedAmount}) is not equeal to the payment amount (${payment.amount}). Aborting sync.`
+            `The sum of all invoice totals (${totalInvoicedAmount}) is not equeal to the payment amount (${payment.amount}). Aborting sync.`,
           );
         }
 
