@@ -1156,17 +1156,16 @@ describe("Zoho Inventory payment Sync", () => {
     });
   });
 
-  // test("It should work to sync Zoho Payments with internal ECI DB", async () => {
-  //   const xx = new ZohoPaymentSyncService({
-  //     zoho: mockedZohoClient,
-  //     logger: new NoopLogger(),
-  //     db: new PrismaClient(),
-  //     zohoApp,
-  //   });
-  //   await xx.syncToECI();
-  // }, 90000);
-
   test("It should work to sync Zoho Payments with internal ECI DB", async () => {
-    await zohoPaymentSyncService.syncFromECI();
+    const xx = new ZohoPaymentSyncService({
+      zoho: mockedZohoClient,
+      logger: new NoopLogger(),
+      db: new PrismaClient(),
+      zohoApp,
+    });
+    await xx.syncToECI();
   }, 90000);
+
+  // See ../test/index.test.ts for a Test of zohoPaymentSyncService
+  // zohoPaymentSyncService.syncFromECI();
 });

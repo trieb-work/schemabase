@@ -444,8 +444,9 @@ model Invoice {
   // Un-Prefixed Invoice Number (e.g. 30994)
   // Invoice-Numbers have to be unique per Tenant!
   // We use them as unique identifier between systems
-  invoiceNumber String
-  totalInvoiceGross Float
+  invoiceNumber     String
+  invoiceTotalGross Float
+  invoiceCurrency   Currency
 
   payments Payment[]
 

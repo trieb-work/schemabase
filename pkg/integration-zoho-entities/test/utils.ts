@@ -221,20 +221,27 @@ export async function upsertZohoBankAccount(prisma: PrismaClient, name: string, 
   if (LOGGING) console.log("created zoho bank account: "+name);
 }
 
+export async function deletePayment(
+  prisma: PrismaClient,
+) {
+  const delRes = await prisma.payment.deleteMany({
+    where: {
+      id: "test",
+    }
+  });
+  if (LOGGING) console.log("deleted payment", delRes.count);
+}
 export async function upsertPayment(
   prisma: PrismaClient,
   orderNumber: string,
-  totalPriceGross = 234.68,
+  totalPriceGross = 156.45,
   gatewayType: GatewayType = "braintree",
   methodType: PaymentMethodType = "card",
   referenceNumber: string = "11068bv7", // ist eig. ne paypal ref nr
 ) {
   await prisma.payment.upsert({
     where: {
-      referenceNumber_tenantId: {
-        referenceNumber,
-        tenantId: "test",
-      },
+      id: "test",
     },
     update: {},
     create: {

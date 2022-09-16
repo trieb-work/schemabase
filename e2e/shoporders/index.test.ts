@@ -10,7 +10,7 @@ import {
   afterAll,
 } from "@jest/globals";
 import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts";
-import { ZohoSalesOrdersSyncService } from "../src/salesorders";
+import { ZohoSalesOrdersSyncService } from "@eci/pkg/integration-zoho-entities/src/salesorders";
 import {
   deleteOrders,
   deletePayment,
@@ -23,15 +23,15 @@ import {
   upsertPayment,
   upsertPaymentMethods,
   upsertZohoBankAccounts,
-} from "./utils";
-import "../../jest-utils/consoleFormatter";
-import { ZohoItemSyncService } from "../src/items";
-import { ZohoContactSyncService } from "../src/contacts";
-import { ZohoTaxSyncService } from "../src/taxes";
-import { ZohoInvoiceSyncService } from "../src/invoices";
-import { ZohoPaymentSyncService } from "../src/payments";
+} from "@eci/pkg/integration-zoho-entities/test/utils";
+import "@eci/pkg/jest-utils/consoleFormatter";
+import { ZohoItemSyncService } from "@eci/pkg/integration-zoho-entities/src/items";
+import { ZohoContactSyncService } from "@eci/pkg/integration-zoho-entities/src/contacts";
+import { ZohoTaxSyncService } from "@eci/pkg/integration-zoho-entities/src/taxes";
+import { ZohoInvoiceSyncService } from "@eci/pkg/integration-zoho-entities/src/invoices";
+import { ZohoPaymentSyncService } from "@eci/pkg/integration-zoho-entities/src/payments";
 
-const ORDERNR_DATE_PREFIX = "SO-DATE-FT-";
+const ORDERNR_DATE_PREFIX = "SO-DATE-E2E-";
 
 beforeEach(() => {
   jest.clearAllMocks();

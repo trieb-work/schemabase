@@ -5,6 +5,7 @@ import { CronStateHandler } from "@eci/pkg/cronstate";
 import { addMinutes, format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { Warning } from "./utils";
+import { checkCurrency } from "@eci/pkg/normalization/src/currency";
 
 export interface ZohoInvoiceSyncConfig {
   logger: ILogger;
@@ -141,7 +142,7 @@ export class ZohoInvoiceSyncService {
               create: {
                 id: id.id("invoice"),
                 invoiceNumber: invoice.invoice_number,
-                // TODO: totalInvoiceGross: invoice.???, // can we get invoice total from invoice list?
+                // TODO: invoiceTotalGross: invoice.???, // can we get invoice total from invoice list?
                 tenant: {
                   connect: {
                     id: this.zohoApp.tenantId,
@@ -268,7 +269,8 @@ export class ZohoInvoiceSyncService {
                 id: this.zohoApp.tenantId,
               },
             },
-            totalInvoiceGross: createdInvoice.total,
+            invoiceCurrency: checkCurrency(createdInvoice.currency_code),
+            invoiceTotalGross: createdInvoice.total,
             zohoInvoice: {
               connectOrCreate: {
                 where: {

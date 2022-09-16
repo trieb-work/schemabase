@@ -112,27 +112,29 @@ export class ZohoPaymentSyncService {
       // }
       // We first have to check, if we already have a Zoho Customer to be connected to
       // this payment
-      const customerExist = await this.db.zohoContact.findUnique({
-        where: {
-          id_zohoAppId: {
-            id: payment.customer_id,
-            zohoAppId: this.zohoApp.id,
-          },
-        },
-      });
-      const zohoContactConnect = customerExist
-        ? {
-            connect: {
-              id_zohoAppId: {
-                id: payment.customer_id,
-                zohoAppId: this.zohoApp.id,
-              },
-            },
-          }
-        : {};
+
+      // const customerExist = await this.db.zohoContact.findUnique({
+      //   where: {
+      //     id_zohoAppId: {
+      //       id: payment.customer_id,
+      //       zohoAppId: this.zohoApp.id,
+      //     },
+      //   },
+      // });
+      // deprecated removed contact from payment -> double check this
+      // const zohoContactConnect = customerExist
+      //   ? {
+      //       connect: {
+      //         id_zohoAppId: {
+      //           id: payment.customer_id,
+      //           zohoAppId: this.zohoApp.id,
+      //         },
+      //       },
+      //     }
+      //   : {};
 
       // We try to connect existing invoices with this payment using the invoice Ids
-      const invoiceConnect =
+      const invoiceConnect: Prisma.InvoiceCreateNestedManyWithoutPaymentsInput | undefined =
         payment.invoice_numbers_array?.length > 0
           ? {
               connect: payment.invoice_numbers_array.map((id) => ({
@@ -145,7 +147,7 @@ export class ZohoPaymentSyncService {
           : undefined;
 
       // connect or create the Zoho Payment with our internal payment entity
-      const paymentConnectOrCreate = {
+      const paymentConnectOrCreate: Prisma.PaymentCreateNestedOneWithoutZohoPaymentInput = {
         connectOrCreate: {
           where: {
             referenceNumber_tenantId: {
@@ -157,6 +159,14 @@ export class ZohoPaymentSyncService {
             id: id.id("payment"),
             amount: payment.amount,
             referenceNumber,
+            paymentMethod: {
+              connect: {
+                zohoBankAccountId_zohoBankAccountZohoAppId: {
+                  zohoBankAccountId: payment.account_id,
+                  zohoBankAccountZohoAppId: this.zohoApp.id
+                }
+              }
+            },
             tenant: {
               connect: {
                 id: this.zohoApp.tenantId,
@@ -183,13 +193,13 @@ export class ZohoPaymentSyncService {
           },
           createdAt: new Date(payment.created_time),
           updatedAt: new Date(payment.last_modified_time),
-          zohoContact: zohoContactConnect,
+          // zohoContact: zohoContactConnect,
           payment: paymentConnectOrCreate,
         },
         update: {
           createdAt: new Date(payment.created_time),
           updatedAt: new Date(payment.last_modified_time),
-          zohoContact: zohoContactConnect,
+          // zohoContact: zohoContactConnect,
           payment: paymentConnectOrCreate,
         },
       });
@@ -233,19 +243,32 @@ export class ZohoPaymentSyncService {
               AND: {
                 gatewayType: "braintree",
                 methodType: "paypal",
-              }
-            }
-          }
-        }
+              },
+            },
+          },
+        },
       },
       include: {
         order: {
           include: {
             mainContact: {
               include: {
-                zohoContactPersons: true,
+                zohoContactPersons: {
+                  where: {
+                    zohoAppId: this.zohoApp.id,
+                  },
+                },
               }
             },
+            invoices: {
+              include: {
+                zohoInvoice: {
+                  where: {
+                    zohoAppId: this.zohoApp.id,
+                  },
+                },
+              },
+            }
           },
         },
         paymentMethod: {
@@ -254,33 +277,25 @@ export class ZohoPaymentSyncService {
             zohoBankAccount: true,
           },
         },
-        // braintreeTransactions: {
+        // invoices: { // TODO maybe delete invoices in Payment schema
+        //   where: {
+        //     tenantId: this.zohoApp.tenantId,
+        //   },
         //   include: {
-        //     braintreeApp: true
-        //   }
+        //     orders: {
+        //       where: {
+        //         tenantId: this.zohoApp.tenantId,
+        //       },
+        //     },
+        //     zohoInvoice: {
+        //       where: {
+        //         zohoAppId: this.zohoApp.id,
+        //       },
+        //     },
+        //   },
         // },
-        invoices: {
-          where: {
-            tenantId: this.zohoApp.tenantId,
-          },
-          include: {
-            orders: {
-              where: {
-                tenantId: this.zohoApp.tenantId,
-              },
-            },
-            zohoInvoice: {
-              where: {
-                zohoAppId: this.zohoApp.id,
-              },
-            },
-          },
-        },
       },
     });
-
-    // TODO for debug purpose only take first three:
-    paymentsWithoutZohoPaymentFromEciDb.splice(3);
 
     this.logger.info(
       `Received ${paymentsWithoutZohoPaymentFromEciDb.length} payment(s) without a zohoInvoice. Creating zohoInvoices from them.`,
@@ -312,6 +327,7 @@ export class ZohoPaymentSyncService {
             ` with stripe first.`,
           );
         }
+        // Moved to another logic of using the payment.order and not payment.invoices
         // if (payment.invoices.some((inv) => inv.zohoInvoice.length > 0)){
         //   throw new Error(`Some invoices have more then one zohoInvoice attached for the current ZohoAppId`);
         // }
@@ -333,21 +349,33 @@ export class ZohoPaymentSyncService {
         //     `we do not know the amount_applied for the invoices. Aborting sync.`
         //   );
         // }
-        // TODO: double check this logic. Not sure if this is what we need.
         // Make invoice optional and only implement standard logic
-        const invoices: CreatePayment["invoices"] = payment.invoices.map((inv) => ({
-          invoice_id: inv.zohoInvoice?.[0]?.invoiceId,
-          amount_applied: inv.orders.reduce((sum, order) => sum + order.totalPriceGross, 0),
-        }));
-        const totalInvoicedAmount = invoices.reduce((sum, {amount_applied}) => sum + amount_applied, 0);
-        if(payment.amount !== totalInvoicedAmount){
-          throw new Error(
-            `The sum of all invoice totals (${totalInvoicedAmount}) is not equeal to the payment amount. Aborting sync.`
-          );
-        }
+        // const invoices: CreatePayment["invoices"] = payment.invoices.map((inv) => ({
+        //   invoice_id: inv.zohoInvoice?.[0]?.invoiceId,
+        //   amount_applied: inv.orders.reduce((sum, order) => sum + order.totalPriceGross, 0),
+        // }))
+        
         if(!payment.order){
           throw new Error("Can only sync payments to zoho if the payment is accociated to an Order. Otherwise it is not possible to connect the zoho payment to a zoho customer.")
         }
+        const invoices: CreatePayment["invoices"] = [];
+        for(const inv of payment.order.invoices){
+          if(inv.zohoInvoice.length !== 1) {
+            throw new Error(`None or Multiple Zoho Invoices exist for Invoice ${inv.invoiceNumber}/${inv.id}.`)
+          }
+          invoices.push({
+            invoice_id: inv.zohoInvoice?.[0].id,
+            amount_applied: inv.invoiceTotalGross,
+          });
+        }
+
+        const totalInvoicedAmount = invoices.reduce((sum, {amount_applied}) => sum + amount_applied, 0);
+        if(payment.amount !== totalInvoicedAmount){
+          throw new Error(
+            `The sum of all invoice totals (${totalInvoicedAmount}) is not equeal to the payment amount (${payment.amount}). Aborting sync.`
+          );
+        }
+
         const createdPayment = await this.zoho.payment.create({
           amount: payment.amount,
           account_id: zba.id,
@@ -355,80 +383,39 @@ export class ZohoPaymentSyncService {
           payment_mode: payment.paymentMethod.gatewayType,
           bank_charges: payment.transactionFee,
           reference_number: payment.referenceNumber,
-          // customer_id: orderToMainContactPerson(payment.order).zohoContactId, // TODO
-          // customer_id: undefined!,
-          invoices,order
+          customer_id: orderToMainContactPerson(payment.order).zohoContactId,
+          invoices,
         });
-        console.log("createdPayment", createdPayment);
-
-        // await this.db.payment.create({
-        //   data: {
-        //     id: id.id("payment"),
-        //     orders: {
-        //       connect: {
-        //         id: payment.id,
-        //       },
-        //     },
-        //     paymentNumber: createdPayment.payment_number,
-        //     tenant: {
-        //       connect: {
-        //         id: this.tenantId,
-        //       }
-        //     },
-        //     zohopayment: {
-        //       connectOrCreate: {
-        //         where: {
-        //           id_zohoAppId: {
-        //             id: createdPayment.payment_id,
-        //             zohoAppId: this.zohoApp.id,
-        //           }
-        //         },
-        //         create: {
-        //           id: createdPayment.payment_id,
-        //           createdAt: new Date(createdPayment.created_time),
-        //           updatedAt: new Date(createdPayment.last_modified_time),
-        //           number: createdPayment.payment_number,
-        //           zohoApp: {
-        //             connect: {
-        //               id: this.zohoApp.id,
-        //             }
-        //           },
-        //           zohoContact: {
-        //             connect: {
-        //               id_zohoAppId:{
-        //                 id: createdPayment.customer_id,
-        //                 zohoAppId: this.zohoApp.id,
-        //               }
-        //             },
-        //           },
-        //           // TODO: should we change this in ECI db to also be able to connect multiple contact persons?
-        //           ...(createdPayment.contact_persons?.[0] ? {zohoContactPerson:{
-        //             connect: {
-        //               id_zohoAppId: {
-        //                 id: createdPayment.contact_persons?.[0], // TODO add check if
-        //                 zohoAppId: this.zohoApp.id,
-        //               }
-        //             }
-        //           }} : {}),
-        //         }
-        //       }
-        //     }
-        //   },
-        // });
-        // this.logger.info(
-        //   `Successfully created a zoho payment ${createdPayment.payment_number}`,
-        //   {
-        //     orderId: payment.id,
-        //     orderNumber: payment.orderNumber,
-        //     orderMainContactId: payment.mainContactId,
-        //     paymentMainContactId: createdPayment.customer_id,
-        //     paymentNumber: createdPayment.payment_number,
-        //     paymentId: createdPayment.payment_id,
-        //     referenceNumber: createdPayment.reference_number,
-        //     zohoAppId: this.zohoApp.id,
-        //     tenantId: this.tenantId,
-        //   },
-        // );
+        // console.log("createdPayment", createdPayment);
+        await this.db.zohoPayment.create({
+          data: {
+            id: createdPayment.payment_id,
+            createdAt: new Date(createdPayment.created_time),
+            updatedAt: new Date((createdPayment as any).updated_time), // TODO remove this hack after zoho-ts PR #18 is merged
+            zohoApp: {
+              connect: {
+                id: this.zohoApp.id,
+              },
+            },
+            payment: {
+              connect: {
+                id: payment.id,
+              },
+            },
+          },
+        });
+        this.logger.info(
+          `Successfully created a zoho payment ${createdPayment.payment_number}`,
+          {
+            zohoPaymentNumber: createdPayment.payment_number,
+            zohoPaymentId: createdPayment.payment_id,
+            zohoAccountId: createdPayment.account_id,
+            orderId: payment.id,
+            orderNumber: payment.order.orderNumber,
+            zohoAppId: this.zohoApp.id,
+            tenantId: this.zohoApp.tenantId,
+          },
+        );
       } catch (err) {
         const defaultLogFields = {
           eciPaymentId: payment.id,
@@ -459,6 +446,7 @@ export class ZohoPaymentSyncService {
   }
 
   // only runs once a month, should run after current braintree "Transaction Fee Report" is uploaded and attached to the payments
+  // all payments with payment.updatedAt > zohoPayment.updatedAt
   // public async syncFromECI_updateBankCharges(): Promise<void> {
   // }
 }
