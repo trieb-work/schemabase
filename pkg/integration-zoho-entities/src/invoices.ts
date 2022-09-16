@@ -141,6 +141,7 @@ export class ZohoInvoiceSyncService {
               create: {
                 id: id.id("invoice"),
                 invoiceNumber: invoice.invoice_number,
+                // TODO: totalInvoiceGross: invoice.???, // can we get invoice total from invoice list?
                 tenant: {
                   connect: {
                     id: this.zohoApp.tenantId,
@@ -267,6 +268,7 @@ export class ZohoInvoiceSyncService {
                 id: this.zohoApp.tenantId,
               },
             },
+            totalInvoiceGross: createdInvoice.total,
             zohoInvoice: {
               connectOrCreate: {
                 where: {

@@ -6,6 +6,7 @@ import { addMinutes, format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { Warning } from "./utils";
 import { CreatePayment } from "@trieb.work/zoho-ts/dist/types/payment";
+import { orderToMainContactPerson } from "./salesorders/contacts";
 
 type ZohoAppWithTenant = ZohoApp & Prisma.TenantInclude;
 
@@ -238,6 +239,15 @@ export class ZohoPaymentSyncService {
         }
       },
       include: {
+        order: {
+          include: {
+            mainContact: {
+              include: {
+                zohoContactPersons: true,
+              }
+            },
+          },
+        },
         paymentMethod: {
           include: {
             saleorPaymentGateway: true,
@@ -292,9 +302,9 @@ export class ZohoPaymentSyncService {
             `(${payment.paymentMethod.id}) does not equal the zohoAppId of the current workflow run (${this.zohoApp.id})`,
           );
         }
-        if (payment.paymentMethod.methodType === "stripe") {
+        if (payment.paymentMethod.gatewayType === "stripe") {
           throw new Error(
-            `Payment method stripe is currenctly unsuported, please extend and test zoho-ts client (zoho.payment.create)`+
+            `Gateway Type stripe is currenctly unsuported, please extend and test zoho-ts client (zoho.payment.create)`+
             ` with stripe first.`,
           );
         }
@@ -319,6 +329,8 @@ export class ZohoPaymentSyncService {
             `we do not know the amount_applied for the invoices. Aborting sync.`
           );
         }
+        // TODO: double check this logic. Not sure if this is what we need.
+        // Make invoice optional and only implement standard logic
         const invoices: CreatePayment["invoices"] = payment.invoices.map((inv) => ({
           invoice_id: inv.zohoInvoice?.[0]?.invoiceId,
           amount_applied: inv.orders.reduce((sum, order) => sum + order.totalPriceGross, 0),
@@ -329,14 +341,18 @@ export class ZohoPaymentSyncService {
             `The sum of all invoice totals (${totalInvoicedAmount}) is not equeal to the payment amount. Aborting sync.`
           );
         }
+        if(!payment.order){
+          throw new Error("Can only sync payments to zoho if the payment is accociated to an Order. Otherwise it is not possible to connect the zoho payment to a zoho customer.")
+        }
         const createdPayment = await this.zoho.payment.create({
           amount: payment.amount,
           account_id: zba.id,
           date: payment.createdAt.toISOString().substring(0, 10),
-          payment_mode: payment.paymentMethod.methodType,
+          payment_mode: payment.paymentMethod.gatewayType,
           bank_charges: payment.transactionFee,
           reference_number: payment.referenceNumber,
-          customer_id: "TODO", // TODO
+          // customer_id: orderToMainContactPerson(payment.order), // TODO
+          // customer_id: undefined!,
           invoices,
         });
         console.log("createdPayment", createdPayment);

@@ -160,12 +160,18 @@ export class SaleorPaymentSyncService {
           `${payment.gateway} and paymentMethodType ${payment.paymentMethodType}.`
         );
       }
+      if(!methodType!) {
+        throw new Error(
+          `Could not determine methodType for payment ${payment.id} with gateway `+
+          `${payment.gateway} and paymentMethodType ${payment.paymentMethodType}.`
+        );
+      }
       
       const paymentMethodConnect: Prisma.PaymentMethodCreateNestedOneWithoutPaymentsInput = {
         connect: {
           gatewayType_methodType_currency_tenantId: {
-            gatewayType: "braintree",
-            methodType: "card",
+            gatewayType,
+            methodType,
             currency: checkCurrency(payment.total?.currency),
             tenantId: this.tenantId,
           }

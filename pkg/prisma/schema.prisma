@@ -445,6 +445,7 @@ model Invoice {
   // Invoice-Numbers have to be unique per Tenant!
   // We use them as unique identifier between systems
   invoiceNumber String
+  totalInvoiceGross Float
 
   payments Payment[]
 
@@ -582,9 +583,7 @@ model Company {
   @@unique([normalizedName, tenantId])
 }
 
-/// The ECI internal contact model. One contact has one E-Mail address only.
-/// E-Mail addresses are unique per tenant
-/// In some systems the Contact is equal to Users or Accounts
+/// The ECI internal contact model. One contact has one E-Mail address only. E-Mail addresses are unique per tenant. In some systems the Contact is equal to Users or Accounts
 model Contact {
   // eci internal id
   id        String   @id
