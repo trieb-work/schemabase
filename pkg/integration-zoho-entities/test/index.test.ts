@@ -20,6 +20,8 @@ import {
   upsertLineItemWithRealProductVariantFromZoho,
   upsertOrder,
   upsertPayment,
+  upsertPaymentMethods,
+  upsertZohoBankAccounts,
 } from "./utils";
 import "../../jest-utils/consoleFormatter";
 import { ZohoItemSyncService } from "../src/items";
@@ -264,6 +266,8 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
   test("Test 6: It should create a ZohoPayment for the Payment and attach it to the Invoice", async () => {
     console.info("Test 6 started: create ZohoPayment from Payment");
     // upsertPayment(prisma, newOrderNumber);
+    await upsertPaymentMethods(prismaClient);
+    await upsertZohoBankAccounts(prismaClient);
     await upsertPayment(prismaClient, "SO-DATE-1334587");
     await zohoPaymentSyncService.syncFromECI();
     // zohoPaymentSyncLogger.assertOneLogMessageMatches("info", /Synced tax/);

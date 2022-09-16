@@ -306,32 +306,33 @@ export class ZohoPaymentSyncService {
           );
         }
         if (payment.paymentMethod.gatewayType === "stripe") {
+          // maybe it also works with stripe but this is untested so we throw an error first (also we need stripe payment fee sync)
           throw new Error(
             `Gateway Type stripe is currenctly unsuported, please extend and test zoho-ts client (zoho.payment.create)`+
             ` with stripe first.`,
           );
         }
-        if (payment.invoices.some((inv) => inv.zohoInvoice.length > 0)){
-          throw new Error(`Some invoices have more then one zohoInvoice attached for the current ZohoAppId`);
-        }
-        if (payment.invoices.some((inv) => inv.zohoInvoice.length === 0)){
-          throw new Warning(
-            `Some invoices have no zohoInvoice attached for the current ZohoAppId. Aborting`+
-            ` sync and retry after Zoho Invoice creation.`
-          );
-        }
-        if (payment.invoices.some((inv) => inv.orders.length > 0)){
-          throw new Warning(
-            `Some invoices have multiple orders attached for the current TenantId, therefore `+
-            `we use the sum of all order.totalPriceGross as the amount applied, please double check this anomalie.`
-          );
-        }
-        if (payment.invoices.some((inv) => inv.orders.length === 0)){
-          throw new Error(
-            `Some invoices have no order attached for the current TenantId, therefore `+
-            `we do not know the amount_applied for the invoices. Aborting sync.`
-          );
-        }
+        // if (payment.invoices.some((inv) => inv.zohoInvoice.length > 0)){
+        //   throw new Error(`Some invoices have more then one zohoInvoice attached for the current ZohoAppId`);
+        // }
+        // if (payment.invoices.some((inv) => inv.zohoInvoice.length === 0)){
+        //   throw new Warning(
+        //     `Some invoices have no zohoInvoice attached for the current ZohoAppId. Aborting`+
+        //     ` sync and retry after Zoho Invoice creation.`
+        //   );
+        // }
+        // if (payment.invoices.some((inv) => inv.orders.length > 0)){
+        //   throw new Warning(
+        //     `Some invoices have multiple orders attached for the current TenantId, therefore `+
+        //     `we use the sum of all order.totalPriceGross as the amount applied, please double check this anomalie.`
+        //   );
+        // }
+        // if (payment.invoices.some((inv) => inv.orders.length === 0)){
+        //   throw new Error(
+        //     `Some invoices have no order attached for the current TenantId, therefore `+
+        //     `we do not know the amount_applied for the invoices. Aborting sync.`
+        //   );
+        // }
         // TODO: double check this logic. Not sure if this is what we need.
         // Make invoice optional and only implement standard logic
         const invoices: CreatePayment["invoices"] = payment.invoices.map((inv) => ({
@@ -356,7 +357,7 @@ export class ZohoPaymentSyncService {
           reference_number: payment.referenceNumber,
           // customer_id: orderToMainContactPerson(payment.order).zohoContactId, // TODO
           // customer_id: undefined!,
-          invoices,
+          invoices,order
         });
         console.log("createdPayment", createdPayment);
 

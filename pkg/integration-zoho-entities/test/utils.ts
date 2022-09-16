@@ -132,6 +132,95 @@ export async function upsertOrder(
   if (LOGGING) console.log("created one generic order");
 }
 
+export async function upsertPaymentMethods(prisma: PrismaClient) {
+  await upsertPaymentMethod(prisma, "test-1", {
+    gatewayType: "braintree",
+    methodType: "card",
+    currency: "EUR",
+    tenantId: "test",
+  });
+  await upsertPaymentMethod(prisma, "test-2", {
+    gatewayType: "braintree",
+    methodType: "paypal",
+    currency: "EUR",
+    tenantId: "test",
+  });
+  await upsertPaymentMethod(prisma, "test-3", {
+    gatewayType: "banktransfer",
+    methodType: "banktransfer",
+    currency: "EUR",
+    tenantId: "test",
+  });
+}
+export async function upsertPaymentMethod(prisma: PrismaClient, id: string, config: Prisma.PaymentMethodGatewayTypeMethodTypeCurrencyTenantIdCompoundUniqueInput,) {
+  await prisma.paymentMethod.upsert({
+    where: {
+      gatewayType_methodType_currency_tenantId: config
+    },
+    update: {},
+    create: {
+      ...config,
+      id,
+    },
+  })
+  if (LOGGING) console.log("created payment method: "+id);
+}
+export async function upsertZohoBankAccounts(prisma: PrismaClient) {
+  await upsertZohoBankAccount(prisma,
+    "Braintree Sandbox",{
+      gatewayType: "braintree",
+      methodType: "card",
+      currency: "EUR",
+      tenantId: "test",
+    }, { // braintree card
+      id: "116240000000482021",
+      zohoAppId: "test",
+    }
+  );
+  await upsertZohoBankAccount(prisma,
+    "PayPal Sandbox",{
+      gatewayType: "braintree",
+      methodType: "paypal",
+      currency: "EUR",
+      tenantId: "test",
+    }, { // braintree paypal
+      id: "116240000000482029",
+      zohoAppId: "test",
+    }
+  );
+  await upsertZohoBankAccount(prisma,
+    "Penta P+F Dev Online",{
+      gatewayType: "banktransfer",
+      methodType: "banktransfer",
+      currency: "EUR",
+      tenantId: "test",
+    }, { // banktransfer banktransfer
+      id: "116240000000482013",
+      zohoAppId: "test",
+    }
+  );
+}
+export async function upsertZohoBankAccount(prisma: PrismaClient, name: string, paymentMethodConfig: Prisma.PaymentMethodGatewayTypeMethodTypeCurrencyTenantIdCompoundUniqueInput, config: Prisma.ZohoBankAccountIdZohoAppIdCompoundUniqueInput) {
+  await prisma.zohoBankAccount.upsert({
+    where: {
+      id_zohoAppId: config,
+    },
+    update: {},
+    create: {
+      ...config,
+      currency: "EUR",
+      name,
+      active: true,
+      paymentMethod: {
+        connect: {
+          gatewayType_methodType_currency_tenantId: paymentMethodConfig,
+        },
+      },
+    },
+  })
+  if (LOGGING) console.log("created zoho bank account: "+name);
+}
+
 export async function upsertPayment(
   prisma: PrismaClient,
   orderNumber: string,
@@ -152,6 +241,7 @@ export async function upsertPayment(
       id: "test",
       amount: totalPriceGross,
       referenceNumber,
+      createdAt: "2022-09-15T13:45:45.799Z",
       tenant: {
         connect: {
           id: "test",
