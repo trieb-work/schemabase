@@ -1,3 +1,5 @@
+/* eslint-disable max-len */
+/* eslint-disable camelcase */
 import type { Invoice, Zoho, ZohoApiError } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { PrismaClient, ZohoApp } from "@eci/pkg/prisma";
@@ -30,7 +32,6 @@ export class ZohoInvoiceSyncService {
     this.zoho = config.zoho;
     this.db = config.db;
     this.zohoApp = config.zohoApp;
-    this.zohoApp.tenantId = this.zohoApp.tenantId;
     this.cronState = new CronStateHandler({
       tenantId: this.zohoApp.tenantId,
       appId: this.zohoApp.id,
@@ -118,6 +119,8 @@ export class ZohoInvoiceSyncService {
               create: {
                 id: id.id("invoice"),
                 invoiceNumber: invoice.invoice_number,
+                invoiceTotalGross: invoice.total,
+                invoiceCurrency: checkCurrency(invoice.currency_code),
                 tenant: {
                   connect: {
                     id: this.zohoApp.tenantId,
@@ -142,7 +145,8 @@ export class ZohoInvoiceSyncService {
               create: {
                 id: id.id("invoice"),
                 invoiceNumber: invoice.invoice_number,
-                // TODO: invoiceTotalGross: invoice.???, // can we get invoice total from invoice list?
+                invoiceTotalGross: invoice.total,
+                invoiceCurrency: checkCurrency(invoice.currency_code),
                 tenant: {
                   connect: {
                     id: this.zohoApp.tenantId,
