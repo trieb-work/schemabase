@@ -1,0 +1,47 @@
+
+query saleorCronPayments($createdGte: Date, $after: String) {
+  orders(first: 100, after: $after, filter: { created: { gte: $createdGte } }) {
+    totalCount
+    pageInfo {
+      hasNextPage
+      endCursor
+      startCursor
+    }
+    edges {
+      node {
+        id
+        channel {
+          id
+          name
+        }
+        payments {
+          id
+          gateway
+          created
+          modified
+          isActive
+          creditCard{
+            brand
+            lastDigits
+          }
+          order {
+            id
+            created
+            number
+          }
+          paymentMethodType
+          transactions {
+            id
+            isSuccess
+            # token is the Braintree Transaction ID
+            token
+          }
+          total {
+            currency
+            amount
+          }
+        }
+      }
+    }
+  }
+}

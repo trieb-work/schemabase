@@ -2,9 +2,10 @@ import type { Invoice, Zoho, ZohoApiError } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { format, setHours, subDays, subYears } from "date-fns";
+import { addMinutes, format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { Warning } from "./utils";
+import { checkCurrency } from "@eci/pkg/normalization/src/currency";
 
 export interface ZohoInvoiceSyncConfig {
   logger: ILogger;
@@ -24,16 +25,14 @@ export class ZohoInvoiceSyncService {
 
   private readonly cronState: CronStateHandler;
 
-  private readonly tenantId: string;
-
   public constructor(config: ZohoInvoiceSyncConfig) {
     this.logger = config.logger;
     this.zoho = config.zoho;
     this.db = config.db;
     this.zohoApp = config.zohoApp;
-    this.tenantId = this.zohoApp.tenantId;
+    this.zohoApp.tenantId = this.zohoApp.tenantId;
     this.cronState = new CronStateHandler({
-      tenantId: this.tenantId,
+      tenantId: this.zohoApp.tenantId,
       appId: this.zohoApp.id,
       db: this.db,
       syncEntity: "invoices",
@@ -74,33 +73,12 @@ export class ZohoInvoiceSyncService {
     }
 
     for (const invoice of invoices) {
-      // We first have to check, if we already have a Zoho Customer to be connected to
-      // this Invoice
-      const customerExist = await this.db.zohoContact.findUnique({
-        where: {
-          id_zohoAppId: {
-            id: invoice.customer_id,
-            zohoAppId: this.zohoApp.id,
-          },
-        },
-      });
-      const zohoContactConnect = customerExist
-        ? {
-            connect: {
-              id_zohoAppId: {
-                id: invoice.customer_id,
-                zohoAppId: this.zohoApp.id,
-              },
-            },
-          }
-        : undefined;
-
       // search for a corresponding order using the reference number from the invoice
       const orderExist = await this.db.order.findUnique({
         where: {
           orderNumber_tenantId: {
             orderNumber: invoice.reference_number,
-            tenantId: this.tenantId,
+            tenantId: this.zohoApp.tenantId,
           },
         },
       });
@@ -134,7 +112,7 @@ export class ZohoInvoiceSyncService {
               where: {
                 invoiceNumber_tenantId: {
                   invoiceNumber: invoice.invoice_number,
-                  tenantId: this.tenantId,
+                  tenantId: this.zohoApp.tenantId,
                 },
               },
               create: {
@@ -142,14 +120,13 @@ export class ZohoInvoiceSyncService {
                 invoiceNumber: invoice.invoice_number,
                 tenant: {
                   connect: {
-                    id: this.tenantId,
+                    id: this.zohoApp.tenantId,
                   },
                 },
                 orders: orderConnect,
               },
             },
           },
-          zohoContact: zohoContactConnect,
         },
         update: {
           createdAt: new Date(invoice.created_time),
@@ -159,22 +136,22 @@ export class ZohoInvoiceSyncService {
               where: {
                 invoiceNumber_tenantId: {
                   invoiceNumber: invoice.invoice_number,
-                  tenantId: this.tenantId,
+                  tenantId: this.zohoApp.tenantId,
                 },
               },
               create: {
                 id: id.id("invoice"),
                 invoiceNumber: invoice.invoice_number,
+                // TODO: invoiceTotalGross: invoice.???, // can we get invoice total from invoice list?
                 tenant: {
                   connect: {
-                    id: this.tenantId,
+                    id: this.zohoApp.tenantId,
                   },
                 },
                 orders: orderConnect,
               },
             },
           },
-          zohoContact: zohoContactConnect,
         },
       });
     }
@@ -184,6 +161,7 @@ export class ZohoInvoiceSyncService {
       lastRunStatus: "success",
     });
   }
+
   // TODO2: syncFromECI (standard syncs invoice object) (lower prio for the future)
   // TODO1: syncFromECIAutocreateFromSalesorder (creates an zohoinvoice and eci invoice from an zohosalesorder)
   public async syncFromECI_autocreateInvoiceFromSalesorder(): Promise<void> {
@@ -198,8 +176,12 @@ export class ZohoInvoiceSyncService {
             zohoAppId: this.zohoApp.id,
           },
         },
+        // filter out orders which are newer than 20min to increase the likelihood that the
+        // zoho order was created
+        createdAt: {
+          lte: addMinutes(new Date(), -20),
+        },
         invoices: {
-          // TODO test/validate this with ECI db
           none: {
             zohoInvoice: {
               some: {
@@ -217,7 +199,7 @@ export class ZohoInvoiceSyncService {
         },
         invoices: {
           where: {
-            tenantId: this.tenantId,
+            tenantId: this.zohoApp.tenantId,
           },
           include: {
             zohoInvoice: {
@@ -284,9 +266,11 @@ export class ZohoInvoiceSyncService {
             invoiceNumber: createdInvoice.invoice_number,
             tenant: {
               connect: {
-                id: this.tenantId,
+                id: this.zohoApp.tenantId,
               },
             },
+            invoiceCurrency: checkCurrency(createdInvoice.currency_code),
+            invoiceTotalGross: createdInvoice.total,
             zohoInvoice: {
               connectOrCreate: {
                 where: {
@@ -305,27 +289,6 @@ export class ZohoInvoiceSyncService {
                       id: this.zohoApp.id,
                     },
                   },
-                  zohoContact: {
-                    connect: {
-                      id_zohoAppId: {
-                        id: createdInvoice.customer_id,
-                        zohoAppId: this.zohoApp.id,
-                      },
-                    },
-                  },
-                  // TODO: should we change this in ECI db to also be able to connect multiple contact persons?
-                  ...(createdInvoice.contact_persons?.[0]
-                    ? {
-                        zohoContactPerson: {
-                          connect: {
-                            id_zohoAppId: {
-                              id: createdInvoice.contact_persons?.[0], // TODO add check if
-                              zohoAppId: this.zohoApp.id,
-                            },
-                          },
-                        },
-                      }
-                    : {}),
                 },
               },
             },
@@ -342,7 +305,7 @@ export class ZohoInvoiceSyncService {
             invoiceId: createdInvoice.invoice_id,
             referenceNumber: createdInvoice.reference_number,
             zohoAppId: this.zohoApp.id,
-            tenantId: this.tenantId,
+            tenantId: this.zohoApp.tenantId,
           },
         );
         invoicesToConfirm.push(createdInvoice);

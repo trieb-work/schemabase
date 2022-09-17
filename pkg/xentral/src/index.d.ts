@@ -7,6 +7,7 @@ declare module "digest-fetch" {
     ): {
       fetch: () => void;
     };
+
     fetch(url: RequestInfo, init?: RequestInit): Promise<Response>;
   }
 }

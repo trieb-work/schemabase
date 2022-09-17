@@ -22,7 +22,7 @@ import {
   upsertTaxWithZohoTax,
   upsertZohoItem,
 } from "../test/utils";
-import "../../jest-utils/consoleFormatter";
+import "@eci/pkg/jest-utils/consoleFormatter";
 import { ZohoSalesOrdersSyncService } from "./salesorders";
 
 const ORDERNR_DATE_PREFIX = "SO-DATE-INV-";
@@ -26897,7 +26897,7 @@ describe("Zoho Inventory Invoice Sync", () => {
   let newOrderNumber: string;
   let zohoInvoiceLogger: AssertionLogger;
   let zohoInvoiceSyncService: ZohoInvoiceSyncService;
-  let invoicesToDeleteAfterTest: string[] = [];
+  const invoicesToDeleteAfterTest: string[] = [];
 
   beforeAll(async () => {
     zohoApp = (await prismaClient.zohoApp.findUnique({
@@ -26946,7 +26946,7 @@ describe("Zoho Inventory Invoice Sync", () => {
     console.log("zoho delete res", await zoho.salesOrder.delete(zohoIds));
   });
 
-  test("It should work to sync Zoho invoices with internal ECI DB", async () => {
+  test("It should work to sync Zoho invoices to internal ECI DB", async () => {
     const xx = new ZohoInvoiceSyncService({
       zoho: mockedZohoClient,
       logger: new NoopLogger(),
@@ -27012,7 +27012,7 @@ describe("Zoho Inventory Invoice Sync", () => {
     zohoInvoiceLogger.assertOneLogEntryMatches(
       "info",
       ({ message, fields }) => {
-        if (!!message.match(/Successfully created a zoho Invoice /)) {
+        if (message.match(/Successfully created a zoho Invoice /)) {
           if (
             fields?.invoiceNumber &&
             fields?.invoiceId &&
@@ -27101,7 +27101,7 @@ describe("Zoho Inventory Invoice Sync", () => {
     zohoInvoiceLogger.assertOneLogEntryMatches(
       "info",
       ({ message, fields }) => {
-        if (!!message.match(/Successfully created a zoho Invoice /)) {
+        if (message.match(/Successfully created a zoho Invoice /)) {
           if (
             fields?.invoiceNumber &&
             fields?.invoiceId &&
@@ -27186,7 +27186,7 @@ describe("Zoho Inventory Invoice Sync", () => {
     zohoInvoiceLogger.assertOneLogEntryMatches(
       "info",
       ({ message, fields }) => {
-        if (!!message.match(/Successfully created a zoho Invoice /)) {
+        if (message.match(/Successfully created a zoho Invoice /)) {
           if (
             fields?.invoiceNumber &&
             fields?.invoiceId &&

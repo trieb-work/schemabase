@@ -10252,57 +10252,6 @@ export type SaleorCronOrderDetailsQuery = {
   } | null;
 };
 
-export type SaleorCronPaymentsQueryVariables = Exact<{
-  createdGte?: InputMaybe<Scalars["Date"]>;
-  after?: InputMaybe<Scalars["String"]>;
-}>;
-
-export type SaleorCronPaymentsQuery = {
-  __typename?: "Query";
-  orders?: {
-    __typename?: "OrderCountableConnection";
-    totalCount?: number | null;
-    pageInfo: {
-      __typename?: "PageInfo";
-      hasNextPage: boolean;
-      endCursor?: string | null;
-      startCursor?: string | null;
-    };
-    edges: Array<{
-      __typename?: "OrderCountableEdge";
-      node: {
-        __typename?: "Order";
-        id: string;
-        channel: { __typename?: "Channel"; id: string; name: string };
-        payments?: Array<{
-          __typename?: "Payment";
-          id: string;
-          gateway: string;
-          created: any;
-          modified: any;
-          paymentMethodType: string;
-          order?: {
-            __typename?: "Order";
-            id: string;
-            created: any;
-            number?: string | null;
-          } | null;
-          transactions?: Array<{
-            __typename?: "Transaction";
-            id: string;
-            token: string;
-          } | null> | null;
-          total?: {
-            __typename?: "Money";
-            currency: string;
-            amount: number;
-          } | null;
-        } | null> | null;
-      };
-    }>;
-  } | null;
-};
-
 export type SaleorCronPackagesOverviewQueryVariables = Exact<{
   createdGte?: InputMaybe<Scalars["Date"]>;
   after?: InputMaybe<Scalars["String"]>;
@@ -10338,6 +10287,79 @@ export type SaleorCronPackagesOverviewQuery = {
             orderLine?: { __typename?: "OrderLine"; productSku: string } | null;
           } | null> | null;
         } | null>;
+      };
+    }>;
+  } | null;
+};
+
+export type PaymentGatewaysQueryVariables = Exact<{ [key: string]: never }>;
+
+export type PaymentGatewaysQuery = {
+  __typename?: "Query";
+  shop: {
+    __typename?: "Shop";
+    availablePaymentGateways: Array<{
+      __typename?: "PaymentGateway";
+      id: string;
+      name: string;
+      currencies: Array<string | null>;
+    }>;
+  };
+};
+
+export type SaleorCronPaymentsQueryVariables = Exact<{
+  createdGte?: InputMaybe<Scalars["Date"]>;
+  after?: InputMaybe<Scalars["String"]>;
+}>;
+
+export type SaleorCronPaymentsQuery = {
+  __typename?: "Query";
+  orders?: {
+    __typename?: "OrderCountableConnection";
+    totalCount?: number | null;
+    pageInfo: {
+      __typename?: "PageInfo";
+      hasNextPage: boolean;
+      endCursor?: string | null;
+      startCursor?: string | null;
+    };
+    edges: Array<{
+      __typename?: "OrderCountableEdge";
+      node: {
+        __typename?: "Order";
+        id: string;
+        channel: { __typename?: "Channel"; id: string; name: string };
+        payments?: Array<{
+          __typename?: "Payment";
+          id: string;
+          gateway: string;
+          created: any;
+          modified: any;
+          isActive: boolean;
+          paymentMethodType: string;
+          creditCard?: {
+            __typename?: "CreditCard";
+            brand: string;
+            lastDigits: string;
+          } | null;
+          order?: {
+            __typename?: "Order";
+            id: string;
+            created: any;
+            number?: string | null;
+          } | null;
+          transactions?: Array<{
+            __typename?: "Transaction";
+            id: string;
+            isSuccess: boolean;
+            token: string;
+          } | null> | null;
+          total?: {
+            __typename?: "Money";
+            currency: string;
+            amount: number;
+          } | null;
+        } | null> | null;
       };
     }>;
   } | null;
@@ -10868,51 +10890,6 @@ export const SaleorCronOrderDetailsDocument = gql`
     }
   }
 `;
-export const SaleorCronPaymentsDocument = gql`
-  query saleorCronPayments($createdGte: Date, $after: String) {
-    orders(
-      first: 100
-      after: $after
-      filter: { created: { gte: $createdGte } }
-    ) {
-      totalCount
-      pageInfo {
-        hasNextPage
-        endCursor
-        startCursor
-      }
-      edges {
-        node {
-          id
-          channel {
-            id
-            name
-          }
-          payments {
-            id
-            gateway
-            created
-            modified
-            order {
-              id
-              created
-              number
-            }
-            paymentMethodType
-            transactions {
-              id
-              token
-            }
-            total {
-              currency
-              amount
-            }
-          }
-        }
-      }
-    }
-  }
-`;
 export const SaleorCronPackagesOverviewDocument = gql`
   query saleorCronPackagesOverview(
     $createdGte: Date
@@ -10945,6 +10922,68 @@ export const SaleorCronPackagesOverviewDocument = gql`
             }
             trackingNumber
             status
+          }
+        }
+      }
+    }
+  }
+`;
+export const PaymentGatewaysDocument = gql`
+  query paymentGateways {
+    shop {
+      availablePaymentGateways {
+        id
+        name
+        currencies
+      }
+    }
+  }
+`;
+export const SaleorCronPaymentsDocument = gql`
+  query saleorCronPayments($createdGte: Date, $after: String) {
+    orders(
+      first: 100
+      after: $after
+      filter: { created: { gte: $createdGte } }
+    ) {
+      totalCount
+      pageInfo {
+        hasNextPage
+        endCursor
+        startCursor
+      }
+      edges {
+        node {
+          id
+          channel {
+            id
+            name
+          }
+          payments {
+            id
+            gateway
+            created
+            modified
+            isActive
+            creditCard {
+              brand
+              lastDigits
+            }
+            order {
+              id
+              created
+              number
+            }
+            paymentMethodType
+            transactions {
+              id
+              isSuccess
+              token
+            }
+            total {
+              currency
+              amount
+            }
           }
         }
       }
@@ -11263,15 +11302,6 @@ export function getSdk<C>(requester: Requester<C>) {
         SaleorCronOrderDetailsQueryVariables
       >(SaleorCronOrderDetailsDocument, variables, options);
     },
-    saleorCronPayments(
-      variables?: SaleorCronPaymentsQueryVariables,
-      options?: C,
-    ): Promise<SaleorCronPaymentsQuery> {
-      return requester<
-        SaleorCronPaymentsQuery,
-        SaleorCronPaymentsQueryVariables
-      >(SaleorCronPaymentsDocument, variables, options);
-    },
     saleorCronPackagesOverview(
       variables?: SaleorCronPackagesOverviewQueryVariables,
       options?: C,
@@ -11280,6 +11310,25 @@ export function getSdk<C>(requester: Requester<C>) {
         SaleorCronPackagesOverviewQuery,
         SaleorCronPackagesOverviewQueryVariables
       >(SaleorCronPackagesOverviewDocument, variables, options);
+    },
+    paymentGateways(
+      variables?: PaymentGatewaysQueryVariables,
+      options?: C,
+    ): Promise<PaymentGatewaysQuery> {
+      return requester<PaymentGatewaysQuery, PaymentGatewaysQueryVariables>(
+        PaymentGatewaysDocument,
+        variables,
+        options,
+      );
+    },
+    saleorCronPayments(
+      variables?: SaleorCronPaymentsQueryVariables,
+      options?: C,
+    ): Promise<SaleorCronPaymentsQuery> {
+      return requester<
+        SaleorCronPaymentsQuery,
+        SaleorCronPaymentsQueryVariables
+      >(SaleorCronPaymentsDocument, variables, options);
     },
     products(
       variables: ProductsQueryVariables,

@@ -1,10 +1,17 @@
 /* eslint-disable max-len */
 import { ILogger } from "@eci/pkg/logger";
 import { queryWithPagination, SaleorCronPaymentsQuery } from "@eci/pkg/saleor";
-import { Prisma, PrismaClient } from "@eci/pkg/prisma";
+import {
+  GatewayType,
+  PaymentMethodType,
+  Prisma,
+  PrismaClient,
+} from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
+import { checkCurrency } from "@eci/pkg/normalization/src/currency";
+import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils"; // TODO move to Warning to antoher place
 // import { id } from "@eci/pkg/ids";
 
 interface SaleorPaymentSyncServiceConfig {
@@ -86,11 +93,16 @@ export class SaleorPaymentSyncService {
         createdGte,
       }),
     );
+    console.log(
+      "queried",
+      result.orders?.totalCount,
+      result.orders?.edges.length,
+    );
 
+    // Only sycn active payments. For exampe if a payment was captured twice and only one was successfull, the unsuccessfull payment is unactive and should be filtered out.
     const payments = result.orders?.edges
-      .map((order) => order.node)
-      .map((x) => x.payments)
-      .flat();
+      .flatMap((order) => order.node.payments)
+      .filter((payment) => payment?.isActive);
 
     if (!result.orders || result.orders.edges.length === 0 || !payments) {
       this.logger.info("Saleor returned no orders. Don't sync anything");
@@ -99,6 +111,7 @@ export class SaleorPaymentSyncService {
     this.logger.info(`Syncing ${payments?.length} payments`);
 
     for (const payment of payments) {
+      // TODO add try/catch Warning handle logic // TODO rewrite all continues with Warning try/catch logger
       if (!payment || !payment?.id) continue;
       if (!payment?.order?.id) {
         this.logger.warn(
@@ -114,25 +127,85 @@ export class SaleorPaymentSyncService {
        */
       const prefixedOrderNumber = `${this.orderPrefix}-${saleorOrder.number}`;
 
-      const paymentReference = payment.transactions?.[0]?.token;
+      const successfullTransactions = payment.transactions?.filter(
+        (tr) => tr?.isSuccess,
+      );
+      if (!successfullTransactions || successfullTransactions?.length === 0) {
+        throw new Error(
+          `No successfull transaction included in payment. Cant't sync ${payment.id}.`,
+        );
+      }
+      if (successfullTransactions?.length > 1) {
+        // Do not throw if gateway is triebwork.payments.rechnung because in the old version this was possible.
+        if (payment.gateway !== "triebwork.payments.rechnung") {
+          throw new Error(
+            `Multiple successfull transaction included in payment. Cant't sync ${payment.id}.`,
+          );
+        }
+      }
+      const paymentReference = successfullTransactions?.[0]?.token;
       if (!paymentReference) {
-        this.logger.error(
+        throw new Warning(
           `No payment gateway transaction Id given. We use this value as internal payment reference. Cant't sync ${payment.id}`,
         );
-        continue;
       }
-      // const paymentMethod: PaymentMethodType =
-      //   payment.paymentMethodType === "card"
-      //     ? "card"
-      //     : payment.paymentMethodType === "paypal"
-      //     ? "paypal"
-      //     : "unknown";
-      // if (paymentMethod === "unknown") {
-      //   this.logger.warn(
-      //     `Can't match the payment method with our internal type! ${payment.id}. Received type ${payment.paymentMethodType}`,
-      //   );
-      // }
 
+      // TODO include payment status failed, fully charged etc. somehow!!
+      // TODO test failed payments etc.
+      let gatewayType: GatewayType;
+      let methodType: PaymentMethodType;
+      // modern webhook based integration have the schema `app:17:triebwork.payments.rechnung` and not `triebwork.payments.rechnung`
+      const gatewayId = payment.gateway.startsWith("app")
+        ? payment.gateway.split(":")?.[2]
+        : payment.gateway;
+
+      if (gatewayId === "mirumee.payments.braintree") {
+        gatewayType = "braintree";
+        // new braintree implementation has a bug and classifies PayPal payments as card payment
+        if (payment.paymentMethodType === "card") {
+          if (payment.creditCard) {
+            methodType = "card";
+          } else {
+            methodType = "paypal";
+          }
+          // old Braintree PayPal integration sets paymentMethodType correctly
+        } else if (payment.paymentMethodType === "paypal") {
+          methodType = "paypal";
+          // Edge case if applepay does not give the details back
+        } else if (
+          payment.paymentMethodType === "" &&
+          payment.creditCard === null
+        ) {
+          methodType = "card";
+        }
+      } else if (gatewayId === "triebwork.payments.rechnung") {
+        methodType = "banktransfer";
+        gatewayType = "banktransfer";
+      }
+      if (!gatewayType!) {
+        throw new Error(
+          `Could not determine gatewayType for payment ${payment.id} with gateway ` +
+            `${payment.gateway} and paymentMethodType ${payment.paymentMethodType}.`,
+        );
+      }
+      if (!methodType!) {
+        throw new Error(
+          `Could not determine methodType for payment ${payment.id} with gateway ` +
+            `${payment.gateway} and paymentMethodType ${payment.paymentMethodType}.`,
+        );
+      }
+
+      const paymentMethodConnect: Prisma.PaymentMethodCreateNestedOneWithoutPaymentsInput =
+        {
+          connect: {
+            gatewayType_methodType_currency_tenantId: {
+              gatewayType,
+              methodType,
+              currency: checkCurrency(payment.total?.currency),
+              tenantId: this.tenantId,
+            },
+          },
+        };
       const orderExist = await this.db.order.findUnique({
         where: {
           orderNumber_tenantId: {
@@ -141,7 +214,9 @@ export class SaleorPaymentSyncService {
           },
         },
       });
-      const orderConnect = orderExist
+      const orderConnect:
+        | Prisma.OrderCreateNestedOneWithoutPaymentsInput
+        | undefined = orderExist
         ? {
             connect: {
               id: orderExist.id,
@@ -167,6 +242,7 @@ export class SaleorPaymentSyncService {
                   id: this.tenantId,
                 },
               },
+              paymentMethod: paymentMethodConnect,
               order: orderConnect,
             },
           },

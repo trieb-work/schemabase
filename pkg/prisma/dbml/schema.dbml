@@ -3,7 +3,7 @@
 //// ------------------------------------------------------
 
 Table SaleorOrder {
-  id String [not null]
+  id String [not null, note: 'Saleor Internal Id']
   createdAt DateTime [not null]
   order Order [not null]
   orderId String [not null]
@@ -19,7 +19,7 @@ Table SaleorOrder {
 }
 
 Table SaleorPackage {
-  id String [not null]
+  id String [not null, note: 'Saleor Internal Id']
   createdAt DateTime [not null]
   package Package [not null]
   packageId String [not null]
@@ -32,7 +32,7 @@ Table SaleorPackage {
 }
 
 Table SaleorFulfillmentLine {
-  id String [not null]
+  id String [not null, note: 'Saleor Internal Id']
   packagelineItem PackageLineItem [not null]
   packageLineItemId String [not null]
   installedSaleorApp InstalledSaleorApp [not null]
@@ -44,7 +44,7 @@ Table SaleorFulfillmentLine {
 }
 
 Table SaleorOrderLineItem {
-  id String [not null]
+  id String [not null, note: 'Saleor Internal Id']
   orderLineItem OrderLineItem [not null]
   orderLineItemId String [not null]
   installedSaleorApp InstalledSaleorApp [not null]
@@ -56,7 +56,7 @@ Table SaleorOrderLineItem {
 }
 
 Table SaleorPayment {
-  id String [not null]
+  id String [not null, note: 'Saleor Internal Id']
   createdAt DateTime [not null]
   updatedAt DateTime [not null]
   saleorOrder SaleorOrder
@@ -72,8 +72,8 @@ Table SaleorPayment {
 }
 
 Table SaleorProductVariant {
-  id String [not null]
-  productId String [not null]
+  id String [not null, note: 'Saleor internal product variant id']
+  productId String [not null, note: 'Saleor internal product Id']
   updatedAt DateTime [not null]
   productVariant ProductVariant [not null]
   productVariantId String [not null]
@@ -86,7 +86,7 @@ Table SaleorProductVariant {
 }
 
 Table SaleorWarehouse {
-  id String [not null]
+  id String [not null, note: 'Saleor Internal Id']
   warehouse Warehouse [not null]
   warehouseId String [not null]
   installedSaleorApp InstalledSaleorApp [not null]
@@ -97,8 +97,19 @@ Table SaleorWarehouse {
   }
 }
 
+Table SaleorPaymentGateway {
+  id String [not null, note: 'Saleor Internal Id']
+  installedSaleorApp InstalledSaleorApp [not null]
+  installedSaleorAppId String [not null]
+  paymentMethods PaymentMethod [not null]
+
+  indexes {
+    (id, installedSaleorAppId) [unique]
+  }
+}
+
 Table ZohoItem {
-  id String [not null]
+  id String [not null, note: 'Zoho Internal Id']
   createdAt DateTime [not null]
   updatedAt DateTime [not null]
   productVariant ProductVariant [not null]
@@ -112,23 +123,12 @@ Table ZohoItem {
 }
 
 Table ZohoPackage {
-  id String [not null]
+  id String [not null, note: 'Zoho Internal Id']
   shipmentId String
   createdAt DateTime [not null]
   updatedAt DateTime [not null]
   package Package [not null]
   packageId String [not null]
-  zohoApp ZohoApp [not null]
-  zohoAppId String [not null]
-
-  indexes {
-    (id, zohoAppId) [unique]
-  }
-}
-
-Table ZohoBankAccount {
-  id String [not null, note: 'Zoho Internal Bankacount Id']
-  active Boolean [not null, default: true]
   zohoApp ZohoApp [not null]
   zohoAppId String [not null]
 
@@ -145,8 +145,6 @@ Table ZohoContact {
   zohoAppId String [not null]
   zohoContactPerson ZohoContactPerson [not null]
   zohoSalesOrder ZohoSalesOrder [not null]
-  zohoInvoice ZohoInvoice [not null]
-  zohoPayment ZohoPayment [not null]
 
   indexes {
     (id, zohoAppId) [unique]
@@ -161,10 +159,8 @@ Table ZohoContactPerson {
   contact Contact [not null]
   contactId String [not null]
   email String
-  zohoPayments ZohoPayment [not null]
   zohoApp ZohoApp [not null]
   zohoAppId String [not null]
-  zohoInvoices ZohoInvoice [not null]
   zohoSalesOrders ZohoSalesOrder [not null]
 
   indexes {
@@ -185,7 +181,7 @@ Table ZohoAddress {
 }
 
 Table ZohoSalesOrder {
-  id String [not null]
+  id String [not null, note: 'Zoho Internal Id']
   createdAt DateTime [not null]
   updatedAt DateTime [not null]
   zohoContact ZohoContact
@@ -204,19 +200,14 @@ Table ZohoSalesOrder {
 }
 
 Table ZohoInvoice {
-  id String [not null]
+  id String [not null, note: 'Zoho Internal Id']
   createdAt DateTime [not null]
   updatedAt DateTime [not null]
   number String [not null]
-  zohoContact ZohoContact
-  zohoContactId String
   invoice Invoice [not null]
   invoiceId String [not null]
   zohoApp ZohoApp [not null]
   zohoAppId String [not null]
-  zohoContactPerson ZohoContactPerson
-  zohoContactPersonId String
-  zohoContactPersonZohoAppId String
 
   indexes {
     (id, zohoAppId) [unique]
@@ -225,18 +216,29 @@ Table ZohoInvoice {
 }
 
 Table ZohoPayment {
-  id String [not null]
+  id String [not null, note: 'Zoho Internal Id']
   createdAt DateTime [not null]
   updatedAt DateTime [not null]
-  zohoContact ZohoContact
-  zohoContactId String
   payment Payment
   paymentId String [unique]
   zohoApp ZohoApp [not null]
   zohoAppId String [not null]
-  ZohoContactPerson ZohoContactPerson
-  zohoContactPersonId String
-  zohoContactPersonZohoAppId String
+
+  indexes {
+    (id, zohoAppId) [unique]
+  }
+
+  Note: 'Zoho specific model.'
+}
+
+Table ZohoBankAccount {
+  id String [not null, note: 'Zoho Internal Bankacount Id']
+  name String [not null]
+  currency Currency [not null]
+  active Boolean [not null, default: true]
+  paymentMethod PaymentMethod
+  zohoApp ZohoApp [not null]
+  zohoAppId String [not null]
 
   indexes {
     (id, zohoAppId) [unique]
@@ -244,7 +246,7 @@ Table ZohoPayment {
 }
 
 Table ZohoWarehouse {
-  id String [not null]
+  id String [not null, note: 'Zoho Internal Id']
   warehouse Warehouse [not null]
   warehouseId String [not null]
   zohoApp ZohoApp [not null]
@@ -268,7 +270,7 @@ Table ZohoTax {
 }
 
 Table ZohoOrderLineItem {
-  id String [not null]
+  id String [not null, note: 'Zoho Internal Id']
   orderLineItem OrderLineItem [not null]
   orderLineItemId String [not null]
   zohoApp ZohoApp [not null]
@@ -280,7 +282,7 @@ Table ZohoOrderLineItem {
 }
 
 Table ZohoPackageLineItem {
-  id String [not null]
+  id String [not null, note: 'Zoho Internal Id']
   packagelineItem PackageLineItem [not null]
   packagelineItemId String [not null]
   zohoApp ZohoApp [not null]
@@ -298,6 +300,8 @@ Table Invoice {
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   invoiceNumber String [not null]
+  invoiceTotalGross Float [not null]
+  invoiceCurrency Currency [not null]
   payments Payment [not null]
   tenant Tenant [not null]
   tenantId String [not null]
@@ -339,6 +343,8 @@ Table Payment {
   orderId String
   tenant Tenant [not null]
   tenantId String [not null]
+  paymentMethod PaymentMethod [not null]
+  paymentMethodId String [not null]
   invoices Invoice [not null]
   zohoPayment ZohoPayment [not null]
   saleorPayment SaleorPayment [not null]
@@ -347,6 +353,29 @@ Table Payment {
   indexes {
     (orderId, tenantId) [unique]
     (referenceNumber, tenantId) [unique]
+  }
+}
+
+Table PaymentMethod {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  gatewayType GatewayType [not null]
+  methodType PaymentMethodType [not null]
+  currency Currency [not null]
+  saleorPaymentGateway SaleorPaymentGateway
+  saleorPaymentGatewayId String
+  saleorPaymentGatewayInstalledSaleorAppId String
+  zohoBankAccount ZohoBankAccount
+  zohoBankAccountId String
+  zohoBankAccountZohoAppId String
+  payments Payment [not null]
+  tenant Tenant [not null]
+  tenantId String [not null]
+
+  indexes {
+    (zohoBankAccountId, zohoBankAccountZohoAppId) [unique]
+    (gatewayType, methodType, currency, tenantId) [unique]
   }
 }
 
@@ -385,9 +414,7 @@ Table Contact {
     (email, tenantId) [unique]
   }
 
-  Note: 'The ECI internal contact model. One contact has one E-Mail address only.
-E-Mail addresses are unique per tenant
-In some systems the Contact is equal to Users or Accounts'
+  Note: 'The ECI internal contact model. One contact has one E-Mail address only. E-Mail addresses are unique per tenant. In some systems the Contact is equal to Users or Accounts'
 }
 
 Table Warehouse {
@@ -832,7 +859,7 @@ Table ZohoApp {
   zohoContactPersons ZohoContactPerson [not null]
   zohoAddresses ZohoAddress [not null]
   zohoPackages ZohoPackage [not null]
-  zohoBankAccounts ZohoBankAccount [not null]
+  zohoAccounts ZohoBankAccount [not null]
 }
 
 Table SaleorApp {
@@ -861,6 +888,7 @@ Table InstalledSaleorApp {
   saleorZohoIntegration SaleorZohoIntegration [not null]
   productDataFeedIntegration ProductDataFeedIntegration [not null]
   saleorPayment SaleorPayment [not null]
+  saleorPaymentGateway SaleorPaymentGateway [not null]
   saleorProductVariant SaleorProductVariant [not null]
   saleorWarehouse SaleorWarehouse [not null]
   saleorOrder SaleorOrder [not null]
@@ -898,6 +926,7 @@ Table Tenant {
   product Product [not null]
   productVariant ProductVariant [not null]
   payment Payment [not null]
+  paymentMethods PaymentMethod [not null]
   warehouse Warehouse [not null]
   invoice Invoice [not null]
   orderLineItem OrderLineItem [not null]
@@ -1117,9 +1146,13 @@ Enum PaymentMethodType {
   paypal
   card
   banktransfer
+}
+
+Enum GatewayType {
   braintree
-  onlinepayment
-  unknown
+  paypal
+  stripe
+  banktransfer
 }
 
 Enum Currency {
@@ -1471,6 +1504,8 @@ Ref: SaleorWarehouse.warehouseId > Warehouse.id [delete: Cascade]
 
 Ref: SaleorWarehouse.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
 
+Ref: SaleorPaymentGateway.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
+
 Ref: ZohoItem.productVariantId > ProductVariant.id [delete: Cascade]
 
 Ref: ZohoItem.zohoAppId > ZohoApp.id [delete: Cascade]
@@ -1478,8 +1513,6 @@ Ref: ZohoItem.zohoAppId > ZohoApp.id [delete: Cascade]
 Ref: ZohoPackage.packageId > Package.id [delete: Cascade]
 
 Ref: ZohoPackage.zohoAppId > ZohoApp.id [delete: Cascade]
-
-Ref: ZohoBankAccount.zohoAppId > ZohoApp.id [delete: Cascade]
 
 Ref: ZohoContact.zohoAppId > ZohoApp.id [delete: Cascade]
 
@@ -1501,21 +1534,15 @@ Ref: ZohoSalesOrder.zohoAppId > ZohoApp.id [delete: Cascade]
 
 Ref: ZohoSalesOrder.(zohoContactPersonId, zohoContactPersonZohoAppId) > ZohoContactPerson.(id, zohoAppId)
 
-Ref: ZohoInvoice.(zohoContactId, zohoAppId) > ZohoContact.(id, zohoAppId) [delete: Cascade]
-
 Ref: ZohoInvoice.invoiceId > Invoice.id [delete: Cascade]
 
 Ref: ZohoInvoice.zohoAppId > ZohoApp.id [delete: Cascade]
-
-Ref: ZohoInvoice.(zohoContactPersonId, zohoContactPersonZohoAppId) > ZohoContactPerson.(id, zohoAppId)
-
-Ref: ZohoPayment.(zohoContactId, zohoAppId) > ZohoContact.(id, zohoAppId) [delete: Cascade]
 
 Ref: ZohoPayment.paymentId > Payment.id [delete: Cascade]
 
 Ref: ZohoPayment.zohoAppId > ZohoApp.id [delete: Cascade]
 
-Ref: ZohoPayment.(zohoContactPersonId, zohoContactPersonZohoAppId) > ZohoContactPerson.(id, zohoAppId)
+Ref: ZohoBankAccount.zohoAppId > ZohoApp.id [delete: Cascade]
 
 Ref: ZohoWarehouse.warehouseId > Warehouse.id [delete: Cascade]
 
@@ -1542,6 +1569,14 @@ Ref: Tax.tenantId > Tenant.id [delete: Cascade]
 Ref: Payment.orderId > Order.id
 
 Ref: Payment.tenantId > Tenant.id [delete: Cascade]
+
+Ref: Payment.paymentMethodId > PaymentMethod.id
+
+Ref: PaymentMethod.(saleorPaymentGatewayId, saleorPaymentGatewayInstalledSaleorAppId) > SaleorPaymentGateway.(id, installedSaleorAppId) [delete: Cascade]
+
+Ref: PaymentMethod.(zohoBankAccountId, zohoBankAccountZohoAppId) - ZohoBankAccount.(id, zohoAppId)
+
+Ref: PaymentMethod.tenantId > Tenant.id [delete: Cascade]
 
 Ref: Company.tenantId > Tenant.id [delete: Cascade]
 
