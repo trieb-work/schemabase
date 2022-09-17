@@ -1,5 +1,10 @@
 import { Currency } from "@eci/pkg/prisma";
 
+/**
+ * Transforms a string to a valid, internal currency. Throws if no match is possible
+ * @param val
+ * @returns
+ */
 export function checkCurrency(val: string | null | undefined): Currency {
   if (!val) {
     throw new Error(`Currency is ${val}`);
