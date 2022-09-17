@@ -59,6 +59,7 @@ model SaleorPackage {
 
   @@unique([id, installedSaleorAppId])
   @@index([packageId])
+  @@index([installedSaleorAppId])
 }
 
 // model for saleor fulfillment line items
@@ -89,6 +90,7 @@ model SaleorOrderLineItem {
 
   @@unique([id, installedSaleorAppId])
   @@index([orderLineItemId])
+  @@index([installedSaleorAppId])
 }
 
 // Saleor specific model for payments.
@@ -148,6 +150,7 @@ model SaleorWarehouse {
 
   @@unique([id, installedSaleorAppId])
   @@index([installedSaleorAppId])
+  @@index([warehouseId])
 }
 
 model SaleorPaymentGateway {
@@ -160,6 +163,7 @@ model SaleorPaymentGateway {
   paymentMethods PaymentMethod[]
 
   @@unique([id, installedSaleorAppId])
+  @@index([installedSaleorAppId])
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -498,6 +502,7 @@ model Tax {
   @@unique([normalizedName, tenantId])
   @@unique([percentage, tenantId])
   @@index([percentage])
+  @@index([tenantId])
 }
 
 /// The ECI internal payments model
@@ -576,6 +581,7 @@ model PaymentMethod {
 
   @@unique([zohoBankAccountId, zohoBankAccountZohoAppId])
   @@unique([gatewayType, methodType, currency, tenantId])
+  @@index([tenantId])
 }
 
 model Company {
@@ -653,6 +659,7 @@ model Warehouse {
 
   @@unique([name, tenantId])
   @@unique([normalizedName, tenantId])
+  @@index([tenantId])
 }
 
 enum Currency {
@@ -1214,11 +1221,11 @@ model ProductVariant {
   stockOnHand Int?
 
   // if this product variant is a bundle / composite product
-  isBundleProduct       Boolean                 @default(false)
+  isBundleProduct      Boolean          @default(false)
   // A product variant can be a bundle product and can
   // have just one Bill of Material related
-  billOfMaterial        BillOfMaterial[]
-  billOfMaterialChilds  BillOfMaterial[] @relation("childProduct")
+  billOfMaterial       BillOfMaterial[]
+  billOfMaterialChilds BillOfMaterial[] @relation("childProduct")
 
   @@unique([sku, tenantId])
   // Just for relational purposes
@@ -1227,16 +1234,15 @@ model ProductVariant {
   @@index([tenantId])
 }
 
-
 model BillOfMaterial {
   // eci internal id
-  id               String         @id
+  id String @id
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  productVariant  ProductVariant @relation(references: [id], fields: [productVariantId], onDelete: Cascade)
-  productVariantId  String
+  productVariant   ProductVariant @relation(references: [id], fields: [productVariantId], onDelete: Cascade)
+  productVariantId String
 
   // The product variant
   part   ProductVariant @relation("childProduct", references: [id], fields: [partId], onDelete: Cascade)
@@ -1247,8 +1253,9 @@ model BillOfMaterial {
   quantity Int
 
   @@unique([productVariantId, partId])
-  @@index([tenantId, productVariantId, partId])
-
+  @@index([tenantId])
+  @@index([productVariantId])
+  @@index([partId])
 }
 
 model XentralArtikel {
@@ -1613,6 +1620,7 @@ model SaleorApp {
   @@unique([domain, tenantId])
   // Just for relational purposes
   @@unique([id, domain])
+  @@index([tenantId])
 }
 
 // All ECI Integrations for Saleor should be handled as individual Apps that could be installed via the Marketplace for example
@@ -1939,6 +1947,7 @@ model XentralProxyAuftrag {
   @@unique([xentralId, xentralProxyAppId])
   @@unique([id, xentralProxyAppId])
   @@unique([xentralBelegNr, xentralProxyAppId])
+  @@index([orderId])
 }
 
 // ----------------------------------------------------------------------------
