@@ -1,4 +1,4 @@
-import type { Invoice, Zoho, ZohoApiError } from "@trieb.work/zoho-ts";
+import type { Zoho, ZohoApiError } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
@@ -45,6 +45,10 @@ export class ZohoInvoiceSyncService {
    */
   public async syncToECI() {
     const accounts = await this.zoho.bankaccount.list();
+
+    this.logger.info(
+      `Upserting ${accounts.length} bankaccounts with our internal DB`,
+    );
 
     for (const account of accounts) {
       await this.db.zohoBankAccount.upsert({
