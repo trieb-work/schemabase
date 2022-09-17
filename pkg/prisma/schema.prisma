@@ -1217,8 +1217,8 @@ model ProductVariant {
   isBundleProduct       Boolean                 @default(false)
   // A product variant can be a bundle product and can
   // have just one Bill of Material related
-  billOfMaterial        BillOfMaterial?
-  BillOfMaterialEntries BillOfMaterialEntries[]
+  billOfMaterial        BillOfMaterial[]
+  billOfMaterialChilds  BillOfMaterial[] @relation("childProduct")
 
   @@unique([sku, tenantId])
   // Just for relational purposes
@@ -1227,38 +1227,28 @@ model ProductVariant {
   @@index([tenantId])
 }
 
+
 model BillOfMaterial {
   // eci internal id
-  id        String   @id
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // The product variant this BOM is related to
-  productVariant   ProductVariant @relation(references: [id], fields: [productVariantId], onDelete: Cascade)
-  productVariantId String         @unique
-
-  billOfMaterialEntries BillOfMaterialEntries[]
+  id               String         @id
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  @@unique([productVariantId, tenantId])
-  @@index([productVariantId])
-}
-
-model BillOfMaterialEntries {
-  // eci internal id
-  id               String         @id
-  billOfMaterial   BillOfMaterial @relation(references: [id], fields: [billOfMaterialId], onDelete: Cascade)
-  billOfMaterialId String
+  productVariant  ProductVariant @relation(references: [id], fields: [productVariantId], onDelete: Cascade)
+  productVariantId  String
 
   // The product variant
-  part   ProductVariant @relation(references: [id], fields: [partId], onDelete: Cascade)
+  part   ProductVariant @relation("childProduct", references: [id], fields: [partId], onDelete: Cascade)
   partId String
 
+  /// Product parts can have a order in which they appear. Is an optional information
+  order    Int?
   quantity Int
 
-  @@index([billOfMaterialId])
+  @@unique([productVariantId, partId])
+  @@index([tenantId, productVariantId, partId])
+
 }
 
 model XentralArtikel {
