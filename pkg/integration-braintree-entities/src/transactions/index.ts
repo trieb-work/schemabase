@@ -1,9 +1,11 @@
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { id } from "@eci/pkg/ids";
 import { ILogger } from "@eci/pkg/logger";
-import { PrismaClient } from "@eci/pkg/prisma";
+import { PaymentMethodType, PrismaClient } from "@eci/pkg/prisma";
 import { setHours, subDays, subYears } from "date-fns";
 import { BraintreeTransaction, BraintreeClient } from "@eci/pkg/braintree";
+import { PaymentInstrumentType } from "braintree";
+import { checkCurrency } from "@eci/pkg/normalization/src/currency";
 
 interface BraintreeTransactionSyncServiceConfig {
   db: PrismaClient;
@@ -61,6 +63,34 @@ export class BraintreeTransactionSyncService {
     for await (const chunk of transactionsStream) {
       const transaction: BraintreeTransaction = chunk;
 
+      /**
+       * An object to match the braintree method types with our internal one
+       */
+      const braintreePaymentMethodToECIMethod: {
+        [key in PaymentInstrumentType]: PaymentMethodType;
+      } = {
+        android_pay_card: "card",
+        apple_pay_card: "card",
+        credit_card: "card",
+        masterpass_card: "card",
+        paypal_account: "paypal",
+        samsung_pay_card: "card",
+        venmo_account: "card",
+        visa_checkout_card: "card",
+      };
+
+      const methodType =
+        braintreePaymentMethodToECIMethod?.[transaction.paymentInstrumentType];
+      if (!methodType) {
+        this.logger.error(
+          // eslint-disable-next-line max-len
+          `Could not match braintree payment "${transaction.paymentInstrumentType}" type with our internal type!`,
+        );
+        continue;
+      }
+
+      const currency = checkCurrency(transaction.currencyIsoCode);
+
       const payPalTransactionId = transaction?.paypalAccount?.authorizationId;
       const payPalTransactionFee = payPalTransactionId
         ? parseFloat(
@@ -97,6 +127,29 @@ export class BraintreeTransactionSyncService {
                 referenceNumber: transaction.id,
                 amount: Number(transaction.amount),
                 transactionFee: payPalTransactionFee,
+                paymentMethod: {
+                  connectOrCreate: {
+                    where: {
+                      gatewayType_methodType_currency_tenantId: {
+                        gatewayType: "braintree",
+                        methodType,
+                        currency,
+                        tenantId: this.tenantId,
+                      },
+                    },
+                    create: {
+                      id: id.id("paymentMethod"),
+                      gatewayType: "braintree",
+                      methodType,
+                      currency,
+                      tenant: {
+                        connect: {
+                          id: this.tenantId,
+                        },
+                      },
+                    },
+                  },
+                },
                 tenant: {
                   connect: {
                     id: this.tenantId,
