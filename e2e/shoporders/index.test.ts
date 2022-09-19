@@ -192,6 +192,7 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
   // });
 
   test("Test 1: Preparation", async () => {
+    // TODO create an order in saleor
     console.info("Test 1 started");
     console.log("sync saleor paymentGateways to ECI (and create saleoPaymentGateway & paymentMethod)")
     await saleorPaymentGatewaySyncService.syncToECI();

@@ -49,7 +49,7 @@ export class SaleorWarehouseSyncService {
     }
 
     const warehouses = response.warehouses?.edges.map((x) => x.node);
-    this.logger.info(`Syncing ${warehouses?.length}`);
+    this.logger.info(`Syncing ${warehouses?.length} warehouse(s)`);
 
     for (const warehouse of warehouses) {
       const normalizedWarehouseName = normalizeStrings.warehouseNames(
