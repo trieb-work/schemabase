@@ -71,7 +71,7 @@ export class SaleorPaymentSyncService {
   //   private async braintreeGetPaymentDetails() {}
 
   public async syncToECI(): Promise<void> {
-    const cronState = await this.cronState.get();
+    const cronState = await this.cronState.get(); // TODO add gte date filter for better scheduling so orders are most likely synced first
 
     const now = new Date();
     const yesterdayMidnight = setHours(subDays(now, 1), 0);
@@ -206,6 +206,10 @@ export class SaleorPaymentSyncService {
             },
           },
         };
+      // TODO wäre es nicht sicherer und einfacher den connect direkt mit orderNumber_tenantId zu machen, (Siehe INFO unten)
+      // damit wir keine Payments aus saleor importieren welche keiner Order zugeordnet sind. Der Fall
+      // sollte normalerweiße ja eh nicht vorkommen dass es in Saleor eine Payment ohne Order gibt richtig?
+      // Dann wäre schonmal eine Fehlerquelle weniger da im Payment -> Zoho sync.
       const orderExist = await this.db.order.findUnique({
         where: {
           orderNumber_tenantId: {
@@ -244,12 +248,22 @@ export class SaleorPaymentSyncService {
               },
               paymentMethod: paymentMethodConnect,
               order: orderConnect,
+              // INFO: siehe comment oben: so würde ich es lieber machen
+              // order: {
+              //   connect: {
+              //     orderNumber_tenantId: {
+              //       orderNumber: prefixedOrderNumber,
+              //       tenantId: this.tenantId,
+              //     }
+              //   } 
+              // }
             },
           },
         };
 
       // check, if we already have this saleor order created, so that we can
       // connect the payment
+      // TODO: selbes hier wie oben mit order, lieber hier failen und mit nächstem retry anlegen (kann durch besseres scheduling vermieden werden.)
       const existingSaleorOrder = await this.db.saleorOrder.findUnique({
         where: {
           id_installedSaleorAppId: {

@@ -237,7 +237,7 @@ export class SaleorOrderSyncService {
                 date: new Date(order.created),
                 totalPriceGross: order.total.gross.amount,
                 orderStatus,
-                paymentStatus,
+                paymentStatus, // TODO: how will this thing be updated and kept in sync by other services? -> Maybe move it into Payment.status and access it via payments[0].status?
                 mainContact: contactCreateOrConnect,
                 shippingAddress: {},
                 billingAddress: {},

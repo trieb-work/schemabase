@@ -226,7 +226,8 @@ export class ZohoItemSyncService {
             continue;
           }
         } else {
-          throw new Error(JSON.stringify(e));
+          if(e instanceof Error) throw e;
+          throw new Error("Unknown Error: "+JSON.stringify(e));
         }
       }
 
@@ -277,7 +278,7 @@ export class ZohoItemSyncService {
               compositeItem.mapped_items,
             );
           } catch (error) {
-            this.logger.error(`Error setting BOM in ECI DB: ${error}`);
+            this.logger.error(`Error setting BOM in ECI DB for composite item "${compositeItem.name}": ${error}`);
           }
         }
       }
