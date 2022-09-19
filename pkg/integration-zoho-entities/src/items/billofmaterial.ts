@@ -15,15 +15,18 @@ const setBOMinECI = async (
    * of material accordingly
    */
   for (const mappedProduct of mappedProducts) {
-    const eciProductVariant = await db.zohoItem.findUniqueOrThrow({
+    const zohoItem = await db.zohoItem.findUniqueOrThrow({
       where: {
         id_zohoAppId: {
           id: mappedProduct.item_id,
           zohoAppId,
         },
       },
+      select: {
+        productVariantId: true,
+      },
     });
-    mappedECIvariantIds.push(eciProductVariant.id);
+    mappedECIvariantIds.push(zohoItem.productVariantId);
 
     await db.productVariant.update({
       where: {
@@ -36,14 +39,14 @@ const setBOMinECI = async (
               where: {
                 productVariantId_partId: {
                   productVariantId,
-                  partId: eciProductVariant.id,
+                  partId: zohoItem.productVariantId,
                 },
               },
               create: {
                 id: id.id("billOfMaterial"),
                 part: {
                   connect: {
-                    id: eciProductVariant.id,
+                    id: zohoItem.productVariantId,
                   },
                 },
                 quantity: mappedProduct.quantity,
