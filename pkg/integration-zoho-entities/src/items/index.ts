@@ -266,13 +266,19 @@ export class ZohoItemSyncService {
             // eslint-disable-next-line max-len
             `This is a composite item with a bill of material with length ${compositeItem.mapped_items.length}. Upserting this in the DB`,
           );
-          await setBOMinECI(
-            this.db,
-            this.zohoApp.id,
-            this.zohoApp.tenantId,
-            eciVariant.id,
-            compositeItem.mapped_items,
-          );
+
+          // TODO: throw if NOT not found error
+          try {
+            await setBOMinECI(
+              this.db,
+              this.zohoApp.id,
+              this.zohoApp.tenantId,
+              eciVariant.id,
+              compositeItem.mapped_items,
+            );
+          } catch (error) {
+            this.logger.error(`Error setting BOM in ECI DB: ${error}`);
+          }
         }
       }
     }
