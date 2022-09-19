@@ -139,6 +139,75 @@ export async function upsertOrder(
   if (LOGGING) console.log("created one generic order");
 }
 
+export async function connectZohoBankToBraintreeCardPm(prisma: PrismaClient) {
+  await prisma.zohoBankAccount.update({
+    where: {
+      id_zohoAppId: {
+        id: "116240000000482021",
+        zohoAppId: "test",
+      },
+    },
+    data: {
+      paymentMethod: {
+        connect: {
+          gatewayType_methodType_currency_tenantId: {
+            gatewayType: "braintree",
+            methodType: "card",
+            currency: "EUR",
+            tenantId: "test",
+          }
+        }
+      }
+    }
+  });
+  if (LOGGING) console.log("connected zoho bank account with braintree/card payment method");
+}
+export async function connectZohoBankToBraintreePaypalPm(prisma: PrismaClient) {
+  await prisma.zohoBankAccount.update({
+    where: {
+      id_zohoAppId: {
+        id: "116240000000482029",
+        zohoAppId: "test",
+      },
+    },
+    data: {
+      paymentMethod: {
+        connect: {
+          gatewayType_methodType_currency_tenantId: {
+            gatewayType: "braintree",
+            methodType: "paypal",
+            currency: "EUR",
+            tenantId: "test",
+          }
+        }
+      }
+    }
+  });
+  if (LOGGING) console.log("connected zoho bank account with braintree/paypal payment method");
+}
+export async function connectZohoBankToBanktransferPm(prisma: PrismaClient) {
+  await prisma.zohoBankAccount.update({
+    where: {
+      id_zohoAppId: {
+        id: "116240000000482013",
+        zohoAppId: "test",
+      },
+    },
+    data: {
+      paymentMethod: {
+        connect: {
+          gatewayType_methodType_currency_tenantId: {
+            gatewayType: "banktransfer",
+            methodType: "banktransfer",
+            currency: "EUR",
+            tenantId: "test",
+          }
+        }
+      }
+    }
+  });
+  if (LOGGING) console.log("connected zoho bank account with banktransfer/banktransfer payment method");
+}
 export async function upsertPaymentMethods(prisma: PrismaClient) {
   await upsertPaymentMethod(prisma, "test-1", {
     gatewayType: "braintree",

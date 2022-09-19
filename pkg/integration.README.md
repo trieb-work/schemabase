@@ -38,14 +38,14 @@
     //      and upsert saleorOrderLineItem with connectOrCreate orderLineItem with connect tax, warehouse, productVariant, order
     //      sync addresses of mainContact.id (billingAddress: connectOrCreate Address & shippingAddress: connectOrCreate Address)
     await saleorOrderSyncService.syncToECI();
-
-    // sync all contacts to zoho contacts & zoho contact persons from ECI
-    // also sync all addresses to zoho addresses and connect them with zoho contacts/contact persons
-    await saleorContactsSyncService.syncFromECI();
 ```
 
 ### Order and sub-entities to Zoho:
 ```javascript
+    // sync all contacts to zoho contacts & zoho contact persons from ECI
+    // also sync all addresses to zoho addresses and connect them with zoho contacts/contact persons
+    await zohoContactSyncService.syncFromECI();
+
     // sync all orders to zoho salesorders from ECI (and connect salesorder in zoho with: tax, items, warehouses, customer_id: mainCoctact, addresses, contact_persons:[mainContact.contactPerson])
     await zohoSalesOrdersSyncService.syncFromECI();
 

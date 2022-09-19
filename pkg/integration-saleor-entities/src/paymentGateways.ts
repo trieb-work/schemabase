@@ -46,89 +46,97 @@ export class SaleorPaymentGatewaySyncService {
     );
 
     for (const gateway of gateways) {
-      const connectOrCreatePaymentMethods: Prisma.Enumerable<Prisma.PaymentMethodCreateOrConnectWithoutSaleorPaymentGatewayInput> =
-        gateway.currencies
-          .flatMap(
-            (
-              uncheckedCurrency,
-            ): Omit<
-              Prisma.PaymentMethodCreateWithoutSaleorPaymentGatewayInput,
-              "tenant" | "id"
-            >[] => {
-              const currency = checkCurrency(uncheckedCurrency);
-              switch (gateway?.name?.toLowerCase()) {
-                case "vorkasse": {
-                  return [
-                    {
-                      currency,
-                      methodType: "banktransfer",
-                      gatewayType: "banktransfer",
-                    },
-                  ];
+      try{
+        const connectOrCreatePaymentMethods: Prisma.Enumerable<Prisma.PaymentMethodCreateOrConnectWithoutSaleorPaymentGatewayInput> =
+          gateway.currencies
+            .flatMap(
+              (
+                uncheckedCurrency,
+              ): Omit<
+                Prisma.PaymentMethodCreateWithoutSaleorPaymentGatewayInput,
+                "tenant" | "id"
+              >[] => {
+                const currency = checkCurrency(uncheckedCurrency);
+                switch (gateway?.name?.toLowerCase()) {
+                  case "vorkasse": {
+                    return [
+                      {
+                        currency,
+                        methodType: "banktransfer",
+                        gatewayType: "banktransfer",
+                      },
+                    ];
+                  }
+                  case "braintree": {
+                    return [
+                      {
+                        currency,
+                        methodType: "card",
+                        gatewayType: "braintree",
+                      },
+                      {
+                        currency,
+                        methodType: "paypal",
+                        gatewayType: "braintree",
+                      },
+                    ];
+                  }
                 }
-                case "braintree": {
-                  return [
-                    {
-                      currency,
-                      methodType: "card",
-                      gatewayType: "braintree",
-                    },
-                    {
-                      currency,
-                      methodType: "paypal",
-                      gatewayType: "braintree",
-                    },
-                  ];
-                }
-              }
-              return [];
-            },
-          )
-          .map((paymentMethodData) => ({
-            where: {
-              gatewayType_methodType_currency_tenantId: {
-                ...paymentMethodData,
-                tenantId: this.tenantId,
+                return [];
               },
-            },
-            create: {
-              ...paymentMethodData,
-              id: id.id("paymentMethod"),
-              tenant: {
-                connect: {
-                  id: this.tenantId,
+            )
+            .map((paymentMethodData) => ({
+              where: {
+                gatewayType_methodType_currency_tenantId: {
+                  ...paymentMethodData,
+                  tenantId: this.tenantId,
                 },
               },
-            },
-          }));
+              create: {
+                ...paymentMethodData,
+                id: id.id("paymentMethod"),
+                tenant: {
+                  connect: {
+                    id: this.tenantId,
+                  },
+                },
+              },
+            }));
 
-      await this.db.saleorPaymentGateway.upsert({
-        where: {
-          id_installedSaleorAppId: {
-            id: gateway.id,
-            installedSaleorAppId: this.installedSaleorAppId,
-          },
-        },
-        create: {
-          id: gateway.id,
-          installedSaleorApp: {
-            connect: {
-              id: this.installedSaleorAppId,
+        await this.db.saleorPaymentGateway.upsert({
+          where: {
+            id_installedSaleorAppId: {
+              id: gateway.id,
+              installedSaleorAppId: this.installedSaleorAppId,
             },
           },
-          paymentMethods: {
-            connectOrCreate: connectOrCreatePaymentMethods,
+          create: {
+            id: gateway.id,
+            installedSaleorApp: {
+              connect: {
+                id: this.installedSaleorAppId,
+              },
+            },
+            paymentMethods: {
+              connectOrCreate: connectOrCreatePaymentMethods,
+            },
           },
-        },
-        update: {
-          paymentMethods: {
-            connectOrCreate: connectOrCreatePaymentMethods,
+          update: {
+            paymentMethods: {
+              connectOrCreate: connectOrCreatePaymentMethods,
+            },
           },
-        },
-      });
-      this.logger.info(
-        `Updated saleor payment gateway ${gateway.id} with ${connectOrCreatePaymentMethods.length} payment method(s).`,
-      );
+        });
+        this.logger.info(
+          `Updated saleor payment gateway ${gateway.id} with ${connectOrCreatePaymentMethods.length} payment method(s).`,
+        );
+      } catch(err){
+        if(err instanceof Error){
+          this.logger.error("Error during creation of SaleorPaymentGateway or PaymentMethod: "+err.message);
+        } else {
+          this.logger.error("Unknown Error during creation of SaleorPaymentGateway or PaymentMethod: "+JSON.stringify(err));
+        }
+      }
     }
   }
 }
