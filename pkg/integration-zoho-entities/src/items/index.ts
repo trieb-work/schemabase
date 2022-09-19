@@ -269,7 +269,7 @@ export class ZohoItemSyncService {
           await setBOMinECI(
             this.db,
             this.zohoApp.id,
-            this.zohoApp.id,
+            this.zohoApp.tenantId,
             eciVariant.id,
             compositeItem.mapped_items,
           );
