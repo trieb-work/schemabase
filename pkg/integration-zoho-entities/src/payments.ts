@@ -88,51 +88,6 @@ export class ZohoPaymentSyncService {
         continue;
       }
 
-      /**
-       * Match the different payment types that might come from Zoho to our
-       * more generic internal types
-       */
-      // const paymentMethodMatch: { [key: string]: PaymentMethodType } = {
-      //   braintree: "braintree",
-      //   banküberweisung: "banktransfer",
-      //   "Bank Geldüberweisung": "banktransfer",
-      //   banktransfer: "banktransfer",
-      //   paypal: "paypal",
-      //   onlinepayment: "onlinepayment",
-      // };
-      // const paymentMethod: PaymentMethodType =
-      //   paymentMethodMatch[payment.payment_mode.toLowerCase()];
-
-      // if (!paymentMethod) {
-      //   this.logger.error(
-      //     // eslint-disable-next-line max-len
-      //     `Can't match the payment method type of payment ${payment.payment_id}. Got type: ${payment.payment_mode} from Zoho`,
-      //   );
-      //   continue;
-      // }
-      // We first have to check, if we already have a Zoho Customer to be connected to
-      // this payment
-
-      // const customerExist = await this.db.zohoContact.findUnique({
-      //   where: {
-      //     id_zohoAppId: {
-      //       id: payment.customer_id,
-      //       zohoAppId: this.zohoApp.id,
-      //     },
-      //   },
-      // });
-      // deprecated removed contact from payment -> double check this
-      // const zohoContactConnect = customerExist
-      //   ? {
-      //       connect: {
-      //         id_zohoAppId: {
-      //           id: payment.customer_id,
-      //           zohoAppId: this.zohoApp.id,
-      //         },
-      //       },
-      //     }
-      //   : {};
-
       // We try to connect existing invoices with this payment using the invoice Ids
       const invoiceConnect:
         | Prisma.InvoiceCreateNestedManyWithoutPaymentsInput
@@ -301,6 +256,7 @@ export class ZohoPaymentSyncService {
     });
 
     this.logger.info(
+      // eslint-disable-next-line max-len
       `Received ${paymentsWithoutZohoPaymentFromEciDb.length} payment(s) without a zohoPayment. Creating zohoPayments from them.`,
       {
         paymentIds: paymentsWithoutZohoPaymentFromEciDb.map((p) => p.id),
