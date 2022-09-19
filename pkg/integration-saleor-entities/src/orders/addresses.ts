@@ -69,6 +69,8 @@ class Addresses {
    * Sync Saleor Addresses with ECI DB and connect them to an ECI order
    * @param shippingAddress
    * @param billingAddress
+   * 
+   * This service is not scheduled but called by saleor order sync service instead
    */
   public async sync(
     shippingAddress: StandardAddressValuesFragment,

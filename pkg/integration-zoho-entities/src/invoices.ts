@@ -2,7 +2,7 @@
 /* eslint-disable camelcase */
 import type { Invoice, Zoho, ZohoApiError } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
-import { PrismaClient, ZohoApp } from "@eci/pkg/prisma";
+import { Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { addMinutes, format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
@@ -167,7 +167,7 @@ export class ZohoInvoiceSyncService {
   }
 
   // TODO2: syncFromECI (standard syncs invoice object) (lower prio for the future)
-  // TODO1: syncFromECIAutocreateFromSalesorder (creates an zohoinvoice and eci invoice from an zohosalesorder)
+  // DONE1: syncFromECI_autocreateInvoiceFromSalesorder (creates an zohoinvoice and eci invoice from an zohosalesorder)
   public async syncFromECI_autocreateInvoiceFromSalesorder(): Promise<void> {
     const ordersWithoutZohoInvoicesFromEciDb = await this.db.order.findMany({
       where: {
@@ -226,22 +226,22 @@ export class ZohoInvoiceSyncService {
       },
     );
     const invoicesToConfirm: Invoice[] = [];
-    for (const ordersWithoutZohoInvoice of ordersWithoutZohoInvoicesFromEciDb) {
+    for (const orderWithoutZohoInvoice of ordersWithoutZohoInvoicesFromEciDb) {
       try {
         if (
-          !ordersWithoutZohoInvoice?.zohoSalesOrders ||
-          ordersWithoutZohoInvoice?.zohoSalesOrders.length === 0
+          !orderWithoutZohoInvoice?.zohoSalesOrders ||
+          orderWithoutZohoInvoice?.zohoSalesOrders.length === 0
         ) {
           throw new Warning(
             "No zohoSalesOrders set for this order. Aborting sync of this order. Try again after zoho salesorder sync.",
           );
         }
-        if (ordersWithoutZohoInvoice?.zohoSalesOrders.length > 1) {
+        if (orderWithoutZohoInvoice?.zohoSalesOrders.length > 1) {
           throw new Error(
             "Multiple zohoSalesOrders set for this order. Aborting sync of this order.",
           );
         }
-        const zohoSalesOrder = ordersWithoutZohoInvoice.zohoSalesOrders[0];
+        const zohoSalesOrder = orderWithoutZohoInvoice.zohoSalesOrders[0];
         const createdInvoice = await this.zoho.invoice.createFromSalesOrder(
           zohoSalesOrder.id,
         );
@@ -259,12 +259,50 @@ export class ZohoInvoiceSyncService {
               "(Change this to a WARNING if it is okay)",
           );
         }
-        await this.db.invoice.create({
-          data: {
+        const zohoInvoiceConnectOrCreate: Prisma.Enumerable<Prisma.ZohoInvoiceCreateOrConnectWithoutInvoiceInput> = {
+          where: {
+            id_zohoAppId: {
+              id: createdInvoice.invoice_id,
+              zohoAppId: this.zohoApp.id,
+            },
+          },
+          create: {
+            id: createdInvoice.invoice_id,
+            createdAt: new Date(createdInvoice.created_time),
+            updatedAt: new Date(createdInvoice.last_modified_time),
+            number: createdInvoice.invoice_number,
+            zohoApp: {
+              connect: {
+                id: this.zohoApp.id,
+              },
+            },
+          },
+        };
+
+        await this.db.invoice.upsert({
+          where: {
+            invoiceNumber_tenantId: {
+              invoiceNumber: createdInvoice.invoice_number,
+              tenantId: this.zohoApp.tenantId,
+            }
+          },
+          update: {
+            invoiceCurrency: checkCurrency(createdInvoice.currency_code),
+            invoiceTotalGross: createdInvoice.total,
+            zohoInvoice: {
+              connectOrCreate: zohoInvoiceConnectOrCreate,
+            },
+            orders: {
+              connect: {
+                id: orderWithoutZohoInvoice.id,
+              },
+            },
+          },
+          create: {
             id: id.id("invoice"),
             orders: {
               connect: {
-                id: ordersWithoutZohoInvoice.id,
+                id: orderWithoutZohoInvoice.id,
               },
             },
             invoiceNumber: createdInvoice.invoice_number,
@@ -276,34 +314,16 @@ export class ZohoInvoiceSyncService {
             invoiceCurrency: checkCurrency(createdInvoice.currency_code),
             invoiceTotalGross: createdInvoice.total,
             zohoInvoice: {
-              connectOrCreate: {
-                where: {
-                  id_zohoAppId: {
-                    id: createdInvoice.invoice_id,
-                    zohoAppId: this.zohoApp.id,
-                  },
-                },
-                create: {
-                  id: createdInvoice.invoice_id,
-                  createdAt: new Date(createdInvoice.created_time),
-                  updatedAt: new Date(createdInvoice.last_modified_time),
-                  number: createdInvoice.invoice_number,
-                  zohoApp: {
-                    connect: {
-                      id: this.zohoApp.id,
-                    },
-                  },
-                },
-              },
+              connectOrCreate: zohoInvoiceConnectOrCreate,
             },
           },
         });
         this.logger.info(
           `Successfully created a zoho Invoice ${createdInvoice.invoice_number}`,
           {
-            orderId: ordersWithoutZohoInvoice.id,
-            orderNumber: ordersWithoutZohoInvoice.orderNumber,
-            orderMainContactId: ordersWithoutZohoInvoice.mainContactId,
+            orderId: orderWithoutZohoInvoice.id,
+            orderNumber: orderWithoutZohoInvoice.orderNumber,
+            orderMainContactId: orderWithoutZohoInvoice.mainContactId,
             invoiceMainContactId: createdInvoice.customer_id,
             invoiceNumber: createdInvoice.invoice_number,
             invoiceId: createdInvoice.invoice_id,
@@ -316,8 +336,8 @@ export class ZohoInvoiceSyncService {
       } catch (err) {
         if (err instanceof Warning) {
           this.logger.warn(err.message, {
-            eciOrderId: ordersWithoutZohoInvoice.id,
-            eciOrderNumber: ordersWithoutZohoInvoice.orderNumber,
+            eciOrderId: orderWithoutZohoInvoice.id,
+            eciOrderNumber: orderWithoutZohoInvoice.orderNumber,
           });
         } else if (err instanceof Error) {
           // TODO zoho-ts package: add enum for error codes . like this:
@@ -327,22 +347,22 @@ export class ZohoInvoiceSyncService {
               "Aborting sync of this invoice since it was already created. The syncToEci will handle this. Original Error: " +
                 err.message,
               {
-                eciOrderId: ordersWithoutZohoInvoice.id,
-                eciOrderNumber: ordersWithoutZohoInvoice.orderNumber,
+                eciOrderId: orderWithoutZohoInvoice.id,
+                eciOrderNumber: orderWithoutZohoInvoice.orderNumber,
               },
             );
           } else {
             this.logger.error(err.message, {
-              eciOrderId: ordersWithoutZohoInvoice.id,
-              eciOrderNumber: ordersWithoutZohoInvoice.orderNumber,
+              eciOrderId: orderWithoutZohoInvoice.id,
+              eciOrderNumber: orderWithoutZohoInvoice.orderNumber,
             });
           }
         } else {
           this.logger.error(
             "An unknown Error occured: " + (err as any)?.toString(),
             {
-              eciOrderId: ordersWithoutZohoInvoice.id,
-              eciOrderNumber: ordersWithoutZohoInvoice.orderNumber,
+              eciOrderId: orderWithoutZohoInvoice.id,
+              eciOrderNumber: orderWithoutZohoInvoice.orderNumber,
             },
           );
         }

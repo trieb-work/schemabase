@@ -99,7 +99,7 @@ export class SaleorPaymentSyncService {
       result.orders?.edges.length,
     );
 
-    // Only sycn active payments. For exampe if a payment was captured twice and only one was successfull, the unsuccessfull payment is unactive and should be filtered out.
+    // Only sync active payments. For exampe if a payment was captured twice and only one was successfull, the unsuccessfull payment is unactive and should be filtered out.
     const payments = result.orders?.edges
       .flatMap((order) => order.node.payments)
       .filter((payment) => payment?.isActive);

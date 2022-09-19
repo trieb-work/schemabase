@@ -1166,6 +1166,7 @@ describe("Zoho Inventory payment Sync", () => {
     await xx.syncToECI();
   }, 90000);
 
-  // See ../test/index.test.ts for a Test of zohoPaymentSyncService
+  // Hard to test in isolation because of the many dependecies. 
+  // Therefore see ../test/index.test.ts for a Test of zohoPaymentSyncService with other dependend services
   // zohoPaymentSyncService.syncFromECI();
 });

@@ -11,25 +11,18 @@ import {
 } from "@jest/globals";
 import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts";
 import { ZohoSalesOrdersSyncService } from "@eci/pkg/integration-zoho-entities/src/salesorders";
-import {
-  deleteOrders,
-  deletePayment,
-  deleteZohoItem,
-  recreateAddress,
-  recreateContact,
-  recreateTax,
-  upsertLineItemWithRealProductVariantFromZoho,
-  upsertOrder,
-  upsertPayment,
-  upsertPaymentMethods,
-  upsertZohoBankAccounts,
-} from "@eci/pkg/integration-zoho-entities/test/utils";
+import { deleteOrders } from "@eci/pkg/integration-zoho-entities/test/utils";
 import "@eci/pkg/jest-utils/consoleFormatter";
 import { ZohoItemSyncService } from "@eci/pkg/integration-zoho-entities/src/items";
 import { ZohoContactSyncService } from "@eci/pkg/integration-zoho-entities/src/contacts";
 import { ZohoTaxSyncService } from "@eci/pkg/integration-zoho-entities/src/taxes";
 import { ZohoInvoiceSyncService } from "@eci/pkg/integration-zoho-entities/src/invoices";
 import { ZohoPaymentSyncService } from "@eci/pkg/integration-zoho-entities/src/payments";
+import { ZohoBankAccountsSyncService } from "@eci/pkg/integration-zoho-entities/src/bankaccounts";
+import { createSaleorClient, SaleorClient } from "@eci/pkg/saleor";
+import { SaleorProductSyncService } from "@eci/pkg/integration-saleor-entities";
+import { SaleorPaymentGatewaySyncService } from "@eci/pkg/integration-saleor-entities/src/paymentGateways";
+import { SaleorWarehouseSyncService } from "@eci/pkg/integration-saleor-entities/src/warehouses";
 
 const ORDERNR_DATE_PREFIX = "SO-DATE-E2E-";
 
@@ -48,13 +41,31 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
   let zohoTaxSyncService: ZohoTaxSyncService;
   let zohoInvoiceSyncService: ZohoInvoiceSyncService;
   let zohoPaymentSyncService: ZohoPaymentSyncService;
-  let zohoSalesOrdersLogger: AssertionLogger;
-  let zohoItemSyncLogger: AssertionLogger;
-  let zohoContactSyncLogger: AssertionLogger;
-  let zohoTaxSyncLogger: AssertionLogger;
-  let zohoInvoiceSyncLogger: AssertionLogger;
-  let zohoPaymentSyncLogger: AssertionLogger;
-  let newOrderNumber: string;
+  let zohoBankAccountsSyncService: ZohoBankAccountsSyncService;
+  const zohoSalesOrdersLogger = new AssertionLogger()
+  const zohoItemSyncLogger = new AssertionLogger()
+  const zohoContactSyncLogger = new AssertionLogger()
+  const zohoTaxSyncLogger = new AssertionLogger()
+  const zohoInvoiceSyncLogger = new AssertionLogger()
+  const zohoPaymentSyncLogger = new AssertionLogger()
+  const zohoBankAccountsSyncLogger = new AssertionLogger()
+
+  const saleor: SaleorClient = createSaleorClient({
+    // graphqlEndpoint: "https://shop-api.pfefferundfrost.de/graphql/",
+    graphqlEndpoint: "https://testing--saleor.monorepo-preview.eu.fsn1.trwrk.xyz/graphql/",
+    traceId: "test",
+    token:
+      // manually optian a token if it is outdated by: mutation{tokenCreate(email: "admin@example.com", password: "admin"){token}}
+      // eslint-disable-next-line max-len
+      "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IjEifQ.eyJpYXQiOjE2NjM1ODk3MzUsIm93bmVyIjoic2FsZW9yIiwiZXhwIjoxNjYzODQ4OTM1LCJ0b2tlbiI6ImsxWmZlUGc5WjRVVyIsImVtYWlsIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJ0eXBlIjoiYWNjZXNzIiwidXNlcl9pZCI6IlZYTmxjam80TVE9PSIsImlzX3N0YWZmIjp0cnVlfQ.gVNKfbd6AT4RclOMVX_P_oxPm1zepzsvzBuYls300oCU48F_Wga2il4mk2b7yb3W_cP951VxbKOG_Az4RzK2rhDrviaSgfqjqVTdD5f7xmelSpSK7ByA-_LVlzgRlJeqpkL9b6yzQsGZgYFcw7fcQxn8DEZkNczuRUPIM5x1rSU",
+  });
+  let saleorPaymentGatewaySyncService: SaleorPaymentGatewaySyncService;
+  let saleorWarehouseSyncService: SaleorWarehouseSyncService;
+  let saleorProductSyncService: SaleorProductSyncService;
+  const SaleorPaymentGatewaySyncLogger = new AssertionLogger();
+  const SaleorWarehouseSyncLogger = new AssertionLogger();
+  const SaleorProductSyncLogger = new AssertionLogger();
+  // let newOrderNumber: string;
 
   beforeAll(async () => {
     const zohoApp = await prismaClient.zohoApp.findUnique({
@@ -70,242 +81,132 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
         client: { id: zohoApp.clientId, secret: zohoApp.clientSecret },
       }),
     );
-    const commonParamms = { zoho, db: prismaClient, zohoApp };
-    zohoSalesOrdersLogger = new AssertionLogger();
+    const commonZohoParamms = { zoho, db: prismaClient, zohoApp };
     zohoSalesOrdersSyncService = new ZohoSalesOrdersSyncService({
       logger: zohoSalesOrdersLogger,
-      ...commonParamms,
+      ...commonZohoParamms,
     });
-    zohoItemSyncLogger = new AssertionLogger();
     zohoItemSyncService = new ZohoItemSyncService({
       logger: zohoItemSyncLogger,
-      ...commonParamms,
+      ...commonZohoParamms,
     });
-    zohoContactSyncLogger = new AssertionLogger();
     zohoContactSyncService = new ZohoContactSyncService({
       logger: zohoContactSyncLogger,
-      ...commonParamms,
+      ...commonZohoParamms,
     });
-    zohoTaxSyncLogger = new AssertionLogger();
     zohoTaxSyncService = new ZohoTaxSyncService({
       logger: zohoTaxSyncLogger,
-      ...commonParamms,
+      ...commonZohoParamms,
     });
-    zohoInvoiceSyncLogger = new AssertionLogger();
     zohoInvoiceSyncService = new ZohoInvoiceSyncService({
       logger: zohoInvoiceSyncLogger,
-      ...commonParamms,
+      ...commonZohoParamms,
     });
-    zohoPaymentSyncLogger = new AssertionLogger();
     zohoPaymentSyncService = new ZohoPaymentSyncService({
       logger: zohoPaymentSyncLogger,
-      ...commonParamms,
+      ...commonZohoParamms,
     });
-  });
-  afterAll(async () => {
-    if (CLEANUP_ORDERS) {
-      // TODO: delete ECI Payments & Invoices
-      await deleteOrders(prismaClient, { startsWith: ORDERNR_DATE_PREFIX });
+    zohoBankAccountsSyncService = new ZohoBankAccountsSyncService({
+      logger: zohoBankAccountsSyncLogger,
+      ...commonZohoParamms,
+    });
 
-      const zohoPaymentIds = (await zoho.payment.list({}))
-        .filter((pay) => pay.reference_number.startsWith(ORDERNR_DATE_PREFIX))
-        .map((pay) => pay.payment_id);
-      console.log("zohoPaymentIds for deletion", zohoPaymentIds);
-      console.log(
-        "zoho payment delete res",
-        await zoho.invoice
-          .delete(zohoPaymentIds)
-          .catch((err) =>
-            console.error("Payment Cleanup failed: " + err.message),
-          ),
-      );
-      const zohoInvoiceIds = (await zoho.invoice.list({}))
-        .filter((so) => so.reference_number.startsWith(ORDERNR_DATE_PREFIX))
-        .map((inv) => inv.invoice_id);
-      console.log("zohoInvoiceIds for deletion", zohoInvoiceIds);
-      console.log(
-        "zoho invoice delete res",
-        await zoho.invoice
-          .delete(zohoInvoiceIds)
-          .catch((err) =>
-            console.error("Invoice Cleanup failed: " + err.message),
-          ),
-      );
-      const zohoSalesOrderIds = (
-        await zoho.salesOrder.search(ORDERNR_DATE_PREFIX)
-      ).map((so) => so.salesorder_id);
-      console.log("zohoSalesOrderIds for deletion", zohoSalesOrderIds);
-      console.log(
-        "zoho salesOrder delete res",
-        await zoho.salesOrder
-          .delete(zohoSalesOrderIds)
-          .catch((err) =>
-            console.error("SalesOrder Cleanup failed: " + err.message),
-          ),
-      );
-    }
-  });
+    const saleorApp = await prismaClient.saleorApp.findUnique({
+      where: {
+        id: "test",
+      },
+      include: { tenant: true },
+    });
+    if (!saleorApp) throw new Error("No testing Saleor App found!");
+    const installedSaleorApp = await prismaClient.installedSaleorApp.findUnique({
+      where: {
+        id: "test",
+      },
+    });
+    if (!installedSaleorApp) throw new Error("No testing installed Saleor App found!");
+    const commonSaleorParamms = {
+      db: prismaClient,
+      installedSaleorAppId: installedSaleorApp.id,
+      saleorClient: saleor,
+      tenantId: saleorApp?.tenantId,
+    };
+    saleorPaymentGatewaySyncService = new SaleorPaymentGatewaySyncService({
+      logger: SaleorPaymentGatewaySyncLogger,
+      ...commonSaleorParamms,
+    });
 
-  test("Test 1: It should abort sync of orders if contacts are not synced to zoho yet", async () => {
+    saleorWarehouseSyncService = new SaleorWarehouseSyncService({
+      logger: SaleorWarehouseSyncLogger,
+      ...commonSaleorParamms,
+    });
+
+    saleorProductSyncService = new SaleorProductSyncService({
+      logger: SaleorProductSyncLogger,
+      channelSlug: "storefront",
+      ...commonSaleorParamms,
+    });
+
+  });
+  // afterAll(async () => {
+  //   if (CLEANUP_ORDERS) {
+  //     // TODO: delete Payments & Invoices in ECI
+  //     await deleteOrders(prismaClient, { startsWith: ORDERNR_DATE_PREFIX });
+
+  //     const zohoPaymentIds = (await zoho.payment.list({}))
+  //       .filter((pay) => pay.reference_number.startsWith(ORDERNR_DATE_PREFIX))
+  //       .map((pay) => pay.payment_id);
+  //     console.log("zohoPaymentIds for deletion", zohoPaymentIds);
+  //     console.log(
+  //       "zoho payment delete res",
+  //       await zoho.invoice
+  //         .delete(zohoPaymentIds)
+  //         .catch((err) =>
+  //           console.error("Payment Cleanup failed: " + err.message),
+  //         ),
+  //     );
+  //     const zohoInvoiceIds = (await zoho.invoice.list({}))
+  //       .filter((so) => so.reference_number.startsWith(ORDERNR_DATE_PREFIX))
+  //       .map((inv) => inv.invoice_id);
+  //     console.log("zohoInvoiceIds for deletion", zohoInvoiceIds);
+  //     console.log(
+  //       "zoho invoice delete res",
+  //       await zoho.invoice
+  //         .delete(zohoInvoiceIds)
+  //         .catch((err) =>
+  //           console.error("Invoice Cleanup failed: " + err.message),
+  //         ),
+  //     );
+  //     const zohoSalesOrderIds = (
+  //       await zoho.salesOrder.search(ORDERNR_DATE_PREFIX)
+  //     ).map((so) => so.salesorder_id);
+  //     console.log("zohoSalesOrderIds for deletion", zohoSalesOrderIds);
+  //     console.log(
+  //       "zoho salesOrder delete res",
+  //       await zoho.salesOrder
+  //         .delete(zohoSalesOrderIds)
+  //         .catch((err) =>
+  //           console.error("SalesOrder Cleanup failed: " + err.message),
+  //         ),
+  //     );
+  //   }
+  // });
+
+  test("Test 1: Preparation", async () => {
     console.info("Test 1 started");
-    newOrderNumber = `${ORDERNR_DATE_PREFIX}${Math.round(
-      (Number(new Date()) - 1662000000000) / 1000,
-    )}`;
-    console.log("newOrderNumber", newOrderNumber);
+    console.log("sync saleor paymentGateways to ECI (and create saleoPaymentGateway & paymentMethod)")
+    await saleorPaymentGatewaySyncService.syncToECI();
+    console.log("Sync zoho bank accounts to ECI")
+    await zohoBankAccountsSyncService.syncToECI();
+    console.log("manually connect Zoho Bank accounts with payment methods")
+    // TODO
+    console.log("sync saleor warehouses to ECI (and create warehouses)")
+    await saleorWarehouseSyncService.syncToECI();
+    console.log("sync saleor products to ECI (and create product & productVariants)")
+    await saleorProductSyncService.syncToECI();
+    console.log("sync zoho items to ECI (and connect them with product variants)")
     await zohoItemSyncService.syncToECI();
-    await Promise.all([
-      recreateTax(prismaClient),
-      recreateContact(prismaClient),
-      deleteZohoItem(prismaClient),
-    ]);
-    await recreateAddress(prismaClient);
-    await upsertOrder(prismaClient, newOrderNumber, 156.45);
-    await upsertLineItemWithRealProductVariantFromZoho(
-      prismaClient,
-      newOrderNumber,
-    );
-    zohoSalesOrdersLogger.clearMessages();
-    await zohoSalesOrdersSyncService.syncFromECI();
-    zohoSalesOrdersLogger.assertOneLogEntryMatches(
-      "info",
-      ({ message, fields }) =>
-        !!message.match(
-          /Received [\d]+ orders that are not synced with Zoho/,
-        ) && (fields?.orderNumbers as string[])?.includes(newOrderNumber),
-    );
-    zohoSalesOrdersLogger.assertOneLogMessageMatches(
-      "warn",
-      `No zohoContactPersons set for the mainContact of this order. Aborting sync of this order. Try again after zoho contacts sync.`,
-    );
-    zohoSalesOrdersLogger.assertOneLogMessageMatches(
-      "info",
-      `Successfully confirmed 0 order(s).`,
-    );
-    console.info("Test 1 completed");
-  }, 90000);
-
-  test("Test 2: It should abort sync of orders if product variants are not synced to zoho yet", async () => {
-    console.info("Test 2 started: sync contact + addresses");
-    await zohoContactSyncService.syncFromECI();
-    zohoContactSyncLogger.assertOneLogMessageMatches(
-      "info",
-      /We have [1-9]+[0-9]* contacts that we need to create in Zoho/,
-    );
-    zohoContactSyncLogger.assertOneLogMessageMatches(
-      "info",
-      /We have [1-9]+[0-9]* addresses that need to be synced with Zoho/,
-    );
-    zohoSalesOrdersLogger.clearMessages();
-    await zohoSalesOrdersSyncService.syncFromECI();
-    zohoSalesOrdersLogger.assertOneLogEntryMatches(
-      "info",
-      ({ message, fields }) =>
-        !!message.match(
-          /Received [\d]+ orders that are not synced with Zoho/,
-        ) && (fields?.orderNumbers as string[])?.includes(newOrderNumber),
-    );
-    zohoSalesOrdersLogger.assertOneLogMessageMatches(
-      "warn",
-      `No zohoItem set for the productVariant of this lineItem. Aborting sync of this order. Try again after zoho items sync.`,
-    );
-    zohoSalesOrdersLogger.assertOneLogMessageMatches(
-      "info",
-      `Successfully confirmed 0 order(s).`,
-    );
-    console.info("Test 2 completed");
-  }, 90000);
-
-  test("Test 3: It should abort sync of orders if tax are not synced to zoho yet", async () => {
-    console.info("Test 3 started: sync zohoItems");
-    await zohoItemSyncService.syncToECI();
-    zohoItemSyncLogger.assertOneLogMessageMatches(
-      "info",
-      /Upserting [0-9]+ items with the internal DB/,
-    );
-    zohoItemSyncLogger.assertOneLogMessageMatches(
-      "info",
-      /Sync finished for [0-9]+ Zoho Items/,
-    );
-    zohoSalesOrdersLogger.clearMessages();
-    await zohoSalesOrdersSyncService.syncFromECI();
-    zohoSalesOrdersLogger.assertOneLogEntryMatches(
-      "info",
-      ({ message, fields }) =>
-        !!message.match(
-          /Received [\d]+ orders that are not synced with Zoho/,
-        ) && (fields?.orderNumbers as string[])?.includes(newOrderNumber),
-    );
-    zohoSalesOrdersLogger.assertOneLogMessageMatches(
-      "warn",
-      `No zohoTaxes set for this tax. Aborting sync of this order. Try again after zoho taxes sync.`,
-    );
-    zohoSalesOrdersLogger.assertOneLogMessageMatches(
-      "info",
-      `Successfully confirmed 0 order(s).`,
-    );
-    console.info("Test 3 completed");
-  }, 90000);
-
-  test("Test 4: It should succeed if everthing is synced", async () => {
-    console.info("Test 4 started: sync zohoTaxes");
+    console.log("sync zoho taxes to ECI (and create zohoTax & tax)")
     await zohoTaxSyncService.syncToECI();
-    zohoTaxSyncLogger.assertOneLogMessageMatches("info", /Synced tax/);
-    zohoTaxSyncLogger.assertOneLogMessageMatches(
-      "info",
-      /Sync finished for [1-9]+[0]* Zoho Taxes/,
-    );
-    zohoSalesOrdersLogger.clearMessages();
-    await zohoSalesOrdersSyncService.syncFromECI();
-    zohoSalesOrdersLogger.assertOneLogEntryMatches(
-      "info",
-      ({ message, fields }) =>
-        !!message.match(
-          /Received [\d]+ orders that are not synced with Zoho/,
-        ) && (fields?.orderNumbers as string[])?.includes(newOrderNumber),
-    );
-    zohoSalesOrdersLogger.assertOneLogMessageMatches(
-      "info",
-      `Successfully created zoho salesorder ${newOrderNumber}`,
-    );
-    zohoSalesOrdersLogger.assertOneLogEntryMatches(
-      "info",
-      ({ message, fields }) =>
-        !!message.match(/Successfully confirmed [1-9]+[0]* order\(s\)./) &&
-        (fields?.salesorderNumbersToConfirm as string[])?.includes(
-          newOrderNumber,
-        ),
-    );
-    console.info("Test 4 completed");
-  }, 90000);
-
-  test("Test 5: It should create an Invoice from an Order and referenceNumber should be set to Order Number", async () => {
-    console.info("Test 5 started: autocreate zohoInvoices from salesOrder");
-    await zohoInvoiceSyncService.syncFromECI_autocreateInvoiceFromSalesorder();
-    zohoInvoiceSyncLogger.assertOneLogMessageMatches(
-      "info",
-      /Received [1-9]+[0-9]* orders without a zohoInvoice. Creating zohoInvoices from them./,
-    );
-    zohoInvoiceSyncLogger.assertOneLogEntryMatches(
-      "info",
-      ({ message, fields }) =>
-        !!message.match(/Successfully created a zoho Invoice/) &&
-        (fields?.referenceNumber as string) === newOrderNumber,
-    );
-    console.info("Test 5 completed");
-  }, 90000);
-
-  test("Test 6: It should create a ZohoPayment for the Payment and attach it to the Invoice", async () => {
-    console.info("Test 6 started: create ZohoPayment from Payment");
-    await Promise.all([
-      deletePayment(prismaClient),
-      await upsertPaymentMethods(prismaClient),
-    ]);
-    await Promise.all([
-      upsertZohoBankAccounts(prismaClient),
-      await upsertPayment(prismaClient, newOrderNumber),
-    ]);
-    await zohoPaymentSyncService.syncFromECI();
-    // zohoPaymentSyncLogger.assertOneLogMessageMatches("info", /Synced tax/);
-    console.info("Test 6 completed");
+    console.info("Test 1 completed");
   }, 90000);
 });

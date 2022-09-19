@@ -4,6 +4,7 @@ const prisma = new PrismaClient();
 
 async function main() {
   console.log("Seeding DB started");
+  // TODO move to new package pkg/prisma-seeding-utils/eci, pkg/prisma-seeding-utils/zoho, pkg/prisma-seeding-utils/saleor
   await prisma.tenant.upsert({
     where: {
       id: "test",

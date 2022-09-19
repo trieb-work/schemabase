@@ -271,6 +271,7 @@ export class SaleorOrderSyncService {
         this.logger.error(
           `Can't get order details from saleor for order ${order.id}!`,
         );
+        // TODO maybe also rewrite with try/catch Error/Warning class.
         continue;
       }
       const lineItems = orderDetails.order?.lines;
@@ -463,6 +464,8 @@ export class SaleorOrderSyncService {
         this.logger.info(
           `Upserting addresses for ${upsertedOrder.orderNumber} - contact ${upsertedOrder.order.mainContactId}`,
         );
+        // TODO: rewrite/rename addesses without Class so it follows the same schema as zoho-salesorders-helpers
+        // -> also move both in an integration-saleor-entities/src/helpers folder because they can potentially be used by more than this entities
         await addresses(
           this.db,
           upsertedOrder.orderId,

@@ -128,6 +128,8 @@ export class BraintreeTransactionSyncService {
                 amount: Number(transaction.amount),
                 transactionFee: payPalTransactionFee,
                 paymentMethod: {
+                  // TODO: do we really want to create paymentMethods here or is it more safe to just 
+                  // use an connect and let the saleorGateway/zohoBankAccount sync jobs handle the create of the paymentMethods?
                   connectOrCreate: {
                     where: {
                       gatewayType_methodType_currency_tenantId: {

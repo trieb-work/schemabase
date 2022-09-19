@@ -11,6 +11,7 @@ interface ContactPersonsSyncConfig {
   logger: ILogger;
 }
 
+// TODO rewrite class to use helper function structure
 class ContactPersonsSync {
   private db: PrismaClient;
   private tenantId: string;
