@@ -1,4 +1,4 @@
-import { NoopLogger } from "@eci/pkg/logger";
+import { AssertionLogger } from "@eci/pkg/logger";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { SaleorClient } from "@eci/pkg/saleor";
 import { beforeEach, describe, jest, test } from "@jest/globals";
@@ -34,12 +34,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     sku: "friends-coldbrew-gemischt-2-test32",
                     metadata: [],
                     "stocks": [
-                      {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
-                      },
+                      // {
+                      //   "warehouse": {
+                      //     "name": "GIGATEC GmbH",
+                      //     "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
+                      //   }
+                      // },
                       {
                         "warehouse": {
                           "name": "Test WH",
@@ -146,6 +146,14 @@ describe("Saleor Entity Sync Products Test", () => {
                       {
                         key: "EAN",
                         value: "0080542773495",
+                      },
+                    ],
+                    "stocks": [
+                      {
+                        "warehouse": {
+                          "name": "GIGATEC GmbH",
+                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
+                        }
                       },
                     ],
                     variantAttributes: [
@@ -559,6 +567,14 @@ describe("Saleor Entity Sync Products Test", () => {
                         value: "0080542773501",
                       },
                     ],
+                    "stocks": [
+                      {
+                        "warehouse": {
+                          "name": "GIGATEC GmbH",
+                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
+                        }
+                      },
+                    ],
                     variantAttributes: [
                       {
                         attribute: {
@@ -581,6 +597,14 @@ describe("Saleor Entity Sync Products Test", () => {
                       {
                         key: "EAN",
                         value: "0080542773518",
+                      },
+                    ],
+                    "stocks": [
+                      {
+                        "warehouse": {
+                          "name": "GIGATEC GmbH",
+                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
+                        }
                       },
                     ],
                     variantAttributes: [
@@ -607,6 +631,14 @@ describe("Saleor Entity Sync Products Test", () => {
                         value: "0080542773532",
                       },
                     ],
+                    "stocks": [
+                      {
+                        "warehouse": {
+                          "name": "GIGATEC GmbH",
+                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
+                        }
+                      },
+                    ],
                     variantAttributes: [
                       {
                         attribute: {
@@ -629,6 +661,14 @@ describe("Saleor Entity Sync Products Test", () => {
                       {
                         key: "EAN",
                         value: "0080542773549",
+                      },
+                    ],
+                    "stocks": [
+                      {
+                        "warehouse": {
+                          "name": "GIGATEC GmbH",
+                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
+                        }
                       },
                     ],
                     variantAttributes: [
@@ -954,6 +994,14 @@ describe("Saleor Entity Sync Products Test", () => {
                         value: "0080542773648",
                       },
                     ],
+                    "stocks": [
+                      {
+                        "warehouse": {
+                          "name": "GIGATEC GmbH",
+                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
+                        }
+                      },
+                    ],
                     variantAttributes: [
                       {
                         attribute: {
@@ -976,6 +1024,14 @@ describe("Saleor Entity Sync Products Test", () => {
                       {
                         key: "EAN",
                         value: "0080542773655",
+                      },
+                    ],
+                    "stocks": [
+                      {
+                        "warehouse": {
+                          "name": "GIGATEC GmbH",
+                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
+                        }
                       },
                     ],
                     variantAttributes: [
@@ -1332,6 +1388,14 @@ describe("Saleor Entity Sync Products Test", () => {
                         value: "0080542773600",
                       },
                     ],
+                    "stocks": [
+                      {
+                        "warehouse": {
+                          "name": "GIGATEC GmbH",
+                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
+                        }
+                      },
+                    ],
                     variantAttributes: [
                       {
                         attribute: {
@@ -1462,6 +1526,14 @@ describe("Saleor Entity Sync Products Test", () => {
                       {
                         key: "EAN",
                         value: "0036089937791",
+                      },
+                    ],
+                    "stocks": [
+                      {
+                        "warehouse": {
+                          "name": "GIGATEC GmbH",
+                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
+                        }
                       },
                     ],
                     variantAttributes: [
@@ -1663,11 +1735,11 @@ describe("Saleor Entity Sync Products Test", () => {
     const xx = new SaleorProductSyncService({
       saleorClient: mockedSaleorClient,
       channelSlug: "storefront",
-      logger: new NoopLogger(),
+      logger: new AssertionLogger(),
       db: prismaClient,
       installedSaleorAppId: installedSaleorApp.id,
       tenantId: tenant.id,
     });
     await xx.syncToECI();
-  });
+  }, 60_000);
 });

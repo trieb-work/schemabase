@@ -23,6 +23,7 @@ import {
   upsertZohoItem,
   deleteZohoItem,
   deleteOrder,
+  upsertZohoWarehouse,
 } from "../../test/utils";
 import "../../../jest-utils/consoleFormatter";
 
@@ -77,6 +78,7 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
     )}`;
     console.log("newOrderNumber", newOrderNumber);
     await Promise.all([
+      upsertZohoWarehouse(prismaClient),
       upsertTaxWithZohoTax(prismaClient),
       upsertProductVariant(prismaClient),
       deleteZohoItem(prismaClient),
@@ -196,7 +198,7 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
     );
     zohoSalesOrdersLogger.assertOneLogMessageMatches(
       "error",
-      `Failed during Salesorder sync loop. Orgiginal Error: ECI Order is having a discountValueNet and therefore is ` +
+      `Failed during Salesorder sync loop. Original Error: ECI Order is having a discountValueNet and therefore is ` +
         `from discount_type entity_level but lineItem also has a discountValueNet. This is not supported. It is only allowed ` +
         `to set discountValueNet on the ECI Order or on the ECI lineItems but not both`,
     );

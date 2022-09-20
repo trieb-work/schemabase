@@ -15,12 +15,12 @@ import { ExtendedTax, taxToZohoTaxId } from "./taxes";
 type ExtendedLineItem = OrderLineItem & {
   productVariant: ProductVariant & {
     zohoItem: ZohoItem[];
+    defaultWarehouse:
+      | (Warehouse & {
+          zohoWarehouse: ZohoWarehouse[];
+        })
+      | null;
   };
-  warehouse:
-    | (Warehouse & {
-        zohoWarehouse: ZohoWarehouse[];
-      })
-    | null;
   tax: ExtendedTax;
 };
 
@@ -75,19 +75,18 @@ export function orderToZohoLineItems(
         "Multiple zohoItems set for the productVariant of this lineItem. Aborting sync of this order.",
       );
     }
-    if (!lineItem?.warehouse) {
-      throw new Error(
-        "No warehouse set for current lineItem. Aborting sync of this order",
+    if (!lineItem?.productVariant?.defaultWarehouse) {
+      throw new Warning(
+        "No warehouse set for current lineItem.productVariant. Aborting sync of this order. Try again after saleor product variant sync.",
       );
     }
-    const warehouses =
-      lineItem?.warehouse?.zohoWarehouse?.flatMap((wh) => wh.id) || [];
-    if (warehouses.length === 0) {
+    const zohoWarehousesIds = lineItem?.productVariant?.defaultWarehouse?.zohoWarehouse?.flatMap((wh) => wh.id) || [];
+    if (zohoWarehousesIds.length === 0) {
       throw new Warning(
         "No zoho warehouses found for single lineItem. Aborting sync of this order. Try again after zoho warehouses sync.",
       );
     }
-    if (warehouses.length > 1) {
+    if (zohoWarehousesIds.length > 1) {
       throw new Error(
         "Multiple zoho warehouses found for single lineItem. Aborting sync of this order",
       );
@@ -97,7 +96,7 @@ export function orderToZohoLineItems(
       {
         item_id: lineItem.productVariant.zohoItem[0].id,
         quantity: lineItem.quantity,
-        warehouse_id: warehouses[0],
+        warehouse_id: zohoWarehousesIds[0],
         discount: calculateLineItemDiscount(lineItem, discount_type),
         tax_id: taxToZohoTaxId(lineItem.tax),
       },

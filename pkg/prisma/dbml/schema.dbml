@@ -430,7 +430,6 @@ Table Warehouse {
   zohoWarehouse ZohoWarehouse [not null]
   saleorWarehouse SaleorWarehouse [not null]
   xentralProxyIntegration XentralProxyIntegration [not null]
-  orderLineItems OrderLineItem [not null]
   packageLineItems PackageLineItem [not null]
   stockEntries StockEntries [not null]
   isDefaultWarehouseOf ProductVariant [not null]
@@ -448,8 +447,6 @@ Table OrderLineItem {
   uniqueString String [not null]
   order Order [not null]
   orderId String [not null]
-  warehouse Warehouse
-  warehouseId String
   quantity Float [not null]
   sku String [not null]
   tax Tax [not null]
@@ -597,8 +594,8 @@ Table ProductVariant {
   productId String [not null]
   tenant Tenant [not null]
   tenantId String [not null]
-  defaultWarehouse Warehouse [not null]
-  defaultWarehouseId String [not null]
+  defaultWarehouse Warehouse
+  defaultWarehouseId String
   stockEntries StockEntries [not null]
   orderLineItem OrderLineItem [not null]
   packagelineItem PackageLineItem [not null]
@@ -1586,8 +1583,6 @@ Ref: Contact.tenantId > Tenant.id [delete: Cascade]
 Ref: Warehouse.tenantId > Tenant.id [delete: Cascade]
 
 Ref: OrderLineItem.orderId > Order.id [delete: Cascade]
-
-Ref: OrderLineItem.warehouseId > Warehouse.id
 
 Ref: OrderLineItem.taxId > Tax.id [delete: Cascade]
 

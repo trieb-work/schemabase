@@ -10221,10 +10221,6 @@ export type SaleorCronOrderDetailsQuery = {
       unitDiscountValue: any;
       taxRate: number;
       variant?: { __typename?: "ProductVariant"; sku: string } | null;
-      allocations?: Array<{
-        __typename?: "Allocation";
-        warehouse: { __typename?: "Warehouse"; id: string; name: string };
-      }> | null;
       undiscountedUnitPrice: {
         __typename?: "TaxedMoney";
         currency: string;
@@ -10843,12 +10839,6 @@ export const SaleorCronOrderDetailsDocument = gql`
         id
         variant {
           sku
-        }
-        allocations {
-          warehouse {
-            id
-            name
-          }
         }
         quantity
         unitDiscountType

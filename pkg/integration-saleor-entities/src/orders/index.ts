@@ -272,13 +272,7 @@ export class SaleorOrderSyncService {
         if (!lineItems) {
           throw new Error(`No line items returned for order! Aborting sync and retry next time.`);
         }
-
-        const saleorWarehouses = await this.db.saleorWarehouse.findMany({
-          where: {
-            installedSaleorAppId: this.installedSaleorAppId,
-          },
-        });
-
+        
         // loop through all line items and upsert them in the DB
         for (const lineItem of lineItems) {
           if (!lineItem?.id) {
@@ -286,35 +280,6 @@ export class SaleorOrderSyncService {
           };
           if (!lineItem?.variant?.sku) {
             throw new Error(`Lineitem of Order is missing the variant sku in saleor response.`);
-          }
-
-          // TODO discuss were should we get the warehouse from? -> Or can/should we remove it from OrderLineItem type and move it to ProductVariant 
-          //    (then we can sync it with item sync, this would make it simpler but would limit the functionality in such a way that one variant can only exist in one warehouse 
-          //        (possible solutions ProductVariant.defaultWarehouse & ProductVariant.warehouses & [Package routing logic can also get extended in the future] ) )
-          //      if we decide to move this we also have to add warehouse sync to saleorProduct & zohoItemSync + adap zohoSalesOrderSync
-          // warehouse allocations, does not work as expected. The allocations array is empty sometimes (I think its empty if the order was created while the product variants has track invetory set to off).
-          if (!lineItem.allocations || lineItem.allocations.length === 0) {
-            throw new Error(
-              `The variant with SKU ${lineItem.variant.sku} has no warehouse allocations set in saleor. `+
-              `Therefore this Order can not be created because we can not create a lineItem without a warehouse. `+
-              `Please allocate/assign a warehouse to this variant in saleor. Will retry to create this order in next sync run.`
-            );
-          }
-          if (lineItem.allocations.length > 1) {
-            throw new Warning(
-              `The variant with SKU ${lineItem.variant.sku} has multiple warehouse allocations set in saleor. `+
-              `Therefore this Order can not be created because we can not determine the warehouse for this lineItem. `+
-              `Please allocate/assign only one warehouse to this variant in saleor. Will retry to create this order in next sync run.`
-            );
-          }
-          const warehouse = saleorWarehouses.find(
-            (wh) => wh.id === lineItem?.allocations?.[0].warehouse.id,
-          )?.warehouseId;
-
-          if (!warehouse) {
-            throw new Error(
-              `No saleor warehouse found internally for saleor warehouse Id ${JSON.stringify(lineItem.allocations)}`,
-            );
           }
 
           const productSku = await this.db.productVariant.findUnique({
@@ -401,11 +366,6 @@ export class SaleorOrderSyncService {
                         id: productSku.id,
                       },
                     },
-                    warehouse: {
-                      connect: {
-                        id: warehouse,
-                      },
-                    },
                   },
                 },
               },
@@ -439,11 +399,6 @@ export class SaleorOrderSyncService {
                     update: {
                       shippingPriceGross:
                         orderDetails.order?.shippingPrice.gross.amount,
-                    },
-                  },
-                  warehouse: {
-                    connect: {
-                      id: warehouse,
                     },
                   },
                 },

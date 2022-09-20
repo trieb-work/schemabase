@@ -10,6 +10,8 @@ import { PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
+import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 // import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils";
 
 interface SaleorProductSyncServiceConfig {
@@ -262,8 +264,31 @@ export class SaleorProductSyncService {
               },
             },
           });
-        } catch(err) {
-          
+        } catch (err) {
+          const defaultLogFields = {
+            variantId: variant?.id,
+            variantSku: variant?.sku,
+            variantName: variant?.name,
+            productId: product.id,
+            productName: product.name,
+          };
+          if (err instanceof Warning) {
+            this.logger.warn(err.message, { ...defaultLogFields, stack: err.stack });
+          } else if (err instanceof Error) {
+            // if(err.name)
+            if(err instanceof PrismaClientKnownRequestError){
+              if(err.code === "P2025" && (err?.meta?.cause as string).includes("No 'Warehouse' record")){
+                this.logger.warn("Warehouse for defaultwarehouse relation is missing. Aborting sync. Should retry after rerun of Saleor Warehouse sync.");
+              }
+            } else {
+              this.logger.error(err.message, { ...defaultLogFields, stack: err.stack });
+            }
+          } else {
+            this.logger.error(
+              "An unknown Error occured during product-variant sync loop: " + (err as any)?.toString(),
+              defaultLogFields,
+            );
+          }
         }
       }
     }

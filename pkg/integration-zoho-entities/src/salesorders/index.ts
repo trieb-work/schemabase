@@ -522,20 +522,20 @@ export class ZohoSalesOrdersSyncService {
                     zohoAppId: this.zohoApp.id,
                   },
                 },
+                defaultWarehouse: {
+                  include: {
+                    zohoWarehouse: {
+                      where: {
+                        zohoAppId: this.zohoApp.id,
+                      },
+                    },
+                  },
+                },
               },
             },
             tax: {
               include: {
                 zohoTaxes: {
-                  where: {
-                    zohoAppId: this.zohoApp.id,
-                  },
-                },
-              },
-            },
-            warehouse: {
-              include: {
-                zohoWarehouse: {
                   where: {
                     zohoAppId: this.zohoApp.id,
                   },

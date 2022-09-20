@@ -125,25 +125,6 @@ async function main() {
           id: "test",
         },
       },
-      // TODO move to pkg/prisma-seeding-utils and call from it from test file were this is needed
-      // zohoWarehouse: {
-      //   connectOrCreate: {
-      //     where: {
-      //       id_zohoAppId: {
-      //         id: "116240000000067007",
-      //         zohoAppId: "test",
-      //       },
-      //     },
-      //     create: {
-      //       id: "116240000000067007",
-      //       zohoApp: {
-      //         connect: {
-      //           id: "test",
-      //         },
-      //       },
-      //     },
-      //   },
-      // },
     },
   });
   console.log("created test warehouse for xentralProxyIntegration");

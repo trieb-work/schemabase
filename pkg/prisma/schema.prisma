@@ -653,7 +653,6 @@ model Warehouse {
 
   xentralProxyIntegration XentralProxyIntegration[]
 
-  orderLineItems       OrderLineItem[]
   packageLineItems     PackageLineItem[]
   stockEntries         StockEntries[]
   isDefaultWarehouseOf ProductVariant[]
@@ -685,11 +684,6 @@ model OrderLineItem {
   order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId String
 
-  // Warehouse, this line item corresponds to.
-  // Warehouse can be undefined, as we have non-inventory products as well.
-  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
-  warehouseId String?
-
   quantity Float
   sku      String
   tax      Tax    @relation(fields: [taxId], references: [id], onDelete: Cascade)
@@ -718,7 +712,6 @@ model OrderLineItem {
 
   @@unique([uniqueString, tenantId])
   @@index([orderId])
-  @@index([warehouseId])
   @@index([productVariantId])
   @@index([uniqueString])
   @@index([tenantId])
@@ -1206,8 +1199,8 @@ model ProductVariant {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  defaultWarehouse   Warehouse @relation(fields: [defaultWarehouseId], references: [id], onDelete: Cascade)
-  defaultWarehouseId String
+  defaultWarehouse   Warehouse? @relation(fields: [defaultWarehouseId], references: [id], onDelete: Cascade)
+  defaultWarehouseId String?
 
   stockEntries StockEntries[]
 

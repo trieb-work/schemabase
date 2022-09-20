@@ -81,6 +81,11 @@ export async function upsertProductVariant(prisma: PrismaClient) {
           },
         },
       },
+      defaultWarehouse: {
+        connect: {
+          id: "test",
+        },
+      },
       tenant: {
         connect: {
           id: "test",
@@ -137,6 +142,44 @@ export async function upsertOrder(
     },
   });
   if (LOGGING) console.log("created one generic order");
+}
+
+export async function upsertZohoWarehouse(prisma: PrismaClient) {
+  await prisma.zohoWarehouse.upsert({
+    where: {
+      id_zohoAppId: {
+        id: "116240000000067007",
+        zohoAppId: "test",
+      },
+    },
+    update: {
+      id: "116240000000067007",
+      zohoApp: {
+        connect: {
+          id: "test",
+        },
+      },
+      warehouse: {
+        connect: {
+          id: "test",
+        },
+      },
+    },
+    create: {
+      id: "116240000000067007",
+      zohoApp: {
+        connect: {
+          id: "test",
+        },
+      },
+      warehouse: {
+        connect: {
+          id: "test",
+        },
+      },
+    },
+  });
+  if (LOGGING) console.log("created and connected zoho warehozse with warehouse");
 }
 
 export async function connectZohoBankToBraintreeCardPm(prisma: PrismaClient) {
@@ -414,11 +457,6 @@ export async function upsertLineItem1(
           id: "test",
         },
       },
-      warehouse: {
-        connect: {
-          id: "test",
-        },
-      },
     },
   });
   if (LOGGING) console.log("created one generic lineitem for the order");
@@ -467,11 +505,6 @@ export async function upsertLineItemWithRealProductVariantFromZoho(
           id: "test",
         },
       },
-      warehouse: {
-        connect: {
-          id: "test",
-        },
-      },
     },
   });
   if (LOGGING) console.log("created one generic lineitem for the order");
@@ -513,11 +546,6 @@ export async function upsertLineItem2(
         },
       },
       tenant: {
-        connect: {
-          id: "test",
-        },
-      },
-      warehouse: {
         connect: {
           id: "test",
         },

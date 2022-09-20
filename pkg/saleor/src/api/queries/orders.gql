@@ -75,12 +75,6 @@ query saleorCronOrderDetails($id: ID!) {
       variant {
         sku
       }
-      allocations {
-        warehouse {
-          id
-          name
-        }
-      }
       quantity
       unitDiscountType
       unitDiscountValue
