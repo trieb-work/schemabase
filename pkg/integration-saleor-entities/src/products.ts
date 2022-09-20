@@ -10,6 +10,7 @@ import { PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
+// import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils";
 
 interface SaleorProductSyncServiceConfig {
   saleorClient: {
@@ -88,7 +89,7 @@ export class SaleorProductSyncService {
     const products = response.products?.edges.map((x) => x.node);
 
     if (!products) {
-      this.logger.info("No products returned from saleor! Can't sync");
+      this.logger.info("No products returned from saleor! Aborting sync");
       return;
     }
 
@@ -106,123 +107,164 @@ export class SaleorProductSyncService {
       const normalizedProductName = normalizeStrings.productNames(product.name);
 
       for (const variant of product.variants) {
-        if (!variant) throw new Error("Variant empty");
-        if (!variant?.sku) {
-          this.logger.warn(
-            `Product Variant ${variant?.id} has no SKU! Cant't sync`,
-          );
+        try{
+          if (!variant) {
+            throw new Error("Variant empty");
+          }
+          if (!variant?.sku) {
+            throw new Error(`Product Variant ${variant?.id} has no SKU! Aborting sync`);
+          }
+          if(!variant?.stocks || variant.stocks.length === 0){
+            throw new Error(`Product Variant has no stocks (warehouses) assigned, therefore we can not determine the default warehouse. Aborting sync.`);
+          }
+          if(variant?.stocks?.length > 1){
+            throw new Error(`Product Variant has multiple stocks (warehouses) assigned, therefore we can not determine the default warehouse. Aborting sync.`);
+          }
+          if(!variant.stocks?.[0]?.warehouse?.name){
+            throw new Error(`First Warehouse of Product Variant (the default warehouse) has no name set. Aborting sync.`);
+          }
+          const normalizedDefaultWarehouseName = normalizeStrings.warehouseNames(variant.stocks?.[0]?.warehouse.name);
+  
+          /**
+           * The product variants EAN-13 number. Stored as metadata field in Saleor
+           */
+          const ean = variant.metadata.find((meta) => meta?.key === "EAN")?.value;
+  
+          await this.db.saleorProductVariant.upsert({
+            where: {
+              id_installedSaleorAppId: {
+                id: variant.id,
+                installedSaleorAppId: this.installedSaleorAppId,
+              },
+            },
+            create: {
+              id: variant!.id,
+              productId: product.id,
+              updatedAt: product.updatedAt,
+              installedSaleorApp: {
+                connect: {
+                  id: this.installedSaleorAppId,
+                },
+              },
+              productVariant: {
+                connectOrCreate: {
+                  where: {
+                    sku_tenantId: {
+                      sku: variant.sku,
+                      tenantId: this.tenantId,
+                    },
+                  },
+                  create: {
+                    // TODO: does it make sense to set stock entries here as well
+                    id: id.id("variant"),
+                    defaultWarehouse: {
+                      connect: {
+                        normalizedName_tenantId: {
+                          normalizedName: normalizedDefaultWarehouseName,
+                          tenantId: this.tenantId,
+                        }
+                      }
+                    },
+                    sku: variant.sku,
+                    ean,
+                    tenant: {
+                      connect: {
+                        id: this.tenantId,
+                      },
+                    },
+                    product: {
+                      connectOrCreate: {
+                        where: {
+                          normalizedName_tenantId: {
+                            normalizedName: normalizedProductName,
+                            tenantId: this.tenantId,
+                          },
+                        },
+                        create: {
+                          id: id.id("product"),
+                          tenant: {
+                            connect: {
+                              id: this.tenantId,
+                            },
+                          },
+                          name: product.name,
+                          normalizedName: normalizedProductName,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            update: {
+              updatedAt: product.updatedAt,
+              productId: product.id,
+              productVariant: {
+                connectOrCreate: {
+                  where: {
+                    sku_tenantId: {
+                      sku: variant.sku,
+                      tenantId: this.tenantId,
+                    },
+                  },
+                  create: {
+                    // TODO: does it make sense to set stock entries here as well
+                    id: id.id("variant"),
+                    defaultWarehouse: {
+                      connect: {
+                        normalizedName_tenantId: {
+                          normalizedName: normalizedDefaultWarehouseName,
+                          tenantId: this.tenantId,
+                        }
+                      }
+                    },
+                    sku: variant.sku,
+                    ean,
+                    tenant: {
+                      connect: {
+                        id: this.tenantId,
+                      },
+                    },
+                    product: {
+                      connectOrCreate: {
+                        where: {
+                          normalizedName_tenantId: {
+                            normalizedName: normalizedProductName,
+                            tenantId: this.tenantId,
+                          },
+                        },
+                        create: {
+                          id: id.id("product"),
+                          tenant: {
+                            connect: {
+                              id: this.tenantId,
+                            },
+                          },
+                          name: product.name,
+                          normalizedName: normalizedProductName,
+                        },
+                      },
+                    },
+                  },
+                },
+                update: {
+                  // TODO: does it make sense to update stock entries here as well
+                  defaultWarehouse: {
+                    connect: {
+                      normalizedName_tenantId: {
+                        normalizedName: normalizedDefaultWarehouseName,
+                        tenantId: this.tenantId,
+                      }
+                    }
+                  },
+                  ean,
+                },
+              },
+            },
+          });
+        } catch(err) {
+          
         }
-
-        /**
-         * The product variants EAN-13 number. Stored as metadata field in Saleor
-         */
-        const ean = variant.metadata.find((meta) => meta?.key === "EAN")?.value;
-
-        await this.db.saleorProductVariant.upsert({
-          where: {
-            id_installedSaleorAppId: {
-              id: variant.id,
-              installedSaleorAppId: this.installedSaleorAppId,
-            },
-          },
-          create: {
-            id: variant!.id,
-            productId: product.id,
-            updatedAt: product.updatedAt,
-            installedSaleorApp: {
-              connect: {
-                id: this.installedSaleorAppId,
-              },
-            },
-            productVariant: {
-              connectOrCreate: {
-                where: {
-                  sku_tenantId: {
-                    sku: variant.sku,
-                    tenantId: this.tenantId,
-                  },
-                },
-                create: {
-                  id: id.id("variant"),
-                  sku: variant.sku,
-                  ean,
-                  tenant: {
-                    connect: {
-                      id: this.tenantId,
-                    },
-                  },
-                  product: {
-                    connectOrCreate: {
-                      where: {
-                        normalizedName_tenantId: {
-                          normalizedName: normalizedProductName,
-                          tenantId: this.tenantId,
-                        },
-                      },
-                      create: {
-                        id: id.id("product"),
-                        tenant: {
-                          connect: {
-                            id: this.tenantId,
-                          },
-                        },
-                        name: product.name,
-                        normalizedName: normalizedProductName,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          update: {
-            updatedAt: product.updatedAt,
-            productId: product.id,
-            productVariant: {
-              connectOrCreate: {
-                where: {
-                  sku_tenantId: {
-                    sku: variant.sku,
-                    tenantId: this.tenantId,
-                  },
-                },
-                create: {
-                  id: id.id("variant"),
-                  sku: variant.sku,
-                  ean,
-                  tenant: {
-                    connect: {
-                      id: this.tenantId,
-                    },
-                  },
-                  product: {
-                    connectOrCreate: {
-                      where: {
-                        normalizedName_tenantId: {
-                          normalizedName: normalizedProductName,
-                          tenantId: this.tenantId,
-                        },
-                      },
-                      create: {
-                        id: id.id("product"),
-                        tenant: {
-                          connect: {
-                            id: this.tenantId,
-                          },
-                        },
-                        name: product.name,
-                        normalizedName: normalizedProductName,
-                      },
-                    },
-                  },
-                },
-              },
-              update: {
-                ean,
-              },
-            },
-          },
-        });
       }
     }
 

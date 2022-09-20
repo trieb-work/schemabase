@@ -172,7 +172,6 @@ export class ZohoPaymentSyncService {
   public async syncFromECI(): Promise<void> {
     const paymentsWithoutZohoPaymentFromEciDb = await this.db.payment.findMany({
       where: {
-        // TODO: make sure order and then invoice is created before this job runs
         tenant: {
           id: this.zohoApp.tenantId,
         },
@@ -185,7 +184,7 @@ export class ZohoPaymentSyncService {
         // filter out orders which are newer than 30min to increase the likelihood that the
         // zoho invoice was created
         createdAt: {
-          lte: addMinutes(new Date(), -30),
+          lte: addMinutes(new Date(), -30), // TODO: schedule hint: make sure order and then invoice is created before this job runs
         },
         // TEST this out: make sure braintree sync runs before this sync
         NOT: {
@@ -265,7 +264,11 @@ export class ZohoPaymentSyncService {
         ),
       },
     );
+    debugger;
     for (const payment of paymentsWithoutZohoPaymentFromEciDb) {
+      if(payment.referenceNumber === "1agh010j" || payment.referenceNumber === "85jhgcqt"){
+        debugger;
+      }
       try {
         const zba = payment.paymentMethod.zohoBankAccount;
         if (!zba) {
@@ -319,6 +322,9 @@ export class ZohoPaymentSyncService {
             "Can only sync payments to zoho if the payment is accociated to an Order. Otherwise it is not possible to connect the zoho payment to a zoho customer.",
           );
         }
+        if(!payment?.order?.invoices || payment?.order?.invoices?.length === 0){
+          throw new Warning("No Invoices attached to Order. Aborting Sync and retry next time.");
+        }
         const invoices: CreatePayment["invoices"] = [];
         for (const inv of payment.order.invoices) {
           if (inv.zohoInvoice.length !== 1) {
@@ -342,6 +348,7 @@ export class ZohoPaymentSyncService {
           );
         }
 
+        this.logger.debug(`Creating a zoho payment for Reference Number ${payment.referenceNumber} Order Number ${payment.order.orderNumber}`);
         const createdPayment = await this.zoho.payment.create({
           amount: payment.amount,
           account_id: zba.id,
@@ -384,6 +391,7 @@ export class ZohoPaymentSyncService {
       } catch (err) {
         const defaultLogFields = {
           eciPaymentId: payment.id,
+          eciPaymentReferenceNumber: payment.referenceNumber,
           eciOrderId: payment.orderId,
         };
         if (err instanceof Warning) {

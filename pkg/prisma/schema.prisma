@@ -653,9 +653,10 @@ model Warehouse {
 
   xentralProxyIntegration XentralProxyIntegration[]
 
-  orderLineItems   OrderLineItem[]
-  packageLineItems PackageLineItem[]
-  stockEntries     StockEntries[]
+  orderLineItems       OrderLineItem[]
+  packageLineItems     PackageLineItem[]
+  stockEntries         StockEntries[]
+  isDefaultWarehouseOf ProductVariant[]
 
   @@unique([name, tenantId])
   @@unique([normalizedName, tenantId])
@@ -1205,6 +1206,9 @@ model ProductVariant {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
+  defaultWarehouse   Warehouse @relation(fields: [defaultWarehouseId], references: [id], onDelete: Cascade)
+  defaultWarehouseId String
+
   stockEntries StockEntries[]
 
   orderLineItem OrderLineItem[]
@@ -1291,13 +1295,11 @@ model StockEntries {
   productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
   productVariantId String
 
-  // Physical stock entries
-  // // Stock, that is commited in not
-  // // finished orders
+  /// Physical stock entries; Stock, that is commited in not finished orders
   actualCommittedStock        Int @default(0)
-  // // Total stock in this warehouse right now
+  /// Total stock in this warehouse right now
   actualAvailableStock        Int @default(0)
-  // // Total stock that is not commited and ready for sale
+  /// Total stock that is not commited and ready for sale
   actualAvailableForSaleStock Int @default(0)
 
   @@unique([warehouseId, productVariantId, tenantId])
@@ -1305,7 +1307,7 @@ model StockEntries {
   @@index([warehouseId])
 }
 
-// Internal model to store braintree payment gateway settings for tenants
+/// Internal model to store braintree payment gateway settings for tenants
 model BraintreeApp {
   id String @id
 

@@ -10495,6 +10495,10 @@ export type SaleorEntitySyncProductsQuery = {
             key: string;
             value: string;
           } | null>;
+          stocks?: Array<{
+            __typename?: "Stock";
+            warehouse: { __typename?: "Warehouse"; name: string; id: string };
+          } | null> | null;
           variantAttributes: Array<{
             __typename?: "SelectedAttribute";
             attribute: { __typename?: "Attribute"; name?: string | null };
@@ -11098,6 +11102,12 @@ export const SaleorEntitySyncProductsDocument = gql`
             metadata {
               key
               value
+            }
+            stocks {
+              warehouse {
+                name
+                id
+              }
             }
             variantAttributes: attributes(variantSelection: VARIANT_SELECTION) {
               attribute {

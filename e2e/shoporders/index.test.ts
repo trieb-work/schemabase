@@ -247,61 +247,60 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
   //   }
   // });
 
-  test("Test 1: Preparation", async () => {
-    // TODO create an order in saleor
-    console.info("Test 1 started");
-    console.log("sync saleor paymentGateways to ECI (and create saleoPaymentGateway & paymentMethod)")
-    await saleorPaymentGatewaySyncService.syncToECI();
-    console.log("Sync zoho bank accounts to ECI")
-    await zohoBankAccountsSyncService.syncToECI();
-    console.log("manually connect Zoho Bank accounts with payment methods")
-    await Promise.all([
-      connectZohoBankToBraintreeCardPm(prismaClient),
-      connectZohoBankToBraintreePaypalPm(prismaClient),
-      // connectZohoBankToBanktransferPm(prismaClient), // TODO add setup of banktransfer GW in saleor testing
-    ]);
-    console.log("sync saleor warehouses to ECI (and connectOrCreate warehouses)")
-    await saleorWarehouseSyncService.syncToECI();
-    console.log("sync saleor products to ECI (and create product & productVariants)")
-    await saleorProductSyncService.syncToECI();
-    console.log("sync zoho warehouses to ECI (and connectOrCreate warehouses)")
-    await zohoWarehouseSyncService.syncToECI();
-    console.log("sync zoho items to ECI (and connect them with product variants)")
-    await zohoItemSyncService.syncToECI();
-    console.log("sync zoho taxes to ECI (and create zohoTax & tax)")
-    await zohoTaxSyncService.syncToECI();
-    console.info("Test 1 completed");
-  }, 90000);
+  // test("Test 1: Preparation", async () => {
+  //   // TODO create an order in saleor
+  //   console.info("Test 1 started");
+  //   console.log("sync saleor paymentGateways to ECI (and create saleoPaymentGateway & paymentMethod)")
+  //   await saleorPaymentGatewaySyncService.syncToECI();
+  //   console.log("Sync zoho bank accounts to ECI")
+  //   await zohoBankAccountsSyncService.syncToECI();
+  //   console.log("manually connect Zoho Bank accounts with payment methods")
+  //   await Promise.all([
+  //     connectZohoBankToBraintreeCardPm(prismaClient),
+  //     connectZohoBankToBraintreePaypalPm(prismaClient),
+  //     // connectZohoBankToBanktransferPm(prismaClient), // TODO add setup of banktransfer GW in saleor testing
+  //   ]);
+  //   console.log("sync saleor warehouses to ECI (and connectOrCreate warehouses)")
+  //   await saleorWarehouseSyncService.syncToECI();
+  //   console.log("sync saleor products to ECI (and create product & productVariants)")
+  //   await saleorProductSyncService.syncToECI();
+  //   console.log("sync zoho warehouses to ECI (and connectOrCreate warehouses)")
+  //   await zohoWarehouseSyncService.syncToECI();
+  //   console.log("sync zoho items to ECI (and connect them with product variants)")
+  //   await zohoItemSyncService.syncToECI();
+  //   console.log("sync zoho taxes to ECI (and create zohoTax & tax)")
+  //   await zohoTaxSyncService.syncToECI();
+  //   console.info("Test 1 completed");
+  // }, 90000);
 
   test("Test 2: Order and sub-entities to ECI", async () => {
-    console.info("Test 2 started");
+  //   console.info("Test 2 started");
     console.log("sync all orders from saleor to ECI (connectOrCreate: Contact, Order, orderLineItem, tax, warehouse, productVariant, Address)");
-    await saleorOrderSyncService.syncToECI();
-    console.log("sync payments from saleor to ECI (and connect them with payment method)");
-    console.log("sync all transaction fees from braintree to ECI (and connectOrCreate them with a payment & connectOrCreate payment method)");
-    // NOTE: these services can run in parallel because the both do an upsert based on the transaction id
-    await Promise.all([
-      saleorPaymentSyncService.syncToECI(),
-      braintreeTransactionSyncService.syncToECI(),
-    ])
+    await saleorOrderSyncService.syncToECI(); // TODO discuss warehouse allocation problem
+  //   console.log("sync payments from saleor to ECI (and connect them with payment method)");
+  //   console.log("sync all transaction fees from braintree to ECI (and connectOrCreate them with a payment & connectOrCreate payment method)");
+  //   // NOTE: these services can run in parallel because the both do an upsert based on the transaction id
+  //   await Promise.all([
+  //     saleorPaymentSyncService.syncToECI(),
+  //     braintreeTransactionSyncService.syncToECI(),
+  //   ])
     console.info("Test 2 completed");
   }, 190000);
 
 
-  // test("Test 3: Order and sub-entities to Zoho", async () => {
-  //   console.info("Test 3 started");
-  //   // sync all contacts to zoho contacts & zoho contact persons from ECI
-  //   // also sync all addresses to zoho addresses and connect them with zoho contacts/contact persons
-  //   await zohoContactSyncService.syncFromECI();
+  test("Test 3: Order and sub-entities to Zoho", async () => {
+    console.info("Test 3 started");
+    // console.log("sync all contacts to zoho contacts & zoho contact persons & addresses from ECI")
+    // await zohoContactSyncService.syncFromECI();
     
-  //   // sync all orders to zoho salesorders from ECI (and connect salesorder in zoho with: tax, items, warehouses, customer_id: mainCoctact, addresses, contact_persons:[mainContact.contactPerson])
-  //   await zohoSalesOrdersSyncService.syncFromECI();
+    console.log("sync all orders to zoho salesorders from ECI (and connect salesorder in zoho with: tax, items, warehouses, customer_id: mainCoctact, addresses, contact_persons:[mainContact.contactPerson])");
+    // await zohoSalesOrdersSyncService.syncFromECI();
 
-  //   // create invoices from zoho salesorders and sync the created invoices back to ECI DB (creates ECI invoice & zoho invocie in ECI DB)
-  //   await zohoSalesOrdersSyncService.syncFromECI_autocreateInvoiceFromSalesorder();
+    // console.log("create invoices from zoho salesorders and sync the created invoices back to ECI DB (creates ECI invoice & zoho invocie in ECI DB)");
+    // await zohoInvoiceSyncService.syncFromECI_autocreateInvoiceFromSalesorder();
 
-  //   // sync all payments to zoho from ECI (and connect the payments in zoho with: order.invoices and the order.mainContact)
-  //   await zohoPaymentSyncService.syncFromECI();
-  //   console.info("Test 3 completed");
-  // }, 190000);
+    // console.log("sync all payments to zoho from ECI (and connect the payments in zoho with: order.invoices and the order.mainContact)");
+    // await zohoPaymentSyncService.syncFromECI();
+    console.info("Test 3 completed");
+  }, 190000);
 });

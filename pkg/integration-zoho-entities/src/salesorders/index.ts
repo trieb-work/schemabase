@@ -759,7 +759,7 @@ export class ZohoSalesOrdersSyncService {
             }
           } else {
             this.logger.error(
-              "Failed during Salesorder sync loop. Orgiginal Error: " +
+              "Failed during Salesorder sync loop. Original Error: " +
                 err.message,
               {
                 eciOrderId: order.id,

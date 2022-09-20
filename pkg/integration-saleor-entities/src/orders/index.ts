@@ -21,6 +21,7 @@ import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline
 import { round } from "reliable-round";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import addresses from "./addresses";
+import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils";
 
 interface SaleorOrderSyncServiceConfig {
   saleorClient: {
@@ -118,271 +119,305 @@ export class SaleorOrderSyncService {
     this.logger.info(`Working on ${orders.length} orders`);
 
     for (const order of orders) {
-      if (!order.number || typeof order.number === "undefined") {
-        this.logger.error(`No orderNumber in order ${order.id} - Can't sync`);
-        continue;
-      }
-      const prefixedOrderNumber = `${this.orderPrefix}-${order.number}`;
+      try{
+        if (!order.number || typeof order.number === "undefined") {
+          throw new Error(`No orderNumber in order. Can't sync.`);
+        }
+        const prefixedOrderNumber = `${this.orderPrefix}-${order.number}`;
 
-      if (!order.userEmail) {
-        this.logger.error(
-          `No user email given for order ${prefixedOrderNumber} - ${order.id}. Can't proceed`,
-        );
-        continue;
-      }
+        if (!order.userEmail) {
+          throw new Error(`No user email given for order. Can't sync.`);
+        }
 
-      const email = order.userEmail.toLowerCase();
-      const companyName = order.billingAddress?.companyName;
+        const email = order.userEmail.toLowerCase();
+        const companyName = order.billingAddress?.companyName;
 
-      const companyCreateOrConnect: Prisma.CompanyCreateNestedOneWithoutContactsInput =
-        companyName
-          ? {
-              connectOrCreate: {
-                where: {
-                  normalizedName_tenantId: {
-                    normalizedName: normalizeStrings.companyNames(companyName),
-                    tenantId: this.tenantId,
+        const companyCreateOrConnect: Prisma.CompanyCreateNestedOneWithoutContactsInput =
+          companyName
+            ? {
+                connectOrCreate: {
+                  where: {
+                    normalizedName_tenantId: {
+                      normalizedName: normalizeStrings.companyNames(companyName),
+                      tenantId: this.tenantId,
+                    },
                   },
-                },
-                create: {
-                  id: id.id("company"),
-                  name: companyName,
-                  normalizedName: normalizeStrings.companyNames(companyName),
-                  tenant: {
-                    connect: {
-                      id: this.tenantId,
+                  create: {
+                    id: id.id("company"),
+                    name: companyName,
+                    normalizedName: normalizeStrings.companyNames(companyName),
+                    tenant: {
+                      connect: {
+                        id: this.tenantId,
+                      },
                     },
                   },
                 },
+              }
+            : {};
+        const contactCreateOrConnect = {
+          connectOrCreate: {
+            where: {
+              email_tenantId: {
+                email,
+                tenantId: this.tenantId,
               },
-            }
-          : {};
-      const contactCreateOrConnect = {
-        connectOrCreate: {
-          where: {
-            email_tenantId: {
+            },
+            create: {
+              id: id.id("contact"),
               email,
-              tenantId: this.tenantId,
-            },
-          },
-          create: {
-            id: id.id("contact"),
-            email,
-            firstName: order.billingAddress?.firstName,
-            lastName: order.billingAddress?.lastName,
-            company: companyCreateOrConnect,
-            tenant: {
-              connect: {
-                id: this.tenantId,
+              firstName: order.billingAddress?.firstName,
+              lastName: order.billingAddress?.lastName,
+              company: companyCreateOrConnect,
+              tenant: {
+                connect: {
+                  id: this.tenantId,
+                },
               },
             },
           },
-        },
-      };
-
-      const orderStatusMapping: { [key in OrderStatus]: InternalOrderStatus } =
-        {
-          [OrderStatus.Canceled]: "canceled",
-          [OrderStatus.Draft]: "draft",
-          [OrderStatus.Unfulfilled]: "confirmed",
-          [OrderStatus.Fulfilled]: "confirmed",
-          [OrderStatus.PartiallyFulfilled]: "confirmed",
-          [OrderStatus.Returned]: "confirmed",
-          [OrderStatus.Unconfirmed]: "unconfirmed",
-          [OrderStatus.PartiallyReturned]: "confirmed",
         };
-      const orderStatus = orderStatusMapping[order.status];
 
-      const paymentStatusMapping: {
-        [key in PaymentChargeStatusEnum]: InternalOrderPaymentStatus;
-      } = {
-        [PaymentChargeStatusEnum.Cancelled]: "unpaid",
-        [PaymentChargeStatusEnum.FullyCharged]: "fullyPaid",
-        [PaymentChargeStatusEnum.FullyRefunded]: "fullyRefunded",
-        [PaymentChargeStatusEnum.NotCharged]: "unpaid",
-        [PaymentChargeStatusEnum.PartiallyCharged]: "partiallyPaid",
-        [PaymentChargeStatusEnum.PartiallyRefunded]: "partiallyRefunded",
-        [PaymentChargeStatusEnum.Pending]: "unpaid",
-        [PaymentChargeStatusEnum.Refused]: "unpaid",
-      };
+        const orderStatusMapping: { [key in OrderStatus]: InternalOrderStatus } =
+          {
+            [OrderStatus.Canceled]: "canceled",
+            [OrderStatus.Draft]: "draft",
+            [OrderStatus.Unfulfilled]: "confirmed",
+            [OrderStatus.Fulfilled]: "confirmed",
+            [OrderStatus.PartiallyFulfilled]: "confirmed",
+            [OrderStatus.Returned]: "confirmed",
+            [OrderStatus.Unconfirmed]: "unconfirmed",
+            [OrderStatus.PartiallyReturned]: "confirmed",
+          };
+        const orderStatus = orderStatusMapping[order.status];
 
-      const paymentStatus = paymentStatusMapping[order.paymentStatus];
+        const paymentStatusMapping: {
+          [key in PaymentChargeStatusEnum]: InternalOrderPaymentStatus;
+        } = {
+          [PaymentChargeStatusEnum.Cancelled]: "unpaid",
+          [PaymentChargeStatusEnum.FullyCharged]: "fullyPaid",
+          [PaymentChargeStatusEnum.FullyRefunded]: "fullyRefunded",
+          [PaymentChargeStatusEnum.NotCharged]: "unpaid",
+          [PaymentChargeStatusEnum.PartiallyCharged]: "partiallyPaid",
+          [PaymentChargeStatusEnum.PartiallyRefunded]: "partiallyRefunded",
+          [PaymentChargeStatusEnum.Pending]: "unpaid",
+          [PaymentChargeStatusEnum.Refused]: "unpaid",
+        };
 
-      const upsertedOrder = await this.db.saleorOrder.upsert({
-        where: {
-          id_installedSaleorAppId: {
-            id: order.id,
-            installedSaleorAppId: this.installedSaleorAppId,
-          },
-        },
-        create: {
-          id: order.id,
-          installedSaleorApp: {
-            connect: {
-              id: this.installedSaleorAppId,
-            },
-          },
-          createdAt: order.created,
-          order: {
-            connectOrCreate: {
-              where: {
-                orderNumber_tenantId: {
-                  orderNumber: prefixedOrderNumber,
-                  tenantId: this.tenantId,
-                },
-              },
-              create: {
-                id: id.id("order"),
-                orderNumber: prefixedOrderNumber,
-                date: new Date(order.created),
-                totalPriceGross: order.total.gross.amount,
-                orderStatus,
-                paymentStatus, // TODO: how will this thing be updated and kept in sync by other services? -> Maybe move it into Payment.status and access it via payments[0].status?
-                mainContact: contactCreateOrConnect,
-                shippingAddress: {},
-                billingAddress: {},
-                tenant: {
-                  connect: {
-                    id: this.tenantId,
-                  },
-                },
-              },
-            },
-          },
-        },
-        update: {
-          order: {
-            update: {
-              totalPriceGross: order.total.gross.amount,
-              orderStatus,
-              mainContact: contactCreateOrConnect,
-            },
-          },
-        },
-        include: {
-          order: true,
-        },
-      });
+        const paymentStatus = paymentStatusMapping[order.paymentStatus];
 
-      const orderDetails = await this.saleorClient.saleorCronOrderDetails({
-        id: order.id,
-      });
-      if (!orderDetails) {
-        this.logger.error(
-          `Can't get order details from saleor for order ${order.id}!`,
-        );
-        // TODO maybe also rewrite with try/catch Error/Warning class.
-        continue;
-      }
-      const lineItems = orderDetails.order?.lines;
-      if (!lineItems) {
-        this.logger.error(`No line items returned for order ${order.id}!`);
-        continue;
-      }
-
-      const saleorWarehouses = await this.db.saleorWarehouse.findMany({
-        where: {
-          installedSaleorAppId: this.installedSaleorAppId,
-        },
-      });
-
-      // loop through all line items and upsert them in the DB
-      for (const lineItem of lineItems) {
-        if (!lineItem?.id) continue;
-        if (!lineItem?.variant?.sku) continue;
-
-        if (!lineItem.allocations || lineItem.allocations.length === 0) {
-          this.logger.warn(
-            `No warehouse allocations given for this lineItem ${lineItem.id} - ${order.number}`,
-          );
-          continue;
-        }
-        if (lineItem.allocations.length > 1) {
-          this.logger.error(
-            `More than one warehouse allocation given for ${lineItem.id} - ${order.number}`,
-          );
-          continue;
-        }
-        const warehouse = saleorWarehouses.find(
-          (wh) => wh.id === lineItem?.allocations?.[0].warehouse.id,
-        )?.warehouseId;
-
-        if (!warehouse) {
-          this.logger.error(
-            `No saleor warehouse found internally for saleor warehouse Id ${JSON.stringify(
-              lineItem.allocations,
-            )}`,
-          );
-          continue;
-        }
-
-        const productSku = await this.db.productVariant.findUnique({
-          where: {
-            sku_tenantId: {
-              sku: lineItem.variant.sku,
-              tenantId: this.tenantId,
-            },
-          },
-        });
-        if (!productSku) {
-          this.logger.warn(
-            `No internal product variant found for SKU ${lineItem.variant.sku}! Can't create line Item`,
-          );
-          continue;
-        }
-
-        const uniqueString = uniqueStringOrderLine(
-          prefixedOrderNumber,
-          lineItem.variant.sku,
-          lineItem.quantity,
-        );
-
-        // Before Saleor 3.3.13, the discount value is calculated on the
-        // gross price (which is just bullshit :D) so we have to calculate the discountValueNet
-        // manually
-        const discountValueNet = round(
-          lineItem.unitDiscountValue === 0
-            ? 0
-            : lineItem.undiscountedUnitPrice.net.amount * lineItem.quantity -
-                lineItem.totalPrice.net.amount,
-          2,
-        );
-
-        if (discountValueNet < 0)
-          throw new Error(
-            `Calculated saleor discount is negative: ${discountValueNet}! This can never be. Failing..`,
-          );
-
-        await this.db.saleorOrderLineItem.upsert({
+        const upsertedOrder = await this.db.saleorOrder.upsert({
           where: {
             id_installedSaleorAppId: {
-              id: lineItem.id,
+              id: order.id,
               installedSaleorAppId: this.installedSaleorAppId,
             },
           },
           create: {
-            id: lineItem.id,
-            orderLineItem: {
+            id: order.id,
+            installedSaleorApp: {
+              connect: {
+                id: this.installedSaleorAppId,
+              },
+            },
+            createdAt: order.created,
+            order: {
               connectOrCreate: {
                 where: {
-                  uniqueString_tenantId: {
-                    uniqueString,
+                  orderNumber_tenantId: {
+                    orderNumber: prefixedOrderNumber,
                     tenantId: this.tenantId,
                   },
                 },
                 create: {
-                  id: id.id("lineItem"),
+                  id: id.id("order"),
+                  orderNumber: prefixedOrderNumber,
+                  date: new Date(order.created),
+                  totalPriceGross: order.total.gross.amount,
+                  orderStatus,
+                  paymentStatus, // TODO: how will this thing be updated and kept in sync by other services? -> Maybe move it into Payment.status and access it via payments[0].status?
+                  mainContact: contactCreateOrConnect,
+                  shippingAddress: {},
+                  billingAddress: {},
                   tenant: {
                     connect: {
                       id: this.tenantId,
                     },
                   },
-                  uniqueString,
-                  order: {
-                    connect: {
-                      id: upsertedOrder.orderId,
+                },
+              },
+            },
+          },
+          update: {
+            order: {
+              update: {
+                totalPriceGross: order.total.gross.amount,
+                orderStatus,
+                mainContact: contactCreateOrConnect,
+              },
+            },
+          },
+          include: {
+            order: true,
+          },
+        });
+
+        const orderDetails = await this.saleorClient.saleorCronOrderDetails({
+          id: order.id,
+        });
+        if (!orderDetails) {
+          throw new Error(`Can't get order details from saleor! Aborting sync and retry next time.`);
+        }
+        const lineItems = orderDetails.order?.lines;
+        if (!lineItems) {
+          throw new Error(`No line items returned for order! Aborting sync and retry next time.`);
+        }
+
+        const saleorWarehouses = await this.db.saleorWarehouse.findMany({
+          where: {
+            installedSaleorAppId: this.installedSaleorAppId,
+          },
+        });
+
+        // loop through all line items and upsert them in the DB
+        for (const lineItem of lineItems) {
+          if (!lineItem?.id) {
+            throw new Error(`Lineitem of Order has a missing id in saleor response.`);
+          };
+          if (!lineItem?.variant?.sku) {
+            throw new Error(`Lineitem of Order is missing the variant sku in saleor response.`);
+          }
+
+          // TODO discuss were should we get the warehouse from? -> Or can/should we remove it from OrderLineItem type and move it to ProductVariant 
+          //    (then we can sync it with item sync, this would make it simpler but would limit the functionality in such a way that one variant can only exist in one warehouse 
+          //        (possible solutions ProductVariant.defaultWarehouse & ProductVariant.warehouses & [Package routing logic can also get extended in the future] ) )
+          //      if we decide to move this we also have to add warehouse sync to saleorProduct & zohoItemSync + adap zohoSalesOrderSync
+          // warehouse allocations, does not work as expected. The allocations array is empty sometimes (I think its empty if the order was created while the product variants has track invetory set to off).
+          if (!lineItem.allocations || lineItem.allocations.length === 0) {
+            throw new Error(
+              `The variant with SKU ${lineItem.variant.sku} has no warehouse allocations set in saleor. `+
+              `Therefore this Order can not be created because we can not create a lineItem without a warehouse. `+
+              `Please allocate/assign a warehouse to this variant in saleor. Will retry to create this order in next sync run.`
+            );
+          }
+          if (lineItem.allocations.length > 1) {
+            throw new Warning(
+              `The variant with SKU ${lineItem.variant.sku} has multiple warehouse allocations set in saleor. `+
+              `Therefore this Order can not be created because we can not determine the warehouse for this lineItem. `+
+              `Please allocate/assign only one warehouse to this variant in saleor. Will retry to create this order in next sync run.`
+            );
+          }
+          const warehouse = saleorWarehouses.find(
+            (wh) => wh.id === lineItem?.allocations?.[0].warehouse.id,
+          )?.warehouseId;
+
+          if (!warehouse) {
+            throw new Error(
+              `No saleor warehouse found internally for saleor warehouse Id ${JSON.stringify(lineItem.allocations)}`,
+            );
+          }
+
+          const productSku = await this.db.productVariant.findUnique({
+            where: {
+              sku_tenantId: {
+                sku: lineItem.variant.sku,
+                tenantId: this.tenantId,
+              },
+            },
+          });
+          if (!productSku) {
+            throw new Warning(
+              `No internal product variant found for SKU ${lineItem.variant.sku}! Can't create line Item. Try again after Product Variant Sync.`,
+            );
+          }
+
+          const uniqueString = uniqueStringOrderLine(
+            prefixedOrderNumber,
+            lineItem.variant.sku,
+            lineItem.quantity,
+          );
+
+          // Before Saleor 3.3.13, the discount value is calculated on the
+          // gross price (which is just bullshit :D) so we have to calculate the discountValueNet
+          // manually
+          const discountValueNet = round(
+            lineItem.unitDiscountValue === 0
+              ? 0
+              : lineItem.undiscountedUnitPrice.net.amount * lineItem.quantity -
+                  lineItem.totalPrice.net.amount,
+            2,
+          );
+
+          if (discountValueNet < 0) {
+            throw new Error(
+              `Calculated saleor discount is negative: ${discountValueNet}! This can never be. Failing..`,
+            );
+          }
+
+          await this.db.saleorOrderLineItem.upsert({
+            where: {
+              id_installedSaleorAppId: {
+                id: lineItem.id,
+                installedSaleorAppId: this.installedSaleorAppId,
+              },
+            },
+            create: {
+              id: lineItem.id,
+              orderLineItem: {
+                connectOrCreate: {
+                  where: {
+                    uniqueString_tenantId: {
+                      uniqueString,
+                      tenantId: this.tenantId,
                     },
                   },
+                  create: {
+                    id: id.id("lineItem"),
+                    tenant: {
+                      connect: {
+                        id: this.tenantId,
+                      },
+                    },
+                    uniqueString,
+                    order: {
+                      connect: {
+                        id: upsertedOrder.orderId,
+                      },
+                    },
+                    quantity: lineItem.quantity,
+                    discountValueNet,
+                    totalPriceNet: lineItem.totalPrice.net.amount,
+                    totalPriceGross: lineItem.totalPrice.gross.amount,
+                    tax: {
+                      connect: {
+                        percentage_tenantId: {
+                          percentage: lineItem.taxRate * 100,
+                          tenantId: this.tenantId,
+                        },
+                      },
+                    },
+                    productVariant: {
+                      connect: {
+                        id: productSku.id,
+                      },
+                    },
+                    warehouse: {
+                      connect: {
+                        id: warehouse,
+                      },
+                    },
+                  },
+                },
+              },
+              installedSaleorApp: {
+                connect: {
+                  id: this.installedSaleorAppId,
+                },
+              },
+            },
+            update: {
+              orderLineItem: {
+                update: {
                   quantity: lineItem.quantity,
                   discountValueNet,
                   totalPriceNet: lineItem.totalPrice.net.amount,
@@ -400,6 +435,12 @@ export class SaleorOrderSyncService {
                       id: productSku.id,
                     },
                   },
+                  order: {
+                    update: {
+                      shippingPriceGross:
+                        orderDetails.order?.shippingPrice.gross.amount,
+                    },
+                  },
                   warehouse: {
                     connect: {
                       id: warehouse,
@@ -408,71 +449,49 @@ export class SaleorOrderSyncService {
                 },
               },
             },
-            installedSaleorApp: {
-              connect: {
-                id: this.installedSaleorAppId,
-              },
-            },
-          },
-          update: {
-            orderLineItem: {
-              update: {
-                quantity: lineItem.quantity,
-                discountValueNet,
-                totalPriceNet: lineItem.totalPrice.net.amount,
-                totalPriceGross: lineItem.totalPrice.gross.amount,
-                tax: {
-                  connect: {
-                    percentage_tenantId: {
-                      percentage: lineItem.taxRate * 100,
-                      tenantId: this.tenantId,
-                    },
-                  },
-                },
-                productVariant: {
-                  connect: {
-                    id: productSku.id,
-                  },
-                },
-                order: {
-                  update: {
-                    shippingPriceGross:
-                      orderDetails.order?.shippingPrice.gross.amount,
-                  },
-                },
-                warehouse: {
-                  connect: {
-                    id: warehouse,
-                  },
-                },
-              },
-            },
-          },
-        });
-      }
+          });
+        }
 
-      if (upsertedOrder.order?.mainContactId == null)
-        this.logger.error(
-          `Order ${upsertedOrder.orderNumber} has no main contact Id set! Can't sync addressess`,
-        );
-      // Sync the order's addresses with the internal DB
-      if (
-        order.shippingAddress &&
-        order.billingAddress &&
-        upsertedOrder.order?.mainContactId !== null
-      ) {
-        this.logger.info(
-          `Upserting addresses for ${upsertedOrder.orderNumber} - contact ${upsertedOrder.order.mainContactId}`,
-        );
-        // TODO: rewrite/rename addesses without Class so it follows the same schema as zoho-salesorders-helpers
-        // -> also move both in an integration-saleor-entities/src/helpers folder because they can potentially be used by more than this entities
-        await addresses(
-          this.db,
-          upsertedOrder.orderId,
-          this.tenantId,
-          this.logger,
-          upsertedOrder.order.mainContactId,
-        ).sync(order.shippingAddress, order.billingAddress);
+        if (upsertedOrder.order?.mainContactId == null) {
+          throw new Error(
+            `Order ${upsertedOrder.orderNumber} has no main contact Id set! Can't sync addressess`,
+          );
+        }
+        // Sync the order's addresses with the internal DB
+        if (
+          order.shippingAddress &&
+          order.billingAddress &&
+          upsertedOrder.order?.mainContactId !== null
+        ) {
+          this.logger.info(
+            `Upserting addresses for ${upsertedOrder.orderNumber} - contact ${upsertedOrder.order.mainContactId}`,
+          );
+          // TODO: rewrite/rename addesses without Class so it follows the same schema as zoho-salesorders-helpers
+          // -> also move both in an integration-saleor-entities/src/helpers folder because they can potentially be used by more than this entities
+          await addresses(
+            this.db,
+            upsertedOrder.orderId,
+            this.tenantId,
+            this.logger,
+            upsertedOrder.order.mainContactId,
+          ).sync(order.shippingAddress, order.billingAddress);
+        }
+      } catch(err){
+        const defaultLogFields = {
+          saleorOrderId: order.id,
+          saleorOrderNumber: `${this.orderPrefix}-${order.number}`,
+          saleorOrderUserEmail: order.userEmail,
+        };
+        if (err instanceof Warning) {
+          this.logger.warn(err.message, defaultLogFields);
+        } else if (err instanceof Error) {
+          this.logger.error(err.message, defaultLogFields);
+        } else {
+          this.logger.error(
+            "An unknown Error occured: " + (err as any)?.toString(),
+            defaultLogFields,
+          );
+        }
       }
     }
 

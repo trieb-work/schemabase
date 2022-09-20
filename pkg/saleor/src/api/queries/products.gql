@@ -101,6 +101,12 @@ query saleorEntitySyncProducts($first: Int!, $channel: String, $after: String) {
             key
             value
           }
+          stocks{
+            warehouse{
+              name,
+              id
+            }
+          }
           variantAttributes: attributes(variantSelection: VARIANT_SELECTION) {
             attribute {
               name

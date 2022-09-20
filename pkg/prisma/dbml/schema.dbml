@@ -433,6 +433,7 @@ Table Warehouse {
   orderLineItems OrderLineItem [not null]
   packageLineItems PackageLineItem [not null]
   stockEntries StockEntries [not null]
+  isDefaultWarehouseOf ProductVariant [not null]
 
   indexes {
     (name, tenantId) [unique]
@@ -596,6 +597,8 @@ Table ProductVariant {
   productId String [not null]
   tenant Tenant [not null]
   tenantId String [not null]
+  defaultWarehouse Warehouse [not null]
+  defaultWarehouseId String [not null]
   stockEntries StockEntries [not null]
   orderLineItem OrderLineItem [not null]
   packagelineItem PackageLineItem [not null]
@@ -653,9 +656,9 @@ Table StockEntries {
   warehouseId String [not null]
   productVariant ProductVariant [not null]
   productVariantId String [not null]
-  actualCommittedStock Int [not null, default: 0]
-  actualAvailableStock Int [not null, default: 0]
-  actualAvailableForSaleStock Int [not null, default: 0]
+  actualCommittedStock Int [not null, default: 0, note: 'Physical stock entries; Stock, that is commited in not finished orders']
+  actualAvailableStock Int [not null, default: 0, note: 'Total stock in this warehouse right now']
+  actualAvailableForSaleStock Int [not null, default: 0, note: 'Total stock that is not commited and ready for sale']
 
   indexes {
     (warehouseId, productVariantId, tenantId) [unique]
@@ -674,6 +677,8 @@ Table BraintreeApp {
   cronSchedule String [not null, default: '*/30 * * * *']
   cronTimeout Int [not null, default: 800]
   braintreeTransactions BraintreeTransaction [not null]
+
+  Note: 'Internal model to store braintree payment gateway settings for tenants'
 }
 
 Table BraintreeTransaction {
@@ -1619,6 +1624,8 @@ Ref: Product.tenantId > Tenant.id [delete: Cascade]
 Ref: ProductVariant.productId > Product.id [delete: Cascade]
 
 Ref: ProductVariant.tenantId > Tenant.id [delete: Cascade]
+
+Ref: ProductVariant.defaultWarehouseId > Warehouse.id [delete: Cascade]
 
 Ref: BillOfMaterial.tenantId > Tenant.id [delete: Cascade]
 
