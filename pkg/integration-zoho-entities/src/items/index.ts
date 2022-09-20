@@ -182,7 +182,7 @@ export class ZohoItemSyncService {
                         normalizedName_tenantId: {
                           tenantId,
                           normalizedName: normalizeStrings.productNames(
-                            item?.group_name || "",
+                            item?.group_name || item.name,
                           ),
                         },
                       },
