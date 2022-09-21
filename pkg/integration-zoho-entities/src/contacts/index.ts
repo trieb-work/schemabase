@@ -249,7 +249,7 @@ export class ZohoContactSyncService {
         continue;
       }
 
-      // Possible improvement: we can set the address of an contact
+      // TODO: Possible improvement: we can set the address of an contact
       // directly as shipping and billing address without more API calls
       const zohoContact = await this.zoho.contact.create({
         contact_name: `${newContact.firstName} ${newContact.lastName}`,

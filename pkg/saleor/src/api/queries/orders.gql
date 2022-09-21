@@ -35,6 +35,11 @@ query saleorCronOrdersOverview($createdGte: Date, $after: String, $first: Int) {
         shippingAddress {
           ...standardAddressValues
         }
+        shippingPrice{
+          gross{
+            amount
+          }
+        }
         paymentStatus
         number
         total {

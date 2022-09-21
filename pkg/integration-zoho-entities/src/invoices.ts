@@ -14,12 +14,18 @@ export interface ZohoInvoiceSyncConfig {
   zoho: Zoho;
   db: PrismaClient;
   zohoApp: ZohoApp;
+  /**
+   * Time offset in Minutes between creation and execution before this Entity will get synced.
+   */
+  createdTimeOffset: number;
 }
 
 export class ZohoInvoiceSyncService {
   private readonly logger: ILogger;
 
   private readonly zoho: Zoho;
+
+  private readonly createdTimeOffsetMin: number;
 
   private readonly db: PrismaClient;
 
@@ -32,6 +38,7 @@ export class ZohoInvoiceSyncService {
     this.zoho = config.zoho;
     this.db = config.db;
     this.zohoApp = config.zohoApp;
+    this.createdTimeOffsetMin = config.createdTimeOffset;
     this.cronState = new CronStateHandler({
       tenantId: this.zohoApp.tenantId,
       appId: this.zohoApp.id,
@@ -183,7 +190,7 @@ export class ZohoInvoiceSyncService {
         // filter out orders which are newer than 20min to increase the likelihood that the
         // zoho order was created
         createdAt: {
-          lte: addMinutes(new Date(), -20),
+          lte: addMinutes(new Date(), -this.createdTimeOffsetMin),
         },
         invoices: {
           none: {

@@ -114,14 +114,6 @@ export class ZohoItemSyncService {
                       id: tenantId,
                     },
                   },
-                  defaultWarehouse: {
-                    connect: {
-                      normalizedName_tenantId: {
-                        tenantId: this.zohoApp.tenantId,
-                        // normalizedName: 
-                      }
-                    }
-                  },
                   stockOnHand: stock,
                   // It is a product variant, if we have a "group_name" in Zoho.
                   // In this moment, we first have to check, if a product does already

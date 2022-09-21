@@ -230,6 +230,7 @@ export class SaleorOrderSyncService {
                   },
                 },
                 create: {
+                  // TODO add orderCurrency for all prices in an order
                   id: id.id("order"),
                   orderNumber: prefixedOrderNumber,
                   date: new Date(order.created),
@@ -239,6 +240,7 @@ export class SaleorOrderSyncService {
                   mainContact: contactCreateOrConnect,
                   shippingAddress: {},
                   billingAddress: {},
+                  shippingPriceGross: order.shippingPrice.gross.amount,
                   tenant: {
                     connect: {
                       id: this.tenantId,
@@ -252,6 +254,7 @@ export class SaleorOrderSyncService {
             order: {
               update: {
                 totalPriceGross: order.total.gross.amount,
+                shippingPriceGross: order?.shippingPrice.gross.amount,
                 orderStatus,
                 mainContact: contactCreateOrConnect,
               },
@@ -272,7 +275,7 @@ export class SaleorOrderSyncService {
         if (!lineItems) {
           throw new Error(`No line items returned for order! Aborting sync and retry next time.`);
         }
-        
+
         // loop through all line items and upsert them in the DB
         for (const lineItem of lineItems) {
           if (!lineItem?.id) {
@@ -319,6 +322,9 @@ export class SaleorOrderSyncService {
             );
           }
 
+          // TODO: would it not be better to inline this into db.saleorOrder.upsert (line 209) so we do not have partiall order data in ECI db if something fails?
+          // Otherwise we would maybe need a parialdata flag (or commited flag) which is true on create and will be updated to false once all lineitems etc. have been created. 
+          // Then we can filter for the next steps for partial data = true;
           await this.db.saleorOrderLineItem.upsert({
             where: {
               id_installedSaleorAppId: {
@@ -351,6 +357,7 @@ export class SaleorOrderSyncService {
                     },
                     quantity: lineItem.quantity,
                     discountValueNet,
+                    undiscountedUnitPriceNet: lineItem.undiscountedUnitPrice.net.amount,
                     totalPriceNet: lineItem.totalPrice.net.amount,
                     totalPriceGross: lineItem.totalPrice.gross.amount,
                     tax: {

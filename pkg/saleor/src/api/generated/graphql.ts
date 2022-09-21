@@ -10178,6 +10178,10 @@ export type SaleorCronOrdersOverviewQuery = {
           companyName: string;
           country: { __typename?: "CountryDisplay"; code: string };
         } | null;
+        shippingPrice: {
+          __typename?: "TaxedMoney";
+          gross: { __typename?: "Money"; amount: number };
+        };
         total: {
           __typename?: "TaxedMoney";
           currency: string;
@@ -10797,6 +10801,11 @@ export const SaleorCronOrdersOverviewDocument = gql`
           }
           shippingAddress {
             ...standardAddressValues
+          }
+          shippingPrice {
+            gross {
+              amount
+            }
           }
           paymentStatus
           number

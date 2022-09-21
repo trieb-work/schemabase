@@ -33,12 +33,18 @@ export interface ZohoSalesOrdersSyncConfig {
   zoho: Zoho;
   db: PrismaClient;
   zohoApp: ZohoApp;
+  /**
+   * Time offset in Minutes between creation and execution before this Entity will get synced.
+   */
+  createdTimeOffset: number;
 }
 
 export class ZohoSalesOrdersSyncService {
   private readonly logger: ILogger;
 
   private readonly zoho: Zoho;
+
+  private readonly createdTimeOffsetMin: number;
 
   private readonly db: PrismaClient;
 
@@ -67,6 +73,7 @@ export class ZohoSalesOrdersSyncService {
     this.zoho = config.zoho;
     this.db = config.db;
     this.zohoApp = config.zohoApp;
+    this.createdTimeOffsetMin = config.createdTimeOffset;
     this.tenantId = this.zohoApp.tenantId;
     this.cronState = new CronStateHandler({
       tenantId: this.zohoApp.tenantId,
@@ -306,29 +313,29 @@ export class ZohoSalesOrdersSyncService {
             continue;
           }
 
-          const warehouse = lineItem.warehouse_id
-            ? await this.db.zohoWarehouse.findUnique({
-                where: {
-                  id_zohoAppId: {
-                    id: lineItem.warehouse_id,
-                    zohoAppId: this.zohoApp.id,
-                  },
-                },
-              })
-            : null;
+          // const warehouse = lineItem.warehouse_id
+          //   ? await this.db.zohoWarehouse.findUnique({
+          //       where: {
+          //         id_zohoAppId: {
+          //           id: lineItem.warehouse_id,
+          //           zohoAppId: this.zohoApp.id,
+          //         },
+          //       },
+          //     })
+          //   : null;
 
-          /**
-           * Only try to connect a warehouse, if we have one related to
-           * this line item.
-           */
-          const warehouseConnect = warehouse?.warehouseId
-            ? { connect: { id: warehouse.warehouseId } }
-            : {};
+          // /**
+          //  * Only try to connect a warehouse, if we have one related to
+          //  * this line item.
+          //  */
+          // const warehouseConnect = warehouse?.warehouseId
+          //   ? { connect: { id: warehouse.warehouseId } }
+          //   : {};
 
-          if (!warehouse)
-            this.logger.info(
-              `This line item has no warehouse attached. ${lineItem.line_item_id}`,
-            );
+          // if (!warehouse)
+          //   this.logger.info(
+          //     `This line item has no warehouse attached. ${lineItem.line_item_id}`,
+          //   );
           await this.db.zohoOrderLineItem.upsert({
             where: {
               id_zohoAppId: {
@@ -367,7 +374,7 @@ export class ZohoSalesOrdersSyncService {
                       },
                     },
                     totalPriceNet: lineItem.item_total,
-                    warehouse: warehouseConnect,
+                    // warehouse: warehouseConnect,
                     productVariant: {
                       connect: {
                         id: productVariantLookup.id,
@@ -503,7 +510,7 @@ export class ZohoSalesOrdersSyncService {
         // filter out orders which are newer than 10min to increase the likelihood that all
         // zoho sub entities (like zohoContactPersons, zohoAddresses etc.) are already synced
         createdAt: {
-          lte: addMinutes(new Date(), -10),
+          lte: addMinutes(new Date(), -this.createdTimeOffsetMin),
         },
         // TODO enhance where clause so we filter out the orders for which some data is missing so we can delte the throw Warning stuff
         // order.lineItems.productVariant.zohoItem,
@@ -612,11 +619,12 @@ export class ZohoSalesOrdersSyncService {
           shipping_address_id: addressToZohoAddressId(order.shippingAddress),
           contact_persons: [mainContactPerson.id],
           shipping_charge: order.shippingPriceGross ?? undefined,
+          // is_inclusive_tax: true, // TODO
+          // mit is_inclusive_tax = true klappt das discountValueNet natürlich nicht.
           shipping_charge_tax_id: order.shippingPriceTax
             ? taxToZohoTaxId(order.shippingPriceTax)
             : undefined,
-          // TODO:
-          // shipment_date?
+          // TODO: shipment_date?
         };
         const createdSalesOrder = await this.zoho.salesOrder.create(
           createSalesOrderBody,
@@ -651,6 +659,7 @@ export class ZohoSalesOrdersSyncService {
             tenantId: this.tenantId,
           },
         );
+        // TODO if this fails because diff is only 1 cent and order has a discount we can add/substract one cent on the discount and try it again.
         if (
           order.totalPriceNet &&
           createdSalesOrder.sub_total !== order.totalPriceNet
@@ -775,39 +784,40 @@ export class ZohoSalesOrdersSyncService {
           );
         }
       }
-      try {
-        await this.zoho.salesOrder.confirm(
-          salesordersToConfirm.map((so) => so.salesorder_id),
-        );
-        this.logger.info(
-          `Successfully confirmed ${salesordersToConfirm.length} order(s).`,
-          {
-            salesorderNumbersToConfirm: salesordersToConfirm.map(
-              (o) => o.salesorder_number,
-            ),
-            salesorderIDsToConfirm: salesordersToConfirm.map(
-              (o) => o.salesorder_id,
-            ),
-          },
-        );
-      } catch (err) {
-        const errorMsg =
-          err instanceof Error
-            ? `${err.name}:\n${err.message}`
-            : JSON.stringify(err);
-        this.logger.error(
-          "Could not confirm all salesorders after creating them. Please check Zoho and confirm them manually.",
-          {
-            submitedSalesorderIds: salesordersToConfirm.map(
-              (so) => so.salesorder_id,
-            ),
-            submitedSalesorderNumbers: salesordersToConfirm.map(
-              (so) => so.salesorder_number,
-            ),
-            zohoClientErrorMessage: errorMsg,
-          },
-        );
-      }
+    }
+    try {
+      await this.zoho.salesOrder.confirm(
+        salesordersToConfirm.map((so) => so.salesorder_id),
+      );
+      // TODO update in DB which salesorders are confirmed. Maybe add status to eci zohosalesorder? or status to eci order?
+      this.logger.info(
+        `Successfully confirmed ${salesordersToConfirm.length} order(s).`,
+        {
+          salesorderNumbersToConfirm: salesordersToConfirm.map(
+            (o) => o.salesorder_number,
+          ),
+          salesorderIDsToConfirm: salesordersToConfirm.map(
+            (o) => o.salesorder_id,
+          ),
+        },
+      );
+    } catch (err) {
+      const errorMsg =
+        err instanceof Error
+          ? `${err.name}:\n${err.message}`
+          : JSON.stringify(err);
+      this.logger.error(
+        "Could not confirm all salesorders after creating them. Please check Zoho and confirm them manually.",
+        {
+          submitedSalesorderIds: salesordersToConfirm.map(
+            (so) => so.salesorder_id,
+          ),
+          submitedSalesorderNumbers: salesordersToConfirm.map(
+            (so) => so.salesorder_number,
+          ),
+          zohoClientErrorMessage: errorMsg,
+        },
+      );
     }
   }
 }
