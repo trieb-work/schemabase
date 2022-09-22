@@ -34,6 +34,7 @@ export class XentralProxyProductVariantSyncService {
   public async syncFromECI(): Promise<void> {
     this.logger.info("Starting sync of ECI Orders to XentralProxy Aufträge");
     const xentralClient = new XentralClient(this.xentralProxyApp);
+    // TODO artikel get
     const productVariants = await this.db.productVariant.findMany({
       where: {
         xentralArtikel: {
@@ -55,9 +56,10 @@ export class XentralProxyProductVariantSyncService {
         ean: productVariant.ean || undefined,
         nummer: "NEW",
         aktiv: 1,
-        // lagerartikel: 0,
-        lagerartikel: 1, // TODO: muss lagerartikel sein sonst kann auftrag nicht fortgeführt werden
+        // TODO: muss lagerartikel sein sonst kann auftrag nicht fortgeführt werden
+        lagerartikel: 1, // TODO: lagereinlagerungen müssen dann gemacht werden
         typ: "3_kat",
+        // TODO: Altersfreigabe
       };
       const xentralResData = await xentralClient.ArtikelCreate(artikel);
       const createdXentralArtikel = await this.db.xentralArtikel.create({

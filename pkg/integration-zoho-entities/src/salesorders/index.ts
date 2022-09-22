@@ -619,7 +619,6 @@ export class ZohoSalesOrdersSyncService {
           shipping_address_id: addressToZohoAddressId(order.shippingAddress),
           contact_persons: [mainContactPerson.id],
           shipping_charge: order.shippingPriceGross ?? undefined,
-          // is_inclusive_tax: true, // TODO
           // mit is_inclusive_tax = true klappt das discountValueNet natürlich nicht.
           shipping_charge_tax_id: order.shippingPriceTax
             ? taxToZohoTaxId(order.shippingPriceTax)
@@ -659,7 +658,7 @@ export class ZohoSalesOrdersSyncService {
             tenantId: this.tenantId,
           },
         );
-        // TODO if this fails because diff is only 1 cent and order has a discount we can add/substract one cent on the discount and try it again.
+        // TODO if this fails because diff is only 1 or 2 cent and order has a discount we can add/substract one cent on the discount and try it again.
         if (
           order.totalPriceNet &&
           createdSalesOrder.sub_total !== order.totalPriceNet

@@ -60,8 +60,10 @@ export class BraintreeTransactionSyncService {
     const transactionsStream = this.braintreeClient.listTransactionStream({
       createdAfter: createdGte,
     });
+    console.log("transactionsStream.readableLength", transactionsStream.readableLength)
     for await (const chunk of transactionsStream) {
       const transaction: BraintreeTransaction = chunk;
+      this.logger.info(`Processing transaction ${transaction.id}, ${transaction.orderId}`)
 
       /**
        * An object to match the braintree method types with our internal one

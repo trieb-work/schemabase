@@ -302,9 +302,10 @@ export class ZohoPaymentSyncService {
           payment.paymentMethod.methodType === "paypal" &&
           (!payment.braintreeTransactions || payment.braintreeTransactions.length === 0)
         ) {
-          throw new Error(
+          throw new Warning(
             `Payment is a braintree/paypal payment but no payment.braintreeTransactions and therefore `+
-            `no payment fees are synced yes. Need them before creating the payment. Aborting and retrying sync later.`
+            `no payment fees are synced yet. Need them before we can create the payment. `+
+            `Aborting and retrying sync later.`
           );
         }
         // Moved to another logic of using the payment.order and not payment.invoices
@@ -360,11 +361,11 @@ export class ZohoPaymentSyncService {
           (sum, { amount_applied }) => sum + amount_applied,
           0,
         );
-        // if (payment.amount !== totalInvoicedAmount) {
-        //   throw new Error(
-        //     `The sum of all invoice totals (${totalInvoicedAmount}) is not equeal to the payment amount (${payment.amount}). Aborting sync.`,
-        //   );
-        // }
+        if (payment.amount !== totalInvoicedAmount) {
+          throw new Error(
+            `The sum of all invoice totals (${totalInvoicedAmount}) is not equeal to the payment amount (${payment.amount}). Aborting sync.`,
+          );
+        }
 
         this.logger.debug(`Creating a zoho payment for Reference Number ${payment.referenceNumber} Order Number ${payment.order.orderNumber}, customer_id:${orderToMainContactPerson(payment.order).zohoContactId}`);
 
