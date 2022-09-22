@@ -109,6 +109,13 @@ export class SaleorProductSyncService {
       const normalizedProductName = normalizeStrings.productNames(product.name);
 
       for (const variant of product.variants) {
+        const defaultLogFields = {
+          variantId: variant?.id,
+          variantSku: variant?.sku,
+          variantName: variant?.name,
+          productId: product.id,
+          productName: product.name,
+        };
         try{
           if (!variant) {
             throw new Error("Variant empty");
@@ -168,6 +175,7 @@ export class SaleorProductSyncService {
                       }
                     },
                     sku: variant.sku,
+                    variantName: variant.name,
                     ean,
                     tenant: {
                       connect: {
@@ -221,6 +229,7 @@ export class SaleorProductSyncService {
                       }
                     },
                     sku: variant.sku,
+                    variantName: variant.name,
                     ean,
                     tenant: {
                       connect: {
@@ -250,6 +259,8 @@ export class SaleorProductSyncService {
                   },
                 },
                 update: {
+                  variantName: variant.name,
+                  sku: variant.sku,
                   // TODO: does it make sense to update stock entries here as well
                   defaultWarehouse: {
                     connect: {
@@ -264,14 +275,8 @@ export class SaleorProductSyncService {
               },
             },
           });
+          this.logger.debug("Successfully synced", defaultLogFields);
         } catch (err) {
-          const defaultLogFields = {
-            variantId: variant?.id,
-            variantSku: variant?.sku,
-            variantName: variant?.name,
-            productId: product.id,
-            productName: product.name,
-          };
           if (err instanceof Warning) {
             this.logger.warn(err.message, { ...defaultLogFields, stack: err.stack });
           } else if (err instanceof Error) {

@@ -48,13 +48,22 @@ export class XentralProxyProductVariantSyncService {
         product: true,
       },
     });
+    this.logger.info(`Syncing ${productVariants.length} productVariant(s) to xentral Artikel-Stammdaten`);
     for (const productVariant of productVariants) {
+      const loggerFields = {
+        sku: productVariant.sku,
+        variantName: productVariant.variantName,
+        productName: productVariant.product.name,
+      };
+      this.logger.debug("Syncing productVariant to xentral Artikel-Stammdaten", loggerFields)
       const artikel: ArtikelCreateRequest = {
         projekt: this.xentralProxyApp.projectId,
-        name_de: `${productVariant.product.name} (${productVariant.variantName})`,
-        artikel: productVariant.sku,
+        name_de: productVariant.product.name + (productVariant.variantName ? ` (${productVariant.variantName})` : ''),
+        // artikel: productVariant.sku, // TODO seems like this feeld does not exist
+        // herstellernummer: productVariant.sku,
         ean: productVariant.ean || undefined,
         nummer: "NEW",
+        kundennummer: productVariant.sku,
         aktiv: 1,
         // TODO: muss lagerartikel sein sonst kann auftrag nicht fortgeführt werden
         lagerartikel: 1, // TODO: lagereinlagerungen müssen dann gemacht werden

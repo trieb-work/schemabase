@@ -1,1 +1,1 @@
-export * from "./src/xentral";
+export * from "./src/xml";

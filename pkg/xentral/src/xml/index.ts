@@ -9,7 +9,7 @@ import {
   GenericCreateResponse,
 } from "./types";
 
-export class XentralClient {
+export class XentralXmlClient {
   public readonly client: DigestClient;
 
   private readonly parser = new XMLParser({ ignoreDeclaration: true });
@@ -24,10 +24,8 @@ export class XentralClient {
     this.url = config.url;
   }
 
-  public async xmlCreate(xml: object, methodName: string): Promise<any> {
+  public async create(xml: object, methodName: string): Promise<any> {
     const xmlStr = this.builder.build({ request: { xml } });
-    console.log("xmlStr", xmlStr);
-    console.log("url", `${this.url}/api/${methodName}`);
     const body = `xml=${encodeURIComponent(xmlStr)}`;
     const xentralRes = await this.client.fetch(
       `${this.url}/api/${methodName}`,
@@ -61,7 +59,7 @@ export class XentralClient {
   public async AuftragCreate(
     auftrag: AuftragCreateRequest,
   ): Promise<AuftragCreateResponse> {
-    const res = (await this.xmlCreate(
+    const res = (await this.create(
       auftrag,
       "AuftragCreate",
     )) as Partial<AuftragCreateResponse>;
@@ -76,7 +74,7 @@ export class XentralClient {
   public async ArtikelCreate(
     artikel: ArtikelCreateRequest,
   ): Promise<ArtikelCreateResponse> {
-    const res = (await this.xmlCreate(
+    const res = (await this.create(
       artikel,
       "ArtikelCreate",
     )) as Partial<ArtikelCreateResponse>;
