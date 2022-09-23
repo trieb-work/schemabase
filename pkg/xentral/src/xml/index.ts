@@ -1,9 +1,13 @@
-import "./index.d.ts";
+import "./digest.d.ts";
 import DigestClient from "digest-fetch";
 import { XMLParser, XMLBuilder } from "fast-xml-parser";
 import {
   ArtikelCreateRequest,
   ArtikelCreateResponse,
+  ArtikelEditRequest,
+  ArtikelEditResponse,
+  ArtikelGetRequest,
+  ArtikelGetResponse,
   AuftragCreateRequest,
   AuftragCreateResponse,
   GenericCreateResponse,
@@ -24,8 +28,12 @@ export class XentralXmlClient {
     this.url = config.url;
   }
 
-  public async create(xml: object, methodName: string): Promise<any> {
+  public async edit<Res>(xml: object, methodName: string): Promise<Res> {
+    return this.create<Res>(xml, methodName, true);
+  }
+  public async create<Res>(xml: object, methodName: string, allowEmptyResponse = false): Promise<Res> {
     const xmlStr = this.builder.build({ request: { xml } });
+    // console.log("xmlStr", xmlStr)
     const body = `xml=${encodeURIComponent(xmlStr)}`;
     const xentralRes = await this.client.fetch(
       `${this.url}/api/${methodName}`,
@@ -51,7 +59,7 @@ export class XentralXmlClient {
       throw new Error(
         `${methodName} API response is ${res?.response?.status?.message} and not OK`,
       );
-    if (!res?.response?.xml)
+    if (!allowEmptyResponse && !res?.response?.xml)
       throw new Error(`${methodName} API response XML is empty`);
     return res.response.xml;
   }
@@ -59,10 +67,7 @@ export class XentralXmlClient {
   public async AuftragCreate(
     auftrag: AuftragCreateRequest,
   ): Promise<AuftragCreateResponse> {
-    const res = (await this.create(
-      auftrag,
-      "AuftragCreate",
-    )) as Partial<AuftragCreateResponse>;
+    const res = await this.create<AuftragCreateResponse>(auftrag, "AuftragCreate");
     if (!res?.belegnr)
       throw new Error("AuftragCreateResponse is missing the belegnr");
     res.belegnr = String(res.belegnr);
@@ -71,18 +76,32 @@ export class XentralXmlClient {
     return res as AuftragCreateResponse;
   }
 
+
   public async ArtikelCreate(
     artikel: ArtikelCreateRequest,
   ): Promise<ArtikelCreateResponse> {
-    const res = (await this.create(
-      artikel,
-      "ArtikelCreate",
-    )) as Partial<ArtikelCreateResponse>;
+    const res = await this.create<ArtikelCreateResponse>(artikel, "ArtikelCreate");
     if (!res?.nummer)
-      throw new Error("ArtikelCreateResponse is missing the belegnr");
+      throw new Error("ArtikelCreateResponse is missing the artikelnr.");
     res.nummer = String(res.nummer);
     if (!res?.id)
-      throw new Error("ArtikelCreateResponse is missing the belegnr");
+      throw new Error("ArtikelCreateResponse is missing the artikelnr.");
+    return res as ArtikelCreateResponse;
+  }
+  public async ArtikelEdit(
+    artikel: ArtikelEditRequest,
+  ): Promise<ArtikelEditResponse> {
+    return await this.edit<ArtikelEditResponse>(artikel, "ArtikelEdit");
+  }
+  public async ArtikelGet(
+    artikel: ArtikelGetRequest,
+  ): Promise<ArtikelGetResponse> {
+    const res = await this.create<ArtikelGetResponse>(artikel, "ArtikelGet");
+    if (!res?.nummer)
+      throw new Error("ArtikelGetResponse is missing the artikelnr.");
+    res.nummer = String(res.nummer);
+    if (!res?.id)
+      throw new Error("ArtikelGetResponse is missing the artikelnr.");
     return res as ArtikelCreateResponse;
   }
 }

@@ -1,3 +1,5 @@
+import { ArtikelTypeEnum } from "../types";
+
 export interface ArtikelCreateRequest {
   projekt: number;
   name_de?: string;
@@ -27,7 +29,7 @@ export interface ArtikelCreateRequest {
    *
    * 6_kat = sonstiges
    */
-  typ?: "3_kat" | "6_kat";
+  typ?: ArtikelTypeEnum;
   /**
    * Artikelbeschreibung
    */
@@ -37,127 +39,135 @@ export interface ArtikelCreateRequest {
    */
   variante_von_nummer?: number | string;
 
-
-  // leerfeld: 
-  // name_de: Grußkarten-Set "Pyjama" (5 Karten + Kuverts)
-  // adresse: 
-  // ishtml_cke_anabregs_text: 1
-  // kurztext_de: 
-  // internerkommentar: 
-  // zolltarifnummer: 
-  // herkunftsland: 
-  // ursprungsregion: 
-  // mindestlager: 0
-  // gewicht: 
-  // mindestbestellung: 0
-  // nettogewicht: 
-  // lager_platz: 
-  // laenge: 0,00
-  // einheit: 
-  // breite: 0,00
-  // xvp: 0.00
-  // hoehe: 0,00
-  // abckategorie: 
-  // lagerartikel: 1
-  // rabatt_prozent: 
-  // variante_von: 
-  // umsatzsteuer: normal
-  // steuersatz: 
-  // chargenverwaltung: 0
-  // seriennummern: keine
-  // inventurek: 0,00
-  // berechneterek: 0,00
-  // berechneterekwaehrung: 
-  // altersfreigabe: 
-  // preproduced_partlist: 
-  // formelmenge: 
-  // formelpreis: 
-  // intern_gesperrtgrund: 
-  // hinweis_einfuegen: 
-  // freigaberegel: 
-  // name_en: 
-  // kurztext_en: 
-  // artikelbeschreibung_de_anzeige: 
-  // anabregs_text_en: 
-  // ishtml_cke_anabregs_text_en: 1
-  // uebersicht_de: 
-  // ishtml_cke_uebersicht_de: 1
-  // uebersicht_en: 
-  // ishtml_cke_uebersicht_en: 1
-  // metatitle_de: 
-  // metatitle_en: 
-  // metadescription_de: 
-  // metadescription_en: 
-  // metakeywords_de: 
-  // metakeywords_en: 
-  // katalogbezeichnung_de: 
-  // katalogbezeichnung_en: 
-  // katalogtext_de: 
-  // katalogtext_en: 
-  // freifeld1: 
-  // freifeld2: 
-  // freifeld3: 
-  // freifeld4: 
-  // freifeld5: 
-  // freifeld6: 
-  // freifeld7: 
-  // freifeld8: 
-  // freifeld9: 
-  // freifeld10: 
-  // freifeld11: 
-  // freifeld12: 
-  // freifeld13: 
-  // freifeld14: 
-  // freifeld15: 
-  // freifeld16: 
-  // freifeld17: 
-  // freifeld18: 
-  // freifeld19: 
-  // freifeld20: 
-  // freifeld21: 
-  // freifeld22: 
-  // freifeld23: 
-  // freifeld24: 
-  // freifeld25: 
-  // freifeld26: 
-  // freifeld27: 
-  // freifeld28: 
-  // freifeld29: 
-  // freifeld30: 
-  // freifeld31: 
-  // freifeld32: 
-  // freifeld33: 
-  // freifeld34: 
-  // freifeld35: 
-  // freifeld36: 
-  // freifeld37: 
-  // freifeld38: 
-  // freifeld39: 
-  // freifeld40: 
-  // artikel_onlineshops_length: 10
-  // pseudolager: 
-  // lieferzeitmanuell: 
-  // bestandalternativartikel: 
-  // lagerkorrekturwert: 0
-  // pseudopreis: 0,00
-  // steuer_erloese_inland_normal: 
-  // steuer_aufwendung_inland_normal: 
-  // steuer_erloese_inland_ermaessigt: 
-  // steuer_aufwendung_inland_ermaessigt: 
-  // steuer_erloese_inland_nichtsteuerbar: 
-  // steuer_aufwendung_inland_nichtsteuerbar: 
-  // steuer_erloese_inland_innergemeinschaftlich: 
-  // steuertext_innergemeinschaftlich: 
-  // steuer_aufwendung_inland_innergemeinschaftlich: 
-  // steuer_erloese_inland_eunormal: 
-  // steuer_aufwendung_inland_eunormal: 
-  // steuer_erloese_inland_euermaessigt: 
-  // steuer_aufwendung_inland_euermaessigt: 
-  // steuer_erloese_inland_export: 
-  // steuertext_export: 
-  // steuer_aufwendung_inland_import: 
-  // kostenstelle: 
+  leerfeld: string;
+  adresse: string;
+  ishtml_cke_anabregs_text: 1 | 0
+  kurztext_de: string;
+  internerkommentar: string;
+  zolltarifnummer: string;
+  herkunftsland: string;
+  ursprungsregion: string;
+  mindestlager: number;
+  gewicht: string;
+  mindestbestellung: number;
+  nettogewicht: string;
+  lager_platz: string;
+  laenge: "0,00";
+  einheit: string;
+  breite: "0,00";
+  xvp: number;
+  hoehe: "0,00";
+  abckategorie: string;
+  rabatt_prozent: string;
+  variante_von: string;
+  umsatzsteuer: "normal"
+  steuersatz: string;
+  chargenverwaltung: number;
+  seriennummern: "keine"
+  inventurek: "0,00";
+  berechneterek: "0,00";
+  berechneterekwaehrung: string;
+  altersfreigabe: string;
+  preproduced_partlist: string;
+  formelmenge: string;
+  formelpreis: string;
+  intern_gesperrtgrund: string;
+  hinweis_einfuegen: string;
+  freigaberegel: string;
+  kurztext_en: string;
+  artikelbeschreibung_de_anzeige: string;
+  anabregs_text_en: string;
+  ishtml_cke_anabregs_text_en: 1 | 0;
+  uebersicht_de: string;
+  ishtml_cke_uebersicht_de: 1 | 0;
+  uebersicht_en: string;
+  ishtml_cke_uebersicht_en: 1 | 0;
+  metatitle_de: string;
+  metatitle_en: string;
+  metadescription_de: string;
+  metadescription_en: string;
+  metakeywords_de: string;
+  metakeywords_en: string;
+  katalogbezeichnung_de: string;
+  katalogbezeichnung_en: string;
+  katalogtext_de: string;
+  katalogtext_en: string;
+  freifeld1: string;
+  freifeld2: string;
+  freifeld3: string;
+  freifeld4: string;
+  freifeld5: string;
+  freifeld6: string;
+  freifeld7: string;
+  freifeld8: string;
+  freifeld9: string;
+  freifeld10: string;
+  freifeld11: string;
+  freifeld12: string;
+  freifeld13: string;
+  freifeld14: string;
+  freifeld15: string;
+  freifeld16: string;
+  freifeld17: string;
+  freifeld18: string;
+  freifeld19: string;
+  freifeld20: string;
+  freifeld21: string;
+  freifeld22: string;
+  freifeld23: string;
+  freifeld24: string;
+  freifeld25: string;
+  freifeld26: string;
+  freifeld27: string;
+  freifeld28: string;
+  freifeld29: string;
+  freifeld30: string;
+  freifeld31: string;
+  freifeld32: string;
+  freifeld33: string;
+  freifeld34: string;
+  freifeld35: string;
+  freifeld36: string;
+  freifeld37: string;
+  freifeld38: string;
+  freifeld39: string;
+  freifeld40: string;
+  artikel_onlineshops_length: number;
+  pseudolager: string;
+  lieferzeitmanuell: string;
+  bestandalternativartikel: string;
+  lagerkorrekturwert: number;
+  pseudopreis: "0,00";
+  steuer_erloese_inland_normal: string;
+  steuer_aufwendung_inland_normal: string;
+  steuer_erloese_inland_ermaessigt: string;
+  steuer_aufwendung_inland_ermaessigt: string;
+  steuer_erloese_inland_nichtsteuerbar: string;
+  steuer_aufwendung_inland_nichtsteuerbar: string;
+  steuer_erloese_inland_innergemeinschaftlich: string;
+  steuertext_innergemeinschaftlich: string;
+  steuer_aufwendung_inland_innergemeinschaftlich: string;
+  steuer_erloese_inland_eunormal: string;
+  steuer_aufwendung_inland_eunormal: string;
+  steuer_erloese_inland_euermaessigt: string;
+  steuer_aufwendung_inland_euermaessigt: string;
+  steuer_erloese_inland_export: string;
+  steuertext_export: string;
+  steuer_aufwendung_inland_import: string;
+  kostenstelle: string;
 }
+export interface ArtikelCreateResponse {
+  id: number;
+  nummer: string;
+}
+export type ArtikelEditRequest = ArtikelCreateRequest & {
+  id: string;
+};
+export type ArtikelEditResponse = ArtikelCreateResponse;
+export type ArtikelGetRequest = {
+  id: string;
+}
+export type ArtikelGetResponse = ArtikelCreateResponse;
 
 export interface AuftragCreateRequest {
   kundennummer: number | "NEW";
@@ -165,6 +175,15 @@ export interface AuftragCreateRequest {
    * Vor- und Nachname
    */
   name?: string;
+  titel?: string;
+  telefon?: string;
+  telefax?: string;
+  email?: string;
+  ansprechpartner?: string;
+  abteilung?: string;
+  unterabteilung?: string;
+  anschreiben?: string;
+  freitext?: string;
   typ?: "firma" | "herr" | "frau" | "sonstige";
   /**
    * Straße und Hausnummer
@@ -179,8 +198,10 @@ export interface AuftragCreateRequest {
    * Stadt oder Dorf. Beispiel: Nürnberg
    */
   ort?: string;
+  bundesstaat?: string;
   /**
    * 2 letter ISO country code
+   * @example "DE", "EN"
    */
   land?: string;
   artikelliste?: {
@@ -198,16 +219,84 @@ export interface AuftragCreateRequest {
       waehrung?: "EUR";
     }[];
   };
+  /**
+   * Internal order number for example: SO-1234
+   */
+  ihrebestellnummer?: string;
+
+  lieferid?: number;
+  ansprechpartnerid?: number;
+  uebernehmen?: 0 | 1;
+  lieferant?: string;
+  uebernehmen2?: number;
+  projekt?: string | "STANDARD"
+  aktion?: string;
+  internet?: string;
+  angebotid?: string;
+  kundennummer_buchhaltung?: string;
+  internebezeichnung?: string;
+  auftragseingangper?: "internet"
+  /**
+   * Datestring in format dd.MM.yyy
+   * @example "23.09.2022"
+   */
+  datum?: string;
+  /**
+   * Datestring in format dd.MM.yyy
+   * @example "23.09.2022"
+   */
+  lieferdatum?: string;
+  /**
+   * Datestring in format dd.MM.yyy
+   * @example "23.09.2022"
+   */
+  tatsaechlicheslieferdatum?: string;
+  /**
+   * Datestring in format dd.MM.yyy
+   * @example "23.09.2022"
+   */
+  reservationdate?: string;
+  kommissionskonsignationslager?: number;
+  ishtml_cke_freitext?: 1 | 0;
+  bodyzusatz?: string;
+  ishtml_cke_bodyzusatz?: 1 | 0;
+  zahlungsweise?: "rechnung";
+  versandart?: "DHL" | "DPD";
+  lieferbedingung?: string;
+  vertrieb?: string;
+  bearbeiter?: string;
+  autoversand?: 1 | 0;
+  art?: "standardauftrag"
+  gln?: string;
+  zahlungszieltage?: 14
+  zahlungszieltageskonto?: 10
+  /**
+   * Datestring in format dd.MM.yyy
+   * @example "23.09.2022"
+   */
+  einzugsdatum?: string;
+  kreditkarte_typ?: "MasterCard"
+  kreditkarte_inhaber?: string;
+  kreditkarte_nummer?: string;
+  kreditkarte_pruefnummer?: string;
+  kreditkarte_monat?: number;
+  kreditkarte_jahr?: number;
+  zahlungszielskonto?: number;
+  internebemerkung?: string;
+  ishtml_cke_internebemerkung?: 1 | 0;
+  ustid?: string;
+  ust_befreit?: number;
+  ust_ok?: 1
+  anzeigesteuer?: number;
+  waehrung?: "EUR"
+  sprache?: "deutsch"
+  kurs?: number;
+  kostenstelle?: string;
 }
 
 export interface AuftragCreateResponse {
   id: number;
   belegnr: string;
-}
-
-export interface ArtikelCreateResponse {
-  id: number;
-  nummer: string;
 }
 
 export interface GenericCreateResponse {

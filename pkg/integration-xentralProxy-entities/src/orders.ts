@@ -2,8 +2,11 @@
 /* eslint-disable prettier/prettier */
 import { ILogger } from "@eci/pkg/logger";
 import { PrismaClient, XentralProxyApp } from "@eci/pkg/prisma";
-import { XentralClient } from "@eci/pkg/xentral";
-import { AuftragCreateRequest } from "@eci/pkg/xentral/src/types";
+import { XentralRestClient, XentralRestNotFoundError } from "@eci/pkg/xentral/src/rest";
+import { Auftrag } from "@eci/pkg/xentral/src/rest/types";
+import { XentralXmlClient } from "@eci/pkg/xentral/src/xml";
+import { AuftragCreateRequest, AuftragCreateResponse } from "@eci/pkg/xentral/src/xml/types";
+import { format } from "date-fns";
 
 interface XentralProxyOrderSyncServiceConfig {
   xentralProxyApp: XentralProxyApp;
@@ -33,7 +36,8 @@ export class XentralProxyOrderSyncService {
 
   public async syncFromECI(): Promise<void> {
     this.logger.info("Starting sync of ECI Orders to XentralProxy Aufträge");
-    const xentralClient = new XentralClient(this.xentralProxyApp);
+    const xentralXmlClient = new XentralXmlClient(this.xentralProxyApp);
+    const xentralRestClient = new XentralRestClient(this.xentralProxyApp);
     const orders = await this.db.order.findMany({
       where: {
         orderStatus: "confirmed",
@@ -55,7 +59,9 @@ export class XentralProxyOrderSyncService {
          */
         orderLineItems: {
           where: {
-            warehouseId: this.warehouseId,
+            productVariant: {
+              defaultWarehouseId: this.warehouseId,
+            }
           },
           include: {
             productVariant: {
@@ -82,6 +88,9 @@ export class XentralProxyOrderSyncService {
         plz: order.shippingAddress?.plz || "",
         ort: order.shippingAddress?.city || "",
         land: order.shippingAddress?.countryCode || "",
+        ihrebestellnummer: order.orderNumber,
+        // INFO: do not remove date otherwise search will not work anymore!
+        datum: format(order.date, 'dd.MM.yyyy'),
         artikelliste: {
           position: order.orderLineItems.map((lineItem) => {
             if (!lineItem.productVariant.xentralArtikel[0]) {
@@ -99,17 +108,48 @@ export class XentralProxyOrderSyncService {
           }),
         },
       };
-      const xentralResData = await xentralClient.AuftragCreate(auftrag);
+      const xentralAuftraegeWithSameDatePaginator = xentralRestClient.getAuftraege({
+        "datum": format(order.date, "yyyy-MM-dd"),
+      }, 1000);
+      let existingXentralAuftrag: Auftrag | undefined;
+      try{
+        for await (const xentralAuftrag of xentralAuftraegeWithSameDatePaginator) {
+          if (xentralAuftrag.ihrebestellnummer === order.orderNumber) {
+            existingXentralAuftrag = xentralAuftrag;
+            break;
+          }
+        }
+      } catch(error){
+        if(error instanceof XentralRestNotFoundError){
+          this.logger.debug("No Xentral Auftrag found for the specified Date, therefore we assume that no Auftag exists with the same Ordernumber.");
+        } else {
+          throw error;
+        }
+      }
+      if (existingXentralAuftrag) {
+        this.logger.error(
+          `There already exist an Auftrag in Xentral for this ECI Order ${order.orderNumber}. ` +
+          `We will try to attach this XentralProxyAuftrag to Order in ECI DB. Please check ` +
+          `manually in your Xentral Account what could cause this out-of-sync.`, {
+          orderId: order.id,
+          tenantId: this.tenantId,
+          orderNumber: order.orderNumber,
+          xentralIhrebestellnr: existingXentralAuftrag.ihrebestellnummer,
+          xentralAuftragId: existingXentralAuftrag.id,
+          xentralAuftragBelegNr: existingXentralAuftrag.belegnr,
+        });
+      }
+      const resData: Auftrag | AuftragCreateResponse = existingXentralAuftrag ? existingXentralAuftrag : await xentralXmlClient.AuftragCreate(auftrag);
       const createdXentralAuftrag = await this.db.xentralProxyAuftrag.create({
         data: {
-          id: xentralResData.id.toString(),
+          id: resData.id.toString(),
           order: {
             connect: {
               id: order.id,
             },
           },
-          xentralBelegNr: xentralResData.belegnr,
-          xentralId: xentralResData.id,
+          xentralBelegNr: resData.belegnr,
+          xentralId: resData.id,
           xentralProxyApp: {
             connect: {
               id: this.xentralProxyApp.id,
@@ -117,13 +157,16 @@ export class XentralProxyOrderSyncService {
           },
         },
       });
-      this.logger.info("Created new xentralAuftrag for current order", {
-        orderId: order.id,
-        tenantId: this.tenantId,
-        orderNumber: order.orderNumber,
-        xentralAuftragId: createdXentralAuftrag.xentralId,
-        xentralAuftragBelegNr: createdXentralAuftrag.xentralBelegNr,
-      });
+      this.logger.info(
+        existingXentralAuftrag ? "Attached xentralProxyAuftrag to ECI Order." : "Created new xentralProxyAuftrag for current order",
+        {
+          orderId: order.id,
+          tenantId: this.tenantId,
+          orderNumber: order.orderNumber,
+          xentralAuftragId: createdXentralAuftrag.xentralId,
+          xentralAuftragBelegNr: createdXentralAuftrag.xentralBelegNr,
+        }
+      );
     }
   }
 }
