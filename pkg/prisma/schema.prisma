@@ -807,6 +807,7 @@ model Order {
   paymentStatus  OrderPaymentStatus  @default(unpaid)
   shipmentStatus OrderShipmentStatus @default(pending)
 
+  /// In PuF: if the Order is not readyToFullfill it woll not get transfered to logistics partner (kramer); default is false
   readyToFullfill Boolean @default(false)
 
   /// Order-Numbers have to be unique per Tenant!
