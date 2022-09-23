@@ -80,7 +80,14 @@ export class XentralProxyOrderSyncService {
       },
     });
     for (const order of orders) {
-      if (!order.shippingAddress) continue;
+      if (!order.shippingAddress) {
+        this.logger.warn("Skipping sync of Order because of missing shipping Address", {
+          orderId: order.id,
+          tenantId: this.tenantId,
+          orderNumber: order.orderNumber,
+        })
+        continue;
+      }
       const auftrag: AuftragCreateRequest = {
         kundennummer: "NEW",
         name: order.shippingAddress?.fullname || "",
