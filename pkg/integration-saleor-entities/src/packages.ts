@@ -106,11 +106,6 @@ export class SaleorPackageSyncService {
     });
   }
 
-  /**
-   * Pull payment metadata from braintree
-   */
-  //   private async braintreeGetPaymentDetails() {}
-
   public async syncToECI(): Promise<void> {
     const cronState = await this.cronState.get();
 
