@@ -695,9 +695,9 @@ model OrderLineItem {
   totalPriceGross Float?
 
   /// The unit net price (price excluding taxes) of one line item. Optional, as we might have just one of the two values on hand
-  undiscountedUnitPriceNet   Float
+  undiscountedUnitPriceNet   Float?
   /// The unit gross price (price including taxes) of one line item. Optional, as we might have just one of the two values on hand
-  //unitPriceGross Float?
+  undiscountedUnitPriceGross Float?
 
   /// The disount amount, that is applied to the net price (discount excluding taxes).
   discountValueNet Float @default(0)

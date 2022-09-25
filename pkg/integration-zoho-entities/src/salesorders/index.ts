@@ -374,6 +374,13 @@ export class ZohoSalesOrdersSyncService {
                       },
                     },
                     totalPriceNet: lineItem.item_total,
+                    totalPriceGross: lineItem.item_total_inclusive_of_tax,
+                    undiscountedUnitPriceGross: fullSalesorder.is_inclusive_tax
+                      ? lineItem.rate
+                      : undefined,
+                    undiscountedUnitPriceNet: fullSalesorder.is_inclusive_tax
+                      ? undefined
+                      : lineItem.rate,
                     // warehouse: warehouseConnect,
                     productVariant: {
                       connect: {
@@ -410,6 +417,13 @@ export class ZohoSalesOrdersSyncService {
                     },
                   },
                   totalPriceNet: lineItem.item_total,
+                  totalPriceGross: lineItem.item_total_inclusive_of_tax,
+                  undiscountedUnitPriceGross: fullSalesorder.is_inclusive_tax
+                    ? lineItem.rate
+                    : undefined,
+                  undiscountedUnitPriceNet: fullSalesorder.is_inclusive_tax
+                    ? undefined
+                    : lineItem.rate,
                 },
               },
             },
