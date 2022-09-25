@@ -266,32 +266,33 @@ export class ZohoInvoiceSyncService {
               "(Change this to a WARNING if it is okay)",
           );
         }
-        const zohoInvoiceConnectOrCreate: Prisma.Enumerable<Prisma.ZohoInvoiceCreateOrConnectWithoutInvoiceInput> = {
-          where: {
-            id_zohoAppId: {
-              id: createdInvoice.invoice_id,
-              zohoAppId: this.zohoApp.id,
-            },
-          },
-          create: {
-            id: createdInvoice.invoice_id,
-            createdAt: new Date(createdInvoice.created_time),
-            updatedAt: new Date(createdInvoice.last_modified_time),
-            number: createdInvoice.invoice_number,
-            zohoApp: {
-              connect: {
-                id: this.zohoApp.id,
+        const zohoInvoiceConnectOrCreate: Prisma.Enumerable<Prisma.ZohoInvoiceCreateOrConnectWithoutInvoiceInput> =
+          {
+            where: {
+              id_zohoAppId: {
+                id: createdInvoice.invoice_id,
+                zohoAppId: this.zohoApp.id,
               },
             },
-          },
-        };
+            create: {
+              id: createdInvoice.invoice_id,
+              createdAt: new Date(createdInvoice.created_time),
+              updatedAt: new Date(createdInvoice.last_modified_time),
+              number: createdInvoice.invoice_number,
+              zohoApp: {
+                connect: {
+                  id: this.zohoApp.id,
+                },
+              },
+            },
+          };
 
         await this.db.invoice.upsert({
           where: {
             invoiceNumber_tenantId: {
               invoiceNumber: createdInvoice.invoice_number,
               tenantId: this.zohoApp.tenantId,
-            }
+            },
           },
           update: {
             invoiceCurrency: checkCurrency(createdInvoice.currency_code),

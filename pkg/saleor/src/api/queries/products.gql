@@ -101,9 +101,9 @@ query saleorEntitySyncProducts($first: Int!, $channel: String, $after: String) {
             key
             value
           }
-          stocks{
-            warehouse{
-              name,
+          stocks {
+            warehouse {
+              name
               id
             }
           }

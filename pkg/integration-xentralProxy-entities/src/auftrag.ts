@@ -2,7 +2,10 @@
 /* eslint-disable prettier/prettier */
 import { ILogger } from "@eci/pkg/logger";
 import { PrismaClient, XentralProxyApp } from "@eci/pkg/prisma";
-import { XentralRestClient, XentralRestNotFoundError } from "@eci/pkg/xentral/src/rest";
+import {
+  XentralRestClient,
+  XentralRestNotFoundError,
+} from "@eci/pkg/xentral/src/rest";
 import { Auftrag } from "@eci/pkg/xentral/src/rest/types";
 import { XentralXmlClient } from "@eci/pkg/xentral/src/xml";
 import { AuftragCreateRequest, AuftragCreateResponse } from "@eci/pkg/xentral/src/xml/types";
@@ -80,7 +83,7 @@ export class XentralProxyOrderSyncService {
           where: {
             productVariant: {
               defaultWarehouseId: this.warehouseId,
-            }
+            },
           },
           include: {
             productVariant: {
@@ -224,14 +227,16 @@ export class XentralProxyOrderSyncService {
         },
       });
       this.logger.info(
-        existingXentralAuftrag ? "Attached xentralProxyAuftrag to ECI Order." : "Created new xentralProxyAuftrag for current order",
+        existingXentralAuftrag
+          ? "Attached xentralProxyAuftrag to ECI Order."
+          : "Created new xentralProxyAuftrag for current order",
         {
           orderId: order.id,
           tenantId: this.tenantId,
           orderNumber: order.orderNumber,
           xentralAuftragId: createdXentralAuftrag.xentralId,
           xentralAuftragBelegNr: createdXentralAuftrag.xentralBelegNr,
-        }
+        },
       );
     }
   }

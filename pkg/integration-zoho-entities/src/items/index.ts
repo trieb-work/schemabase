@@ -226,8 +226,8 @@ export class ZohoItemSyncService {
             continue;
           }
         } else {
-          if(e instanceof Error) throw e;
-          throw new Error("Unknown Error: "+JSON.stringify(e));
+          if (e instanceof Error) throw e;
+          throw new Error("Unknown Error: " + JSON.stringify(e));
         }
       }
 
@@ -278,7 +278,15 @@ export class ZohoItemSyncService {
               compositeItem.mapped_items,
             );
           } catch (error) {
-            this.logger.error(`Error setting BOM in ECI DB for composite item "${compositeItem.name}": ${error}`);
+            if (error instanceof Prisma.NotFoundError) {
+              this.logger.info(
+                // eslint-disable-next-line max-len
+                `Can't sync the BOM for ${compositeItem.name}, as some parts of it are still missing in the DB. The next run should work!`,
+              );
+            }
+            this.logger.error(
+              `Error setting BOM in ECI DB for composite item "${compositeItem.name}": ${error}`,
+            );
           }
         }
       }

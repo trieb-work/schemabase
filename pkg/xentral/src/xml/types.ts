@@ -167,7 +167,7 @@ export type ArtikelEditRequest = Omit<ArtikelCreateRequest, "nummer"> & {
 export type ArtikelEditResponse = ArtikelCreateResponse;
 export type ArtikelGetRequest = {
   id: string;
-}
+};
 export type ArtikelGetResponse = ArtikelCreateResponse;
 
 export interface AuftragCreateRequest {
@@ -230,13 +230,13 @@ export interface AuftragCreateRequest {
   uebernehmen?: 0 | 1;
   lieferant?: string;
   uebernehmen2?: number;
-  projekt?: string | "STANDARD"
+  projekt?: string | "STANDARD";
   aktion?: string;
   internet?: string;
   angebotid?: string;
   kundennummer_buchhaltung?: string;
   internebezeichnung?: string;
-  auftragseingangper?: "internet"
+  auftragseingangper?: "internet";
   /**
    * Datestring in format dd.MM.yyy
    * @example "23.09.2022"
@@ -267,16 +267,16 @@ export interface AuftragCreateRequest {
   vertrieb?: string;
   bearbeiter?: string;
   autoversand?: 1 | 0;
-  art?: "standardauftrag"
+  art?: "standardauftrag";
   gln?: string;
-  zahlungszieltage?: 14
-  zahlungszieltageskonto?: 10
+  zahlungszieltage?: 14;
+  zahlungszieltageskonto?: 10;
   /**
    * Datestring in format dd.MM.yyy
    * @example "23.09.2022"
    */
   einzugsdatum?: string;
-  kreditkarte_typ?: "MasterCard"
+  kreditkarte_typ?: "MasterCard";
   kreditkarte_inhaber?: string;
   kreditkarte_nummer?: string;
   kreditkarte_pruefnummer?: string;
@@ -287,10 +287,10 @@ export interface AuftragCreateRequest {
   ishtml_cke_internebemerkung?: 1 | 0;
   ustid?: string;
   ust_befreit?: number;
-  ust_ok?: 1
+  ust_ok?: 1;
   anzeigesteuer?: number;
-  waehrung?: "EUR"
-  sprache?: "deutsch"
+  waehrung?: "EUR";
+  sprache?: "deutsch";
   kurs?: number;
   kostenstelle?: string;
 }

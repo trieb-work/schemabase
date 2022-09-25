@@ -11,7 +11,11 @@ import {
 } from "@jest/globals";
 import { Zoho, ZohoApiClient } from "@trieb.work/zoho-ts";
 import { ZohoSalesOrdersSyncService } from "@eci/pkg/integration-zoho-entities/src/salesorders";
-import { connectZohoBankToBraintreeCardPm, connectZohoBankToBraintreePaypalPm, deleteOrders } from "@eci/pkg/integration-zoho-entities/test/utils";
+import {
+  connectZohoBankToBraintreeCardPm,
+  connectZohoBankToBraintreePaypalPm,
+  deleteOrders,
+} from "@eci/pkg/integration-zoho-entities/test/utils";
 import "@eci/pkg/jest-utils/consoleFormatter";
 import { ZohoItemSyncService } from "@eci/pkg/integration-zoho-entities/src/items";
 import { ZohoContactSyncService } from "@eci/pkg/integration-zoho-entities/src/contacts";
@@ -50,18 +54,19 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
   let zohoPaymentSyncService: ZohoPaymentSyncService;
   let zohoBankAccountsSyncService: ZohoBankAccountsSyncService;
   let zohoWarehouseSyncService: ZohoWarehouseSyncService;
-  const zohoSalesOrdersLogger = new AssertionLogger()
-  const zohoItemSyncLogger = new AssertionLogger()
-  const zohoContactSyncLogger = new AssertionLogger()
-  const zohoTaxSyncLogger = new AssertionLogger()
-  const zohoInvoiceSyncLogger = new AssertionLogger()
-  const zohoPaymentSyncLogger = new AssertionLogger()
-  const zohoBankAccountsSyncLogger = new AssertionLogger()
-  const zohoWarehouseSyncLogger = new AssertionLogger()
+  const zohoSalesOrdersLogger = new AssertionLogger();
+  const zohoItemSyncLogger = new AssertionLogger();
+  const zohoContactSyncLogger = new AssertionLogger();
+  const zohoTaxSyncLogger = new AssertionLogger();
+  const zohoInvoiceSyncLogger = new AssertionLogger();
+  const zohoPaymentSyncLogger = new AssertionLogger();
+  const zohoBankAccountsSyncLogger = new AssertionLogger();
+  const zohoWarehouseSyncLogger = new AssertionLogger();
 
   const saleor: SaleorClient = createSaleorClient({
     // graphqlEndpoint: "https://shop-api.pfefferundfrost.de/graphql/",
-    graphqlEndpoint: "https://testing--saleor.monorepo-preview.eu.fsn1.trwrk.xyz/graphql/",
+    graphqlEndpoint:
+      "https://testing--saleor.monorepo-preview.eu.fsn1.trwrk.xyz/graphql/",
     traceId: "test",
     token:
       // manually optian a token if it is outdated by: mutation{tokenCreate(email: "admin@example.com", password: "admin"){token}}
@@ -82,7 +87,6 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
   let braintreeTransactionSyncService: BraintreeTransactionSyncService;
   const braintreeTransactionSyncLogger = new AssertionLogger();
 
-
   beforeAll(async () => {
     const zohoApp = await prismaClient.zohoApp.findUnique({
       where: {
@@ -97,7 +101,7 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
         client: { id: zohoApp.clientId, secret: zohoApp.clientSecret },
       }),
     );
-    console.debug("zohoApp", zohoApp)
+    console.debug("zohoApp", zohoApp);
     const commonZohoParamms = { zoho, db: prismaClient, zohoApp };
     zohoSalesOrdersSyncService = new ZohoSalesOrdersSyncService({
       logger: zohoSalesOrdersLogger,
@@ -142,12 +146,15 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
       include: { tenant: true },
     });
     if (!saleorApp) throw new Error("No testing Saleor App found!");
-    const installedSaleorApp = await prismaClient.installedSaleorApp.findUnique({
-      where: {
-        id: "test",
+    const installedSaleorApp = await prismaClient.installedSaleorApp.findUnique(
+      {
+        where: {
+          id: "test",
+        },
       },
-    });
-    if (!installedSaleorApp) throw new Error("No testing installed Saleor App found!");
+    );
+    if (!installedSaleorApp)
+      throw new Error("No testing installed Saleor App found!");
     const commonSaleorParamms = {
       db: prismaClient,
       installedSaleorAppId: installedSaleorApp.id,
@@ -183,7 +190,6 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
       ...commonSaleorParamms,
     });
 
-
     const braintreeApp = await prismaClient.braintreeApp.findUnique({
       where: {
         id: "test",
@@ -205,7 +211,7 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
       logger: braintreeTransactionSyncLogger,
       braintreeAppId: braintreeApp.id,
       tenantId: braintreeApp.tenantId,
-      braintreeClient
+      braintreeClient,
     });
   });
   afterAll(async () => {
@@ -255,38 +261,54 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
   test("Test 1: Preparation", async () => {
     // TODO create an order in saleor
     console.info("Test 1 started");
-    console.debug("sync saleor paymentGateways to ECI (and create saleoPaymentGateway & paymentMethod)")
+    console.debug(
+      "sync saleor paymentGateways to ECI (and create saleoPaymentGateway & paymentMethod)",
+    );
     await saleorPaymentGatewaySyncService.syncToECI();
-    console.debug("Sync zoho bank accounts to ECI")
+    console.debug("Sync zoho bank accounts to ECI");
     await zohoBankAccountsSyncService.syncToECI();
-    console.debug("manually connect Zoho Bank accounts with payment methods")
+    console.debug("manually connect Zoho Bank accounts with payment methods");
     await Promise.all([
       connectZohoBankToBraintreeCardPm(prismaClient),
       connectZohoBankToBraintreePaypalPm(prismaClient),
       // connectZohoBankToBanktransferPm(prismaClient), // TODO add setup of banktransfer GW in saleor testing
     ]);
-    console.debug("sync saleor warehouses to ECI (and connectOrCreate warehouses)")
+    console.debug(
+      "sync saleor warehouses to ECI (and connectOrCreate warehouses)",
+    );
     await saleorWarehouseSyncService.syncToECI();
-    console.debug("sync saleor products to ECI (and create product & productVariants)")
+    console.debug(
+      "sync saleor products to ECI (and create product & productVariants)",
+    );
     await saleorProductSyncService.syncToECI();
-    console.debug("sync zoho warehouses to ECI (and connectOrCreate warehouses)")
+    console.debug(
+      "sync zoho warehouses to ECI (and connectOrCreate warehouses)",
+    );
     await zohoWarehouseSyncService.syncToECI();
-    console.debug("sync zoho items to ECI (and connect them with product variants)")
+    console.debug(
+      "sync zoho items to ECI (and connect them with product variants)",
+    );
     await zohoItemSyncService.syncToECI();
-    console.debug("sync zoho taxes to ECI (and create zohoTax & tax)")
+    console.debug("sync zoho taxes to ECI (and create zohoTax & tax)");
     await zohoTaxSyncService.syncToECI();
     console.info("Test 1 completed");
   }, 1_240_000);
 
   test("Test 2: Order and sub-entities to ECI", async () => {
     console.info("Test 2 started");
-    console.debug("sync all orders from saleor to ECI (connectOrCreate: Contact, Order, orderLineItem, tax, warehouse, productVariant, Address)");
+    console.debug(
+      "sync all orders from saleor to ECI (connectOrCreate: Contact, Order, orderLineItem, tax, warehouse, productVariant, Address)",
+    );
     await saleorOrderSyncService.syncToECI();
     await sleep(1000);
-    console.debug("sync payments from saleor to ECI (and connect them with payment method)");
+    console.debug(
+      "sync payments from saleor to ECI (and connect them with payment method)",
+    );
     // NOTE: saleorPaymentSyncService & braintreeTransactionSyncService services could run in parallel because the both do an upsert based on the transaction id
     await saleorPaymentSyncService.syncToECI();
-    console.debug("sync all transaction fees from braintree to ECI (and connectOrCreate them with a payment & connectOrCreate payment method)");
+    console.debug(
+      "sync all transaction fees from braintree to ECI (and connectOrCreate them with a payment & connectOrCreate payment method)",
+    );
     await braintreeTransactionSyncService.syncToECI();
     await sleep(1000);
     console.info("Test 2 completed");
@@ -294,19 +316,27 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
 
   test("Test 3: Order and sub-entities to Zoho", async () => {
     console.info("Test 3 started");
-    console.debug("sync all contacts to zoho contacts & zoho contact persons & addresses from ECI")
+    console.debug(
+      "sync all contacts to zoho contacts & zoho contact persons & addresses from ECI",
+    );
     await zohoContactSyncService.syncFromECI();
     await sleep(1000);
 
-    console.debug("sync all orders to zoho salesorders from ECI (and connect salesorder in zoho with: tax, items, warehouses, customer_id: mainCoctact, addresses, contact_persons:[mainContact.contactPerson])");
+    console.debug(
+      "sync all orders to zoho salesorders from ECI (and connect salesorder in zoho with: tax, items, warehouses, customer_id: mainCoctact, addresses, contact_persons:[mainContact.contactPerson])",
+    );
     await zohoSalesOrdersSyncService.syncFromECI();
     await sleep(1000);
 
-    console.debug("create invoices from zoho salesorders and sync the created invoices back to ECI DB (creates ECI invoice & zoho invocie in ECI DB)");
+    console.debug(
+      "create invoices from zoho salesorders and sync the created invoices back to ECI DB (creates ECI invoice & zoho invocie in ECI DB)",
+    );
     await zohoInvoiceSyncService.syncFromECI_autocreateInvoiceFromSalesorder();
     await sleep(1000);
 
-    console.debug("sync all payments to zoho from ECI (and connect the payments in zoho with: order.invoices and the order.mainContact)");
+    console.debug(
+      "sync all payments to zoho from ECI (and connect the payments in zoho with: order.invoices and the order.mainContact)",
+    );
     await zohoPaymentSyncService.syncFromECI();
     await sleep(1000);
 

@@ -192,6 +192,7 @@ export class ZohoSalesOrdersSyncService {
               id: id.id("order"),
               orderNumber: salesorder.salesorder_number,
               date: new Date(salesorder.date),
+              expectedShippingDate: new Date(salesorder.shipment_date),
               totalPriceGross: salesorder.total,
               mainContact: contactConnectOrCreate,
               tenant: {
@@ -240,6 +241,7 @@ export class ZohoSalesOrdersSyncService {
           order: {
             update: {
               date: new Date(salesorder.date),
+              expectedShippingDate: new Date(salesorder.shipment_date),
               mainContact: contactConnectOrCreate,
             },
           },
@@ -375,6 +377,13 @@ export class ZohoSalesOrdersSyncService {
                     },
                     undiscountedUnitPriceNet: lineItem.rate, // TODO double check if this always is the price net or only if no tax?
                     totalPriceNet: lineItem.item_total,
+                    totalPriceGross: lineItem.item_total_inclusive_of_tax,
+                    undiscountedUnitPriceGross: fullSalesorder.is_inclusive_tax
+                      ? lineItem.rate
+                      : undefined,
+                    undiscountedUnitPriceNet: fullSalesorder.is_inclusive_tax
+                      ? undefined
+                      : lineItem.rate,
                     // warehouse: warehouseConnect,
                     productVariant: {
                       connect: {
@@ -411,6 +420,13 @@ export class ZohoSalesOrdersSyncService {
                     },
                   },
                   totalPriceNet: lineItem.item_total,
+                  totalPriceGross: lineItem.item_total_inclusive_of_tax,
+                  undiscountedUnitPriceGross: fullSalesorder.is_inclusive_tax
+                    ? lineItem.rate
+                    : undefined,
+                  undiscountedUnitPriceNet: fullSalesorder.is_inclusive_tax
+                    ? undefined
+                    : lineItem.rate,
                 },
               },
             },
@@ -496,9 +512,7 @@ export class ZohoSalesOrdersSyncService {
   public async syncFromECI(): Promise<void> {
     const ordersFromEciDb = await this.db.order.findMany({
       where: {
-        tenant: {
-          id: this.zohoApp.tenantId,
-        },
+        tenantId: this.zohoApp.tenantId,
         // filter out orders that are cancled (for example in saleor)
         orderStatus: "confirmed",
         // filter out zohoSalesorders with the current AppId like this we find the orders,
@@ -610,6 +624,8 @@ export class ZohoSalesOrdersSyncService {
         const mainContactPerson = orderToMainContactPerson(order);
         const createSalesOrderBody: CreateSalesOrder = {
           date: format(order.date, "yyyy-MM-dd"),
+          // We always create orders inclusive of tax to prevent possible rounding errors
+          is_inclusive_tax: true,
           salesorder_number: order.orderNumber,
           reference_number: order.referenceNumber ?? undefined,
           line_items: orderToZohoLineItems(order, discount_type),

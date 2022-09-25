@@ -75,6 +75,7 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
     zohoSalesOrdersSyncService = new ZohoSalesOrdersSyncService({
       logger: zohoSalesOrdersLogger,
       ...commonParamms,
+      createdTimeOffset: 1,
     });
     zohoItemSyncLogger = new AssertionLogger();
     zohoItemSyncService = new ZohoItemSyncService({
@@ -95,11 +96,13 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
     zohoInvoiceSyncService = new ZohoInvoiceSyncService({
       logger: zohoInvoiceSyncLogger,
       ...commonParamms,
+      createdTimeOffset: 2,
     });
     zohoPaymentSyncLogger = new AssertionLogger();
     zohoPaymentSyncService = new ZohoPaymentSyncService({
       logger: zohoPaymentSyncLogger,
       ...commonParamms,
+      createdTimeOffset: 3,
     });
   });
   afterAll(async () => {

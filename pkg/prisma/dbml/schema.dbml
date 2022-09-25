@@ -453,7 +453,8 @@ Table OrderLineItem {
   taxId String [not null]
   totalPriceNet Float [note: 'The total net price (price excluding taxes) of all line item. Optional, as we might have just one of the two values on hand']
   totalPriceGross Float [note: 'The total gross price (price including taxes) of all line item. Optional, as we might have just one of the two values on hand']
-  undiscountedUnitPriceNet Float [not null, note: 'The unit net price (price excluding taxes) of one line item. Optional, as we might have just one of the two values on hand']
+  undiscountedUnitPriceNet Float [note: 'The unit net price (price excluding taxes) of one line item. Optional, as we might have just one of the two values on hand']
+  undiscountedUnitPriceGross Float [note: 'The unit gross price (price including taxes) of one line item. Optional, as we might have just one of the two values on hand']
   discountValueNet Float [not null, default: 0, note: 'The disount amount, that is applied to the net price (discount excluding taxes).']
   productVariant ProductVariant [not null, note: 'The disount amount, that is applied to the gross price (discount including taxes).']
   productVariantId String [not null]
@@ -498,6 +499,7 @@ Table Order {
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   date DateTime [not null]
+  expectedShippingDate DateTime [note: 'The Date, that we expect this order to be shipped.']
   externalOrderId String
   orderStatus OrderStatus [not null, default: 'draft']
   paymentStatus OrderPaymentStatus [not null, default: 'unpaid']

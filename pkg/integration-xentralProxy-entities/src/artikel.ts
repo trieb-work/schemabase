@@ -6,7 +6,11 @@ import { XentralXmlClient } from "@eci/pkg/xentral";
 import { XentralRestClient } from "@eci/pkg/xentral/src/rest";
 import { Artikel } from "@eci/pkg/xentral/src/rest/types";
 import { ArtikelTypeEnum } from "@eci/pkg/xentral/src/types";
-import { ArtikelCreateRequest, ArtikelCreateResponse, ArtikelEditRequest } from "@eci/pkg/xentral/src/xml/types";
+import {
+  ArtikelCreateRequest,
+  ArtikelCreateResponse,
+  ArtikelEditRequest,
+} from "@eci/pkg/xentral/src/xml/types";
 
 interface XentralProxyProductVariantSyncServiceConfig {
   xentralProxyApp: XentralProxyApp;
@@ -61,9 +65,15 @@ export class XentralProxyProductVariantSyncService {
       xentralArtikelSkus.push(xentralArtikel.nummer);
       xentralArtikels.push(xentralArtikel);
     }
-    const missingProductVariants = productVariants.filter((pv) => !xentralArtikelSkus.includes(pv.sku));
-    const existingProductVariants = productVariants.filter((pv) => xentralArtikelSkus.includes(pv.sku));
-    this.logger.info(`Syncing ${productVariants.length} (creating: ${missingProductVariants.length} / updating: ${existingProductVariants.length}) productVariant(s) to xentral Artikel-Stammdaten`);
+    const missingProductVariants = productVariants.filter(
+      (pv) => !xentralArtikelSkus.includes(pv.sku),
+    );
+    const existingProductVariants = productVariants.filter((pv) =>
+      xentralArtikelSkus.includes(pv.sku),
+    );
+    this.logger.info(
+      `Syncing ${productVariants.length} (creating: ${missingProductVariants.length} / updating: ${existingProductVariants.length}) productVariant(s) to xentral Artikel-Stammdaten`,
+    );
 
     for (const productVariant of productVariants) {
       const existingXentralArtikel = xentralArtikels.find((xa) => xa.nummer === productVariant.xentralArtikel[0].xentralNummer);
@@ -74,7 +84,11 @@ export class XentralProxyProductVariantSyncService {
       };
       const artikel: Omit<ArtikelEditRequest, "id"> = {
         projekt: this.xentralProxyApp.projectId,
-        name_de: productVariant.product.name + (productVariant.variantName ? ` (${productVariant.variantName})` : ''),
+        name_de:
+          productVariant.product.name +
+          (productVariant.variantName
+            ? ` (${productVariant.variantName})`
+            : ""),
         ean: productVariant.ean || undefined,
         herstellernummer: productVariant.sku,
         aktiv: 1,
@@ -124,7 +138,7 @@ export class XentralProxyProductVariantSyncService {
           xentralNummer_xentralProxyAppId: {
             xentralNummer: xentralResData.nummer,
             xentralProxyAppId: this.xentralProxyApp.id,
-          }
+          },
         },
         create: {
           id: xentralResData.id.toString(),
@@ -140,10 +154,12 @@ export class XentralProxyProductVariantSyncService {
             },
           },
         },
-        update: {}
+        update: {},
       });
       this.logger.info(
-        `${existingXentralArtikel ? 'Updated' : 'Created new'} xentralArtikel for current productVariant`,
+        `${
+          existingXentralArtikel ? "Updated" : "Created new"
+        } xentralArtikel for current productVariant`,
         {
           productVariantId: productVariant.id,
           tenantId: this.tenantId,

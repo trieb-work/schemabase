@@ -98,8 +98,6 @@ export class CronTable {
           [tenantId, id],
         );
       }
-      // We don't use the standard cron schedule for contacts,
-      // as contacts need too many API calls
       if (enabledZohoIntegration.syncContacts) {
         this.scheduler.schedule(
           createWorkflowFactory(
@@ -107,7 +105,7 @@ export class CronTable {
             this.clients,
             commonWorkflowConfig,
           ),
-          { ...commonCronConfig, offset: 2, cron: "0 */3 * * *" },
+          { ...commonCronConfig, offset: 2 },
           [tenantId, id],
         );
       }
@@ -152,19 +150,10 @@ export class CronTable {
           [tenantId, id],
         );
       }
-      if (enabledZohoIntegration.syncPayments) {
-        this.scheduler.schedule(
-          createWorkflowFactory(
-            ZohoPaymentSyncWorkflow,
-            this.clients,
-            commonWorkflowConfig,
-          ),
-          { ...commonCronConfig, offset: 8 },
-          [tenantId, id],
-        );
+      if (enabledZohoIntegration.syncInvoices) {
         new WorkflowScheduler(this.clients).schedule(
           createWorkflowFactory(
-            SaleorPaymentSyncWorkflow,
+            ZohoInvoiceSyncWorkflow,
             this.clients,
             commonWorkflowConfig,
           ),
@@ -172,10 +161,19 @@ export class CronTable {
           [tenantId, id],
         );
       }
-      if (enabledZohoIntegration.syncInvoices) {
+      if (enabledZohoIntegration.syncPayments) {
+        this.scheduler.schedule(
+          createWorkflowFactory(
+            ZohoPaymentSyncWorkflow,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 10 },
+          [tenantId, id],
+        );
         new WorkflowScheduler(this.clients).schedule(
           createWorkflowFactory(
-            ZohoInvoiceSyncWorkflow,
+            SaleorPaymentSyncWorkflow,
             this.clients,
             commonWorkflowConfig,
           ),

@@ -33,7 +33,7 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "Fruchtig + Schokoladig",
                     sku: "friends-coldbrew-gemischt-2-test32",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       // {
                       //   "warehouse": {
                       //     "name": "GIGATEC GmbH",
@@ -41,11 +41,11 @@ describe("Saleor Entity Sync Products Test", () => {
                       //   }
                       // },
                       {
-                        "warehouse": {
-                          "name": "Test WH",
-                          "id": "V2FyZWhvdXNlOjMzOTkwN2NkLTRkNjctNGVmNC1iNWY0LTZjYjkxOTk4NzQ5OA=="
-                        }
-                      }
+                        warehouse: {
+                          name: "Test WH",
+                          id: "V2FyZWhvdXNlOjMzOTkwN2NkLTRkNjctNGVmNC1iNWY0LTZjYjkxOTk4NzQ5OA==",
+                        },
+                      },
                     ],
                     variantAttributes: [
                       {
@@ -80,13 +80,13 @@ describe("Saleor Entity Sync Products Test", () => {
                         value: "0080542773569",
                       },
                     ],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
-                      }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
+                      },
                     ],
                     variantAttributes: [
                       {
@@ -116,12 +116,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "Mixed",
                     sku: "pf-leb-5-gemischt",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -148,12 +148,12 @@ describe("Saleor Entity Sync Products Test", () => {
                         value: "0080542773495",
                       },
                     ],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -175,12 +175,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "White Chocolate",
                     sku: "pf-leb-5-weis",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -202,12 +202,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "Icing",
                     sku: "pf-leb-5-zucker",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -229,12 +229,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "Natural",
                     sku: "pf-leb-5-natur",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -265,12 +265,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "Schokoladig",
                     sku: "friends-coldbrew-colombia-6",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -292,12 +292,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "Fruchtig",
                     sku: "friends-coldbrew-ethiopia-6",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -328,12 +328,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "2x 0,2l Sekt",
                     sku: "jg-secco-weiss-2er",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -355,12 +355,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "6x 0,2l Sekt",
                     sku: "jg-secco-weiss-6er",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -391,12 +391,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "",
                     sku: "winzer-punsch",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [],
@@ -415,12 +415,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "6x 0,33l",
                     sku: "friends-limo-apfel-quitte-330ml-6",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -451,12 +451,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "",
                     sku: "friends-tuch-large-gelb",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [],
@@ -475,12 +475,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "",
                     sku: "friends-tuch-medium-blau",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [],
@@ -499,12 +499,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "Bio vegan gemischt",
                     sku: "pf-dose-5-bio-ad-gemischt",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -526,12 +526,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "Mixed",
                     sku: "pf-dose-5-ad-gemischt",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -567,12 +567,12 @@ describe("Saleor Entity Sync Products Test", () => {
                         value: "0080542773501",
                       },
                     ],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -599,12 +599,12 @@ describe("Saleor Entity Sync Products Test", () => {
                         value: "0080542773518",
                       },
                     ],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -631,12 +631,12 @@ describe("Saleor Entity Sync Products Test", () => {
                         value: "0080542773532",
                       },
                     ],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -663,12 +663,12 @@ describe("Saleor Entity Sync Products Test", () => {
                         value: "0080542773549",
                       },
                     ],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -690,12 +690,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "Natural",
                     sku: "pf-dose-5-cj-natur",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -734,12 +734,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "",
                     sku: "granola-2010-apfelstroodle",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [],
@@ -758,12 +758,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "",
                     sku: "granola-erdnuss-cold-ethiopia",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [],
@@ -782,12 +782,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "",
                     sku: "granola-erdnuss-cold-colombia",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [],
@@ -806,12 +806,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "",
                     sku: "granola-1701-fruehsportfreunde",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [],
@@ -830,12 +830,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "",
                     sku: "granola-himb-cold-ethiopia",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [],
@@ -854,12 +854,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "",
                     sku: "granola-himb-cold-colombia",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [],
@@ -878,12 +878,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "",
                     sku: "granola-2010-peanutpower",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [],
@@ -902,12 +902,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "",
                     sku: "cp-greetingcard-din-lang",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [],
@@ -926,12 +926,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "1 Karte + Kuvert",
                     sku: "kartenset-1-swing",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -953,12 +953,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "5 Karten + Kuverts",
                     sku: "kartenset-5-swing",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -994,12 +994,12 @@ describe("Saleor Entity Sync Products Test", () => {
                         value: "0080542773648",
                       },
                     ],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -1026,12 +1026,12 @@ describe("Saleor Entity Sync Products Test", () => {
                         value: "0080542773655",
                       },
                     ],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -1062,12 +1062,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "1 Karte + Kuvert",
                     sku: "kartenset-1-piano",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -1089,12 +1089,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "5 Karten + Kuverts",
                     sku: "kartenset-5-piano",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -1125,12 +1125,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "1 Karte + Kuvert",
                     sku: "kartenset-1-pyjama",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -1152,12 +1152,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "5 Karten + Kuverts",
                     sku: "kartenset-5-pyjama",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -1188,12 +1188,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "",
                     sku: "nudeln-bienenwachstuch-bundle",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [],
@@ -1212,12 +1212,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "Mixed",
                     sku: "pf-dose-5-cd-gemischt",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -1239,12 +1239,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "Bio vegan gemischt",
                     sku: "pf-dose-5-bio-cd-gemischt",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -1266,12 +1266,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "Natural",
                     sku: "pf-dose-5-cd-natur",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -1293,12 +1293,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "Icing",
                     sku: "pf-dose-5-cd-zucker",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -1320,12 +1320,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "Dark Chocolate",
                     sku: "pf-dose-5-cd-dunkle",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -1347,12 +1347,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "White Chocolate",
                     sku: "pf-dose-5-cd-weis",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -1388,12 +1388,12 @@ describe("Saleor Entity Sync Products Test", () => {
                         value: "0080542773600",
                       },
                     ],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -1415,12 +1415,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "Bio vegan gemischt",
                     sku: "pf-dose-5-bio-ms-gemischt",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -1451,12 +1451,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "",
                     sku: "buch-nudeln",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [],
@@ -1475,12 +1475,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "",
                     sku: "pf-permakalender",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [],
@@ -1499,12 +1499,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "",
                     sku: "bunny-secco-bundle-3er",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [],
@@ -1528,12 +1528,12 @@ describe("Saleor Entity Sync Products Test", () => {
                         value: "0036089937791",
                       },
                     ],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -1564,12 +1564,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "4 Osterhasen",
                     sku: "nu-company-bunny-4er",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -1591,12 +1591,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "8 Osterhasen",
                     sku: "nu-company-bunny-8er",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -1627,12 +1627,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "ganze Bohne",
                     sku: "pf-bundle-winterrendezvous-trad",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -1663,12 +1663,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "Fruchtig",
                     sku: "pf-kaffee-filter-winter",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [
@@ -1699,12 +1699,12 @@ describe("Saleor Entity Sync Products Test", () => {
                     name: "",
                     sku: "gewuerzwein-rot",
                     metadata: [],
-                    "stocks": [
+                    stocks: [
                       {
-                        "warehouse": {
-                          "name": "GIGATEC GmbH",
-                          "id": "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA=="
-                        }
+                        warehouse: {
+                          name: "GIGATEC GmbH",
+                          id: "V2FyZWhvdXNlOjQ2NDgyZWI2LTk1OGYtNGI4Ny1hYmFhLWM1NjJjMTY4MTAwOA==",
+                        },
                       },
                     ],
                     variantAttributes: [],
