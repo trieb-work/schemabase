@@ -576,3 +576,216 @@ export interface Auftrag {
   "shopextid": string;
   "shopextstatus": string;
 }
+export interface LieferscheinParams {
+  /**
+   * Suche nach Lieferschein-Status (genaue Übereinstimmung)
+   */
+  status?: "angelegt" | "freigegeben" | "abgeschlossen" | "versendet" | "storniert";
+  
+  /**
+   * Suche nach Belegnummer (ungefähre Übereinstimmung)
+   */
+  belegnr?: string;
+  
+  /**
+   * Suche nach Belegnummer (genaue Übereinstimmung)
+   */
+  belegnr_equals?: string;
+  
+  /**
+   * Suche nach Belegnummer (Übereinstimmung am Anfang)
+   */
+  belegnr_startswith?: string;
+  
+  /**
+   * Suche nach Belegnummer (Übereinstimmung am Ende)
+   */
+  belegnr_endswith?: string;
+  
+  /**
+   * Suche nach Internetnummer (ungefähre Übereinstimmung)
+   */
+  internet?: string;
+  
+  /**
+   * Suche nach Internetnummer (genaue Übereinstimmung)
+   */
+  internet_equals?: string;
+  
+  /**
+   * Suche nach Internetnummer (Übereinstimmung am Anfang)
+   */
+  internet_startswith?: string;
+  
+  /**
+   * Suche nach Internetnummer (Übereinstimmung am Ende)
+   */
+  internet_endswith?: string;
+  
+  /**
+   * Suche nach Kundennummer (ungefähre Übereinstimmung)
+   */
+  kundennummer?: string;
+  
+  /**
+   * Suche nach Kundennummer (genaue Übereinstimmung)
+   */
+  kundennummer_equals?: string;
+  
+  /**
+   * Suche nach Kundennummer (Übereinstimmung am Anfang)
+   */
+  kundennummer_startswith?: string;
+  
+  /**
+   * Suche nach Kundennummer (Übereinstimmung am Ende)
+   */
+  kundennummer_endswith?: string;
+  
+  /**
+   * Suche nach bestimmtem Belegdatum (genaue Übereinstimmung)
+   */
+  datum?: string;
+  
+  /**
+   * Suche nach bestimmtem Belegdatum (Datum größer Suchwert)
+   * 
+   * Format: "yyyy-MM-dd"
+   * @example "2019-06-28"
+   */
+  datum_gt?: string;
+  
+  /**
+   * Suche nach bestimmtem Belegdatum (Datum größer gleich Suchwert)
+   * 
+   * Format: "yyyy-MM-dd"
+   * @example "2019-06-28"
+   */
+  datum_gte?: string;
+  
+  /**
+   * Suche nach bestimmtem Belegdatum (Datum kleiner Suchwert)
+   * 
+   * Format: "yyyy-MM-dd"
+   * @example "2019-06-28"
+   */
+  datum_lt?: string;
+  
+  /**
+   * Suche nach bestimmtem Belegdatum (Datum kleiner gleich Suchwert)
+   * 
+   * Format: "yyyy-MM-dd"
+   * @example "2019-06-28"
+   */
+  datum_lte?: string;
+  
+  /**
+   * Lieferscheine nach Auftragsnummer filtern (genaue Übereinstimmung)
+   */
+  auftrag?: string;
+  
+  /**
+   * Lieferscheine nach Auftrags-ID filtern (genaue Übereinstimmung)
+   */
+  auftragid?: number;
+  
+  /**
+   * Lieferscheine eines bestimmten Projekt filtern
+   */
+  projekt?: number;
+  
+  /**
+   * Sortierung (Beispiel: sort=belegnr)
+   */
+  sort?: "belegnr" | "datum";
+  
+  /**
+   * Unter-Resourcen in Resource einbinden (Beispiel: include=positionen)
+   */
+  include?: "positionen" | "protokoll";
+}
+export interface Lieferschein {
+  "id": 1,
+  "firma": 1,
+  /**
+   * projekt number formatted as string 
+   * @example "1"
+   */
+  "projekt": string;
+  "status": string,
+  "lieferscheinart": string,
+  "belegnr": string,
+  "kundennummer": string,
+  "ihrebestellnummer": string,
+  /**
+   * date string "yyyyy-MM-dd"
+   * @example "2022-08-17"
+   */
+  "datum": string,
+  "auftrag": string,
+  "auftragid": 16,
+  "freitext": string,
+  "adresse": 23,
+  "typ": string,
+  "name": string,
+  "titel": string,
+  "ansprechpartnerid": 0,
+  "ansprechpartner": string,
+  "abteilung": string,
+  "unterabteilung": string,
+  "adresszusatz": string,
+  "strasse": string,
+  "plz": string,
+  "ort": string,
+  "land": "DE",
+  "bundesstaat": string,
+  "telefon": string,
+  "telefax": string,
+  "email": string,
+  "anschreiben": string,
+  "versandart": string, //TODO enum
+  "versand": string,
+  "versendet": 1,
+  /**
+   * date string "yyyyy-MM-dd hh:mm:ss"
+   * @example "2022-08-17 09:46:22"
+   */
+  "versendet_am": string,
+  "versendet_per": "sonstiges",
+  "versendet_durch": "Administrator",
+  "ustid": string,
+  "ust_befreit": 0,
+  "usereditid": 1,
+  /**
+   * date string "yyyyy-MM-dd hh:mm:ss"
+   * @example "2022-08-17 09:46:22"
+   */
+  "useredittimestamp": string,
+  "lieferantenretoure": 0,
+  "lieferantenretoureinfo": string,
+  "lieferant": 0,
+  "pdfarchiviert": 0,
+  "pdfarchiviertversion": 0,
+  "internebemerkung": string,
+  "ohne_briefpapier": 0,
+  "lieferid": 0,
+  "projektfiliale": 0,
+  "projektfiliale_eingelagert": 0,
+  "zuarchivieren": 1,
+  "internebezeichnung": string,
+  "kommissionierung": 0,
+  "sprache": string,
+  "gln": string,
+  "bearbeiter": "Administrator",
+  "keinerechnung": 0,
+  "ohne_artikeltext": 0,
+  "abweichendebezeichnung": 0,
+  "kostenstelle": string,
+  "bodyzusatz": string,
+  "lieferbedingung": string,
+  "standardlager": 0,
+  "kommissionskonsignationslager": 0,
+  "teillieferungvon": 0,
+  "teillieferungnummer": 0,
+  "kiste": -1
+}

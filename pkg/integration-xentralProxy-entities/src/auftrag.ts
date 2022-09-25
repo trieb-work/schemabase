@@ -60,6 +60,16 @@ export class XentralProxyOrderSyncService {
             xentralProxyAppId: this.xentralProxyApp.id,
           },
         },
+        /**
+         * only sync orders which have at least one lineitem for the specified warehouse
+         */
+        orderLineItems: {
+          some: {
+            productVariant: {
+              defaultWarehouseId: this.warehouseId,
+            }
+          },
+        }
       },
       include: {
         /**
@@ -90,6 +100,7 @@ export class XentralProxyOrderSyncService {
     });
     this.logger.info(`Will sync ${orders.length} Orders with Xentral.`);
     for (const order of orders) {
+      // TODO add try/catch block from other services
       const defaultLogFields = {
         orderId: order.id,
         tenantId: this.tenantId,
@@ -175,21 +186,25 @@ export class XentralProxyOrderSyncService {
         datum: order.date.toJSON(),
         artikelliste: {
           position: order.orderLineItems.map((lineItem) => {
-            if (!lineItem.productVariant.xentralArtikel[0]) {
+            if (!lineItem?.productVariant?.xentralArtikel?.[0]?.xentralNummer) {
               throw new Error(
                 `No matching xentral artikel for lineItem (${lineItem.sku}). Please sync new productVariants first to xentral artikel before creating an xentral auftrag.`,
               );
             }
             return {
+              id: lineItem.productVariant.xentralArtikel[0].id,
               nummer: lineItem.productVariant.xentralArtikel[0].xentralNummer,
-              preis: 0,
-              waehrung: "EUR",
+              // preis: 0,
+              // waehrung: "EUR",
               projekt: this.xentralProxyApp.projectId,
               menge: lineItem.quantity,
             };
           }),
         },
       };
+      if(!auftrag.artikelliste?.position || auftrag.artikelliste?.position.length === 0){
+        throw new Error("Can not sync an Auftrag with an empty artikelliste");
+      }
       const resData: Auftrag | AuftragCreateResponse = existingXentralAuftrag ? existingXentralAuftrag : await this.xentralXmlClient.AuftragCreate(auftrag);
       const createdXentralAuftrag = await this.db.xentralProxyAuftrag.create({
         data: {

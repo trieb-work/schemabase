@@ -33,7 +33,7 @@ export class XentralXmlClient {
   }
   public async create<Res>(xml: object, methodName: string, allowEmptyResponse = false): Promise<Res> {
     const xmlStr = this.builder.build({ request: { xml } });
-    // console.log("xmlStr", xmlStr)
+    console.log("xmlStr", xmlStr)
     const body = `xml=${encodeURIComponent(xmlStr)}`;
     const xentralRes = await this.client.fetch(
       `${this.url}/api/${methodName}`,

@@ -6,6 +6,8 @@ import {
   Artikel,
   Auftrag,
   AuftragParams,
+  Lieferschein,
+  LieferscheinParams,
   PaginatedRes,
   Trackingnummer,
 } from "./types";
@@ -95,6 +97,9 @@ export class XentralRestClient {
   }
   public async *getTrackingnummern(params?: Record<string, string | number | boolean>, items: number = DEFAULT_ITEM_COUNT, headers: HeadersInit = DEFAULT_HEADERS) {
     yield* this.paginatedApiFetch<Trackingnummer>(null, "/v1/trackingnummern", "GET", params, items, headers);
+  }
+  public async *getLieferscheine(params?: LieferscheinParams, items: number = DEFAULT_ITEM_COUNT, headers: HeadersInit = DEFAULT_HEADERS) {
+    yield* this.paginatedApiFetch<Lieferschein>(null, "/v1/belege/lieferscheine", "GET", params as Record<string, string | number | boolean>, items, headers);
   }
   public async *getAuftraege(params?: AuftragParams, items: number = DEFAULT_ITEM_COUNT, headers: HeadersInit = DEFAULT_HEADERS) {
     yield* this.paginatedApiFetch<Auftrag>(null, "/v1/belege/auftraege", "GET", params as Record<string, string | number | boolean>, items, headers);
