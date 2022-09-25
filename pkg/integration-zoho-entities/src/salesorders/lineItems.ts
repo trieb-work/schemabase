@@ -99,14 +99,17 @@ export function orderToZohoLineItems(
         "Multiple zoho warehouses found for single lineItem. Aborting sync of this order",
       );
     }
+    if (!lineItem.undiscountedUnitPriceGross) {
+      throw new Error(
+        `Missing value "undiscountedUnitPriceGross" for this line_item! Aborting sync of this order`,
+      );
+    }
     return {
       item_id: lineItem.productVariant.zohoItem[0].id,
       quantity: lineItem.quantity,
       warehouse_id: zohoWarehousesIds[0],
       tax_id: taxToZohoTaxId(lineItem.tax),
-      // item_total_inclusive_of_tax: lineItem.totalPriceGross, //TODO update doc in zoho ts to remove this field or verify how it works
-      // item_total: lineItem.totalPriceGross, //TODO update doc in zoho ts to remove this field or verify how it works
-      rate: lineItem.undiscountedUnitPriceNet,
+      rate: lineItem.undiscountedUnitPriceGross,
       discount: calculateLineItemDiscount(lineItem, discount_type),
     };
   });

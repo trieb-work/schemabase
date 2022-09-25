@@ -623,6 +623,8 @@ export class ZohoSalesOrdersSyncService {
         const mainContactPerson = orderToMainContactPerson(order);
         const createSalesOrderBody: CreateSalesOrder = {
           date: format(order.date, "yyyy-MM-dd"),
+          // We always create orders inclusive of tax to prevent possible rounding errors
+          is_inclusive_tax: true,
           salesorder_number: order.orderNumber,
           reference_number: order.referenceNumber ?? undefined,
           line_items: orderToZohoLineItems(order, discount_type),
