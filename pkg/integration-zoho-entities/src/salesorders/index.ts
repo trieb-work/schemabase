@@ -511,9 +511,7 @@ export class ZohoSalesOrdersSyncService {
   public async syncFromECI(): Promise<void> {
     const ordersFromEciDb = await this.db.order.findMany({
       where: {
-        tenant: {
-          id: this.zohoApp.tenantId,
-        },
+        tenantId: this.zohoApp.tenantId,
         // filter out orders that are cancled (for example in saleor)
         orderStatus: "confirmed",
         // filter out zohoSalesorders with the current AppId like this we find the orders,
