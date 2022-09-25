@@ -1,4 +1,4 @@
-query paymentGateways{
+query paymentGateways {
   shop {
     availablePaymentGateways {
       id

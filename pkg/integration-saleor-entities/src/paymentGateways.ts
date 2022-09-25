@@ -46,7 +46,7 @@ export class SaleorPaymentGatewaySyncService {
     );
 
     for (const gateway of gateways) {
-      try{
+      try {
         const connectOrCreatePaymentMethods: Prisma.Enumerable<Prisma.PaymentMethodCreateOrConnectWithoutSaleorPaymentGatewayInput> =
           gateway.currencies
             .flatMap(
@@ -130,11 +130,17 @@ export class SaleorPaymentGatewaySyncService {
         this.logger.info(
           `Updated saleor payment gateway ${gateway.id} with ${connectOrCreatePaymentMethods.length} payment method(s).`,
         );
-      } catch(err){
-        if(err instanceof Error){
-          this.logger.error("Error during creation of SaleorPaymentGateway or PaymentMethod: "+err.message);
+      } catch (err) {
+        if (err instanceof Error) {
+          this.logger.error(
+            "Error during creation of SaleorPaymentGateway or PaymentMethod: " +
+              err.message,
+          );
         } else {
-          this.logger.error("Unknown Error during creation of SaleorPaymentGateway or PaymentMethod: "+JSON.stringify(err));
+          this.logger.error(
+            "Unknown Error during creation of SaleorPaymentGateway or PaymentMethod: " +
+              JSON.stringify(err),
+          );
         }
       }
     }

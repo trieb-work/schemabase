@@ -119,7 +119,7 @@ export class SaleorOrderSyncService {
     this.logger.info(`Working on ${orders.length} orders`);
 
     for (const order of orders) {
-      try{
+      try {
         if (!order.number || typeof order.number === "undefined") {
           throw new Error(`No orderNumber in order. Can't sync.`);
         }
@@ -138,7 +138,8 @@ export class SaleorOrderSyncService {
                 connectOrCreate: {
                   where: {
                     normalizedName_tenantId: {
-                      normalizedName: normalizeStrings.companyNames(companyName),
+                      normalizedName:
+                        normalizeStrings.companyNames(companyName),
                       tenantId: this.tenantId,
                     },
                   },
@@ -178,17 +179,18 @@ export class SaleorOrderSyncService {
           },
         };
 
-        const orderStatusMapping: { [key in OrderStatus]: InternalOrderStatus } =
-          {
-            [OrderStatus.Canceled]: "canceled",
-            [OrderStatus.Draft]: "draft",
-            [OrderStatus.Unfulfilled]: "confirmed",
-            [OrderStatus.Fulfilled]: "confirmed",
-            [OrderStatus.PartiallyFulfilled]: "confirmed",
-            [OrderStatus.Returned]: "confirmed",
-            [OrderStatus.Unconfirmed]: "unconfirmed",
-            [OrderStatus.PartiallyReturned]: "confirmed",
-          };
+        const orderStatusMapping: {
+          [key in OrderStatus]: InternalOrderStatus;
+        } = {
+          [OrderStatus.Canceled]: "canceled",
+          [OrderStatus.Draft]: "draft",
+          [OrderStatus.Unfulfilled]: "confirmed",
+          [OrderStatus.Fulfilled]: "confirmed",
+          [OrderStatus.PartiallyFulfilled]: "confirmed",
+          [OrderStatus.Returned]: "confirmed",
+          [OrderStatus.Unconfirmed]: "unconfirmed",
+          [OrderStatus.PartiallyReturned]: "confirmed",
+        };
         const orderStatus = orderStatusMapping[order.status];
 
         const paymentStatusMapping: {
@@ -269,20 +271,28 @@ export class SaleorOrderSyncService {
           id: order.id,
         });
         if (!orderDetails) {
-          throw new Error(`Can't get order details from saleor! Aborting sync and retry next time.`);
+          throw new Error(
+            `Can't get order details from saleor! Aborting sync and retry next time.`,
+          );
         }
         const lineItems = orderDetails.order?.lines;
         if (!lineItems) {
-          throw new Error(`No line items returned for order! Aborting sync and retry next time.`);
+          throw new Error(
+            `No line items returned for order! Aborting sync and retry next time.`,
+          );
         }
 
         // loop through all line items and upsert them in the DB
         for (const lineItem of lineItems) {
           if (!lineItem?.id) {
-            throw new Error(`Lineitem of Order has a missing id in saleor response.`);
-          };
+            throw new Error(
+              `Lineitem of Order has a missing id in saleor response.`,
+            );
+          }
           if (!lineItem?.variant?.sku) {
-            throw new Error(`Lineitem of Order is missing the variant sku in saleor response.`);
+            throw new Error(
+              `Lineitem of Order is missing the variant sku in saleor response.`,
+            );
           }
 
           const productSku = await this.db.productVariant.findUnique({
@@ -323,7 +333,7 @@ export class SaleorOrderSyncService {
           }
 
           // TODO: would it not be better to inline this into db.saleorOrder.upsert (line 209) so we do not have partiall order data in ECI db if something fails?
-          // Otherwise we would maybe need a parialdata flag (or commited flag) which is true on create and will be updated to false once all lineitems etc. have been created. 
+          // Otherwise we would maybe need a parialdata flag (or commited flag) which is true on create and will be updated to false once all lineitems etc. have been created.
           // Then we can filter for the next steps for partial data = true;
           await this.db.saleorOrderLineItem.upsert({
             where: {
@@ -357,7 +367,8 @@ export class SaleorOrderSyncService {
                     },
                     quantity: lineItem.quantity,
                     discountValueNet,
-                    undiscountedUnitPriceNet: lineItem.undiscountedUnitPrice.net.amount,
+                    undiscountedUnitPriceNet:
+                      lineItem.undiscountedUnitPrice.net.amount,
                     totalPriceNet: lineItem.totalPrice.net.amount,
                     totalPriceGross: lineItem.totalPrice.gross.amount,
                     tax: {
@@ -438,7 +449,7 @@ export class SaleorOrderSyncService {
             upsertedOrder.order.mainContactId,
           ).sync(order.shippingAddress, order.billingAddress);
         }
-      } catch(err){
+      } catch (err) {
         const defaultLogFields = {
           saleorOrderId: order.id,
           saleorOrderNumber: `${this.orderPrefix}-${order.number}`,

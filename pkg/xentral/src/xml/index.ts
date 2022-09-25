@@ -31,7 +31,11 @@ export class XentralXmlClient {
   public async edit<Res>(xml: object, methodName: string): Promise<Res> {
     return this.create<Res>(xml, methodName, true);
   }
-  public async create<Res>(xml: object, methodName: string, allowEmptyResponse = false): Promise<Res> {
+  public async create<Res>(
+    xml: object,
+    methodName: string,
+    allowEmptyResponse = false,
+  ): Promise<Res> {
     const xmlStr = this.builder.build({ request: { xml } });
     // console.log("xmlStr", xmlStr)
     const body = `xml=${encodeURIComponent(xmlStr)}`;
@@ -67,7 +71,10 @@ export class XentralXmlClient {
   public async AuftragCreate(
     auftrag: AuftragCreateRequest,
   ): Promise<AuftragCreateResponse> {
-    const res = await this.create<AuftragCreateResponse>(auftrag, "AuftragCreate");
+    const res = await this.create<AuftragCreateResponse>(
+      auftrag,
+      "AuftragCreate",
+    );
     if (!res?.belegnr)
       throw new Error("AuftragCreateResponse is missing the belegnr");
     res.belegnr = String(res.belegnr);
@@ -76,11 +83,13 @@ export class XentralXmlClient {
     return res as AuftragCreateResponse;
   }
 
-
   public async ArtikelCreate(
     artikel: ArtikelCreateRequest,
   ): Promise<ArtikelCreateResponse> {
-    const res = await this.create<ArtikelCreateResponse>(artikel, "ArtikelCreate");
+    const res = await this.create<ArtikelCreateResponse>(
+      artikel,
+      "ArtikelCreate",
+    );
     if (!res?.nummer)
       throw new Error("ArtikelCreateResponse is missing the artikelnr.");
     res.nummer = String(res.nummer);

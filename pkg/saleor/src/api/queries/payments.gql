@@ -1,4 +1,3 @@
-
 query saleorCronPayments($createdGte: Date, $after: String) {
   orders(first: 100, after: $after, filter: { created: { gte: $createdGte } }) {
     totalCount
@@ -20,7 +19,7 @@ query saleorCronPayments($createdGte: Date, $after: String) {
           created
           modified
           isActive
-          creditCard{
+          creditCard {
             brand
             lastDigits
           }

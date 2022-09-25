@@ -179,7 +179,8 @@ export async function upsertZohoWarehouse(prisma: PrismaClient) {
       },
     },
   });
-  if (LOGGING) console.log("created and connected zoho warehozse with warehouse");
+  if (LOGGING)
+    console.log("created and connected zoho warehozse with warehouse");
 }
 
 export async function connectZohoBankToBraintreeCardPm(prisma: PrismaClient) {
@@ -198,12 +199,15 @@ export async function connectZohoBankToBraintreeCardPm(prisma: PrismaClient) {
             methodType: "card",
             currency: "EUR",
             tenantId: "test",
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   });
-  if (LOGGING) console.log("connected zoho bank account with braintree/card payment method");
+  if (LOGGING)
+    console.log(
+      "connected zoho bank account with braintree/card payment method",
+    );
 }
 export async function connectZohoBankToBraintreePaypalPm(prisma: PrismaClient) {
   await prisma.zohoBankAccount.update({
@@ -221,12 +225,15 @@ export async function connectZohoBankToBraintreePaypalPm(prisma: PrismaClient) {
             methodType: "paypal",
             currency: "EUR",
             tenantId: "test",
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   });
-  if (LOGGING) console.log("connected zoho bank account with braintree/paypal payment method");
+  if (LOGGING)
+    console.log(
+      "connected zoho bank account with braintree/paypal payment method",
+    );
 }
 export async function connectZohoBankToBanktransferPm(prisma: PrismaClient) {
   await prisma.zohoBankAccount.update({
@@ -244,12 +251,15 @@ export async function connectZohoBankToBanktransferPm(prisma: PrismaClient) {
             methodType: "banktransfer",
             currency: "EUR",
             tenantId: "test",
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   });
-  if (LOGGING) console.log("connected zoho bank account with banktransfer/banktransfer payment method");
+  if (LOGGING)
+    console.log(
+      "connected zoho bank account with banktransfer/banktransfer payment method",
+    );
 }
 export async function upsertPaymentMethods(prisma: PrismaClient) {
   await upsertPaymentMethod(prisma, "test-1", {

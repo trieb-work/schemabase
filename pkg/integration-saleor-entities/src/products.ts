@@ -116,29 +116,42 @@ export class SaleorProductSyncService {
           productId: product.id,
           productName: product.name,
         };
-        try{
+        try {
           if (!variant) {
             throw new Error("Variant empty");
           }
           if (!variant?.sku) {
-            throw new Error(`Product Variant ${variant?.id} has no SKU! Aborting sync`);
+            throw new Error(
+              `Product Variant ${variant?.id} has no SKU! Aborting sync`,
+            );
           }
-          if(!variant?.stocks || variant.stocks.length === 0){
-            throw new Error(`Product Variant has no stocks (warehouses) assigned, therefore we can not determine the default warehouse. Aborting sync.`);
+          if (!variant?.stocks || variant.stocks.length === 0) {
+            throw new Error(
+              `Product Variant has no stocks (warehouses) assigned, therefore we can not determine the default warehouse. Aborting sync.`,
+            );
           }
-          if(variant?.stocks?.length > 1){
-            throw new Error(`Product Variant has multiple stocks (warehouses) assigned, therefore we can not determine the default warehouse. Aborting sync.`);
+          if (variant?.stocks?.length > 1) {
+            throw new Error(
+              `Product Variant has multiple stocks (warehouses) assigned, therefore we can not determine the default warehouse. Aborting sync.`,
+            );
           }
-          if(!variant.stocks?.[0]?.warehouse?.name){
-            throw new Error(`First Warehouse of Product Variant (the default warehouse) has no name set. Aborting sync.`);
+          if (!variant.stocks?.[0]?.warehouse?.name) {
+            throw new Error(
+              `First Warehouse of Product Variant (the default warehouse) has no name set. Aborting sync.`,
+            );
           }
-          const normalizedDefaultWarehouseName = normalizeStrings.warehouseNames(variant.stocks?.[0]?.warehouse.name);
-  
+          const normalizedDefaultWarehouseName =
+            normalizeStrings.warehouseNames(
+              variant.stocks?.[0]?.warehouse.name,
+            );
+
           /**
            * The product variants EAN-13 number. Stored as metadata field in Saleor
            */
-          const ean = variant.metadata.find((meta) => meta?.key === "EAN")?.value;
-  
+          const ean = variant.metadata.find(
+            (meta) => meta?.key === "EAN",
+          )?.value;
+
           await this.db.saleorProductVariant.upsert({
             where: {
               id_installedSaleorAppId: {
@@ -171,8 +184,8 @@ export class SaleorProductSyncService {
                         normalizedName_tenantId: {
                           normalizedName: normalizedDefaultWarehouseName,
                           tenantId: this.tenantId,
-                        }
-                      }
+                        },
+                      },
                     },
                     sku: variant.sku,
                     variantName: variant.name,
@@ -225,8 +238,8 @@ export class SaleorProductSyncService {
                         normalizedName_tenantId: {
                           normalizedName: normalizedDefaultWarehouseName,
                           tenantId: this.tenantId,
-                        }
-                      }
+                        },
+                      },
                     },
                     sku: variant.sku,
                     variantName: variant.name,
@@ -267,8 +280,8 @@ export class SaleorProductSyncService {
                       normalizedName_tenantId: {
                         normalizedName: normalizedDefaultWarehouseName,
                         tenantId: this.tenantId,
-                      }
-                    }
+                      },
+                    },
                   },
                   ean,
                 },
@@ -278,19 +291,31 @@ export class SaleorProductSyncService {
           this.logger.debug("Successfully synced", defaultLogFields);
         } catch (err) {
           if (err instanceof Warning) {
-            this.logger.warn(err.message, { ...defaultLogFields, stack: err.stack });
+            this.logger.warn(err.message, {
+              ...defaultLogFields,
+              stack: err.stack,
+            });
           } else if (err instanceof Error) {
             // if(err.name)
-            if(err instanceof PrismaClientKnownRequestError){
-              if(err.code === "P2025" && (err?.meta?.cause as string).includes("No 'Warehouse' record")){
-                this.logger.warn("Warehouse for defaultwarehouse relation is missing. Aborting sync. Should retry after rerun of Saleor Warehouse sync.");
+            if (err instanceof PrismaClientKnownRequestError) {
+              if (
+                err.code === "P2025" &&
+                (err?.meta?.cause as string).includes("No 'Warehouse' record")
+              ) {
+                this.logger.warn(
+                  "Warehouse for defaultwarehouse relation is missing. Aborting sync. Should retry after rerun of Saleor Warehouse sync.",
+                );
               }
             } else {
-              this.logger.error(err.message, { ...defaultLogFields, stack: err.stack });
+              this.logger.error(err.message, {
+                ...defaultLogFields,
+                stack: err.stack,
+              });
             }
           } else {
             this.logger.error(
-              "An unknown Error occured during product-variant sync loop: " + (err as any)?.toString(),
+              "An unknown Error occured during product-variant sync loop: " +
+                (err as any)?.toString(),
               defaultLogFields,
             );
           }

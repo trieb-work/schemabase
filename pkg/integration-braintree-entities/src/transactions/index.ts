@@ -60,10 +60,15 @@ export class BraintreeTransactionSyncService {
     const transactionsStream = this.braintreeClient.listTransactionStream({
       createdAfter: createdGte,
     });
-    console.log("transactionsStream.readableLength", transactionsStream.readableLength)
+    console.log(
+      "transactionsStream.readableLength",
+      transactionsStream.readableLength,
+    );
     for await (const chunk of transactionsStream) {
       const transaction: BraintreeTransaction = chunk;
-      this.logger.info(`Processing transaction ${transaction.id}, ${transaction.orderId}`)
+      this.logger.info(
+        `Processing transaction ${transaction.id}, ${transaction.orderId}`,
+      );
 
       /**
        * An object to match the braintree method types with our internal one
@@ -130,7 +135,7 @@ export class BraintreeTransactionSyncService {
                 amount: Number(transaction.amount),
                 transactionFee: payPalTransactionFee,
                 paymentMethod: {
-                  // TODO: do we really want to create paymentMethods here or is it more safe to just 
+                  // TODO: do we really want to create paymentMethods here or is it more safe to just
                   // use an connect and let the saleorGateway/zohoBankAccount sync jobs handle the create of the paymentMethods?
                   connectOrCreate: {
                     where: {

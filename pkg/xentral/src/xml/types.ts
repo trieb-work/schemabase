@@ -41,7 +41,7 @@ export interface ArtikelCreateRequest {
 
   leerfeld: string;
   adresse: string;
-  ishtml_cke_anabregs_text: 1 | 0
+  ishtml_cke_anabregs_text: 1 | 0;
   kurztext_de: string;
   internerkommentar: string;
   zolltarifnummer: string;
@@ -60,10 +60,10 @@ export interface ArtikelCreateRequest {
   abckategorie: string;
   rabatt_prozent: string;
   variante_von: string;
-  umsatzsteuer: "normal"
+  umsatzsteuer: "normal";
   steuersatz: string;
   chargenverwaltung: number;
-  seriennummern: "keine"
+  seriennummern: "keine";
   inventurek: "0,00";
   berechneterek: "0,00";
   berechneterekwaehrung: string;
@@ -166,7 +166,7 @@ export type ArtikelEditRequest = ArtikelCreateRequest & {
 export type ArtikelEditResponse = ArtikelCreateResponse;
 export type ArtikelGetRequest = {
   id: string;
-}
+};
 export type ArtikelGetResponse = ArtikelCreateResponse;
 
 export interface AuftragCreateRequest {
@@ -229,13 +229,13 @@ export interface AuftragCreateRequest {
   uebernehmen?: 0 | 1;
   lieferant?: string;
   uebernehmen2?: number;
-  projekt?: string | "STANDARD"
+  projekt?: string | "STANDARD";
   aktion?: string;
   internet?: string;
   angebotid?: string;
   kundennummer_buchhaltung?: string;
   internebezeichnung?: string;
-  auftragseingangper?: "internet"
+  auftragseingangper?: "internet";
   /**
    * Datestring in format dd.MM.yyy
    * @example "23.09.2022"
@@ -266,16 +266,16 @@ export interface AuftragCreateRequest {
   vertrieb?: string;
   bearbeiter?: string;
   autoversand?: 1 | 0;
-  art?: "standardauftrag"
+  art?: "standardauftrag";
   gln?: string;
-  zahlungszieltage?: 14
-  zahlungszieltageskonto?: 10
+  zahlungszieltage?: 14;
+  zahlungszieltageskonto?: 10;
   /**
    * Datestring in format dd.MM.yyy
    * @example "23.09.2022"
    */
   einzugsdatum?: string;
-  kreditkarte_typ?: "MasterCard"
+  kreditkarte_typ?: "MasterCard";
   kreditkarte_inhaber?: string;
   kreditkarte_nummer?: string;
   kreditkarte_pruefnummer?: string;
@@ -286,10 +286,10 @@ export interface AuftragCreateRequest {
   ishtml_cke_internebemerkung?: 1 | 0;
   ustid?: string;
   ust_befreit?: number;
-  ust_ok?: 1
+  ust_ok?: 1;
   anzeigesteuer?: number;
-  waehrung?: "EUR"
-  sprache?: "deutsch"
+  waehrung?: "EUR";
+  sprache?: "deutsch";
   kurs?: number;
   kostenstelle?: string;
 }

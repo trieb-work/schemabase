@@ -6,7 +6,11 @@ import { XentralXmlClient } from "@eci/pkg/xentral";
 import { XentralRestClient } from "@eci/pkg/xentral/src/rest";
 import { Artikel } from "@eci/pkg/xentral/src/rest/types";
 import { ArtikelTypeEnum } from "@eci/pkg/xentral/src/types";
-import { ArtikelCreateRequest, ArtikelCreateResponse, ArtikelEditRequest } from "@eci/pkg/xentral/src/xml/types";
+import {
+  ArtikelCreateRequest,
+  ArtikelCreateResponse,
+  ArtikelEditRequest,
+} from "@eci/pkg/xentral/src/xml/types";
 
 interface XentralProxyProductVariantSyncServiceConfig {
   xentralProxyApp: XentralProxyApp;
@@ -38,7 +42,7 @@ export class XentralProxyProductVariantSyncService {
     this.logger.info("Starting sync of ECI Orders to XentralProxy Aufträge");
     const xentralXmlClient = new XentralXmlClient(this.xentralProxyApp);
     const xentralRestClient = new XentralRestClient(this.xentralProxyApp);
-    
+
     const productVariants = await this.db.productVariant.findMany({
       include: {
         xentralArtikel: true,
@@ -49,20 +53,33 @@ export class XentralProxyProductVariantSyncService {
     const xentralArtikelSkus: string[] = [];
     const xentralArtikels: Artikel[] = [];
     for await (const xentralArtikel of artikelPaginator) {
-      const productVariant = productVariants.find((pv) => pv.sku === xentralArtikel.nummer);
-      if(!productVariant){
-        this.logger.warn("Could not find internal productVariant for xentralArtikel", { xentralArtikelSku: xentralArtikel.nummer });
+      const productVariant = productVariants.find(
+        (pv) => pv.sku === xentralArtikel.nummer,
+      );
+      if (!productVariant) {
+        this.logger.warn(
+          "Could not find internal productVariant for xentralArtikel",
+          { xentralArtikelSku: xentralArtikel.nummer },
+        );
         continue;
       }
       xentralArtikelSkus.push(xentralArtikel.nummer);
       xentralArtikels.push(xentralArtikel);
     }
-    const missingProductVariants = productVariants.filter((pv) => !xentralArtikelSkus.includes(pv.sku));
-    const existingProductVariants = productVariants.filter((pv) => xentralArtikelSkus.includes(pv.sku));
-    this.logger.info(`Syncing ${productVariants.length} (creating: ${missingProductVariants.length} / updating: ${existingProductVariants.length}) productVariant(s) to xentral Artikel-Stammdaten`);
+    const missingProductVariants = productVariants.filter(
+      (pv) => !xentralArtikelSkus.includes(pv.sku),
+    );
+    const existingProductVariants = productVariants.filter((pv) =>
+      xentralArtikelSkus.includes(pv.sku),
+    );
+    this.logger.info(
+      `Syncing ${productVariants.length} (creating: ${missingProductVariants.length} / updating: ${existingProductVariants.length}) productVariant(s) to xentral Artikel-Stammdaten`,
+    );
 
     for (const productVariant of productVariants) {
-      const existingXentralArtikel = xentralArtikels.find((xa) => xa.nummer === productVariant.sku);
+      const existingXentralArtikel = xentralArtikels.find(
+        (xa) => xa.nummer === productVariant.sku,
+      );
       const loggerFields = {
         sku: productVariant.sku,
         variantName: productVariant.variantName,
@@ -70,7 +87,11 @@ export class XentralProxyProductVariantSyncService {
       };
       const artikel: ArtikelCreateRequest = {
         projekt: this.xentralProxyApp.projectId,
-        name_de: productVariant.product.name + (productVariant.variantName ? ` (${productVariant.variantName})` : ''),
+        name_de:
+          productVariant.product.name +
+          (productVariant.variantName
+            ? ` (${productVariant.variantName})`
+            : ""),
         ean: productVariant.ean || undefined,
         nummer: productVariant.sku, // INFO: alternativ, nummer: "NEU" und sku in feld herstellernummer
         aktiv: 1,
@@ -79,16 +100,16 @@ export class XentralProxyProductVariantSyncService {
         typ: ArtikelTypeEnum.Versandartikel,
         // TODO: Altersfreigabe
       };
-      
+
       let xentralResData: ArtikelCreateResponse;
-      if(existingXentralArtikel){
+      if (existingXentralArtikel) {
         // this.logger.debug("Editing Artikel in Xentral-Stammdaten", loggerFields);
         const artikelId = String(existingXentralArtikel.id);
         await xentralXmlClient.ArtikelEdit({
           ...artikel,
           id: artikelId,
         });
-        xentralResData = await xentralXmlClient.ArtikelGet({id: artikelId});
+        xentralResData = await xentralXmlClient.ArtikelGet({ id: artikelId });
       } else {
         // this.logger.debug("Creating Artikel in Xentral-Stammdaten)", loggerFields);
         xentralResData = await xentralXmlClient.ArtikelCreate(artikel);
@@ -99,7 +120,7 @@ export class XentralProxyProductVariantSyncService {
           xentralNummer_xentralProxyAppId: {
             xentralNummer: xentralResData.nummer,
             xentralProxyAppId: this.xentralProxyApp.id,
-          }
+          },
         },
         create: {
           id: xentralResData.id.toString(),
@@ -115,10 +136,12 @@ export class XentralProxyProductVariantSyncService {
             },
           },
         },
-        update: {}
+        update: {},
       });
       this.logger.info(
-        `${existingXentralArtikel ? 'Updated' : 'Created new'} xentralArtikel for current productVariant`,
+        `${
+          existingXentralArtikel ? "Updated" : "Created new"
+        } xentralArtikel for current productVariant`,
         {
           productVariantId: productVariant.id,
           tenantId: this.tenantId,
