@@ -800,6 +800,9 @@ model Order {
   // the order date
   date DateTime
 
+  /// The Date, that we expect this order to be shipped.
+  expectedShippingDate  DateTime?
+
   // deprecated!
   externalOrderId String?
 
