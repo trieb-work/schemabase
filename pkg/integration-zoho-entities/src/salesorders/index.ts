@@ -192,6 +192,7 @@ export class ZohoSalesOrdersSyncService {
               id: id.id("order"),
               orderNumber: salesorder.salesorder_number,
               date: new Date(salesorder.date),
+              expectedShippingDate: new Date(salesorder.shipment_date),
               totalPriceGross: salesorder.total,
               mainContact: contactConnectOrCreate,
               tenant: {
@@ -240,6 +241,7 @@ export class ZohoSalesOrdersSyncService {
           order: {
             update: {
               date: new Date(salesorder.date),
+              expectedShippingDate: new Date(salesorder.shipment_date),
               mainContact: contactConnectOrCreate,
             },
           },
