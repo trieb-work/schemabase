@@ -67,6 +67,7 @@ export class ZohoBankAccountsSyncService {
           );
         } else {
           this.logger.error(
+            // eslint-disable-next-line max-len
             "An error occured during syncToECI zohoBankAccount upsert or currency check - UNKNOWN ERROR: " +
               JSON.stringify(err, null, 2),
           );
@@ -86,6 +87,7 @@ export class ZohoBankAccountsSyncService {
     );
     if (zohoBankAccountsWithoutPaymentMethod.length > 0) {
       this.logger.warn(
+        // eslint-disable-next-line max-len
         `We have ${zohoBankAccountsWithoutPaymentMethod.length} zohoBankAccount(s) without payment method(s)`,
         {
           zohoBankAccountNamessWithoutPaymentMethod:
@@ -97,10 +99,11 @@ export class ZohoBankAccountsSyncService {
     }
     const zohoBankAccountsWithWrongCurrency = zohoBankAccounts.filter(
       (zba) =>
-        zba?.paymentMethod && zba?.paymentMethod?.currency != zba?.currency,
+        zba?.paymentMethod && zba?.paymentMethod?.currency !== zba?.currency,
     );
     if (zohoBankAccountsWithWrongCurrency.length > 0) {
       this.logger.error(
+        // eslint-disable-next-line max-len
         `We have ${zohoBankAccountsWithWrongCurrency.length} zohoBankAccount(s) with wrong currency`,
         {
           zohoBankAccountNamessWithoutPaymentMethod:
