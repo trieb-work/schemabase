@@ -3,6 +3,7 @@ import type { PrismaClient } from "@eci/pkg/prisma";
 import type { RuntimeContext, Workflow } from "@eci/pkg/scheduler/workflow";
 import { ZohoPaymentSyncService } from "@eci/pkg/integration-zoho-entities/src/payments";
 import { getZohoClientAndEntry } from "@eci/pkg/zoho/src/zoho";
+import { ZohoBankAccountsSyncService } from "@eci/pkg/integration-zoho-entities/src/bankaccounts";
 
 export type ZohoPaymentSyncWorkflowClients = {
   prisma: PrismaClient;
@@ -35,20 +36,30 @@ export class ZohoPaymentSyncWorkflow implements Workflow {
    * Sync all zoho invoices into ECI-DB
    */
   public async run(): Promise<void> {
-    this.logger.info("Starting zoho payment sync workflow run");
+    this.logger.info("Starting zoho bank acounts + payment sync workflow run");
     const { client: zoho, zohoApp } = await getZohoClientAndEntry(
       this.zohoAppId,
       this.prisma,
       undefined,
     );
-    const zohoSalesOrdersSyncService = new ZohoPaymentSyncService({
+    const zohoBankAccountsSyncService = new ZohoBankAccountsSyncService({
       logger: this.logger,
       zoho,
       db: this.prisma,
       zohoApp,
     });
-    await zohoSalesOrdersSyncService.syncToECI();
 
-    this.logger.info("Finished zoho payment sync workflow run");
+    const zohoPaymentSyncService = new ZohoPaymentSyncService({
+      logger: this.logger,
+      zoho,
+      db: this.prisma,
+      zohoApp,
+      createdTimeOffset: 30,
+    });
+
+    await zohoBankAccountsSyncService.syncToECI();
+    await zohoPaymentSyncService.syncToECI();
+
+    this.logger.info("Finished zoho bank acounts + payment sync workflow run");
   }
 }

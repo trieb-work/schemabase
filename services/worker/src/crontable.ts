@@ -152,19 +152,10 @@ export class CronTable {
           [tenantId, id],
         );
       }
-      if (enabledZohoIntegration.syncPayments) {
-        this.scheduler.schedule(
-          createWorkflowFactory(
-            ZohoPaymentSyncWorkflow,
-            this.clients,
-            commonWorkflowConfig,
-          ),
-          { ...commonCronConfig, offset: 8 },
-          [tenantId, id],
-        );
+      if (enabledZohoIntegration.syncInvoices) {
         new WorkflowScheduler(this.clients).schedule(
           createWorkflowFactory(
-            SaleorPaymentSyncWorkflow,
+            ZohoInvoiceSyncWorkflow,
             this.clients,
             commonWorkflowConfig,
           ),
@@ -172,10 +163,19 @@ export class CronTable {
           [tenantId, id],
         );
       }
-      if (enabledZohoIntegration.syncInvoices) {
+      if (enabledZohoIntegration.syncPayments) {
+        this.scheduler.schedule(
+          createWorkflowFactory(
+            ZohoPaymentSyncWorkflow,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 10 },
+          [tenantId, id],
+        );
         new WorkflowScheduler(this.clients).schedule(
           createWorkflowFactory(
-            ZohoInvoiceSyncWorkflow,
+            SaleorPaymentSyncWorkflow,
             this.clients,
             commonWorkflowConfig,
           ),
