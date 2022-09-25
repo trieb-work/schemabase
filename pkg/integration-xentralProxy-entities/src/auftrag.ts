@@ -6,10 +6,11 @@ import { XentralRestClient, XentralRestNotFoundError } from "@eci/pkg/xentral/sr
 import { Auftrag } from "@eci/pkg/xentral/src/rest/types";
 import { XentralXmlClient } from "@eci/pkg/xentral/src/xml";
 import { AuftragCreateRequest, AuftragCreateResponse } from "@eci/pkg/xentral/src/xml/types";
-import { format } from "date-fns";
 
 interface XentralProxyOrderSyncServiceConfig {
   xentralProxyApp: XentralProxyApp;
+  xentralXmlClient: XentralXmlClient;
+  xentralRestClient: XentralRestClient;
   db: PrismaClient;
   logger: ILogger;
   warehouseId: string;
@@ -24,6 +25,10 @@ export class XentralProxyOrderSyncService {
 
   public readonly xentralProxyApp: XentralProxyApp;
 
+  public readonly xentralXmlClient: XentralXmlClient;
+
+  public readonly xentralRestClient: XentralRestClient;
+
   private readonly db: PrismaClient;
 
   public constructor(config: XentralProxyOrderSyncServiceConfig) {
@@ -32,12 +37,12 @@ export class XentralProxyOrderSyncService {
     this.xentralProxyApp = config.xentralProxyApp;
     this.warehouseId = config.warehouseId;
     this.db = config.db;
+    this.xentralXmlClient = config.xentralXmlClient;
+    this.xentralRestClient = config.xentralRestClient;
   }
 
   public async syncFromECI(): Promise<void> {
     this.logger.info("Starting sync of ECI Orders to XentralProxy Aufträge");
-    const xentralXmlClient = new XentralXmlClient(this.xentralProxyApp);
-    const xentralRestClient = new XentralRestClient(this.xentralProxyApp);
     const orders = await this.db.order.findMany({
       where: {
         orderStatus: "confirmed",
@@ -122,7 +127,7 @@ export class XentralProxyOrderSyncService {
         defaultLogFields);
         continue;
       }
-      const xentralAuftraegeWithSameDatePaginator = xentralRestClient.getAuftraege({
+      const xentralAuftraegeWithSameDatePaginator = this.xentralRestClient.getAuftraege({
         // "datum": format(order.date, "yyyy-MM-dd"),
         "datum": order.date.toJSON(),
       }, 1000);
@@ -159,12 +164,12 @@ export class XentralProxyOrderSyncService {
         name: order.shippingAddress.fullname,
         strasse: order.shippingAddress.street || "",
         adresszusatz: order.shippingAddress?.additionalAddressLine || "",
-        // email: order.mainContact.email // TODO disabled for now because we want to send tracking emails by our own
+        // email: order.mainContact.email // TODO disabled for now because we want to send tracking emails by our own, and do not want to risk that kramer sends some emails
         projekt: String(this.xentralProxyApp.projectId),
         // : order.shippingAddress.company || "", //TODO all missing other shippingaddr fields 
         plz: order.shippingAddress.plz || "",
         ort: order.shippingAddress.city || "",
-        land: order.shippingAddress.countryCode || "DE", // TODO make this a config option in tenant
+        land: order.shippingAddress.countryCode || "DE", // TODO make default country a config option in tenant
         ihrebestellnummer: order.orderNumber,
         // INFO: do not remove date otherwise search will not work anymore!
         datum: order.date.toJSON(),
@@ -185,7 +190,7 @@ export class XentralProxyOrderSyncService {
           }),
         },
       };
-      const resData: Auftrag | AuftragCreateResponse = existingXentralAuftrag ? existingXentralAuftrag : await xentralXmlClient.AuftragCreate(auftrag);
+      const resData: Auftrag | AuftragCreateResponse = existingXentralAuftrag ? existingXentralAuftrag : await this.xentralXmlClient.AuftragCreate(auftrag);
       const createdXentralAuftrag = await this.db.xentralProxyAuftrag.create({
         data: {
           id: resData.id.toString(),

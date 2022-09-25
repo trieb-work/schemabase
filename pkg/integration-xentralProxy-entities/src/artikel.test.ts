@@ -1,7 +1,7 @@
 import { AssertionLogger } from "@eci/pkg/logger";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { beforeEach, describe, jest, test } from "@jest/globals";
-import { XentralProxyProductVariantSyncService } from "./productVariant";
+import { XentralProxyProductVariantSyncService } from "./artikel";
 import "@eci/pkg/jest-utils/consoleFormatter";
 
 beforeEach(() => {

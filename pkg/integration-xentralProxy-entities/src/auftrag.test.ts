@@ -1,8 +1,10 @@
 import { AssertionLogger } from "@eci/pkg/logger";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { beforeEach, describe, jest, test } from "@jest/globals";
-import { XentralProxyOrderSyncService } from "./orders";
+import { XentralProxyOrderSyncService } from "./auftrag";
 import "@eci/pkg/jest-utils/consoleFormatter";
+import { XentralRestClient } from "@eci/pkg/xentral/src/rest";
+import { XentralXmlClient } from "@eci/pkg/xentral/src/xml";
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -32,7 +34,11 @@ describe("XentralProxy Entity Sync Orders Test", () => {
       throw new Error(
         "Testing Tenant or xentral app/integration not found in DB",
       );
+    const xentralXmlClient = new XentralXmlClient(xentralProxyApp);
+    const xentralRestClient = new XentralRestClient(xentralProxyApp);
     const service = new XentralProxyOrderSyncService({
+      xentralXmlClient,
+      xentralRestClient,
       logger: new AssertionLogger(),
       db: prismaClient,
       xentralProxyApp,

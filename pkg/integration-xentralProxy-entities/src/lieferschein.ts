@@ -7,18 +7,7 @@ import {
 } from "@eci/pkg/saleor";
 import { PrismaClient } from "@eci/pkg/prisma";
 // import { CronStateHandler } from "@eci/pkg/cronstate";
-interface XentralProxyPackageSyncServiceConfig {
-  saleorClient: {
-    saleorCronPackagesOverview: (variables: {
-      first: number;
-      after: string;
-      createdGte: string;
-    }) => Promise<SaleorCronPackagesOverviewQuery>;
-    saleorCreatePackage: (variables: {
-      order: string;
-      input: OrderFulfillInput;
-    }) => Promise<SaleorCreatePackageMutation>;
-  };
+interface XentralProxyLieferscheinSyncServiceConfig {
   installedSaleorAppId: string;
   tenantId: string;
   db: PrismaClient;
@@ -26,7 +15,7 @@ interface XentralProxyPackageSyncServiceConfig {
   orderPrefix: string;
 }
 
-export class XentralProxyPackageSyncService {
+export class XentralProxyLieferscheinSyncService {
   public readonly saleorClient: {
     saleorCronPackagesOverview: (variables: {
       first: number;
@@ -51,7 +40,7 @@ export class XentralProxyPackageSyncService {
 
   // private readonly orderPrefix: string;
 
-  public constructor(config: XentralProxyPackageSyncServiceConfig) {
+  public constructor(config: XentralProxyLieferscheinSyncServiceConfig) {
     this.saleorClient = config.saleorClient;
     // this.logger = config.logger;
     this.installedSaleorAppId = config.installedSaleorAppId;
@@ -66,10 +55,10 @@ export class XentralProxyPackageSyncService {
     // });
   }
 
+  // für alle ECI-Orders ohne package
+  // --> für jede order mit xentralAuftragId
+  //    --> request xentralProxy API (to get lieferschein mit tracking nummern)
+  //        --> update packages in ECI-Orders
   public async syncToECI(): Promise<void> {
-    // für alle ECI-Orders ohne package
-    // --> für jede order mit xentralAuftragId
-    //    --> request xentralProxy API (to get paket zusammensetzung mit tracking nummern)
-    //        --> update packages in ECI-Orders
   }
 }
