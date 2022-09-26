@@ -189,7 +189,7 @@ export class XentralProxyLieferscheinSyncService {
         if (matchingTrackingnummers.length > 1) {
           // TODO: possible workaround if kramer does this would be to create multiple packages but then we do not know how the positions are split up across
           // these packages so we have to split them up "randomly"
-          this.logger.error("Xentral returned multiple trackingnummern for one lieferscheine. This is currently not supported. Please check this order manually", loggingFields);
+          this.logger.error("Xentral returned multiple trackingnumbers for one lieferschein. This is currently not supported. Please check this order manually", loggingFields);
           continue;
         }
         if (matchingTrackingnummers.length === 0) {
@@ -327,7 +327,6 @@ export class XentralProxyLieferscheinSyncService {
       } else {
         shipmentStatus = OrderShipmentStatus.pending;
       }
-      console.log("fully shippedLineItems", fullyShippedLineItems, partiallyOrFullyshippedLineItems, shipmentStatus, skuGroupedLineItems, packagedItems)
       const updatedOrder = await this.db.order.update({
         where: {
           id: order.id
@@ -337,7 +336,7 @@ export class XentralProxyLieferscheinSyncService {
         }
       })
       this.logger.info("Updated order shipmentStatus", {
-        loggingFields,
+        ...loggingFields,
         updatedOrderShipmentStatus: updatedOrder.shipmentStatus
       })
     }
