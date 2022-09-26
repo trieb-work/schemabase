@@ -83,13 +83,13 @@ export class XentralProxyLieferscheinSyncService {
       ) {
         throw new Warning(
           "No xentralProxyAuftraege set for this order. " +
-            "Aborting sync of this order. Try again after xentral auftrag sync.",
+          "Aborting sync of this order. Try again after xentral auftrag sync.",
         );
       }
       if (order.xentralProxyAuftraege.length > 1) {
         throw new Error(
           "Multiple xentralProxyAuftraege set for the mainContact of this order. " +
-            "Aborting sync of this order.",
+          "Aborting sync of this order.",
         );
       }
       // Main Auftrag
@@ -103,12 +103,12 @@ export class XentralProxyLieferscheinSyncService {
       }
       // We need to fetch auftraege again because it could be that one Auftrag was splitted in two or more if it does not fit in one package.
       let xentralChildAndParentAuftraege: Auftrag[];
-      try{
+      try {
         xentralChildAndParentAuftraege = await arrayFromAsyncGenerator(this.xentralRestClient.getAuftraege({
           belegnr_startswith: xentralParentAuftrag.xentralBelegNr,
         }));
-      } catch(err){
-        if(err instanceof XentralRestNotFoundError){
+      } catch (err) {
+        if (err instanceof XentralRestNotFoundError) {
           // TODO add try/catch block from other services: 
           this.logger.error("Having an Auftrag with this belegnr in ECI DB but could not find one via xentral api.");
           continue;
@@ -125,23 +125,27 @@ export class XentralProxyLieferscheinSyncService {
         trackingnummern = await arrayFromAsyncGenerator(this.xentralRestClient.getTrackingnummern({
           auftrag_startswith: xentralParentAuftrag.xentralBelegNr,
         }));
-      } catch(err){
-        if(err instanceof XentralRestNotFoundError){
-          this.logger.info("No Trackingnumbers found with this belegnr. Seems like this Auftrag has not been processed by logisitics yet.", {
+      } catch (err) {
+        if (err instanceof XentralRestNotFoundError) {
+          this.logger.info("XentralRestNotFoundError: No Trackingnumbers found with this belegnr. Seems like this Auftrag has not been processed by logisitics yet.", {
             loggingFields
           });
           continue;
         }
         throw err;
       }
+      if (trackingnummern.length === 0) {
+        this.logger.info("Length = 0: No Trackingnumbers found with this belegnr. Seems like this Auftrag has not been processed by logisitics yet.", {
+          loggingFields
+        });
+        continue;
+      }
       loggingFields = {
         ...loggingFields,
         trackingnummern: trackingnummern.map((t) => t.tracking),
       }
-      console.log("trackingnummern", trackingnummern);
-      console.log("xentralChildAndParentAuftraege", xentralChildAndParentAuftraege, order);
-      const packagedItems:{[sku: string]: number} = {}
-      for(const auftrag of xentralChildAndParentAuftraege){
+      const packagedItems: { [sku: string]: number } = {}
+      for (const auftrag of xentralChildAndParentAuftraege) {
         const lieferscheine = await arrayFromAsyncGenerator(this.xentralRestClient.getLieferscheine({
           auftragid: auftrag.id,
           include: "positionen",
@@ -151,19 +155,27 @@ export class XentralProxyLieferscheinSyncService {
           lieferscheineIds: lieferscheine.map((t) => t.id),
           lieferscheineBelegnrs: lieferscheine.map((t) => t.belegnr),
         }
-        if(lieferscheine.length > 1){
+        if (lieferscheine.length > 1) {
           this.logger.error("Xentral returned multiple lieferscheine for a lieferscheine search with an auftrag id", {
             xentralAuftragId: auftrag.id,
           });
           continue;
         }
-        if(lieferscheine.length === 0){
+        if (lieferscheine.length === 0) {
           this.logger.info("Xentral returned no lieferscheine for a lieferscheine search with an auftrag id. Could be that logistics partner is still processing this Auftrag.", {
             xentralAuftragId: auftrag.id,
           });
           continue;
         }
         const lieferschein = lieferscheine[0];
+        if (!lieferschein.positionen || lieferschein.positionen.length === 0) {
+          this.logger.error("Xentral returned a lieferschein without any positions. Aborting sync. Please check this order manually.", loggingFields);
+          continue;
+        }
+        if (lieferschein.status !== "abgeschlossen" && lieferschein.status !== "versendet") {
+          this.logger.warn(`Xentral returned a lieferschein with status ${lieferschein.status}. Status must be "abgeschlossen" or "versendet". Aborting sync and retry on next run.`, loggingFields);
+          continue;
+        }
         const matchingTrackingnummers = trackingnummern.filter((tr) => tr.auftrag === auftrag.belegnr && tr.lieferschein === lieferschein.belegnr);
         loggingFields = {
           ...loggingFields,
@@ -174,19 +186,14 @@ export class XentralProxyLieferscheinSyncService {
           currentXentralLieferscheinBelegnr: lieferschein.belegnr,
           currentXentralLieferscheinStatus: lieferschein.status,
         }
-        throw Error("test");
-        if(!lieferschein.positionen || lieferschein.positionen.length === 0){
-          this.logger.error("Xentral returned a lieferschein without any positions. Aborting sync. Please check this order manually.", loggingFields);
-          continue;
-        }
-        if(matchingTrackingnummers.length > 1){
+        if (matchingTrackingnummers.length > 1) {
           // TODO: possible workaround if kramer does this would be to create multiple packages but then we do not know how the positions are split up across
           // these packages so we have to split them up "randomly"
           this.logger.error("Xentral returned multiple trackingnummern for one lieferscheine. This is currently not supported. Please check this order manually", loggingFields);
           continue;
         }
-        if(matchingTrackingnummers.length === 0){
-          if(lieferschein.status === "versendet"){
+        if (matchingTrackingnummers.length === 0) {
+          if (lieferschein.status === "versendet") {
             this.logger.error("Xentral returned no trackingnummer for this lieferscheine, but the lieferschein was in status versendet. Please contact logisitics partner and clarify if he forgot set the trackingnumber for this lieferschein.", loggingFields);
           } else {
             this.logger.warn("Xentral returned no trackingnummer for this lieferscheine. Could be that logistics partner is still processing this Lieferschein.", loggingFields);
@@ -195,24 +202,34 @@ export class XentralProxyLieferscheinSyncService {
         }
         const matchingTrackingnummer = matchingTrackingnummers[0];
         let carrier: Carrier = Carrier.UNKNOWN;
-        if(lieferschein.versandart.toLowerCase().includes("dhl")){
+        if (lieferschein.versandart.toLowerCase().includes("dhl")) {
           carrier = Carrier.DHL;
-        } else if(lieferschein.versandart.toLowerCase().includes("dpd")){
+        } else if (lieferschein.versandart.toLowerCase().includes("dpd")) {
           carrier = Carrier.DPD;
-        } else if(lieferschein.versandart.toLowerCase().includes("ups")){
+        } else if (lieferschein.versandart.toLowerCase().includes("ups")) {
           carrier = Carrier.UPS;
         }
         const packageNumber = `LF-${lieferschein.belegnr}_TRN-${matchingTrackingnummer.tracking}`;
-        const createdPackage = await this.db.package.create({
-          data: {
-            id: id.id("package"),
+        const packageCreateId = id.id("package");
+        const upsertedPackage = await this.db.package.upsert({
+          where: {
+            number_tenantId: {
+              number: packageNumber,
+              tenantId: this.tenantId,
+            }
+          },
+          update: {
+            trackingId: matchingTrackingnummer.tracking,
+          },
+          create: {
+            id: packageCreateId,
             order: {
               connect: {
                 id: order.id,
               },
             },
             carrier,
-            number: `LF-${lieferschein.belegnr}_TRN-${matchingTrackingnummer.tracking}`,
+            number: packageNumber,
             tenant: {
               connect: {
                 id: this.tenantId,
@@ -236,7 +253,7 @@ export class XentralProxyLieferscheinSyncService {
                 where: {
                   id_xentralProxyAppId: {
                     id: lieferschein.id,
-                    xentralProxyAppId: this.xentralProxyApp.id,  
+                    xentralProxyAppId: this.xentralProxyApp.id,
                   }
                 },
                 create: {
@@ -253,56 +270,75 @@ export class XentralProxyLieferscheinSyncService {
             },
           },
         });
-        for(const pos of lieferschein.positionen){
-          if(!packagedItems[pos.nummer]){
+        for (const pos of lieferschein.positionen) {
+          if (!packagedItems[pos.nummer]) {
             packagedItems[pos.nummer] = Number(pos.menge)
           } else {
             packagedItems[pos.nummer] += Number(pos.menge);
           }
         }
         this.logger.info(
-          "Created new Package and XentralLieferschein for current order",
+          packageCreateId === upsertedPackage.id ?
+            "Created new Package and XentralLieferschein for current order" :
+            "Updated Package and Trackingnumber for the current order",
           {
             ...loggingFields,
             trackingnummer: matchingTrackingnummer.tracking,
           }
         );
       }
-      // If there is a lineitem in the order which was not packaged (!packagedItems[li.sku]) or has less quantity packaged 
-      const shipmentStatus = order.orderLineItems.some((li) => {
-        if(!packagedItems[li.sku]){
-          this.logger.info("The current order has a unpackaged line item",{
+      const skuReducedLineItems = order.orderLineItems.reduce((akku, li) => ({...akku, [li.sku]: (akku[li.sku] || 0) + li.quantity}), {} as Record<string, number>);
+      const skuGroupedLineItems = Object.entries(skuReducedLineItems).map(([sku, quantity]) => ({sku, quantity}));
+      const partiallyOrFullyshippedLineItems = skuGroupedLineItems.filter((li) => packagedItems[li.sku]);
+      const fullyShippedLineItems = skuGroupedLineItems.filter((li) => {
+        if (!packagedItems[li.sku]) {
+          this.logger.info("The current order has a unpackaged line item", {
             sku: li.sku,
             orderNumber: order.orderNumber,
           })
-          return true;
-        } else if(packagedItems[li.sku] < li.quantity){
-          this.logger.info("The current order has a underpackaged line item",{
-            sku: li.sku,
-            desiredQuantity: li.quantity,
-            actualQuantity: packagedItems[li.sku],
-            orderNumber: order.orderNumber,
-          });
-          return true;
-        } else if(packagedItems[li.sku] > li.quantity){
-          this.logger.info("The current order has a line item which have been shiped more than needed! Please check this Order manually.",{
+          return false;
+        } else if (packagedItems[li.sku] < li.quantity) {
+          this.logger.info("The current order has a underpackaged line item", {
             sku: li.sku,
             desiredQuantity: li.quantity,
             actualQuantity: packagedItems[li.sku],
             orderNumber: order.orderNumber,
           });
           return false;
-        } else {
-          return false;
+        } else if (packagedItems[li.sku] > li.quantity) {
+          this.logger.info("The current order has a line item which have been shiped more than needed! Please check this Order manually.", {
+            sku: li.sku,
+            desiredQuantity: li.quantity,
+            actualQuantity: packagedItems[li.sku],
+            orderNumber: order.orderNumber,
+          });
+          return true;
+        } else { // is same as: if (packagedItems[li.sku] === li.quantity) 
+          return true;
         }
-      }) ? OrderShipmentStatus.partiallyShipped : OrderShipmentStatus.shipped;
-      this.db.order.update({
+      }); 
+      let shipmentStatus: OrderShipmentStatus;
+      if(partiallyOrFullyshippedLineItems.length > 0){
+        if(fullyShippedLineItems.length === skuGroupedLineItems.length){
+          shipmentStatus = OrderShipmentStatus.shipped;
+        } else {
+          shipmentStatus = OrderShipmentStatus.partiallyShipped;
+        }
+      } else {
+        shipmentStatus = OrderShipmentStatus.pending;
+      }
+      console.log("fully shippedLineItems", fullyShippedLineItems, partiallyOrFullyshippedLineItems, shipmentStatus, skuGroupedLineItems, packagedItems)
+      const updatedOrder = await this.db.order.update({
         where: {
           id: order.id
         },
         data: {
           shipmentStatus
         }
+      })
+      this.logger.info("Updated order shipmentStatus", {
+        loggingFields,
+        updatedOrderShipmentStatus: updatedOrder.shipmentStatus
       })
     }
   }
