@@ -1,10 +1,10 @@
 import { AssertionLogger } from "@eci/pkg/logger";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { beforeEach, describe, jest, test } from "@jest/globals";
-import { XentralProxyOrderSyncService } from "./auftrag";
 import "@eci/pkg/jest-utils/consoleFormatter";
 import { XentralRestClient } from "@eci/pkg/xentral/src/rest";
 import { XentralXmlClient } from "@eci/pkg/xentral/src/xml";
+import { XentralProxyLieferscheinSyncService } from "./lieferschein";
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -36,14 +36,14 @@ describe("XentralProxy Entity Sync Orders Test", () => {
       );
     const xentralXmlClient = new XentralXmlClient(xentralProxyApp);
     const xentralRestClient = new XentralRestClient(xentralProxyApp);
-    const service = new XentralProxyOrderSyncService({
+    const service = new XentralProxyLieferscheinSyncService({
       xentralXmlClient,
       xentralRestClient,
       logger: new AssertionLogger(),
       db: prismaClient,
       xentralProxyApp,
-      warehouseId: xentralProxyIntegration.warehouseId,
+      // warehouseId: xentralProxyIntegration.warehouseId,
     });
-    await service.syncFromECI();
+    await service.syncToECI();
   }, 1000000);
 });

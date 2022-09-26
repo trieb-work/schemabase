@@ -197,8 +197,6 @@ export class XentralProxyOrderSyncService {
             return {
               id: lineItem.productVariant.xentralArtikel[0].id,
               nummer: lineItem.productVariant.xentralArtikel[0].xentralNummer,
-              // preis: 0,
-              // waehrung: "EUR",
               projekt: this.xentralProxyApp.projectId,
               menge: lineItem.quantity,
             };

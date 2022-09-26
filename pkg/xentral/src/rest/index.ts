@@ -10,6 +10,7 @@ import {
   LieferscheinParams,
   PaginatedRes,
   Trackingnummer,
+  TrackingnummerParams,
 } from "./types";
 
 const DEFAULT_HEADERS = {};
@@ -83,8 +84,8 @@ export class XentralRestClient {
     const queryString =
       newParams && Object.keys(newParams).length > 0
         ? `?${new URLSearchParams(
-            newParams as Record<string, string>,
-          ).toString()}`
+          newParams as Record<string, string>,
+        ).toString()}`
         : "";
     const xentralRes = await this.client.fetch(
       `${this.url}/api${subroute}${queryString}`,
@@ -97,8 +98,7 @@ export class XentralRestClient {
     if (xentralRes.status === 404) throw new XentralRestNotFoundError();
     if (!xentralRes.ok) {
       throw new Error(
-        `Xentral api ${method} call ${subroute} failed with status ${
-          xentralRes.status
+        `Xentral api ${method} call ${subroute} failed with status ${xentralRes.status
         }:\n${await xentralRes.text()}`,
       );
     }
@@ -109,13 +109,13 @@ export class XentralRestClient {
     InnerRes,
     Res extends PaginatedRes<InnerRes> = PaginatedRes<any>,
     Req extends object = {},
-  >(
-    json: Req | null,
-    subroute: AllowedSubRoutes,
-    method: AllowedMethod,
-    params?: Record<string, string | number | boolean>,
-    items: number = DEFAULT_ITEM_COUNT,
-    headers: HeadersInit = DEFAULT_HEADERS,
+    >(
+      json: Req | null,
+      subroute: AllowedSubRoutes,
+      method: AllowedMethod,
+      params?: Record<string, string | number | boolean>,
+      items: number = DEFAULT_ITEM_COUNT,
+      headers: HeadersInit = DEFAULT_HEADERS,
   ): AsyncIterableIterator<InnerRes> {
     let res: Res;
     do {
@@ -142,16 +142,13 @@ export class XentralRestClient {
       headers,
     );
   }
-  public async *getTrackingnummern(
-    params?: Record<string, string | number | boolean>,
-    items: number = DEFAULT_ITEM_COUNT,
-    headers: HeadersInit = DEFAULT_HEADERS,
+  public async *getTrackingnummern(params?: TrackingnummerParams, items: number = DEFAULT_ITEM_COUNT, headers: HeadersInit = DEFAULT_HEADERS,
   ) {
     yield* this.paginatedApiFetch<Trackingnummer>(
       null,
       "/v1/trackingnummern",
       "GET",
-      params,
+      params as Record<string, string | number | boolean>,
       items,
       headers,
     );

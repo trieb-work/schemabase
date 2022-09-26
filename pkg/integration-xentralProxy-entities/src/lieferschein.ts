@@ -3,12 +3,11 @@
 import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils";
 import { ILogger } from "@eci/pkg/logger";
 import { arrayFromAsyncGenerator } from "@eci/pkg/miscHelper/array";
-import { Carrier, OrderShipmentStatus, PackageState, PrismaClient, XentralProxyApp } from "@eci/pkg/prisma";
+import { Carrier, OrderShipmentStatus, PrismaClient, XentralProxyApp } from "@eci/pkg/prisma";
 import { XentralRestClient, XentralRestNotFoundError } from "@eci/pkg/xentral/src/rest";
-import { Auftrag, Lieferschein } from "@eci/pkg/xentral/src/rest/types";
 import { XentralXmlClient } from "@eci/pkg/xentral/src/xml";
-import { AuftragCreateRequest, AuftragCreateResponse } from "@eci/pkg/xentral/src/xml/types";
 import { id } from "@eci/pkg/ids";
+import { Auftrag, Trackingnummer } from "@eci/pkg/xentral/src/rest/types";
 
 interface XentralProxyLieferscheinSyncServiceConfig {
   xentralProxyApp: XentralProxyApp;
@@ -73,6 +72,10 @@ export class XentralProxyLieferscheinSyncService {
     });
     this.logger.info(`Will sync Xentral Lieferscheine to Packages for ${orders.length} Orders with Xentral.`);
     for (const order of orders) {
+      let loggingFields: Record<string, any> = {
+        order: order.id,
+        orderNumber: order.orderNumber,
+      }
       // TODO add try/catch block from other services
       if (
         !order.xentralProxyAuftraege ||
@@ -91,13 +94,50 @@ export class XentralProxyLieferscheinSyncService {
       }
       // Main Auftrag
       const xentralParentAuftrag = order.xentralProxyAuftraege[0];
+      loggingFields = {
+        ...loggingFields,
+        order: order.id,
+        orderNumber: order.orderNumber,
+        xentralParentAuftragId: xentralParentAuftrag.id,
+        xentralParentAuftragBelegnr: xentralParentAuftrag.xentralBelegNr,
+      }
       // We need to fetch auftraege again because it could be that one Auftrag was splitted in two or more if it does not fit in one package.
-      const xentralChildAndParentAuftraege = await arrayFromAsyncGenerator(this.xentralRestClient.getAuftraege({
-        belegnr_startswith: xentralParentAuftrag.xentralBelegNr,
-      }));
-      const trackingnummern = await arrayFromAsyncGenerator(this.xentralRestClient.getTrackingnummern({
-        belegnr_startswith: xentralParentAuftrag.xentralBelegNr,
-      }));
+      let xentralChildAndParentAuftraege: Auftrag[];
+      try{
+        xentralChildAndParentAuftraege = await arrayFromAsyncGenerator(this.xentralRestClient.getAuftraege({
+          belegnr_startswith: xentralParentAuftrag.xentralBelegNr,
+        }));
+      } catch(err){
+        if(err instanceof XentralRestNotFoundError){
+          // TODO add try/catch block from other services: 
+          this.logger.error("Having an Auftrag with this belegnr in ECI DB but could not find one via xentral api.");
+          continue;
+        }
+        throw err;
+      }
+      loggingFields = {
+        ...loggingFields,
+        xentralChildAndParentAuftraegeIds: xentralChildAndParentAuftraege.map((a) => a.id),
+        xentralChildAndParentAuftraegeBelegnrs: xentralChildAndParentAuftraege.map((a) => a.belegnr),
+      }
+      let trackingnummern: Trackingnummer[];
+      try {
+        trackingnummern = await arrayFromAsyncGenerator(this.xentralRestClient.getTrackingnummern({
+          auftrag_startswith: xentralParentAuftrag.xentralBelegNr,
+        }));
+      } catch(err){
+        if(err instanceof XentralRestNotFoundError){
+          this.logger.info("No Trackingnumbers found with this belegnr. Seems like this Auftrag has not been processed by logisitics yet.", {
+            loggingFields
+          });
+          continue;
+        }
+        throw err;
+      }
+      loggingFields = {
+        ...loggingFields,
+        trackingnummern: trackingnummern.map((t) => t.tracking),
+      }
       console.log("trackingnummern", trackingnummern);
       console.log("xentralChildAndParentAuftraege", xentralChildAndParentAuftraege, order);
       const packagedItems:{[sku: string]: number} = {}
@@ -106,6 +146,11 @@ export class XentralProxyLieferscheinSyncService {
           auftragid: auftrag.id,
           include: "positionen",
         }));
+        loggingFields = {
+          ...loggingFields,
+          lieferscheineIds: lieferscheine.map((t) => t.id),
+          lieferscheineBelegnrs: lieferscheine.map((t) => t.belegnr),
+        }
         if(lieferscheine.length > 1){
           this.logger.error("Xentral returned multiple lieferscheine for a lieferscheine search with an auftrag id", {
             xentralAuftragId: auftrag.id,
@@ -120,16 +165,16 @@ export class XentralProxyLieferscheinSyncService {
         }
         const lieferschein = lieferscheine[0];
         const matchingTrackingnummers = trackingnummern.filter((tr) => tr.auftrag === auftrag.belegnr && tr.lieferschein === lieferschein.belegnr);
-        const loggingFields = {
-          order: order.id,
-          orderNumber: order.orderNumber,
-          xentralAuftragId: auftrag.id,
-          xentralAuftragBelegnr: auftrag.belegnr,
-          xentralAuftragStatus: auftrag.status,
-          xentralLieferscheinId: lieferschein.id,
-          xentralLieferscheinBelegnr: lieferschein.belegnr,
-          xentralLieferscheinStatus: lieferschein.status,
+        loggingFields = {
+          ...loggingFields,
+          currentXentralAuftragId: auftrag.id,
+          currentXentralAuftragBelegnr: auftrag.belegnr,
+          currentXentralAuftragStatus: auftrag.status,
+          currentXentralLieferscheinId: lieferschein.id,
+          currentXentralLieferscheinBelegnr: lieferschein.belegnr,
+          currentXentralLieferscheinStatus: lieferschein.status,
         }
+        throw Error("test");
         if(!lieferschein.positionen || lieferschein.positionen.length === 0){
           this.logger.error("Xentral returned a lieferschein without any positions. Aborting sync. Please check this order manually.", loggingFields);
           continue;

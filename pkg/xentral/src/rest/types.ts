@@ -288,6 +288,142 @@ export interface Artikel {
   freifeld39: string;
   freifeld40: string;
 }
+export interface TrackingnummerParams {
+  /**
+   * Suche nach bestimmter Trackingnummer (ungefähre Übereinstimmung)
+   */
+  tracking?: string;
+
+  /**
+   * Suche nach bestimmter Trackingnummer (genaue Übereinstimmung)
+   */
+  tracking_equals?: string;
+
+  /**
+   * Suche nach bestimmter Trackingnummer (Übereinstimmung am Anfang)
+   */
+  tracking_startswith?: string;
+
+  /**
+   * Suche nach bestimmter Trackingnummer (Übereinstimmung am Ende)
+   */
+  tracking_endswith?: string;
+
+  /**
+   * Suche nach bestimmter Lieferscheinnummer (ungefähre Übereinstimmung)
+   */
+  lieferschein?: string;
+
+  /**
+   * Suche nach bestimmter Lieferscheinnummer (genaue Übereinstimmung)
+   */
+  lieferschein_equals?: string;
+
+  /**
+   * Suche nach bestimmter Lieferscheinnummer (Übereinstimmung am Anfang)
+   */
+  lieferschein_startswith?: string;
+
+  /**
+   * Suche nach bestimmter Lieferscheinnummer (Übereinstimmung am Ende)
+   */
+  lieferschein_endswith?: string;
+
+  /**
+   * Suche nach bestimmter Auftragsnummer (ungefähre Übereinstimmung)
+   */
+  auftrag?: string;
+
+  /**
+   * Suche nach bestimmter Auftragsnummer (genaue Übereinstimmung)
+   */
+  auftrag_equals?: string;
+
+  /**
+   * Suche nach bestimmter Auftragsnummer (Übereinstimmung am Anfang)
+   */
+  auftrag_startswith?: string;
+
+  /**
+   * Suche nach bestimmter Auftragsnummer (Übereinstimmung am Ende)
+   */
+  auftrag_endswith?: string;
+
+  /**
+   * Suche nach bestimmter Internetnummer (ungefähre Übereinstimmung)
+   */
+  internet?: string;
+
+  /**
+   * Suche nach bestimmter Internetnummer (genaue Übereinstimmung)
+   */
+  internet_equals?: string;
+
+  /**
+   * Suche nach bestimmter Internetnummer (Übereinstimmung am Anfang)
+   */
+  internet_startswith?: string;
+
+  /**
+   * Suche nach bestimmter Internetnummer (Übereinstimmung am Ende)
+   */
+  internet_endswith?: string;
+
+  /**
+   * Suche nach bestimmter Versandart (genaue Übereinstimmung)
+   */
+  versandart?: string;
+
+  /**
+   * Suche nach bestimmtem Versanddatum (genaue Übereinstimmung)
+   */
+  versendet_am?: string;
+
+  /**
+   * Suche nach bestimmtem Versanddatum (Datum größer Suchwert)
+   */
+  versendet_am_gt?: string;
+
+  /**
+   * Suche nach bestimmtem Versanddatum (Datum größer gleich Suchwert)
+   */
+  versendet_am_gte?: string;
+
+  /**
+   * Suche nach bestimmtem Versanddatum (Datum kleiner Suchwert)
+   */
+  versendet_am_lt?: string;
+
+  /**
+   * Suche nach bestimmtem Versanddatum (Datum kleiner gleich Suchwert)
+   */
+  versendet_am_lte?: string;
+
+  /**
+   * Suche nach bestimmter Adress-ID (genaue Übereinstimmung)
+   */
+  adresse?: number;
+
+  /**
+   * Suche nach bestimmter Projekt-ID (genaue Übereinstimmung)
+   */
+  projekt?: number;
+
+  /**
+   * Suche nach bestimmtem Ländercode (genaue Übereinstimmung)
+   */
+  land?: string;
+
+  /**
+   * Sortierung (Beispiel: sort=-versendet_am,lieferschein)
+   */
+  sort?: "tracking" | "auftrag" | "lieferschein" | "versandart" | "versendet_am"  | "abgeschlossen" | "-tracking" | "-auftrag" | "-lieferschein" | "-versandart" | "-versendet_am"  | "-abgeschlossen";
+
+  /**
+   * Unter-Resourcen in Resource einbinden (Beispiel: include=projekt)
+   */
+  include?: "projekt";
+}
 export interface Trackingnummer {
   id: number;
   tracking: string;
