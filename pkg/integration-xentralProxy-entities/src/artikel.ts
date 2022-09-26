@@ -82,7 +82,7 @@ export class XentralProxyProductVariantSyncService {
         variantName: productVariant.variantName,
         productName: productVariant.product.name,
       };
-      const artikel: Omit<ArtikelEditRequest, "id"> = {
+      const artikel: ArtikelCreateRequest = {
         projekt: this.xentralProxyApp.projectId,
         name_de:
           productVariant.product.name +
@@ -90,6 +90,7 @@ export class XentralProxyProductVariantSyncService {
             ? ` (${productVariant.variantName})`
             : ""),
         ean: productVariant.ean || undefined,
+        nummer: productVariant.sku,
         herstellernummer: productVariant.sku,
         aktiv: 1,
         // INFO: muss lagerartikel sein sonst kann auftrag nicht fortgeführt werden
@@ -111,6 +112,7 @@ export class XentralProxyProductVariantSyncService {
           this.logger.debug("Existing Artikel in Xentral-Stammdaten is exactly the same as in ECI-DB, skipping update for this Artikel.", loggerFields);
           continue;
         }
+        // TODO remove console.logs
         console.log("projekt", existingXentralArtikel.projekt, artikel.projekt);
         console.log("name_de", existingXentralArtikel.name_de, artikel.name_de);
         console.log("ean", existingXentralArtikel.ean, artikel.ean);
@@ -127,10 +129,7 @@ export class XentralProxyProductVariantSyncService {
         xentralResData = await xentralXmlClient.ArtikelGet({ id: artikelId });
       } else {
         this.logger.debug("Creating Artikel in Xentral-Stammdaten)", loggerFields);
-        xentralResData = await xentralXmlClient.ArtikelCreate({
-          ...artikel,
-          nummer: "NEU",
-        });
+        xentralResData = await xentralXmlClient.ArtikelCreate(artikel);
       }
 
       const createdXentralArtikel = await this.db.xentralArtikel.upsert({

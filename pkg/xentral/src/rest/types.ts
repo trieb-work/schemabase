@@ -310,12 +310,12 @@ export interface AuftragParams {
    * Suche nach Auftragssstatus (genaue Übereinstimmung)
    */
   status?:
-    | "angelegt"
-    | "bestellt"
-    | "freigegeben"
-    | "versendet"
-    | "abgeschlossen"
-    | "storniert";
+  | "angelegt"
+  | "bestellt"
+  | "freigegeben"
+  | "versendet"
+  | "abgeschlossen"
+  | "storniert";
   /**
    * Suche nach Belegnummer (ungefähre Übereinstimmung)
    */
@@ -429,7 +429,12 @@ export interface Auftrag {
    * @example "1"
    */
   projekt: string;
-  status: string | "freigegeben";
+  status: "angelegt"
+  | "bestellt"
+  | "freigegeben"
+  | "versendet"
+  | "abgeschlossen"
+  | "storniert";
   /**
    * formatted as string:
    * @example "200000"
@@ -588,72 +593,72 @@ export interface LieferscheinParams {
    * Suche nach Lieferschein-Status (genaue Übereinstimmung)
    */
   status?: "angelegt" | "freigegeben" | "abgeschlossen" | "versendet" | "storniert";
-  
+
   /**
    * Suche nach Belegnummer (ungefähre Übereinstimmung)
    */
   belegnr?: string;
-  
+
   /**
    * Suche nach Belegnummer (genaue Übereinstimmung)
    */
   belegnr_equals?: string;
-  
+
   /**
    * Suche nach Belegnummer (Übereinstimmung am Anfang)
    */
   belegnr_startswith?: string;
-  
+
   /**
    * Suche nach Belegnummer (Übereinstimmung am Ende)
    */
   belegnr_endswith?: string;
-  
+
   /**
    * Suche nach Internetnummer (ungefähre Übereinstimmung)
    */
   internet?: string;
-  
+
   /**
    * Suche nach Internetnummer (genaue Übereinstimmung)
    */
   internet_equals?: string;
-  
+
   /**
    * Suche nach Internetnummer (Übereinstimmung am Anfang)
    */
   internet_startswith?: string;
-  
+
   /**
    * Suche nach Internetnummer (Übereinstimmung am Ende)
    */
   internet_endswith?: string;
-  
+
   /**
    * Suche nach Kundennummer (ungefähre Übereinstimmung)
    */
   kundennummer?: string;
-  
+
   /**
    * Suche nach Kundennummer (genaue Übereinstimmung)
    */
   kundennummer_equals?: string;
-  
+
   /**
    * Suche nach Kundennummer (Übereinstimmung am Anfang)
    */
   kundennummer_startswith?: string;
-  
+
   /**
    * Suche nach Kundennummer (Übereinstimmung am Ende)
    */
   kundennummer_endswith?: string;
-  
+
   /**
    * Suche nach bestimmtem Belegdatum (genaue Übereinstimmung)
    */
   datum?: string;
-  
+
   /**
    * Suche nach bestimmtem Belegdatum (Datum größer Suchwert)
    * 
@@ -661,7 +666,7 @@ export interface LieferscheinParams {
    * @example "2019-06-28"
    */
   datum_gt?: string;
-  
+
   /**
    * Suche nach bestimmtem Belegdatum (Datum größer gleich Suchwert)
    * 
@@ -669,7 +674,7 @@ export interface LieferscheinParams {
    * @example "2019-06-28"
    */
   datum_gte?: string;
-  
+
   /**
    * Suche nach bestimmtem Belegdatum (Datum kleiner Suchwert)
    * 
@@ -677,7 +682,7 @@ export interface LieferscheinParams {
    * @example "2019-06-28"
    */
   datum_lt?: string;
-  
+
   /**
    * Suche nach bestimmtem Belegdatum (Datum kleiner gleich Suchwert)
    * 
@@ -685,27 +690,27 @@ export interface LieferscheinParams {
    * @example "2019-06-28"
    */
   datum_lte?: string;
-  
+
   /**
    * Lieferscheine nach Auftragsnummer filtern (genaue Übereinstimmung)
    */
   auftrag?: string;
-  
+
   /**
    * Lieferscheine nach Auftrags-ID filtern (genaue Übereinstimmung)
    */
   auftragid?: number;
-  
+
   /**
    * Lieferscheine eines bestimmten Projekt filtern
    */
   projekt?: number;
-  
+
   /**
    * Sortierung (Beispiel: sort=belegnr)
    */
   sort?: "belegnr" | "datum";
-  
+
   /**
    * Unter-Resourcen in Resource einbinden (Beispiel: include=positionen)
    */
@@ -719,7 +724,7 @@ export interface Lieferschein {
    * @example "1"
    */
   "projekt": string;
-  "status": string,
+  "status": "angelegt" | "freigegeben" | "abgeschlossen" | "versendet" | "storniert",
   "lieferscheinart": string,
   "belegnr": string,
   "kundennummer": string,
@@ -794,5 +799,77 @@ export interface Lieferschein {
   "kommissionskonsignationslager": 0,
   "teillieferungvon": 0,
   "teillieferungnummer": 0,
-  "kiste": -1
+  "kiste": -1,
+  "positionen"?: {
+    "id": number,
+    "projekt": number,
+    /**
+     * xentral internal artikel id
+     */
+    "artikel": number,
+    "bezeichnung": string,
+    "beschreibung": string,
+    /**
+     * xentral artikel number
+     */
+    "nummer": string,
+    /**
+     * menge formated as string
+     * @example "2.0000"
+     */
+    "menge": string,
+    "einheit": string,
+    "vpe": string,
+    /**
+     * date string "yyyyy-MM-dd"
+     * @example "2022-08-17"
+     */
+    "lieferdatum": string,
+    "lieferdatumkw": number,
+    "artikelnummerkunde": string,
+    "kostenlos": number,
+    "bemerkung": string,
+    /**
+     * number formated as string
+     * @example "0.0000"
+     */
+    "geliefert": string,
+    "abgerechnet": 0,
+    "seriennummer": string,
+    "herkunftsland": string,
+    "zolltarifnummer": string,
+    /**
+     * number formated as string
+     * @example "0.00000000"
+     */
+    "zolleinzelwert": string,
+    /**
+     * number formated as string
+     * @example "0.00000000"
+     */
+    "zollgesamtwert": string,
+    "zollwaehrung": string,
+    /**
+     * number formated as string
+     * @example "0.00000000"
+     */
+    "zolleinzelgewicht": string,
+    /**
+     * number formated as string
+     * @example "0.00000000"
+     */
+    "zollgesamtgewicht": string,
+    "nve": string,
+    "packstueck": string,
+    /**
+     * number formated as string
+     * @example "0.0000"
+     */
+    "vpemenge": string,
+    /**
+     * number formated as string
+     * @example "0.0000"
+     */
+    "einzelstueckmenge": string,
+  }[]
 }

@@ -211,14 +211,13 @@ export class XentralProxyOrderSyncService {
       const resData: Auftrag | AuftragCreateResponse = existingXentralAuftrag ? existingXentralAuftrag : await this.xentralXmlClient.AuftragCreate(auftrag);
       const createdXentralAuftrag = await this.db.xentralProxyAuftrag.create({
         data: {
-          id: resData.id.toString(),
+          id: resData.id,
           order: {
             connect: {
               id: order.id,
             },
           },
           xentralBelegNr: resData.belegnr,
-          xentralId: resData.id,
           xentralProxyApp: {
             connect: {
               id: this.xentralProxyApp.id,
@@ -234,7 +233,7 @@ export class XentralProxyOrderSyncService {
           orderId: order.id,
           tenantId: this.tenantId,
           orderNumber: order.orderNumber,
-          xentralAuftragId: createdXentralAuftrag.xentralId,
+          xentralAuftragId: createdXentralAuftrag.id,
           xentralAuftragBelegNr: createdXentralAuftrag.xentralBelegNr,
         },
       );

@@ -375,7 +375,6 @@ export class ZohoSalesOrdersSyncService {
                         },
                       },
                     },
-                    undiscountedUnitPriceNet: lineItem.rate, // TODO double check if this always is the price net or only if no tax?
                     totalPriceNet: lineItem.item_total,
                     totalPriceGross: lineItem.item_total_inclusive_of_tax,
                     undiscountedUnitPriceGross: fullSalesorder.is_inclusive_tax
