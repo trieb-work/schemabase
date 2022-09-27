@@ -67,7 +67,7 @@ export class XentralProxyLieferscheinSyncService {
             xentralProxyAppId: this.xentralProxyApp.id
           }
         },
-        orderLineItems: true,
+        orderLineItems: true, // TODO check if package volume and shippingStatus makes sense if multiple warehouses
       },
     });
     this.logger.info(`Will sync Xentral Lieferscheine to Packages for ${orders.length} Orders with Xentral.`);
@@ -209,6 +209,7 @@ export class XentralProxyLieferscheinSyncService {
         } else if (lieferschein.versandart.toLowerCase().includes("ups")) {
           carrier = Carrier.UPS;
         }
+        // TODO: lieferschein.belegnr is unique and should be enough but only if we do not use the workaround described in line 190
         const packageNumber = `LF-${lieferschein.belegnr}_TRN-${matchingTrackingnummer.tracking}`;
         const packageCreateId = id.id("package");
         const upsertedPackage = await this.db.package.upsert({
@@ -306,7 +307,7 @@ export class XentralProxyLieferscheinSyncService {
           });
           return false;
         } else if (packagedItems[li.sku] > li.quantity) {
-          this.logger.info("The current order has a line item which have been shiped more than needed! Please check this Order manually.", {
+          this.logger.error("The current order has a line item which have been shiped more than needed! Please check this Order manually.", {
             sku: li.sku,
             desiredQuantity: li.quantity,
             actualQuantity: packagedItems[li.sku],
@@ -327,6 +328,8 @@ export class XentralProxyLieferscheinSyncService {
       } else {
         shipmentStatus = OrderShipmentStatus.pending;
       }
+      // TODO: How to handle orders which have been shipped via multiple warehouses and especailly via multiple systems and one via Xentral and one via Zoho
+      // I think we need a new integration that will handle status field updates and is independet from any service like zoho or xentral
       const updatedOrder = await this.db.order.update({
         where: {
           id: order.id

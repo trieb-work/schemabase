@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 /* eslint-disable prettier/prettier */
 import { ILogger } from "@eci/pkg/logger";
+import { arrayFromAsyncGenerator } from "@eci/pkg/miscHelper/array";
 import { PrismaClient, XentralProxyApp } from "@eci/pkg/prisma";
 import {
   XentralRestClient,
@@ -44,16 +45,21 @@ export class XentralProxyOrderSyncService {
     this.xentralRestClient = config.xentralRestClient;
   }
 
+  
+  /**
+   * This Service syncs ECI Orders to Xentral Aufträge
+   * 
+   */
   public async syncFromECI(): Promise<void> {
     this.logger.info("Starting sync of ECI Orders to XentralProxy Aufträge");
     const orders = await this.db.order.findMany({
       where: {
         orderStatus: "confirmed",
-        paymentStatus: "fullyPaid",
+        paymentStatus: "fullyPaid", // TODO remove this filter and make sure saleor orders handle readyToFullfill correctly
         shipmentStatus: {
           in: ["pending", "partiallyShipped"]
         },
-        readyToFullfill: true,
+        readyToFullfill: true, // TODO: in zukunft wäre es auch möglich hier das shipment date 
         /**
          * only include orders which have not been transfered to the current xentral instance and
          * therefore have no xentralProxyAuftrag with the current xentral instance
@@ -97,8 +103,7 @@ export class XentralProxyOrderSyncService {
             },
           },
         },
-        shippingAddress: true,
-        xentralProxyAuftraege: true,
+        shippingAddress: true
       },
     });
     this.logger.info(`Will sync ${orders.length} Orders with Xentral.`);
@@ -110,10 +115,12 @@ export class XentralProxyOrderSyncService {
         orderNumber: order.orderNumber,
       };
       if (!order.shippingAddress) {
+        // TODO add try/catch block from other services -> use Warning Class
         this.logger.warn("Skipping sync of Order because of missing shipping Address", defaultLogFields)
         continue;
       }
       if(!order.shippingAddress?.fullname){
+        // TODO add try/catch block from other services -> use Error Class
         this.logger.error(
           "Skipping sync of Order because order.shippingAddress.fullname is empty. Please double check. "+
           "If you want to override this check please write a space/blank in this field via ECI Prisma DB Dashboard.",
@@ -141,16 +148,28 @@ export class XentralProxyOrderSyncService {
         defaultLogFields);
         continue;
       }
-      const xentralAuftraegeWithSameDatePaginator = this.xentralRestClient.getAuftraege({
-        // "datum": format(order.date, "yyyy-MM-dd"),
-        "datum": order.date.toJSON(),
-      }, 1000);
+
       let existingXentralAuftrag: Auftrag | undefined;
       try {
-        for await (const xentralAuftrag of xentralAuftraegeWithSameDatePaginator) {
-          if (xentralAuftrag.ihrebestellnummer === order.orderNumber) {
-            existingXentralAuftrag = xentralAuftrag;
-            break;
+        const xentralAuftraegeWithSameDate = await arrayFromAsyncGenerator(this.xentralRestClient.getAuftraege({
+          "datum": order.date.toJSON(),
+        }, 1000));
+        if(xentralAuftraegeWithSameDate.length === 0){
+          this.logger.debug("No Xentral Auftrag found for the specified Date, therefore we assume that no Auftag exists with the same Ordernumber.");
+        }
+        const xentralAuftraegeWithSameOrderNumber = xentralAuftraegeWithSameDate.filter((xa) => xa.ihrebestellnummer === order.orderNumber);
+        if(xentralAuftraegeWithSameOrderNumber.length === 0){
+          this.logger.debug("No Xentral Auftrag exists with the same Ordernumber.");
+        } else {
+          const xentralParentAuftraegeWithSameOrderNumber = xentralAuftraegeWithSameDate.filter((xa) => xa.teillieferungvon === 0);
+          if(xentralParentAuftraegeWithSameOrderNumber.length === 0){
+            this.logger.error("A Xentral Auftrag with the same Ordernumber exists but, no Xentral Parent Auftrag exists with the same Ordernumber. This should not happen therefore aborting sync.");
+            continue;
+          } else if(xentralParentAuftraegeWithSameOrderNumber.length > 1){
+            this.logger.error("Multiple Xentral Parent Auftraege with the same Ordernumber exists. This should not happen therefore aborting sync.");
+            continue;
+          } else {
+            existingXentralAuftrag = xentralParentAuftraegeWithSameOrderNumber?.[0];
           }
         }
       } catch (error) {

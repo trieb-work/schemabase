@@ -37,6 +37,12 @@ export class XentralProxyProductVariantSyncService {
     this.db = config.db;
   }
 
+  /**
+   * This Service syncs ECI Product Variant to Xentral Artikels
+   * 
+   * Xentral Artikel Nummer is equal to Product Variant SKU
+   * 
+   */
   public async syncFromECI(): Promise<void> {
     this.logger.info("Starting sync of ECI Orders to XentralProxy Aufträge");
     const xentralXmlClient = new XentralXmlClient(this.xentralProxyApp);
@@ -81,6 +87,7 @@ export class XentralProxyProductVariantSyncService {
         variantName: productVariant.variantName,
         productName: productVariant.product.name,
       };
+      // INFO: make sure to keep this object in sync with the articel changed if check (Line 111 - 117)
       const artikel: ArtikelCreateRequest = {
         projekt: this.xentralProxyApp.projectId,
         name_de:
@@ -100,6 +107,7 @@ export class XentralProxyProductVariantSyncService {
 
       let xentralResData: ArtikelCreateResponse;
       if (existingXentralArtikel) {
+        // INFO: make sure to keep this object in sync with the ArtikelCreateRequest line 91
         if (
           (existingXentralArtikel.projekt || null) === (artikel.projekt || null) &&
           (existingXentralArtikel.name_de || null) === (artikel.name_de || null) &&
@@ -111,60 +119,51 @@ export class XentralProxyProductVariantSyncService {
           this.logger.debug("Existing Artikel in Xentral-Stammdaten is exactly the same as in ECI-DB, skipping update for this Artikel.", loggerFields);
           continue;
         }
-        // console.log("projekt", existingXentralArtikel.projekt, artikel.projekt);
-        // console.log("name_de", existingXentralArtikel.name_de, artikel.name_de);
-        // console.log("ean", existingXentralArtikel.ean, artikel.ean);
-        // console.log("herstellernummer", existingXentralArtikel.herstellernummer, artikel.herstellernummer);
-        // console.log("lagerartikel", existingXentralArtikel.lagerartikel, artikel.lagerartikel);
-        // console.log("typ", existingXentralArtikel.typ, artikel.typ);
 
-        this.logger.debug("Editing Artikel in Xentral-Stammdaten", loggerFields);
+        this.logger.info("Editing Artikel in Xentral-Stammdaten", loggerFields);
         const artikelId = String(existingXentralArtikel.id);
         await xentralXmlClient.ArtikelEdit({
           ...artikel,
           id: artikelId,
         });
-        xentralResData = await xentralXmlClient.ArtikelGet({ id: artikelId });
+        // xentralResData = await xentralXmlClient.ArtikelGet({ id: artikelId });
       } else {
         this.logger.debug("Creating Artikel in Xentral-Stammdaten)", loggerFields);
         xentralResData = await xentralXmlClient.ArtikelCreate(artikel);
-      }
-
-      const createdXentralArtikel = await this.db.xentralArtikel.upsert({
-        where: {
-          xentralNummer_xentralProxyAppId: {
+        const createdXentralArtikel = await this.db.xentralArtikel.upsert({
+          where: {
+            xentralNummer_xentralProxyAppId: {
+              xentralNummer: xentralResData.nummer,
+              xentralProxyAppId: this.xentralProxyApp.id,
+            },
+          },
+          create: {
+            id: xentralResData.id.toString(),
             xentralNummer: xentralResData.nummer,
-            xentralProxyAppId: this.xentralProxyApp.id,
-          },
-        },
-        create: {
-          id: xentralResData.id.toString(),
-          xentralNummer: xentralResData.nummer,
-          xentralProxyApp: {
-            connect: {
-              id: this.xentralProxyApp.id,
+            xentralProxyApp: {
+              connect: {
+                id: this.xentralProxyApp.id,
+              },
+            },
+            productVariant: {
+              connect: {
+                id: productVariant.id,
+              },
             },
           },
-          productVariant: {
-            connect: {
-              id: productVariant.id,
-            },
+          update: {},
+        });
+        this.logger.info(
+          `Created new xentralArtikel for current productVariant`,
+          {
+            productVariantId: productVariant.id,
+            tenantId: this.tenantId,
+            productVariantName: productVariant.variantName,
+            xentralArtikelId: createdXentralArtikel.id,
+            xentralArtikelNummer: createdXentralArtikel.xentralNummer,
           },
-        },
-        update: {},
-      });
-      this.logger.info(
-        `${
-          existingXentralArtikel ? "Updated" : "Created new"
-        } xentralArtikel for current productVariant`,
-        {
-          productVariantId: productVariant.id,
-          tenantId: this.tenantId,
-          productVariantName: productVariant.variantName,
-          xentralArtikelId: createdXentralArtikel.id,
-          xentralArtikelNummer: createdXentralArtikel.xentralNummer,
-        },
-      );
+        );
+      }
     }
   }
 }
