@@ -9,7 +9,6 @@ import { ArtikelTypeEnum } from "@eci/pkg/xentral/src/types";
 import {
   ArtikelCreateRequest,
   ArtikelCreateResponse,
-  ArtikelEditRequest,
 } from "@eci/pkg/xentral/src/xml/types";
 
 interface XentralProxyProductVariantSyncServiceConfig {
@@ -112,13 +111,12 @@ export class XentralProxyProductVariantSyncService {
           this.logger.debug("Existing Artikel in Xentral-Stammdaten is exactly the same as in ECI-DB, skipping update for this Artikel.", loggerFields);
           continue;
         }
-        // TODO remove console.logs
-        console.log("projekt", existingXentralArtikel.projekt, artikel.projekt);
-        console.log("name_de", existingXentralArtikel.name_de, artikel.name_de);
-        console.log("ean", existingXentralArtikel.ean, artikel.ean);
-        console.log("herstellernummer", existingXentralArtikel.herstellernummer, artikel.herstellernummer);
-        console.log("lagerartikel", existingXentralArtikel.lagerartikel, artikel.lagerartikel);
-        console.log("typ", existingXentralArtikel.typ, artikel.typ);
+        // console.log("projekt", existingXentralArtikel.projekt, artikel.projekt);
+        // console.log("name_de", existingXentralArtikel.name_de, artikel.name_de);
+        // console.log("ean", existingXentralArtikel.ean, artikel.ean);
+        // console.log("herstellernummer", existingXentralArtikel.herstellernummer, artikel.herstellernummer);
+        // console.log("lagerartikel", existingXentralArtikel.lagerartikel, artikel.lagerartikel);
+        // console.log("typ", existingXentralArtikel.typ, artikel.typ);
 
         this.logger.debug("Editing Artikel in Xentral-Stammdaten", loggerFields);
         const artikelId = String(existingXentralArtikel.id);

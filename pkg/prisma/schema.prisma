@@ -740,7 +740,7 @@ model PackageLineItem {
   warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
   warehouseId String?
 
-  package   Package? @relation(fields: [packageId], references: [id])
+  package   Package? @relation(fields: [packageId], references: [id], onDelete: Cascade)
   packageId String?
 
   quantity Float
