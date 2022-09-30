@@ -1,7 +1,8 @@
-import { NoopLogger } from "@eci/pkg/logger";
+import { AssertionLogger } from "@eci/pkg/logger";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { beforeEach, describe, jest, test } from "@jest/globals";
-import { XentralProxyOrderSyncService } from "./orders";
+import { XentralProxyProductVariantSyncService } from "./artikel";
+import "@eci/pkg/jest-utils/consoleFormatter";
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -31,8 +32,8 @@ describe("XentralProxy Entity Sync Orders Test", () => {
       throw new Error(
         "Testing Tenant or xentral app/integration not found in DB",
       );
-    const service = new XentralProxyOrderSyncService({
-      logger: new NoopLogger(),
+    const service = new XentralProxyProductVariantSyncService({
+      logger: new AssertionLogger(),
       db: prismaClient,
       xentralProxyApp,
       warehouseId: xentralProxyIntegration.warehouseId,

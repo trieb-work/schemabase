@@ -288,6 +288,142 @@ export interface Artikel {
   freifeld39: string;
   freifeld40: string;
 }
+export interface TrackingnummerParams {
+  /**
+   * Suche nach bestimmter Trackingnummer (ungefähre Übereinstimmung)
+   */
+  tracking?: string;
+
+  /**
+   * Suche nach bestimmter Trackingnummer (genaue Übereinstimmung)
+   */
+  tracking_equals?: string;
+
+  /**
+   * Suche nach bestimmter Trackingnummer (Übereinstimmung am Anfang)
+   */
+  tracking_startswith?: string;
+
+  /**
+   * Suche nach bestimmter Trackingnummer (Übereinstimmung am Ende)
+   */
+  tracking_endswith?: string;
+
+  /**
+   * Suche nach bestimmter Lieferscheinnummer (ungefähre Übereinstimmung)
+   */
+  lieferschein?: string;
+
+  /**
+   * Suche nach bestimmter Lieferscheinnummer (genaue Übereinstimmung)
+   */
+  lieferschein_equals?: string;
+
+  /**
+   * Suche nach bestimmter Lieferscheinnummer (Übereinstimmung am Anfang)
+   */
+  lieferschein_startswith?: string;
+
+  /**
+   * Suche nach bestimmter Lieferscheinnummer (Übereinstimmung am Ende)
+   */
+  lieferschein_endswith?: string;
+
+  /**
+   * Suche nach bestimmter Auftragsnummer (ungefähre Übereinstimmung)
+   */
+  auftrag?: string;
+
+  /**
+   * Suche nach bestimmter Auftragsnummer (genaue Übereinstimmung)
+   */
+  auftrag_equals?: string;
+
+  /**
+   * Suche nach bestimmter Auftragsnummer (Übereinstimmung am Anfang)
+   */
+  auftrag_startswith?: string;
+
+  /**
+   * Suche nach bestimmter Auftragsnummer (Übereinstimmung am Ende)
+   */
+  auftrag_endswith?: string;
+
+  /**
+   * Suche nach bestimmter Internetnummer (ungefähre Übereinstimmung)
+   */
+  internet?: string;
+
+  /**
+   * Suche nach bestimmter Internetnummer (genaue Übereinstimmung)
+   */
+  internet_equals?: string;
+
+  /**
+   * Suche nach bestimmter Internetnummer (Übereinstimmung am Anfang)
+   */
+  internet_startswith?: string;
+
+  /**
+   * Suche nach bestimmter Internetnummer (Übereinstimmung am Ende)
+   */
+  internet_endswith?: string;
+
+  /**
+   * Suche nach bestimmter Versandart (genaue Übereinstimmung)
+   */
+  versandart?: string;
+
+  /**
+   * Suche nach bestimmtem Versanddatum (genaue Übereinstimmung)
+   */
+  versendet_am?: string;
+
+  /**
+   * Suche nach bestimmtem Versanddatum (Datum größer Suchwert)
+   */
+  versendet_am_gt?: string;
+
+  /**
+   * Suche nach bestimmtem Versanddatum (Datum größer gleich Suchwert)
+   */
+  versendet_am_gte?: string;
+
+  /**
+   * Suche nach bestimmtem Versanddatum (Datum kleiner Suchwert)
+   */
+  versendet_am_lt?: string;
+
+  /**
+   * Suche nach bestimmtem Versanddatum (Datum kleiner gleich Suchwert)
+   */
+  versendet_am_lte?: string;
+
+  /**
+   * Suche nach bestimmter Adress-ID (genaue Übereinstimmung)
+   */
+  adresse?: number;
+
+  /**
+   * Suche nach bestimmter Projekt-ID (genaue Übereinstimmung)
+   */
+  projekt?: number;
+
+  /**
+   * Suche nach bestimmtem Ländercode (genaue Übereinstimmung)
+   */
+  land?: string;
+
+  /**
+   * Sortierung (Beispiel: sort=-versendet_am,lieferschein)
+   */
+  sort?: "tracking" | "auftrag" | "lieferschein" | "versandart" | "versendet_am"  | "abgeschlossen" | "-tracking" | "-auftrag" | "-lieferschein" | "-versandart" | "-versendet_am"  | "-abgeschlossen";
+
+  /**
+   * Unter-Resourcen in Resource einbinden (Beispiel: include=projekt)
+   */
+  include?: "projekt";
+}
 export interface Trackingnummer {
   id: number;
   tracking: string;
@@ -310,12 +446,12 @@ export interface AuftragParams {
    * Suche nach Auftragssstatus (genaue Übereinstimmung)
    */
   status?:
-    | "angelegt"
-    | "bestellt"
-    | "freigegeben"
-    | "versendet"
-    | "abgeschlossen"
-    | "storniert";
+  | "angelegt"
+  | "bestellt"
+  | "freigegeben"
+  | "versendet"
+  | "abgeschlossen"
+  | "storniert";
   /**
    * Suche nach Belegnummer (ungefähre Übereinstimmung)
    */
@@ -429,7 +565,12 @@ export interface Auftrag {
    * @example "1"
    */
   projekt: string;
-  status: string | "freigegeben";
+  status: "angelegt"
+  | "bestellt"
+  | "freigegeben"
+  | "versendet"
+  | "abgeschlossen"
+  | "storniert";
   /**
    * formatted as string:
    * @example "200000"
@@ -560,26 +701,311 @@ export interface Auftrag {
    * date string "yyyyy-MM-dd"
    * @example "2022-08-17"
    */
-  versendet_am: string;
-  versendet_per: string;
-  versendet_durch: string;
-  angebotid: 0;
-  gln: string;
-  bearbeiterid: 1;
-  bearbeiter: "Administrator";
-  ohne_artikeltext: 0;
-  ustid: string;
-  ust_befreit: 0;
-  ust_inner: 0;
-  anzeigesteuer: 0;
-  waehrung: "EUR";
-  sprache: "deutsch";
-  kurs: "0.00000000";
-  kostenstelle: string;
-  freitext: string;
-  internebemerkung: string;
-  bodyzusatz: string;
-  shop: 0;
-  shopextid: string;
-  shopextstatus: string;
+  "versendet_am": string;
+  "versendet_per": string;
+  "versendet_durch": string;
+  "angebotid": 0,
+  "gln": string;
+  "bearbeiterid": 1,
+  "bearbeiter": "Administrator",
+  "ohne_artikeltext": 0,
+  "ustid": string;
+  "ust_befreit": 0,
+  "ust_inner": 0,
+  "anzeigesteuer": 0,
+  "waehrung": "EUR",
+  "sprache": "deutsch",
+  "kurs": "0.00000000",
+  "kostenstelle": string;
+  "freitext": string;
+  "internebemerkung": string;
+  "bodyzusatz": string;
+  "shop": 0,
+  "shopextid": string;
+  "shopextstatus": string;
+}
+export interface LieferscheinParams {
+  /**
+   * Suche nach Lieferschein-Status (genaue Übereinstimmung)
+   */
+  status?: "angelegt" | "freigegeben" | "abgeschlossen" | "versendet" | "storniert";
+
+  /**
+   * Suche nach Belegnummer (ungefähre Übereinstimmung)
+   */
+  belegnr?: string;
+
+  /**
+   * Suche nach Belegnummer (genaue Übereinstimmung)
+   */
+  belegnr_equals?: string;
+
+  /**
+   * Suche nach Belegnummer (Übereinstimmung am Anfang)
+   */
+  belegnr_startswith?: string;
+
+  /**
+   * Suche nach Belegnummer (Übereinstimmung am Ende)
+   */
+  belegnr_endswith?: string;
+
+  /**
+   * Suche nach Internetnummer (ungefähre Übereinstimmung)
+   */
+  internet?: string;
+
+  /**
+   * Suche nach Internetnummer (genaue Übereinstimmung)
+   */
+  internet_equals?: string;
+
+  /**
+   * Suche nach Internetnummer (Übereinstimmung am Anfang)
+   */
+  internet_startswith?: string;
+
+  /**
+   * Suche nach Internetnummer (Übereinstimmung am Ende)
+   */
+  internet_endswith?: string;
+
+  /**
+   * Suche nach Kundennummer (ungefähre Übereinstimmung)
+   */
+  kundennummer?: string;
+
+  /**
+   * Suche nach Kundennummer (genaue Übereinstimmung)
+   */
+  kundennummer_equals?: string;
+
+  /**
+   * Suche nach Kundennummer (Übereinstimmung am Anfang)
+   */
+  kundennummer_startswith?: string;
+
+  /**
+   * Suche nach Kundennummer (Übereinstimmung am Ende)
+   */
+  kundennummer_endswith?: string;
+
+  /**
+   * Suche nach bestimmtem Belegdatum (genaue Übereinstimmung)
+   */
+  datum?: string;
+
+  /**
+   * Suche nach bestimmtem Belegdatum (Datum größer Suchwert)
+   * 
+   * Format: "yyyy-MM-dd"
+   * @example "2019-06-28"
+   */
+  datum_gt?: string;
+
+  /**
+   * Suche nach bestimmtem Belegdatum (Datum größer gleich Suchwert)
+   * 
+   * Format: "yyyy-MM-dd"
+   * @example "2019-06-28"
+   */
+  datum_gte?: string;
+
+  /**
+   * Suche nach bestimmtem Belegdatum (Datum kleiner Suchwert)
+   * 
+   * Format: "yyyy-MM-dd"
+   * @example "2019-06-28"
+   */
+  datum_lt?: string;
+
+  /**
+   * Suche nach bestimmtem Belegdatum (Datum kleiner gleich Suchwert)
+   * 
+   * Format: "yyyy-MM-dd"
+   * @example "2019-06-28"
+   */
+  datum_lte?: string;
+
+  /**
+   * Lieferscheine nach Auftragsnummer filtern (genaue Übereinstimmung)
+   */
+  auftrag?: string;
+
+  /**
+   * Lieferscheine nach Auftrags-ID filtern (genaue Übereinstimmung)
+   */
+  auftragid?: number;
+
+  /**
+   * Lieferscheine eines bestimmten Projekt filtern
+   */
+  projekt?: number;
+
+  /**
+   * Sortierung (Beispiel: sort=belegnr)
+   */
+  sort?: "belegnr" | "datum";
+
+  /**
+   * Unter-Resourcen in Resource einbinden (Beispiel: include=positionen)
+   */
+  include?: "positionen" | "protokoll";
+}
+export interface Lieferschein {
+  "id": 1,
+  "firma": 1,
+  /**
+   * projekt number formatted as string 
+   * @example "1"
+   */
+  "projekt": string;
+  "status": "angelegt" | "freigegeben" | "abgeschlossen" | "versendet" | "storniert",
+  "lieferscheinart": string,
+  "belegnr": string,
+  "kundennummer": string,
+  "ihrebestellnummer": string,
+  /**
+   * date string "yyyyy-MM-dd"
+   * @example "2022-08-17"
+   */
+  "datum": string,
+  "auftrag": string,
+  "auftragid": 16,
+  "freitext": string,
+  "adresse": 23,
+  "typ": string,
+  "name": string,
+  "titel": string,
+  "ansprechpartnerid": 0,
+  "ansprechpartner": string,
+  "abteilung": string,
+  "unterabteilung": string,
+  "adresszusatz": string,
+  "strasse": string,
+  "plz": string,
+  "ort": string,
+  "land": "DE",
+  "bundesstaat": string,
+  "telefon": string,
+  "telefax": string,
+  "email": string,
+  "anschreiben": string,
+  "versandart": string, //TODO enum
+  "versand": string,
+  "versendet": 1,
+  /**
+   * date string "yyyyy-MM-dd hh:mm:ss"
+   * @example "2022-08-17 09:46:22"
+   */
+  "versendet_am": string,
+  "versendet_per": "sonstiges",
+  "versendet_durch": "Administrator",
+  "ustid": string,
+  "ust_befreit": 0,
+  "usereditid": 1,
+  /**
+   * date string "yyyyy-MM-dd hh:mm:ss"
+   * @example "2022-08-17 09:46:22"
+   */
+  "useredittimestamp": string,
+  "lieferantenretoure": 0,
+  "lieferantenretoureinfo": string,
+  "lieferant": 0,
+  "pdfarchiviert": 0,
+  "pdfarchiviertversion": 0,
+  "internebemerkung": string,
+  "ohne_briefpapier": 0,
+  "lieferid": 0,
+  "projektfiliale": 0,
+  "projektfiliale_eingelagert": 0,
+  "zuarchivieren": 1,
+  "internebezeichnung": string,
+  "kommissionierung": 0,
+  "sprache": string,
+  "gln": string,
+  "bearbeiter": "Administrator",
+  "keinerechnung": 0,
+  "ohne_artikeltext": 0,
+  "abweichendebezeichnung": 0,
+  "kostenstelle": string,
+  "bodyzusatz": string,
+  "lieferbedingung": string,
+  "standardlager": 0,
+  "kommissionskonsignationslager": 0,
+  "teillieferungvon": 0,
+  "teillieferungnummer": 0,
+  "kiste": -1,
+  "positionen"?: {
+    "id": number,
+    "projekt": number,
+    /**
+     * xentral internal artikel id
+     */
+    "artikel": number,
+    "bezeichnung": string,
+    "beschreibung": string,
+    /**
+     * xentral artikel number
+     */
+    "nummer": string,
+    /**
+     * menge formated as string
+     * @example "2.0000"
+     */
+    "menge": string,
+    "einheit": string,
+    "vpe": string,
+    /**
+     * date string "yyyyy-MM-dd"
+     * @example "2022-08-17"
+     */
+    "lieferdatum": string,
+    "lieferdatumkw": number,
+    "artikelnummerkunde": string,
+    "kostenlos": number,
+    "bemerkung": string,
+    /**
+     * number formated as string
+     * @example "0.0000"
+     */
+    "geliefert": string,
+    "abgerechnet": 0,
+    "seriennummer": string,
+    "herkunftsland": string,
+    "zolltarifnummer": string,
+    /**
+     * number formated as string
+     * @example "0.00000000"
+     */
+    "zolleinzelwert": string,
+    /**
+     * number formated as string
+     * @example "0.00000000"
+     */
+    "zollgesamtwert": string,
+    "zollwaehrung": string,
+    /**
+     * number formated as string
+     * @example "0.00000000"
+     */
+    "zolleinzelgewicht": string,
+    /**
+     * number formated as string
+     * @example "0.00000000"
+     */
+    "zollgesamtgewicht": string,
+    "nve": string,
+    "packstueck": string,
+    /**
+     * number formated as string
+     * @example "0.0000"
+     */
+    "vpemenge": string,
+    /**
+     * number formated as string
+     * @example "0.0000"
+     */
+    "einzelstueckmenge": string,
+  }[]
 }

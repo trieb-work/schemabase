@@ -242,6 +242,7 @@ export class SaleorOrderSyncService {
                   mainContact: contactCreateOrConnect,
                   shippingAddress: {},
                   billingAddress: {},
+                  readyToFullfill: orderStatus === "confirmed" && paymentStatus === "fullyPaid",
                   shippingPriceGross: order.shippingPrice.gross.amount,
                   tenant: {
                     connect: {

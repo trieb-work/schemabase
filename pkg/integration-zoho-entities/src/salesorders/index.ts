@@ -715,19 +715,33 @@ export class ZohoSalesOrdersSyncService {
             );
             if (searchedSalesOrders.length === 0) {
               this.logger.error(
-                "Salesorder was already created and search with order.orderNumber returned no results. Aborting sync of this order.",
+                "Salesorder was already created and search with order.orderNumber returned no results. Aborting attach of this order, please resolve this Issue manually.",
                 { eciOrderId: order.id, eciOrderNumber: order.orderNumber },
               );
               continue;
             }
             if (searchedSalesOrders.length > 1) {
               this.logger.error(
-                "Salesorder was already created and search with order.orderNumber returned multiple results. Aborting sync of this order.",
+                "Salesorder was already created and search with order.orderNumber returned multiple results. Aborting attach of this order, please resolve this Issue manually.",
                 { eciOrderId: order.id, eciOrderNumber: order.orderNumber },
               );
               continue;
             }
             const matchingSalesOrder = searchedSalesOrders[0];
+            if(matchingSalesOrder.total !== order.totalPriceGross){
+              this.logger.error(
+                "Salesorder was already created and search with order.orderNumber returned a results with different order.totalPriceGross. Aborting attach of this order, please resolve this Issue manually.",
+                { eciOrderId: order.id, eciOrderNumber: order.orderNumber },
+              );
+              continue;
+            }
+            if(matchingSalesOrder.line_items.length !== order.orderLineItems.length){
+              this.logger.error(
+                "Salesorder was already created and search with order.orderNumber returned a results with different order.orderLineItems.length. Aborting attach of this order, please resolve this Issue manually.",
+                { eciOrderId: order.id, eciOrderNumber: order.orderNumber },
+              );
+              continue;
+            }
             await this.db.zohoSalesOrder.create({
               data: {
                 id: matchingSalesOrder.salesorder_id,
@@ -743,7 +757,7 @@ export class ZohoSalesOrdersSyncService {
                 },
                 createdAt: new Date(matchingSalesOrder.created_time),
                 updatedAt: new Date(matchingSalesOrder.last_modified_time),
-                // zohoContact // TODO is this needed? --> remove it from the schema if it is really not needed
+                // zohoContact // TODO is this needed? --> remove it from the schema if it is really not needed, should be accessible via zohoSalesOrder -> order -> mainCont
                 // zohoContactPerson // TODO is this needed? --> remove it from the schema if it is really not needed
               },
             });

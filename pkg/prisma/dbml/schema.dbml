@@ -474,8 +474,6 @@ Table PackageLineItem {
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   uniqueString String [not null]
-  order Order [not null]
-  orderId String [not null]
   warehouse Warehouse
   warehouseId String
   package Package
@@ -483,7 +481,6 @@ Table PackageLineItem {
   quantity Float [not null]
   sku String [not null]
   productVariant ProductVariant [not null]
-  productVariantId String [not null]
   tenant Tenant [not null]
   tenantId String [not null]
   zohoPackageLineItems ZohoPackageLineItem [not null]
@@ -504,12 +501,11 @@ Table Order {
   orderStatus OrderStatus [not null, default: 'draft']
   paymentStatus OrderPaymentStatus [not null, default: 'unpaid']
   shipmentStatus OrderShipmentStatus [not null, default: 'pending']
-  readyToFullfill Boolean [not null, default: false]
+  readyToFullfill Boolean [not null, default: false, note: 'In PuF: if the Order is not readyToFullfill it woll not get transfered to logistics partner (kramer); default is false']
   orderNumber String [not null, note: 'Order-Numbers have to be unique per Tenant!
 We use them as unique identifier between systems']
   referenceNumber String [note: 'if source system has a second ID which is benefitial to the user, we can provide it here']
   orderLineItems OrderLineItem [not null]
-  packageLineItems PackageLineItem [not null]
   shippingPriceNet Float
   shippingPriceGross Float
   shippingPriceTax Tax
@@ -631,7 +627,7 @@ Table BillOfMaterial {
 }
 
 Table XentralArtikel {
-  id String [not null]
+  id String [not null, note: 'Xentral Internal ID']
   xentralNummer String [not null]
   xentralProxyApp XentralProxyApp [not null]
   xentralProxyAppId String [not null]
@@ -641,6 +637,21 @@ Table XentralArtikel {
   indexes {
     (id, xentralProxyAppId) [unique]
     (xentralNummer, xentralProxyAppId) [unique]
+  }
+}
+
+Table XentralLieferschein {
+  id Int [not null, note: 'Xentral Internal ID']
+  status String [not null]
+  xentralBelegNr String [not null]
+  xentralProxyApp XentralProxyApp [not null]
+  xentralProxyAppId String [not null]
+  package Package [not null]
+  packageId String [not null]
+
+  indexes {
+    (id, xentralProxyAppId) [unique]
+    (xentralBelegNr, xentralProxyAppId) [unique]
   }
 }
 
@@ -733,20 +744,21 @@ Table ElasticLogDrainIntegration {
 }
 
 Table Package {
-  id String [pk]
+  id String [pk, note: 'internal id']
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   carrier Carrier [not null]
   state PackageState [not null, default: 'INIT']
-  number String [not null]
-  trackingId String
-  carrierTrackingUrl String
+  number String [not null, note: 'A unique identifier for this package like PKG-0034']
+  trackingId String [note: 'tracking id from the carrier. Optional, as the package can, exist before we created a tracking number']
+  carrierTrackingUrl String [note: 'A link to the carriers tracking page']
   order Order [not null]
   orderId String [not null]
   events PackageEvent [not null]
-  packageLineItems PackageLineItem [not null]
+  packageLineItems PackageLineItem [not null, note: 'Line Items in this package']
   zohoPackage ZohoPackage [not null]
   saleorPackage SaleorPackage [not null]
+  xentralLieferschein XentralLieferschein [not null]
   tenant Tenant [not null]
   tenantId String [not null]
 
@@ -1058,7 +1070,8 @@ Table XentralProxyApp {
   tenantId String [unique, not null]
   xentralProxyIntegration XentralProxyIntegration [not null]
   xentralProxyAuftraege XentralProxyAuftrag [not null]
-  xentralArtikel XentralArtikel [not null]
+  xentralArtikele XentralArtikel [not null]
+  XentralLieferscheine XentralLieferschein [not null]
 }
 
 Table XentralProxyIntegration {
@@ -1076,8 +1089,7 @@ Table XentralProxyIntegration {
 }
 
 Table XentralProxyAuftrag {
-  id String [not null]
-  xentralId Int [not null]
+  id Int [not null, note: 'Xentral internal ID']
   xentralBelegNr String [not null]
   xentralProxyApp XentralProxyApp [not null]
   xentralProxyAppId String [not null]
@@ -1085,7 +1097,6 @@ Table XentralProxyAuftrag {
   orderId String [not null]
 
   indexes {
-    (xentralId, xentralProxyAppId) [unique]
     (id, xentralProxyAppId) [unique]
     (xentralBelegNr, xentralProxyAppId) [unique]
   }
@@ -1591,13 +1602,11 @@ Ref: OrderLineItem.(productVariantId, sku) > ProductVariant.(id, sku)
 
 Ref: OrderLineItem.tenantId > Tenant.id [delete: Cascade]
 
-Ref: PackageLineItem.orderId > Order.id [delete: Cascade]
-
 Ref: PackageLineItem.warehouseId > Warehouse.id
 
 Ref: PackageLineItem.packageId > Package.id
 
-Ref: PackageLineItem.(productVariantId, sku) > ProductVariant.(id, sku)
+Ref: PackageLineItem.(tenantId, sku) > ProductVariant.(tenantId, sku)
 
 Ref: PackageLineItem.tenantId > Tenant.id [delete: Cascade]
 
@@ -1632,6 +1641,10 @@ Ref: BillOfMaterial.partId > ProductVariant.id [delete: Cascade]
 Ref: XentralArtikel.xentralProxyAppId > XentralProxyApp.id
 
 Ref: XentralArtikel.productVariantId > ProductVariant.id
+
+Ref: XentralLieferschein.xentralProxyAppId > XentralProxyApp.id
+
+Ref: XentralLieferschein.packageId > Package.id [delete: Cascade]
 
 Ref: StockEntries.tenantId > Tenant.id [delete: Cascade]
 

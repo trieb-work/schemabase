@@ -732,22 +732,21 @@ model PackageLineItem {
   // For packages: ${packageNumber}${sku}${quantity} 
   uniqueString String
 
-  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  orderId String
+  // order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  // orderId String
 
   // Warehouse, this line item corresponds to.
   // Warehouse can be undefined, as we have non-inventory products as well.
   warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
   warehouseId String?
 
-  package   Package? @relation(fields: [packageId], references: [id])
+  package   Package? @relation(fields: [packageId], references: [id], onDelete: Cascade)
   packageId String?
 
   quantity Float
   sku      String
-
-  productVariant   ProductVariant @relation(fields: [productVariantId, sku], references: [id, sku])
-  productVariantId String
+  // TODO changed fields from productVariantId, sku to tenantId, sku because these fields already exist and will it more easy during creation
+  productVariant   ProductVariant @relation(fields: [tenantId, sku], references: [tenantId, sku])
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -756,10 +755,9 @@ model PackageLineItem {
   saleorFulfillmentsLines SaleorFulfillmentLine[]
 
   @@unique([uniqueString, tenantId])
-  @@index([orderId])
+  // @@index([orderId])
   @@index([packageId])
   @@index([warehouseId])
-  @@index([productVariantId])
   @@index([uniqueString])
   @@index([tenantId])
 }
@@ -801,7 +799,7 @@ model Order {
   date DateTime
 
   /// The Date, that we expect this order to be shipped.
-  expectedShippingDate  DateTime?
+  expectedShippingDate DateTime?
 
   // deprecated!
   externalOrderId String?
@@ -810,6 +808,7 @@ model Order {
   paymentStatus  OrderPaymentStatus  @default(unpaid)
   shipmentStatus OrderShipmentStatus @default(pending)
 
+  /// In PuF: if the Order is not readyToFullfill it woll not get transfered to logistics partner (kramer); default is false
   readyToFullfill Boolean @default(false)
 
   /// Order-Numbers have to be unique per Tenant!
@@ -819,7 +818,7 @@ model Order {
   referenceNumber String?
 
   orderLineItems   OrderLineItem[]
-  packageLineItems PackageLineItem[]
+  // packageLineItems PackageLineItem[] // TODO I think this does not make sense, maybe double check
 
   shippingPriceNet   Float?
   shippingPriceGross Float?
@@ -1263,7 +1262,7 @@ model BillOfMaterial {
 }
 
 model XentralArtikel {
-  // Xentral Internal ID
+  /// Xentral Internal ID
   id String
 
   xentralNummer String
@@ -1276,8 +1275,29 @@ model XentralArtikel {
 
   @@unique([id, xentralProxyAppId])
   @@unique([xentralNummer, xentralProxyAppId])
+  @@index([id])
   @@index([xentralProxyAppId])
   @@index([productVariantId])
+}
+
+model XentralLieferschein {
+  /// Xentral Internal ID
+  id Int
+
+  status String
+
+  xentralBelegNr String
+
+  xentralProxyApp   XentralProxyApp @relation(fields: [xentralProxyAppId], references: [id])
+  xentralProxyAppId String
+
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  packageId String
+
+  @@unique([id, xentralProxyAppId])
+  @@unique([xentralBelegNr, xentralProxyAppId])
+  @@index([xentralProxyAppId])
+  @@index([id])
 }
 
 model StockEntries {
@@ -1433,29 +1453,29 @@ model ElasticLogDrainIntegration {
 
 // The ECI Internal Package model
 model Package {
-  // internal id
+  /// internal id
   id        String       @id
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
   carrier   Carrier
   state     PackageState @default(INIT)
 
-  // A unique identifier for this package like PKG-0034
+  /// A unique identifier for this package like PKG-0034
   number             String
-  // tracking id from the carrier. Optional, as the package can
-  // exist before we created a tracking number
+  /// tracking id from the carrier. Optional, as the package can, exist before we created a tracking number
   trackingId         String?
-  // A link to the carriers tracking page
+  /// A link to the carriers tracking page
   carrierTrackingUrl String?
   order              Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId            String
   events             PackageEvent[]
 
-  // Line Items in this package
+  /// Line Items in this package
   packageLineItems PackageLineItem[]
 
-  zohoPackage   ZohoPackage[]
-  saleorPackage SaleorPackage[]
+  zohoPackage         ZohoPackage[]
+  saleorPackage       SaleorPackage[]
+  xentralLieferschein XentralLieferschein[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -1907,7 +1927,8 @@ model XentralProxyApp {
   tenantId                String                    @unique
   xentralProxyIntegration XentralProxyIntegration[]
   xentralProxyAuftraege   XentralProxyAuftrag[]
-  xentralArtikel          XentralArtikel[]
+  xentralArtikele         XentralArtikel[]
+  XentralLieferscheine    XentralLieferschein[]
 
   @@index([tenantId])
 }
@@ -1934,10 +1955,8 @@ model XentralProxyIntegration {
 }
 
 model XentralProxyAuftrag {
-  // Xentral internal ID
-  id String
-
-  xentralId      Int
+  /// Xentral internal ID
+  id             Int
   xentralBelegNr String
 
   xentralProxyApp   XentralProxyApp @relation(fields: [xentralProxyAppId], references: [id])
@@ -1946,7 +1965,6 @@ model XentralProxyAuftrag {
   order   Order  @relation(fields: [orderId], references: [id])
   orderId String
 
-  @@unique([xentralId, xentralProxyAppId])
   @@unique([id, xentralProxyAppId])
   @@unique([xentralBelegNr, xentralProxyAppId])
   @@index([orderId])
