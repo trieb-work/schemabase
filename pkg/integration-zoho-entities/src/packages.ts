@@ -273,11 +273,6 @@ export class ZohoPackageSyncService {
                   },
                 },
               },
-              order: {
-                connect: {
-                  id: orderExist.id,
-                },
-              },
               warehouse: warehouseConnect,
               package: {
                 connect: {
