@@ -1604,7 +1604,7 @@ Ref: OrderLineItem.tenantId > Tenant.id [delete: Cascade]
 
 Ref: PackageLineItem.warehouseId > Warehouse.id
 
-Ref: PackageLineItem.packageId > Package.id
+Ref: PackageLineItem.packageId > Package.id [delete: Cascade]
 
 Ref: PackageLineItem.(tenantId, sku) > ProductVariant.(tenantId, sku)
 

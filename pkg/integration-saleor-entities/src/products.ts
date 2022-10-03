@@ -390,18 +390,27 @@ export class SaleorProductSyncService {
       for (const stockEntry of variant.productVariant.stockEntries) {
         // Check, if we have a saleor warehouse for this stock entry.
         // If not continue.
-        const saleorWarehouseId = warehouses.find(
+        const saleorWarehouse = warehouses.find(
           (saleorWarehouse) =>
             saleorWarehouse.warehouseId === stockEntry.warehouseId,
-        )?.id;
+        );
+        const saleorWarehouseId = saleorWarehouse?.id;
         if (!saleorWarehouseId) {
           this.logger.info(
             `No saleor warehouse for ECI warehouse ${stockEntry.warehouseId}`,
           );
           continue;
         }
-        // TODO: add the current commited stock of saleor to the available stock
-        const totalQuantity = stockEntry.actualAvailableForSaleStock;
+        /**
+         * The stock information of the current product variant in the current warehouse
+         */
+        const saleorStockEntry = saleorProductVariant.productVariant.stocks.find((x) => x?.warehouse.id === saleorWarehouseId);
+        const currentlyAllocated = saleorStockEntry?.quantityAllocated || 0;
+
+        /**
+         * to get the "real" available stock, we have to add the currently allocated stock from saleor
+         */
+        const totalQuantity = stockEntry.actualAvailableForSaleStock + currentlyAllocated;
         await this.saleorClient.productVariantStockEntryUpdate({
           variantId: variant.id,
           stocks: [
