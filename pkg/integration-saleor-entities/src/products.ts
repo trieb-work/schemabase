@@ -381,8 +381,17 @@ export class SaleorProductSyncService {
         !saleorProductVariant.productVariant.stocks
       ) {
         this.logger.warn(
-          `No product variant returned from saleor for id ${variant.id}! Cant update stocks`,
+          `No product variant returned from saleor for id ${variant.id}! Cant update stocks. Disabling variant in internal DB`,
         );
+        // TODO: disable variant
+        // await this.db.productVariant.update({
+        //   where: {
+        //     id: variant.productVariant.id
+        //   }, 
+        //   data: {
+            
+        //   }
+        // })
         continue;
       }
 
