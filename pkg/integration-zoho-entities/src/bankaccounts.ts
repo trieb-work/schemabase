@@ -41,6 +41,10 @@ export class ZohoBankAccountsSyncService {
           currency: checkCurrency(account.currency_code), // TODO handle throw error
           active: account.is_active,
         };
+
+        /**
+         * Upsert the Zoho Bank Accounts. Don't link internal payment methods. We have to do that manually
+         */
         await this.db.zohoBankAccount.upsert({
           where: {
             id_zohoAppId: {
@@ -118,11 +122,11 @@ export class ZohoBankAccountsSyncService {
         tenantId: this.tenantId,
       },
       include: {
-        zohoBankAccount: true,
+        zohoBankAccounts: true,
       },
     });
     const paymentMethodWithoutZohoBankAccounts = paymentMethod.filter(
-      (pm) => !pm.zohoBankAccount,
+      (pm) => pm.zohoBankAccounts.length === 0,
     );
     if (paymentMethodWithoutZohoBankAccounts.length > 0) {
       this.logger.warn(
@@ -142,7 +146,7 @@ export class ZohoBankAccountsSyncService {
     }
     const paymentMethodWithWrongCurrency = paymentMethod.filter(
       (pm) =>
-        pm?.zohoBankAccount && pm?.zohoBankAccount?.currency !== pm?.currency,
+        pm?.zohoBankAccounts && pm?.zohoBankAccounts?.some((zba) => zba.currency !== pm?.currency),
     );
     if (paymentMethodWithWrongCurrency.length > 0) {
       this.logger.error(

@@ -366,13 +366,15 @@ model ZohoPayment {
 
 model ZohoBankAccount {
   /// Zoho Internal Bankacount Id
+  
   id String
 
   name     String
   currency Currency
   active   Boolean  @default(true)
 
-  paymentMethod PaymentMethod?
+  paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
+  paymentMethodId String?
 
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String
@@ -558,6 +560,7 @@ enum GatewayType {
   banktransfer
 }
 
+/// Internal representation of payment methods. We try to normalize different payment types to more generic ones.
 model PaymentMethod {
   id        String   @id
   createdAt DateTime @default(now())
@@ -570,16 +573,16 @@ model PaymentMethod {
   saleorPaymentGateway                     SaleorPaymentGateway? @relation(fields: [saleorPaymentGatewayId, saleorPaymentGatewayInstalledSaleorAppId], references: [id, installedSaleorAppId], onDelete: Cascade)
   saleorPaymentGatewayId                   String?
   saleorPaymentGatewayInstalledSaleorAppId String?
-  zohoBankAccount                          ZohoBankAccount?      @relation(fields: [zohoBankAccountId, zohoBankAccountZohoAppId], references: [id, zohoAppId])
-  zohoBankAccountId                        String?
-  zohoBankAccountZohoAppId                 String?
+
+  /// One internal payment method can have multiple Zoho Bank Accounts. Internally, we know for example just "banktransfer" but in Zoho we might have multiple
+  /// bank Accounts
+  zohoBankAccounts ZohoBankAccount[]
 
   payments Payment[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  @@unique([zohoBankAccountId, zohoBankAccountZohoAppId])
   @@unique([gatewayType, methodType, currency, tenantId])
   @@index([tenantId])
 }
@@ -743,10 +746,10 @@ model PackageLineItem {
   package   Package? @relation(fields: [packageId], references: [id], onDelete: Cascade)
   packageId String?
 
-  quantity Float
-  sku      String
+  quantity       Float
+  sku            String
   // TODO changed fields from productVariantId, sku to tenantId, sku because these fields already exist and will it more easy during creation
-  productVariant   ProductVariant @relation(fields: [tenantId, sku], references: [tenantId, sku])
+  productVariant ProductVariant @relation(fields: [tenantId, sku], references: [tenantId, sku])
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -817,7 +820,7 @@ model Order {
   /// if source system has a second ID which is benefitial to the user, we can provide it here
   referenceNumber String?
 
-  orderLineItems   OrderLineItem[]
+  orderLineItems OrderLineItem[]
   // packageLineItems PackageLineItem[] // TODO I think this does not make sense, maybe double check
 
   shippingPriceNet   Float?

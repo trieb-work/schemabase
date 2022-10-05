@@ -113,7 +113,22 @@ export class ZohoPaymentSyncService {
             }
           : undefined;
 
-      
+      const zohoBankAccount = await this.db.zohoBankAccount.findUnique({
+        where: {
+          id_zohoAppId: {
+            id: payment.account_id,
+            zohoAppId: this.zohoApp.id
+          }
+        }
+      })
+
+      if (!zohoBankAccount) {
+        this.logger.error(`Could not find a zohobank account internally for Zoho payment id ${payment.payment_id}`)
+        continue;
+      }
+      if (!zohoBankAccount?.paymentMethodId) {
+        throw new Error(`The zohobankaccount ${zohoBankAccount.id} has no payment method connected to it! Can't create payment internally`)
+      }
 
       // connect or create the Zoho Payment with our internal payment entity
       const paymentConnectOrCreate: Prisma.PaymentCreateNestedOneWithoutZohoPaymentInput =
@@ -131,10 +146,7 @@ export class ZohoPaymentSyncService {
               referenceNumber,
               paymentMethod: {
                 connect: {
-                  zohoBankAccountId_zohoBankAccountZohoAppId: {
-                    zohoBankAccountId: payment.account_id,
-                    zohoBankAccountZohoAppId: this.zohoApp.id,
-                  },
+                  id: zohoBankAccount?.paymentMethodId
                 },
               },
               tenant: {
@@ -247,7 +259,7 @@ export class ZohoPaymentSyncService {
         paymentMethod: {
           include: {
             saleorPaymentGateway: true,
-            zohoBankAccount: true,
+            zohoBankAccounts: true,
           },
         },
         braintreeTransactions: true,
@@ -283,18 +295,13 @@ export class ZohoPaymentSyncService {
     );
     for (const payment of paymentsWithoutZohoPaymentFromEciDb) {
       try {
-        const zba = payment.paymentMethod.zohoBankAccount;
+        const zba = payment.paymentMethod.zohoBankAccounts.find((ba) => ba.zohoAppId === this.zohoApp.id);
         if (!zba) {
           throw new Error(
             `No Zohobankaccount attached to the current payment method ${payment.paymentMethod.id}`,
           );
         }
-        if (zba.zohoAppId !== this.zohoApp.id) {
-          throw new Error(
-            `the ZohoAppId (${zba.zohoAppId}) from the Zohobankaccountattached attached to the current payment method ` +
-              `(${payment.paymentMethod.id}) does not equal the zohoAppId of the current workflow run (${this.zohoApp.id})`,
-          );
-        }
+
         if (payment.paymentMethod.gatewayType === "stripe") {
           // maybe it also works with stripe but this is untested so we throw an error first (also we need stripe payment fee sync)
           throw new Error(

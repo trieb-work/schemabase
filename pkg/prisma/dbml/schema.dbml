@@ -237,6 +237,7 @@ Table ZohoBankAccount {
   currency Currency [not null]
   active Boolean [not null, default: true]
   paymentMethod PaymentMethod
+  paymentMethodId String
   zohoApp ZohoApp [not null]
   zohoAppId String [not null]
 
@@ -368,17 +369,17 @@ Table PaymentMethod {
   saleorPaymentGateway SaleorPaymentGateway
   saleorPaymentGatewayId String
   saleorPaymentGatewayInstalledSaleorAppId String
-  zohoBankAccount ZohoBankAccount
-  zohoBankAccountId String
-  zohoBankAccountZohoAppId String
+  zohoBankAccounts ZohoBankAccount [not null, note: 'One internal payment method can have multiple Zoho Bank Accounts. Internally, we know for example just "banktransfer" but in Zoho we might have multiple
+bank Accounts']
   payments Payment [not null]
   tenant Tenant [not null]
   tenantId String [not null]
 
   indexes {
-    (zohoBankAccountId, zohoBankAccountZohoAppId) [unique]
     (gatewayType, methodType, currency, tenantId) [unique]
   }
+
+  Note: 'Internal representation of payment methods. We try to normalize different payment types to more generic ones.'
 }
 
 Table Company {
@@ -1550,6 +1551,8 @@ Ref: ZohoPayment.paymentId > Payment.id [delete: Cascade]
 
 Ref: ZohoPayment.zohoAppId > ZohoApp.id [delete: Cascade]
 
+Ref: ZohoBankAccount.paymentMethodId > PaymentMethod.id
+
 Ref: ZohoBankAccount.zohoAppId > ZohoApp.id [delete: Cascade]
 
 Ref: ZohoWarehouse.warehouseId > Warehouse.id [delete: Cascade]
@@ -1581,8 +1584,6 @@ Ref: Payment.tenantId > Tenant.id [delete: Cascade]
 Ref: Payment.paymentMethodId > PaymentMethod.id
 
 Ref: PaymentMethod.(saleorPaymentGatewayId, saleorPaymentGatewayInstalledSaleorAppId) > SaleorPaymentGateway.(id, installedSaleorAppId) [delete: Cascade]
-
-Ref: PaymentMethod.(zohoBankAccountId, zohoBankAccountZohoAppId) - ZohoBankAccount.(id, zohoAppId)
 
 Ref: PaymentMethod.tenantId > Tenant.id [delete: Cascade]
 
