@@ -200,6 +200,7 @@ export default async function (
     // logger.info("body", { body });
     let clusters = cache.get(webhookId);
     if (clusters.length === 0) {
+      logger.info(`Getting Webhook data from prisma. ID: ${webhookId}`);
       const webhook = await prisma.incomingWebhook.findUnique({
         where: {
           id: webhookId,
