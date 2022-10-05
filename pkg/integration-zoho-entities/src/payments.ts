@@ -99,20 +99,21 @@ export class ZohoPaymentSyncService {
       this.logger.info(`Upserting Zoho Payment ${payment.payment_id}`);
 
       // We try to connect existing invoices with this payment using the invoice Ids
-      const invoiceConnect:
-        | Prisma.InvoiceCreateNestedManyWithoutPaymentsInput
-        | undefined =
-        payment.invoice_numbers_array?.length > 0
-          ? {
-              connect: payment.invoice_numbers_array.map((id) => ({
-                invoiceNumber_tenantId: {
-                  invoiceNumber: id,
-                  tenantId: this.zohoApp.tenantId,
-                },
-              })),
-            }
-          : undefined;
-
+      // const invoiceConnect:
+      //   | Prisma.InvoiceCreateNestedManyWithoutPaymentsInput
+      //   | undefined =
+      //   payment.invoice_numbers_array?.length > 0
+      //     ? {
+      //         connect: payment.invoice_numbers_array.map((id) => ({
+      //           invoiceNumber_tenantId: {
+      //             invoiceNumber: id,
+      //             tenantId: this.zohoApp.tenantId,
+      //           },
+      //         })),
+      //       }
+      //     : undefined;
+ 
+    
       const zohoBankAccount = await this.db.zohoBankAccount.findUnique({
         where: {
           id_zohoAppId: {
@@ -146,7 +147,7 @@ export class ZohoPaymentSyncService {
               referenceNumber,
               paymentMethod: {
                 connect: {
-                  id: zohoBankAccount?.paymentMethodId
+                  id: zohoBankAccount.paymentMethodId
                 },
               },
               tenant: {
@@ -154,7 +155,7 @@ export class ZohoPaymentSyncService {
                   id: this.zohoApp.tenantId,
                 },
               },
-              invoices: invoiceConnect,
+              // invoices: invoiceConnect,
             },
           },
         };
