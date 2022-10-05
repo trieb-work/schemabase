@@ -849,6 +849,7 @@ Table ZohoApp {
   orgId String [not null]
   clientId String [not null]
   clientSecret String [not null]
+  datacenter String [not null, default: '.eu', note: 'Set the datacenter of this ZohoApp. One of: ".com" | ".eu" | ".in" | ".com.au" | ".jp";']
   tenant Tenant [not null]
   tenantId String [unique, not null]
   orgLanguage Language [not null, default: 'DE', note: 'The language, that this org is set to. Some API fields like the country name work with translated names, so we need to know the orgs language']

@@ -4,9 +4,14 @@ import type { Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 export async function prismaZohoAppEntryToClient(
   zohoApp: ZohoApp,
 ): Promise<Zoho> {
+  
+  // TODO: better fix the datacenter here. Check, that it is a valid value
+  const dc = zohoApp.datacenter as any;
+
   return new Zoho(
     await ZohoApiClient.fromOAuth({
       orgId: zohoApp.orgId,
+      dc,
       client: {
         id: zohoApp.clientId,
         secret: zohoApp.clientSecret,

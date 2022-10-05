@@ -1598,6 +1598,8 @@ model ZohoApp {
   orgId                    String
   clientId                 String
   clientSecret             String
+  /// Set the datacenter of this ZohoApp. One of: ".com" | ".eu" | ".in" | ".com.au" | ".jp";
+  datacenter               String @default(".eu") 
   tenant                   Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId                 String                    @unique
   /// The language, that this org is set to. Some API fields like the country name work with translated names, so we need to know the orgs language
