@@ -1153,6 +1153,7 @@ describe("Zoho Inventory payment Sync", () => {
       logger: zohoPaymentLogger,
       db: new PrismaClient(),
       zohoApp,
+      createdTimeOffset: 1
     });
   });
 
@@ -1162,6 +1163,7 @@ describe("Zoho Inventory payment Sync", () => {
       logger: new NoopLogger(),
       db: new PrismaClient(),
       zohoApp,
+      createdTimeOffset: 1
     });
     await xx.syncToECI();
   }, 90000);
