@@ -269,7 +269,7 @@ export default async function (
             },
           };
           return logs.flatMap((log) => {
-            logger.info("log", { log });
+            // logger.info("log", { log });
             let payload = {
               message:
                 typeof log?.message === "string" && log.message.length > 0
@@ -336,7 +336,7 @@ export default async function (
                 ...log.message,
               };
             }
-            logger.info("payload", { payload });
+            // logger.info("payload", { payload });
 
             return [index, payload];
           });
