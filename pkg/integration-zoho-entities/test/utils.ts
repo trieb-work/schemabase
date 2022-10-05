@@ -357,7 +357,12 @@ export async function upsertZohoBankAccount(
     },
     update: {},
     create: {
-      ...config,
+      id: config.id,
+      zohoApp: {
+        connect: {
+          id: config.zohoAppId
+        }
+      },
       currency: "EUR",
       name,
       active: true,
