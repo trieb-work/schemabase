@@ -23,12 +23,13 @@ export class ZohoSalesOrderSyncWorkflow implements Workflow {
     clients: ZohoSalesOrderSyncWorkflowClients,
     config: ZohoSalesOrderSyncWorkflowConfig,
   ) {
+    this.zohoAppId = config.zohoAppId;
     this.logger = ctx.logger.with({
       workflow: ZohoSalesOrderSyncWorkflow.name,
+      zohoAppId: this.zohoAppId,
     });
     this.logger = ctx.logger;
     this.prisma = clients.prisma;
-    this.zohoAppId = config.zohoAppId;
   }
 
   /**

@@ -1788,6 +1788,8 @@ model Subscription {
   elasticLogDrainIntegration ElasticLogDrainIntegration[]
   saleorZohoIntegration      SaleorZohoIntegration[]
   xentralProxyIntegration    XentralProxyIntegration[]
+
+  @@index([tenantId])
 }
 
 // ----------------------------------------------------------------------------
@@ -2028,6 +2030,8 @@ model IncomingWebhook {
   installedSaleorAppId String?
   vercelLogDrainApp    VercelLogDrainApp?  @relation(fields: [vercelLogDrainAppId], references: [id], onDelete: Cascade)
   vercelLogDrainAppId  String?
+
+  @@index([id])
 }
 
 model SecretKey {

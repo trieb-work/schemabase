@@ -23,12 +23,13 @@ export class ZohoTaxSyncWorkflow implements Workflow {
     clients: ZohoTaxSyncWorkflowClients,
     config: ZohoTaxSyncWorkflowConfig,
   ) {
+    this.zohoAppId = config.zohoAppId;
     this.logger = ctx.logger.with({
       workflow: ZohoTaxSyncWorkflow.name,
+      zohoAppId: this.zohoAppId,
     });
     this.logger = ctx.logger;
     this.prisma = clients.prisma;
-    this.zohoAppId = config.zohoAppId;
   }
 
   public async run(): Promise<void> {

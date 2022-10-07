@@ -23,8 +23,10 @@ export class ZohoItemSyncWorkflow implements Workflow {
     clients: ZohoItemSyncWorkflowClients,
     config: ZohoItemSyncWorkflowConfig,
   ) {
+    this.zohoAppId = config.zohoAppId;
     this.logger = ctx.logger.with({
       workflow: ZohoItemSyncWorkflow.name,
+      zohoAppId: this.zohoAppId,
     });
     this.logger = ctx.logger;
     this.prisma = clients.prisma;

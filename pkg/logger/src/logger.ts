@@ -57,6 +57,9 @@ export class Logger implements ILogger {
     this.logger = winston.createLogger({
       transports: [new winston.transports.Console()],
       format:
+        /**
+         * If the environment variable "VERCEL" is 1, we do no longer pretty-print
+         */
         env.get("VERCEL") === "1"
           ? winston.format.json()
           : winston.format.prettyPrint({

@@ -24,12 +24,13 @@ export class ZohoPaymentSyncWorkflow implements Workflow {
     clients: ZohoPaymentSyncWorkflowClients,
     config: ZohoPaymentSyncWorkflowConfig,
   ) {
+    this.zohoAppId = config.zohoAppId;
     this.logger = ctx.logger.with({
       workflow: ZohoPaymentSyncWorkflow.name,
+      zohoAppId: this.zohoAppId,
     });
     this.logger = ctx.logger;
     this.prisma = clients.prisma;
-    this.zohoAppId = config.zohoAppId;
   }
 
   /**
