@@ -48,6 +48,73 @@ export class CronTable {
           // TODO + filter auf active subscription
         },
       });
+    const enabledZohoApps = await this.clients.prisma.zohoApp.findMany({
+      where: {
+        enabled: true
+      }
+    })
+
+
+    /**
+     * Zoho Workflows
+     */
+    for (const enabledZohoApp of enabledZohoApps) {
+      const {
+        cronSchedule,
+        id,
+        cronTimeout,
+        tenantId,
+        
+      } = enabledZohoApp
+      const commonCronConfig = {
+        cron: cronSchedule,
+        timeout: cronTimeout,
+      };
+      const commonWorkflowConfig = {
+        zohoAppId: id,
+      };
+
+      if (enabledZohoApp.syncWarehouses){
+        new WorkflowScheduler(this.clients).schedule(
+          createWorkflowFactory(
+            ZohoWarehouseSyncWorkflow,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 0 },
+          [tenantId, id],
+        );
+      }
+
+      if (enabledZohoApp.syncTaxes) {
+        this.scheduler.schedule(
+          createWorkflowFactory(
+            ZohoTaxSyncWorkflow,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 1 },
+          [tenantId, id],
+        );
+      }
+
+      if (enabledZohoApp.syncContacts) {
+        this.scheduler.schedule(
+          createWorkflowFactory(
+            ZohoContactSyncWorkflow,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 2 },
+          [tenantId, id],
+        );
+      }
+
+    }
+
+
+
+    /// LEGACY - Using Integrations, not data hub setup    
     for (const enabledZohoIntegration of enabledZohoIntegrations) {
       const {
         zohoAppId,
@@ -67,16 +134,11 @@ export class CronTable {
         installedSaleorAppId,
         orderPrefix,
       };
+
+
+
       if (enabledZohoIntegration.syncWarehouses) {
-        new WorkflowScheduler(this.clients).schedule(
-          createWorkflowFactory(
-            ZohoWarehouseSyncWorkflow,
-            this.clients,
-            commonWorkflowConfig,
-          ),
-          { ...commonCronConfig, offset: 0 },
-          [tenantId, id],
-        );
+
         new WorkflowScheduler(this.clients).schedule(
           createWorkflowFactory(
             SaleorWarehouseSyncWorkflow,
@@ -87,28 +149,8 @@ export class CronTable {
           [tenantId, id],
         );
       }
-      if (enabledZohoIntegration.syncTaxes) {
-        this.scheduler.schedule(
-          createWorkflowFactory(
-            ZohoTaxSyncWorkflow,
-            this.clients,
-            commonWorkflowConfig,
-          ),
-          { ...commonCronConfig, offset: 1 },
-          [tenantId, id],
-        );
-      }
-      if (enabledZohoIntegration.syncContacts) {
-        this.scheduler.schedule(
-          createWorkflowFactory(
-            ZohoContactSyncWorkflow,
-            this.clients,
-            commonWorkflowConfig,
-          ),
-          { ...commonCronConfig, offset: 2 },
-          [tenantId, id],
-        );
-      }
+
+
       if (enabledZohoIntegration.syncProducts) {
         this.scheduler.schedule(
           createWorkflowFactory(

@@ -1595,15 +1595,32 @@ model LogisticsApp {
 model ZohoApp {
   id String @id
 
+  enabled       Boolean @default(true)
+
   orgId                    String
   clientId                 String
   clientSecret             String
   /// Set the datacenter of this ZohoApp. One of: ".com" | ".eu" | ".in" | ".com.au" | ".jp";
   datacenter               String @default(".eu") 
   tenant                   Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId                 String                    @unique
+  tenantId                 String               
   /// The language, that this org is set to. Some API fields like the country name work with translated names, so we need to know the orgs language
   orgLanguage              Language                  @default(DE)
+  
+  cronSchedule   String @default("*/30 * * * *")
+  cronTimeout    Int    @default(800)
+
+  // We can create the needed bull jobs for every sync entity, that is enabled
+  syncContacts      Boolean @default(false)
+  syncWarehouses    Boolean @default(false)
+  syncOrders        Boolean @default(false)
+  syncInvoices      Boolean @default(false)
+  syncPayments      Boolean @default(false)
+  syncProductStocks Boolean @default(false)
+  syncProducts      Boolean @default(false)
+  syncPackages      Boolean @default(false)
+  syncTaxes         Boolean @default(false)
+
   strapiToZohoIntegrations StrapiToZohoIntegration[]
   logisticsIntegrations    LogisticsIntegration[]
   trackingIntegrations     TrackingIntegration[]
@@ -1623,6 +1640,9 @@ model ZohoApp {
   zohoAddresses         ZohoAddress[]
   zohoPackages          ZohoPackage[]
   zohoAccounts          ZohoBankAccount[]
+
+  @@index([tenantId])
+  @@index([enabled])
 }
 
 // Saleor Apps are separate applications that use GraphQL to talk to a Saleor
@@ -1669,6 +1689,12 @@ model InstalledSaleorApp {
 
   // should be made mandatory later.
   type SaleorAppType?
+
+
+  cronSchedule   String @default("*/30 * * * *")
+
+  // The order prefix we use to identify orders coming from this Saleor.
+  orderPrefix String @default("STORE")
 
   // Every SaleorApp can have multiple webhooks configured.
   // One webhook can fire on multiple events. But for sync webhooks, we need a different one

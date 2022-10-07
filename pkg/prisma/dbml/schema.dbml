@@ -846,13 +846,25 @@ Table LogisticsApp {
 
 Table ZohoApp {
   id String [pk]
+  enabled Boolean [not null, default: true]
   orgId String [not null]
   clientId String [not null]
   clientSecret String [not null]
   datacenter String [not null, default: '.eu', note: 'Set the datacenter of this ZohoApp. One of: ".com" | ".eu" | ".in" | ".com.au" | ".jp";']
   tenant Tenant [not null]
-  tenantId String [unique, not null]
+  tenantId String [not null]
   orgLanguage Language [not null, default: 'DE', note: 'The language, that this org is set to. Some API fields like the country name work with translated names, so we need to know the orgs language']
+  cronSchedule String [not null, default: '*/30 * * * *']
+  cronTimeout Int [not null, default: 800]
+  syncContacts Boolean [not null, default: false]
+  syncWarehouses Boolean [not null, default: false]
+  syncOrders Boolean [not null, default: false]
+  syncInvoices Boolean [not null, default: false]
+  syncPayments Boolean [not null, default: false]
+  syncProductStocks Boolean [not null, default: false]
+  syncProducts Boolean [not null, default: false]
+  syncPackages Boolean [not null, default: false]
+  syncTaxes Boolean [not null, default: false]
   strapiToZohoIntegrations StrapiToZohoIntegration [not null]
   logisticsIntegrations LogisticsIntegration [not null]
   trackingIntegrations TrackingIntegration [not null]
@@ -890,6 +902,8 @@ Table SaleorApp {
 Table InstalledSaleorApp {
   id String [pk]
   type SaleorAppType
+  cronSchedule String [not null, default: '*/30 * * * *']
+  orderPrefix String [not null, default: 'STORE']
   webhooks IncomingWebhook [not null]
   token String [not null]
   channelSlug String
