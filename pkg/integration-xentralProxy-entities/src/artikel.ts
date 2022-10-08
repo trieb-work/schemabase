@@ -15,7 +15,6 @@ interface XentralProxyProductVariantSyncServiceConfig {
   xentralProxyApp: XentralProxyApp;
   db: PrismaClient;
   logger: ILogger;
-  warehouseId: string;
 }
 
 export class XentralProxyProductVariantSyncService {
@@ -33,7 +32,7 @@ export class XentralProxyProductVariantSyncService {
     this.logger = config.logger;
     this.tenantId = config.xentralProxyApp.tenantId;
     this.xentralProxyApp = config.xentralProxyApp;
-    this.warehouseId = config.warehouseId;
+    this.warehouseId = config.xentralProxyApp.warehouseId;
     this.db = config.db;
   }
 
