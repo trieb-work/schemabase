@@ -333,6 +333,8 @@ export class SaleorOrderSyncService {
             );
           }
 
+          const taxPercentage = Math.round(lineItem.taxRate * 100)
+
           // TODO: would it not be better to inline this into db.saleorOrder.upsert (line 209) so we do not have partiall order data in ECI db if something fails?
           // Otherwise we would maybe need a parialdata flag (or commited flag) which is true on create and will be updated to false once all lineitems etc. have been created.
           // Then we can filter for the next steps for partial data = true;
@@ -375,7 +377,7 @@ export class SaleorOrderSyncService {
                     tax: {
                       connect: {
                         percentage_tenantId: {
-                          percentage: lineItem.taxRate * 100,
+                          percentage: taxPercentage,
                           tenantId: this.tenantId,
                         },
                       },
@@ -404,7 +406,7 @@ export class SaleorOrderSyncService {
                   tax: {
                     connect: {
                       percentage_tenantId: {
-                        percentage: lineItem.taxRate * 100,
+                        percentage: taxPercentage,
                         tenantId: this.tenantId,
                       },
                     },
