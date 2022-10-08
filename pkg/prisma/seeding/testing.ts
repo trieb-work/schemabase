@@ -78,6 +78,11 @@ async function main() {
       password: "2b995033dd61455591ce",
       projectId: 2,
       url: "https://62fb63a4bdbf9.xentral.biz",
+      warehouse: {
+        connect: {
+          id: "test"
+        }
+      },
       tenant: {
         connect: {
           id: "test",
@@ -128,31 +133,6 @@ async function main() {
     },
   });
   console.log("created test warehouse for xentralProxyIntegration");
-  await prisma.xentralProxyIntegration.upsert({
-    where: {
-      id: "test",
-    },
-    update: {},
-    create: {
-      id: "test",
-      tenant: {
-        connect: {
-          id: "test",
-        },
-      },
-      warehouse: {
-        connect: {
-          id: "test",
-        },
-      },
-      xentralProxyApp: {
-        connect: {
-          id: "test",
-        },
-      },
-    },
-  });
-  console.log("created xentralProxyIntegration");
 
   await prisma.braintreeApp.upsert({
     where: {

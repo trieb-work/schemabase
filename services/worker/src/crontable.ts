@@ -11,6 +11,7 @@ import { SaleorPackageSyncWorkflow } from "./workflows/saleorPackageSync";
 import { SaleorPaymentSyncWorkflow } from "./workflows/saleorPaymentSync";
 import { SaleorProductSyncWorkflow } from "./workflows/saleorProductSync";
 import { SaleorWarehouseSyncWorkflow } from "./workflows/saleorWarehouseSync";
+import { XentralArtikelSyncWorkflow } from "./workflows/xentralArtikelSync";
 import { ZohoContactSyncWorkflow } from "./workflows/zohoContactSync";
 import { ZohoInvoiceSyncWorkflow } from "./workflows/zohoInvoiceSync";
 import { ZohoItemSyncWorkflow } from "./workflows/zohoItemSync";
@@ -53,6 +54,44 @@ export class CronTable {
         enabled: true
       }
     })
+    const enabledXentralApps = await this.clients.prisma.xentralProxyApp.findMany({
+      where: {
+        enabled: true
+      }
+    })
+
+
+    /**
+     * XentralApp Workflows
+     */
+    for (const enabledXentralApp of enabledXentralApps) {
+
+      const {
+        id,
+        cronTimeout,
+        cronSchedule,
+        tenantId,
+      } = enabledXentralApp
+      const commonCronConfig = {
+        cron: cronSchedule,
+        timeout: cronTimeout,
+      };
+      const commonWorkflowConfig = {
+        xentralProxyApp: enabledXentralApp,
+      };
+
+      new WorkflowScheduler(this.clients).schedule(
+        createWorkflowFactory(
+          XentralArtikelSyncWorkflow,
+          this.clients,
+          commonWorkflowConfig,
+        ),
+        { ...commonCronConfig, offset: 0 },
+        [tenantId, id],
+      );
+
+    }
+
 
 
     /**
@@ -110,6 +149,18 @@ export class CronTable {
         );
       }
 
+      if (enabledZohoApp.syncProducts) {
+        this.scheduler.schedule(
+          createWorkflowFactory(
+            ZohoItemSyncWorkflow,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 3 },
+          [tenantId, id],
+        );
+      }
+
     }
 
 
@@ -152,15 +203,6 @@ export class CronTable {
 
 
       if (enabledZohoIntegration.syncProducts) {
-        this.scheduler.schedule(
-          createWorkflowFactory(
-            ZohoItemSyncWorkflow,
-            this.clients,
-            commonWorkflowConfig,
-          ),
-          { ...commonCronConfig, offset: 3 },
-          [tenantId, id],
-        );
 
         this.scheduler.schedule(
           createWorkflowFactory(
