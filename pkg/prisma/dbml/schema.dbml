@@ -430,7 +430,7 @@ Table Warehouse {
   tenantId String [not null]
   zohoWarehouse ZohoWarehouse [not null]
   saleorWarehouse SaleorWarehouse [not null]
-  xentralProxyIntegration XentralProxyIntegration [not null]
+  xentralProxyApp XentralProxyApp [not null]
   packageLineItems PackageLineItem [not null]
   stockEntries StockEntries [not null]
   isDefaultWarehouseOf ProductVariant [not null]
@@ -942,7 +942,6 @@ Table Tenant {
   dpdApps DpdApp [not null]
   trackingIntegrations TrackingIntegration [not null]
   elasticLogDrainIntegration ElasticLogDrainIntegration [not null]
-  xentralProxyIntegration XentralProxyIntegration [not null]
   xentralProxyApp XentralProxyApp [not null]
   order Order [not null]
   contact Contact [not null]
@@ -975,7 +974,7 @@ Table Subscription {
   trackingIntegration TrackingIntegration
   elasticLogDrainIntegration ElasticLogDrainIntegration [not null]
   saleorZohoIntegration SaleorZohoIntegration [not null]
-  xentralProxyIntegration XentralProxyIntegration [not null]
+  xentralProxyApp XentralProxyApp [not null]
 }
 
 Table TrackingIntegration {
@@ -1078,21 +1077,6 @@ Table StrapiApp {
 
 Table XentralProxyApp {
   id String [pk]
-  username String [not null]
-  password String [not null]
-  projectId Int [not null]
-  url String [not null]
-  tenant Tenant [not null]
-  tenantId String [unique, not null]
-  xentralProxyIntegration XentralProxyIntegration [not null]
-  xentralProxyAuftraege XentralProxyAuftrag [not null]
-  xentralArtikele XentralArtikel [not null]
-  XentralLieferscheine XentralLieferschein [not null]
-}
-
-Table XentralProxyIntegration {
-  id String [pk]
-  payedUntil DateTime
   enabled Boolean [not null, default: true]
   subscription Subscription
   subscriptionId String
@@ -1100,8 +1084,15 @@ Table XentralProxyIntegration {
   tenantId String [not null]
   warehouse Warehouse [not null]
   warehouseId String [not null]
-  xentralProxyApp XentralProxyApp [not null]
-  xentralProxyAppId String [not null]
+  username String [not null]
+  password String [not null]
+  projectId Int [not null]
+  url String [not null]
+  cronSchedule String [not null, default: '*/30 * * * *']
+  cronTimeout Int [not null, default: 800]
+  xentralProxyAuftraege XentralProxyAuftrag [not null]
+  xentralArtikel XentralArtikel [not null]
+  XentralLieferscheine XentralLieferschein [not null]
 }
 
 Table XentralProxyAuftrag {
@@ -1752,15 +1743,11 @@ Ref: StrapiToZohoIntegration.zohoAppId > ZohoApp.id
 
 Ref: StrapiApp.tenantId > Tenant.id [delete: Cascade]
 
+Ref: XentralProxyApp.subscriptionId > Subscription.id
+
 Ref: XentralProxyApp.tenantId > Tenant.id [delete: Cascade]
 
-Ref: XentralProxyIntegration.subscriptionId > Subscription.id
-
-Ref: XentralProxyIntegration.tenantId > Tenant.id [delete: Cascade]
-
-Ref: XentralProxyIntegration.warehouseId > Warehouse.id [delete: Cascade]
-
-Ref: XentralProxyIntegration.xentralProxyAppId > XentralProxyApp.id
+Ref: XentralProxyApp.warehouseId > Warehouse.id [delete: Cascade]
 
 Ref: XentralProxyAuftrag.xentralProxyAppId > XentralProxyApp.id
 
