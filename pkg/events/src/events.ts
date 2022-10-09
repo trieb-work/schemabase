@@ -175,9 +175,7 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
 
           this.signer.verify(message.serialize(), signature);
 
-          this.logger.info("Incoming message", {
-            time: payload.message.timestamp,
-          });
+          this.logger.info("Incoming message from live worker queue");
           if (!payload.message.value) {
             throw new Error("Kafka did not return a message value");
           }

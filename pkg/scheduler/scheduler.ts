@@ -114,19 +114,7 @@ export class WorkflowScheduler {
         queueName,
         async (job: Job) => {
           const logger = this.logger
-            // TODO: here we write the whole log to the bullmq log. Unfortunatly, this is
-            // logging everything during this time
-            // and is not using the child-logger
-            // .withLogDrain({
-            // log: (message: string) => {
-            // try {
-            //   job.log(message);
-            // } catch (err) {
-            //   console.warn("failed to write log message", err);
-            // }
-            // },
-            //
-            // })
+
             .with({ jobId: job.id, queueName, workflow: workflow.name });
 
           const runtimeContext = {

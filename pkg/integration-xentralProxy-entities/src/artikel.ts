@@ -43,7 +43,7 @@ export class XentralProxyProductVariantSyncService {
    * 
    */
   public async syncFromECI(): Promise<void> {
-    this.logger.info("Starting sync of ECI Orders to XentralProxy Aufträge");
+    this.logger.info("Starting sync of ECI Product Variants to XentralProxy Artikel");
     const xentralXmlClient = new XentralXmlClient(this.xentralProxyApp);
     const xentralRestClient = new XentralRestClient(this.xentralProxyApp);
 
