@@ -12,13 +12,14 @@ import {
   Trackingnummer,
   TrackingnummerParams,
 } from "./types";
+import { throws } from "assert";
 
 const DEFAULT_HEADERS = {};
 const DEFAULT_ITEM_COUNT = 100;
 
 export class XentralRestNotFoundError extends Error {
-  constructor() {
-    super("Resource not found");
+  constructor(resText: string, url: string) {
+    super(`Resource not found. \n  URL: ${url}\n  API Response: \n  ${resText}`);
   }
 }
 
@@ -87,15 +88,16 @@ export class XentralRestClient {
           newParams as Record<string, string>,
         ).toString()}`
         : "";
+    const url = `${this.url}/api${subroute}${queryString}`;
     const xentralRes = await this.client.fetch(
-      `${this.url}/api${subroute}${queryString}`,
+      url,
       {
         method,
         headers,
         ...(json ? { body: JSON.stringify(json) } : {}),
       },
     );
-    if (xentralRes.status === 404) throw new XentralRestNotFoundError();
+    if (xentralRes.status === 404) throw new XentralRestNotFoundError(await xentralRes.text(), url);
     if (!xentralRes.ok) {
       throw new Error(
         `Xentral api ${method} call ${subroute} failed with status ${xentralRes.status
@@ -121,11 +123,19 @@ export class XentralRestClient {
     do {
       const page = res! ? res.pagination.page_current + 1 : 1;
       const newParams = { ...params, items, page };
-      res = await this.apiFetch(json, subroute, method, newParams, headers);
-      for (const elem of res.data) {
-        yield elem;
+      try{
+        res = await this.apiFetch(json, subroute, method, newParams, headers);
+        for (const elem of res.data) {
+          yield elem;
+        }
+      } catch(err){
+        if(err instanceof XentralRestNotFoundError){
+          console.debug("resource not found in paginatedApiFetch, retuning an empty list");
+          console.debug(err);
+          break;
+        }
       }
-    } while (!res || res.pagination.page_current < res.pagination.page_last);
+    } while (!res! || res.pagination.page_current < res.pagination.page_last);
   }
 
   public async *getArtikel(
