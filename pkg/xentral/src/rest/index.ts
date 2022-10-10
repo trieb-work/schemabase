@@ -12,7 +12,6 @@ import {
   Trackingnummer,
   TrackingnummerParams,
 } from "./types";
-import { throws } from "assert";
 
 const DEFAULT_HEADERS = {};
 const DEFAULT_ITEM_COUNT = 100;
