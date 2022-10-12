@@ -34,6 +34,9 @@ export namespace EventSchemaRegistry {
     {
       trackingId: string;
       location: string;
+      /**
+       * Timestamp in epoch: (new Date()).getTime() / 1000
+       */
       time: number;
       state: PackageState;
       message?: string;
