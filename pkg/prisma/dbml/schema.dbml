@@ -586,6 +586,7 @@ Table ProductVariant {
   id String [pk]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
+  active Boolean [not null, default: true, note: 'Old product variants get disabled']
   sku String [not null]
   variantName String
   ean String
@@ -821,7 +822,22 @@ Table DpdApp {
   tenant Tenant [not null]
   tenantId String [unique, not null]
   integration TrackingIntegration
+  integrationId String
   webhooks IncomingWebhook [not null]
+  trackingIntegrationId String
+}
+
+Table EasyPostApp {
+  id String [pk]
+  name String
+  apiKey String [not null]
+  tenant Tenant [not null]
+  tenantId String [unique, not null]
+  webhooks IncomingWebhook [not null]
+  integration TrackingIntegration
+  integrationId String
+
+  Note: 'EasyPost Model'
 }
 
 Table ProductDataFeedApp {
@@ -962,6 +978,7 @@ Table Tenant {
   stockEntries StockEntries [not null]
   addresses Address [not null]
   billOfMaterial BillOfMaterial [not null]
+  easyPost EasyPostApp [not null]
 }
 
 Table Subscription {
@@ -985,8 +1002,8 @@ Table TrackingIntegration {
   subscriptionId String [unique]
   tenant Tenant [not null]
   tenantId String [not null]
-  dpdApp DpdApp [not null]
-  dpdAppId String [unique, not null]
+  dpdApps DpdApp [not null]
+  easyPostApps EasyPostApp [not null]
   trackingEmailApp TrackingEmailApp [not null]
   trackingEmailAppId String [not null]
   zohoApp ZohoApp
@@ -1118,6 +1135,8 @@ Table IncomingWebhook {
   secret SecretKey
   dpdApp DpdApp
   dpdAppId String
+  easyPostApp EasyPostApp
+  easyPostAppId String
   logisticsApp LogisticsApp
   logisticsAppId String
   productDataFeedApp ProductDataFeedApp
@@ -1688,6 +1707,12 @@ Ref: SendgridTemplate.trackingEmailAppId > TrackingEmailApp.id [delete: Cascade]
 
 Ref: DpdApp.tenantId > Tenant.id [delete: Cascade]
 
+Ref: DpdApp.integrationId > TrackingIntegration.id
+
+Ref: EasyPostApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: EasyPostApp.integrationId > TrackingIntegration.id
+
 Ref: ProductDataFeedApp.tenantId > Tenant.id [delete: Cascade]
 
 Ref: LogisticsApp.tenantId > Tenant.id [delete: Cascade]
@@ -1703,8 +1728,6 @@ Ref: Subscription.tenantId > Tenant.id [delete: Cascade]
 Ref: TrackingIntegration.subscriptionId - Subscription.id
 
 Ref: TrackingIntegration.tenantId > Tenant.id [delete: Cascade]
-
-Ref: TrackingIntegration.dpdAppId - DpdApp.id
 
 Ref: TrackingIntegration.trackingEmailAppId > TrackingEmailApp.id
 
@@ -1755,6 +1778,8 @@ Ref: XentralProxyAuftrag.xentralProxyAppId > XentralProxyApp.id
 Ref: XentralProxyAuftrag.orderId > Order.id
 
 Ref: IncomingWebhook.dpdAppId > DpdApp.id [delete: Cascade]
+
+Ref: IncomingWebhook.easyPostAppId > EasyPostApp.id [delete: Cascade]
 
 Ref: IncomingWebhook.logisticsAppId > LogisticsApp.id [delete: Cascade]
 

@@ -275,6 +275,7 @@ model ZohoAddress {
   zohoAppId String
 
   @@unique([id, zohoAppId])
+  @@index([id])
   @@index([zohoAppId])
   @@index([addressId])
 }
@@ -366,7 +367,7 @@ model ZohoPayment {
 
 model ZohoBankAccount {
   /// Zoho Internal Bankacount Id
-  
+
   id String
 
   name     String
@@ -828,8 +829,8 @@ model Order {
   shippingPriceTaxId String?
 
   /// The applied discount code
-  discountCode  String?
-  
+  discountCode String?
+
   // The disount amount, that is applied
   // to the net, undiscounted price.
   // Discounts never get applied on shipping costs
@@ -1163,6 +1164,7 @@ model Address {
   @@unique([normalizedName, tenantId])
   @@index([tenantId])
   @@index([contactId])
+  @@index([id])
 }
 
 // The ECI internal Product model
@@ -1197,6 +1199,9 @@ model ProductVariant {
   id        String   @id
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  /// Old product variants get disabled
+  active Boolean @default(true)
 
   sku         String
   // Some systems don't have a specific variant name
@@ -1551,12 +1556,26 @@ model SendgridTemplate {
 }
 
 model DpdApp {
-  id          String               @id
-  name        String?
-  tenant      Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId    String               @unique
-  integration TrackingIntegration?
-  webhooks    IncomingWebhook[]
+  id                    String               @id
+  name                  String?
+  tenant                Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId              String               @unique
+  integration           TrackingIntegration? @relation(fields: [integrationId], references: [id])
+  integrationId         String?
+  webhooks              IncomingWebhook[]
+  trackingIntegrationId String?
+}
+
+/// EasyPost Model
+model EasyPostApp {
+  id            String               @id
+  name          String?
+  apiKey        String
+  tenant        Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId      String               @unique
+  webhooks      IncomingWebhook[]
+  integration   TrackingIntegration? @relation(fields: [integrationId], references: [id])
+  integrationId String?
 }
 
 model ProductDataFeedApp {
@@ -1597,20 +1616,20 @@ model LogisticsApp {
 model ZohoApp {
   id String @id
 
-  enabled       Boolean @default(true)
+  enabled Boolean @default(true)
 
-  orgId                    String
-  clientId                 String
-  clientSecret             String
+  orgId        String
+  clientId     String
+  clientSecret String
   /// Set the datacenter of this ZohoApp. One of: ".com" | ".eu" | ".in" | ".com.au" | ".jp";
-  datacenter               String @default(".eu") 
-  tenant                   Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId                 String               
+  datacenter   String   @default(".eu")
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId     String
   /// The language, that this org is set to. Some API fields like the country name work with translated names, so we need to know the orgs language
-  orgLanguage              Language                  @default(DE)
-  
-  cronSchedule   String @default("*/30 * * * *")
-  cronTimeout    Int    @default(800)
+  orgLanguage  Language @default(DE)
+
+  cronSchedule String @default("*/30 * * * *")
+  cronTimeout  Int    @default(800)
 
   // We can create the needed bull jobs for every sync entity, that is enabled
   syncContacts      Boolean @default(false)
@@ -1692,8 +1711,7 @@ model InstalledSaleorApp {
   // should be made mandatory later.
   type SaleorAppType?
 
-
-  cronSchedule   String @default("*/30 * * * *")
+  cronSchedule String @default("*/30 * * * *")
 
   // The order prefix we use to identify orders coming from this Saleor.
   orderPrefix String @default("STORE")
@@ -1771,6 +1789,7 @@ model Tenant {
   stockEntries                StockEntries[]
   addresses                   Address[]
   billOfMaterial              BillOfMaterial[]
+  easyPost                    EasyPostApp[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
@@ -1808,8 +1827,8 @@ model TrackingIntegration {
   subscriptionId     String?          @unique
   tenant             Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId           String
-  dpdApp             DpdApp           @relation(fields: [dpdAppId], references: [id])
-  dpdAppId           String           @unique
+  dpdApps            DpdApp[]
+  easyPostApps       EasyPostApp[]
   trackingEmailApp   TrackingEmailApp @relation(fields: [trackingEmailAppId], references: [id])
   trackingEmailAppId String
   zohoApp            ZohoApp?         @relation(fields: [zohoAppId], references: [id])
@@ -1953,7 +1972,7 @@ model StrapiApp {
 model XentralProxyApp {
   id String @id
 
-  enabled    Boolean   @default(true)
+  enabled Boolean @default(true)
 
   subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
   subscriptionId String?
@@ -1964,17 +1983,17 @@ model XentralProxyApp {
   warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
   warehouseId String
 
-  username                String
-  password                String
-  projectId               Int
-  url                     String
+  username  String
+  password  String
+  projectId Int
+  url       String
 
-  cronSchedule   String @default("*/30 * * * *")
-  cronTimeout    Int    @default(800)
+  cronSchedule String @default("*/30 * * * *")
+  cronTimeout  Int    @default(800)
 
-  xentralProxyAuftraege   XentralProxyAuftrag[]
-  xentralArtikel         XentralArtikel[]
-  XentralLieferscheine    XentralLieferschein[]
+  xentralProxyAuftraege XentralProxyAuftrag[]
+  xentralArtikel        XentralArtikel[]
+  XentralLieferscheine  XentralLieferschein[]
 
   @@index([tenantId])
   @@index([enabled])
@@ -2011,6 +2030,8 @@ model IncomingWebhook {
   // Webhook Connections
   dpdApp               DpdApp?             @relation(fields: [dpdAppId], references: [id], onDelete: Cascade)
   dpdAppId             String?
+  easyPostApp          EasyPostApp?        @relation(fields: [easyPostAppId], references: [id], onDelete: Cascade)
+  easyPostAppId        String?
   logisticsApp         LogisticsApp?       @relation(fields: [logisticsAppId], references: [id], onDelete: Cascade)
   logisticsAppId       String?
   productDataFeedApp   ProductDataFeedApp? @relation(fields: [productDataFeedAppId], references: [id], onDelete: Cascade)
