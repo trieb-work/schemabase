@@ -23,12 +23,14 @@ export class SaleorWarehouseSyncWorkflow implements Workflow {
     clients: SaleorWarehouseSyncWorkflowClients,
     config: SaleorWarehouseSyncWorkflowConfig,
   ) {
+    this.installedSaleorAppId = config.installedSaleorAppId;
     this.logger = ctx.logger.with({
       workflow: SaleorWarehouseSyncWorkflow.name,
+      installedSaleorAppId: this.installedSaleorAppId,
     });
     this.logger = ctx.logger;
     this.prisma = clients.prisma;
-    this.installedSaleorAppId = config.installedSaleorAppId;
+    
   }
 
   public async run(): Promise<void> {

@@ -28,7 +28,6 @@ export class ZohoSalesOrderSyncWorkflow implements Workflow {
       workflow: ZohoSalesOrderSyncWorkflow.name,
       zohoAppId: this.zohoAppId,
     });
-    this.logger = ctx.logger;
     this.prisma = clients.prisma;
   }
 

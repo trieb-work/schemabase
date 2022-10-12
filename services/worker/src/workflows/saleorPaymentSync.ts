@@ -26,8 +26,10 @@ export class SaleorPaymentSyncWorkflow implements Workflow {
     clients: SaleorPaymentSyncWorkflowClients,
     config: SaleorPaymentSyncWorkflowConfig,
   ) {
+    this.installedSaleorAppId = config.installedSaleorAppId;
     this.logger = ctx.logger.with({
       workflow: SaleorPaymentSyncWorkflow.name,
+      installedSaleorAppId: this.installedSaleorAppId,
     });
     this.logger = ctx.logger;
     this.orderPrefix = config.orderPrefix;

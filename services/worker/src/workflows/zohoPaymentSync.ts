@@ -29,7 +29,6 @@ export class ZohoPaymentSyncWorkflow implements Workflow {
       workflow: ZohoPaymentSyncWorkflow.name,
       zohoAppId: this.zohoAppId,
     });
-    this.logger = ctx.logger;
     this.prisma = clients.prisma;
   }
 

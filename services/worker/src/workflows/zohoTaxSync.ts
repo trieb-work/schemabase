@@ -28,7 +28,6 @@ export class ZohoTaxSyncWorkflow implements Workflow {
       workflow: ZohoTaxSyncWorkflow.name,
       zohoAppId: this.zohoAppId,
     });
-    this.logger = ctx.logger;
     this.prisma = clients.prisma;
   }
 

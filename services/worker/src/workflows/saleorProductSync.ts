@@ -23,8 +23,10 @@ export class SaleorProductSyncWorkflow implements Workflow {
     clients: SaleorProductSyncWorkflowClients,
     config: SaleorProductSyncWorkflowConfig,
   ) {
+    this.installedSaleorAppId = config.installedSaleorAppId;
     this.logger = ctx.logger.with({
       workflow: SaleorProductSyncWorkflow.name,
+      installedSaleorAppId: this.installedSaleorAppId,
     });
     this.logger = ctx.logger;
     this.prisma = clients.prisma;
