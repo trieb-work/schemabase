@@ -22,13 +22,8 @@ describe("XentralProxy Entity Sync Orders Test", () => {
         id: "test",
       },
     });
-    const xentralProxyIntegration =
-      await prismaClient.xentralProxyIntegration.findUnique({
-        where: {
-          id: "test",
-        },
-      });
-    if (!xentralProxyApp || !tenant || !xentralProxyIntegration)
+
+    if (!xentralProxyApp || !tenant)
       throw new Error(
         "Testing Tenant or xentral app/integration not found in DB",
       );
@@ -36,7 +31,6 @@ describe("XentralProxy Entity Sync Orders Test", () => {
       logger: new AssertionLogger(),
       db: prismaClient,
       xentralProxyApp,
-      warehouseId: xentralProxyIntegration.warehouseId,
     });
     await service.syncFromECI();
   }, 1000000);
