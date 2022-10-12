@@ -511,6 +511,7 @@ We use them as unique identifier between systems']
   shippingPriceGross Float
   shippingPriceTax Tax
   shippingPriceTaxId String
+  discountCode String [note: 'The applied discount code']
   discountValueNet Float [not null, default: 0]
   totalPriceNet Float
   totalPriceGross Float [not null]

@@ -827,6 +827,9 @@ model Order {
   shippingPriceTax   Tax?    @relation(fields: [shippingPriceTaxId], references: [id], onDelete: Cascade)
   shippingPriceTaxId String?
 
+  /// The applied discount code
+  discountCode  String?
+  
   // The disount amount, that is applied
   // to the net, undiscounted price.
   // Discounts never get applied on shipping costs
