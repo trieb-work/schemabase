@@ -92,6 +92,7 @@ export class XentralProxyProductVariantSyncService {
         sku: productVariant.sku,
         variantName: productVariant.variantName,
         productName: productVariant.product.name,
+        xentralId: existingXentralArtikel?.id ?? undefined,
       };
       // INFO: make sure to keep this object in sync with the articel changed if check (Line 111 - 117)
       const artikel: ArtikelCreateRequest = {
