@@ -78,6 +78,9 @@ export class XentralRestClient {
     params?: Record<string, string | number | boolean>,
     headers: HeadersInit = DEFAULT_HEADERS,
   ): Promise<Res> {
+    /**
+     * Automatically add the Projekt Id as filter
+     */
     const newParams = this.projectId
       ? { projekt: this.projectId, ...params }
       : params;
