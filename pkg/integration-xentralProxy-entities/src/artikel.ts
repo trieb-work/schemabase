@@ -48,6 +48,10 @@ export class XentralProxyProductVariantSyncService {
     const xentralRestClient = new XentralRestClient(this.xentralProxyApp);
 
     const productVariants = await this.db.productVariant.findMany({
+      where: {
+        // TODO: remove that later! This is just for the setup
+        sku: "granola-2010-peanutpower"
+      },
       include: {
         xentralArtikel: {
           where: {
@@ -69,6 +73,9 @@ export class XentralProxyProductVariantSyncService {
       xentralArtikelSkus.push(xentralArtikel.nummer);
       xentralArtikels.push(xentralArtikel);
     }
+    /**
+     * Articles, that exist in the ECI DB, but not in Xentral
+     */
     const missingProductVariants = productVariants.filter(
       (pv) => !xentralArtikelSkus.includes(pv.sku),
     );
