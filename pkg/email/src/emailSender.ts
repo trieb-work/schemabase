@@ -4,6 +4,7 @@ import { ILogger } from "@eci/pkg/logger";
 export interface EmailTemplateSender {
   sendTemplate: (
     templateId: string,
+    sender: string,
     receiver: string,
     substitutions: Record<string, unknown>,
   ) => Promise<{ id: string }>;
@@ -21,7 +22,11 @@ export class Sendgrid implements EmailTemplateSender {
 
   public async sendTemplate(
     templateId: string,
+    sender: string,
     receiver: string,
+    /**
+     * Template strings - key, that gets replaced with the value
+     */
     substitutions: Record<string, unknown>,
   ): Promise<{ id: string }> {
     const res = await this.client.call({
@@ -32,7 +37,7 @@ export class Sendgrid implements EmailTemplateSender {
       },
       body: JSON.stringify({
         template_id: templateId,
-        from: { email: "noreply@triebwork.com" },
+        from: { email: sender },
         personalizations: [
           {
             to: [{ email: receiver }],
