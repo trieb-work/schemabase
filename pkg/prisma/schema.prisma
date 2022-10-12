@@ -1564,6 +1564,8 @@ model DpdApp {
   integrationId         String?
   webhooks              IncomingWebhook[]
   trackingIntegrationId String?
+
+  @@index([integrationId])
 }
 
 /// EasyPost Model
@@ -1576,6 +1578,8 @@ model EasyPostApp {
   webhooks      IncomingWebhook[]
   integration   TrackingIntegration? @relation(fields: [integrationId], references: [id])
   integrationId String?
+
+  @@index([integrationId])
 }
 
 model ProductDataFeedApp {
@@ -1589,6 +1593,8 @@ model ProductDataFeedApp {
 
   webhooks    IncomingWebhook[]
   integration ProductDataFeedIntegration?
+
+  @@index([tenantId])
 }
 
 model LogisticsApp {
@@ -1611,6 +1617,7 @@ model LogisticsApp {
 
   webhooks    IncomingWebhook[]
   integration LogisticsIntegration?
+
 }
 
 model ZohoApp {
@@ -2046,6 +2053,8 @@ model IncomingWebhook {
   vercelLogDrainAppId  String?
 
   @@index([id])
+  @@index([dpdAppId])
+  @@index([easyPostAppId])
 }
 
 model SecretKey {
