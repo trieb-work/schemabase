@@ -110,6 +110,7 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
         }
         const res = await this.emailTemplateSender.sendTemplate(
           template.templateId,
+          integration.trackingEmailApp.sender,
           "test@trieb.work",
           {
             time: packageEvent.time.toLocaleString(
@@ -118,7 +119,10 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
             newState: packageEvent.state,
             message: packageEvent.message,
             location: packageEvent.location,
-            trackingId: packageEvent.package.trackingId,
+            FIRSTNAME: contact.firstName,
+            LASTNAME: contact.lastName,
+            TRACKINGPROVIDER: packageEvent.package.carrier,
+            TRACKINGNUMBER: packageEvent.package.trackingId,
           },
         );
 
