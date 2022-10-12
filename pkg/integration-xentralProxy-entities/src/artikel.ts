@@ -80,7 +80,7 @@ export class XentralProxyProductVariantSyncService {
     );
 
     for (const productVariant of productVariants) {
-      const existingXentralArtikel = xentralArtikels.find((xa) => xa.nummer === productVariant.xentralArtikel[0].xentralNummer);
+      const existingXentralArtikel = xentralArtikels.find((xa) => xa.nummer === productVariant?.xentralArtikel[0]?.xentralNummer);
       const loggerFields = {
         sku: productVariant.sku,
         variantName: productVariant.variantName,
