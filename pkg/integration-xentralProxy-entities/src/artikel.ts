@@ -105,6 +105,7 @@ export class XentralProxyProductVariantSyncService {
         ean: productVariant.ean || undefined,
         nummer: productVariant.sku,
         herstellernummer: productVariant.sku,
+        zolltarifnummer: productVariant.product.hsCode || undefined,
         aktiv: 1,
         // INFO: muss lagerartikel sein sonst kann auftrag nicht fortgeführt werden
         lagerartikel: 1, // TODO: wenn = 1, dann müssen lagereinlagerungen für den artikel gemacht werden (z.b. von kramer oder über sync, noch zu klären)
@@ -120,6 +121,7 @@ export class XentralProxyProductVariantSyncService {
           (existingXentralArtikel.name_de || null) === (artikel.name_de || null) &&
           (existingXentralArtikel.ean || null) === (artikel.ean || null) &&
           (existingXentralArtikel.herstellernummer || null) === (artikel.herstellernummer || null) &&
+          (existingXentralArtikel.zolltarifnummer || null) === (artikel.zolltarifnummer || null) &&
           (existingXentralArtikel.lagerartikel || null) === (artikel.lagerartikel || null) &&
           (existingXentralArtikel.typ || null) === (artikel.typ || null)
         ) {
