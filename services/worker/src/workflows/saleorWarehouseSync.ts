@@ -30,7 +30,6 @@ export class SaleorWarehouseSyncWorkflow implements Workflow {
     });
     this.logger = ctx.logger;
     this.prisma = clients.prisma;
-    
   }
 
   public async run(): Promise<void> {

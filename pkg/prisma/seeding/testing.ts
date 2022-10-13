@@ -80,8 +80,8 @@ async function main() {
       url: "https://62fb63a4bdbf9.xentral.biz",
       warehouse: {
         connect: {
-          id: "test"
-        }
+          id: "test",
+        },
       },
       tenant: {
         connect: {

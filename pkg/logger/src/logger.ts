@@ -60,7 +60,7 @@ export class Logger implements ILogger {
         /**
          * If the environment variable "VERCEL" is 1, we do no longer pretty-print
          */
-        (env.get("VERCEL") === "1" || env.get("ECI_ENV") === "production")
+        env.get("VERCEL") === "1" || env.get("ECI_ENV") === "production"
           ? winston.format.json()
           : winston.format.prettyPrint({
               colorize: true,

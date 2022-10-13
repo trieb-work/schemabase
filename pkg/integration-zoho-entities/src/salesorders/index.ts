@@ -728,14 +728,17 @@ export class ZohoSalesOrdersSyncService {
               continue;
             }
             const matchingSalesOrder = searchedSalesOrders[0];
-            if(matchingSalesOrder.total !== order.totalPriceGross){
+            if (matchingSalesOrder.total !== order.totalPriceGross) {
               this.logger.error(
                 "Salesorder was already created and search with order.orderNumber returned a results with different order.totalPriceGross. Aborting attach of this order, please resolve this Issue manually.",
                 { eciOrderId: order.id, eciOrderNumber: order.orderNumber },
               );
               continue;
             }
-            if(matchingSalesOrder.line_items.length !== order.orderLineItems.length){
+            if (
+              matchingSalesOrder.line_items.length !==
+              order.orderLineItems.length
+            ) {
               this.logger.error(
                 "Salesorder was already created and search with order.orderNumber returned a results with different order.orderLineItems.length. Aborting attach of this order, please resolve this Issue manually.",
                 { eciOrderId: order.id, eciOrderNumber: order.orderNumber },

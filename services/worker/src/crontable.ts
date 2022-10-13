@@ -51,27 +51,21 @@ export class CronTable {
       });
     const enabledZohoApps = await this.clients.prisma.zohoApp.findMany({
       where: {
-        enabled: true
-      }
-    })
-    const enabledXentralApps = await this.clients.prisma.xentralProxyApp.findMany({
-      where: {
-        enabled: true
-      }
-    })
-
+        enabled: true,
+      },
+    });
+    const enabledXentralApps =
+      await this.clients.prisma.xentralProxyApp.findMany({
+        where: {
+          enabled: true,
+        },
+      });
 
     /**
      * XentralApp Workflows
      */
     for (const enabledXentralApp of enabledXentralApps) {
-
-      const {
-        id,
-        cronTimeout,
-        cronSchedule,
-        tenantId,
-      } = enabledXentralApp
+      const { id, cronTimeout, cronSchedule, tenantId } = enabledXentralApp;
       const commonCronConfig = {
         cron: cronSchedule,
         timeout: cronTimeout,
@@ -89,22 +83,13 @@ export class CronTable {
         { ...commonCronConfig, offset: 0 },
         [tenantId, id],
       );
-
     }
-
-
 
     /**
      * Zoho Workflows
      */
     for (const enabledZohoApp of enabledZohoApps) {
-      const {
-        cronSchedule,
-        id,
-        cronTimeout,
-        tenantId,
-        
-      } = enabledZohoApp
+      const { cronSchedule, id, cronTimeout, tenantId } = enabledZohoApp;
       const commonCronConfig = {
         cron: cronSchedule,
         timeout: cronTimeout,
@@ -113,7 +98,7 @@ export class CronTable {
         zohoAppId: id,
       };
 
-      if (enabledZohoApp.syncWarehouses){
+      if (enabledZohoApp.syncWarehouses) {
         new WorkflowScheduler(this.clients).schedule(
           createWorkflowFactory(
             ZohoWarehouseSyncWorkflow,
@@ -160,12 +145,9 @@ export class CronTable {
           [tenantId, id],
         );
       }
-
     }
 
-
-
-    /// LEGACY - Using Integrations, not data hub setup    
+    /// LEGACY - Using Integrations, not data hub setup
     for (const enabledZohoIntegration of enabledZohoIntegrations) {
       const {
         zohoAppId,
@@ -186,10 +168,7 @@ export class CronTable {
         orderPrefix,
       };
 
-
-
       if (enabledZohoIntegration.syncWarehouses) {
-
         new WorkflowScheduler(this.clients).schedule(
           createWorkflowFactory(
             SaleorWarehouseSyncWorkflow,
@@ -201,9 +180,7 @@ export class CronTable {
         );
       }
 
-
       if (enabledZohoIntegration.syncProducts) {
-
         this.scheduler.schedule(
           createWorkflowFactory(
             SaleorProductSyncWorkflow,

@@ -360,8 +360,8 @@ export async function upsertZohoBankAccount(
       id: config.id,
       zohoApp: {
         connect: {
-          id: config.zohoAppId
-        }
+          id: config.zohoAppId,
+        },
       },
       currency: "EUR",
       name,

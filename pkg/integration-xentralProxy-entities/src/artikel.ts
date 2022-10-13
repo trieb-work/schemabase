@@ -38,19 +38,21 @@ export class XentralProxyProductVariantSyncService {
 
   /**
    * This Service syncs ECI Product Variant to Xentral Artikels
-   * 
+   *
    * Xentral Artikel Nummer is equal to Product Variant SKU
-   * 
+   *
    */
   public async syncFromECI(): Promise<void> {
-    this.logger.info("Starting sync of ECI Product Variants to XentralProxy Artikel");
+    this.logger.info(
+      "Starting sync of ECI Product Variants to XentralProxy Artikel",
+    );
     const xentralXmlClient = new XentralXmlClient(this.xentralProxyApp);
     const xentralRestClient = new XentralRestClient(this.xentralProxyApp);
 
     const productVariants = await this.db.productVariant.findMany({
       where: {
         // TODO: remove that later! This is just for the setup
-        sku: "granola-2010-peanutpower"
+        sku: "granola-2010-peanutpower",
       },
       include: {
         xentralArtikel: {
@@ -65,9 +67,14 @@ export class XentralProxyProductVariantSyncService {
     const xentralArtikelSkus: string[] = [];
     const xentralArtikels: Artikel[] = [];
     for await (const xentralArtikel of artikelPaginator) {
-      const productVariant = productVariants.find((pv) => pv.sku === xentralArtikel.nummer);
+      const productVariant = productVariants.find(
+        (pv) => pv.sku === xentralArtikel.nummer,
+      );
       if (!productVariant) {
-        this.logger.warn("Could not find internal productVariant for xentralArtikel", { xentralArtikelSku: xentralArtikel.nummer });
+        this.logger.warn(
+          "Could not find internal productVariant for xentralArtikel",
+          { xentralArtikelSku: xentralArtikel.nummer },
+        );
         continue;
       }
       xentralArtikelSkus.push(xentralArtikel.nummer);
@@ -87,7 +94,9 @@ export class XentralProxyProductVariantSyncService {
     );
 
     for (const productVariant of productVariants) {
-      const existingXentralArtikel = xentralArtikels.find((xa) => xa.nummer === productVariant?.xentralArtikel[0]?.xentralNummer);
+      const existingXentralArtikel = xentralArtikels.find(
+        (xa) => xa.nummer === productVariant?.xentralArtikel[0]?.xentralNummer,
+      );
       const loggerFields = {
         sku: productVariant.sku,
         variantName: productVariant.variantName,
@@ -105,7 +114,7 @@ export class XentralProxyProductVariantSyncService {
         ean: productVariant.ean || undefined,
         nummer: productVariant.sku,
         herstellernummer: productVariant.sku,
-        zolltarifnummer: productVariant.product.hsCode || undefined,
+        zolltarifnummer: productVariant.product.hsCode || undefined,
         aktiv: 1,
         // INFO: muss lagerartikel sein sonst kann auftrag nicht fortgeführt werden
         lagerartikel: 1, // TODO: wenn = 1, dann müssen lagereinlagerungen für den artikel gemacht werden (z.b. von kramer oder über sync, noch zu klären)
@@ -117,15 +126,23 @@ export class XentralProxyProductVariantSyncService {
       if (existingXentralArtikel) {
         // INFO: make sure to keep this object in sync with the ArtikelCreateRequest line 91
         if (
-          (existingXentralArtikel.projekt || null) === (artikel.projekt || null) &&
-          (existingXentralArtikel.name_de || null) === (artikel.name_de || null) &&
+          (existingXentralArtikel.projekt || null) ===
+            (artikel.projekt || null) &&
+          (existingXentralArtikel.name_de || null) ===
+            (artikel.name_de || null) &&
           (existingXentralArtikel.ean || null) === (artikel.ean || null) &&
-          (existingXentralArtikel.herstellernummer || null) === (artikel.herstellernummer || null) &&
-          (existingXentralArtikel.zolltarifnummer || null) === (artikel.zolltarifnummer || null) &&
-          (existingXentralArtikel.lagerartikel || null) === (artikel.lagerartikel || null) &&
+          (existingXentralArtikel.herstellernummer || null) ===
+            (artikel.herstellernummer || null) &&
+          (existingXentralArtikel.zolltarifnummer || null) ===
+            (artikel.zolltarifnummer || null) &&
+          (existingXentralArtikel.lagerartikel || null) ===
+            (artikel.lagerartikel || null) &&
           (existingXentralArtikel.typ || null) === (artikel.typ || null)
         ) {
-          this.logger.debug("Existing Artikel in Xentral-Stammdaten is exactly the same as in ECI-DB, skipping update for this Artikel.", loggerFields);
+          this.logger.debug(
+            "Existing Artikel in Xentral-Stammdaten is exactly the same as in ECI-DB, skipping update for this Artikel.",
+            loggerFields,
+          );
           continue;
         }
 
@@ -137,7 +154,10 @@ export class XentralProxyProductVariantSyncService {
         });
         // xentralResData = await xentralXmlClient.ArtikelGet({ id: artikelId });
       } else {
-        this.logger.debug("Creating Artikel in Xentral-Stammdaten)", loggerFields);
+        this.logger.debug(
+          "Creating Artikel in Xentral-Stammdaten)",
+          loggerFields,
+        );
         xentralResData = await xentralXmlClient.ArtikelCreate(artikel);
         const createdXentralArtikel = await this.db.xentralArtikel.upsert({
           where: {

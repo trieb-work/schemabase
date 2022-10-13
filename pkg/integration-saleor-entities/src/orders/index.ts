@@ -242,7 +242,9 @@ export class SaleorOrderSyncService {
                   mainContact: contactCreateOrConnect,
                   shippingAddress: {},
                   billingAddress: {},
-                  readyToFullfill: orderStatus === "confirmed" && paymentStatus === "fullyPaid",
+                  readyToFullfill:
+                    orderStatus === "confirmed" &&
+                    paymentStatus === "fullyPaid",
                   shippingPriceGross: order.shippingPrice.gross.amount,
                   tenant: {
                     connect: {
@@ -333,7 +335,7 @@ export class SaleorOrderSyncService {
             );
           }
 
-          const taxPercentage = Math.round(lineItem.taxRate * 100)
+          const taxPercentage = Math.round(lineItem.taxRate * 100);
 
           // TODO: would it not be better to inline this into db.saleorOrder.upsert (line 209) so we do not have partiall order data in ECI db if something fails?
           // Otherwise we would maybe need a parialdata flag (or commited flag) which is true on create and will be updated to false once all lineitems etc. have been created.

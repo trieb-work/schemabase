@@ -417,7 +417,19 @@ export interface TrackingnummerParams {
   /**
    * Sortierung (Beispiel: sort=-versendet_am,lieferschein)
    */
-  sort?: "tracking" | "auftrag" | "lieferschein" | "versandart" | "versendet_am"  | "abgeschlossen" | "-tracking" | "-auftrag" | "-lieferschein" | "-versandart" | "-versendet_am"  | "-abgeschlossen";
+  sort?:
+    | "tracking"
+    | "auftrag"
+    | "lieferschein"
+    | "versandart"
+    | "versendet_am"
+    | "abgeschlossen"
+    | "-tracking"
+    | "-auftrag"
+    | "-lieferschein"
+    | "-versandart"
+    | "-versendet_am"
+    | "-abgeschlossen";
 
   /**
    * Unter-Resourcen in Resource einbinden (Beispiel: include=projekt)
@@ -446,12 +458,12 @@ export interface AuftragParams {
    * Suche nach Auftragssstatus (genaue Übereinstimmung)
    */
   status?:
-  | "angelegt"
-  | "bestellt"
-  | "freigegeben"
-  | "versendet"
-  | "abgeschlossen"
-  | "storniert";
+    | "angelegt"
+    | "bestellt"
+    | "freigegeben"
+    | "versendet"
+    | "abgeschlossen"
+    | "storniert";
   /**
    * Suche nach Belegnummer (ungefähre Übereinstimmung)
    */
@@ -565,12 +577,13 @@ export interface Auftrag {
    * @example "1"
    */
   projekt: string;
-  status: "angelegt"
-  | "bestellt"
-  | "freigegeben"
-  | "versendet"
-  | "abgeschlossen"
-  | "storniert";
+  status:
+    | "angelegt"
+    | "bestellt"
+    | "freigegeben"
+    | "versendet"
+    | "abgeschlossen"
+    | "storniert";
   /**
    * formatted as string:
    * @example "200000"
@@ -701,34 +714,39 @@ export interface Auftrag {
    * date string "yyyyy-MM-dd"
    * @example "2022-08-17"
    */
-  "versendet_am": string;
-  "versendet_per": string;
-  "versendet_durch": string;
-  "angebotid": 0,
-  "gln": string;
-  "bearbeiterid": 1,
-  "bearbeiter": "Administrator",
-  "ohne_artikeltext": 0,
-  "ustid": string;
-  "ust_befreit": 0,
-  "ust_inner": 0,
-  "anzeigesteuer": 0,
-  "waehrung": "EUR",
-  "sprache": "deutsch",
-  "kurs": "0.00000000",
-  "kostenstelle": string;
-  "freitext": string;
-  "internebemerkung": string;
-  "bodyzusatz": string;
-  "shop": 0,
-  "shopextid": string;
-  "shopextstatus": string;
+  versendet_am: string;
+  versendet_per: string;
+  versendet_durch: string;
+  angebotid: 0;
+  gln: string;
+  bearbeiterid: 1;
+  bearbeiter: "Administrator";
+  ohne_artikeltext: 0;
+  ustid: string;
+  ust_befreit: 0;
+  ust_inner: 0;
+  anzeigesteuer: 0;
+  waehrung: "EUR";
+  sprache: "deutsch";
+  kurs: "0.00000000";
+  kostenstelle: string;
+  freitext: string;
+  internebemerkung: string;
+  bodyzusatz: string;
+  shop: 0;
+  shopextid: string;
+  shopextstatus: string;
 }
 export interface LieferscheinParams {
   /**
    * Suche nach Lieferschein-Status (genaue Übereinstimmung)
    */
-  status?: "angelegt" | "freigegeben" | "abgeschlossen" | "versendet" | "storniert";
+  status?:
+    | "angelegt"
+    | "freigegeben"
+    | "abgeschlossen"
+    | "versendet"
+    | "storniert";
 
   /**
    * Suche nach Belegnummer (ungefähre Übereinstimmung)
@@ -797,7 +815,7 @@ export interface LieferscheinParams {
 
   /**
    * Suche nach bestimmtem Belegdatum (Datum größer Suchwert)
-   * 
+   *
    * Format: "yyyy-MM-dd"
    * @example "2019-06-28"
    */
@@ -805,7 +823,7 @@ export interface LieferscheinParams {
 
   /**
    * Suche nach bestimmtem Belegdatum (Datum größer gleich Suchwert)
-   * 
+   *
    * Format: "yyyy-MM-dd"
    * @example "2019-06-28"
    */
@@ -813,7 +831,7 @@ export interface LieferscheinParams {
 
   /**
    * Suche nach bestimmtem Belegdatum (Datum kleiner Suchwert)
-   * 
+   *
    * Format: "yyyy-MM-dd"
    * @example "2019-06-28"
    */
@@ -821,7 +839,7 @@ export interface LieferscheinParams {
 
   /**
    * Suche nach bestimmtem Belegdatum (Datum kleiner gleich Suchwert)
-   * 
+   *
    * Format: "yyyy-MM-dd"
    * @example "2019-06-28"
    */
@@ -853,159 +871,164 @@ export interface LieferscheinParams {
   include?: "positionen" | "protokoll";
 }
 export interface Lieferschein {
-  "id": 1,
-  "firma": 1,
+  id: 1;
+  firma: 1;
   /**
-   * projekt number formatted as string 
+   * projekt number formatted as string
    * @example "1"
    */
-  "projekt": string;
-  "status": "angelegt" | "freigegeben" | "abgeschlossen" | "versendet" | "storniert",
-  "lieferscheinart": string,
-  "belegnr": string,
-  "kundennummer": string,
-  "ihrebestellnummer": string,
+  projekt: string;
+  status:
+    | "angelegt"
+    | "freigegeben"
+    | "abgeschlossen"
+    | "versendet"
+    | "storniert";
+  lieferscheinart: string;
+  belegnr: string;
+  kundennummer: string;
+  ihrebestellnummer: string;
   /**
    * date string "yyyyy-MM-dd"
    * @example "2022-08-17"
    */
-  "datum": string,
-  "auftrag": string,
-  "auftragid": 16,
-  "freitext": string,
-  "adresse": 23,
-  "typ": string,
-  "name": string,
-  "titel": string,
-  "ansprechpartnerid": 0,
-  "ansprechpartner": string,
-  "abteilung": string,
-  "unterabteilung": string,
-  "adresszusatz": string,
-  "strasse": string,
-  "plz": string,
-  "ort": string,
-  "land": "DE",
-  "bundesstaat": string,
-  "telefon": string,
-  "telefax": string,
-  "email": string,
-  "anschreiben": string,
-  "versandart": string, //TODO enum
-  "versand": string,
-  "versendet": 1,
+  datum: string;
+  auftrag: string;
+  auftragid: 16;
+  freitext: string;
+  adresse: 23;
+  typ: string;
+  name: string;
+  titel: string;
+  ansprechpartnerid: 0;
+  ansprechpartner: string;
+  abteilung: string;
+  unterabteilung: string;
+  adresszusatz: string;
+  strasse: string;
+  plz: string;
+  ort: string;
+  land: "DE";
+  bundesstaat: string;
+  telefon: string;
+  telefax: string;
+  email: string;
+  anschreiben: string;
+  versandart: string; //TODO enum
+  versand: string;
+  versendet: 1;
   /**
    * date string "yyyyy-MM-dd hh:mm:ss"
    * @example "2022-08-17 09:46:22"
    */
-  "versendet_am": string,
-  "versendet_per": "sonstiges",
-  "versendet_durch": "Administrator",
-  "ustid": string,
-  "ust_befreit": 0,
-  "usereditid": 1,
+  versendet_am: string;
+  versendet_per: "sonstiges";
+  versendet_durch: "Administrator";
+  ustid: string;
+  ust_befreit: 0;
+  usereditid: 1;
   /**
    * date string "yyyyy-MM-dd hh:mm:ss"
    * @example "2022-08-17 09:46:22"
    */
-  "useredittimestamp": string,
-  "lieferantenretoure": 0,
-  "lieferantenretoureinfo": string,
-  "lieferant": 0,
-  "pdfarchiviert": 0,
-  "pdfarchiviertversion": 0,
-  "internebemerkung": string,
-  "ohne_briefpapier": 0,
-  "lieferid": 0,
-  "projektfiliale": 0,
-  "projektfiliale_eingelagert": 0,
-  "zuarchivieren": 1,
-  "internebezeichnung": string,
-  "kommissionierung": 0,
-  "sprache": string,
-  "gln": string,
-  "bearbeiter": "Administrator",
-  "keinerechnung": 0,
-  "ohne_artikeltext": 0,
-  "abweichendebezeichnung": 0,
-  "kostenstelle": string,
-  "bodyzusatz": string,
-  "lieferbedingung": string,
-  "standardlager": 0,
-  "kommissionskonsignationslager": 0,
-  "teillieferungvon": 0,
-  "teillieferungnummer": 0,
-  "kiste": -1,
-  "positionen"?: {
-    "id": number,
-    "projekt": number,
+  useredittimestamp: string;
+  lieferantenretoure: 0;
+  lieferantenretoureinfo: string;
+  lieferant: 0;
+  pdfarchiviert: 0;
+  pdfarchiviertversion: 0;
+  internebemerkung: string;
+  ohne_briefpapier: 0;
+  lieferid: 0;
+  projektfiliale: 0;
+  projektfiliale_eingelagert: 0;
+  zuarchivieren: 1;
+  internebezeichnung: string;
+  kommissionierung: 0;
+  sprache: string;
+  gln: string;
+  bearbeiter: "Administrator";
+  keinerechnung: 0;
+  ohne_artikeltext: 0;
+  abweichendebezeichnung: 0;
+  kostenstelle: string;
+  bodyzusatz: string;
+  lieferbedingung: string;
+  standardlager: 0;
+  kommissionskonsignationslager: 0;
+  teillieferungvon: 0;
+  teillieferungnummer: 0;
+  kiste: -1;
+  positionen?: {
+    id: number;
+    projekt: number;
     /**
      * xentral internal artikel id
      */
-    "artikel": number,
-    "bezeichnung": string,
-    "beschreibung": string,
+    artikel: number;
+    bezeichnung: string;
+    beschreibung: string;
     /**
      * xentral artikel number
      */
-    "nummer": string,
+    nummer: string;
     /**
      * menge formated as string
      * @example "2.0000"
      */
-    "menge": string,
-    "einheit": string,
-    "vpe": string,
+    menge: string;
+    einheit: string;
+    vpe: string;
     /**
      * date string "yyyyy-MM-dd"
      * @example "2022-08-17"
      */
-    "lieferdatum": string,
-    "lieferdatumkw": number,
-    "artikelnummerkunde": string,
-    "kostenlos": number,
-    "bemerkung": string,
+    lieferdatum: string;
+    lieferdatumkw: number;
+    artikelnummerkunde: string;
+    kostenlos: number;
+    bemerkung: string;
     /**
      * number formated as string
      * @example "0.0000"
      */
-    "geliefert": string,
-    "abgerechnet": 0,
-    "seriennummer": string,
-    "herkunftsland": string,
-    "zolltarifnummer": string,
+    geliefert: string;
+    abgerechnet: 0;
+    seriennummer: string;
+    herkunftsland: string;
+    zolltarifnummer: string;
     /**
      * number formated as string
      * @example "0.00000000"
      */
-    "zolleinzelwert": string,
+    zolleinzelwert: string;
     /**
      * number formated as string
      * @example "0.00000000"
      */
-    "zollgesamtwert": string,
-    "zollwaehrung": string,
+    zollgesamtwert: string;
+    zollwaehrung: string;
     /**
      * number formated as string
      * @example "0.00000000"
      */
-    "zolleinzelgewicht": string,
+    zolleinzelgewicht: string;
     /**
      * number formated as string
      * @example "0.00000000"
      */
-    "zollgesamtgewicht": string,
-    "nve": string,
-    "packstueck": string,
+    zollgesamtgewicht: string;
+    nve: string;
+    packstueck: string;
     /**
      * number formated as string
      * @example "0.0000"
      */
-    "vpemenge": string,
+    vpemenge: string;
     /**
      * number formated as string
      * @example "0.0000"
      */
-    "einzelstueckmenge": string,
-  }[]
+    einzelstueckmenge: string;
+  }[];
 }

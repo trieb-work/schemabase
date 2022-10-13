@@ -36,7 +36,9 @@ export class XentralArtikelSyncWorkflow implements Workflow {
    * Sync all zoho invoices into ECI-DB
    */
   public async run(): Promise<void> {
-    this.logger.info(`Starting xentral artikel sync workflow run for xentral URL ${this.xentralProxyApp.url}`);
+    this.logger.info(
+      `Starting xentral artikel sync workflow run for xentral URL ${this.xentralProxyApp.url}`,
+    );
 
     const xentralArtikelSync = new XentralProxyProductVariantSyncService({
       logger: this.logger,

@@ -112,23 +112,26 @@ export class ZohoPaymentSyncService {
       //         })),
       //       }
       //     : undefined;
- 
-    
+
       const zohoBankAccount = await this.db.zohoBankAccount.findUnique({
         where: {
           id_zohoAppId: {
             id: payment.account_id,
-            zohoAppId: this.zohoApp.id
-          }
-        }
-      })
+            zohoAppId: this.zohoApp.id,
+          },
+        },
+      });
 
       if (!zohoBankAccount) {
-        this.logger.error(`Could not find a zohobank account internally for Zoho payment id ${payment.payment_id}`)
+        this.logger.error(
+          `Could not find a zohobank account internally for Zoho payment id ${payment.payment_id}`,
+        );
         continue;
       }
       if (!zohoBankAccount?.paymentMethodId) {
-        throw new Error(`The zohobankaccount ${zohoBankAccount.id} has no payment method connected to it! Can't create payment internally`)
+        throw new Error(
+          `The zohobankaccount ${zohoBankAccount.id} has no payment method connected to it! Can't create payment internally`,
+        );
       }
 
       // connect or create the Zoho Payment with our internal payment entity
@@ -147,7 +150,7 @@ export class ZohoPaymentSyncService {
               referenceNumber,
               paymentMethod: {
                 connect: {
-                  id: zohoBankAccount.paymentMethodId
+                  id: zohoBankAccount.paymentMethodId,
                 },
               },
               tenant: {
@@ -296,7 +299,9 @@ export class ZohoPaymentSyncService {
     );
     for (const payment of paymentsWithoutZohoPaymentFromEciDb) {
       try {
-        const zba = payment.paymentMethod.zohoBankAccounts.find((ba) => ba.zohoAppId === this.zohoApp.id);
+        const zba = payment.paymentMethod.zohoBankAccounts.find(
+          (ba) => ba.zohoAppId === this.zohoApp.id,
+        );
         if (!zba) {
           throw new Error(
             `No Zohobankaccount attached to the current payment method ${payment.paymentMethod.id}`,

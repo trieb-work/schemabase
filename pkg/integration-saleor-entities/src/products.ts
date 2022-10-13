@@ -387,9 +387,9 @@ export class SaleorProductSyncService {
         // await this.db.productVariant.update({
         //   where: {
         //     id: variant.productVariant.id
-        //   }, 
+        //   },
         //   data: {
-            
+
         //   }
         // })
         continue;
@@ -413,13 +413,17 @@ export class SaleorProductSyncService {
         /**
          * The stock information of the current product variant in the current warehouse
          */
-        const saleorStockEntry = saleorProductVariant.productVariant.stocks.find((x) => x?.warehouse.id === saleorWarehouseId);
-        const currentlyAllocated = saleorStockEntry?.quantityAllocated || 0;
+        const saleorStockEntry =
+          saleorProductVariant.productVariant.stocks.find(
+            (x) => x?.warehouse.id === saleorWarehouseId,
+          );
+        const currentlyAllocated = saleorStockEntry?.quantityAllocated || 0;
 
         /**
          * to get the "real" available stock, we have to add the currently allocated stock from saleor
          */
-        const totalQuantity = stockEntry.actualAvailableForSaleStock + currentlyAllocated;
+        const totalQuantity =
+          stockEntry.actualAvailableForSaleStock + currentlyAllocated;
         await this.saleorClient.productVariantStockEntryUpdate({
           variantId: variant.id,
           stocks: [

@@ -41,7 +41,7 @@ export interface ArtikelCreateRequest {
 
   leerfeld?: string;
   adresse?: string;
-  ishtml_cke_anabregs_text?: 1 | 0
+  ishtml_cke_anabregs_text?: 1 | 0;
   kurztext_de?: string;
   internerkommentar?: string;
   zolltarifnummer?: string;
@@ -60,10 +60,10 @@ export interface ArtikelCreateRequest {
   abckategorie?: string;
   rabatt_prozent?: string;
   variante_von?: string;
-  umsatzsteuer?: "normal"
+  umsatzsteuer?: "normal";
   steuersatz?: string;
   chargenverwaltung?: number;
-  seriennummern?: "keine"
+  seriennummern?: "keine";
   inventurek?: "0,00";
   berechneterek?: "0,00";
   berechneterekwaehrung?: string;

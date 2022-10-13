@@ -33,7 +33,6 @@ export class SaleorPackageSyncWorkflow implements Workflow {
     });
     this.orderPrefix = config.orderPrefix;
     this.prisma = clients.prisma;
-    
   }
 
   public async run(): Promise<void> {

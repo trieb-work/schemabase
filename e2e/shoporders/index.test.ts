@@ -37,7 +37,10 @@ import { sleep } from "@eci/pkg/miscHelper/time";
 import { XentralProxyProductVariantSyncService } from "@eci/pkg/integration-xentralProxy-entities/src/artikel";
 import { XentralXmlClient } from "@eci/pkg/xentral";
 import { XentralRestClient } from "@eci/pkg/xentral/src/rest";
-import { XentralProxyLieferscheinSyncService, XentralProxyOrderSyncService } from "@eci/pkg/integration-xentralProxy-entities";
+import {
+  XentralProxyLieferscheinSyncService,
+  XentralProxyOrderSyncService,
+} from "@eci/pkg/integration-xentralProxy-entities";
 
 const ORDERNR_DATE_PREFIX = "SO-DATE-E2E-";
 
@@ -87,7 +90,7 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
   const SaleorProductSyncLogger = new AssertionLogger();
   const SaleorPaymentSyncLogger = new AssertionLogger();
   const SaleorOrderSyncLogger = new AssertionLogger();
-  
+
   let braintreeTransactionSyncService: BraintreeTransactionSyncService;
   const braintreeTransactionSyncLogger = new AssertionLogger();
 
@@ -223,16 +226,13 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
       braintreeClient,
     });
 
-
-    xentralProxyApp = await prismaClient.xentralProxyApp.findUnique({
+    xentralProxyApp = (await prismaClient.xentralProxyApp.findUnique({
       where: {
         id: "test",
       },
-    }) as XentralProxyApp;
+    })) as XentralProxyApp;
     if (!xentralProxyApp) {
-      throw new Error(
-        "Xentral app not found in DB",
-      );
+      throw new Error("Xentral app not found in DB");
     }
   });
   afterAll(async () => {
@@ -314,28 +314,32 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
     await zohoTaxSyncService.syncToECI();
 
     console.debug("connect xentralProxyIntegration with gigatec warehouse");
-    const xentralProxyIntegration = await prismaClient.xentralProxyIntegration.update({
-      where: {
-        id: "test",
-      },
-      data: {
-        warehouse:{
-          connect: {
-            normalizedName_tenantId: {
-              tenantId: "test",
-              normalizedName: "gigatecgmbh"
-            }
-          }
-        }
-      }
-    });
-    console.debug("Setup xentralProxyProductVariantSyncService with gigatec warehouse and sync product variants to xentral artikels");
-    const xentralProxyProductVariantSyncService = new XentralProxyProductVariantSyncService({
-      logger: xentralProxyProductVariantLogger,
-      db: prismaClient,
-      xentralProxyApp,
-      warehouseId: xentralProxyIntegration!.warehouseId,
-    });
+    const xentralProxyIntegration =
+      await prismaClient.xentralProxyIntegration.update({
+        where: {
+          id: "test",
+        },
+        data: {
+          warehouse: {
+            connect: {
+              normalizedName_tenantId: {
+                tenantId: "test",
+                normalizedName: "gigatecgmbh",
+              },
+            },
+          },
+        },
+      });
+    console.debug(
+      "Setup xentralProxyProductVariantSyncService with gigatec warehouse and sync product variants to xentral artikels",
+    );
+    const xentralProxyProductVariantSyncService =
+      new XentralProxyProductVariantSyncService({
+        logger: xentralProxyProductVariantLogger,
+        db: prismaClient,
+        xentralProxyApp,
+        warehouseId: xentralProxyIntegration!.warehouseId,
+      });
     await xentralProxyProductVariantSyncService.syncFromECI();
     console.info("Test 1 completed");
   }, 1_240_000);
@@ -388,13 +392,13 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
 
     console.info("Test 3 completed");
   }, 1_200_000);
-  
+
   test("Test 4: Orders to Xentral Auftrag and Xentral Lieferschei back to Packages", async () => {
     console.info("Test 4 started");
     console.debug(
       "sync all contacts to zoho contacts & zoho contact persons & addresses from ECI",
     );
-    
+
     const xentralProxyIntegration =
       await prismaClient.xentralProxyIntegration.findUnique({
         where: {
@@ -416,13 +420,14 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
       warehouseId: xentralProxyIntegration.warehouseId,
     });
     await xentralProxyOrderSyncService.syncFromECI();
-    const xentralProxyLieferscheinSyncService = new XentralProxyLieferscheinSyncService({
-      xentralXmlClient,
-      xentralRestClient,
-      logger: xentralProxyLieferscheinLogger,
-      db: prismaClient,
-      xentralProxyApp,
-    });
+    const xentralProxyLieferscheinSyncService =
+      new XentralProxyLieferscheinSyncService({
+        xentralXmlClient,
+        xentralRestClient,
+        logger: xentralProxyLieferscheinLogger,
+        db: prismaClient,
+        xentralProxyApp,
+      });
     await xentralProxyLieferscheinSyncService.syncToECI();
 
     console.info("Test 4 completed");

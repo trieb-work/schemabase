@@ -18,7 +18,9 @@ const DEFAULT_ITEM_COUNT = 100;
 
 export class XentralRestNotFoundError extends Error {
   constructor(resText: string, url: string) {
-    super(`Resource not found. \n  URL: ${url}\n  API Response: \n  ${resText}`);
+    super(
+      `Resource not found. \n  URL: ${url}\n  API Response: \n  ${resText}`,
+    );
   }
 }
 
@@ -87,22 +89,21 @@ export class XentralRestClient {
     const queryString =
       newParams && Object.keys(newParams).length > 0
         ? `?${new URLSearchParams(
-          newParams as Record<string, string>,
-        ).toString()}`
+            newParams as Record<string, string>,
+          ).toString()}`
         : "";
     const url = `${this.url}/api${subroute}${queryString}`;
-    const xentralRes = await this.client.fetch(
-      url,
-      {
-        method,
-        headers,
-        ...(json ? { body: JSON.stringify(json) } : {}),
-      },
-    );
-    if (xentralRes.status === 404) throw new XentralRestNotFoundError(await xentralRes.text(), url);
+    const xentralRes = await this.client.fetch(url, {
+      method,
+      headers,
+      ...(json ? { body: JSON.stringify(json) } : {}),
+    });
+    if (xentralRes.status === 404)
+      throw new XentralRestNotFoundError(await xentralRes.text(), url);
     if (!xentralRes.ok) {
       throw new Error(
-        `Xentral api ${method} call ${subroute} failed with status ${xentralRes.status
+        `Xentral api ${method} call ${subroute} failed with status ${
+          xentralRes.status
         }:\n${await xentralRes.text()}`,
       );
     }
@@ -113,26 +114,28 @@ export class XentralRestClient {
     InnerRes,
     Res extends PaginatedRes<InnerRes> = PaginatedRes<any>,
     Req extends object = {},
-    >(
-      json: Req | null,
-      subroute: AllowedSubRoutes,
-      method: AllowedMethod,
-      params?: Record<string, string | number | boolean>,
-      items: number = DEFAULT_ITEM_COUNT,
-      headers: HeadersInit = DEFAULT_HEADERS,
+  >(
+    json: Req | null,
+    subroute: AllowedSubRoutes,
+    method: AllowedMethod,
+    params?: Record<string, string | number | boolean>,
+    items: number = DEFAULT_ITEM_COUNT,
+    headers: HeadersInit = DEFAULT_HEADERS,
   ): AsyncIterableIterator<InnerRes> {
     let res: Res;
     do {
       const page = res! ? res.pagination.page_current + 1 : 1;
       const newParams = { ...params, items, page };
-      try{
+      try {
         res = await this.apiFetch(json, subroute, method, newParams, headers);
         for (const elem of res.data) {
           yield elem;
         }
-      } catch(err){
-        if(err instanceof XentralRestNotFoundError){
-          console.debug("resource not found in paginatedApiFetch, retuning an empty list");
+      } catch (err) {
+        if (err instanceof XentralRestNotFoundError) {
+          console.debug(
+            "resource not found in paginatedApiFetch, retuning an empty list",
+          );
           console.debug(err);
           break;
         }
@@ -154,7 +157,10 @@ export class XentralRestClient {
       headers,
     );
   }
-  public async *getTrackingnummern(params?: TrackingnummerParams, items: number = DEFAULT_ITEM_COUNT, headers: HeadersInit = DEFAULT_HEADERS,
+  public async *getTrackingnummern(
+    params?: TrackingnummerParams,
+    items: number = DEFAULT_ITEM_COUNT,
+    headers: HeadersInit = DEFAULT_HEADERS,
   ) {
     yield* this.paginatedApiFetch<Trackingnummer>(
       null,
@@ -165,10 +171,32 @@ export class XentralRestClient {
       headers,
     );
   }
-  public async *getLieferscheine(params?: LieferscheinParams, items: number = DEFAULT_ITEM_COUNT, headers: HeadersInit = DEFAULT_HEADERS) {
-    yield* this.paginatedApiFetch<Lieferschein>(null, "/v1/belege/lieferscheine", "GET", params as Record<string, string | number | boolean>, items, headers);
+  public async *getLieferscheine(
+    params?: LieferscheinParams,
+    items: number = DEFAULT_ITEM_COUNT,
+    headers: HeadersInit = DEFAULT_HEADERS,
+  ) {
+    yield* this.paginatedApiFetch<Lieferschein>(
+      null,
+      "/v1/belege/lieferscheine",
+      "GET",
+      params as Record<string, string | number | boolean>,
+      items,
+      headers,
+    );
   }
-  public async *getAuftraege(params?: AuftragParams, items: number = DEFAULT_ITEM_COUNT, headers: HeadersInit = DEFAULT_HEADERS) {
-    yield* this.paginatedApiFetch<Auftrag>(null, "/v1/belege/auftraege", "GET", params as Record<string, string | number | boolean>, items, headers);
+  public async *getAuftraege(
+    params?: AuftragParams,
+    items: number = DEFAULT_ITEM_COUNT,
+    headers: HeadersInit = DEFAULT_HEADERS,
+  ) {
+    yield* this.paginatedApiFetch<Auftrag>(
+      null,
+      "/v1/belege/auftraege",
+      "GET",
+      params as Record<string, string | number | boolean>,
+      items,
+      headers,
+    );
   }
 }

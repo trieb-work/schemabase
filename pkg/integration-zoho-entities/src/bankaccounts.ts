@@ -146,7 +146,8 @@ export class ZohoBankAccountsSyncService {
     }
     const paymentMethodWithWrongCurrency = paymentMethod.filter(
       (pm) =>
-        pm?.zohoBankAccounts && pm?.zohoBankAccounts?.some((zba) => zba.currency !== pm?.currency),
+        pm?.zohoBankAccounts &&
+        pm?.zohoBankAccounts?.some((zba) => zba.currency !== pm?.currency),
     );
     if (paymentMethodWithWrongCurrency.length > 0) {
       this.logger.error(
