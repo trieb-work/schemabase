@@ -7,6 +7,7 @@ import { CronStateHandler } from "@eci/pkg/cronstate";
 import { SyncStocks } from "./stocks";
 import { isAfter } from "date-fns";
 import { setBOMinECI } from "./billofmaterial";
+import { getProductAndVariantName } from "./itemAndVariantNames";
 
 export interface ZohoItemSyncConfig {
   logger: ILogger;
@@ -80,6 +81,8 @@ export class ZohoItemSyncService {
 
       let eciVariant: ProductVariant | null = null;
 
+      const { itemName, variantName } = getProductAndVariantName(item.name);
+
       const weight =
         item.weight > 0
           ? item.weight_unit === "kg"
@@ -135,7 +138,7 @@ export class ZohoItemSyncService {
                         normalizedName_tenantId: {
                           tenantId,
                           normalizedName: normalizeStrings.productNames(
-                            item?.group_name || "",
+                            item?.group_name || itemName,
                           ),
                         },
                       },
@@ -144,9 +147,9 @@ export class ZohoItemSyncService {
                         tenantId,
                         // If this is a single variant product, we set the variant name as
                         // the product name
-                        name: item?.group_name || item.name,
+                        name: item?.group_name || itemName,
                         normalizedName: normalizeStrings.productNames(
-                          item?.group_name || item.name,
+                          item?.group_name || itemName,
                         ),
                       },
                     },
@@ -170,6 +173,7 @@ export class ZohoItemSyncService {
                   id: id.id("variant"),
                   sku: item.sku,
                   isBundleProduct: item.is_combo_product || false,
+                  variantName: variantName,
                   weight,
                   tenant: {
                     connect: {
@@ -186,7 +190,7 @@ export class ZohoItemSyncService {
                         normalizedName_tenantId: {
                           tenantId,
                           normalizedName: normalizeStrings.productNames(
-                            item?.group_name || item.name,
+                            item?.group_name || itemName,
                           ),
                         },
                       },
@@ -222,9 +226,9 @@ export class ZohoItemSyncService {
             stockOnHand: item.stock_on_hand,
             product: {
               update: {
-                name: item?.group_name || item.name,
+                name: item?.group_name || itemName,
                 normalizedName: normalizeStrings.productNames(
-                  item?.group_name || item.name,
+                  item?.group_name || itemName,
                 ),
               },
             },
