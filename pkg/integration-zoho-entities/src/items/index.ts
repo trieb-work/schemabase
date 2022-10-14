@@ -117,6 +117,7 @@ export class ZohoItemSyncService {
                 create: {
                   id: id.id("variant"),
                   sku: item.sku,
+                  active: item.status === "active" ?? false,
                   isBundleProduct: item.is_combo_product || false,
                   weight,
                   tenant: {
@@ -217,6 +218,7 @@ export class ZohoItemSyncService {
             id: eciVariant.id,
           },
           data: {
+            active: item.status === "active" ?? false,
             stockOnHand: item.stock_on_hand,
             product: {
               update: {
