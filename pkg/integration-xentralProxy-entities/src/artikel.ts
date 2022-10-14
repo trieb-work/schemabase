@@ -52,7 +52,8 @@ export class XentralProxyProductVariantSyncService {
     const productVariants = await this.db.productVariant.findMany({
       where: {
         // TODO: remove that later! This is just for the setup
-        sku: "granola-2010-peanutpower",
+        // sku: "granola-2010-peanutpower",
+        active: true,
       },
       include: {
         xentralArtikel: {
@@ -115,6 +116,7 @@ export class XentralProxyProductVariantSyncService {
         nummer: productVariant.sku,
         herstellernummer: productVariant.sku,
         zolltarifnummer: productVariant.product.hsCode || undefined,
+        gewicht: productVariant.weight?.toString() || undefined,
         aktiv: 1,
         // INFO: muss lagerartikel sein sonst kann auftrag nicht fortgeführt werden
         lagerartikel: 1, // TODO: wenn = 1, dann müssen lagereinlagerungen für den artikel gemacht werden (z.b. von kramer oder über sync, noch zu klären)
@@ -131,6 +133,7 @@ export class XentralProxyProductVariantSyncService {
           (existingXentralArtikel.name_de || null) ===
             (artikel.name_de || null) &&
           (existingXentralArtikel.ean || null) === (artikel.ean || null) &&
+          (existingXentralArtikel.gewicht || null) === (artikel.gewicht || null) &&
           (existingXentralArtikel.herstellernummer || null) ===
             (artikel.herstellernummer || null) &&
           (existingXentralArtikel.zolltarifnummer || null) ===
