@@ -81,10 +81,12 @@ export class ZohoItemSyncService {
       let eciVariant: ProductVariant | null = null;
 
       const weight =
-        item.weight_unit === "kg"
-          ? item.weight
-          : item.weight_unit === "g"
-          ? item.weight / 1000
+        item.weight > 0
+          ? item.weight_unit === "kg"
+            ? item.weight
+            : item.weight_unit === "g"
+            ? item.weight / 1000
+            : undefined
           : undefined;
 
       try {
