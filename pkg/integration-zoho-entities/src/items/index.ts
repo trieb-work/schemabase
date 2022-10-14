@@ -80,6 +80,13 @@ export class ZohoItemSyncService {
 
       let eciVariant: ProductVariant | null = null;
 
+      const weight =
+        item.weight_unit === "kg"
+          ? item.weight
+          : item.weight_unit === "g"
+          ? item.weight / 1000
+          : undefined;
+
       try {
         const zohoItem = await this.db.zohoItem.upsert({
           where: {
@@ -109,6 +116,7 @@ export class ZohoItemSyncService {
                   id: id.id("variant"),
                   sku: item.sku,
                   isBundleProduct: item.is_combo_product || false,
+                  weight,
                   tenant: {
                     connect: {
                       id: tenantId,
@@ -159,6 +167,7 @@ export class ZohoItemSyncService {
                   id: id.id("variant"),
                   sku: item.sku,
                   isBundleProduct: item.is_combo_product || false,
+                  weight,
                   tenant: {
                     connect: {
                       id: tenantId,

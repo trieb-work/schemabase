@@ -1209,6 +1209,9 @@ model ProductVariant {
   variantName String?
   ean         String?
 
+  /// The weight in KG for this product variant
+  weight      Float?
+
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String
 

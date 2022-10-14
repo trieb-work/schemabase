@@ -67,6 +67,25 @@ async function main() {
     },
   });
   console.log("created zohoApp");
+
+  await prisma.warehouse.upsert({
+    where: {
+      id: "test",
+    },
+    update: {},
+    create: {
+      id: "test",
+      normalizedName: "test",
+      name: "test",
+      tenant: {
+        connect: {
+          id: "test",
+        },
+      },
+    },
+  });
+  console.log("created test warehouse");
+
   await prisma.xentralProxyApp.upsert({
     where: {
       id: "test",
@@ -116,23 +135,6 @@ async function main() {
     },
   });
   console.log("created saleorZohoIntegration");
-  await prisma.warehouse.upsert({
-    where: {
-      id: "test",
-    },
-    update: {},
-    create: {
-      id: "test",
-      normalizedName: "test",
-      name: "test",
-      tenant: {
-        connect: {
-          id: "test",
-        },
-      },
-    },
-  });
-  console.log("created test warehouse for xentralProxyIntegration");
 
   await prisma.braintreeApp.upsert({
     where: {

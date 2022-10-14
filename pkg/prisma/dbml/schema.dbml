@@ -590,6 +590,7 @@ Table ProductVariant {
   sku String [not null]
   variantName String
   ean String
+  weight Float [note: 'The weight in KG for this product variant']
   product Product [not null]
   productId String [not null]
   tenant Tenant [not null]
