@@ -9,7 +9,7 @@ import {
 } from "@eci/pkg/saleor";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { format, setHours, subDays, subYears } from "date-fns";
+import { format, setHours, subDays, subMonths, subYears } from "date-fns";
 
 interface SaleorPackageSyncServiceConfig {
   saleorClient: {
@@ -237,6 +237,11 @@ export class SaleorPackageSyncService {
     const packagesNotYetInSaleor = await this.db.package.findMany({
       where: {
         AND: [
+          {
+            createdAt: {
+              gt: subMonths(new Date(), 5),
+            },
+          },
           {
             // Orders, that have a related saleorOrder
             order: {
