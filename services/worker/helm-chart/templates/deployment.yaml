@@ -30,8 +30,8 @@ spec:
                 name: {{ include "eci-worker.fullname" . }}
           resources:
             requests:
-              cpu: 50m
+              cpu: 150m
               memory: 180Mi
             limits:
-              cpu: 200m
+              cpu: 400m
               memory: 250Mi
