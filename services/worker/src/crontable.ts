@@ -145,6 +145,42 @@ export class CronTable {
           [tenantId, id],
         );
       }
+
+      if (enabledZohoApp.syncOrders) {
+        this.scheduler.schedule(
+          createWorkflowFactory(
+            ZohoSalesOrderSyncWorkflow,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 4 },
+          [tenantId, id],
+        );
+      }
+
+      if (enabledZohoApp.syncInvoices) {
+        new WorkflowScheduler(this.clients).schedule(
+          createWorkflowFactory(
+            ZohoInvoiceSyncWorkflow,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 8 },
+          [tenantId, id],
+        );
+      }
+
+      if (enabledZohoApp.syncPayments) {
+        this.scheduler.schedule(
+          createWorkflowFactory(
+            ZohoPaymentSyncWorkflow,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 10 },
+          [tenantId, id],
+        );
+      }
     }
 
     /// LEGACY - Using Integrations, not data hub setup
@@ -194,15 +230,6 @@ export class CronTable {
       if (enabledZohoIntegration.syncOrders) {
         this.scheduler.schedule(
           createWorkflowFactory(
-            ZohoSalesOrderSyncWorkflow,
-            this.clients,
-            commonWorkflowConfig,
-          ),
-          { ...commonCronConfig, offset: 4 },
-          [tenantId, id],
-        );
-        this.scheduler.schedule(
-          createWorkflowFactory(
             SaleorOrderSyncWorkflow,
             this.clients,
             commonWorkflowConfig,
@@ -211,27 +238,9 @@ export class CronTable {
           [tenantId, id],
         );
       }
-      if (enabledZohoIntegration.syncInvoices) {
-        new WorkflowScheduler(this.clients).schedule(
-          createWorkflowFactory(
-            ZohoInvoiceSyncWorkflow,
-            this.clients,
-            commonWorkflowConfig,
-          ),
-          { ...commonCronConfig, offset: 8 },
-          [tenantId, id],
-        );
-      }
+
       if (enabledZohoIntegration.syncPayments) {
-        this.scheduler.schedule(
-          createWorkflowFactory(
-            ZohoPaymentSyncWorkflow,
-            this.clients,
-            commonWorkflowConfig,
-          ),
-          { ...commonCronConfig, offset: 10 },
-          [tenantId, id],
-        );
+
         new WorkflowScheduler(this.clients).schedule(
           createWorkflowFactory(
             SaleorPaymentSyncWorkflow,
