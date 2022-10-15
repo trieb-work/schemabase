@@ -497,6 +497,8 @@ model Tax {
   /// An array of lineitems where this tax is used as the tax for the line item
   taxInLineItems      OrderLineItem[]
 
+  products      Product[]
+
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
@@ -1182,6 +1184,10 @@ model Product {
   hsCode          String?
   // Where the product was produced. Important only for customs/tariffs
   countryOfOrigin CountryCode?
+
+  /// The standard tax rate of this article. Might be different for purchase and sales
+  salesTax      Tax?    @relation(fields: [salesTaxId], references: [id])
+  salesTaxId    String?
 
   variants ProductVariant[]
 

@@ -323,6 +323,7 @@ Table Tax {
   percentage Float [not null]
   shippingTaxInOrders Order [not null, note: 'An array of orders where this tax is used as the tax for the shipping method']
   taxInLineItems OrderLineItem [not null, note: 'An array of lineitems where this tax is used as the tax for the line item']
+  products Product [not null]
   tenant Tenant [not null]
   tenantId String [not null]
   zohoTaxes ZohoTax [not null]
@@ -572,6 +573,8 @@ Table Product {
   normalizedName String [not null]
   hsCode String
   countryOfOrigin CountryCode
+  salesTax Tax [note: 'The standard tax rate of this article. Might be different for purchase and sales']
+  salesTaxId String
   variants ProductVariant [not null]
   tenant Tenant [not null]
   tenantId String [not null]
@@ -1651,6 +1654,8 @@ Ref: Order.tenantId > Tenant.id [delete: Cascade]
 Ref: Address.contactId > Contact.id [delete: Cascade]
 
 Ref: Address.tenantId > Tenant.id [delete: Cascade]
+
+Ref: Product.salesTaxId > Tax.id
 
 Ref: Product.tenantId > Tenant.id [delete: Cascade]
 
