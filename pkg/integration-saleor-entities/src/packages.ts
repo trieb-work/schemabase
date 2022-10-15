@@ -344,6 +344,7 @@ export class SaleorPackageSyncService {
         this.logger.error(
           `Can't create fulfillment in saleor. Warehouse or SaleorWarehouse is missing for (some) line items of package ${parcel.id} - ${parcel.number}`,
         );
+        continue;
       }
 
       const lines: OrderFulfillLineInput[] = parcel.packageLineItems.map(
