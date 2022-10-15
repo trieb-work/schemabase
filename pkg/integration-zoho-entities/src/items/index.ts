@@ -88,8 +88,8 @@ export class ZohoItemSyncService {
           ? item.weight_unit === "kg"
             ? item.weight
             : item.weight_unit === "g"
-            ? item.weight / 1000
-            : undefined
+              ? item.weight / 1000
+              : undefined
           : undefined;
 
       try {
@@ -225,6 +225,26 @@ export class ZohoItemSyncService {
             active: item.status === "active" ?? false,
             stockOnHand: item.stock_on_hand,
             product: {
+              connectOrCreate: {
+                where: {
+                  normalizedName_tenantId: {
+                    tenantId,
+                    normalizedName: normalizeStrings.productNames(
+                      item?.group_name || itemName,
+                    ),
+                  },
+                },
+                create: {
+                  id: id.id("product"),
+                  tenantId,
+                  // If this is a single variant product, we set the variant name as
+                  // the product name
+                  name: item?.group_name || item.name,
+                  normalizedName: normalizeStrings.productNames(
+                    item?.group_name || item.name,
+                  ),
+                },
+              },
               update: {
                 name: item?.group_name || itemName,
                 normalizedName: normalizeStrings.productNames(
