@@ -83,13 +83,19 @@ export class ZohoItemSyncService {
 
       const { itemName, variantName } = getProductAndVariantName(item.name);
 
+      /**
+       * The HS-Code = Zolltarifnummer in a custom field in Zoho.
+       * We might want to make this field configurable
+       */
+      const hsCode: string | undefined = item?.cf_hs_code as string;
+
       const weight =
         item.weight > 0
           ? item.weight_unit === "kg"
             ? item.weight
             : item.weight_unit === "g"
-              ? item.weight / 1000
-              : undefined
+            ? item.weight / 1000
+            : undefined
           : undefined;
 
       try {
@@ -197,6 +203,7 @@ export class ZohoItemSyncService {
                       create: {
                         id: id.id("product"),
                         tenantId,
+                        hsCode,
                         // If this is a single variant product, we set the variant name as
                         // the product name
                         name: item?.group_name || item.name,
@@ -246,6 +253,7 @@ export class ZohoItemSyncService {
                 },
               },
               update: {
+                hsCode,
                 name: item?.group_name || itemName,
                 normalizedName: normalizeStrings.productNames(
                   item?.group_name || itemName,
