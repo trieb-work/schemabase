@@ -69,6 +69,7 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
       this.logger.info("Sending transactional email", {
         packageEventId: packageEvent.id,
         state: packageEvent.state,
+        trackingId: packageEvent.package.trackingId,
       });
       const integration = await this.db.trackingIntegration.findUnique({
         where: {
