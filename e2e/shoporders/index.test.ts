@@ -399,13 +399,7 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
       "sync all contacts to zoho contacts & zoho contact persons & addresses from ECI",
     );
 
-    const xentralProxyIntegration =
-      await prismaClient.xentralProxyIntegration.findUnique({
-        where: {
-          id: "test",
-        },
-      });
-    if (!xentralProxyApp || !xentralProxyIntegration)
+    if (!xentralProxyApp)
       throw new Error(
         "Testing Tenant or xentral app/integration not found in DB",
       );
@@ -417,7 +411,7 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
       logger: xentralProxyOrderLogger,
       db: prismaClient,
       xentralProxyApp,
-      warehouseId: xentralProxyIntegration.warehouseId,
+      warehouseId: xentralProxyApp.warehouseId,
     });
     await xentralProxyOrderSyncService.syncFromECI();
     const xentralProxyLieferscheinSyncService =
