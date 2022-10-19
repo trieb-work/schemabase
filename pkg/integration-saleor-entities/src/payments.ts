@@ -115,6 +115,7 @@ export class SaleorPaymentSyncService {
         continue;
       }
       const saleorOrder = payment.order;
+      this.logger.info(`Processing payment for order ${saleorOrder.number}`);
       if (typeof saleorOrder.number !== "string") continue;
 
       /**
