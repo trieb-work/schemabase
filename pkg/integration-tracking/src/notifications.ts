@@ -144,6 +144,11 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
       };
       const emailId = await send();
       await this.onSuccess(ctx, { emailId });
+    } else {
+      this.logger.info(
+        `Not sending a transactional email. No valid transition: \
+        ${event.previousState}  ${packageEvent.state}`,
+      );
     }
   }
 }
