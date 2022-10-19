@@ -374,6 +374,7 @@ export class SaleorOrderSyncService {
                     discountValueNet,
                     undiscountedUnitPriceNet:
                       lineItem.undiscountedUnitPrice.net.amount,
+                    undiscountedUnitPriceGross: lineItem.undiscountedUnitPrice.gross.amount,
                     totalPriceNet: lineItem.totalPrice.net.amount,
                     totalPriceGross: lineItem.totalPrice.gross.amount,
                     tax: {
