@@ -3,7 +3,7 @@ import { ILogger } from "@eci/pkg/logger";
 import { Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { isAfter, subDays } from "date-fns";
+import { isAfter, subDays, subMonths } from "date-fns";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import { sleep } from "@eci/pkg/miscHelper/time";
 import addresses from "../addresses";
@@ -290,7 +290,6 @@ export class ZohoContactSyncService {
         },
       });
     }
-    // TODO: get all addresses, that don't have a Zoho ID yet
     const newAddresses = await this.db.address.findMany({
       where: {
         tenantId: this.zohoApp.tenantId,
@@ -298,6 +297,9 @@ export class ZohoContactSyncService {
           none: {
             zohoAppId: this.zohoApp.id,
           },
+        },
+        updatedAt: {
+          gte: subMonths(new Date(), 5),
         },
       },
       include: {
