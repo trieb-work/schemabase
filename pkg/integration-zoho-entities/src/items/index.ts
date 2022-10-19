@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { FullCompositeItem, Zoho } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { PrismaClient, Prisma, ZohoApp, ProductVariant } from "@eci/pkg/prisma";
