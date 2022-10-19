@@ -631,8 +631,14 @@ export class ZohoSalesOrdersSyncService {
           customer_id: mainContactPerson.zohoContactId,
           discount_type,
           discount: calculateDiscount(order.discountValueNet, "fixed"),
-          billing_address_id: addressToZohoAddressId(order.billingAddress),
-          shipping_address_id: addressToZohoAddressId(order.shippingAddress),
+          billing_address_id: addressToZohoAddressId(
+            order.billingAddress,
+            this.logger,
+          ),
+          shipping_address_id: addressToZohoAddressId(
+            order.shippingAddress,
+            this.logger,
+          ),
           contact_persons: [mainContactPerson.id],
           shipping_charge: order.shippingPriceGross ?? undefined,
           // mit is_inclusive_tax = true klappt das discountValueNet natürlich nicht.
@@ -818,9 +824,10 @@ export class ZohoSalesOrdersSyncService {
       }
     }
     try {
-      await this.zoho.salesOrder.confirm(
-        salesordersToConfirm.map((so) => so.salesorder_id),
-      );
+      if (salesordersToConfirm.length > 0)
+        await this.zoho.salesOrder.confirm(
+          salesordersToConfirm.map((so) => so.salesorder_id),
+        );
       // TODO update in DB which salesorders are confirmed. Maybe add status to eci zohosalesorder? or status to eci order?
       this.logger.info(
         `Successfully confirmed ${salesordersToConfirm.length} order(s).`,

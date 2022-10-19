@@ -1,3 +1,4 @@
+import { ILogger } from "@eci/pkg/logger";
 import { Address, ZohoAddress } from "@prisma/client";
 import { Warning } from "../utils";
 
@@ -7,6 +8,7 @@ type AddressWithZohoAddress = Address & {
 
 export function addressToZohoAddressId(
   address: AddressWithZohoAddress,
+  logger: ILogger,
 ): string {
   if (!address?.zohoAddress || address.zohoAddress.length === 0) {
     throw new Warning(
@@ -15,7 +17,7 @@ export function addressToZohoAddressId(
     );
   }
   if (address.zohoAddress.length > 1) {
-    throw new Warning(
+    logger.warn(
       "Multiple zohoAddresses set for the address of this order. Selecting one!",
     );
   }
