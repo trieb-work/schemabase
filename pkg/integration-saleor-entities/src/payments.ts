@@ -214,6 +214,10 @@ export class SaleorPaymentSyncService {
           },
         },
       });
+      if (!orderExist)
+        this.logger.warn(
+          `No ECI order with number ${prefixedOrderNumber} found! Creating a payment without an order`,
+        );
       const orderConnect:
         | Prisma.OrderCreateNestedOneWithoutPaymentsInput
         | undefined = orderExist
