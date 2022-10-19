@@ -15,8 +15,8 @@ export function addressToZohoAddressId(
     );
   }
   if (address.zohoAddress.length > 1) {
-    throw new Error(
-      "Multiple zohoAddresses set for the address of this order. Aborting sync of this order.",
+    throw new Warning(
+      "Multiple zohoAddresses set for the address of this order. Selecting one!",
     );
   }
   return address.zohoAddress[0].id;
