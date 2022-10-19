@@ -142,7 +142,7 @@ beforeAll(async () => {
         },
       },
       enabled: true,
-      dpdApp: {
+      dpdApps: {
         connect: {
           id: dpdApp.id,
         },
