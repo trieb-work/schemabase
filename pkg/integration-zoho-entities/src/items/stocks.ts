@@ -48,6 +48,8 @@ export class SyncStocks {
       }
       const eciWarehouseId = zohoWarehouse?.warehouseId;
 
+      const isDefaultWarehouse = stocks?.is_primary || false;
+
       await this.db.stockEntries.upsert({
         where: {
           warehouseId_productVariantId_tenantId: {
@@ -85,6 +87,20 @@ export class SyncStocks {
             stocks.warehouse_actual_available_for_sale_stock,
           actualAvailableStock: stocks.warehouse_actual_available_stock,
           actualCommittedStock: stocks.warehouse_actual_committed_stock,
+          /**
+           * Update the default warehouse, if we have this information
+           */
+          productVariant: isDefaultWarehouse
+            ? {
+                update: {
+                  defaultWarehouse: {
+                    connect: {
+                      id: eciWarehouseId,
+                    },
+                  },
+                },
+              }
+            : undefined,
         },
       });
     }
