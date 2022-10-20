@@ -50,6 +50,10 @@ export class ZohoInvoiceSyncWorkflow implements Workflow {
       createdTimeOffset: 20,
     });
     await zohoInvoiceSyncService.syncToECI();
+    /**
+     * auto-create invoices from SalesOrders
+     */
+    await zohoInvoiceSyncService.syncFromECI_autocreateInvoiceFromSalesorder();
 
     this.logger.info("Finished zoho invoice sync workflow run");
   }
