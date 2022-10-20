@@ -884,6 +884,8 @@ model Order {
   @@index([orderNumber])
   @@index([orderStatus])
   @@index([date])
+  @@index([shipmentStatus])
+  @@index([paymentStatus])
 }
 
 enum CountryCode {

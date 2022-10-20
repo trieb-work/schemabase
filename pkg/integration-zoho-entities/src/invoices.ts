@@ -175,6 +175,7 @@ export class ZohoInvoiceSyncService {
 
   // TODO2: syncFromECI (standard syncs invoice object) (lower prio for the future)
   // DONE1: syncFromECI_autocreateInvoiceFromSalesorder (creates an zohoinvoice and eci invoice from an zohosalesorder)
+  // We only create invoices for orders with STORE- order prefix right now.
   public async syncFromECI_autocreateInvoiceFromSalesorder(): Promise<void> {
     const ordersWithoutZohoInvoicesFromEciDb = await this.db.order.findMany({
       where: {
@@ -197,6 +198,10 @@ export class ZohoInvoiceSyncService {
           gt: subMonths(new Date(), 5),
         },
         invoiceStatus: "notInvoiced",
+        orderStatus: "confirmed",
+        orderNumber: {
+          startsWith: "STORE",
+        },
         invoices: {
           none: {
             zohoInvoice: {
