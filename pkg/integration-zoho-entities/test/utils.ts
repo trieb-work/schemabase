@@ -489,6 +489,7 @@ export async function upsertLineItemWithRealProductVariantFromZoho(
     create: {
       id: `test-l1-1-${orderNumber}`,
       quantity: 10,
+      totalPriceGross: 60,
       uniqueString: uniqueStringOrderLine(
         orderNumber,
         `test-l1-1-${orderNumber}`,
