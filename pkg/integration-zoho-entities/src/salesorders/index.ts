@@ -79,16 +79,16 @@ export class ZohoSalesOrdersSyncService {
    * @param zohoStatus
    * @returns
    */
-  public parseInvoiceStatus(zohoStatus: string): OrderInvoiceStatus {
+  public parseInvoiceStatus(
+    zohoStatus: string,
+  ): OrderInvoiceStatus | undefined {
     switch (zohoStatus) {
       case "not_invoiced":
         return OrderInvoiceStatus.notInvoiced;
       case "invoiced":
         return OrderInvoiceStatus.invoiced;
       default:
-        throw new Error(
-          `Could not parse zoho invoice status "${zohoStatus}" to our internal schema!`,
-        );
+        return undefined;
     }
   }
 
