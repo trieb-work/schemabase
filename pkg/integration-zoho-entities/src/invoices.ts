@@ -196,6 +196,7 @@ export class ZohoInvoiceSyncService {
         date: {
           gt: subMonths(new Date(), 5),
         },
+        invoiceStatus: "notInvoiced",
         invoices: {
           none: {
             zohoInvoice: {
