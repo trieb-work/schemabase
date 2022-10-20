@@ -228,39 +228,6 @@ export class SaleorPaymentSyncService {
           }
         : undefined;
 
-      const paymentCreateOrConnect: Prisma.PaymentCreateNestedOneWithoutSaleorPaymentInput =
-        {
-          connectOrCreate: {
-            where: {
-              referenceNumber_tenantId: {
-                referenceNumber: paymentReference,
-                tenantId: this.tenantId,
-              },
-            },
-            create: {
-              id: id.id("payment"),
-              amount: payment.total?.amount as number,
-              referenceNumber: paymentReference,
-              tenant: {
-                connect: {
-                  id: this.tenantId,
-                },
-              },
-              paymentMethod: paymentMethodConnect,
-              order: orderConnect,
-              // INFO: siehe comment oben: so würde ich es lieber machen
-              // order: {
-              //   connect: {
-              //     orderNumber_tenantId: {
-              //       orderNumber: prefixedOrderNumber,
-              //       tenantId: this.tenantId,
-              //     }
-              //   }
-              // }
-            },
-          },
-        };
-
       // check, if we already have this saleor order created, so that we can
       // connect the payment
       // TODO: selbes hier wie oben mit order, lieber hier failen und mit nächstem retry anlegen (kann durch besseres scheduling vermieden werden.)
@@ -300,13 +267,58 @@ export class SaleorPaymentSyncService {
               id: this.installedSaleorAppId,
             },
           },
-          payment: paymentCreateOrConnect,
+          payment: {
+            connectOrCreate: {
+              where: {
+                referenceNumber_tenantId: {
+                  referenceNumber: paymentReference,
+                  tenantId: this.tenantId,
+                },
+              },
+              create: {
+                id: id.id("payment"),
+                amount: payment.total?.amount as number,
+                referenceNumber: paymentReference,
+                tenant: {
+                  connect: {
+                    id: this.tenantId,
+                  },
+                },
+                paymentMethod: paymentMethodConnect,
+                order: orderConnect,
+              },
+            },
+          },
         },
         update: {
           createdAt: payment?.created,
           updatedAt: payment?.modified,
           saleorOrder: saleorOrderConnect,
-          payment: paymentCreateOrConnect,
+          payment: {
+            connectOrCreate: {
+              where: {
+                referenceNumber_tenantId: {
+                  referenceNumber: paymentReference,
+                  tenantId: this.tenantId,
+                },
+              },
+              create: {
+                id: id.id("payment"),
+                amount: payment.total?.amount as number,
+                referenceNumber: paymentReference,
+                tenant: {
+                  connect: {
+                    id: this.tenantId,
+                  },
+                },
+                paymentMethod: paymentMethodConnect,
+                order: orderConnect,
+              },
+            },
+            update: {
+              order: orderConnect,
+            },
+          },
         },
       });
     }
