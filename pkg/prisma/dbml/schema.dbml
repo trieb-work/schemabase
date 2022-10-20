@@ -503,6 +503,7 @@ Table Order {
   orderStatus OrderStatus [not null, default: 'draft']
   paymentStatus OrderPaymentStatus [not null, default: 'unpaid']
   shipmentStatus OrderShipmentStatus [not null, default: 'pending']
+  invoiceStatus OrderInvoiceStatus [not null, default: 'notInvoiced']
   readyToFullfill Boolean [not null, default: false, note: 'In PuF: if the Order is not readyToFullfill it woll not get transfered to logistics partner (kramer); default is false']
   orderNumber String [not null, note: 'Order-Numbers have to be unique per Tenant!
 We use them as unique identifier between systems']
@@ -513,7 +514,12 @@ We use them as unique identifier between systems']
   shippingPriceTax Tax
   shippingPriceTaxId String
   discountCode String [note: 'The applied discount code']
-  discountValueNet Float [not null, default: 0]
+  discountValueNet Float [not null, default: 0, note: 'The disount amount, that is applied
+to the net, undiscounted subtotal price.
+Discounts never get applied on shipping costs']
+  discountValueNetPercentage Float [not null, default: 0, note: 'The disount percentage, that is applied
+to the net, undiscounted subtotal price.
+Discounts never get applied on shipping costs']
   totalPriceNet Float
   totalPriceGross Float [not null]
   mainContact Contact [not null, note: 'The person who has created this Order (In other systems this can also be a Useraccount)']
@@ -1220,6 +1226,11 @@ Enum OrderShipmentStatus {
   partiallyShipped
   shipped
   delivered
+}
+
+Enum OrderInvoiceStatus {
+  notInvoiced
+  invoiced
 }
 
 Enum CountryCode {

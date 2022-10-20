@@ -7,7 +7,13 @@ import {
 } from "@trieb.work/zoho-ts";
 
 import { ILogger } from "@eci/pkg/logger";
-import { Language, Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
+import {
+  Language,
+  OrderInvoiceStatus,
+  Prisma,
+  PrismaClient,
+  ZohoApp,
+} from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import {
   addMinutes,
@@ -65,6 +71,24 @@ export class ZohoSalesOrdersSyncService {
         return Language.DE;
       default:
         return undefined;
+    }
+  }
+
+  /**
+   * Brings the zoho invoiced schema to our internal schema
+   * @param zohoStatus
+   * @returns
+   */
+  public parseInvoiceStatus(zohoStatus: string): OrderInvoiceStatus {
+    switch (zohoStatus) {
+      case "not_invoiced":
+        return OrderInvoiceStatus.notInvoiced;
+      case "invoiced":
+        return OrderInvoiceStatus.invoiced;
+      default:
+        throw new Error(
+          `Could not parse zoho invoice status "${zohoStatus}" to our internal schema!`,
+        );
     }
   }
 
@@ -150,6 +174,10 @@ export class ZohoSalesOrdersSyncService {
           undefined,
       );
 
+      const invoiceStatus = this.parseInvoiceStatus(
+        salesorder.invoiced_status as string,
+      );
+
       if (!salesorder.email) {
         this.logger.error(
           `Salesorder ${salesorder.salesorder_number} - ${salesorder.salesorder_id} has no related email address. Can't sync`,
@@ -194,6 +222,7 @@ export class ZohoSalesOrdersSyncService {
               date: new Date(salesorder.date),
               expectedShippingDate: new Date(salesorder.shipment_date),
               totalPriceGross: salesorder.total,
+              invoiceStatus,
               mainContact: contactConnectOrCreate,
               tenant: {
                 connect: {
@@ -243,6 +272,7 @@ export class ZohoSalesOrdersSyncService {
               date: new Date(salesorder.date),
               expectedShippingDate: new Date(salesorder.shipment_date),
               mainContact: contactConnectOrCreate,
+              invoiceStatus,
             },
           },
           zohoContact: zohoContactConnect,

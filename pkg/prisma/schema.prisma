@@ -791,6 +791,11 @@ enum OrderShipmentStatus {
   delivered
 }
 
+enum OrderInvoiceStatus {
+  notInvoiced
+  invoiced
+}
+
 // The ECI internal Order model.
 
 model Order {
@@ -812,6 +817,7 @@ model Order {
   orderStatus    OrderStatus         @default(draft)
   paymentStatus  OrderPaymentStatus  @default(unpaid)
   shipmentStatus OrderShipmentStatus @default(pending)
+  invoiceStatus  OrderInvoiceStatus  @default(notInvoiced)
 
   /// In PuF: if the Order is not readyToFullfill it woll not get transfered to logistics partner (kramer); default is false
   readyToFullfill Boolean @default(false)
@@ -833,10 +839,15 @@ model Order {
   /// The applied discount code
   discountCode String?
 
-  // The disount amount, that is applied
-  // to the net, undiscounted price.
-  // Discounts never get applied on shipping costs
+  /// The disount amount, that is applied
+  /// to the net, undiscounted subtotal price.
+  /// Discounts never get applied on shipping costs
   discountValueNet Float @default(0)
+
+  /// The disount percentage, that is applied
+  /// to the net, undiscounted subtotal price.
+  /// Discounts never get applied on shipping costs
+  discountValueNetPercentage Float @default(0)
 
   // The final, total price
   totalPriceNet   Float?
