@@ -3,7 +3,7 @@ import { Zoho, ZohoApiError } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { PrismaClient, Prisma, ZohoApp } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { addMinutes, format, setHours, subDays, subYears } from "date-fns";
+import { addMinutes, format, setHours, subDays, subMonths, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { Warning } from "./utils";
 import { CreatePayment } from "@trieb.work/zoho-ts/dist/types/payment";
@@ -214,6 +214,7 @@ export class ZohoPaymentSyncService {
         createdAt: {
           // TODO: schedule hint: make sure order and then invoice is created before this job runs
           lte: addMinutes(new Date(), -this.createdTimeOffsetMin),
+          gt: subMonths(new Date(), 5),
         },
         order: {
           tenantId: this.zohoApp.tenantId,
@@ -424,7 +425,7 @@ export class ZohoPaymentSyncService {
           data: {
             id: createdPayment.payment_id,
             createdAt: new Date(createdPayment.created_time),
-            updatedAt: new Date((createdPayment as any).updated_time), // TODO remove this hack after zoho-ts PR #18 is merged
+            updatedAt: new Date(createdPayment.updated_time),
             zohoApp: {
               connect: {
                 id: this.zohoApp.id,
