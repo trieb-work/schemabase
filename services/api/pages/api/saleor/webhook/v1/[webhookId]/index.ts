@@ -17,6 +17,7 @@ const requestValidation = z.object({
       "payment_confirm",
       "payment_capture",
       "payment_void",
+      "product_variant_out_of_stock",
     ]),
   }),
 });
