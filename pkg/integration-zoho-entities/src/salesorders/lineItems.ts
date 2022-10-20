@@ -80,11 +80,12 @@ export function orderToZohoLineItems(
         `Multiple zohoItems set for the productVariant of this lineItem (SKU: ${lineItem.productVariant.sku}). Aborting sync of this order.`,
       );
     }
-    if (!lineItem?.productVariant?.defaultWarehouse) {
-      throw new Warning(
-        `No warehouse set for current lineItem.productVariant (SKU: ${lineItem.productVariant.sku}). Aborting sync of this order. Try again after saleor product variant sync.`,
-      );
-    }
+    // We might want to use a default warehouse
+    // if (!lineItem?.productVariant?.defaultWarehouse) {
+    //   throw new Warning(
+    //     `No warehouse set for current lineItem.productVariant (SKU: ${lineItem.productVariant.sku}). Aborting sync of this order. Try again after saleor product variant sync.`,
+    //   );
+    // }
     const zohoWarehousesIds =
       lineItem?.productVariant?.defaultWarehouse?.zohoWarehouse?.flatMap(
         (wh) => wh.id,
