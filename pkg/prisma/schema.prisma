@@ -883,6 +883,7 @@ model Order {
   @@index([shippingPriceTaxId])
   @@index([orderNumber])
   @@index([orderStatus])
+  @@index([date])
 }
 
 enum CountryCode {

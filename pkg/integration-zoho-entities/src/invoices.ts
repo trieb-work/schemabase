@@ -4,7 +4,7 @@ import type { Invoice, Zoho, ZohoApiError } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { addMinutes, format, setHours, subDays, subYears } from "date-fns";
+import { addMinutes, format, setHours, subDays, subMonths, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { Warning } from "./utils";
 import { checkCurrency } from "@eci/pkg/normalization/src/currency";
@@ -191,6 +191,10 @@ export class ZohoInvoiceSyncService {
         // zoho order was created
         createdAt: {
           lte: addMinutes(new Date(), -this.createdTimeOffsetMin),
+        },
+        /// We don't try to sync that old invoices
+        date: {
+          gt: subMonths(new Date(), 5),
         },
         invoices: {
           none: {
