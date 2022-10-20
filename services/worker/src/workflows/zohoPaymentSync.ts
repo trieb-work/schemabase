@@ -59,6 +59,7 @@ export class ZohoPaymentSyncWorkflow implements Workflow {
 
     await zohoBankAccountsSyncService.syncToECI();
     await zohoPaymentSyncService.syncToECI();
+    await zohoPaymentSyncService.syncFromECI();
 
     this.logger.info("Finished zoho bank acounts + payment sync workflow run");
   }
