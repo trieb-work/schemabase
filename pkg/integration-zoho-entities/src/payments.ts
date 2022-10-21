@@ -216,27 +216,6 @@ export class ZohoPaymentSyncService {
           lte: addMinutes(new Date(), -this.createdTimeOffsetMin),
           gt: subMonths(new Date(), 5),
         },
-        order: {
-          tenantId: this.zohoApp.tenantId,
-        },
-        // TEST this out: make sure braintree sync runs before this sync
-        // NOT: {
-        //   AND: {
-        //     braintreeTransactions: {
-        //       none: {
-        //         braintreeApp: {
-        //           tenantId: this.zohoApp.tenantId,
-        //         },
-        //       },
-        //     },
-        //     paymentMethod: {
-        //       AND: {
-        //         gatewayType: "braintree",
-        //         methodType: "paypal",
-        //       },
-        //     },
-        //   },
-        // },
       },
       include: {
         order: {
