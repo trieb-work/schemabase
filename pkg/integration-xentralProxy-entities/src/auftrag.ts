@@ -175,7 +175,7 @@ export class XentralProxyOrderSyncService {
         }
         const xentralAuftraegeWithSameOrderNumber =
           xentralAuftraegeWithSameDate.filter(
-            (xa) => xa.ihrebestellnummer === order.orderNumber,
+            (xa) => xa.internet === order.orderNumber,
           );
         if (xentralAuftraegeWithSameOrderNumber.length === 0) {
           this.logger.debug(
@@ -220,6 +220,7 @@ export class XentralProxyOrderSyncService {
             tenantId: this.tenantId,
             orderNumber: order.orderNumber,
             xentralIhrebestellnr: existingXentralAuftrag.ihrebestellnummer,
+            xentralInternet: existingXentralAuftrag.internet,
             xentralAuftragId: existingXentralAuftrag.id,
             xentralAuftragBelegNr: existingXentralAuftrag.belegnr,
           },
@@ -227,16 +228,18 @@ export class XentralProxyOrderSyncService {
       }
       const auftrag: AuftragCreateRequest = {
         kundennummer: "NEW",
-        name: order.shippingAddress.fullname,
+        ansprechpartner: order.shippingAddress.fullname,
+        name: order.shippingAddress.company || "",
         strasse: order.shippingAddress.street || "",
         adresszusatz: order.shippingAddress?.additionalAddressLine || "",
         // email: order.mainContact.email // TODO disabled for now because we want to send tracking emails by our own, and do not want to risk that kramer sends some emails
         projekt: String(this.xentralProxyApp.projectId),
-        // : order.shippingAddress.company || "", //TODO all missing other shippingaddr fields
         plz: order.shippingAddress.plz || "",
         ort: order.shippingAddress.city || "",
         land: order.shippingAddress.countryCode || "DE", // TODO make default country a config option in tenant
-        ihrebestellnummer: order.orderNumber,
+        // Ihre Bestellnummer scheint eher für Dropshipping etc. verwendung zu finden
+        // ihrebestellnummer: order.orderNumber,
+        internet: order.orderNumber,
         // INFO: do not remove date otherwise search will not work anymore!
         datum: order.date.toJSON(),
         artikelliste: {
