@@ -3,7 +3,14 @@ import { Zoho, ZohoApiError } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { PrismaClient, Prisma, ZohoApp } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { addMinutes, format, setHours, subDays, subMonths, subYears } from "date-fns";
+import {
+  addMinutes,
+  format,
+  setHours,
+  subDays,
+  subMonths,
+  subYears,
+} from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { Warning } from "./utils";
 import { CreatePayment } from "@trieb.work/zoho-ts/dist/types/payment";
@@ -98,20 +105,35 @@ export class ZohoPaymentSyncService {
 
       this.logger.info(`Upserting Zoho Payment ${payment.payment_id}`);
 
-      // We try to connect existing invoices with this payment using the invoice Ids
-      // const invoiceConnect:
-      //   | Prisma.InvoiceCreateNestedManyWithoutPaymentsInput
-      //   | undefined =
-      //   payment.invoice_numbers_array?.length > 0
-      //     ? {
-      //         connect: payment.invoice_numbers_array.map((id) => ({
-      //           invoiceNumber_tenantId: {
-      //             invoiceNumber: id,
-      //             tenantId: this.zohoApp.tenantId,
-      //           },
-      //         })),
-      //       }
-      //     : undefined;
+      let eciContactId: string | undefined;
+      /**
+       * A payment needs to be connected to a contact. We look it up here
+       */
+      const eciContact = await this.db.zohoContact.findUnique({
+        where: {
+          id_zohoAppId: {
+            id: payment.customer_id,
+            zohoAppId: this.zohoApp.id,
+          },
+        },
+        include: {
+          zohoContactPerson: {
+            where: {
+              isPrimary: true,
+            },
+            select: {
+              contactId: true,
+            },
+          },
+        },
+      });
+      if (!eciContact?.zohoContactPerson?.[0]?.contactId) {
+        this.logger.warn(
+          `Can't find an internal contact for Zoho Contact Person Id ${payment.customer_id}`,
+        );
+      } else {
+        eciContactId = eciContact.zohoContactPerson[0].contactId;
+      }
 
       const zohoBankAccount = await this.db.zohoBankAccount.findUnique({
         where: {
@@ -148,6 +170,13 @@ export class ZohoPaymentSyncService {
               id: id.id("payment"),
               amount: payment.amount,
               referenceNumber,
+              mainContact: eciContactId
+                ? {
+                    connect: {
+                      id: eciContactId,
+                    },
+                  }
+                : undefined,
               paymentMethod: {
                 connect: {
                   id: zohoBankAccount.paymentMethodId,
@@ -158,7 +187,6 @@ export class ZohoPaymentSyncService {
                   id: this.zohoApp.tenantId,
                 },
               },
-              // invoices: invoiceConnect,
             },
           },
         };
@@ -215,6 +243,9 @@ export class ZohoPaymentSyncService {
           // TODO: schedule hint: make sure order and then invoice is created before this job runs
           lte: addMinutes(new Date(), -this.createdTimeOffsetMin),
           gt: subMonths(new Date(), 5),
+        },
+        order: {
+          tenantId: this.zohoApp.tenantId,
         },
       },
       include: {

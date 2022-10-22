@@ -154,7 +154,7 @@ Table ZohoContact {
 Table ZohoContactPerson {
   id String [not null, note: 'Zoho Internal ContactPerson Id']
   active Boolean [not null, default: true, note: 'Contacts/Contactpersons can be disabled to filter out merged contacts']
-  isPrimary Boolean [not null, default: false]
+  isPrimary Boolean [not null, default: false, note: 'Just one Zoho Contact Person can be primary']
   zohoContact ZohoContact [not null]
   zohoContactId String [not null]
   contact Contact [not null]
@@ -309,7 +309,7 @@ Table Invoice {
   tenantId String [not null]
   orders Order [not null]
   zohoInvoice ZohoInvoice [not null]
-  mainContact Contact [note: 'The person who has created this Order (In other systems this can also be a Useraccount)']
+  mainContact Contact [note: 'The person who has created this Invoice (In other systems this can also be a Useraccount)']
   mainContactId String
 
   indexes {
@@ -346,6 +346,8 @@ Table Payment {
   transactionFee Float [not null, default: 0, note: 'Costs for this transaction, for example bank charges, gateway charges, paypal charges']
   order Order
   orderId String
+  mainContact Contact [note: 'The person who has created this Payment (In other systems this can also be a Useraccount)']
+  mainContactId String
   tenant Tenant [not null]
   tenantId String [not null]
   paymentMethod PaymentMethod [not null]
@@ -411,6 +413,7 @@ Table Contact {
   lastName String
   orders Order [not null]
   invoices Invoice [not null]
+  payments Payment [not null]
   company Company [note: 'A Contact can be related to one company']
   companyId String
   tenant Tenant [not null]
@@ -1625,6 +1628,8 @@ Ref: Invoice.mainContactId > Contact.id
 Ref: Tax.tenantId > Tenant.id [delete: Cascade]
 
 Ref: Payment.orderId > Order.id
+
+Ref: Payment.mainContactId > Contact.id
 
 Ref: Payment.tenantId > Tenant.id [delete: Cascade]
 

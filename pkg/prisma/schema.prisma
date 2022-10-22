@@ -265,6 +265,7 @@ model ZohoContactPerson {
   @@index([zohoContactId])
   @@index([zohoAppId])
   @@index([active])
+  @@index([isPrimary])
 }
 
 model ZohoAddress {
@@ -479,7 +480,7 @@ model Invoice {
   orders      Order[]
   zohoInvoice ZohoInvoice[]
 
-  /// The person who has created this Order (In other systems this can also be a Useraccount)
+  /// The person who has created this Invoice (In other systems this can also be a Useraccount)
   mainContact   Contact? @relation(references: [id], fields: [mainContactId])
   mainContactId String?
 
@@ -534,6 +535,10 @@ model Payment {
 
   order   Order?  @relation(fields: [orderId], references: [id])
   orderId String?
+
+  /// The person who has created this Payment (In other systems this can also be a Useraccount)
+  mainContact   Contact? @relation(references: [id], fields: [mainContactId])
+  mainContactId String?
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -632,6 +637,7 @@ model Contact {
 
   orders Order[]
   invoices Invoice[]
+  payments Payment[]
 
   /// A Contact can be related to one company
   company   Company? @relation(fields: [companyId], references: [id])
