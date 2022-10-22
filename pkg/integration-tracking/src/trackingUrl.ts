@@ -10,7 +10,7 @@ export function generateTrackingPortalURL(
     DPD: `https://tracking.dpd.de/status/${languageCode}/parcel/${trackingId}`,
     UNKNOWN: "",
     UPS: "",
-    DHL: "",
+    DHL: `https://www.dhl.com/${languageCode}/home/tracking/tracking-parcel.html?submit=1&tracking-id=${trackingId}`,
   };
   return trackingUrls[carrier];
 }
