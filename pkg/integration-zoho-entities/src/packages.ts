@@ -1,11 +1,12 @@
 import { Zoho } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
-import { PrismaClient, ZohoApp } from "@eci/pkg/prisma";
+import { Carrier, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 // import { id } from "@eci/pkg/ids";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { format, setHours, subDays, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { uniqueStringPackageLineItem } from "@eci/pkg/miscHelper/uniqueStringOrderline";
+import { generateTrackingPortalURL } from "@eci/pkg/integration-tracking";
 
 export interface ZohoPackageSyncConfig {
   logger: ILogger;
@@ -96,19 +97,31 @@ export class ZohoPackageSyncService {
         parcel.carrier?.toLowerCase() ||
         "";
       const carrier = lowerCaseCarrier.includes("dhl")
-        ? "DHL"
+        ? Carrier.DHL
         : lowerCaseCarrier.includes("dpd")
-        ? "DPD"
+        ? Carrier.DPD
         : lowerCaseCarrier.includes("ups")
-        ? "UPS"
-        : "UNKNOWN";
+        ? Carrier.UPS
+        : Carrier.UNKNOWN;
 
+      if (carrier === Carrier.UNKNOWN)
+        this.logger.warn(
+          `Can't match the packages carrier "${lowerCaseCarrier}" to our internal carriers.`,
+        );
+
+      const carrierTrackingUrl = generateTrackingPortalURL(
+        carrier,
+        orderExist.language,
+        parcel.tracking_number,
+      );
       /**
        * Only try to update the tracking number if we have one..
        */
       const packageUpdate = parcel.tracking_number
         ? {
             trackingId: parcel.tracking_number,
+            carrier,
+            carrierTrackingUrl,
           }
         : {};
 
@@ -153,6 +166,7 @@ export class ZohoPackageSyncService {
                 id: id.id("package"),
                 number: parcel.package_number,
                 trackingId: parcel.tracking_number,
+                carrierTrackingUrl,
                 tenant: {
                   connect: {
                     id: this.zohoApp.tenantId,
