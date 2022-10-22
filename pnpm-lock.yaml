@@ -26,7 +26,7 @@ specifiers:
   '@trieb.work/eslint-config-base': ^1.10.0
   '@trieb.work/prettier-base': ^0.1.2
   '@trieb.work/tsconfig-base': ^1.6.4
-  '@trieb.work/zoho-ts': ^0.5.52
+  '@trieb.work/zoho-ts': ^0.5.54
   '@types/async': ^3.2.13
   '@types/body-parser': ^1.19.2
   '@types/braintree': ^3.3.2
@@ -116,7 +116,7 @@ dependencies:
   '@geist-ui/react': 2.2.5_sfoxds7t5ydpegc3knd667wn6m
   '@jest/console': 29.0.2
   '@prisma/client': 4.3.1_prisma@4.3.1
-  '@trieb.work/zoho-ts': 0.5.52
+  '@trieb.work/zoho-ts': 0.5.54
   apollo-datasource: 3.3.1
   apollo-server: 3.6.7_graphql@15.8.0
   apollo-server-core: 3.6.7_graphql@15.8.0
@@ -2754,8 +2754,8 @@ packages:
     resolution: {integrity: sha512-DTHkbsRuE9fEl+rwMPNoVXcs/JCSKHIFFluE11MgsMXleOotrw+XdzpQU15xrAFiGHpcY92a3XJwxkr3HBoNqw==}
     dev: true
 
-  /@trieb.work/zoho-ts/0.5.52:
-    resolution: {integrity: sha512-ve6pYMqc0QjtOVd8rrymWjfhV0hTKig0kU0o1X2jEVHMb0tfk6FLJN0ptIV2UIJm5j6Alg1sCel8AnXPHIqAQg==}
+  /@trieb.work/zoho-ts/0.5.54:
+    resolution: {integrity: sha512-VosaQfy5mlegcuh+wu1kQ9GsbUq66C4UYUT6iBmrFpkQM8RodK0dlJRPu+bRViH7xR+VLfA2l41NKf+NY59eug==}
     dependencies:
       async-retry: 1.3.3
       await-timeout: 1.1.1
@@ -5103,8 +5103,8 @@ packages:
     dev: false
     optional: true
 
-  /elastic-apm-node/3.38.0:
-    resolution: {integrity: sha512-/d6YuWFtsfkVRpFD0YJ2rYJVq0rI0PGqG/C+cW1JpMZ4IOU8dA9xzUkxbT0G3B8gpHNug07Xo6bJdQa2oUaFbQ==}
+  /elastic-apm-node/3.39.0:
+    resolution: {integrity: sha512-aNRLDMQreZ+u23HStmppdDNtfS7Z651MWf3wLjw72haCNpGczuXsb4EuBRfJOk0IXWXTYgX1cDy2hiy4PAxlSQ==}
     engines: {node: ^8.6.0 || 10 || 12 || 14 || 16 || 17 || 18 || 19}
     requiresBuild: true
     dependencies:
@@ -5132,7 +5132,7 @@ packages:
       original-url: 1.2.3
       pino: 6.14.0
       relative-microtime: 2.0.0
-      require-in-the-middle: 5.1.0
+      require-in-the-middle: 5.2.0
       semver: 6.3.0
       set-cookie-serde: 1.0.0
       shallow-clone-shim: 2.0.0
@@ -9870,8 +9870,9 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /require-in-the-middle/5.1.0:
-    resolution: {integrity: sha512-M2rLKVupQfJ5lf9OvqFGIT+9iVLnTmjgbOmpil12hiSQNn5zJTKGPoIisETNjfK+09vP3rpm1zJajmErpr2sEQ==}
+  /require-in-the-middle/5.2.0:
+    resolution: {integrity: sha512-efCx3b+0Z69/LGJmm9Yvi4cqEdxnoGnxYxGxBghkkTTFeXRtTCmmhO0AnAfHz59k957uTSuy8WaHqOs8wbYUWg==}
+    engines: {node: '>=6'}
     dependencies:
       debug: 4.3.4
       module-details-from-path: 1.0.3
@@ -11413,7 +11414,7 @@ packages:
       winston: 3.7.2
       winston-transport: 4.5.0
     optionalDependencies:
-      elastic-apm-node: 3.38.0
+      elastic-apm-node: 3.39.0
     transitivePeerDependencies:
       - supports-color
     dev: false

@@ -160,6 +160,13 @@ export interface ArtikelCreateResponse {
   id: number;
   nummer: string;
 }
+
+export type AuftragEditRequest = Omit<AuftragCreateRequest, "nummer"> & {
+  id: number;
+  nummer?: number | string;
+};
+export type AuftragEditResponse = AuftragCreateResponse;
+
 export type ArtikelEditRequest = Omit<ArtikelCreateRequest, "nummer"> & {
   id: string;
   nummer?: number | string;
@@ -221,10 +228,17 @@ export interface AuftragCreateRequest {
     }[];
   };
   /**
-   * Internal order number for example: SO-1234
+   * Order number - used for example for drop shipping
    */
   ihrebestellnummer?: string;
 
+  status?:
+    | "angelegt"
+    | "bestellt"
+    | "freigegeben"
+    | "versendet"
+    | "abgeschlossen"
+    | "storniert";
   lieferid?: number;
   ansprechpartnerid?: number;
   uebernehmen?: 0 | 1;

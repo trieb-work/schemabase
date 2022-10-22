@@ -10,6 +10,8 @@ import {
   ArtikelGetResponse,
   AuftragCreateRequest,
   AuftragCreateResponse,
+  AuftragEditRequest,
+  AuftragEditResponse,
   GenericCreateResponse,
 } from "./types";
 
@@ -82,6 +84,12 @@ export class XentralXmlClient {
     if (!res?.id)
       throw new Error("AuftragCreateResponse is missing the belegnr");
     return res as AuftragCreateResponse;
+  }
+
+  public async AuftragEdit(
+    auftrag: AuftragEditRequest,
+  ): Promise<AuftragEditResponse> {
+    return await this.edit<AuftragEditResponse>(auftrag, "AuftragEdit");
   }
 
   public async ArtikelCreate(

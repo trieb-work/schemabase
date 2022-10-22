@@ -12,7 +12,10 @@ import { XentralXmlClient } from "@eci/pkg/xentral/src/xml";
 import {
   AuftragCreateRequest,
   AuftragCreateResponse,
+  AuftragEditRequest,
+  AuftragEditResponse,
 } from "@eci/pkg/xentral/src/xml/types";
+import { subDays } from "date-fns";
 
 interface XentralProxyOrderSyncServiceConfig {
   xentralProxyApp: XentralProxyApp;
@@ -57,19 +60,34 @@ export class XentralProxyOrderSyncService {
     const orders = await this.db.order.findMany({
       where: {
         orderStatus: "confirmed",
-        paymentStatus: "fullyPaid", // TODO remove this filter and make sure saleor orders handle readyToFullfill correctly
         shipmentStatus: {
           in: ["pending", "partiallyShipped"],
         },
         readyToFullfill: true, // TODO: in zukunft wäre es auch möglich hier das shipment date
+        
+        /**
+         * Filter out orders, that are already too old. In this time window, we want to update
+         * all orders in Xentral, as we see them as "active"
+         */
+        updatedAt: {
+          gt: subDays(new Date(), 5)
+        },
+
         /**
          * only include orders which have not been transfered to the current xentral instance and
-         * therefore have no xentralProxyAuftrag with the current xentral instance
+         * therefore have no xentralProxyAuftrag with the current xentral instance. We change this logic,
+         * to sync all orders without packages, so that we can update or create orders older than ~2-3 days
          */
-        xentralProxyAuftraege: {
-          none: {
-            xentralProxyAppId: this.xentralProxyApp.id,
-          },
+        // xentralProxyAuftraege: {
+        //   none: {
+        //     xentralProxyAppId: this.xentralProxyApp.id,
+        //   },
+        // },
+        /**
+         * Filter out all orders with packages. 
+         */
+        packages: {
+          none: {}
         },
         /**
          * only sync orders which have at least one lineitem for the specified warehouse
@@ -163,7 +181,8 @@ export class XentralProxyOrderSyncService {
         const xentralAuftraegeWithSameDate = await arrayFromAsyncGenerator(
           this.xentralRestClient.getAuftraege(
             {
-              datum: order.date.toJSON(),
+              // datum_gte: subDays(order.date, 1).toJSON(),
+              internet: order.orderNumber,
             },
             1000,
           ),
@@ -210,26 +229,15 @@ export class XentralProxyOrderSyncService {
           throw error;
         }
       }
-      if (existingXentralAuftrag) {
-        this.logger.error(
-          `There already exist an Auftrag in Xentral for this ECI Order ${order.orderNumber}. ` +
-            `We will try to attach this XentralProxyAuftrag to Order in ECI DB. Please check ` +
-            `manually in your Xentral Account what could cause this out-of-sync-issue.`,
-          {
-            orderId: order.id,
-            tenantId: this.tenantId,
-            orderNumber: order.orderNumber,
-            xentralIhrebestellnr: existingXentralAuftrag.ihrebestellnummer,
-            xentralInternet: existingXentralAuftrag.internet,
-            xentralAuftragId: existingXentralAuftrag.id,
-            xentralAuftragBelegNr: existingXentralAuftrag.belegnr,
-          },
-        );
-      }
+
       const auftrag: AuftragCreateRequest = {
         kundennummer: "NEW",
-        ansprechpartner: order.shippingAddress.fullname,
-        name: order.shippingAddress.company || "",
+        /**
+         * If we have a company, we set the fullname as ansprechpartner. If not,
+         * the fullname ist just in the name field
+         */
+        ansprechpartner: order.shippingAddress.company ? order.shippingAddress.fullname : "",
+        name: order.shippingAddress.company || order.shippingAddress.fullname || "",
         strasse: order.shippingAddress.street || "",
         adresszusatz: order.shippingAddress?.additionalAddressLine || "",
         // email: order.mainContact.email // TODO disabled for now because we want to send tracking emails by our own, and do not want to risk that kramer sends some emails
@@ -242,6 +250,7 @@ export class XentralProxyOrderSyncService {
         internet: order.orderNumber,
         // INFO: do not remove date otherwise search will not work anymore!
         datum: order.date.toJSON(),
+        lieferdatum: order.expectedShippingDate?.toJSON(),
         artikelliste: {
           position: order.orderLineItems.map((lineItem) => {
             if (!lineItem?.productVariant?.xentralArtikel?.[0]?.xentralNummer) {
@@ -258,30 +267,75 @@ export class XentralProxyOrderSyncService {
           }),
         },
       };
+      // if (existingXentralAuftrag) {
+        // this.logger.error(
+        //   `There already exist an Auftrag in Xentral for this ECI Order ${order.orderNumber}. ` +
+        //     `We will try to attach this XentralProxyAuftrag to Order in ECI DB. Please check ` +
+        //     `manually in your Xentral Account what could cause this out-of-sync-issue.`,
+        //   {
+        //     orderId: order.id,
+        //     tenantId: this.tenantId,
+        //     orderNumber: order.orderNumber,
+        //     xentralIhrebestellnr: existingXentralAuftrag.ihrebestellnummer,
+        //     xentralInternet: existingXentralAuftrag.internet,
+        //     xentralAuftragId: existingXentralAuftrag.id,
+        //     xentralAuftragBelegNr: existingXentralAuftrag.belegnr,
+        //   },
+        // );
+      // }
       if (
         !auftrag.artikelliste?.position ||
         auftrag.artikelliste?.position.length === 0
       ) {
         throw new Error("Can not sync an Auftrag with an empty artikelliste");
       }
-      const resData: Auftrag | AuftragCreateResponse = existingXentralAuftrag
-        ? existingXentralAuftrag
-        : await this.xentralXmlClient.AuftragCreate(auftrag);
-      const createdXentralAuftrag = await this.db.xentralProxyAuftrag.create({
-        data: {
+
+      const createOrUpdateXentralAuftrag = async () => {
+        if (existingXentralAuftrag) {
+          // TODO: maybe don't do anything if auftrag is not in status "freigegeben"
+          this.logger.info(`Updating Existing Xentral Auftrag ${existingXentralAuftrag.id} - ${existingXentralAuftrag.internet}`)
+          const auftragUpdate :AuftragEditRequest = {
+            ...auftrag,
+            status: existingXentralAuftrag.status,
+            kundennummer: parseInt(existingXentralAuftrag.kundennummer),
+            id: existingXentralAuftrag.id,
+          }
+          return this.xentralXmlClient.AuftragEdit(auftragUpdate);
+        } else {
+          return this.xentralXmlClient.AuftragCreate(auftrag)
+        }
+
+      }
+
+      const resData: AuftragEditResponse | AuftragCreateResponse = await createOrUpdateXentralAuftrag();
+      const createdXentralAuftrag = await this.db.xentralProxyAuftrag.upsert({
+        where: {
+          id_xentralProxyAppId: {
+            id: resData.id,
+            xentralProxyAppId: this.xentralProxyApp.id
+          }
+        },
+        create: {
           id: resData.id,
           order: {
             connect: {
               id: order.id,
             },
           },
-          xentralBelegNr: resData.belegnr,
+          xentralBelegNr: resData.belegnr.toString(),
           xentralProxyApp: {
             connect: {
               id: this.xentralProxyApp.id,
             },
           },
         },
+        update: {
+          order: {
+            connect: {
+              id: order.id,
+            },
+          },
+        }
       });
       this.logger.info(
         existingXentralAuftrag

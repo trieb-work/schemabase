@@ -10,6 +10,7 @@ import { ILogger } from "@eci/pkg/logger";
 import {
   Language,
   OrderInvoiceStatus,
+  OrderStatus,
   Prisma,
   PrismaClient,
   ZohoApp,
@@ -33,6 +34,7 @@ import { addressToZohoAddressId } from "./address";
 import { taxToZohoTaxId } from "./taxes";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import { Warning } from "../utils";
+import { SalesOrderStatus } from "@trieb.work/zoho-ts/dist/types/salesOrder";
 
 export interface ZohoSalesOrdersSyncConfig {
   logger: ILogger;
@@ -71,6 +73,22 @@ export class ZohoSalesOrdersSyncService {
         return Language.DE;
       default:
         return undefined;
+    }
+  }
+
+  /**
+   * Maps the Zoho SalesOrder status to our internal status
+   * @param zohoStatus
+   * @returns OrderStatus
+   */
+  public parserOrderStatus(zohoStatus: SalesOrderStatus) {
+    switch (zohoStatus) {
+      case "void":
+        return OrderStatus.canceled;
+      case "confirmed":
+        return OrderStatus.confirmed;
+      default:
+        return OrderStatus.draft;
     }
   }
 

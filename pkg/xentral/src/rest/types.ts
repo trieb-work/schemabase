@@ -568,6 +568,11 @@ export interface AuftragParams {
    * Unter-Resourcen in Resource einbinden (Beispiel: include=positionen)
    */
   include?: "positionen" | "protokoll";
+
+  /**
+   * Suche nach Internet Nummer
+   */
+  internet?: string;
 }
 export interface Auftrag {
   id: number;
