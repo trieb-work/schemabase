@@ -31,6 +31,7 @@ export class XentralXmlClient {
   public async edit<Res>(xml: object, methodName: string): Promise<Res> {
     return this.create<Res>(xml, methodName, true);
   }
+
   public async create<Res>(
     xml: object,
     methodName: string,
@@ -97,11 +98,13 @@ export class XentralXmlClient {
       throw new Error("ArtikelCreateResponse is missing the artikelnr.");
     return res as ArtikelCreateResponse;
   }
+
   public async ArtikelEdit(
     artikel: ArtikelEditRequest,
   ): Promise<ArtikelEditResponse> {
     return await this.edit<ArtikelEditResponse>(artikel, "ArtikelEdit");
   }
+
   public async ArtikelGet(
     artikel: ArtikelGetRequest,
   ): Promise<ArtikelGetResponse> {
