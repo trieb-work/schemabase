@@ -64,6 +64,7 @@ class ContactPersonsSync {
             },
           },
           active,
+          isPrimary: contactPerson.is_primary_contact,
           zohoApp: {
             connect: {
               id: this.zohoAppId,
@@ -94,6 +95,7 @@ class ContactPersonsSync {
         },
         update: {
           email: lowercaseEmail,
+          isPrimary: contactPerson.is_primary_contact,
         },
       });
     }

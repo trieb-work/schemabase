@@ -154,6 +154,7 @@ Table ZohoContact {
 Table ZohoContactPerson {
   id String [not null, note: 'Zoho Internal ContactPerson Id']
   active Boolean [not null, default: true, note: 'Contacts/Contactpersons can be disabled to filter out merged contacts']
+  isPrimary Boolean [not null, default: false]
   zohoContact ZohoContact [not null]
   zohoContactId String [not null]
   contact Contact [not null]
@@ -308,6 +309,8 @@ Table Invoice {
   tenantId String [not null]
   orders Order [not null]
   zohoInvoice ZohoInvoice [not null]
+  mainContact Contact [note: 'The person who has created this Order (In other systems this can also be a Useraccount)']
+  mainContactId String
 
   indexes {
     (invoiceNumber, tenantId) [unique]
@@ -407,6 +410,7 @@ Table Contact {
   firstName String
   lastName String
   orders Order [not null]
+  invoices Invoice [not null]
   company Company [note: 'A Contact can be related to one company']
   companyId String
   tenant Tenant [not null]
@@ -1615,6 +1619,8 @@ Ref: ZohoPackageLineItem.zohoAppId > ZohoApp.id [delete: Cascade]
 Ref: ZohoPackageLineItem.orderLineItemId > OrderLineItem.id
 
 Ref: Invoice.tenantId > Tenant.id [delete: Cascade]
+
+Ref: Invoice.mainContactId > Contact.id
 
 Ref: Tax.tenantId > Tenant.id [delete: Cascade]
 

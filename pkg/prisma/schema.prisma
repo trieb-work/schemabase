@@ -241,6 +241,9 @@ model ZohoContactPerson {
   /// Contacts/Contactpersons can be disabled to filter out merged contacts
   active Boolean @default(true)
 
+  /// Just one Zoho Contact Person can be primary
+  isPrimary Boolean @default(false)
+
   zohoContact   ZohoContact @relation(fields: [zohoContactId, zohoAppId], references: [id, zohoAppId], onDelete: Cascade)
   zohoContactId String
 
@@ -476,6 +479,10 @@ model Invoice {
   orders      Order[]
   zohoInvoice ZohoInvoice[]
 
+  /// The person who has created this Order (In other systems this can also be a Useraccount)
+  mainContact   Contact? @relation(references: [id], fields: [mainContactId])
+  mainContactId String?
+
   @@unique([invoiceNumber, tenantId])
   @@index([tenantId])
 }
@@ -624,6 +631,7 @@ model Contact {
   lastName  String?
 
   orders Order[]
+  invoices Invoice[]
 
   /// A Contact can be related to one company
   company   Company? @relation(fields: [companyId], references: [id])
