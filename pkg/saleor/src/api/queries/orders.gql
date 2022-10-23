@@ -41,6 +41,7 @@ query saleorCronOrdersOverview($createdGte: Date, $after: String, $first: Int) {
           }
         }
         paymentStatus
+        isPaid
         number
         total {
           currency

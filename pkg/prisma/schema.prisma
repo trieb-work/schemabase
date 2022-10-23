@@ -1672,6 +1672,8 @@ model ZohoApp {
   /// The language, that this org is set to. Some API fields like the country name work with translated names, so we need to know the orgs language
   orgLanguage  Language @default(DE)
 
+  customFieldReadyToFulfil String?
+
   cronSchedule String @default("*/30 * * * *")
   cronTimeout  Int    @default(800)
 

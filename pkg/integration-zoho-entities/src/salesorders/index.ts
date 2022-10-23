@@ -687,6 +687,13 @@ export class ZohoSalesOrdersSyncService {
             order.shippingAddress,
             this.logger,
           ),
+          // TODO: make this use settings from Zoho App. This fails, if custom field is not prepared
+          custom_fields: [
+            {
+              api_name: "cf_ready_to_fulfill",
+              value: order.readyToFullfill,
+            },
+          ],
           contact_persons: [mainContactPerson.id],
           shipping_charge: order.shippingPriceGross ?? undefined,
           // mit is_inclusive_tax = true klappt das discountValueNet natürlich nicht.

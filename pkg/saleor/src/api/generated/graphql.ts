@@ -10153,6 +10153,7 @@ export type SaleorCronOrdersOverviewQuery = {
         status: OrderStatus;
         userEmail?: string | null;
         paymentStatus: PaymentChargeStatusEnum;
+        isPaid: boolean;
         number?: string | null;
         billingAddress?: {
           __typename?: "Address";
@@ -10808,6 +10809,7 @@ export const SaleorCronOrdersOverviewDocument = gql`
             }
           }
           paymentStatus
+          isPaid
           number
           total {
             currency
