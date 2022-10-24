@@ -888,6 +888,7 @@ Table ZohoApp {
   tenant Tenant [not null]
   tenantId String [not null]
   orgLanguage Language [not null, default: 'DE', note: 'The language, that this org is set to. Some API fields like the country name work with translated names, so we need to know the orgs language']
+  customFieldReadyToFulfil String
   cronSchedule String [not null, default: '*/30 * * * *']
   cronTimeout Int [not null, default: 800]
   syncContacts Boolean [not null, default: false]
