@@ -664,6 +664,28 @@ export class ZohoSalesOrdersSyncService {
         if (!order.billingAddress || !order.shippingAddress) {
           throw new Error("Billing and Shipping address need both to be set!");
         }
+
+        const customFields = [];
+
+        /**
+         * The custom field mapping for a voucher code
+         */
+
+        if (this.zohoApp.customFieldVoucherCode && order.discountCode)
+          customFields.push({
+            api_name: this.zohoApp.customFieldVoucherCode,
+            value: order.discountCode,
+          });
+
+        /**
+         * The custom field mapping for ready to fulfill
+         */
+        if (this.zohoApp.customFieldReadyToFulfill)
+          customFields.push({
+            api_name: this.zohoApp.customFieldVoucherCode,
+            value: order.readyToFullfill,
+          });
+
         // eslint-disable-next-line camelcase
         const discount_type = order.discountValueNet
           ? "entity_level"
