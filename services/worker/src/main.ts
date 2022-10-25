@@ -97,7 +97,6 @@ async function main() {
   /**
    * Store package updates
    */
-
   const packageEventHandler = new PackageEventHandler({
     db: prisma,
     onSuccess: publishSuccess(producer, Topic.PACKAGE_STATE_TRANSITION),
@@ -118,7 +117,6 @@ async function main() {
   /**
    * Send emails when packages update
    */
-
   const customerNotifierSubscriber = await KafkaSubscriber.new<
     EventSchemaRegistry.PackageStateTransition["message"]
   >({
