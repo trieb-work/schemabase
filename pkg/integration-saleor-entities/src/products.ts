@@ -405,10 +405,10 @@ export class SaleorProductSyncService {
             saleorWarehouse.warehouseId === stockEntry.warehouseId,
         );
         const saleorWarehouseId = saleorWarehouse?.id;
+        /**
+         * Just update the stock for warehouses, that we have configured in Saleor
+         */
         if (!saleorWarehouseId) {
-          this.logger.info(
-            `No saleor warehouse for ECI warehouse ${stockEntry.warehouseId}`,
-          );
           continue;
         }
         /**
