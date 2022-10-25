@@ -48,6 +48,7 @@ export class ZohoPackageSyncWorkflow implements Workflow {
       zohoApp,
     });
     await zohoSalesOrdersSyncService.syncToECI();
+    await zohoSalesOrdersSyncService.syncFromECI();
 
     this.logger.info("Finished zoho package sync workflow run");
   }

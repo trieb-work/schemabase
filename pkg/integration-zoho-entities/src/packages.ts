@@ -3,7 +3,7 @@ import { ILogger } from "@eci/pkg/logger";
 import { Carrier, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 // import { id } from "@eci/pkg/ids";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { format, setHours, subDays, subYears } from "date-fns";
+import { format, setHours, subDays, subMonths, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { uniqueStringPackageLineItem } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { generateTrackingPortalURL } from "@eci/pkg/integration-tracking";
@@ -329,5 +329,27 @@ export class ZohoPackageSyncService {
       lastRun: new Date(),
       lastRunStatus: "success",
     });
+  }
+
+  public async syncFromECI(): Promise<void> {
+    const packagesNotInZoho = await this.db.package.findMany({
+      where: {
+        tenant: {
+          id: this.zohoApp.tenantId,
+        },
+        zohoPackage: {
+          none: {
+            zohoAppId: this.zohoApp.id,
+          },
+        },
+        createdAt: {
+          gt: subMonths(new Date(), 5),
+        },
+      },
+    });
+
+    this.logger.info(
+      `Received ${packagesNotInZoho.length} packages that we need to sync with Zoho`,
+    );
   }
 }
