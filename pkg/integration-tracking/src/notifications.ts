@@ -116,6 +116,14 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
           this.logger.warn(`No Email Address found for contact ${contact}`);
           return "";
         }
+        if (!contact.firstName) {
+          this.logger.warn(
+            `First Name not set! Can't send email. Contact object: ${JSON.stringify(
+              contact,
+            )}`,
+          );
+          return "";
+        }
         const res = await this.emailTemplateSender.sendTemplate(
           template.templateId,
           integration.trackingEmailApp.sender,
@@ -131,6 +139,7 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
             LASTNAME: contact.lastName,
             TRACKINGPROVIDER: packageEvent.package.carrier,
             TRACKINGNUMBER: packageEvent.package.trackingId,
+            TRACKINGPORTALURL: packageEvent.package.carrierTrackingUrl,
           },
         );
 
