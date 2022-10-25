@@ -382,14 +382,13 @@ export class SaleorProductSyncService {
       ) {
         this.logger.warn(
           `No product variant returned from saleor for id ${variant.id}! Cant update stocks.\
-            Disabling variant in internal DB`,
+          Deleting variant in internal DB`,
         );
-        // TODO: disable variant
-        if (variant.productVariant.id)
+        if (variant.id)
           await this.db.saleorProductVariant.delete({
             where: {
               id_installedSaleorAppId: {
-                id: variant.productVariant.id,
+                id: variant.id,
                 installedSaleorAppId: this.installedSaleorAppId,
               },
             },
