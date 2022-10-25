@@ -294,6 +294,10 @@ export class XentralProxyOrderSyncService {
 
       const createOrUpdateXentralAuftrag = async () => {
         if (existingXentralAuftrag) {
+          if (existingXentralAuftrag.status === "abgeschlossen") {
+            this.logger.info(`Existing Xentral Auftrag ${existingXentralAuftrag.id} - ${existingXentralAuftrag.internet} is already closed. Don't update anything`);
+            return existingXentralAuftrag;
+          }
           // TODO: maybe don't do anything if auftrag is not in status "freigegeben"
           this.logger.info(
             `Updating Existing Xentral Auftrag ${existingXentralAuftrag.id} - ${existingXentralAuftrag.internet}`,

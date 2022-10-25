@@ -16,12 +16,14 @@ describe("XentralProxy Entity Sync Orders Test", () => {
   test("It should work to sync orders to Xentral via XentralProxy", async () => {
     const xentralProxyApp = await prismaClient.xentralProxyApp.findUnique({
       where: {
+        // id: "xpa_gigago",
         id: "test",
       },
     });
     const tenant = await prismaClient.tenant.findUnique({
       where: {
-        id: "test",
+        id: "pk_7f16573fece94114847dc81d3214eef4",
+        // id: "test",
       },
     });
     if (!xentralProxyApp || !tenant)
@@ -36,7 +38,6 @@ describe("XentralProxy Entity Sync Orders Test", () => {
       logger: new AssertionLogger(),
       db: prismaClient,
       xentralProxyApp,
-      warehouseId: xentralProxyApp.warehouseId,
     });
     await service.syncFromECI();
   }, 1000000);
