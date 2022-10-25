@@ -19,10 +19,10 @@ import { PackageState } from "@eci/pkg/prisma";
 const parseState = (state: string): PackageState | null => {
   switch (state) {
     case "start_order":
-      return PackageState.INIT;
+      return PackageState.INFORMATION_RECEIVED;
 
     case "pickup_driver":
-      return PackageState.IN_TRANSIT;
+      return PackageState.INIT;
 
     case "pickup_depot":
       return PackageState.IN_TRANSIT;
