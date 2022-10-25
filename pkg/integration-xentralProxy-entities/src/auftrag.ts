@@ -85,9 +85,9 @@ export class XentralProxyOrderSyncService {
         /**
          * Filter out all orders with packages.
          */
-        packages: {
-          none: {},
-        },
+        // packages: {
+        //   none: {},
+        // },
         /**
          * only sync orders which have at least one lineitem for the specified warehouse
          */
@@ -298,9 +298,11 @@ export class XentralProxyOrderSyncService {
           this.logger.info(
             `Updating Existing Xentral Auftrag ${existingXentralAuftrag.id} - ${existingXentralAuftrag.internet}`,
           );
+          // TODO: how to make sure, that the shipment status is correct? 
+          const auftragsStatus = order.shipmentStatus === "shipped" ? "abgeschlossen" : existingXentralAuftrag.status;
           const auftragUpdate: AuftragEditRequest = {
             ...auftrag,
-            status: existingXentralAuftrag.status,
+            status: auftragsStatus,
             kundennummer: parseInt(existingXentralAuftrag.kundennummer),
             id: existingXentralAuftrag.id,
           };
