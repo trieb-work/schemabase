@@ -10,6 +10,7 @@ import { ILogger } from "@eci/pkg/logger";
 import {
   Language,
   OrderInvoiceStatus,
+  OrderShipmentStatus,
   OrderStatus,
   Prisma,
   PrismaClient,
@@ -34,7 +35,10 @@ import { addressToZohoAddressId } from "./address";
 import { taxToZohoTaxId } from "./taxes";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import { Warning } from "../utils";
-import { SalesOrderStatus } from "@trieb.work/zoho-ts/dist/types/salesOrder";
+import {
+  SalesOrderShippedStatus,
+  SalesOrderStatus,
+} from "@trieb.work/zoho-ts/dist/types/salesOrder";
 
 export interface ZohoSalesOrdersSyncConfig {
   logger: ILogger;
@@ -89,6 +93,17 @@ export class ZohoSalesOrdersSyncService {
         return OrderStatus.confirmed;
       default:
         return OrderStatus.draft;
+    }
+  }
+
+  public parseShipmentStatus(zohoStatus: SalesOrderShippedStatus) {
+    switch (zohoStatus) {
+      case "shipped":
+        return OrderShipmentStatus.shipped;
+      case "fulfilled":
+        return OrderShipmentStatus.delivered;
+      default:
+        return undefined;
     }
   }
 
@@ -202,6 +217,12 @@ export class ZohoSalesOrdersSyncService {
         );
         continue;
       }
+
+      const fullyShipped = salesorder.shipped_status === "shipped" ?? false;
+      if (fullyShipped)
+        this.logger.info(
+          `Order ${salesorder.salesorder_number} is in status fully shipped in Zoho. Setting this in ECI DB`,
+        );
       // Connect or create the internal contact using the email address
       // connected with this salesorder
       const contactConnectOrCreate = {
@@ -289,6 +310,9 @@ export class ZohoSalesOrdersSyncService {
             update: {
               date: new Date(salesorder.date),
               expectedShippingDate: new Date(salesorder.shipment_date),
+              shipmentStatus: this.parseShipmentStatus(
+                salesorder.shipped_status,
+              ),
               mainContact: contactConnectOrCreate,
               invoiceStatus,
             },
