@@ -621,8 +621,10 @@ Table ProductVariant {
   saleorProductVariant SaleorProductVariant [not null]
   stockOnHand Int
   isBundleProduct Boolean [not null, default: false]
+  isProductBundle Boolean [not null, default: false, note: 'if this product is actually a "just-in-time" bundle, not a composite item.
+normally, product bundles don\'t allocate stock on the individual products']
   billOfMaterial BillOfMaterial [not null]
-  billOfMaterialChilds BillOfMaterial [not null]
+  billOfMaterialChilds BillOfMaterial [not null, note: 'deprecated']
 
   indexes {
     (sku, tenantId) [unique]
@@ -1127,6 +1129,8 @@ Table XentralProxyApp {
   url String [not null]
   cronSchedule String [not null, default: '*/30 * * * *']
   cronTimeout Int [not null, default: 800]
+  syncOrders Boolean [not null, default: false]
+  syncProducts Boolean [not null, default: false]
   xentralProxyAuftraege XentralProxyAuftrag [not null]
   xentralArtikel XentralArtikel [not null]
   XentralLieferscheine XentralLieferschein [not null]

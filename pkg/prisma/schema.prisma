@@ -2045,6 +2045,9 @@ model XentralProxyApp {
   cronSchedule String @default("*/30 * * * *")
   cronTimeout  Int    @default(800)
 
+  syncOrders        Boolean @default(false)
+  syncProducts      Boolean @default(false)
+
   xentralProxyAuftraege XentralProxyAuftrag[]
   xentralArtikel        XentralArtikel[]
   XentralLieferscheine  XentralLieferschein[]

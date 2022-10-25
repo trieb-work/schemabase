@@ -75,25 +75,29 @@ export class CronTable {
         xentralProxyApp: enabledXentralApp,
       };
 
-      new WorkflowScheduler(this.clients).schedule(
-        createWorkflowFactory(
-          XentralArtikelSyncWorkflow,
-          this.clients,
-          commonWorkflowConfig,
-        ),
-        { ...commonCronConfig, offset: 0 },
-        [tenantId, id],
-      );
+      if (enabledXentralApp.syncProducts) {
+        new WorkflowScheduler(this.clients).schedule(
+          createWorkflowFactory(
+            XentralArtikelSyncWorkflow,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 0 },
+          [tenantId, id],
+        );
+      }
 
-      new WorkflowScheduler(this.clients).schedule(
-        createWorkflowFactory(
-          XentralAuftragSyncWorkflow,
-          this.clients,
-          commonWorkflowConfig,
-        ),
-        { ...commonCronConfig, offset: 10 },
-        [tenantId, id],
-      );
+      if (enabledXentralApp.syncOrders) {
+        new WorkflowScheduler(this.clients).schedule(
+          createWorkflowFactory(
+            XentralAuftragSyncWorkflow,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 20 },
+          [tenantId, id],
+        );
+      }
     }
 
     /**
@@ -251,7 +255,6 @@ export class CronTable {
       }
 
       if (enabledZohoIntegration.syncPayments) {
-
         new WorkflowScheduler(this.clients).schedule(
           createWorkflowFactory(
             SaleorPaymentSyncWorkflow,
