@@ -84,6 +84,9 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
         },
       });
       if (integration == null) {
+        this.logger.error(
+          `No trackingIntegration found for id: ${event.integrationId}`,
+        );
         throw new Error(
           `No trackingIntegration found for id: ${event.integrationId}`,
         );
