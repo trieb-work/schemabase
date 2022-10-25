@@ -133,7 +133,8 @@ export class XentralProxyProductVariantSyncService {
           (existingXentralArtikel.name_de || null) ===
             (artikel.name_de || null) &&
           (existingXentralArtikel.ean || null) === (artikel.ean || null) &&
-          (existingXentralArtikel.gewicht || null) === (artikel.gewicht || null) &&
+          (existingXentralArtikel.gewicht || null) ===
+            (artikel.gewicht || null) &&
           (existingXentralArtikel.herstellernummer || null) ===
             (artikel.herstellernummer || null) &&
           (existingXentralArtikel.zolltarifnummer || null) ===

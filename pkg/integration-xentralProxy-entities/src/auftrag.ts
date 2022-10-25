@@ -63,13 +63,13 @@ export class XentralProxyOrderSyncService {
           in: ["pending", "partiallyShipped"],
         },
         readyToFullfill: true, // TODO: in zukunft wäre es auch möglich hier das shipment date
-        
+
         /**
          * Filter out orders, that are already too old. In this time window, we want to update
          * all orders in Xentral, as we see them as "active"
          */
         updatedAt: {
-          gt: subDays(new Date(), 5)
+          gt: subDays(new Date(), 5),
         },
 
         /**
@@ -83,10 +83,10 @@ export class XentralProxyOrderSyncService {
         //   },
         // },
         /**
-         * Filter out all orders with packages. 
+         * Filter out all orders with packages.
          */
         packages: {
-          none: {}
+          none: {},
         },
         /**
          * only sync orders which have at least one lineitem for the specified warehouse
@@ -235,8 +235,11 @@ export class XentralProxyOrderSyncService {
          * If we have a company, we set the fullname as ansprechpartner. If not,
          * the fullname ist just in the name field
          */
-        ansprechpartner: order.shippingAddress.company ? order.shippingAddress.fullname : "",
-        name: order.shippingAddress.company || order.shippingAddress.fullname || "",
+        ansprechpartner: order.shippingAddress.company
+          ? order.shippingAddress.fullname
+          : "",
+        name:
+          order.shippingAddress.company || order.shippingAddress.fullname || "",
         strasse: order.shippingAddress.street || "",
         adresszusatz: order.shippingAddress?.additionalAddressLine || "",
         // email: order.mainContact.email // TODO disabled for now because we want to send tracking emails by our own, and do not want to risk that kramer sends some emails
@@ -267,20 +270,20 @@ export class XentralProxyOrderSyncService {
         },
       };
       // if (existingXentralAuftrag) {
-        // this.logger.error(
-        //   `There already exist an Auftrag in Xentral for this ECI Order ${order.orderNumber}. ` +
-        //     `We will try to attach this XentralProxyAuftrag to Order in ECI DB. Please check ` +
-        //     `manually in your Xentral Account what could cause this out-of-sync-issue.`,
-        //   {
-        //     orderId: order.id,
-        //     tenantId: this.tenantId,
-        //     orderNumber: order.orderNumber,
-        //     xentralIhrebestellnr: existingXentralAuftrag.ihrebestellnummer,
-        //     xentralInternet: existingXentralAuftrag.internet,
-        //     xentralAuftragId: existingXentralAuftrag.id,
-        //     xentralAuftragBelegNr: existingXentralAuftrag.belegnr,
-        //   },
-        // );
+      // this.logger.error(
+      //   `There already exist an Auftrag in Xentral for this ECI Order ${order.orderNumber}. ` +
+      //     `We will try to attach this XentralProxyAuftrag to Order in ECI DB. Please check ` +
+      //     `manually in your Xentral Account what could cause this out-of-sync-issue.`,
+      //   {
+      //     orderId: order.id,
+      //     tenantId: this.tenantId,
+      //     orderNumber: order.orderNumber,
+      //     xentralIhrebestellnr: existingXentralAuftrag.ihrebestellnummer,
+      //     xentralInternet: existingXentralAuftrag.internet,
+      //     xentralAuftragId: existingXentralAuftrag.id,
+      //     xentralAuftragBelegNr: existingXentralAuftrag.belegnr,
+      //   },
+      // );
       // }
       if (
         !auftrag.artikelliste?.position ||
@@ -292,27 +295,29 @@ export class XentralProxyOrderSyncService {
       const createOrUpdateXentralAuftrag = async () => {
         if (existingXentralAuftrag) {
           // TODO: maybe don't do anything if auftrag is not in status "freigegeben"
-          this.logger.info(`Updating Existing Xentral Auftrag ${existingXentralAuftrag.id} - ${existingXentralAuftrag.internet}`)
-          const auftragUpdate :AuftragEditRequest = {
+          this.logger.info(
+            `Updating Existing Xentral Auftrag ${existingXentralAuftrag.id} - ${existingXentralAuftrag.internet}`,
+          );
+          const auftragUpdate: AuftragEditRequest = {
             ...auftrag,
             status: existingXentralAuftrag.status,
             kundennummer: parseInt(existingXentralAuftrag.kundennummer),
             id: existingXentralAuftrag.id,
-          }
+          };
           return this.xentralXmlClient.AuftragEdit(auftragUpdate);
         } else {
-          return this.xentralXmlClient.AuftragCreate(auftrag)
+          return this.xentralXmlClient.AuftragCreate(auftrag);
         }
+      };
 
-      }
-
-      const resData: AuftragEditResponse | AuftragCreateResponse = await createOrUpdateXentralAuftrag();
+      const resData: AuftragEditResponse | AuftragCreateResponse =
+        await createOrUpdateXentralAuftrag();
       const createdXentralAuftrag = await this.db.xentralProxyAuftrag.upsert({
         where: {
           id_xentralProxyAppId: {
             id: resData.id,
-            xentralProxyAppId: this.xentralProxyApp.id
-          }
+            xentralProxyAppId: this.xentralProxyApp.id,
+          },
         },
         create: {
           id: resData.id,
@@ -334,7 +339,7 @@ export class XentralProxyOrderSyncService {
               id: order.id,
             },
           },
-        }
+        },
       });
       this.logger.info(
         existingXentralAuftrag

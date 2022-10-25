@@ -374,7 +374,8 @@ export class SaleorOrderSyncService {
                     discountValueNet,
                     undiscountedUnitPriceNet:
                       lineItem.undiscountedUnitPrice.net.amount,
-                    undiscountedUnitPriceGross: lineItem.undiscountedUnitPrice.gross.amount,
+                    undiscountedUnitPriceGross:
+                      lineItem.undiscountedUnitPrice.gross.amount,
                     totalPriceNet: lineItem.totalPrice.net.amount,
                     totalPriceGross: lineItem.totalPrice.gross.amount,
                     tax: {
@@ -406,7 +407,8 @@ export class SaleorOrderSyncService {
                   discountValueNet,
                   totalPriceNet: lineItem.totalPrice.net.amount,
                   totalPriceGross: lineItem.totalPrice.gross.amount,
-                  undiscountedUnitPriceGross: lineItem.undiscountedUnitPrice.gross.amount,
+                  undiscountedUnitPriceGross:
+                    lineItem.undiscountedUnitPrice.gross.amount,
                   tax: {
                     connect: {
                       percentage_tenantId: {
