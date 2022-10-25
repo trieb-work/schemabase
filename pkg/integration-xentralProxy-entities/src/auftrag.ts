@@ -23,7 +23,6 @@ interface XentralProxyOrderSyncServiceConfig {
   xentralRestClient: XentralRestClient;
   db: PrismaClient;
   logger: ILogger;
-  warehouseId: string;
 }
 
 export class XentralProxyOrderSyncService {
@@ -45,7 +44,7 @@ export class XentralProxyOrderSyncService {
     this.logger = config.logger;
     this.tenantId = config.xentralProxyApp.tenantId;
     this.xentralProxyApp = config.xentralProxyApp;
-    this.warehouseId = config.warehouseId;
+    this.warehouseId = config.xentralProxyApp.warehouseId;
     this.db = config.db;
     this.xentralXmlClient = config.xentralXmlClient;
     this.xentralRestClient = config.xentralRestClient;

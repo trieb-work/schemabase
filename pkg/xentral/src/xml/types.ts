@@ -68,6 +68,8 @@ export interface ArtikelCreateRequest {
   berechneterek?: "0,00";
   berechneterekwaehrung?: string;
   altersfreigabe?: string;
+  stueckliste?: 1 | 0;
+  juststueckliste?: 1 | 0;
   preproduced_partlist?: string;
   formelmenge?: string;
   formelpreis?: string;
@@ -159,6 +161,29 @@ export interface ArtikelCreateRequest {
 export interface ArtikelCreateResponse {
   id: number;
   nummer: string;
+}
+
+export interface StuecklisteEditRequest {
+  eid?: string;
+  /**
+   * The id of the article you want to add a bill of material
+   */
+  estartikelid: number;
+
+  /**
+   * The BOM part item. It might work with the SKU only
+   */
+  eartikel: string;
+  emenge: number;
+  eart?: "et";
+  ereferenz?: string;
+  elayer?: "Top";
+  eplace?: string;
+  ewert?: string;
+  ebauform?: string;
+  ezachse?: string;
+  expos?: string;
+  eypos?: string;
 }
 
 export type AuftragEditRequest = Omit<AuftragCreateRequest, "nummer"> & {

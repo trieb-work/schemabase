@@ -1272,9 +1272,14 @@ model ProductVariant {
 
   // if this product variant is a bundle / composite product
   isBundleProduct      Boolean          @default(false)
+
+  /// if this product is actually a "just-in-time" bundle, not a composite item.
+  /// normally, product bundles don't allocate stock on the individual products
+  isProductBundle     Boolean           @default(false)
   // A product variant can be a bundle product and can
   // have just one Bill of Material related
   billOfMaterial       BillOfMaterial[]
+  /// deprecated
   billOfMaterialChilds BillOfMaterial[] @relation("childProduct")
 
   @@unique([sku, tenantId])

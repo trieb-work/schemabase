@@ -39,7 +39,7 @@ export class XentralAuftragSyncWorkflow implements Workflow {
    */
   public async run(): Promise<void> {
     this.logger.info(
-      `Starting xentral artikel sync workflow run for xentral URL ${this.xentralProxyApp.url}`,
+      `Starting xentral Auftrag sync workflow run for xentral URL ${this.xentralProxyApp.url}`,
     );
 
     const xentralXmlClient = new XentralXmlClient(this.xentralProxyApp);
@@ -50,9 +50,8 @@ export class XentralAuftragSyncWorkflow implements Workflow {
       logger: this.logger,
       db: this.prisma,
       xentralProxyApp: this.xentralProxyApp,
-      warehouseId: this.xentralProxyApp.warehouseId,
     });
     await xentralAuftragSync.syncFromECI();
-    this.logger.info("Finished xentral artikel sync workflow run");
+    this.logger.info("Finished xentral Auftrag sync workflow run");
   }
 }
