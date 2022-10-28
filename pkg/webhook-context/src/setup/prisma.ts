@@ -9,5 +9,6 @@ let prismaGlobal: PrismaClient;
  */
 export const setupPrisma = (): ExtendContextFn<"prisma"> => async (ctx) => {
   const prisma = prismaGlobal || new PrismaClient();
+  prismaGlobal = prisma;
   return Object.assign(ctx, { prisma });
 };
