@@ -166,6 +166,7 @@ export class ZohoPackageSyncService {
                 id: id.id("package"),
                 number: parcel.package_number,
                 trackingId: parcel.tracking_number,
+                state: parcel.tracking_number ? "INFORMATION_RECEIVED" : "INIT",
                 carrierTrackingUrl,
                 tenant: {
                   connect: {
