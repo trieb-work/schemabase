@@ -10221,6 +10221,7 @@ export type SaleorCronOrderDetailsQuery = {
     lines: Array<{
       __typename?: "OrderLine";
       id: string;
+      productSku: string;
       quantity: number;
       unitDiscountType?: DiscountValueTypeEnum | null;
       unitDiscountValue: any;
@@ -10848,6 +10849,7 @@ export const SaleorCronOrderDetailsDocument = gql`
       }
       lines {
         id
+        productSku
         variant {
           sku
         }

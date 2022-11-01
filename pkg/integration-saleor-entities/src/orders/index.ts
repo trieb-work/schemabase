@@ -292,7 +292,7 @@ export class SaleorOrderSyncService {
               `Lineitem of Order has a missing id in saleor response.`,
             );
           }
-          if (!lineItem?.variant?.sku) {
+          if (!lineItem?.productSku) {
             throw new Error(
               `Lineitem of Order is missing the variant sku in saleor response.`,
             );
@@ -301,20 +301,20 @@ export class SaleorOrderSyncService {
           const productSku = await this.db.productVariant.findUnique({
             where: {
               sku_tenantId: {
-                sku: lineItem.variant.sku,
+                sku: lineItem.productSku,
                 tenantId: this.tenantId,
               },
             },
           });
           if (!productSku) {
             throw new Warning(
-              `No internal product variant found for SKU ${lineItem.variant.sku}! Can't create line Item. Try again after Product Variant Sync.`,
+              `No internal product variant found for SKU ${lineItem.productSku}! Can't create line Item. Try again after Product Variant Sync.`,
             );
           }
 
           const uniqueString = uniqueStringOrderLine(
             prefixedOrderNumber,
-            lineItem.variant.sku,
+            lineItem.productSku,
             lineItem.quantity,
           );
 

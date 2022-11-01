@@ -78,6 +78,7 @@ query saleorCronOrderDetails($id: ID!) {
     }
     lines {
       id
+      productSku
       variant {
         sku
       }
