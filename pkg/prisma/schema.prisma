@@ -779,6 +779,7 @@ model PackageLineItem {
   @@index([warehouseId])
   @@index([uniqueString])
   @@index([tenantId])
+  @@index([sku])
 }
 
 enum OrderStatus {
@@ -2047,6 +2048,7 @@ model XentralProxyApp {
 
   syncOrders        Boolean @default(false)
   syncProducts      Boolean @default(false)
+  syncPackages      Boolean @default(false)
 
   xentralProxyAuftraege XentralProxyAuftrag[]
   xentralArtikel        XentralArtikel[]

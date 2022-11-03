@@ -1131,6 +1131,7 @@ Table XentralProxyApp {
   cronTimeout Int [not null, default: 800]
   syncOrders Boolean [not null, default: false]
   syncProducts Boolean [not null, default: false]
+  syncPackages Boolean [not null, default: false]
   xentralProxyAuftraege XentralProxyAuftrag [not null]
   xentralArtikel XentralArtikel [not null]
   XentralLieferscheine XentralLieferschein [not null]
