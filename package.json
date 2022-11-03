@@ -57,7 +57,7 @@
     "prettier": "^2.6.2",
     "prisma-dbml-generator": "^0.9.0",
     "ts-jest": "^27.1.4",
-    "typescript": "^4.7.3",
+    "typescript": "^4.8.0",
     "vercel": "^24.2.3"
   },
   "lint-staged": {
@@ -123,7 +123,7 @@
     "i18n-iso-countries": "^7.5.0",
     "ioredis": "^5.0.6",
     "jsonwebtoken": "^8.5.1",
-    "kafkajs": "^1.16.0",
+    "kafkajs": "^2.2.2",
     "micro": "^9.3.4",
     "morgan": "^1.10.0",
     "next": "^12.2.2",
