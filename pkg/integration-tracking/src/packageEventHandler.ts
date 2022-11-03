@@ -38,13 +38,17 @@ export class PackageEventHandler {
   constructor(config: PackageEventHandlerConfig) {
     this.db = config.db;
     this.onSuccess = config.onSuccess;
-    this.logger = config.logger;
+    this.logger = config.logger.with({ handler: "packageeventhandler" });
   }
 
   public async handleEvent(
     ctx: Context,
     event: EventSchemaRegistry.PackageUpdate["message"],
   ): Promise<void> {
+    this.logger.info(
+      // eslint-disable-next-line max-len
+      `Package Event Handler - new message. State: ${event.state} - Tracking Number: ${event.trackingId}`,
+    );
     const storedPackage = await this.db.package.findFirst({
       where: {
         trackingId: event.trackingId,
