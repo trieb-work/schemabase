@@ -13,6 +13,7 @@ import { SaleorProductSyncWorkflow } from "./workflows/saleorProductSync";
 import { SaleorWarehouseSyncWorkflow } from "./workflows/saleorWarehouseSync";
 import { XentralArtikelSyncWorkflow } from "./workflows/xentralArtikelSync";
 import { XentralAuftragSyncWorkflow } from "./workflows/xentralAuftragSync";
+import { XentralLieferscheinSyncWorkflow } from "./workflows/xentralLieferscheinSync";
 import { ZohoContactSyncWorkflow } from "./workflows/zohoContactSync";
 import { ZohoInvoiceSyncWorkflow } from "./workflows/zohoInvoiceSync";
 import { ZohoItemSyncWorkflow } from "./workflows/zohoItemSync";
@@ -95,6 +96,18 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 20 },
+          [tenantId, id],
+        );
+      }
+
+      if (enabledXentralApp.syncPackages) {
+        new WorkflowScheduler(this.clients).schedule(
+          createWorkflowFactory(
+            XentralLieferscheinSyncWorkflow,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 30 },
           [tenantId, id],
         );
       }
