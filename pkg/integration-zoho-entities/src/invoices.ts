@@ -393,35 +393,39 @@ export class ZohoInvoiceSyncService {
           );
         }
       }
-      try {
-        await this.zoho.invoice.sent(
-          invoicesToConfirm.map((inv) => inv.invoice_id),
-        );
-        this.logger.info(
-          `Successfully confirmed ${invoicesToConfirm.length} invoice(s).`,
-          {
-            invoiceNumbersToConfirm: invoicesToConfirm.map(
-              (inv) => inv.invoice_number,
-            ),
-            invoiceIDsToConfirm: invoicesToConfirm.map((inv) => inv.invoice_id),
-          },
-        );
-      } catch (err) {
-        const errorMsg =
-          err instanceof Error
-            ? `${err.name}:\n${err.message}`
-            : JSON.stringify(err);
-        this.logger.error(
-          "Could not confirm all invoices after creating them. Please check Zoho and confirm them manually.",
-          {
-            submitedinvoiceIds: invoicesToConfirm.map((inv) => inv.invoice_id),
-            submitedinvoiceNumbers: invoicesToConfirm.map(
-              (inv) => inv.invoice_number,
-            ),
-            zohoClientErrorMessage: errorMsg,
-          },
-        );
-      }
+    }
+
+    /**
+     * Confirm all above created invoices
+     */
+    try {
+      await this.zoho.invoice.sent(
+        invoicesToConfirm.map((inv) => inv.invoice_id),
+      );
+      this.logger.info(
+        `Successfully confirmed ${invoicesToConfirm.length} invoice(s).`,
+        {
+          invoiceNumbersToConfirm: invoicesToConfirm.map(
+            (inv) => inv.invoice_number,
+          ),
+          invoiceIDsToConfirm: invoicesToConfirm.map((inv) => inv.invoice_id),
+        },
+      );
+    } catch (err) {
+      const errorMsg =
+        err instanceof Error
+          ? `${err.name}:\n${err.message}`
+          : JSON.stringify(err);
+      this.logger.error(
+        "Could not confirm all invoices after creating them. Please check Zoho and confirm them manually.",
+        {
+          submitedinvoiceIds: invoicesToConfirm.map((inv) => inv.invoice_id),
+          submitedinvoiceNumbers: invoicesToConfirm.map(
+            (inv) => inv.invoice_number,
+          ),
+          zohoClientErrorMessage: errorMsg,
+        },
+      );
     }
   }
 }
