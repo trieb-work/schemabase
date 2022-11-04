@@ -156,7 +156,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     )}:${statusdate.slice(12, 14)}.000+01:00`,
   );
 
-  ctx.logger.info("package update", {
+  ctx.logger.info(`package update - TrackingId: ${trackingId}`, {
     pushId,
     trackingId,
     status,
