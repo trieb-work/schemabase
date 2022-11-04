@@ -48,6 +48,9 @@ export class PackageEventHandler {
     this.logger.info(
       // eslint-disable-next-line max-len
       `Package Event Handler - new message. State: ${event.state} - Tracking Number: ${event.trackingId}`,
+      {
+        trackingId: event.trackingId,
+      },
     );
     const storedPackage = await this.db.package.findFirst({
       where: {
@@ -59,7 +62,13 @@ export class PackageEventHandler {
       },
     });
     if (storedPackage == null) {
-      throw new Error(`No package found with tracking id: ${event.trackingId}`);
+      this.logger.error(
+        `No package found with tracking id: ${event.trackingId}`,
+        {
+          trackingId: event.trackingId,
+        },
+      );
+      throw new Error();
     }
     const currentState = storedPackage.state;
 
