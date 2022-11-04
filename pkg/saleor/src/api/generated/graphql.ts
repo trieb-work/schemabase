@@ -10338,6 +10338,7 @@ export type SaleorCronPaymentsQuery = {
           created: any;
           modified: any;
           isActive: boolean;
+          chargeStatus: PaymentChargeStatusEnum;
           paymentMethodType: string;
           creditCard?: {
             __typename?: "CreditCard";
@@ -10972,6 +10973,7 @@ export const SaleorCronPaymentsDocument = gql`
             created
             modified
             isActive
+            chargeStatus
             creditCard {
               brand
               lastDigits

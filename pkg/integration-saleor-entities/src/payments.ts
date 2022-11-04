@@ -1,6 +1,10 @@
 /* eslint-disable max-len */
 import { ILogger } from "@eci/pkg/logger";
-import { queryWithPagination, SaleorCronPaymentsQuery } from "@eci/pkg/saleor";
+import {
+  PaymentChargeStatusEnum,
+  queryWithPagination,
+  SaleorCronPaymentsQuery,
+} from "@eci/pkg/saleor";
 import {
   GatewayType,
   PaymentMethodType,
@@ -97,7 +101,14 @@ export class SaleorPaymentSyncService {
     // Only sync active payments. For exampe if a payment was captured twice and only one was successfull, the unsuccessfull payment is unactive and should be filtered out.
     const payments = result.orders?.edges
       .flatMap((order) => order.node.payments)
-      .filter((payment) => payment?.isActive);
+      .filter((payment) => payment?.isActive)
+      /**
+       * We only sync fully charged payments right now
+       */
+      .filter(
+        (payment) =>
+          payment?.chargeStatus === PaymentChargeStatusEnum.FullyCharged,
+      );
 
     if (!result.orders || result.orders.edges.length === 0 || !payments) {
       this.logger.info("Saleor returned no orders. Don't sync anything");
