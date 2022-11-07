@@ -96,6 +96,7 @@ class ContactPersonsSync {
         update: {
           email: lowercaseEmail,
           isPrimary: contactPerson.is_primary_contact,
+          active,
         },
       });
     }
