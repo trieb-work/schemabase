@@ -256,6 +256,7 @@ export class ZohoPaymentSyncService {
                 zohoContactPersons: {
                   where: {
                     zohoAppId: this.zohoApp.id,
+                    active: true,
                   },
                 },
               },
