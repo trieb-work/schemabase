@@ -42,7 +42,7 @@ export class ZohoContactSyncService {
 
   public async syncToECI(): Promise<void> {
     const contacts = await this.zoho.contact.list({
-      filterBy: "active",
+      // filterBy: "active",
       contactType: "customer",
     });
     const tenantId = this.zohoApp.tenantId;
