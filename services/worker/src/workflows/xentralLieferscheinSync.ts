@@ -29,7 +29,6 @@ export class XentralLieferscheinSyncWorkflow implements Workflow {
       workflow: XentralLieferscheinSyncWorkflow.name,
       xentralProxyApp: this.xentralProxyApp,
     });
-    this.logger = ctx.logger;
     this.prisma = clients.prisma;
     this.xentralProxyApp = config.xentralProxyApp;
   }
