@@ -129,7 +129,7 @@ export class ZohoPaymentSyncService {
       });
       if (!eciContact?.zohoContactPerson?.[0]?.contactId) {
         this.logger.warn(
-          `Can't find an internal contact for Zoho Contact Person Id ${payment.customer_id}`,
+          `Can't find an internal contact for Zoho Contact Id ${payment.customer_id}`,
         );
       } else {
         eciContactId = eciContact.zohoContactPerson[0].contactId;
