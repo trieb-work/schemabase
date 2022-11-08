@@ -16,6 +16,7 @@ import {
 import { XentralXmlClient } from "@eci/pkg/xentral/src/xml";
 import { id } from "@eci/pkg/ids";
 import { Auftrag, Trackingnummer } from "@eci/pkg/xentral/src/rest/types";
+import { generateTrackingPortalURL } from "@eci/pkg/integration-tracking";
 
 interface XentralProxyLieferscheinSyncServiceConfig {
   xentralProxyApp: XentralProxyApp;
@@ -268,6 +269,8 @@ export class XentralProxyLieferscheinSyncService {
         // const packageNumber = `LF-${lieferschein.belegnr}_TRN-${matchingTrackingnummer.tracking}`;
         const packageNumber = `LF-${lieferschein.belegnr}`
         const packageCreateId = id.id("package");
+        const trackingId = matchingTrackingnummer.tracking
+        const carrierTrackingUrl = (carrier && trackingId) ? generateTrackingPortalURL(carrier, order.language, trackingId) : undefined;
         const upsertedPackage = await this.db.package.upsert({
           where: {
             number_tenantId: {
@@ -277,6 +280,7 @@ export class XentralProxyLieferscheinSyncService {
           },
           update: {
             trackingId: matchingTrackingnummer.tracking,
+            carrierTrackingUrl,
           },
           create: {
             id: packageCreateId,
@@ -293,6 +297,7 @@ export class XentralProxyLieferscheinSyncService {
               },
             },
             trackingId: matchingTrackingnummer.tracking,
+            carrierTrackingUrl,
             packageLineItems: {
               createMany: {
                 // skipDuplicates: true, // TODO check if this is needed?
