@@ -17,6 +17,7 @@ import { XentralXmlClient } from "@eci/pkg/xentral/src/xml";
 import { id } from "@eci/pkg/ids";
 import { Auftrag, Trackingnummer } from "@eci/pkg/xentral/src/rest/types";
 import { generateTrackingPortalURL } from "@eci/pkg/integration-tracking";
+import { subDays } from "date-fns";
 
 interface XentralProxyLieferscheinSyncServiceConfig {
   xentralProxyApp: XentralProxyApp;
@@ -54,9 +55,12 @@ export class XentralProxyLieferscheinSyncService {
       where: {
         // TODO check which filters make sense?
         orderStatus: "confirmed",
-        paymentStatus: "fullyPaid",
-        shipmentStatus: {
-          in: ["pending", "partiallyShipped"],
+
+        // shipmentStatus: {
+        //   in: ["pending", "partiallyShipped"],
+        // },
+        createdAt: {
+          gte: subDays(new Date(), 1)
         },
         readyToFullfill: true,
         /**
