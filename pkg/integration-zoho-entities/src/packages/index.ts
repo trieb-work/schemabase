@@ -411,6 +411,7 @@ export class ZohoPackageSyncService {
         {
           package_number: p.number,
           line_items: lineItems,
+          date: format(p.createdAt, "yyyy-MM-dd"),
         },
         orderLineItems.zohoSalesOrders[0].id,
       );
