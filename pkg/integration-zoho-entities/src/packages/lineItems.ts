@@ -25,7 +25,7 @@ export function packageToZohoLineItems(
     )?.zohoOrderLineItems?.[0];
     if (!zohoOrderLines)
       throw new Error(
-        `No order line items found for ${eciLineItem.sku} and quantity >= ${l.quantity}`,
+        `No order line items found for ${eciLineItem.sku} and quantity >= ${eciLineItem.quantity}`,
       );
     return {
       so_line_item_id: zohoOrderLines.id,
