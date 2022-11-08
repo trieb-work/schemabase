@@ -284,6 +284,18 @@ export class ZohoSalesOrdersSyncService {
             }
           : {};
 
+      const lastModifiedDateBeforeUpsert =
+        await this.db.zohoSalesOrder.findUnique({
+          where: {
+            id_zohoAppId: {
+              id: salesorder.salesorder_id,
+              zohoAppId: this.zohoApp.id,
+            },
+          },
+          select: {
+            updatedAt: true,
+          },
+        });
       const createdSalesOrder = await this.db.zohoSalesOrder.upsert({
         where: {
           id_zohoAppId: {
@@ -333,9 +345,10 @@ export class ZohoSalesOrdersSyncService {
       // LINE ITEMs and addresses sync - pulls the full salesorder from Zoho only
       // if something has changed or if we don't have any line items internally
       if (
+        !lastModifiedDateBeforeUpsert?.updatedAt ||
         isAfter(
           new Date(salesorder.last_modified_time),
-          createdSalesOrder.updatedAt,
+          lastModifiedDateBeforeUpsert.updatedAt,
         )
       ) {
         this.logger.info(
