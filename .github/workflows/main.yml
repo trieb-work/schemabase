@@ -19,7 +19,7 @@ jobs:
       IMAGE_NAME: ${{ github.repository }}/${{matrix.service}}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       -
         name: Login to GitHub Container Registry
         uses: docker/login-action@v2
@@ -67,7 +67,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set Kubernetes Context
         uses: azure/k8s-set-context@v1
@@ -127,7 +127,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set Kubernetes Context
         uses: azure/k8s-set-context@v1
@@ -183,7 +183,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set Kubernetes Context
         uses: azure/k8s-set-context@v1
