@@ -7,6 +7,7 @@ import { format, setHours, subDays, subMonths, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { uniqueStringPackageLineItem } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { generateTrackingPortalURL } from "@eci/pkg/integration-tracking";
+import { packageToZohoLineItems } from "./lineItems";
 
 export interface ZohoPackageSyncConfig {
   logger: ILogger;
@@ -347,10 +348,90 @@ export class ZohoPackageSyncService {
           gt: subMonths(new Date(), 5),
         },
       },
+      include: {
+        packageLineItems: true,
+      },
     });
 
     this.logger.info(
       `Received ${packagesNotInZoho.length} packages that we need to sync with Zoho`,
     );
+
+    for (const p of packagesNotInZoho) {
+      this.logger.info(
+        `Creating package ${p.number} - TrackingId: ${p.trackingId} in Zoho`,
+        {
+          trackingId: p.trackingId,
+        },
+      );
+      // fetch the package line items in a seperate call, as this is more efficient with Planetscale
+      const orderLineItems = await this.db.order.findUnique({
+        where: {
+          id: p.orderId,
+        },
+        include: {
+          zohoSalesOrders: {
+            select: {
+              id: true,
+            },
+            where: {
+              zohoAppId: this.zohoApp.id,
+            },
+          },
+          orderLineItems: {
+            select: {
+              sku: true,
+              quantity: true,
+              zohoOrderLineItems: {
+                where: {
+                  zohoAppId: this.zohoApp.id,
+                },
+                select: {
+                  id: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!orderLineItems?.orderLineItems) {
+        this.logger.warn(
+          `No orderline items for order ${p.orderId} - ${p.number}`,
+        );
+        continue;
+      }
+
+      const lineItems = packageToZohoLineItems(
+        orderLineItems.orderLineItems,
+        p.packageLineItems,
+      );
+
+      const createdPackage = await this.zoho.package.create(
+        {
+          package_number: p.number,
+          line_items: lineItems,
+        },
+        orderLineItems.zohoSalesOrders[0].id,
+      );
+
+      await this.db.zohoPackage.create({
+        data: {
+          id: createdPackage.package_id,
+          package: {
+            connect: {
+              id: p.id,
+            },
+          },
+          zohoApp: {
+            connect: {
+              id: this.zohoApp.id,
+            },
+          },
+          createdAt: new Date(createdPackage.created_time),
+          updatedAt: new Date(createdPackage.last_modified_time),
+        },
+      });
+    }
   }
 }
