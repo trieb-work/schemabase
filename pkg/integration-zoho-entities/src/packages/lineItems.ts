@@ -11,11 +11,6 @@ export function packageToZohoLineItems(
   }[],
   packageLineItems: PackageLineItem[],
 ): CreatePackageLineItems {
-  if (lineItems.length !== 0) {
-    throw new Error(
-      `Multiple ZohoOrderLines for this orderline. This should not happen`,
-    );
-  }
   return packageLineItems.map((eciLineItem) => {
     /**
      * The ZohoSalesOrderLine corresponding to our internal PackageOrderLine
