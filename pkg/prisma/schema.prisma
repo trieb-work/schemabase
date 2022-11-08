@@ -210,6 +210,7 @@ model ZohoPackage {
   @@unique([id, zohoAppId])
   @@index([zohoAppId])
   @@index([packageId])
+  @@index([id])
 }
 
 model ZohoContact {
@@ -266,6 +267,7 @@ model ZohoContactPerson {
   @@index([zohoAppId])
   @@index([active])
   @@index([isPrimary])
+  @@index([id])
 }
 
 model ZohoAddress {
@@ -1196,6 +1198,7 @@ model Address {
   @@index([tenantId])
   @@index([contactId])
   @@index([id])
+  @@index([updatedAt])
 }
 
 // The ECI internal Product model
@@ -1536,6 +1539,7 @@ model Package {
   @@unique([number, tenantId])
   @@index([trackingId])
   @@index([orderId])
+  @@index([tenantId])
 }
 
 model PackageEvent {
