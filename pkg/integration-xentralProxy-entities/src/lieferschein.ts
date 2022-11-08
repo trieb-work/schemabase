@@ -271,6 +271,11 @@ export class XentralProxyLieferscheinSyncService {
         const packageCreateId = id.id("package");
         const trackingId = matchingTrackingnummer.tracking
         const carrierTrackingUrl = (carrier && trackingId) ? generateTrackingPortalURL(carrier, order.language, trackingId) : undefined;
+        loggingFields = {
+          ...loggingFields,
+          carrierTrackingUrl,
+        }
+        this.logger.info(`Upserting ${packageNumber}`, loggingFields)
         const upsertedPackage = await this.db.package.upsert({
           where: {
             number_tenantId: {
@@ -279,7 +284,7 @@ export class XentralProxyLieferscheinSyncService {
             },
           },
           update: {
-            trackingId: matchingTrackingnummer.tracking,
+            trackingId,
             carrierTrackingUrl,
           },
           create: {
@@ -296,7 +301,7 @@ export class XentralProxyLieferscheinSyncService {
                 id: this.tenantId,
               },
             },
-            trackingId: matchingTrackingnummer.tracking,
+            trackingId,
             carrierTrackingUrl,
             packageLineItems: {
               createMany: {
