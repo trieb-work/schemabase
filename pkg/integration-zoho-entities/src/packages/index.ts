@@ -43,9 +43,9 @@ export class ZohoPackageSyncService {
   private carrierToAftership(carrier: Carrier) {
     switch (carrier) {
       case "DHL":
-        return "dhl-germany";
+        return "dhl";
       case "DPD":
-        return "dpd-de";
+        return "dpd";
       case "UPS":
         return "ups";
       default:
@@ -446,6 +446,7 @@ export class ZohoPackageSyncService {
         },
         salesOrderId,
         createdPackage.package_id,
+        true
       );
 
       await this.db.zohoPackage.create({
