@@ -125,6 +125,19 @@ export class ZohoSalesOrdersSyncService {
     }
   }
 
+  public parseSalesOrderStatus(
+    zohoStatus: SalesOrderStatus,
+  ): OrderStatus | undefined {
+    switch (zohoStatus) {
+      case "confirmed":
+        return OrderStatus.confirmed;
+      case "closed":
+        return OrderStatus.confirmed;
+      default:
+        return undefined;
+    }
+  }
+
   public constructor(config: ZohoSalesOrdersSyncConfig) {
     this.logger = config.logger;
     this.zoho = config.zoho;
@@ -210,6 +223,9 @@ export class ZohoSalesOrdersSyncService {
       const invoiceStatus = this.parseInvoiceStatus(
         salesorder.invoiced_status as string,
       );
+      const salesOrderStatus = this.parseSalesOrderStatus(
+        salesorder.order_status,
+      );
 
       if (!salesorder.email) {
         this.logger.error(
@@ -262,6 +278,7 @@ export class ZohoSalesOrdersSyncService {
               expectedShippingDate: new Date(salesorder.shipment_date),
               totalPriceGross: salesorder.total,
               invoiceStatus,
+              orderStatus: salesOrderStatus,
               mainContact: contactConnectOrCreate,
               tenant: {
                 connect: {
@@ -327,6 +344,7 @@ export class ZohoSalesOrdersSyncService {
               ),
               mainContact: contactConnectOrCreate,
               invoiceStatus,
+              orderStatus: salesOrderStatus,
             },
           },
           zohoContact: zohoContactConnect,
