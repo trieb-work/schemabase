@@ -12,6 +12,7 @@ export function generateTrackingPortalURL(
     UPS: "",
     DHL: `https://www.dhl.com/${languageCode}/home/tracking/tracking-parcel.html?submit=1&tracking-id=${trackingId}`,
     HERMES: "",
+    PICKUP: "",
   };
   return trackingUrls[carrier];
 }
