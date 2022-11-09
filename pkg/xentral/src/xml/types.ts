@@ -301,7 +301,7 @@ export interface AuftragCreateRequest {
   bodyzusatz?: string;
   ishtml_cke_bodyzusatz?: 1 | 0;
   zahlungsweise?: "rechnung";
-  versandart?: "DHL" | "DPD";
+  versandart?: "DHL" | "DPD" | string;
   lieferbedingung?: string;
   vertrieb?: string;
   bearbeiter?: string;
