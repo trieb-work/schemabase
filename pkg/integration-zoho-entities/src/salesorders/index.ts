@@ -170,12 +170,12 @@ export class ZohoSalesOrdersSyncService {
     }
 
     /**
-     * All salesorder as overview. Sorted by salesorder date ascending
+     * All salesorder as overview. Using last modified time to get most reason changes
      */
     const salesorders = await this.zoho.salesOrder.list({
-      createdDateStart: gteDate,
-      sortColumn: "date",
-      sortOrder: "ascending",
+      sortColumn: "last_modified_time",
+      sortOrder: "descending",
+      limit: 400,
     });
 
     this.logger.info(
