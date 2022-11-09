@@ -108,7 +108,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
-  ctx.logger.info("Incoming webhook from dpd");
+  ctx.logger.info(`Incoming webhook from dpd - ${req.query.pnr}`);
 
   if (!pushId) {
     return;
