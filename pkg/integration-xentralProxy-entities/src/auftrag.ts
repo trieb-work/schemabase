@@ -2,7 +2,7 @@
 /* eslint-disable prettier/prettier */
 import { ILogger } from "@eci/pkg/logger";
 import { arrayFromAsyncGenerator } from "@eci/pkg/miscHelper/array";
-import { PrismaClient, XentralProxyApp } from "@eci/pkg/prisma";
+import { Carrier, PrismaClient, XentralCarrier, XentralProxyApp } from "@eci/pkg/prisma";
 import {
   XentralRestClient,
   XentralRestNotFoundError,
@@ -40,6 +40,8 @@ export class XentralProxyOrderSyncService {
 
   private readonly db: PrismaClient;
 
+  public xentralCarriers :XentralCarrier[] | undefined;
+
   public constructor(config: XentralProxyOrderSyncServiceConfig) {
     this.logger = config.logger;
     this.tenantId = config.xentralProxyApp.tenantId;
@@ -48,6 +50,29 @@ export class XentralProxyOrderSyncService {
     this.db = config.db;
     this.xentralXmlClient = config.xentralXmlClient;
     this.xentralRestClient = config.xentralRestClient;
+  }
+
+  /**
+   * Returns either a custom carrier from our DB or the regular one
+   * @param carrier 
+   * @returns 
+   */
+  private async versandArt(carrier :Carrier) {
+
+    /**
+     * Pull all xentral carriers one time
+     */
+    if (!this.xentralCarriers) this.xentralCarriers = await this.db.xentralCarrier.findMany({
+      where: {
+        xentralProxyAppId: this.xentralProxyApp.id
+      }
+    })
+
+    if (this.xentralCarriers.length > 0) {
+      return this.xentralCarriers.find((x) => x.eciCarrier === carrier)?.name || carrier
+    }
+    return carrier;
+
   }
 
   /**
@@ -229,6 +254,8 @@ export class XentralProxyOrderSyncService {
         }
       }
 
+      const versandart = order.carrier ?  await this.versandArt(order.carrier) : undefined;
+
       const auftrag: AuftragCreateRequest = {
         kundennummer: "NEW",
         /**
@@ -253,6 +280,7 @@ export class XentralProxyOrderSyncService {
         // INFO: do not remove date otherwise search will not work anymore!
         datum: order.date.toJSON(),
         lieferdatum: order.expectedShippingDate?.toJSON(),
+        versandart,
         artikelliste: {
           position: order.orderLineItems.map((lineItem) => {
             if (!lineItem?.productVariant?.xentralArtikel?.[0]?.xentralNummer) {
