@@ -1517,6 +1517,7 @@ Enum Carrier {
   DPD
   DHL
   UPS
+  HERMES
   UNKNOWN
 }
 

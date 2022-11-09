@@ -435,7 +435,7 @@ export class ZohoPackageSyncService {
         },
         salesOrderId,
       );
-      await this.zoho.package.createShipment(
+      const shipment = await this.zoho.package.createShipment(
         {
           date: format(p.createdAt, "yyyy-MM-dd"),
           aftership_carrier_code:
@@ -463,6 +463,7 @@ export class ZohoPackageSyncService {
           },
           createdAt: new Date(createdPackage.created_time),
           updatedAt: new Date(createdPackage.last_modified_time),
+          shipmentId: shipment.shipment_id,
         },
       });
     }
