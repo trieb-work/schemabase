@@ -506,6 +506,7 @@ Table Order {
   updatedAt DateTime [not null]
   date DateTime [not null]
   expectedShippingDate DateTime [note: 'The Date, that we expect this order to be shipped.']
+  carrier Carrier [note: 'The expected shipment carrier for this order']
   externalOrderId String
   orderStatus OrderStatus [not null, default: 'draft']
   paymentStatus OrderPaymentStatus [not null, default: 'unpaid']

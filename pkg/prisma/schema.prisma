@@ -829,6 +829,9 @@ model Order {
   /// The Date, that we expect this order to be shipped.
   expectedShippingDate DateTime?
 
+  /// The expected shipment carrier for this order
+  carrier   Carrier?
+
   // deprecated!
   externalOrderId String?
 
