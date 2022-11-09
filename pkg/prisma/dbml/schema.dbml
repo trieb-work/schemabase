@@ -1531,6 +1531,7 @@ Enum Carrier {
   DHL
   UPS
   HERMES
+  PICKUP
   UNKNOWN
 }
 
