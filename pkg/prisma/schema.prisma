@@ -740,6 +740,7 @@ model OrderLineItem {
   @@index([productVariantId])
   @@index([uniqueString])
   @@index([tenantId])
+  @@index([sku])
 }
 
 model PackageLineItem {
