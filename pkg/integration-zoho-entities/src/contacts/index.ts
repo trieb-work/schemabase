@@ -90,6 +90,7 @@ export class ZohoContactSyncService {
           continue;
         }
 
+        this.logger.info(`Upserting Zoho contact ${contact.contact_id}`);
         const email = contact.email.toLowerCase();
         const companyName = contact?.company_name;
 
