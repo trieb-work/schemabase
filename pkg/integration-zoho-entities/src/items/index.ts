@@ -232,6 +232,7 @@ export class ZohoItemSyncService {
           data: {
             active: item.status === "active" ?? false,
             stockOnHand: item.stock_on_hand,
+            weight,
             product: {
               connectOrCreate: {
                 where: {
