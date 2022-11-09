@@ -1317,6 +1317,21 @@ model BillOfMaterial {
   @@index([partId])
 }
 
+/// Carriers can have different names in Xentral - depending on the manually created shipping zone. We have to match them to our internal carrier
+/// This is a manually created mapping table.
+model XentralCarrier {
+  id String @id @default(cuid())
+  eciCarrier  Carrier
+  name        String
+
+  xentralProxyApp   XentralProxyApp @relation(fields: [xentralProxyAppId], references: [id])
+  xentralProxyAppId String
+
+  @@index([eciCarrier])
+  @@index([name])
+
+}
+
 model XentralArtikel {
   /// Xentral Internal ID
   id String
@@ -2058,6 +2073,7 @@ model XentralProxyApp {
   xentralProxyAuftraege XentralProxyAuftrag[]
   xentralArtikel        XentralArtikel[]
   XentralLieferscheine  XentralLieferschein[]
+  xentralCarrier        XentralCarrier[]
 
   @@index([tenantId])
   @@index([enabled])

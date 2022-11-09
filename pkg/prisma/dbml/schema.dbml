@@ -648,6 +648,17 @@ Table BillOfMaterial {
   }
 }
 
+Table XentralCarrier {
+  id String [pk]
+  eciCarrier Carrier [not null]
+  name String [not null]
+  xentralProxyApp XentralProxyApp [not null]
+  xentralProxyAppId String [not null]
+
+  Note: 'Carriers can have different names in Xentral - depending on the manually created shipping zone. We have to match them to our internal carrier
+This is a manually created mapping table.'
+}
+
 Table XentralArtikel {
   id String [not null, note: 'Xentral Internal ID']
   xentralNummer String [not null]
@@ -1135,6 +1146,7 @@ Table XentralProxyApp {
   xentralProxyAuftraege XentralProxyAuftrag [not null]
   xentralArtikel XentralArtikel [not null]
   XentralLieferscheine XentralLieferschein [not null]
+  xentralCarrier XentralCarrier [not null]
 }
 
 Table XentralProxyAuftrag {
@@ -1700,6 +1712,8 @@ Ref: BillOfMaterial.tenantId > Tenant.id [delete: Cascade]
 Ref: BillOfMaterial.productVariantId > ProductVariant.id [delete: Cascade]
 
 Ref: BillOfMaterial.partId > ProductVariant.id [delete: Cascade]
+
+Ref: XentralCarrier.xentralProxyAppId > XentralProxyApp.id
 
 Ref: XentralArtikel.xentralProxyAppId > XentralProxyApp.id
 
