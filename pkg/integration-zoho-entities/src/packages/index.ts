@@ -40,6 +40,19 @@ export class ZohoPackageSyncService {
     });
   }
 
+  private carrierToAftership(carrier: Carrier) {
+    switch (carrier) {
+      case "DHL":
+        return "dhl-germany";
+      case "DPD":
+        return "dpd-de";
+      case "UPS":
+        return "ups";
+      default:
+        return "";
+    }
+  }
+
   public async syncToECI(): Promise<void> {
     // const tenantId = this.zohoApp.tenantId;
 
@@ -358,6 +371,12 @@ export class ZohoPackageSyncService {
     );
 
     for (const p of packagesNotInZoho) {
+      if (!p.trackingId) {
+        this.logger.warn(
+          `No tracking number found for ${p.number}. Skipping sync`,
+        );
+        continue;
+      }
       this.logger.info(
         `Creating package ${p.number} - TrackingId: ${p.trackingId} in Zoho`,
         {
@@ -406,6 +425,7 @@ export class ZohoPackageSyncService {
         orderLineItems.orderLineItems,
         p.packageLineItems,
       );
+      const salesOrderId = orderLineItems.zohoSalesOrders[0].id;
 
       const createdPackage = await this.zoho.package.create(
         {
@@ -413,7 +433,19 @@ export class ZohoPackageSyncService {
           line_items: lineItems,
           date: format(p.createdAt, "yyyy-MM-dd"),
         },
-        orderLineItems.zohoSalesOrders[0].id,
+        salesOrderId,
+      );
+      await this.zoho.package.createShipment(
+        {
+          date: format(p.createdAt, "yyyy-MM-dd"),
+          aftership_carrier_code:
+            this.carrierToAftership(p.carrier) || undefined,
+          delivery_method: p.carrier,
+          tracking_number: p.trackingId,
+          notes: p.carrierTrackingUrl || undefined,
+        },
+        salesOrderId,
+        createdPackage.package_id,
       );
 
       await this.db.zohoPackage.create({
