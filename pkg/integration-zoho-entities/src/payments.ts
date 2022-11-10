@@ -257,6 +257,7 @@ export class ZohoPaymentSyncService {
                   where: {
                     zohoAppId: this.zohoApp.id,
                     active: true,
+                    isPrimary: true,
                   },
                 },
               },
