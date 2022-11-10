@@ -267,6 +267,7 @@ export class SaleorOrderSyncService {
                 shippingPriceGross: order?.shippingPrice.gross.amount,
                 orderStatus,
                 mainContact: contactCreateOrConnect,
+                paymentStatus,
               },
             },
           },
