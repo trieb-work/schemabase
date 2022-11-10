@@ -175,7 +175,7 @@ export class ZohoSalesOrdersSyncService {
     const salesorders = await this.zoho.salesOrder.list({
       sortColumn: "last_modified_time",
       sortOrder: "descending",
-      limit: 400,
+      last_modified_time: `${gteDate}T01:00:00-0100`,
     });
 
     this.logger.info(
