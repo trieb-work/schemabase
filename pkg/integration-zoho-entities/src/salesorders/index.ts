@@ -34,7 +34,6 @@ import { calculateDiscount, orderToZohoLineItems } from "./lineItems";
 import { orderToMainContactPerson } from "./contacts";
 import { addressToZohoAddressId } from "./address";
 import { taxToZohoTaxId } from "./taxes";
-import { normalizeStrings } from "@eci/pkg/normalization";
 import { Warning } from "../utils";
 import {
   SalesOrderShippedStatus,
