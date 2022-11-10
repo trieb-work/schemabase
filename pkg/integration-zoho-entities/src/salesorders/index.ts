@@ -421,6 +421,7 @@ export class ZohoSalesOrdersSyncService {
         }
         const lineItems = fullSalesorder.line_items;
 
+        // Line Items logic
         try {
           for (const lineItem of lineItems) {
             const uniqueString = uniqueStringOrderLine(
@@ -476,11 +477,9 @@ export class ZohoSalesOrdersSyncService {
                       discountValueNet: lineItem.discount_amount,
                       tax: {
                         connect: {
-                          normalizedName_tenantId: {
-                            normalizedName: normalizeStrings.taxNames(
-                              lineItem.tax_name,
-                            ),
+                          percentage_tenantId: {
                             tenantId: this.tenantId,
+                            percentage: lineItem.tax_percentage,
                           },
                         },
                       },
@@ -520,11 +519,9 @@ export class ZohoSalesOrdersSyncService {
                     discountValueNet: lineItem.discount_amount,
                     tax: {
                       connect: {
-                        normalizedName_tenantId: {
-                          normalizedName: normalizeStrings.taxNames(
-                            lineItem.tax_name,
-                          ),
+                        percentage_tenantId: {
                           tenantId: this.tenantId,
+                          percentage: lineItem.tax_percentage,
                         },
                       },
                     },
