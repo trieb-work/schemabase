@@ -10152,6 +10152,7 @@ export type SaleorCronOrdersOverviewQuery = {
         created: any;
         status: OrderStatus;
         userEmail?: string | null;
+        shippingMethodName?: string | null;
         paymentStatus: PaymentChargeStatusEnum;
         isPaid: boolean;
         number?: string | null;
@@ -10810,6 +10811,7 @@ export const SaleorCronOrdersOverviewDocument = gql`
               amount
             }
           }
+          shippingMethodName
           paymentStatus
           isPaid
           number

@@ -8,7 +8,6 @@ import {
 
 import { ILogger } from "@eci/pkg/logger";
 import {
-  Carrier,
   Language,
   OrderInvoiceStatus,
   OrderShipmentStatus,
@@ -39,6 +38,7 @@ import {
   SalesOrderShippedStatus,
   SalesOrderStatus,
 } from "@trieb.work/zoho-ts/dist/types/salesOrder";
+import { shippingMethodMatch } from "@eci/pkg/miscHelper/shippingMethodMatch";
 
 export interface ZohoSalesOrdersSyncConfig {
   logger: ILogger;
@@ -78,15 +78,6 @@ export class ZohoSalesOrdersSyncService {
       default:
         return undefined;
     }
-  }
-
-  public parseCarrier(zohoCarrier: string): Carrier {
-    const carrierLowercase = zohoCarrier.toLowerCase();
-    if (carrierLowercase.includes("dpd")) return Carrier.DPD;
-    if (carrierLowercase.includes("dhl")) return Carrier.DHL;
-    if (carrierLowercase.includes("ups")) return Carrier.UPS;
-    if (carrierLowercase.includes("abholung")) return Carrier.PICKUP;
-    return Carrier.UNKNOWN;
   }
 
   /**
@@ -236,7 +227,7 @@ export class ZohoSalesOrdersSyncService {
         salesorder.order_status,
       );
 
-      const carrier = this.parseCarrier(salesorder.delivery_method as string);
+      const carrier = shippingMethodMatch(salesorder.delivery_method as string);
 
       const readyToFullfill =
         (salesorder?.cf_ready_to_fulfill_unformatted as boolean) || false;

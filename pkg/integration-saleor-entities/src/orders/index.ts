@@ -22,6 +22,7 @@ import { round } from "reliable-round";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import addresses from "./addresses";
 import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils";
+import { shippingMethodMatch } from "@eci/pkg/miscHelper/shippingMethodMatch";
 
 interface SaleorOrderSyncServiceConfig {
   saleorClient: {
@@ -208,6 +209,8 @@ export class SaleorOrderSyncService {
 
         const paymentStatus = paymentStatusMapping[order.paymentStatus];
 
+        const carrier = shippingMethodMatch(order?.shippingMethodName || "");
+
         const upsertedOrder = await this.db.saleorOrder.upsert({
           where: {
             id_installedSaleorAppId: {
@@ -238,6 +241,7 @@ export class SaleorOrderSyncService {
                   date: new Date(order.created),
                   totalPriceGross: order.total.gross.amount,
                   orderStatus,
+                  carrier,
                   paymentStatus, // TODO: how will this thing be updated and kept in sync by other services? -> Maybe move it into Payment.status and access it via payments[0].status?
                   mainContact: contactCreateOrConnect,
                   shippingAddress: {},
@@ -258,6 +262,7 @@ export class SaleorOrderSyncService {
           update: {
             order: {
               update: {
+                carrier,
                 totalPriceGross: order.total.gross.amount,
                 shippingPriceGross: order?.shippingPrice.gross.amount,
                 orderStatus,
@@ -278,6 +283,7 @@ export class SaleorOrderSyncService {
             `Can't get order details from saleor! Aborting sync and retry next time.`,
           );
         }
+
         const lineItems = orderDetails.order?.lines;
         if (!lineItems) {
           throw new Error(
