@@ -533,36 +533,40 @@ export class ZohoSalesOrdersSyncService {
         }
 
         // if we have payments connected, we can connect them internally as well
-        for (const payment of fullSalesorder.payments) {
-          const zohoPaymentExist = await this.db.zohoPayment.findUnique({
-            where: {
-              id_zohoAppId: {
-                id: payment.payment_id,
-                zohoAppId: this.zohoApp.id,
-              },
-            },
-            include: {
-              payment: true,
-            },
-          });
-          if (zohoPaymentExist && zohoPaymentExist.paymentId) {
-            this.logger.info(
-              // eslint-disable-next-line max-len
-              `Connecting Zoho payment ${zohoPaymentExist.id} with internal order id ${internalOrderId}`,
-            );
-            await this.db.order.update({
+        try {
+          for (const payment of fullSalesorder.payments) {
+            const zohoPaymentExist = await this.db.zohoPayment.findUnique({
               where: {
-                id: internalOrderId,
-              },
-              data: {
-                payments: {
-                  connect: {
-                    id: zohoPaymentExist.paymentId,
-                  },
+                id_zohoAppId: {
+                  id: payment.payment_id,
+                  zohoAppId: this.zohoApp.id,
                 },
               },
+              include: {
+                payment: true,
+              },
             });
+            if (zohoPaymentExist && zohoPaymentExist.paymentId) {
+              this.logger.info(
+                // eslint-disable-next-line max-len
+                `Connecting Zoho payment ${zohoPaymentExist.id} / ECI payment ${zohoPaymentExist.paymentId} with internal order id ${internalOrderId}`,
+              );
+              await this.db.order.update({
+                where: {
+                  id: internalOrderId,
+                },
+                data: {
+                  payments: {
+                    connect: {
+                      id: zohoPaymentExist.paymentId,
+                    },
+                  },
+                },
+              });
+            }
           }
+        } catch (error) {
+          this.logger.error(error as any);
         }
 
         /**
