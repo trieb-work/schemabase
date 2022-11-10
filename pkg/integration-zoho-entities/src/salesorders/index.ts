@@ -8,6 +8,7 @@ import {
 
 import { ILogger } from "@eci/pkg/logger";
 import {
+  Carrier,
   Language,
   OrderInvoiceStatus,
   OrderShipmentStatus,
@@ -78,6 +79,15 @@ export class ZohoSalesOrdersSyncService {
       default:
         return undefined;
     }
+  }
+
+  public parseCarrier(zohoCarrier: string): Carrier {
+    const carrierLowercase = zohoCarrier.toLowerCase();
+    if (carrierLowercase.includes("dpd")) return Carrier.DPD;
+    if (carrierLowercase.includes("dhl")) return Carrier.DHL;
+    if (carrierLowercase.includes("ups")) return Carrier.UPS;
+    if (carrierLowercase.includes("abholung")) return Carrier.PICKUP;
+    return Carrier.UNKNOWN;
   }
 
   /**
@@ -227,6 +237,8 @@ export class ZohoSalesOrdersSyncService {
         salesorder.order_status,
       );
 
+      const carrier = this.parseCarrier(salesorder.delivery_method as string);
+
       const readyToFullfill =
         (salesorder?.cf_ready_to_fulfill_unformatted as boolean) || false;
 
@@ -279,6 +291,7 @@ export class ZohoSalesOrdersSyncService {
               orderNumber: salesorder.salesorder_number,
               date: new Date(salesorder.date),
               expectedShippingDate: new Date(salesorder.shipment_date),
+              carrier,
               totalPriceGross: salesorder.total,
               invoiceStatus,
               orderStatus: salesOrderStatus,
@@ -343,6 +356,7 @@ export class ZohoSalesOrdersSyncService {
             update: {
               date: new Date(salesorder.date),
               expectedShippingDate: new Date(salesorder.shipment_date),
+              carrier,
               shipmentStatus: this.parseShipmentStatus(
                 salesorder.shipped_status,
               ),
