@@ -421,81 +421,101 @@ export class ZohoSalesOrdersSyncService {
         }
         const lineItems = fullSalesorder.line_items;
 
-        for (const lineItem of lineItems) {
-          const uniqueString = uniqueStringOrderLine(
-            salesorder.salesorder_number,
-            lineItem.sku,
-            lineItem.quantity,
-          );
-          this.logger.info(
-            `Upserting line_item with uniqueString ${uniqueString} and Zoho ID ${lineItem.line_item_id}`,
-          );
-
-          // Lookup of the product variant SKU in our internal DB
-          const productVariantLookup = await this.db.productVariant.findUnique({
-            where: {
-              sku_tenantId: {
-                sku: lineItem.sku,
-                tenantId: this.tenantId,
-              },
-            },
-          });
-          if (!productVariantLookup) {
-            this.logger.warn(
-              // eslint-disable-next-line max-len
-              `No internal product variant found for SKU ${lineItem.sku}! Can't process this line item`,
+        try {
+          for (const lineItem of lineItems) {
+            const uniqueString = uniqueStringOrderLine(
+              salesorder.salesorder_number,
+              lineItem.sku,
+              lineItem.quantity,
             );
-            continue;
-          }
 
-          // const warehouse = lineItem.warehouse_id
-          //   ? await this.db.zohoWarehouse.findUnique({
-          //       where: {
-          //         id_zohoAppId: {
-          //           id: lineItem.warehouse_id,
-          //           zohoAppId: this.zohoApp.id,
-          //         },
-          //       },
-          //     })
-          //   : null;
-
-          // /**
-          //  * Only try to connect a warehouse, if we have one related to
-          //  * this line item.
-          //  */
-          // const warehouseConnect = warehouse?.warehouseId
-          //   ? { connect: { id: warehouse.warehouseId } }
-          //   : {};
-
-          // if (!warehouse)
-          //   this.logger.info(
-          //     `This line item has no warehouse attached. ${lineItem.line_item_id}`,
-          //   );
-          await this.db.zohoOrderLineItem.upsert({
-            where: {
-              id_zohoAppId: {
-                id: lineItem.line_item_id,
-                zohoAppId: this.zohoApp.id,
-              },
-            },
-            create: {
-              id: lineItem.line_item_id,
-              orderLineItem: {
-                connectOrCreate: {
-                  where: {
-                    uniqueString_tenantId: {
-                      uniqueString,
-                      tenantId: this.tenantId,
-                    },
+            // Lookup of the product variant SKU in our internal DB
+            const productVariantLookup =
+              await this.db.productVariant.findUnique({
+                where: {
+                  sku_tenantId: {
+                    sku: lineItem.sku,
+                    tenantId: this.tenantId,
                   },
-                  create: {
-                    id: id.id("lineItem"),
-                    uniqueString,
-                    order: {
-                      connect: {
-                        id: internalOrderId,
+                },
+              });
+            if (!productVariantLookup) {
+              this.logger.warn(
+                // eslint-disable-next-line max-len
+                `No internal product variant found for SKU ${lineItem.sku}! Can't process this line item`,
+              );
+              continue;
+            }
+
+            await this.db.zohoOrderLineItem.upsert({
+              where: {
+                id_zohoAppId: {
+                  id: lineItem.line_item_id,
+                  zohoAppId: this.zohoApp.id,
+                },
+              },
+              create: {
+                id: lineItem.line_item_id,
+                orderLineItem: {
+                  connectOrCreate: {
+                    where: {
+                      uniqueString_tenantId: {
+                        uniqueString,
+                        tenantId: this.tenantId,
                       },
                     },
+                    create: {
+                      id: id.id("lineItem"),
+                      uniqueString,
+                      order: {
+                        connect: {
+                          id: internalOrderId,
+                        },
+                      },
+                      quantity: lineItem.quantity,
+                      discountValueNet: lineItem.discount_amount,
+                      tax: {
+                        connect: {
+                          normalizedName_tenantId: {
+                            normalizedName: normalizeStrings.taxNames(
+                              lineItem.tax_name,
+                            ),
+                            tenantId: this.tenantId,
+                          },
+                        },
+                      },
+                      totalPriceNet: lineItem.item_total,
+                      totalPriceGross: lineItem.item_total_inclusive_of_tax,
+                      undiscountedUnitPriceGross:
+                        fullSalesorder.is_inclusive_tax
+                          ? lineItem.rate
+                          : undefined,
+                      undiscountedUnitPriceNet: fullSalesorder.is_inclusive_tax
+                        ? undefined
+                        : lineItem.rate,
+                      // warehouse: warehouseConnect,
+                      productVariant: {
+                        connect: {
+                          id: productVariantLookup.id,
+                        },
+                      },
+                      tenant: {
+                        connect: {
+                          id: this.tenantId,
+                        },
+                      },
+                    },
+                  },
+                },
+                zohoApp: {
+                  connect: {
+                    id: this.zohoApp.id,
+                  },
+                },
+              },
+              update: {
+                orderLineItem: {
+                  update: {
                     quantity: lineItem.quantity,
                     discountValueNet: lineItem.discount_amount,
                     tax: {
@@ -516,53 +536,13 @@ export class ZohoSalesOrdersSyncService {
                     undiscountedUnitPriceNet: fullSalesorder.is_inclusive_tax
                       ? undefined
                       : lineItem.rate,
-                    // warehouse: warehouseConnect,
-                    productVariant: {
-                      connect: {
-                        id: productVariantLookup.id,
-                      },
-                    },
-                    tenant: {
-                      connect: {
-                        id: this.tenantId,
-                      },
-                    },
                   },
                 },
               },
-              zohoApp: {
-                connect: {
-                  id: this.zohoApp.id,
-                },
-              },
-            },
-            update: {
-              orderLineItem: {
-                update: {
-                  quantity: lineItem.quantity,
-                  discountValueNet: lineItem.discount_amount,
-                  tax: {
-                    connect: {
-                      normalizedName_tenantId: {
-                        normalizedName: normalizeStrings.taxNames(
-                          lineItem.tax_name,
-                        ),
-                        tenantId: this.tenantId,
-                      },
-                    },
-                  },
-                  totalPriceNet: lineItem.item_total,
-                  totalPriceGross: lineItem.item_total_inclusive_of_tax,
-                  undiscountedUnitPriceGross: fullSalesorder.is_inclusive_tax
-                    ? lineItem.rate
-                    : undefined,
-                  undiscountedUnitPriceNet: fullSalesorder.is_inclusive_tax
-                    ? undefined
-                    : lineItem.rate,
-                },
-              },
-            },
-          });
+            });
+          }
+        } catch (error) {
+          this.logger.error(JSON.stringify(error));
         }
 
         // if we have payments connected, we can connect them internally as well
@@ -609,6 +589,9 @@ export class ZohoSalesOrdersSyncService {
             `Shipping address id or billing address id missing for ${fullSalesorder.salesorder_id} - Can't sync addresses`,
           );
         } else {
+          this.logger.info(
+            `Upserting addresses for SalesOrder ${fullSalesorder.salesorder_id}`,
+          );
           try {
             await addresses(
               this.db,
@@ -630,6 +613,7 @@ export class ZohoSalesOrdersSyncService {
               this.logger.warn(err.message);
               continue;
             }
+            this.logger.error(JSON.stringify(err));
           }
         }
       }
