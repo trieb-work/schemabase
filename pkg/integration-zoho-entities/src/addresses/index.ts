@@ -98,10 +98,8 @@ class Addresses {
     );
 
     if (!countryCodeValid)
-      throw new Warning(
-        `Received non valid country code: ${
-          address.country_code
-        } - address obj: ${JSON.stringify(address)}`,
+      this.logger.warn(
+        `Received non valid country code: Country Code ${address.country_code.toString()}`,
       );
     if (!(address.attention || customerName)) {
       throw new Warning(
@@ -128,7 +126,7 @@ class Addresses {
       city: address.city,
       countryCode: countryCodeValid
         ? (address.country_code as CountryCode)
-        : CountryCode.DE,
+        : undefined,
       normalizedName: "",
     };
     const uniqueString = uniqueStringAddress(addObj);
