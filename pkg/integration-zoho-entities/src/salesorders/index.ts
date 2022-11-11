@@ -381,8 +381,6 @@ export class ZohoSalesOrdersSyncService {
       // LINE ITEMs and addresses sync - pulls the full salesorder from Zoho only
       // if something has changed or if we don't have any line items internally
       if (
-        !createdSalesOrder.order.billingAddressId ||
-        !createdSalesOrder.order.shippingAddress ||
         !lastModifiedDateBeforeUpsert?.updatedAt ||
         isAfter(
           new Date(salesorder.last_modified_time),
