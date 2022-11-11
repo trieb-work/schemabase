@@ -312,7 +312,11 @@ class Addresses {
               id: id.id("address"),
               ...billingAddr.addObj,
               tenantId: this.tenantId,
-              contactId: this.contactId,
+              contact: {
+                connect: {
+                  id: this.contactId,
+                },
+              },
               zohoAddress: {
                 connectOrCreate: [
                   {

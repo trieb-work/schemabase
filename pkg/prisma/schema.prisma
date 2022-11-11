@@ -1192,8 +1192,10 @@ model Address {
   phone                 String?
   fullname              String?
 
-  contact   Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
-  contactId String
+  /// One address can have multiple contacts connected to it.
+  /// Sometimes, you have orders from different email addresses, sending to the same address..
+  contact   Contact[]
+
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -1211,7 +1213,6 @@ model Address {
 
   @@unique([normalizedName, tenantId])
   @@index([tenantId])
-  @@index([contactId])
   @@index([id])
   @@index([updatedAt])
 }

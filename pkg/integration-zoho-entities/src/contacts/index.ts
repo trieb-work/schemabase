@@ -371,48 +371,48 @@ export class ZohoContactSyncService {
     this.logger.info(
       `We have ${newAddresses.length} addresses that need to be synced with Zoho`,
     );
-    for (const newAddress of newAddresses) {
-      const zohoContactId =
-        newAddress.contact.zohoContactPersons?.[0]?.zohoContactId;
-      if (!zohoContactId) {
-        this.logger.error(
-          `No Zoho ContactId given for ${JSON.stringify(newAddress)}`,
-        );
-        continue;
-      }
+    // for (const newAddress of newAddresses) {
+    //   const zohoContactId =
+    //     newAddress.contact.zohoContactPersons?.[0]?.zohoContactId;
+    //   if (!zohoContactId) {
+    //     this.logger.error(
+    //       `No Zoho ContactId given for ${JSON.stringify(newAddress)}`,
+    //     );
+    //     continue;
+    //   }
 
-      const zohoAddrObj = addresses(
-        this.db,
-        this.zohoApp.tenantId,
-        this.zohoApp.id,
-        this.logger,
-        zohoContactId,
-      ).createZohoAddressFromECI(
-        newAddress,
-        this.zohoApp.orgLanguage.toLowerCase(),
-      );
+    //   const zohoAddrObj = addresses(
+    //     this.db,
+    //     this.zohoApp.tenantId,
+    //     this.zohoApp.id,
+    //     this.logger,
+    //     zohoContactId,
+    //   ).createZohoAddressFromECI(
+    //     newAddress,
+    //     this.zohoApp.orgLanguage.toLowerCase(),
+    //   );
 
-      const zohoAddr = await this.zoho.contact.addAddress(
-        zohoContactId,
-        zohoAddrObj,
-      );
-      await this.db.address.update({
-        where: {
-          id: newAddress.id,
-        },
-        data: {
-          zohoAddress: {
-            create: {
-              id: zohoAddr,
-              zohoApp: {
-                connect: {
-                  id: this.zohoApp.id,
-                },
-              },
-            },
-          },
-        },
-      });
-    }
+    //   const zohoAddr = await this.zoho.contact.addAddress(
+    //     zohoContactId,
+    //     zohoAddrObj,
+    //   );
+    //   await this.db.address.update({
+    //     where: {
+    //       id: newAddress.id,
+    //     },
+    //     data: {
+    //       zohoAddress: {
+    //         create: {
+    //           id: zohoAddr,
+    //           zohoApp: {
+    //             connect: {
+    //               id: this.zohoApp.id,
+    //             },
+    //           },
+    //         },
+    //       },
+    //     },
+    //   });
+    // }
   }
 }

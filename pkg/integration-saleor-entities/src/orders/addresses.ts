@@ -108,6 +108,13 @@ class Addresses {
               },
             },
           },
+          update: {
+            contact: {
+              connect: {
+                id: this.contactId,
+              },
+            },
+          },
         },
         shippingAddress: {
           connectOrCreate: {
