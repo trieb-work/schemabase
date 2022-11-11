@@ -187,13 +187,18 @@ export class ZohoContactSyncService {
           addressArray.push(fullContact.shipping_address);
 
         if (addressArray?.length > 0) {
-          await addresses(
-            this.db,
-            this.zohoApp.tenantId,
-            this.zohoApp.id,
-            this.logger,
-            eciContact.id,
-          ).eciContactAddAddresses(addressArray, fullContact?.contact_name);
+          try {
+            await addresses(
+              this.db,
+              this.zohoApp.tenantId,
+              this.zohoApp.id,
+              this.logger,
+              eciContact.id,
+            ).eciContactAddAddresses(addressArray, fullContact?.contact_name);
+          } catch (error) {
+            this.logger.error(error as any);
+            continue;
+          }
         } else {
           this.logger.info(
             // eslint-disable-next-line max-len
