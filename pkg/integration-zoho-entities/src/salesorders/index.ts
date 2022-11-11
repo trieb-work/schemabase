@@ -721,6 +721,7 @@ export class ZohoSalesOrdersSyncService {
             "IMPORTANT: Neither order totalPriceNet or totalPriceGross is set. Please check and correct it manually in ECI db",
           );
         }
+
         if (!order.billingAddress || !order.shippingAddress) {
           throw new Error("Billing and Shipping address need both to be set!");
         }
@@ -730,7 +731,6 @@ export class ZohoSalesOrdersSyncService {
         /**
          * The custom field mapping for a voucher code
          */
-
         if (this.zohoApp.customFieldVoucherCode && order.discountCode)
           customFields.push({
             api_name: this.zohoApp.customFieldVoucherCode,
@@ -746,11 +746,12 @@ export class ZohoSalesOrdersSyncService {
             value: order.readyToFullfill,
           });
 
+        const mainContactPerson = orderToMainContactPerson(order);
+
         // eslint-disable-next-line camelcase
         const discount_type = order.discountValueNet
           ? "entity_level"
           : "item_level";
-        const mainContactPerson = orderToMainContactPerson(order);
         const createSalesOrderBody: CreateSalesOrder = {
           date: format(order.date, "yyyy-MM-dd"),
           // We always create orders inclusive of tax to prevent possible rounding errors
@@ -763,10 +764,12 @@ export class ZohoSalesOrdersSyncService {
           discount: calculateDiscount(order.discountValueNet, "fixed"),
           billing_address_id: addressToZohoAddressId(
             order.billingAddress,
+            mainContactPerson.zohoContactId,
             this.logger,
           ),
           shipping_address_id: addressToZohoAddressId(
             order.shippingAddress,
+            mainContactPerson.zohoContactId,
             this.logger,
           ),
           // TODO: make this use settings from Zoho App. This fails, if custom field is not prepared

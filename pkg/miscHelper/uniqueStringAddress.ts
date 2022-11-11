@@ -19,7 +19,7 @@ const uniqueStringAddress = ({
   additionalAddressLine?: string;
   plz: string;
   city: string;
-  countryCode: string;
+  countryCode: string | undefined;
   company?: string;
   phone?: string;
   fullname: string;
