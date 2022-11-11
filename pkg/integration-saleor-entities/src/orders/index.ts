@@ -329,20 +329,11 @@ export class SaleorOrderSyncService {
             lineItem.quantity,
           );
 
-          // Before Saleor 3.3.13, the discount value is calculated on the
-          // gross price (which is just bullshit :D) so we have to calculate the discountValueNet
-          // manually
-          const discountValueNet = round(
-            lineItem.unitDiscountValue === 0
-              ? 0
-              : lineItem.undiscountedUnitPrice.net.amount * lineItem.quantity -
-                  lineItem.totalPrice.net.amount,
-            2,
-          );
+          const lineItemTotalDiscountNet = round(lineItem.unitDiscount.amount * lineItem.quantity, 2)
 
-          if (discountValueNet < 0) {
+          if (lineItemTotalDiscountNet < 0) {
             throw new Error(
-              `Calculated saleor discount is negative: ${discountValueNet}! This can never be. Failing..`,
+              `Calculated saleor discount is negative: ${lineItemTotalDiscountNet}! This can never be. Failing..`,
             );
           }
 
@@ -382,7 +373,7 @@ export class SaleorOrderSyncService {
                       },
                     },
                     quantity: lineItem.quantity,
-                    discountValueNet,
+                    discountValueNet: lineItemTotalDiscountNet,
                     undiscountedUnitPriceNet:
                       lineItem.undiscountedUnitPrice.net.amount,
                     undiscountedUnitPriceGross:
@@ -415,7 +406,7 @@ export class SaleorOrderSyncService {
               orderLineItem: {
                 update: {
                   quantity: lineItem.quantity,
-                  discountValueNet,
+                  discountValueNet: lineItemTotalDiscountNet,
                   totalPriceNet: lineItem.totalPrice.net.amount,
                   totalPriceGross: lineItem.totalPrice.gross.amount,
                   undiscountedUnitPriceGross:

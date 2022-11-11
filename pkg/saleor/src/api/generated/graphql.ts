@@ -10225,9 +10225,9 @@ export type SaleorCronOrderDetailsQuery = {
       productSku: string;
       quantity: number;
       unitDiscountType?: DiscountValueTypeEnum | null;
-      unitDiscountValue: any;
       taxRate: number;
       variant?: { __typename?: "ProductVariant"; sku: string } | null;
+      unitDiscount: { __typename?: "Money"; amount: number };
       undiscountedUnitPrice: {
         __typename?: "TaxedMoney";
         currency: string;
@@ -10859,7 +10859,9 @@ export const SaleorCronOrderDetailsDocument = gql`
         }
         quantity
         unitDiscountType
-        unitDiscountValue
+        unitDiscount {
+          amount
+        }
         undiscountedUnitPrice {
           currency
           gross {

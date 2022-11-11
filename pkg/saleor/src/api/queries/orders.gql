@@ -85,7 +85,9 @@ query saleorCronOrderDetails($id: ID!) {
       }
       quantity
       unitDiscountType
-      unitDiscountValue
+      unitDiscount{ 
+        amount
+      }
       undiscountedUnitPrice {
         currency
         gross {
