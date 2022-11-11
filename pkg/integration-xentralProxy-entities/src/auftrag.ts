@@ -158,46 +158,51 @@ export class XentralProxyOrderSyncService {
         tenantId: this.tenantId,
         orderNumber: order.orderNumber,
       };
-      if (!order.shippingAddress) {
+      if (!order.shippingAddress && order.carrier !== "PICKUP") {
         // TODO add try/catch block from other services -> use Warning Class
         this.logger.warn(
-          "Skipping sync of Order because of missing shipping Address",
+          "Skipping sync of Order because of missing shipping Address and carrier not PICKUP",
           defaultLogFields,
         );
         continue;
       }
-      if (!order.shippingAddress?.fullname) {
-        // TODO add try/catch block from other services -> use Error Class
-        this.logger.error(
-          "Skipping sync of Order because order.shippingAddress.fullname is empty. Please double check. " +
-            "If you want to override this check please write a space/blank in this field via ECI Prisma DB Dashboard.",
-          defaultLogFields,
-        );
-        continue;
-      }
-      if (!order.shippingAddress?.street) {
-        this.logger.error(
-          "Skipping sync of Order because order.shippingAddress.street is empty. Please double check. " +
-            "If you want to override this check please write a space/blank in this field via ECI Prisma DB Dashboard.",
-          defaultLogFields,
-        );
-        continue;
-      }
-      if (!order.shippingAddress?.plz) {
-        this.logger.error(
-          "Skipping sync of Order because order.shippingAddress.plz is empty. Please double check. " +
-            "If you want to override this check please write a space/blank in this field via ECI Prisma DB Dashboard.",
-          defaultLogFields,
-        );
-        continue;
-      }
-      if (!order.shippingAddress?.city) {
-        this.logger.error(
-          "Skipping sync of Order because order.shippingAddress.city is empty. Please double check. " +
-            "If you want to override this check please write a space/blank in this field via ECI Prisma DB Dashboard.",
-          defaultLogFields,
-        );
-        continue;
+      /**
+       * These checks are just needed, when the order is not a PICKUP order
+       */
+      if (order.carrier !== "PICKUP") {
+        if (!order.shippingAddress?.fullname) {
+          // TODO add try/catch block from other services -> use Error Class
+          this.logger.error(
+            "Skipping sync of Order because order.shippingAddress.fullname is empty. Please double check. " +
+              "If you want to override this check please write a space/blank in this field via ECI Prisma DB Dashboard.",
+            defaultLogFields,
+          );
+          continue;
+        }
+        if (!order.shippingAddress?.street) {
+          this.logger.error(
+            "Skipping sync of Order because order.shippingAddress.street is empty. Please double check. " +
+              "If you want to override this check please write a space/blank in this field via ECI Prisma DB Dashboard.",
+            defaultLogFields,
+          );
+          continue;
+        }
+        if (!order.shippingAddress?.plz) {
+          this.logger.error(
+            "Skipping sync of Order because order.shippingAddress.plz is empty. Please double check. " +
+              "If you want to override this check please write a space/blank in this field via ECI Prisma DB Dashboard.",
+            defaultLogFields,
+          );
+          continue;
+        }
+        if (!order.shippingAddress?.city) {
+          this.logger.error(
+            "Skipping sync of Order because order.shippingAddress.city is empty. Please double check. " +
+              "If you want to override this check please write a space/blank in this field via ECI Prisma DB Dashboard.",
+            defaultLogFields,
+          );
+          continue;
+        }
       }
 
       let existingXentralAuftrag: Auftrag | undefined;
@@ -256,27 +261,28 @@ export class XentralProxyOrderSyncService {
 
       const versandart = order.carrier ?  await this.versandArt(order.carrier) : undefined;
 
+
       const auftrag: AuftragCreateRequest = {
         kundennummer: "NEW",
         /**
          * If we have a company, we set the fullname as ansprechpartner. If not,
          * the fullname ist just in the name field
          */
-        ansprechpartner: order.shippingAddress.company
-          ? order.shippingAddress.fullname
+        ansprechpartner: order?.shippingAddress?.company
+          ? order?.shippingAddress?.fullname || ""
           : "",
         name:
-          order.shippingAddress.company || order.shippingAddress.fullname || "",
-        strasse: order.shippingAddress.street || "",
+          order?.shippingAddress?.company || order?.shippingAddress?.fullname || "",
+        strasse: order?.shippingAddress?.street || "",
         adresszusatz: order.shippingAddress?.additionalAddressLine || "",
-        // email: order.mainContact.email // TODO disabled for now because we want to send tracking emails by our own, and do not want to risk that kramer sends some emails
-        projekt: String(this.xentralProxyApp.projectId),
-        plz: order.shippingAddress.plz || "",
-        ort: order.shippingAddress.city || "",
-        land: order.shippingAddress.countryCode || "DE", // TODO make default country a config option in tenant
+        plz: order?.shippingAddress?.plz || "",
+        ort: order?.shippingAddress?.city || "",
+        land: order?.shippingAddress?.countryCode || "DE", // TODO make default country a config option in tenant
         // Ihre Bestellnummer scheint eher für Dropshipping etc. verwendung zu finden
         // ihrebestellnummer: order.orderNumber,
         internet: order.orderNumber,
+        projekt: String(this.xentralProxyApp.projectId),
+        // email: order.mainContact.email // TODO disabled for now because we want to send tracking emails by our own, and do not want to risk that kramer sends some emails
         // INFO: do not remove date otherwise search will not work anymore!
         datum: order.date.toJSON(),
         lieferdatum: order.expectedShippingDate?.toJSON(),
