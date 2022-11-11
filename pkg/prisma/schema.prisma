@@ -227,6 +227,7 @@ model ZohoContact {
 
   zohoContactPerson ZohoContactPerson[]
   zohoSalesOrder    ZohoSalesOrder[]
+  zohoAddress       ZohoAddress[]
   // zohoInvoice       ZohoInvoice[]
   // zohoPayment       ZohoPayment[]
 
@@ -276,6 +277,11 @@ model ZohoAddress {
 
   address   Address @relation(fields: [addressId], references: [id], onDelete: Cascade)
   addressId String
+
+  /// Zoho Addresses are valid only per zoho contact. Sometimes, we have different
+  /// customers with the same address. To not get any issues, we need to store the customer id
+  zohoContact    ZohoContact? @relation(fields: [zohoContactId, zohoAppId], references: [id, zohoAppId], onDelete: Cascade)
+  zohoContactId  String?
 
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String
@@ -1170,6 +1176,10 @@ model Address {
   // Created and updated at the ECI DB
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  /// Optional information, if this address is the default for a certain contact.
+  /// This information can be used by some systems like Zoho
+  isDefault   Boolean? 
 
   street                String?
   additionalAddressLine String?

@@ -145,6 +145,7 @@ Table ZohoContact {
   zohoAppId String [not null]
   zohoContactPerson ZohoContactPerson [not null]
   zohoSalesOrder ZohoSalesOrder [not null]
+  zohoAddress ZohoAddress [not null]
 
   indexes {
     (id, zohoAppId) [unique]
@@ -173,6 +174,9 @@ Table ZohoAddress {
   id String [not null, note: 'Zoho internal Address id']
   address Address [not null]
   addressId String [not null]
+  zohoContact ZohoContact [note: 'Zoho Addresses are valid only per zoho contact. Sometimes, we have different
+customers with the same address. To not get any issues, we need to store the customer id']
+  zohoContactId String
   zohoApp ZohoApp [not null]
   zohoAppId String [not null]
 
@@ -1602,6 +1606,8 @@ Ref: ZohoContactPerson.contactId > Contact.id [delete: Cascade]
 Ref: ZohoContactPerson.zohoAppId > ZohoApp.id [delete: Cascade]
 
 Ref: ZohoAddress.addressId > Address.id [delete: Cascade]
+
+Ref: ZohoAddress.(zohoContactId, zohoAppId) > ZohoContact.(id, zohoAppId) [delete: Cascade]
 
 Ref: ZohoAddress.zohoAppId > ZohoApp.id [delete: Cascade]
 

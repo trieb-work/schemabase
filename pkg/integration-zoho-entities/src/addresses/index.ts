@@ -173,6 +173,7 @@ class Addresses {
   // Takes Zoho Addresses for a contact and sync them with the ECI DB
   public async eciContactAddAddresses(
     addresses: Address[],
+    zohoContactId: string,
     customerName?: string,
   ) {
     this.logger.info(
@@ -187,6 +188,7 @@ class Addresses {
       if (!zohoAddress.address_id)
         throw new Warning(`Zoho Address ID missing. Can't sync`);
 
+      this.logger.info(`Upserting Zoho Address ${zohoAddress.address_id}`);
       await this.db.zohoAddress.upsert({
         where: {
           id_zohoAppId: {
@@ -196,6 +198,14 @@ class Addresses {
         },
         create: {
           id: zohoAddress.address_id,
+          zohoContact: {
+            connect: {
+              id_zohoAppId: {
+                id: zohoContactId,
+                zohoAppId: this.zohoAppId,
+              },
+            },
+          },
           zohoApp: {
             connect: {
               id: this.zohoAppId,
@@ -227,6 +237,14 @@ class Addresses {
           },
         },
         update: {
+          zohoContact: {
+            connect: {
+              id_zohoAppId: {
+                id: zohoContactId,
+                zohoAppId: this.zohoAppId,
+              },
+            },
+          },
           address: {
             update: {
               ...addressObj.addObj,

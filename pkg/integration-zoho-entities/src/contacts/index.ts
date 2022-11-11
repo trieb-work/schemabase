@@ -165,9 +165,14 @@ export class ZohoContactSyncService {
 
         // get the full contact, including contact persons and addresses
         const fullContact = await this.zoho.contact.get(contactId);
+        if (!fullContact) {
+          this.logger.error(`No Zoho contact returned for ${contactId}!`);
+          continue;
+        }
         const contactPersons = fullContact?.contact_persons;
 
         const contactActive = fullContact?.status === "active";
+
         // Start the contact person logic
         const totalLength = contactPersons?.length;
         if (totalLength && totalLength > 0) {
@@ -194,7 +199,11 @@ export class ZohoContactSyncService {
               this.zohoApp.id,
               this.logger,
               eciContact.id,
-            ).eciContactAddAddresses(addressArray, fullContact?.contact_name);
+            ).eciContactAddAddresses(
+              addressArray,
+              fullContact?.contact_id,
+              fullContact?.contact_name,
+            );
           } catch (error) {
             this.logger.error(error as any);
             continue;

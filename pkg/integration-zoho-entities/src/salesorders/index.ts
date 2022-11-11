@@ -784,6 +784,7 @@ export class ZohoSalesOrdersSyncService {
             : undefined,
           // TODO: shipment_date?
         };
+        this.logger.debug(JSON.stringify(createSalesOrderBody));
         const createdSalesOrder = await this.zoho.salesOrder.create(
           createSalesOrderBody,
         );
