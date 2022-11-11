@@ -3,7 +3,7 @@ import { ILogger } from "@eci/pkg/logger";
 import { Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { format, setHours, subDays, subMonths, subYears } from "date-fns";
+import { format, setHours, subDays, subHours, subMonths, subYears } from "date-fns";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import { sleep } from "@eci/pkg/miscHelper/time";
 import addresses from "../addresses";
@@ -46,8 +46,8 @@ export class ZohoContactSyncService {
     const cronState = await this.cronState.get();
 
     const now = new Date();
-    const yesterdayMidnight = setHours(subDays(now, 1), 0);
-    let gteDate = format(yesterdayMidnight, "yyyy-MM-dd");
+    const nowMinusthreeHours = subHours(now, 3); 
+    let gteDate = format(nowMinusthreeHours, "yyyy-MM-dd");
 
     if (cronState.lastRun === null) {
       this.logger.info(
