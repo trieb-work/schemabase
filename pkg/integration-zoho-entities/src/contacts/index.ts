@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { Zoho, Address } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
@@ -229,8 +230,6 @@ export class ZohoContactSyncService {
   }
 
   public async syncFromECI(): Promise<void> {
-    // TODO: get all contacts from our DB, that don't have
-    // a Zoho ID yet
     const newContacts = await this.db.contact.findMany({
       where: {
         tenantId: this.zohoApp.tenantId,
@@ -263,11 +262,28 @@ export class ZohoContactSyncService {
         continue;
       }
 
-      // TODO: Possible improvement: we can set the address of an contact
-      // directly as shipping and billing address without more API calls
+      const defaultAddress =
+        newContact.addresses.length === 1 ? newContact.addresses[0] : undefined;
+
+      const defaultZohoAddr = defaultAddress
+        ? addresses(
+            this.db,
+            this.zohoApp.tenantId,
+            this.zohoApp.id,
+            this.logger,
+            "NOTNEEDED",
+          ).createZohoAddressFromECI(
+            defaultAddress,
+            this.zohoApp.orgLanguage.toLowerCase(),
+          )
+        : undefined;
+
+      this.logger.info(`Creating Zoho Contact now for ECI id ${newContact.id}`);
       const zohoContact = await this.zoho.contact.create({
         contact_name: `${newContact.firstName} ${newContact.lastName}`,
         customer_sub_type: newContact?.companyId ? "business" : "individual",
+        shipping_address: defaultZohoAddr,
+        billing_address: defaultZohoAddr,
         contact_persons: [
           {
             first_name: newContact.firstName,
@@ -303,6 +319,27 @@ export class ZohoContactSyncService {
           },
         },
       });
+      if (defaultAddress) {
+        this.logger.info(
+          `Upserting now Zoho Shipping and Billing address Id for newly created Zoho contact ${zohoContact.contact_id}`,
+        );
+        await this.db.zohoAddress.createMany({
+          data: [
+            {
+              id: zohoContact.billing_address.address_id,
+              addressId: defaultAddress.id,
+              zohoContactId: zohoContact.contact_id,
+              zohoAppId: this.zohoApp.id,
+            },
+            {
+              id: zohoContact.shipping_address.address_id,
+              addressId: defaultAddress.id,
+              zohoContactId: zohoContact.contact_id,
+              zohoAppId: this.zohoApp.id,
+            },
+          ],
+        });
+      }
     }
     const newAddresses = await this.db.address.findMany({
       where: {

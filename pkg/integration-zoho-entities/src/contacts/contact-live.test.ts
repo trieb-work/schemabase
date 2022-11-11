@@ -33,6 +33,8 @@ describe("Zoho Entity Sync Orders Test", () => {
       logger: new AssertionLogger(),
       db: prismaClient,
     });
-    await service.syncToECI();
-  }, 1000000);
+    // await service.syncToECI();
+
+    await service.syncFromECI();
+  }, 10000000);
 });
