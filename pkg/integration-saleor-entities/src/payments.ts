@@ -134,6 +134,15 @@ export class SaleorPaymentSyncService {
        */
       const prefixedOrderNumber = `${this.orderPrefix}-${saleorOrder.number}`;
 
+      const lowercaseEmail = saleorOrder.userEmail;
+
+      if (!lowercaseEmail) {
+        this.logger.error(
+          `Did not receive an email address for this payment from saleor. Can't upsert payment`,
+        );
+        continue;
+      }
+
       const successfullTransactions = payment.transactions?.filter(
         (tr) => tr?.isSuccess,
       );
@@ -290,6 +299,14 @@ export class SaleorPaymentSyncService {
                 id: id.id("payment"),
                 amount: payment.total?.amount as number,
                 referenceNumber: paymentReference,
+                mainContact: {
+                  connect: {
+                    email_tenantId: {
+                      tenantId: this.tenantId,
+                      email: lowercaseEmail,
+                    },
+                  },
+                },
                 tenant: {
                   connect: {
                     id: this.tenantId,
@@ -323,6 +340,14 @@ export class SaleorPaymentSyncService {
                   },
                 },
                 paymentMethod: paymentMethodConnect,
+                mainContact: {
+                  connect: {
+                    email_tenantId: {
+                      tenantId: this.tenantId,
+                      email: lowercaseEmail,
+                    },
+                  },
+                },
                 order: orderConnect,
               },
             },

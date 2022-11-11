@@ -10351,6 +10351,7 @@ export type SaleorCronPaymentsQuery = {
             id: string;
             created: any;
             number?: string | null;
+            userEmail?: string | null;
           } | null;
           transactions?: Array<{
             __typename?: "Transaction";
@@ -10984,6 +10985,7 @@ export const SaleorCronPaymentsDocument = gql`
               id
               created
               number
+              userEmail
             }
             paymentMethodType
             transactions {

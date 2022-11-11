@@ -28,6 +28,7 @@ query saleorCronPayments($createdGte: Date, $after: String) {
             id
             created
             number
+            userEmail
           }
           paymentMethodType
           transactions {
