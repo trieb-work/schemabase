@@ -1,9 +1,9 @@
-import { Zoho, Contact, Address } from "@trieb.work/zoho-ts";
+import { Zoho, Address } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { isAfter, subDays, subMonths } from "date-fns";
+import { format, setHours, subDays, subMonths, subYears } from "date-fns";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import { sleep } from "@eci/pkg/miscHelper/time";
 import addresses from "../addresses";
@@ -41,38 +41,37 @@ export class ZohoContactSyncService {
   }
 
   public async syncToECI(): Promise<void> {
-    const contacts = await this.zoho.contact.list({
-      // filterBy: "active",
-      contactType: "customer",
-    });
     const tenantId = this.zohoApp.tenantId;
 
     const cronState = await this.cronState.get();
 
-    let contactsToBeUpserted: Contact[] = [];
+    const now = new Date();
+    const yesterdayMidnight = setHours(subDays(now, 1), 0);
+    let gteDate = format(yesterdayMidnight, "yyyy-MM-dd");
 
     if (cronState.lastRun === null) {
       this.logger.info(
         "This seems to be our first sync run. Upserting ALL contacts",
       );
-      contactsToBeUpserted = contacts;
+      gteDate = format(subYears(now, 2), "yyyy-MM-dd");
     } else {
-      // check if the last_updated timestamp from a contact
-      // is after the last succesfull cron run (-1 day security)
-      contactsToBeUpserted = contacts.filter(
-        // @ts-ignore: Object is possibly 'null'
-        (contact) =>
-          isAfter(
-            new Date(contact.last_modified_time),
-            subDays(cronState.lastRun as Date, 1),
-          ),
-      );
+      this.logger.info(`Setting GTE date to ${gteDate}`);
     }
 
+    const contacts = await this.zoho.contact.list({
+      // filterBy: "active",
+      contactType: "customer",
+      lastModifiedTime: `${gteDate}T01:00:00-0100`,
+    });
+
     this.logger.info(
-      `We have ${contactsToBeUpserted.length} contacts that changed since last sync run.`,
+      `We have ${contacts.length} contacts that changed since last sync run.`,
+      {
+        zohoContactIds:
+          contacts.length > 0 ? contacts.map((c) => c.contact_id) : undefined,
+      },
     );
-    if (contactsToBeUpserted.length === 0) {
+    if (contacts.length === 0) {
       await this.cronState.set({
         lastRun: new Date(),
         lastRunStatus: "success",
@@ -81,7 +80,7 @@ export class ZohoContactSyncService {
     }
 
     try {
-      for (const contact of contactsToBeUpserted) {
+      for (const contact of contacts) {
         if (!contact.email) {
           this.logger.warn(
             // eslint-disable-next-line max-len

@@ -175,7 +175,7 @@ export class ZohoSalesOrdersSyncService {
     const salesorders = await this.zoho.salesOrder.list({
       sortColumn: "last_modified_time",
       sortOrder: "descending",
-      last_modified_time: `${gteDate}T01:00:00-0100`,
+      lastModifiedTime: `${gteDate}T01:00:00-0100`,
     });
 
     this.logger.info(
@@ -604,7 +604,9 @@ export class ZohoSalesOrdersSyncService {
               this.logger.warn(err.message);
               continue;
             }
-            this.logger.error(JSON.stringify(err));
+            this.logger.error(
+              `Error upserting addresses: ${JSON.stringify(err)}`,
+            );
           }
         }
       }
