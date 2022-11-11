@@ -40,6 +40,11 @@ query saleorCronOrdersOverview($createdGte: Date, $after: String, $first: Int) {
             amount
           }
         }
+        voucher {
+          id
+          code
+          type
+        }
         shippingMethodName
         paymentStatus
         isPaid
@@ -60,11 +65,6 @@ query saleorCronOrderDetails($id: ID!) {
     id
     created
     number
-    voucher {
-      id
-      code
-      type
-    }
     shippingPrice {
       currency
       tax {

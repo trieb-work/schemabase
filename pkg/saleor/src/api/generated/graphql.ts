@@ -10184,6 +10184,12 @@ export type SaleorCronOrdersOverviewQuery = {
           __typename?: "TaxedMoney";
           gross: { __typename?: "Money"; amount: number };
         };
+        voucher?: {
+          __typename?: "Voucher";
+          id: string;
+          code: string;
+          type: VoucherTypeEnum;
+        } | null;
         total: {
           __typename?: "TaxedMoney";
           currency: string;
@@ -10206,12 +10212,6 @@ export type SaleorCronOrderDetailsQuery = {
     created: any;
     number?: string | null;
     paymentStatus: PaymentChargeStatusEnum;
-    voucher?: {
-      __typename?: "Voucher";
-      id: string;
-      code: string;
-      type: VoucherTypeEnum;
-    } | null;
     shippingPrice: {
       __typename?: "TaxedMoney";
       currency: string;
@@ -10812,6 +10812,11 @@ export const SaleorCronOrdersOverviewDocument = gql`
               amount
             }
           }
+          voucher {
+            id
+            code
+            type
+          }
           shippingMethodName
           paymentStatus
           isPaid
@@ -10834,11 +10839,6 @@ export const SaleorCronOrderDetailsDocument = gql`
       id
       created
       number
-      voucher {
-        id
-        code
-        type
-      }
       shippingPrice {
         currency
         tax {
