@@ -216,7 +216,7 @@ export class ZohoContactSyncService {
         }
 
         // We sleep here to not get blocked by Zoho
-        await sleep(3000);
+        await sleep(1500);
       }
     } catch (error) {
       this.logger.error((error as any).toString());
