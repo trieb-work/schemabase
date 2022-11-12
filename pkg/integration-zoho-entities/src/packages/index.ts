@@ -371,102 +371,110 @@ export class ZohoPackageSyncService {
     );
 
     for (const p of packagesNotInZoho) {
-      if (!p.trackingId) {
-        this.logger.warn(
-          `No tracking number found for ${p.number}. Skipping sync`,
-        );
-        continue;
-      }
-      this.logger.info(
-        `Creating package ${p.number} - TrackingId: ${p.trackingId} in Zoho`,
-        {
-          trackingId: p.trackingId,
-        },
-      );
-      // fetch the package line items in a seperate call, as this is more efficient with Planetscale
-      const orderLineItems = await this.db.order.findUnique({
-        where: {
-          id: p.orderId,
-        },
-        include: {
-          zohoSalesOrders: {
-            select: {
-              id: true,
-            },
-            where: {
-              zohoAppId: this.zohoApp.id,
-            },
+      try {
+        if (!p.trackingId) {
+          this.logger.warn(
+            `No tracking number found for ${p.number}. Skipping sync`,
+          );
+          continue;
+        }
+        this.logger.info(
+          `Creating package ${p.number} - TrackingId: ${p.trackingId} in Zoho`,
+          {
+            trackingId: p.trackingId,
           },
-          orderLineItems: {
-            select: {
-              sku: true,
-              quantity: true,
-              zohoOrderLineItems: {
-                where: {
-                  zohoAppId: this.zohoApp.id,
-                },
-                select: {
-                  id: true,
+        );
+        // fetch the package line items in a seperate call, as this is more efficient
+        // with Planetscale
+        const orderLineItems = await this.db.order.findUnique({
+          where: {
+            id: p.orderId,
+          },
+          include: {
+            zohoSalesOrders: {
+              select: {
+                id: true,
+              },
+              where: {
+                zohoAppId: this.zohoApp.id,
+              },
+            },
+            orderLineItems: {
+              select: {
+                sku: true,
+                quantity: true,
+                zohoOrderLineItems: {
+                  where: {
+                    zohoAppId: this.zohoApp.id,
+                  },
+                  select: {
+                    id: true,
+                  },
                 },
               },
             },
           },
-        },
-      });
+        });
 
-      if (!orderLineItems?.orderLineItems) {
-        this.logger.warn(
-          `No orderline items for order ${p.orderId} - ${p.number}`,
+        if (!orderLineItems?.orderLineItems) {
+          this.logger.warn(
+            `No orderline items for order ${p.orderId} - ${p.number}`,
+          );
+          continue;
+        }
+
+        const lineItems = packageToZohoLineItems(
+          orderLineItems.orderLineItems,
+          p.packageLineItems,
         );
-        continue;
+        const salesOrderId = orderLineItems.zohoSalesOrders[0].id;
+
+        const createdPackage = await this.zoho.package.create(
+          {
+            package_number: p.number,
+            line_items: lineItems,
+            date: format(p.createdAt, "yyyy-MM-dd"),
+          },
+          salesOrderId,
+        );
+        const shipment = await this.zoho.package.createShipment(
+          {
+            date: format(p.createdAt, "yyyy-MM-dd"),
+            aftership_carrier_code:
+              this.carrierToAftership(p.carrier) || undefined,
+            delivery_method: p.carrier,
+            tracking_number: p.trackingId,
+            notes: p.carrierTrackingUrl || undefined,
+          },
+          salesOrderId,
+          createdPackage.package_id,
+          true,
+        );
+
+        await this.db.zohoPackage.create({
+          data: {
+            id: createdPackage.package_id,
+            package: {
+              connect: {
+                id: p.id,
+              },
+            },
+            zohoApp: {
+              connect: {
+                id: this.zohoApp.id,
+              },
+            },
+            createdAt: new Date(createdPackage.created_time),
+            updatedAt: new Date(createdPackage.last_modified_time),
+            shipmentId: shipment.shipment_id,
+          },
+        });
+      } catch (error) {
+        this.logger.error(
+          `Error working on package ${p.id} - ${p.number}.`,
+          error as any,
+        );
       }
-
-      const lineItems = packageToZohoLineItems(
-        orderLineItems.orderLineItems,
-        p.packageLineItems,
-      );
-      const salesOrderId = orderLineItems.zohoSalesOrders[0].id;
-
-      const createdPackage = await this.zoho.package.create(
-        {
-          package_number: p.number,
-          line_items: lineItems,
-          date: format(p.createdAt, "yyyy-MM-dd"),
-        },
-        salesOrderId,
-      );
-      const shipment = await this.zoho.package.createShipment(
-        {
-          date: format(p.createdAt, "yyyy-MM-dd"),
-          aftership_carrier_code:
-            this.carrierToAftership(p.carrier) || undefined,
-          delivery_method: p.carrier,
-          tracking_number: p.trackingId,
-          notes: p.carrierTrackingUrl || undefined,
-        },
-        salesOrderId,
-        createdPackage.package_id,
-        true
-      );
-
-      await this.db.zohoPackage.create({
-        data: {
-          id: createdPackage.package_id,
-          package: {
-            connect: {
-              id: p.id,
-            },
-          },
-          zohoApp: {
-            connect: {
-              id: this.zohoApp.id,
-            },
-          },
-          createdAt: new Date(createdPackage.created_time),
-          updatedAt: new Date(createdPackage.last_modified_time),
-          shipmentId: shipment.shipment_id,
-        },
-      });
     }
   }
 }
