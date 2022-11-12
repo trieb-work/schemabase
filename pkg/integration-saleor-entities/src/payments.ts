@@ -12,7 +12,7 @@ import {
   PrismaClient,
 } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { format, setHours, subDays, subYears } from "date-fns";
+import { format, subHours, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { checkCurrency } from "@eci/pkg/normalization/src/currency";
 import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils"; // TODO move to Warning to antoher place
@@ -78,8 +78,7 @@ export class SaleorPaymentSyncService {
     const cronState = await this.cronState.get(); // TODO add gte date filter for better scheduling so orders are most likely synced first
 
     const now = new Date();
-    const yesterdayMidnight = setHours(subDays(now, 1), 0);
-    let createdGte = format(yesterdayMidnight, "yyyy-MM-dd");
+    let createdGte: string;
     if (!cronState.lastRun) {
       createdGte = format(subYears(now, 1), "yyyy-MM-dd");
       this.logger.info(
@@ -87,6 +86,7 @@ export class SaleorPaymentSyncService {
         `This seems to be our first sync run. Syncing data from now - 1 Year to: ${createdGte}`,
       );
     } else {
+      createdGte = format(subHours(cronState.lastRun, 3), "yyyy-MM-dd");
       this.logger.info(`Setting GTE date to ${createdGte}`);
     }
 

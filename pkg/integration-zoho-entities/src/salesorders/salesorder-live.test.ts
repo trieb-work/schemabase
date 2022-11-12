@@ -5,6 +5,8 @@ import "@eci/pkg/jest-utils/consoleFormatter";
 import { ZohoSalesOrdersSyncService } from ".";
 import { getZohoClientAndEntry } from "@eci/pkg/zoho";
 
+/// Use this file to locally run this service
+
 beforeEach(() => {
   jest.clearAllMocks();
 });

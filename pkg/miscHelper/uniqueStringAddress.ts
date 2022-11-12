@@ -25,9 +25,9 @@ const uniqueStringAddress = ({
   fullname: string;
 }) => {
   return normalizeStrings.standardNormalize(
-    `${fullname}${street}${
-      additionalAddressLine ?? ""
-    }${plz}${city}${countryCode}${company ?? ""}${phone ?? ""}`,
+    `${fullname}${street}${additionalAddressLine ?? ""}${plz}${city}${
+      countryCode ?? ""
+    }${company ?? ""}${phone ?? ""}`,
   );
 };
 
