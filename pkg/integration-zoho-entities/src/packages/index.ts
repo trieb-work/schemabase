@@ -382,6 +382,7 @@ export class ZohoPackageSyncService {
           `Creating package ${p.number} - TrackingId: ${p.trackingId} in Zoho`,
           {
             trackingId: p.trackingId,
+            orderId: p.orderId,
           },
         );
         // fetch the package line items in a seperate call, as this is more efficient
