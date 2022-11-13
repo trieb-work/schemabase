@@ -319,6 +319,7 @@ export class XentralProxyLieferscheinSyncService {
                   tenantId: this.tenantId,
                   sku: p.nummer,
                   uniqueString: `${packageNumber}${p.nummer}${Number(p.menge)}`,
+                  warehouseId: this.xentralProxyApp.warehouseId,
                 })),
               },
             },

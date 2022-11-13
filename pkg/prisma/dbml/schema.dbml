@@ -443,6 +443,7 @@ Table Warehouse {
   zohoWarehouse ZohoWarehouse [not null]
   saleorWarehouse SaleorWarehouse [not null]
   xentralProxyApp XentralProxyApp [not null]
+  installedSaleorApp InstalledSaleorApp [not null]
   packageLineItems PackageLineItem [not null]
   stockEntries StockEntries [not null]
   isDefaultWarehouseOf ProductVariant [not null]
@@ -961,6 +962,8 @@ Table InstalledSaleorApp {
   cronSchedule String [not null, default: '*/30 * * * *']
   orderPrefix String [not null, default: 'STORE']
   webhooks IncomingWebhook [not null]
+  defaultWarehouse Warehouse [note: 'The default warehouse is always used, when warehouse information is missing for example for packages or items']
+  defaultWarehouseId String
   token String [not null]
   channelSlug String
   saleorApp SaleorApp [not null]
@@ -1783,6 +1786,8 @@ Ref: LogisticsApp.tenantId > Tenant.id [delete: Cascade]
 Ref: ZohoApp.tenantId > Tenant.id [delete: Cascade]
 
 Ref: SaleorApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: InstalledSaleorApp.defaultWarehouseId > Warehouse.id
 
 Ref: InstalledSaleorApp.(saleorAppId, domain) > SaleorApp.(id, domain) [delete: Cascade]
 

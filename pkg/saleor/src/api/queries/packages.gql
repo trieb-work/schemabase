@@ -2,11 +2,22 @@ query saleorCronPackagesOverview(
   $createdGte: Date
   $after: String
   $first: Int
+  $orderStatusFilter: [OrderStatusFilter!]
+  $orderSortField: OrderSortField!
+  $orderDirection: OrderDirection!
+  $updatedAtGte: DateTime
 ) {
   orders(
     first: $first
     after: $after
-    filter: { created: { gte: $createdGte } }
+    sortBy: { field: $orderSortField, direction: $orderDirection }
+    filter: { 
+      created: { 
+        gte: $createdGte 
+      }
+      status: $orderStatusFilter
+      updatedAt: { gte: $updatedAtGte } 
+    }
   ) {
     pageInfo {
       hasNextPage

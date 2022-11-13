@@ -6,17 +6,24 @@ import {
   SaleorCreatePackageMutation,
   OrderFulfillInput,
   OrderFulfillLineInput,
+  OrderStatusFilter,
+  OrderSortField,
+  OrderDirection,
 } from "@eci/pkg/saleor";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { format, setHours, subDays, subMonths, subYears } from "date-fns";
+import { subHours, subMonths, subYears } from "date-fns";
 
 interface SaleorPackageSyncServiceConfig {
   saleorClient: {
     saleorCronPackagesOverview: (variables: {
       first: number;
       after: string;
-      createdGte: string;
+      createdGte?: string;
+      orderStatusFilter: OrderStatusFilter[];
+      orderSortField: OrderSortField;
+      orderDirection: OrderDirection;
+      updatedAtGte: Date;
     }) => Promise<SaleorCronPackagesOverviewQuery>;
     saleorCreatePackage: (variables: {
       order: string;
@@ -35,7 +42,11 @@ export class SaleorPackageSyncService {
     saleorCronPackagesOverview: (variables: {
       first: number;
       after: string;
-      createdGte: string;
+      createdGte?: string;
+      orderStatusFilter: OrderStatusFilter[];
+      orderSortField: OrderSortField;
+      orderDirection: OrderDirection;
+      updatedAtGte: Date;
     }) => Promise<SaleorCronPackagesOverviewQuery>;
     saleorCreatePackage: (variables: {
       order: string;
@@ -110,23 +121,31 @@ export class SaleorPackageSyncService {
     const cronState = await this.cronState.get();
 
     const now = new Date();
-    const yesterdayMidnight = setHours(subDays(now, 1), 0);
-    let createdGte = format(yesterdayMidnight, "yyyy-MM-dd");
+    let createdGte: Date;
     if (!cronState.lastRun) {
-      createdGte = format(subYears(now, 2), "yyyy-MM-dd");
+      createdGte = subYears(now, 2);
       this.logger.info(
         // eslint-disable-next-line max-len
         `This seems to be our first sync run. Syncing data from: ${createdGte}`,
       );
     } else {
-      this.logger.info(`Setting GTE date to ${createdGte}`);
+      createdGte = subHours(cronState.lastRun, 3);
+      this.logger.info(
+        `Setting GTE date to ${createdGte}. Asking Saleor for all (partially) fulfilled orders with lastUpdated GTE.`,
+      );
     }
 
     const result = await queryWithPagination(({ first, after }) =>
       this.saleorClient.saleorCronPackagesOverview({
         first,
         after,
-        createdGte,
+        orderDirection: OrderDirection.Desc,
+        orderSortField: OrderSortField.LastModifiedAt,
+        orderStatusFilter: [
+          OrderStatusFilter.Fulfilled,
+          OrderStatusFilter.PartiallyFulfilled,
+        ],
+        updatedAtGte: createdGte,
       }),
     );
 
@@ -352,8 +371,8 @@ export class SaleorPackageSyncService {
         continue;
       }
 
-      const lines: OrderFulfillLineInput[] = parcel.packageLineItems.map(
-        (packageOrderLine) => {
+      const lines: OrderFulfillLineInput[] = parcel.packageLineItems
+        .map((packageOrderLine) => {
           // Get the corresponding order to this package and lookup the saleor Order Line
           // using the product SKU
           const orderLineId = saleorOrder.order.orderLineItems.find(
@@ -361,13 +380,7 @@ export class SaleorPackageSyncService {
           )?.saleorOrderLineItems[0]?.id;
           if (!orderLineId) {
             this.logger.error(
-              `Can't find a saleor orderLine for order ${
-                saleorOrder.orderNumber
-              }, LineItem SKU ${
-                packageOrderLine.sku
-              } - Can't create fulfillment in saleor. Orderlines: ${JSON.stringify(
-                saleorOrder.order.orderLineItems,
-              )}`,
+              `Can't find a saleor orderLine for order ${saleorOrder.orderNumber}, LineItem SKU ${packageOrderLine.sku} - This happens for example when you add orderlines to an order in a different system.`,
             );
           }
           return {
@@ -381,8 +394,8 @@ export class SaleorPackageSyncService {
               },
             ],
           };
-        },
-      );
+        })
+        .filter((x) => x.orderLineId);
       // Continue, if the lines array is missing the orderline Id
       const fulfillmentLinesCheck = lines.every((i) => {
         if (!i.orderLineId) return false;

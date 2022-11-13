@@ -680,6 +680,7 @@ model Warehouse {
   zohoWarehouse   ZohoWarehouse[]
   saleorWarehouse SaleorWarehouse[]
   xentralProxyApp XentralProxyApp[]
+  installedSaleorApp InstalledSaleorApp[]
 
   packageLineItems     PackageLineItem[]
   stockEntries         StockEntries[]
@@ -1812,6 +1813,10 @@ model InstalledSaleorApp {
   // Every SaleorApp can have multiple webhooks configured.
   // One webhook can fire on multiple events. But for sync webhooks, we need a different one
   webhooks IncomingWebhook[]
+
+  /// The default warehouse is always used, when warehouse information is missing for example for packages or items
+  defaultWarehouse    Warehouse? @relation(fields: [defaultWarehouseId], references: [id])
+  defaultWarehouseId  String?
 
   // Unlike regular users, Saleor Apps use a bearer token. The token is
   // assigned at App installation time and needs to be stored in a secure manner.
