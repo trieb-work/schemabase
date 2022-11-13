@@ -56,11 +56,14 @@ export class XentralProxyLieferscheinSyncService {
         // TODO check which filters make sense?
         orderStatus: "confirmed",
 
-        // shipmentStatus: {
-        //   in: ["pending", "partiallyShipped"],
-        // },
+        // We only pull orders, that are not fully shipped yet.
+        shipmentStatus: {
+          notIn: ["delivered", "shipped"],
+        },
+        // The sliding window - may be removed or changed. Orders can be created a long time ago
+        // and be shipped a few month later. So this will not work
         createdAt: {
-          gte: subDays(new Date(), 1)
+          gte: subDays(new Date(), 10)
         },
         readyToFullfill: true,
         /**
