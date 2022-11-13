@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 import {
   CreateSalesOrder,
+  CustomField,
   SalesOrder,
   Zoho,
   ZohoApiError,
@@ -726,7 +727,7 @@ export class ZohoSalesOrdersSyncService {
           throw new Error("Billing and Shipping address need both to be set!");
         }
 
-        const customFields = [];
+        const customFields: CustomField[] = [];
 
         /**
          * The custom field mapping for a voucher code
@@ -742,7 +743,7 @@ export class ZohoSalesOrdersSyncService {
          */
         if (this.zohoApp.customFieldReadyToFulfill)
           customFields.push({
-            api_name: this.zohoApp.customFieldVoucherCode,
+            api_name: this.zohoApp.customFieldReadyToFulfill,
             value: order.readyToFullfill,
           });
 
@@ -772,13 +773,7 @@ export class ZohoSalesOrdersSyncService {
             mainContactPerson.zohoContactId,
             this.logger,
           ),
-          // TODO: make this use settings from Zoho App. This fails, if custom field is not prepared
-          custom_fields: [
-            {
-              api_name: "cf_ready_to_fulfill",
-              value: order.readyToFullfill,
-            },
-          ],
+          custom_fields: customFields,
           contact_persons: [mainContactPerson.id],
           shipping_charge: order.shippingPriceGross ?? undefined,
           // mit is_inclusive_tax = true klappt das discountValueNet natürlich nicht.
