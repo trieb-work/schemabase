@@ -29,7 +29,7 @@ describe("Zoho Entity Sync Orders Test", () => {
 
     const service = new SaleorPackageSyncService({
       saleorClient,
-      installedSaleorAppId: installedSaleorApp.id,
+      installedSaleorApp: installedSaleorApp,
       logger: new AssertionLogger(),
       db: prismaClient,
       tenantId: tenant.id,

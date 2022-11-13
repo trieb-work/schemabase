@@ -10,7 +10,7 @@ import {
   OrderSortField,
   OrderDirection,
 } from "@eci/pkg/saleor";
-import { PrismaClient } from "@eci/pkg/prisma";
+import { InstalledSaleorApp, PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { subHours, subMonths, subYears } from "date-fns";
 
@@ -30,7 +30,7 @@ interface SaleorPackageSyncServiceConfig {
       input: OrderFulfillInput;
     }) => Promise<SaleorCreatePackageMutation>;
   };
-  installedSaleorAppId: string;
+  installedSaleorApp: InstalledSaleorApp;
   tenantId: string;
   db: PrismaClient;
   logger: ILogger;
@@ -58,6 +58,8 @@ export class SaleorPackageSyncService {
 
   public readonly installedSaleorAppId: string;
 
+  public readonly installedSaleorApp: InstalledSaleorApp;
+
   public readonly tenantId: string;
 
   private readonly cronState: CronStateHandler;
@@ -69,7 +71,8 @@ export class SaleorPackageSyncService {
   public constructor(config: SaleorPackageSyncServiceConfig) {
     this.saleorClient = config.saleorClient;
     this.logger = config.logger;
-    this.installedSaleorAppId = config.installedSaleorAppId;
+    this.installedSaleorAppId = config.installedSaleorApp.id;
+    this.installedSaleorApp = config.installedSaleorApp;
     this.tenantId = config.tenantId;
     this.db = config.db;
     this.orderPrefix = config.orderPrefix;
@@ -310,6 +313,24 @@ export class SaleorPackageSyncService {
         .join(",")}`,
     );
 
+    /**
+     * We need to pull a default warehouse, for packages without a warehouse
+     */
+    const defaultWarehouse = this.installedSaleorApp.defaultWarehouseId
+      ? await this.db.warehouse.findUnique({
+          where: {
+            id: this.installedSaleorApp.defaultWarehouseId,
+          },
+          include: {
+            saleorWarehouse: {
+              where: {
+                installedSaleorAppId: this.installedSaleorAppId,
+              },
+            },
+          },
+        })
+      : undefined;
+
     for (const parcel of packagesNotYetInSaleor) {
       if (!parcel.packageLineItems) {
         this.logger.error(
@@ -364,9 +385,9 @@ export class SaleorPackageSyncService {
         }
         return true;
       });
-      if (!warehouseCheck) {
+      if (!warehouseCheck && !this.installedSaleorApp.defaultWarehouseId) {
         this.logger.error(
-          `Can't create fulfillment in saleor. Warehouse or SaleorWarehouse is missing for (some) line items of package ${parcel.id} - ${parcel.number}`,
+          `Warehouse or SaleorWarehouse missing for ${parcel.id} - ${parcel.number} and no default warehouse given. Can't create fulfillment`,
         );
         continue;
       }
@@ -388,8 +409,10 @@ export class SaleorPackageSyncService {
             orderLineId,
             stocks: [
               {
-                warehouse: packageOrderLine.warehouse?.saleorWarehouse[0]
-                  .id as string,
+                warehouse:
+                  (packageOrderLine.warehouse?.saleorWarehouse?.[0]
+                    .id as string) ||
+                  (defaultWarehouse?.saleorWarehouse?.[0].id as string),
                 quantity: packageOrderLine.quantity,
               },
             ],
@@ -401,8 +424,12 @@ export class SaleorPackageSyncService {
         if (!i.orderLineId) return false;
         return true;
       });
-      if (!fulfillmentLinesCheck) continue;
+      if (!fulfillmentLinesCheck || lines.length === 0) continue;
 
+      this.logger.info(
+        `Creating fulfillment now in Saleor ${saleorOrder.id} - ${parcel.number} - ${parcel.orderId}`,
+      );
+      this.logger.debug("Saleor line items:" + JSON.stringify(lines));
       const response = await this.saleorClient.saleorCreatePackage({
         order: saleorOrder.id,
         input: {
