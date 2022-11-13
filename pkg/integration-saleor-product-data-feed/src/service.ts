@@ -127,6 +127,17 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
           continue;
         }
 
+        if (!variant.sku) {
+          this.logger.warn(`No variant SKU found for ${variant.id}`);
+          continue;
+        }
+        if (!variant.quantityAvailable) {
+          this.logger.warn(
+            `No variant quantity available given for ${variant.id}`,
+          );
+          continue;
+        }
+
         const gtin = hasVariants
           ? variant.metadata?.find((x) => x?.key === "EAN")?.value
           : rawProduct.metadata?.find((x) => x?.key === "EAN")?.value;
