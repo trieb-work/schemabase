@@ -195,6 +195,31 @@ class Addresses {
       this.logger.info(
         `Upserting Zoho Address ${zohoAddress.address_id} for Zoho Contact ${zohoContactId}`,
       );
+
+      const eciAddressConnectOrCreate = {
+        
+          where: {
+            normalizedName_tenantId: {
+              normalizedName: addressObj.uniqueString,
+              tenantId: this.tenantId,
+            },
+          },
+          create: {
+            id: id.id("address"),
+            ...addressObj.addObj,
+            tenant: {
+              connect: {
+                id: this.tenantId,
+              },
+            },
+            contact: {
+              connect: {
+                id: this.contactId,
+              },
+            },
+          },
+        
+      };
       await this.db.zohoAddress.upsert({
         where: {
           id_zohoAppId: {
@@ -218,29 +243,8 @@ class Addresses {
             },
           },
           address: {
-            connectOrCreate: {
-              where: {
-                normalizedName_tenantId: {
-                  normalizedName: addressObj.uniqueString,
-                  tenantId: this.tenantId,
-                },
-              },
-              create: {
-                id: id.id("address"),
-                ...addressObj.addObj,
-                tenant: {
-                  connect: {
-                    id: this.tenantId,
-                  },
-                },
-                contact: {
-                  connect: {
-                    id: this.contactId,
-                  },
-                },
-              },
-            },
-          },
+            connectOrCreate: eciAddressConnectOrCreate
+            }
         },
         update: {
           zohoContact: {
@@ -252,11 +256,12 @@ class Addresses {
             },
           },
           address: {
+            connectOrCreate: eciAddressConnectOrCreate,
             update: {
-              ...addressObj.addObj,
+              ...addressObj.addObj
             },
           },
-        },
+        
       });
     }
   }
