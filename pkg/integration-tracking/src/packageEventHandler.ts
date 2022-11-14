@@ -69,9 +69,10 @@ export class PackageEventHandler {
         },
       );
       /**
-       * We want to retry all packages in state INIT state, as it may be created after some time
+       * TODO: We return here, so that this message is not blocking the queue. Might be good here
+       * to use a retry queue and try again in 20 mins, as the package often takes time to 
+       * be processed
        */
-      if (event.state === "INIT") throw new Error();
       return;
     }
     const currentState = storedPackage.state;
