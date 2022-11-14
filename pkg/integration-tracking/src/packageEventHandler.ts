@@ -68,7 +68,11 @@ export class PackageEventHandler {
           trackingId: event.trackingId,
         },
       );
-      throw new Error();
+      /**
+       * We want to retry all packages in state INIT state, as it may be created after some time
+       */
+      if (event.state !== "INIT") throw new Error();
+      return;
     }
     const currentState = storedPackage.state;
 
