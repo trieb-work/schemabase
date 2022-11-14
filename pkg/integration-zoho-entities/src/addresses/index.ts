@@ -192,7 +192,9 @@ class Addresses {
       if (!zohoAddress.address_id)
         throw new Warning(`Zoho Address ID missing. Can't sync`);
 
-      this.logger.info(`Upserting Zoho Address ${zohoAddress.address_id}`);
+      this.logger.info(
+        `Upserting Zoho Address ${zohoAddress.address_id} for Zoho Contact ${zohoContactId}`,
+      );
       await this.db.zohoAddress.upsert({
         where: {
           id_zohoAppId: {
