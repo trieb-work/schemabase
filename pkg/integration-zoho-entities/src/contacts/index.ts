@@ -282,6 +282,7 @@ export class ZohoContactSyncService {
       const zohoContact = await this.zoho.contact.create({
         contact_name: `${newContact.firstName} ${newContact.lastName}`,
         customer_sub_type: newContact?.companyId ? "business" : "individual",
+        company_name: newContact.company?.name,
         shipping_address: defaultZohoAddr,
         billing_address: defaultZohoAddr,
         contact_persons: [
