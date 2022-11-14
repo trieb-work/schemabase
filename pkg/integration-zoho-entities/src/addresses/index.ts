@@ -197,28 +197,26 @@ class Addresses {
       );
 
       const eciAddressConnectOrCreate = {
-        
-          where: {
-            normalizedName_tenantId: {
-              normalizedName: addressObj.uniqueString,
-              tenantId: this.tenantId,
+        where: {
+          normalizedName_tenantId: {
+            normalizedName: addressObj.uniqueString,
+            tenantId: this.tenantId,
+          },
+        },
+        create: {
+          id: id.id("address"),
+          ...addressObj.addObj,
+          tenant: {
+            connect: {
+              id: this.tenantId,
             },
           },
-          create: {
-            id: id.id("address"),
-            ...addressObj.addObj,
-            tenant: {
-              connect: {
-                id: this.tenantId,
-              },
-            },
-            contact: {
-              connect: {
-                id: this.contactId,
-              },
+          contact: {
+            connect: {
+              id: this.contactId,
             },
           },
-        
+        },
       };
       await this.db.zohoAddress.upsert({
         where: {
@@ -243,8 +241,8 @@ class Addresses {
             },
           },
           address: {
-            connectOrCreate: eciAddressConnectOrCreate
-            }
+            connectOrCreate: eciAddressConnectOrCreate,
+          },
         },
         update: {
           zohoContact: {
@@ -258,10 +256,10 @@ class Addresses {
           address: {
             connectOrCreate: eciAddressConnectOrCreate,
             update: {
-              ...addressObj.addObj
+              ...addressObj.addObj,
             },
           },
-        
+        },
       });
     }
   }
