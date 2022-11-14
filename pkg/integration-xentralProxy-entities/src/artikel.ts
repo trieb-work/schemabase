@@ -155,6 +155,11 @@ export class XentralProxyProductVariantSyncService {
         await xentralXmlClient.ArtikelEdit({
           ...artikel,
           id: artikelId,
+          /**
+           * Don't update this setting. We don't want to overwrite this setting in Xentral until we
+           * sync the Stücklisten feature.
+           */
+          lagerartikel: undefined,
         });
         // xentralResData = await xentralXmlClient.ArtikelGet({ id: artikelId });
       } else {
