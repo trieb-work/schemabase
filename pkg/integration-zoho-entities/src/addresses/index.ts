@@ -20,6 +20,9 @@ interface AddressesConfig {
   tenantId: string;
   zohoAppId: string;
   logger: ILogger;
+  /**
+   * ECI internal contact id
+   */
   contactId: string;
 }
 
@@ -266,15 +269,23 @@ class Addresses {
    * @param customerName fallback customer name, if no attention and no contact person details exist
    * @param eciOrderId
    */
-  public async eciOrderAddAddresses(
-    shippingAddress: AddressWithoutAddressId,
-    shippingAddressId: string,
-    billingAddress: AddressWithoutAddressId,
-    billingAddressId: string,
-    contactPersonDetails: ContactPersonShortList[],
-    customerName: string,
-    eciOrderId: string,
-  ) {
+  public async eciOrderAddAddresses({
+    shippingAddress,
+    shippingAddressId,
+    billingAddress,
+    billingAddressId,
+    contactPersonDetails,
+    customerName,
+    eciOrderId,
+  }: {
+    shippingAddress: AddressWithoutAddressId;
+    shippingAddressId?: string;
+    billingAddress: AddressWithoutAddressId;
+    billingAddressId?: string;
+    contactPersonDetails: ContactPersonShortList[];
+    customerName: string;
+    eciOrderId: string;
+  }) {
     const contactPerson = contactPersonDetails?.[0];
     const fullName =
       contactPerson?.first_name && contactPerson?.last_name
@@ -294,6 +305,54 @@ class Addresses {
         id: this.tenantId,
       },
     };
+
+    this.logger.debug(
+      `Upserting following addresses for contact ${this.contactId}`,
+      {
+        "billingAddress.nornalizedName": billingAddr.uniqueString,
+      },
+    );
+
+    /**
+     * Upsert the zoho billing address if possible. Zoho sometimes just don't provides us this value
+     */
+    const zohoBillingAddr = billingAddressId
+      ? {
+          connectOrCreate: [
+            {
+              where: {
+                id_zohoAppId: {
+                  id: billingAddressId,
+                  zohoAppId: this.zohoAppId,
+                },
+              },
+              create: {
+                id: billingAddressId,
+                zohoAppId: this.zohoAppId,
+              },
+            },
+          ],
+        }
+      : undefined;
+
+    const zohoShippingAddr = shippingAddressId
+      ? {
+          connectOrCreate: [
+            {
+              where: {
+                id_zohoAppId: {
+                  id: shippingAddressId,
+                  zohoAppId: this.zohoAppId,
+                },
+              },
+              create: {
+                id: shippingAddressId,
+                zohoAppId: this.zohoAppId,
+              },
+            },
+          ],
+        }
+      : undefined;
 
     await this.db.order.update({
       where: {
@@ -317,22 +376,7 @@ class Addresses {
                   id: this.contactId,
                 },
               },
-              zohoAddress: {
-                connectOrCreate: [
-                  {
-                    where: {
-                      id_zohoAppId: {
-                        id: billingAddressId,
-                        zohoAppId: this.zohoAppId,
-                      },
-                    },
-                    create: {
-                      id: billingAddressId,
-                      zohoAppId: this.zohoAppId,
-                    },
-                  },
-                ],
-              },
+              zohoAddress: zohoBillingAddr,
             },
           },
         },
@@ -353,22 +397,7 @@ class Addresses {
                   id: this.contactId,
                 },
               },
-              zohoAddress: {
-                connectOrCreate: [
-                  {
-                    where: {
-                      id_zohoAppId: {
-                        id: shippingAddressId,
-                        zohoAppId: this.zohoAppId,
-                      },
-                    },
-                    create: {
-                      id: shippingAddressId,
-                      zohoAppId: this.zohoAppId,
-                    },
-                  },
-                ],
-              },
+              zohoAddress: zohoShippingAddr,
             },
           },
         },

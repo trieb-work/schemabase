@@ -18,14 +18,7 @@ import {
   ZohoApp,
 } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import {
-  addMinutes,
-  format,
-  isAfter,
-  setHours,
-  subDays,
-  subYears,
-} from "date-fns";
+import { addMinutes, format, isAfter, subHours, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { CustomFieldApiName } from "@eci/pkg/zoho-custom-fields/src/registry";
@@ -158,8 +151,7 @@ export class ZohoSalesOrdersSyncService {
     const cronState = await this.cronState.get();
 
     const now = new Date();
-    const yesterdayMidnight = setHours(subDays(now, 1), 0);
-    let gteDate = format(yesterdayMidnight, "yyyy-MM-dd");
+    let gteDate: string;
 
     if (cronState.lastRun === null) {
       gteDate = format(subYears(now, 2), "yyyy-MM-dd");
@@ -167,6 +159,7 @@ export class ZohoSalesOrdersSyncService {
         `This seems to be our first sync run. Setting GTE date to ${gteDate}`,
       );
     } else {
+      gteDate = format(subHours(cronState.lastRun, 3), "yyyy-MM-dd");
       this.logger.info(`Setting GTE date to ${gteDate}`);
     }
 
@@ -365,6 +358,7 @@ export class ZohoSalesOrdersSyncService {
             select: {
               billingAddressId: true,
               shippingAddress: true,
+              mainContactId: true,
             },
           },
         },
@@ -576,37 +570,33 @@ export class ZohoSalesOrdersSyncService {
           !fullSalesorder.billing_address_id
         ) {
           this.logger.warn(
-            `Shipping address id or billing address id missing for ${fullSalesorder.salesorder_id} - Can't sync addresses`,
+            `Shipping address id or billing address id missing for ${fullSalesorder.salesorder_id} - We maybe can't create a Zoho Address entry`,
           );
-        } else {
-          this.logger.info(
-            `Upserting addresses for SalesOrder ${fullSalesorder.salesorder_id}`,
-          );
-          try {
-            await addresses(
-              this.db,
-              this.tenantId,
-              this.zohoApp.id,
-              this.logger,
-              fullSalesorder.customer_id,
-            ).eciOrderAddAddresses(
-              fullSalesorder.shipping_address,
-              fullSalesorder.shipping_address_id,
-              fullSalesorder.billing_address,
-              fullSalesorder.billing_address_id,
-              fullSalesorder.contact_person_details,
-              fullSalesorder.customer_name,
-              internalOrderId,
-            );
-          } catch (err) {
-            if (err instanceof Warning) {
-              this.logger.warn(err.message);
-              continue;
-            }
-            this.logger.error(
-              `Error upserting addresses: ${JSON.stringify(err)}`,
-            );
+        }
+        try {
+          await addresses(
+            this.db,
+            this.tenantId,
+            this.zohoApp.id,
+            this.logger,
+            createdSalesOrder.order.mainContactId,
+          ).eciOrderAddAddresses({
+            shippingAddress: fullSalesorder.shipping_address,
+            shippingAddressId: fullSalesorder.shipping_address_id,
+            billingAddress: fullSalesorder.billing_address,
+            billingAddressId: fullSalesorder.billing_address_id,
+            contactPersonDetails: fullSalesorder.contact_person_details,
+            customerName: fullSalesorder.customer_name,
+            eciOrderId: internalOrderId,
+          });
+        } catch (err) {
+          if (err instanceof Warning) {
+            this.logger.warn(err.message);
+            continue;
           }
+          this.logger.error(
+            `Error upserting addresses: ${JSON.stringify(err)}`,
+          );
         }
       }
     }

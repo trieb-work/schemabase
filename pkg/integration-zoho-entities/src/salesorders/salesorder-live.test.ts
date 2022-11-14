@@ -36,6 +36,8 @@ describe("Zoho Entity Sync Orders Test", () => {
       db: prismaClient,
       createdTimeOffset: 1,
     });
-    await service.syncFromECI();
+    await service.syncToECI();
+
+    // await service.syncFromECI();
   }, 1000000);
 });
