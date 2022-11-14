@@ -262,8 +262,11 @@ export class ZohoContactSyncService {
         continue;
       }
 
+      /**
+       * Always just chosing the first address to at least have default addresses
+       */
       const defaultAddress =
-        newContact.addresses.length === 1 ? newContact.addresses[0] : undefined;
+        newContact.addresses.length > 0 ? newContact.addresses[0] : undefined;
 
       const defaultZohoAddr = defaultAddress
         ? addresses(
@@ -320,6 +323,8 @@ export class ZohoContactSyncService {
           },
         },
       });
+      // TODO: all all other maybe existing addresses to Zoho
+
       if (defaultAddress) {
         this.logger.info(
           `Upserting now Zoho Shipping and Billing address Id for newly created Zoho contact ${zohoContact.contact_id}`,
@@ -372,6 +377,9 @@ export class ZohoContactSyncService {
     this.logger.info(
       `We have ${newAddresses.length} addresses that need to be synced with Zoho`,
     );
+
+    // TODO: Problem: one address internally might belong to multiple Zoho contacts. Like this, we just know, 
+    // if the address is connected to one Zoho Tenant or not. We might need to filter for zoho contacts as well ?! don't know..
     // for (const newAddress of newAddresses) {
     //   const zohoContactId =
     //     newAddress.contact.zohoContactPersons?.[0]?.zohoContactId;
