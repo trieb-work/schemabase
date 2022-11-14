@@ -96,11 +96,12 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
       );
 
       if (templates.length === 0) {
-        throw new Error(
+        this.logger.error(
           `No matching template found for event: ${JSON.stringify(
             event,
           )} - ${JSON.stringify(packageEvent.state)}`,
         );
+        return;
       }
       const template = templates.find(
         (t) => t.language === packageEvent.package.order.language,
