@@ -62,9 +62,9 @@ export class XentralProxyLieferscheinSyncService {
         },
         // The sliding window - may be removed or changed. Orders can be created a long time ago
         // and be shipped a few month later. So this will not work
-        createdAt: {
-          gte: subDays(new Date(), 10)
-        },
+        // createdAt: {
+        //   gte: subDays(new Date(), 10)
+        // },
         readyToFullfill: true,
         /**
          * only include orders which have already been transfered to the current xentral instance and
@@ -87,7 +87,9 @@ export class XentralProxyLieferscheinSyncService {
       },
     });
     this.logger.info(
-      `Will sync Xentral Lieferscheine to Packages for ${orders.length} Orders with Xentral.`,
+      `Will sync Xentral Lieferscheine to Packages for ${orders.length} Orders with Xentral.`, {
+        orderNumbers: orders.map((o) => o.orderNumber)
+      }
     );
     for (const order of orders) {
       let loggingFields: Record<string, any> = {
@@ -244,10 +246,10 @@ export class XentralProxyLieferscheinSyncService {
           // TODO: possible workaround if kramer does this would be to create multiple packages but then we do not know how the positions are split up across
           // these packages so we have to split them up "randomly"
           this.logger.error(
-            "Xentral returned multiple trackingnumbers for one lieferschein. This is currently not supported. Please check this order manually",
+            "Xentral returned multiple trackingnumbers for one lieferschein. This is currently not supported. We just write it all to one package..",
             loggingFields,
           );
-          continue;
+          // continue;
         }
         if (matchingTrackingnummers.length === 0) {
           if (lieferschein.status === "versendet") {
