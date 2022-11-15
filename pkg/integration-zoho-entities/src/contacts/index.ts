@@ -362,6 +362,7 @@ export class ZohoContactSyncService {
       include: {
         contact: {
           select: {
+            id: true,
             zohoContactPersons: {
               where: {
                 zohoAppId: this.zohoApp.id,
@@ -378,50 +379,75 @@ export class ZohoContactSyncService {
       `We have ${newAddresses.length} addresses that need to be synced with Zoho`,
     );
 
-    // TODO: Problem: one address internally might belong to multiple Zoho contacts. Like this, we just know, 
+    // TODO: Problem: one address internally might belong to multiple Zoho contacts. Like this, we just know,
     // if the address is connected to one Zoho Tenant or not. We might need to filter for zoho contacts as well ?! don't know..
-    // for (const newAddress of newAddresses) {
-    //   const zohoContactId =
-    //     newAddress.contact.zohoContactPersons?.[0]?.zohoContactId;
-    //   if (!zohoContactId) {
-    //     this.logger.error(
-    //       `No Zoho ContactId given for ${JSON.stringify(newAddress)}`,
-    //     );
-    //     continue;
-    //   }
+    for (const newAddress of newAddresses) {
+      if (newAddress.contact.length === 0) {
+        this.logger.info(
+          `No related contact for address ${newAddress.id}. Can't sync`,
+        );
+        continue;
+      }
+      for (const contact of newAddress.contact) {
+        if (contact.zohoContactPersons.length === 0) {
+          this.logger.info(
+            `No Zoho contact person for address ${newAddress.id} - contact ${contact.id}`,
+          );
+          continue;
+        }
+        /**
+         * Using only unique zoho contacts
+         */
+        const uniqueZohoContacts = [...new Set(contact.zohoContactPersons)].map(
+          (c) => c.zohoContactId,
+        );
 
-    //   const zohoAddrObj = addresses(
-    //     this.db,
-    //     this.zohoApp.tenantId,
-    //     this.zohoApp.id,
-    //     this.logger,
-    //     zohoContactId,
-    //   ).createZohoAddressFromECI(
-    //     newAddress,
-    //     this.zohoApp.orgLanguage.toLowerCase(),
-    //   );
+        for (const zohoContact of uniqueZohoContacts) {
+          this.logger.info(
+            `Creating address ${newAddress.id} for Zoho Contact ${zohoContact} `,
+          );
+          const zohoAddrObj = addresses(
+            this.db,
+            this.zohoApp.tenantId,
+            this.zohoApp.id,
+            this.logger,
+            zohoContact,
+          ).createZohoAddressFromECI(
+            newAddress,
+            this.zohoApp.orgLanguage.toLowerCase(),
+          );
 
-    //   const zohoAddr = await this.zoho.contact.addAddress(
-    //     zohoContactId,
-    //     zohoAddrObj,
-    //   );
-    //   await this.db.address.update({
-    //     where: {
-    //       id: newAddress.id,
-    //     },
-    //     data: {
-    //       zohoAddress: {
-    //         create: {
-    //           id: zohoAddr,
-    //           zohoApp: {
-    //             connect: {
-    //               id: this.zohoApp.id,
-    //             },
-    //           },
-    //         },
-    //       },
-    //     },
-    //   });
-    // }
+          const zohoAddr = await this.zoho.contact.addAddress(
+            zohoContact,
+            zohoAddrObj,
+          );
+          await this.db.address.update({
+            where: {
+              id: newAddress.id,
+            },
+            data: {
+              zohoAddress: {
+                create: {
+                  id: zohoAddr,
+                  zohoContact: {
+                    connect: {
+                      id_zohoAppId: {
+                        id: zohoContact,
+                        zohoAppId: this.zohoApp.id,
+                      },
+                    },
+                  },
+                  zohoApp: {
+                    connect: {
+                      id: this.zohoApp.id,
+                    },
+                  },
+                },
+              },
+            },
+          });
+        }
+      }
+    }
   }
 }
