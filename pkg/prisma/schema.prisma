@@ -514,7 +514,7 @@ model Tax {
   /// An array of lineitems where this tax is used as the tax for the line item
   taxInLineItems      OrderLineItem[]
 
-  products      Product[]
+  productVariants      ProductVariant[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -915,6 +915,8 @@ model Order {
   @@index([date])
   @@index([shipmentStatus])
   @@index([paymentStatus])
+  @@index([createdAt])
+  @@index([tenantId])
 }
 
 enum CountryCode {
@@ -1234,10 +1236,6 @@ model Product {
   // Where the product was produced. Important only for customs/tariffs
   countryOfOrigin CountryCode?
 
-  /// The standard tax rate of this article. Might be different for purchase and sales
-  salesTax      Tax?    @relation(fields: [salesTaxId], references: [id])
-  salesTaxId    String?
-
   variants ProductVariant[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -1275,6 +1273,10 @@ model ProductVariant {
 
   defaultWarehouse   Warehouse? @relation(fields: [defaultWarehouseId], references: [id], onDelete: Cascade)
   defaultWarehouseId String?
+
+  /// The default tax rate of this article. Might be different for purchase and sales
+  salesTax      Tax?    @relation(fields: [salesTaxId], references: [id])
+  salesTaxId    String?
 
   stockEntries StockEntries[]
 

@@ -13,6 +13,7 @@ import {
   OrderStatus as InternalOrderStatus,
   OrderPaymentStatus as InternalOrderPaymentStatus,
   Prisma,
+  Tax,
 } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { setHours, subDays, subYears, format } from "date-fns";
@@ -71,6 +72,8 @@ export class SaleorOrderSyncService {
 
   private readonly orderPrefix: string;
 
+  private eciTaxes: Tax[] | [];
+
   public constructor(config: SaleorOrderSyncServiceConfig) {
     this.saleorClient = config.saleorClient;
     this.channelSlug = config.channelSlug;
@@ -85,6 +88,23 @@ export class SaleorOrderSyncService {
       db: this.db,
       syncEntity: "orders",
     });
+    this.eciTaxes = [];
+  }
+
+  /**
+   * Lookup table, that is storing all available taxes to save DB calls
+   * @param taxPercentage 
+   */
+  public async lookupECITax(taxPercentage :number): Promise<string|undefined> {
+    if (this.eciTaxes.length === 0) {
+      this.eciTaxes = await this.db.tax.findMany({
+        where: {
+          tenantId: this.tenantId
+        }
+      })  
+    }
+    return this.eciTaxes.find((t) => t.percentage === taxPercentage)?.id;
+    
   }
 
   public async syncToECI(): Promise<void> {
@@ -338,6 +358,16 @@ export class SaleorOrderSyncService {
           }
 
           const taxPercentage = Math.round(lineItem.taxRate * 100);
+          let eciTax = await this.lookupECITax(taxPercentage)
+
+          if (!eciTax) {
+            this.logger.warn(`We could not find an internal tax for tax rate ${taxPercentage} for order ${order.number}. We are using the products default now`)
+            if (!productSku.salesTaxId) {
+              this.logger.error(`Product ${productSku.sku} - ${productSku.id} has no default sales tax set! Can't proceed`)
+              continue;
+            }
+            eciTax = productSku.salesTaxId;
+          }
 
           // TODO: would it not be better to inline this into db.saleorOrder.upsert (line 209) so we do not have partiall order data in ECI db if something fails?
           // Otherwise we would maybe need a parialdata flag (or commited flag) which is true on create and will be updated to false once all lineitems etc. have been created.
@@ -382,10 +412,7 @@ export class SaleorOrderSyncService {
                     totalPriceGross: lineItem.totalPrice.gross.amount,
                     tax: {
                       connect: {
-                        percentage_tenantId: {
-                          percentage: taxPercentage,
-                          tenantId: this.tenantId,
-                        },
+                        id: eciTax
                       },
                     },
                     productVariant: {
@@ -413,10 +440,7 @@ export class SaleorOrderSyncService {
                     lineItem.undiscountedUnitPrice.gross.amount,
                   tax: {
                     connect: {
-                      percentage_tenantId: {
-                        percentage: taxPercentage,
-                        tenantId: this.tenantId,
-                      },
+                      id: eciTax
                     },
                   },
                   productVariant: {

@@ -330,7 +330,7 @@ Table Tax {
   percentage Float [not null]
   shippingTaxInOrders Order [not null, note: 'An array of orders where this tax is used as the tax for the shipping method']
   taxInLineItems OrderLineItem [not null, note: 'An array of lineitems where this tax is used as the tax for the line item']
-  products Product [not null]
+  productVariants ProductVariant [not null]
   tenant Tenant [not null]
   tenantId String [not null]
   zohoTaxes ZohoTax [not null]
@@ -594,8 +594,6 @@ Table Product {
   normalizedName String [not null]
   hsCode String
   countryOfOrigin CountryCode
-  salesTax Tax [note: 'The standard tax rate of this article. Might be different for purchase and sales']
-  salesTaxId String
   variants ProductVariant [not null]
   tenant Tenant [not null]
   tenantId String [not null]
@@ -621,6 +619,8 @@ Table ProductVariant {
   tenantId String [not null]
   defaultWarehouse Warehouse
   defaultWarehouseId String
+  salesTax Tax [note: 'The default tax rate of this article. Might be different for purchase and sales']
+  salesTaxId String
   stockEntries StockEntries [not null]
   orderLineItem OrderLineItem [not null]
   packagelineItem PackageLineItem [not null]
@@ -1713,8 +1713,6 @@ Ref: Order.tenantId > Tenant.id [delete: Cascade]
 
 Ref: Address.tenantId > Tenant.id [delete: Cascade]
 
-Ref: Product.salesTaxId > Tax.id
-
 Ref: Product.tenantId > Tenant.id [delete: Cascade]
 
 Ref: ProductVariant.productId > Product.id [delete: Cascade]
@@ -1722,6 +1720,8 @@ Ref: ProductVariant.productId > Product.id [delete: Cascade]
 Ref: ProductVariant.tenantId > Tenant.id [delete: Cascade]
 
 Ref: ProductVariant.defaultWarehouseId > Warehouse.id [delete: Cascade]
+
+Ref: ProductVariant.salesTaxId > Tax.id
 
 Ref: BillOfMaterial.tenantId > Tenant.id [delete: Cascade]
 

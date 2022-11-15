@@ -63,6 +63,8 @@ export class ZohoItemSyncService {
         ? isAfter(new Date(item.last_modified_time), lastCronRun.lastRun)
         : true;
 
+      const salesTaxRate = item.tax_percentage;
+
       const stockBefore = await this.db.productVariant.findUnique({
         where: {
           sku_tenantId: {
@@ -130,6 +132,14 @@ export class ZohoItemSyncService {
                   active: item.status === "active" ?? false,
                   isBundleProduct: item.is_combo_product || false,
                   weight,
+                  salesTax: {
+                    connect: {
+                      percentage_tenantId: {
+                        percentage: salesTaxRate,
+                        tenantId: this.zohoApp.tenantId,
+                      },
+                    },
+                  },
                   tenant: {
                     connect: {
                       id: tenantId,
@@ -233,6 +243,14 @@ export class ZohoItemSyncService {
             active: item.status === "active" ?? false,
             stockOnHand: item.stock_on_hand,
             weight,
+            salesTax: {
+              connect: {
+                percentage_tenantId: {
+                  percentage: salesTaxRate,
+                  tenantId: this.zohoApp.tenantId,
+                },
+              },
+            },
             product: {
               connectOrCreate: {
                 where: {

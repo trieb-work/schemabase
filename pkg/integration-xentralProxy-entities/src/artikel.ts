@@ -118,7 +118,7 @@ export class XentralProxyProductVariantSyncService {
         zolltarifnummer: productVariant.product.hsCode || undefined,
         gewicht: productVariant.weight?.toString() || undefined,
         aktiv: 1,
-        // INFO: muss lagerartikel sein sonst kann auftrag nicht fortgeführt werden
+        // INFO: muss lagerartikel sein sonst kann auftrag nicht fortgeführt werden. Bei Just-in-Time Stückliste ist es aber kein Lagerartikel
         lagerartikel: 1, // TODO: wenn = 1, dann müssen lagereinlagerungen für den artikel gemacht werden (z.b. von kramer oder über sync, noch zu klären)
         typ: ArtikelTypeEnum.Versandartikel,
         // TODO: Altersfreigabe
