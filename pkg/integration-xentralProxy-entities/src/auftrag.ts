@@ -299,6 +299,7 @@ export class XentralProxyOrderSyncService {
               nummer: lineItem.productVariant.xentralArtikel[0].xentralNummer,
               projekt: this.xentralProxyApp.projectId,
               menge: lineItem.quantity,
+              preis: lineItem.totalPriceGross || lineItem.totalPriceNet || undefined,
             };
           }),
         },
