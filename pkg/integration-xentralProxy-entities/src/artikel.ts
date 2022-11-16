@@ -116,6 +116,7 @@ export class XentralProxyProductVariantSyncService {
         nummer: productVariant.sku,
         herstellernummer: productVariant.sku,
         zolltarifnummer: productVariant.product.hsCode || undefined,
+        herkunftsland: productVariant.product.countryOfOrigin || "DE",
         gewicht: productVariant.weight?.toString() || undefined,
         aktiv: 1,
         // INFO: muss lagerartikel sein sonst kann auftrag nicht fortgeführt werden. Bei Just-in-Time Stückliste ist es aber kein Lagerartikel
@@ -139,8 +140,8 @@ export class XentralProxyProductVariantSyncService {
             (artikel.herstellernummer || null) &&
           (existingXentralArtikel.zolltarifnummer || null) ===
             (artikel.zolltarifnummer || null) &&
-          (existingXentralArtikel.lagerartikel || null) ===
-            (artikel.lagerartikel || null) &&
+          (existingXentralArtikel.herkunftsland || null) ===
+            (artikel.herkunftsland || null) &&            
           (existingXentralArtikel.typ || null) === (artikel.typ || null)
         ) {
           this.logger.debug(
