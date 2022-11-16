@@ -44,6 +44,7 @@ model SaleorOrder {
   @@index([orderId])
   @@index([installedSaleorAppId])
   @@index([orderNumber])
+  @@index([id])
 }
 
 model SaleorPackage {
@@ -61,6 +62,7 @@ model SaleorPackage {
   @@unique([id, installedSaleorAppId])
   @@index([packageId])
   @@index([installedSaleorAppId])
+  @@index([id])
 }
 
 // model for saleor fulfillment line items
