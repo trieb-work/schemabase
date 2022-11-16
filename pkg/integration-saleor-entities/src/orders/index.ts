@@ -16,7 +16,7 @@ import {
   Tax,
 } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { setHours, subDays, subYears, format } from "date-fns";
+import { subYears, subHours } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { round } from "reliable-round";
@@ -34,7 +34,8 @@ interface SaleorOrderSyncServiceConfig {
       first: number;
       channel: string;
       after: string;
-      createdGte: string;
+      createdGte?: string;
+      updatedAtGte: string;
     }) => Promise<SaleorCronOrdersOverviewQuery>;
   };
   channelSlug: string;
@@ -54,7 +55,8 @@ export class SaleorOrderSyncService {
       first: number;
       channel: string;
       after: string;
-      createdGte: string;
+      createdGte?: string;
+      updatedAtGte: string;
     }) => Promise<SaleorCronOrdersOverviewQuery>;
   };
 
@@ -111,22 +113,25 @@ export class SaleorOrderSyncService {
     const cronState = await this.cronState.get();
 
     const now = new Date();
-    const yesterdayMidnight = setHours(subDays(now, 1), 0);
-    let createdGte = format(yesterdayMidnight, "yyyy-MM-dd");
+    let createdGte: string;
     if (!cronState.lastRun) {
-      createdGte = format(subYears(now, 2), "yyyy-MM-dd");
+      createdGte = subYears(now, 2).toISOString();
       this.logger.info(
         // eslint-disable-next-line max-len
-        `This seems to be our first sync run. Syncing data from now - 2 Years to: ${createdGte}`,
+        `This seems to be our first sync run. Syncing data from: ${createdGte}`,
       );
     } else {
-      this.logger.info(`Setting GTE date to ${createdGte}`);
+      createdGte = subHours(cronState.lastRun, 3).toISOString();
+      this.logger.info(
+        `Setting GTE date to ${createdGte}. Asking Saleor for all orders with lastUpdated GTE.`,
+      );
     }
+    
     const result = await queryWithPagination(({ first, after }) =>
       this.saleorClient.saleorCronOrdersOverview({
         first,
         after,
-        createdGte,
+        updatedAtGte: createdGte,
         channel: this.channelSlug,
       }),
     );

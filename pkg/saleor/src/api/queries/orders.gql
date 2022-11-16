@@ -12,11 +12,18 @@ fragment standardAddressValues on Address {
   }
 }
 
-query saleorCronOrdersOverview($createdGte: Date, $after: String, $first: Int) {
+query saleorCronOrdersOverview($createdGte: Date, $after: String, $first: Int, $updatedAtGte: DateTime) {
   orders(
     first: $first
     after: $after
-    filter: { created: { gte: $createdGte } }
+    filter: { 
+      created: { 
+        gte: $createdGte 
+      }
+      updatedAt: { 
+        gte: $updatedAtGte 
+      } 
+    }
   ) {
     pageInfo {
       hasNextPage

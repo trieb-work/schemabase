@@ -764,6 +764,7 @@ export class ZohoSalesOrdersSyncService {
             this.logger,
           ),
           custom_fields: customFields,
+          delivery_method: order.carrier?.toString(),
           contact_persons: [mainContactPerson.id],
           shipping_charge: order.shippingPriceGross ?? undefined,
           // mit is_inclusive_tax = true klappt das discountValueNet natürlich nicht.

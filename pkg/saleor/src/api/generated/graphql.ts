@@ -13243,6 +13243,7 @@ export type SaleorCronOrdersOverviewQueryVariables = Exact<{
   createdGte?: InputMaybe<Scalars["Date"]>;
   after?: InputMaybe<Scalars["String"]>;
   first?: InputMaybe<Scalars["Int"]>;
+  updatedAtGte?: InputMaybe<Scalars["DateTime"]>;
 }>;
 
 export type SaleorCronOrdersOverviewQuery = {
@@ -13899,11 +13900,15 @@ export const SaleorCronOrdersOverviewDocument = gql`
     $createdGte: Date
     $after: String
     $first: Int
+    $updatedAtGte: DateTime
   ) {
     orders(
       first: $first
       after: $after
-      filter: { created: { gte: $createdGte } }
+      filter: {
+        created: { gte: $createdGte }
+        updatedAt: { gte: $updatedAtGte }
+      }
     ) {
       pageInfo {
         hasNextPage
