@@ -53,6 +53,7 @@ class Addresses {
   }
 
   private companyToStreet2(companyName: string, street2?: string) {
+    if (!companyName && !street2) return "";
     return this.escapeLine(companyName) + "\n" + this.escapeLine(street2 || "");
   }
 
