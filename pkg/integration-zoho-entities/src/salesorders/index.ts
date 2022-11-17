@@ -359,6 +359,11 @@ export class ZohoSalesOrdersSyncService {
               billingAddressId: true,
               shippingAddress: true,
               mainContactId: true,
+              orderLineItems: {
+                select: {
+                  id: true,
+                },
+              },
             },
           },
         },
@@ -406,6 +411,11 @@ export class ZohoSalesOrdersSyncService {
 
         // Line Items logic
         try {
+          /**
+           * The order line item ids that are currently correct
+           */
+          const allEciOrderLineItems: { id: string }[] = [];
+
           for (const lineItem of lineItems) {
             const uniqueString = uniqueStringOrderLine(
               salesorder.salesorder_number,
@@ -431,7 +441,7 @@ export class ZohoSalesOrdersSyncService {
               continue;
             }
 
-            await this.db.zohoOrderLineItem.upsert({
+            const upsertedLineItem = await this.db.zohoOrderLineItem.upsert({
               where: {
                 id_zohoAppId: {
                   id: lineItem.line_item_id,
@@ -517,6 +527,29 @@ export class ZohoSalesOrdersSyncService {
                       ? undefined
                       : lineItem.rate,
                   },
+                },
+              },
+            });
+
+            allEciOrderLineItems.push({
+              id: upsertedLineItem.orderLineItemId,
+            });
+          }
+
+          const oldOrderLines = createdSalesOrder.order.orderLineItems;
+
+          const toBeDeleted = oldOrderLines.filter((x) => {
+            return !allEciOrderLineItems.map((all) => all.id).includes(x.id);
+          });
+
+          if (toBeDeleted.length > 0) {
+            this.logger.info(
+              `To be deleted orderlines: ${JSON.stringify(toBeDeleted)}`,
+            );
+            await this.db.orderLineItem.deleteMany({
+              where: {
+                id: {
+                  in: toBeDeleted.map((d) => d.id),
                 },
               },
             });
