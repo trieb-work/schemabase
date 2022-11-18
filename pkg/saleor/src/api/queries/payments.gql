@@ -36,6 +36,8 @@ query saleorCronPayments($createdGte: Date, $after: String) {
             isSuccess
             # token is the Braintree Transaction ID
             token
+            # only with kind, we can filter out "AUTH" transactions for pre-payments
+            kind
           }
           total {
             currency

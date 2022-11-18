@@ -268,9 +268,7 @@ export class XentralProxyOrderSyncService {
          * If we have a company, we set the fullname as ansprechpartner. If not,
          * the fullname ist just in the name field
          */
-        ansprechpartner: order?.shippingAddress?.company
-          ? order?.shippingAddress?.fullname || ""
-          : "",
+        ansprechpartner: order?.shippingAddress?.fullname || "",
         name:
           order?.shippingAddress?.company || order?.shippingAddress?.fullname || "",
         strasse: order?.shippingAddress?.street || "",

@@ -3,18 +3,11 @@ import { Zoho, ZohoApiError } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { PrismaClient, Prisma, ZohoApp } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import {
-  addMinutes,
-  format,
-  setHours,
-  subDays,
-  subMonths,
-  subYears,
-} from "date-fns";
+import { addMinutes, format, subHours, subMonths, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
-import { Warning } from "./utils";
+import { Warning } from "../utils";
 import { CreatePayment } from "@trieb.work/zoho-ts/dist/types/payment";
-import { orderToMainContactPerson } from "./salesorders/contacts";
+import { orderToMainContactPerson } from "../salesorders/contacts";
 
 type ZohoAppWithTenant = ZohoApp & Prisma.TenantInclude;
 
@@ -62,20 +55,20 @@ export class ZohoPaymentSyncService {
     const cronState = await this.cronState.get();
 
     const now = new Date();
-    const yesterdayMidnight = setHours(subDays(now, 1), 0);
-    let gteDate = format(yesterdayMidnight, "yyyy-MM-dd");
+    let gteDate: string;
 
     if (cronState.lastRun === null) {
-      gteDate = format(subYears(now, 1), "yyyy-MM-dd");
+      gteDate = format(subYears(now, 2), "yyyy-MM-dd");
       this.logger.info(
         `This seems to be our first sync run. Setting GTE date to ${gteDate}`,
       );
     } else {
+      gteDate = format(subHours(cronState.lastRun, 3), "yyyy-MM-dd");
       this.logger.info(`Setting GTE date to ${gteDate}`);
     }
 
     const payments = await this.zoho.payment.list({
-      dateStart: gteDate,
+      lastModifiedTime: `${gteDate}T01:00:00-0100`,
     });
 
     this.logger.info(
@@ -151,9 +144,10 @@ export class ZohoPaymentSyncService {
         continue;
       }
       if (!zohoBankAccount?.paymentMethodId) {
-        throw new Error(
+        this.logger.error(
           `The zohobankaccount ${zohoBankAccount.id} has no payment method connected to it! Can't create payment internally`,
         );
+        continue;
       }
 
       // connect or create the Zoho Payment with our internal payment entity
@@ -307,6 +301,9 @@ export class ZohoPaymentSyncService {
         paymentIds: paymentsWithoutZohoPaymentFromEciDb.map((p) => p.id),
         paymentReferenceNumber: paymentsWithoutZohoPaymentFromEciDb.map(
           (p) => p.referenceNumber,
+        ),
+        orderNumbers: paymentsWithoutZohoPaymentFromEciDb.map(
+          (p) => p.order?.orderNumber,
         ),
       },
     );

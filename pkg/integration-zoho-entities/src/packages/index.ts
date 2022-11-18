@@ -372,14 +372,16 @@ export class ZohoPackageSyncService {
 
     for (const p of packagesNotInZoho) {
       try {
-        if (!p.trackingId) {
+        if (!p.trackingId && !["PICKUP", "UNKNOWN"].includes(p.carrier)) {
           this.logger.warn(
-            `No tracking number found for ${p.number}. Skipping sync`,
+            // eslint-disable-next-line max-len
+            `No tracking number found for ${p.number} and Carrier is not pickup - Carrier: ${p.carrier}`,
           );
           continue;
         }
         this.logger.info(
-          `Creating package ${p.number} - TrackingId: ${p.trackingId} in Zoho`,
+          // eslint-disable-next-line max-len
+          `Creating package ${p.number} - Carrier: ${p.carrier} - TrackingId: ${p.trackingId} in Zoho`,
           {
             trackingId: p.trackingId,
             orderId: p.orderId,
@@ -444,7 +446,7 @@ export class ZohoPackageSyncService {
             aftership_carrier_code:
               this.carrierToAftership(p.carrier) || undefined,
             delivery_method: p.carrier,
-            tracking_number: p.trackingId,
+            tracking_number: p.trackingId || "",
             notes: p.carrierTrackingUrl || undefined,
           },
           salesOrderId,
@@ -472,8 +474,7 @@ export class ZohoPackageSyncService {
         });
       } catch (error) {
         this.logger.error(
-          `Error working on package ${p.id} - ${p.number}.`,
-          error as any,
+          `Error working on package ${p.id} - ${p.number}. ${error}`,
         );
       }
     }

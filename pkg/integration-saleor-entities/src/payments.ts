@@ -143,9 +143,12 @@ export class SaleorPaymentSyncService {
         continue;
       }
 
-      const successfullTransactions = payment.transactions?.filter(
-        (tr) => tr?.isSuccess,
-      );
+      /**
+       * Filter out the not successfull transactions and the authorization transactions
+       */
+      const successfullTransactions = payment.transactions
+        ?.filter((tr) => tr?.isSuccess)
+        .filter((tr) => tr.kind !== "AUTH");
       if (!successfullTransactions || successfullTransactions?.length === 0) {
         throw new Error(
           `No successfull transaction included in payment. Cant't sync ${payment.id}.`,
@@ -155,15 +158,20 @@ export class SaleorPaymentSyncService {
         // Do not throw if gateway is triebwork.payments.rechnung because in the old version this was possible.
         if (payment.gateway !== "triebwork.payments.rechnung") {
           throw new Error(
-            `Multiple successfull transaction included in payment. Cant't sync ${payment.id}.`,
+            `Multiple successfull transaction included in payment. Cant't sync ${
+              payment.id
+            }. - ${payment.order.number}. ${JSON.stringify(
+              successfullTransactions,
+            )}`,
           );
         }
       }
       const paymentReference = successfullTransactions?.[0]?.token;
       if (!paymentReference) {
-        throw new Warning(
+        this.logger.warn(
           `No payment gateway transaction Id given. We use this value as internal payment reference. Cant't sync ${payment.id}`,
         );
+        continue;
       }
 
       // TODO include payment status failed, fully charged etc. somehow!!
@@ -234,10 +242,12 @@ export class SaleorPaymentSyncService {
           },
         },
       });
-      if (!orderExist)
-        this.logger.warn(
-          `No ECI order with number ${prefixedOrderNumber} found! Creating a payment without an order`,
+      if (!orderExist) {
+        this.logger.info(
+          `No ECI order with number ${prefixedOrderNumber} found! Skipping..`,
         );
+        continue;
+      }
       const orderConnect:
         | Prisma.OrderCreateNestedOneWithoutPaymentsInput
         | undefined = orderExist

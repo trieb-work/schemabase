@@ -1,5 +1,6 @@
 import { PackageLineItem } from "@eci/pkg/prisma";
 import { CreatePackageLineItems } from "@trieb.work/zoho-ts/dist/types/package";
+import { Warning } from "../utils";
 
 export function packageToZohoLineItems(
   lineItems: {
@@ -19,7 +20,7 @@ export function packageToZohoLineItems(
       (l) => l.sku === eciLineItem.sku && eciLineItem.quantity >= l.quantity,
     )?.zohoOrderLineItems?.[0];
     if (!zohoOrderLines)
-      throw new Error(
+      throw new Warning(
         `No order line items found for ${eciLineItem.sku} and quantity >= ${eciLineItem.quantity}`,
       );
     return {

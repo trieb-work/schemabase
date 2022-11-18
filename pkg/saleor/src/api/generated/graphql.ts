@@ -13477,6 +13477,7 @@ export type SaleorCronPaymentsQuery = {
             id: string;
             isSuccess: boolean;
             token: string;
+            kind: TransactionKind;
           }> | null;
           total?: {
             __typename?: "Money";
@@ -14123,6 +14124,7 @@ export const SaleorCronPaymentsDocument = gql`
               id
               isSuccess
               token
+              kind
             }
             total {
               currency
