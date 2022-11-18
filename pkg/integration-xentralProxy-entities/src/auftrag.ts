@@ -284,6 +284,7 @@ export class XentralProxyOrderSyncService {
         // INFO: do not remove date otherwise search will not work anymore!
         datum: order.date.toJSON(),
         lieferdatum: order.expectedShippingDate?.toJSON(),
+        freitext: order?.customerNote || "",
         versandart,
         artikelliste: {
           position: order.orderLineItems.map((lineItem) => {
