@@ -287,6 +287,11 @@ export class XentralProxyOrderSyncService {
         versandart,
         artikelliste: {
           position: order.orderLineItems.map((lineItem) => {
+
+            const price = lineItem.totalPriceGross || lineItem.totalPriceNet
+
+            const encodedPrice = price ? price.toString().replace(',', '').replace('.',',') : undefined; 
+
             if (!lineItem?.productVariant?.xentralArtikel?.[0]?.xentralNummer) {
               throw new Error(
                 `No matching xentral artikel for lineItem (${lineItem.sku}). Please sync new productVariants first to xentral artikel before creating an xentral auftrag.`,
@@ -297,7 +302,7 @@ export class XentralProxyOrderSyncService {
               nummer: lineItem.productVariant.xentralArtikel[0].xentralNummer,
               projekt: this.xentralProxyApp.projectId,
               menge: lineItem.quantity,
-              preis: lineItem.totalPriceGross || lineItem.totalPriceNet || undefined,
+              preis: encodedPrice,
             };
           }),
         },

@@ -247,7 +247,7 @@ export interface AuftragCreateRequest {
        * Artikelnummer oder SKU
        */
       nummer?: number | string;
-      preis?: number;
+      preis?: number | string;
       menge: number;
       waehrung?: "EUR";
     }[];

@@ -512,6 +512,7 @@ Table Order {
   date DateTime [not null]
   expectedShippingDate DateTime [note: 'The Date, that we expect this order to be shipped.']
   carrier Carrier [note: 'The expected shipment carrier for this order']
+  customerNote String [note: 'Add messages, that will be printed on order and shipping documents for the customer']
   externalOrderId String
   orderStatus OrderStatus [not null, default: 'draft']
   paymentStatus OrderPaymentStatus [not null, default: 'unpaid']
@@ -911,6 +912,7 @@ Table ZohoApp {
   orgLanguage Language [not null, default: 'DE', note: 'The language, that this org is set to. Some API fields like the country name work with translated names, so we need to know the orgs language']
   customFieldReadyToFulfill String [note: 'the cf_api name from Zoho Settings of the custom field']
   customFieldVoucherCode String [note: 'the cf_api name from Zoho Settings of the custom field']
+  customFieldCustomerNote String [note: 'the cf_api name from Zoho Settings of the custom field used to save a note to the customer']
   cronSchedule String [not null, default: '*/30 * * * *']
   cronTimeout Int [not null, default: 800]
   syncContacts Boolean [not null, default: false]

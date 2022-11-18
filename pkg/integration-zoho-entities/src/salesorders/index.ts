@@ -226,6 +226,10 @@ export class ZohoSalesOrdersSyncService {
       const readyToFullfill =
         (salesorder?.cf_ready_to_fulfill_unformatted as boolean) || false;
 
+      const customerNote = this.zohoApp.customFieldCustomerNote
+        ? (salesorder?.[this.zohoApp.customFieldCustomerNote] as string)
+        : undefined;
+
       if (!salesorder.email) {
         this.logger.error(
           `Salesorder ${salesorder.salesorder_number} - ${salesorder.salesorder_id} has no related email address. Can't sync`,
@@ -281,6 +285,7 @@ export class ZohoSalesOrdersSyncService {
               orderStatus: salesOrderStatus,
               mainContact: contactConnectOrCreate,
               readyToFullfill,
+              customerNote,
               tenant: {
                 connect: {
                   id: this.tenantId,
@@ -340,6 +345,7 @@ export class ZohoSalesOrdersSyncService {
             update: {
               date: new Date(salesorder.date),
               expectedShippingDate: new Date(salesorder.shipment_date),
+              customerNote,
               carrier,
               shipmentStatus: this.parseShipmentStatus(
                 salesorder.shipped_status,
