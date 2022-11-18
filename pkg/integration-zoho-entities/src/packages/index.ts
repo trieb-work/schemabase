@@ -368,6 +368,9 @@ export class ZohoPackageSyncService {
 
     this.logger.info(
       `Received ${packagesNotInZoho.length} packages that we need to sync with Zoho`,
+      {
+        packageNumbers: packagesNotInZoho.map((p) => p.number),
+      },
     );
 
     for (const p of packagesNotInZoho) {
@@ -429,6 +432,7 @@ export class ZohoPackageSyncService {
         const lineItems = packageToZohoLineItems(
           orderLineItems.orderLineItems,
           p.packageLineItems,
+          this.logger,
         );
         const salesOrderId = orderLineItems.zohoSalesOrders[0].id;
 
