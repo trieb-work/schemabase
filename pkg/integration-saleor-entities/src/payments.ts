@@ -15,7 +15,6 @@ import { CronStateHandler } from "@eci/pkg/cronstate";
 import { format, subHours, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { checkCurrency } from "@eci/pkg/normalization/src/currency";
-import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils"; // TODO move to Warning to antoher place
 // import { id } from "@eci/pkg/ids";
 
 interface SaleorPaymentSyncServiceConfig {

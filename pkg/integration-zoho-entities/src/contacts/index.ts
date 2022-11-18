@@ -4,7 +4,7 @@ import { ILogger } from "@eci/pkg/logger";
 import { Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { format, subHours, subMonths, subYears } from "date-fns";
+import { subHours, subMonths, subYears } from "date-fns";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import { sleep } from "@eci/pkg/miscHelper/time";
 import addresses from "../addresses";
@@ -47,14 +47,14 @@ export class ZohoContactSyncService {
     const cronState = await this.cronState.get();
 
     const now = new Date();
-    const nowMinusthreeHours = subHours(now, 3);
-    let gteDate = format(nowMinusthreeHours, "yyyy-MM-dd");
+    const nowMinusthreeHours = subHours(now, 1);
+    let gteDate = nowMinusthreeHours;
 
     if (cronState.lastRun === null) {
       this.logger.info(
         "This seems to be our first sync run. Upserting ALL contacts",
       );
-      gteDate = format(subYears(now, 2), "yyyy-MM-dd");
+      gteDate = subYears(now, 2);
     } else {
       this.logger.info(`Setting GTE date to ${gteDate}`);
     }
@@ -62,7 +62,7 @@ export class ZohoContactSyncService {
     const contacts = await this.zoho.contact.list({
       // filterBy: "active",
       contactType: "customer",
-      lastModifiedTime: `${gteDate}T01:00:00-0100`,
+      lastModifiedTime: gteDate,
     });
 
     this.logger.info(
@@ -192,7 +192,7 @@ export class ZohoContactSyncService {
         if (fullContact?.shipping_address)
           addressArray.push(fullContact.shipping_address);
 
-        if (addressArray?.length > 0) {
+        if (addressArray?.length > 0 && contactActive) {
           try {
             await addresses(
               this.db,

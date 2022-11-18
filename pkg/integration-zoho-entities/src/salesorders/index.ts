@@ -151,15 +151,15 @@ export class ZohoSalesOrdersSyncService {
     const cronState = await this.cronState.get();
 
     const now = new Date();
-    let gteDate: string;
+    let gteDate: Date;
 
     if (cronState.lastRun === null) {
-      gteDate = format(subYears(now, 2), "yyyy-MM-dd");
+      gteDate = subYears(now, 2);
       this.logger.info(
         `This seems to be our first sync run. Setting GTE date to ${gteDate}`,
       );
     } else {
-      gteDate = format(subHours(cronState.lastRun, 3), "yyyy-MM-dd");
+      gteDate = subHours(cronState.lastRun, 1);
       this.logger.info(`Setting GTE date to ${gteDate}`);
     }
 
@@ -169,7 +169,7 @@ export class ZohoSalesOrdersSyncService {
     const salesorders = await this.zoho.salesOrder.list({
       sortColumn: "last_modified_time",
       sortOrder: "descending",
-      lastModifiedTime: `${gteDate}T01:00:00-0100`,
+      lastModifiedTime: gteDate,
     });
 
     this.logger.info(
