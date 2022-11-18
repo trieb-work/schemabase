@@ -39,7 +39,8 @@ export class XentralXmlClient {
     methodName: string,
     allowEmptyResponse = false,
   ): Promise<Res> {
-    const xmlStr = this.builder.build({ request: { xml } });
+    const xmlHeader = '<?xml version="1.0" encoding="UTF-8"?>';
+    const xmlStr = `${xmlHeader}${this.builder.build({ request: { xml } })}`;
     console.debug("xmlStr", xmlStr);
     const body = `xml=${encodeURIComponent(xmlStr)}`;
     const xentralRes = await this.client.fetch(
