@@ -3,7 +3,7 @@ import { Zoho, ZohoApiError } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { PrismaClient, Prisma, ZohoApp } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { addMinutes, format, subHours, subMonths, subYears } from "date-fns";
+import { addMinutes, subHours, subMonths, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { Warning } from "../utils";
 import { CreatePayment } from "@trieb.work/zoho-ts/dist/types/payment";
