@@ -101,12 +101,6 @@ export class OrderUpdater
           }),
     );
 
-    const salesorders = await zoho.salesOrder.search(message.externalOrderId);
-    if (salesorders.length === 0) {
-      throw new Error(
-        `Unable to find zoho salesorder: ${message.salesorderId}`,
-      );
-    }
     // const salesorder = salesorders[0];
 
     // const language = this.parseLanguage(
@@ -116,7 +110,6 @@ export class OrderUpdater
     // );
 
     this.logger.info("Upserting order", {
-      externalOrderId: message.externalOrderId,
       emails: message.emails,
     });
 
@@ -127,33 +120,6 @@ export class OrderUpdater
       //   where: {
       //     email,
       //     tenantId: zohoApp.tenantId,
-      //   },
-      // });
-
-      // order = await this.db.order.upsert({
-      //   where: {
-      //     externalOrderId: message.externalOrderId,
-      //   },
-      //   update: {
-      //     language: language ?? undefined,
-      //   },
-      //   create: {
-      //     id: id.id("order"),
-      //     externalOrderId: message.externalOrderId,
-      //     tenantId: zohoApp.tenantId,
-      //     contacts: {
-      //       connectOrCreate: {
-      //         create: {
-      //           id: id.id("contact"),
-      //           email,
-      //           tenantId: zohoApp.tenantId,
-      //         },
-      //         where: {
-      //           id: existingContact?.id,
-      //         },
-      //       },
-      //     },
-      //     language: language ?? message.defaultLanguage,
       //   },
       // });
     }

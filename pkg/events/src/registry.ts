@@ -64,7 +64,6 @@ export namespace EventSchemaRegistry {
       zohoAppId: string;
       salesorderId: string;
       emails: string[];
-      externalOrderId: string;
       defaultLanguage: Language;
       packages: {
         packageId: string;

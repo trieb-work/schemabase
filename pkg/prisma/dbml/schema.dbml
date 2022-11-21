@@ -513,7 +513,6 @@ Table Order {
   expectedShippingDate DateTime [note: 'The Date, that we expect this order to be shipped.']
   carrier Carrier [note: 'The expected shipment carrier for this order']
   customerNote String [note: 'Add messages, that will be printed on order and shipping documents for the customer']
-  externalOrderId String
   orderStatus OrderStatus [not null, default: 'draft']
   paymentStatus OrderPaymentStatus [not null, default: 'unpaid']
   shipmentStatus OrderShipmentStatus [not null, default: 'pending']

@@ -845,9 +845,6 @@ model Order {
   /// Add messages, that will be printed on order and shipping documents for the customer
   customerNote  String?
 
-  // deprecated!
-  externalOrderId String?
-
   orderStatus    OrderStatus         @default(draft)
   paymentStatus  OrderPaymentStatus  @default(unpaid)
   shipmentStatus OrderShipmentStatus @default(pending)

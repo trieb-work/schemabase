@@ -26921,6 +26921,7 @@ describe("Zoho Inventory Invoice Sync", () => {
       logger: zohoSalesOrdersLogger,
       db: new PrismaClient(),
       zohoApp,
+      createdTimeOffset: 1,
     });
     zohoInvoiceLogger = new AssertionLogger();
     zohoInvoiceSyncService = new ZohoInvoiceSyncService({
@@ -26928,6 +26929,7 @@ describe("Zoho Inventory Invoice Sync", () => {
       logger: zohoInvoiceLogger,
       db: new PrismaClient(),
       zohoApp,
+      createdTimeOffset: 1
     });
   });
 

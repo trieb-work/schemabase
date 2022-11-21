@@ -122,7 +122,6 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
         zohoAppId: zohoApp.id,
         salesorderId: event.salesorder.salesorder_id,
         emails: event.salesorder.contact_person_details.map((c) => c.email),
-        externalOrderId: event.salesorder.salesorder_number,
         defaultLanguage: integration.trackingEmailApp.defaultLanguage,
         packages: event.salesorder.packages.map((p) => ({
           packageId: p.package_id,

@@ -314,7 +314,7 @@ export class XentralProxyLieferscheinSyncService {
             carrierTrackingUrl,
             packageLineItems: {
               createMany: {
-                // skipDuplicates: true, // TODO check if this is needed?
+                skipDuplicates: true, // TODO check if this is needed?
                 data: lieferschein.positionen.map((p) => ({
                   quantity: Number(p.menge),
                   id: id.id("packageLineItem"),

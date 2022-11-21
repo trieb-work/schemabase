@@ -33,7 +33,7 @@ describe("Saleor Entity Sync Packages Test", () => {
       saleorClient: mockedSaleorClient,
       logger: new NoopLogger(),
       db: prismaClient,
-      installedSaleorAppId: installedSaleorApp.id,
+      installedSaleorApp: installedSaleorApp,
       tenantId: tenant.id,
       orderPrefix: "STORE",
     });

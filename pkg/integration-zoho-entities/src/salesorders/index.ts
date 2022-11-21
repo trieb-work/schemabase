@@ -33,6 +33,7 @@ import {
   SalesOrderStatus,
 } from "@trieb.work/zoho-ts/dist/types/salesOrder";
 import { shippingMethodMatch } from "@eci/pkg/miscHelper/shippingMethodMatch";
+import { sleep } from "@eci/pkg/miscHelper/time";
 
 export interface ZohoSalesOrdersSyncConfig {
   logger: ILogger;
@@ -990,22 +991,24 @@ export class ZohoSalesOrdersSyncService {
       }
     }
     try {
-      if (salesordersToConfirm.length > 0)
+      if (salesordersToConfirm.length > 0) {
+        await sleep(100);
         await this.zoho.salesOrder.confirm(
           salesordersToConfirm.map((so) => so.salesorder_id),
         );
-      // TODO update in DB which salesorders are confirmed. Maybe add status to eci zohosalesorder? or status to eci order?
-      this.logger.info(
-        `Successfully confirmed ${salesordersToConfirm.length} order(s).`,
-        {
-          salesorderNumbersToConfirm: salesordersToConfirm.map(
-            (o) => o.salesorder_number,
-          ),
-          salesorderIDsToConfirm: salesordersToConfirm.map(
-            (o) => o.salesorder_id,
-          ),
-        },
-      );
+        // TODO update in DB which salesorders are confirmed. Maybe add status to eci zohosalesorder? or status to eci order?
+        this.logger.info(
+          `Successfully confirmed ${salesordersToConfirm.length} order(s).`,
+          {
+            salesorderNumbersToConfirm: salesordersToConfirm.map(
+              (o) => o.salesorder_number,
+            ),
+            salesorderIDsToConfirm: salesordersToConfirm.map(
+              (o) => o.salesorder_id,
+            ),
+          },
+        );
+      }
     } catch (err) {
       const errorMsg =
         err instanceof Error
