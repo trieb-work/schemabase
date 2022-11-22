@@ -39,7 +39,7 @@ const requestValidation = z.object({
         timestamp: z.number().int(),
         requestId: z.string().optional(),
         statusCode: z.number().int().optional(),
-        source: z.enum(["build", "static", "external", "lambda"]),
+        source: z.enum(["build", "static", "external", "lambda", "edge"]),
         projectId: z.string(),
         deploymentId: z.string(),
         host: z.string(),
