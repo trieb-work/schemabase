@@ -58,7 +58,7 @@ export class XentralProxyLieferscheinSyncService {
 
         // We only pull orders, that are not fully shipped yet.
         shipmentStatus: {
-          notIn: ["delivered", "shipped"],
+          notIn: ["delivered"],
         },
         // The sliding window - may be removed or changed. Orders can be created a long time ago
         // and be shipped a few month later. So this will not work
