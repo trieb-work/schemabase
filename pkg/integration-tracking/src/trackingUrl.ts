@@ -6,11 +6,12 @@ export function generateTrackingPortalURL(
   trackingId: string,
 ): string {
   const languageCode = `${language.toLowerCase()}_${language.toUpperCase()}`;
+  const dhlLanguageCode = `${language.toLowerCase()}-${language.toLowerCase()}`;
   const trackingUrls: Record<Carrier, string> = {
     DPD: `https://tracking.dpd.de/status/${languageCode}/parcel/${trackingId}`,
     UNKNOWN: "",
     UPS: "",
-    DHL: `https://www.dhl.com/${languageCode}/home/tracking/tracking-parcel.html?submit=1&tracking-id=${trackingId}`,
+    DHL: `https://www.dhl.com/${dhlLanguageCode}/home/tracking/tracking-parcel.html?submit=1&tracking-id=${trackingId}`,
     HERMES: "",
     PICKUP: "",
   };
