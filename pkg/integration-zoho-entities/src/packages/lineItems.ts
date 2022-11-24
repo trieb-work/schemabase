@@ -20,12 +20,12 @@ export function packageToZohoLineItems(
        * The ZohoSalesOrderLine corresponding to our internal PackageOrderLine
        */
       const zohoOrderLines = lineItems.find(
-        (l) => l.sku === eciLineItem.sku && eciLineItem.quantity >= l.quantity,
+        (l) => l.sku === eciLineItem.sku && l.quantity >= eciLineItem.quantity,
       )?.zohoOrderLineItems?.[0];
       if (!zohoOrderLines) {
         logger.warn(
           // eslint-disable-next-line max-len
-          `No order line items found for ${eciLineItem.sku} and quantity >= ${eciLineItem.quantity}`,
+          `No order line items found for ${eciLineItem.sku} and quantity >= ${eciLineItem.quantity}.`,
         );
         return undefined;
       }

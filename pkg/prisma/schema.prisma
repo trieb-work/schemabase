@@ -1551,7 +1551,13 @@ model Package {
   id        String       @id
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
+
+  /// If this entity is active or got deleted somewhere
+  active   Boolean  @default(true)
+
   carrier   Carrier
+  
+  /// The package shipment state
   state     PackageState @default(INIT)
 
   /// A unique identifier for this package like PKG-0034

@@ -96,7 +96,6 @@ export class XentralProxyLieferscheinSyncService {
         order: order.id,
         orderNumber: order.orderNumber,
       };
-      // TODO add try/catch block from other services
       if (
         !order.xentralProxyAuftraege ||
         order.xentralProxyAuftraege.length === 0
@@ -107,10 +106,11 @@ export class XentralProxyLieferscheinSyncService {
         );
       }
       if (order.xentralProxyAuftraege.length > 1) {
-        throw new Error(
-          "Multiple xentralProxyAuftraege set for the mainContact of this order. " +
+        this.logger.error(
+          `Multiple xentralProxyAuftraege set for the mainContact of this order: ${order.orderNumber} ` +
             "Aborting sync of this order.",
         );
+        continue;
       }
       // Main Auftrag
       const xentralParentAuftrag = order.xentralProxyAuftraege[0];
@@ -181,6 +181,7 @@ export class XentralProxyLieferscheinSyncService {
       };
       const packagedItems: { [sku: string]: number } = {};
       for (const auftrag of xentralChildAndParentAuftraege) {
+        // TODO: handle
         const lieferscheine = await arrayFromAsyncGenerator(
           this.xentralRestClient.getLieferscheine({
             auftragid: auftrag.id,
@@ -192,7 +193,36 @@ export class XentralProxyLieferscheinSyncService {
           lieferscheineIds: lieferscheine.map((t) => t.id),
           lieferscheineBelegnrs: lieferscheine.map((t) => t.belegnr),
         };
-        if (lieferscheine.length > 1) {
+        // Handle stornierte Lieferscheine
+        for (const l of lieferscheine) {
+          if (l.status === "storniert") {
+            this.logger.info(`Xentral Lieferschein belegnr ${l.belegnr} for Auftrag ${l.auftrag} is in status "storniert". Marking as deleted in DB`)
+            try {
+              await this.db.xentralLieferschein.update({
+                where: {
+                  id_xentralProxyAppId: {
+                    id: l.id,
+                    xentralProxyAppId: this.xentralProxyApp.id
+                  }
+                },
+                data: {
+                  status: "storniert",
+                  package: {
+                    update: {
+                      active: false
+                    }
+                  }
+                }
+              })
+              
+            } catch (error) {
+            }
+          }
+        }
+
+        const filteredLieferscheine = lieferscheine.filter((l) => l.status !== "storniert")
+
+        if (filteredLieferscheine.length > 1) {
           this.logger.error(
             "Xentral returned multiple lieferscheine for a lieferscheine search with an auftrag id",
             {
@@ -201,7 +231,7 @@ export class XentralProxyLieferscheinSyncService {
           );
           continue;
         }
-        if (lieferscheine.length === 0) {
+        if (filteredLieferscheine.length === 0) {
           this.logger.info(
             "Xentral returned no lieferscheine for a lieferscheine search with an auftrag id. Could be that logistics partner is still processing this Auftrag.",
             {
@@ -210,7 +240,7 @@ export class XentralProxyLieferscheinSyncService {
           );
           continue;
         }
-        const lieferschein = lieferscheine[0];
+        const lieferschein = filteredLieferscheine[0];
         if (!lieferschein.positionen || lieferschein.positionen.length === 0) {
           this.logger.error(
             "Xentral returned a lieferschein without any positions. Aborting sync. Please check this order manually.",
