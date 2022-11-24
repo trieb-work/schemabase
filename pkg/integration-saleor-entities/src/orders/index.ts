@@ -321,6 +321,27 @@ export class SaleorOrderSyncService {
           );
         }
 
+        /**
+         * The highest Tax Rate is used as the shipping tax rate
+         */
+        const highestTaxRate = order.shippingPrice.gross.amount > 0 ? await this.lookupECITax(Math.round(Math.max(...lineItems.map((i) => i.taxRate)) * 100 )) : undefined;
+
+        if (order.shippingPrice.gross.amount > 0 && !upsertedOrder.order.shippingPriceTaxId && highestTaxRate){
+          this.logger.info(`Upserting shipping price tax id to ${highestTaxRate} for order ${upsertedOrder.orderNumber} - ${upsertedOrder.orderId}`)
+          await this.db.order.update({
+            where: {
+              id: upsertedOrder.orderId
+            },
+            data: {
+              shippingPriceTax: {
+                connect: {
+                  id: highestTaxRate
+                }
+              }
+            }
+          })
+        }
+
         // loop through all line items and upsert them in the DB
         for (const lineItem of lineItems) {
           if (!lineItem?.id) {
