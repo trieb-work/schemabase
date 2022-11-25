@@ -8,6 +8,7 @@ import { id } from "@eci/pkg/ids";
 import { uniqueStringPackageLineItem } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { generateTrackingPortalURL } from "@eci/pkg/integration-tracking";
 import { packageToZohoLineItems } from "./lineItems";
+import { CreatePackageLineItems } from "@trieb.work/zoho-ts/dist/types/package";
 
 export interface ZohoPackageSyncConfig {
   logger: ILogger;
@@ -434,6 +435,7 @@ export class ZohoPackageSyncService {
           p.packageLineItems,
           this.logger,
         );
+
         const salesOrderId = orderLineItems.zohoSalesOrders[0].id;
 
         const createdPackage = await this.zoho.package.create(
@@ -478,7 +480,7 @@ export class ZohoPackageSyncService {
         });
       } catch (error) {
         this.logger.error(
-          `Error working on package ${p.id} - ${p.number}. ${error}`,
+          `Error working on package ${p.id} - ${p.number}. ${error}. `,
         );
       }
     }

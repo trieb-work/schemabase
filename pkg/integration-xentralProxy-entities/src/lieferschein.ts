@@ -423,18 +423,21 @@ export class XentralProxyLieferscheinSyncService {
             orderNumber: order.orderNumber,
           });
           return false;
-        } else if (packagedItems[li.sku] > li.quantity) {
-          this.logger.error(
-            "The current order has a line item which have been shiped more than needed! Please check this Order manually.",
-            {
-              sku: li.sku,
-              desiredQuantity: li.quantity,
-              actualQuantity: packagedItems[li.sku],
-              orderNumber: order.orderNumber,
-            },
-          );
-          return true;
-        } else {
+        } 
+        /// This check is disabled, as we can have this case for Just-in-time bundled articles. We might need to improve this check
+        // else if (packagedItems[li.sku] > li.quantity) {
+        //   this.logger.error(
+        //     "The current order has a line item which have been shiped more than needed! Please check this Order manually.",
+        //     {
+        //       sku: li.sku,
+        //       desiredQuantity: li.quantity,
+        //       actualQuantity: packagedItems[li.sku],
+        //       orderNumber: order.orderNumber,
+        //     },
+        //   );
+        //   return true;
+        // } 
+        else {
           // is same as: if (packagedItems[li.sku] === li.quantity)
           return true;
         }
