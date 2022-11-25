@@ -485,5 +485,56 @@ export class ZohoPackageSyncService {
         );
       }
     }
+
+    const packagesAlreadyDelivered = await this.db.package.findMany({
+      where: {
+        tenantId: this.zohoApp.tenantId,
+        state: "DELIVERED",
+        zohoPackage: {
+          some: {
+            shipmentStatus: {
+              equals: "shipped",
+            },
+          },
+        },
+      },
+      include: {
+        zohoPackage: {
+          select: {
+            id: true,
+            shipmentId: true,
+          },
+        },
+      },
+    });
+
+    this.logger.info(
+      // eslint-disable-next-line max-len
+      `We have ${packagesAlreadyDelivered.length} packages, that we need to mark as delivered in Zoho`,
+      {
+        packageIds: packagesAlreadyDelivered.map((p) => p.id),
+      },
+    );
+
+    for (const p of packagesAlreadyDelivered) {
+      const zohoShipmentId = p.zohoPackage[0].shipmentId;
+      const zohoPackageId = p.zohoPackage[0].id;
+      if (!zohoShipmentId) continue;
+      this.logger.info(
+        `Marking package ${p.id} - Zoho shipment id ${zohoShipmentId} as delivered`,
+      );
+      await this.zoho.package.markDelivered(zohoShipmentId, new Date());
+      this.db.zohoPackage.update({
+        where: {
+          id_zohoAppId: {
+            id: zohoPackageId,
+            zohoAppId: this.zohoApp.id,
+          },
+        },
+        data: {
+          shipmentStatus: "delivered",
+        },
+      });
+    }
   }
 }

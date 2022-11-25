@@ -258,7 +258,7 @@ export class XentralProxyOrderSyncService {
             continue;
           } else if (xentralParentAuftraegeWithSameOrderNumber.length > 1) {
             this.logger.error(
-              "Multiple Xentral Parent Auftraege with the same Ordernumber exists. This should not happen therefore aborting sync.",
+              `Multiple Xentral Parent Auftraege with the same Ordernumber exists. This should not happen therefore aborting sync. ${order.orderNumber}`,
             );
             continue;
           } else {
