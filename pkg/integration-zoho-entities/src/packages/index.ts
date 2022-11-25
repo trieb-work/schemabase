@@ -8,6 +8,7 @@ import { id } from "@eci/pkg/ids";
 import { uniqueStringPackageLineItem } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { generateTrackingPortalURL } from "@eci/pkg/integration-tracking";
 import { packageToZohoLineItems } from "./lineItems";
+import { sleep } from "@eci/pkg/miscHelper/time";
 
 export interface ZohoPackageSyncConfig {
   logger: ILogger;
@@ -535,6 +536,7 @@ export class ZohoPackageSyncService {
           shipmentStatus: "delivered",
         },
       });
+      sleep(200);
     }
   }
 }
