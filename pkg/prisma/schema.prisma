@@ -204,6 +204,8 @@ model ZohoPackage {
   createdAt DateTime
   updatedAt DateTime
 
+  shipmentStatus String?
+
   package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
   packageId String
 
@@ -214,6 +216,7 @@ model ZohoPackage {
   @@index([zohoAppId])
   @@index([packageId])
   @@index([id])
+  @@index([shipmentStatus])
 }
 
 model ZohoContact {
