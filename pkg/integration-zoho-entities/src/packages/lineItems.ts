@@ -28,7 +28,7 @@ export function packageToZohoLineItems(
   //     const zohoOrderLines = orderLineItems?.zohoOrderLineItems?.[0];
   //     if (!zohoOrderLines) {
   //       logger.warn(
-  //         // eslint-disable-next-line max-len
+  // eslint-disable-next-line max-len
   //         `No order line items found for ${eciLineItem.sku} and quantity >= ${eciLineItem.quantity}.`,
   //       );
   //       return undefined;
@@ -56,6 +56,11 @@ export function packageToZohoLineItems(
       );
 
       if (!match) {
+        logger.warn(
+          // eslint-disable-next-line max-len
+          `No order line items found for ${i.sku}`,
+        );
+
         return undefined;
       }
       if (!i.zohoOrderLineItems[0].id) {

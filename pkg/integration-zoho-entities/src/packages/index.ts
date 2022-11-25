@@ -8,7 +8,6 @@ import { id } from "@eci/pkg/ids";
 import { uniqueStringPackageLineItem } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { generateTrackingPortalURL } from "@eci/pkg/integration-tracking";
 import { packageToZohoLineItems } from "./lineItems";
-import { CreatePackageLineItems } from "@trieb.work/zoho-ts/dist/types/package";
 
 export interface ZohoPackageSyncConfig {
   logger: ILogger;
@@ -169,6 +168,7 @@ export class ZohoPackageSyncService {
           createdAt: new Date(parcel.date),
           updatedAt: new Date(parcel.last_modified_time),
           shipmentId: parcel.shipment_id || null,
+          shipmentStatus: parcel.status,
           package: {
             connectOrCreate: {
               where: {
@@ -207,6 +207,7 @@ export class ZohoPackageSyncService {
           createdAt: new Date(parcel.date),
           updatedAt: new Date(parcel.last_modified_time),
           shipmentId: parcel.shipment_id || null,
+          shipmentStatus: parcel.status,
           package: {
             update: packageUpdate,
           },
