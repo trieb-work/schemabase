@@ -62,7 +62,7 @@ export class CronStateHandler {
   private async upsert(
     id: string,
     upsertObject: Prisma.CronJobStateCreateInput,
-    currentlyLocked: boolean,
+    currentlyLocked: boolean = false,
   ) {
     const cronState = await this.db.cronJobState.upsert({
       where: {
