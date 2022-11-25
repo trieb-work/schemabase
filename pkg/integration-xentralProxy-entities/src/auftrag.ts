@@ -296,6 +296,7 @@ export class XentralProxyOrderSyncService {
         // Ihre Bestellnummer scheint eher für Dropshipping etc. verwendung zu finden
         // ihrebestellnummer: order.orderNumber,
         internet: order.orderNumber,
+        telefon: order.shippingAddress?.phone ||"",
         projekt: String(this.xentralProxyApp.projectId),
         // email: order.mainContact.email // TODO disabled for now because we want to send tracking emails by our own, and do not want to risk that kramer sends some emails
         // INFO: do not remove date otherwise search will not work anymore!

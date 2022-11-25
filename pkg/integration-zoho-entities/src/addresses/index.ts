@@ -132,6 +132,7 @@ class Addresses {
         ? (address.country_code as CountryCode)
         : undefined,
       normalizedName: "",
+      phone: address.phone,
     };
     const uniqueString = uniqueStringAddress(addObj);
     addObj.normalizedName = uniqueString;
@@ -169,6 +170,7 @@ class Addresses {
       street2: street2WithCompanyName,
       city: eciAddr.city || "",
       zip: eciAddr.plz || "",
+      phone: eciAddr.phone || "",
       country,
     };
 
