@@ -499,6 +499,7 @@ model Invoice {
   mainContactId String?
 
   @@unique([invoiceNumber, tenantId])
+  @@index([invoiceNumber])
   @@index([tenantId])
 }
 

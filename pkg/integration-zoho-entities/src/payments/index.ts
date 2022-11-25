@@ -150,6 +150,11 @@ export class ZohoPaymentSyncService {
         continue;
       }
 
+      const relatedInvoice =
+        payment.invoice_numbers_array.length === 1
+          ? payment.invoice_numbers_array[0]
+          : undefined;
+
       // connect or create the Zoho Payment with our internal payment entity
       const paymentConnectOrCreate: Prisma.PaymentCreateNestedOneWithoutZohoPaymentInput =
         {
@@ -181,6 +186,16 @@ export class ZohoPaymentSyncService {
                   id: this.zohoApp.tenantId,
                 },
               },
+              invoices: relatedInvoice
+                ? {
+                    connect: {
+                      invoiceNumber_tenantId: {
+                        invoiceNumber: relatedInvoice,
+                        tenantId: this.zohoApp.tenantId,
+                      },
+                    },
+                  }
+                : undefined,
             },
           },
         };
@@ -208,7 +223,21 @@ export class ZohoPaymentSyncService {
           createdAt: new Date(payment.created_time),
           updatedAt: new Date(payment.last_modified_time),
           // zohoContact: zohoContactConnect,
-          payment: paymentConnectOrCreate,
+          payment: {
+            ...paymentConnectOrCreate,
+            update: {
+              invoices: relatedInvoice
+                ? {
+                    connect: {
+                      invoiceNumber_tenantId: {
+                        invoiceNumber: relatedInvoice,
+                        tenantId: this.zohoApp.tenantId,
+                      },
+                    },
+                  }
+                : undefined,
+            },
+          },
         },
       });
     }
