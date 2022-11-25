@@ -13291,6 +13291,7 @@ export type SaleorCronOrdersOverviewQuery = {
         created: any;
         status: OrderStatus;
         userEmail?: string | null;
+        languageCodeEnum: LanguageCodeEnum;
         shippingMethodName?: string | null;
         paymentStatus: PaymentChargeStatusEnum;
         isPaid: boolean;
@@ -13986,6 +13987,7 @@ export const SaleorCronOrdersOverviewDocument = gql`
             code
             type
           }
+          languageCodeEnum
           shippingMethodName
           paymentStatus
           isPaid

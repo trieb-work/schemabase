@@ -52,6 +52,7 @@ query saleorCronOrdersOverview($createdGte: Date, $after: String, $first: Int, $
           code
           type
         }
+        languageCodeEnum
         shippingMethodName
         paymentStatus
         isPaid

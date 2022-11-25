@@ -7,6 +7,7 @@ import {
   SaleorCronOrderDetailsQuery,
   OrderStatus,
   PaymentChargeStatusEnum,
+  LanguageCodeEnum,
 } from "@eci/pkg/saleor";
 import {
   PrismaClient,
@@ -14,6 +15,7 @@ import {
   OrderPaymentStatus as InternalOrderPaymentStatus,
   Prisma,
   Tax,
+  Language,
 } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { subYears, subHours } from "date-fns";
@@ -107,6 +109,17 @@ export class SaleorOrderSyncService {
     }
     return this.eciTaxes.find((t) => t.percentage === taxPercentage)?.id;
     
+  }
+
+  private matchLanguage(language: LanguageCodeEnum): Language {
+    switch (language) {
+      case LanguageCodeEnum.De:
+        return Language.DE;
+      case LanguageCodeEnum.En:
+        return Language.EN;
+      default:
+        return Language.EN;    
+    }
   }
 
   public async syncToECI(): Promise<void> {
@@ -267,6 +280,7 @@ export class SaleorOrderSyncService {
                   orderNumber: prefixedOrderNumber,
                   date: new Date(order.created),
                   totalPriceGross: order.total.gross.amount,
+                  language: this.matchLanguage(order.languageCodeEnum),
                   orderStatus,
                   discountCode,
                   carrier,
@@ -291,6 +305,7 @@ export class SaleorOrderSyncService {
             order: {
               update: {
                 carrier,
+                language: this.matchLanguage(order.languageCodeEnum),
                 totalPriceGross: order.total.gross.amount,
                 shippingPriceGross: order?.shippingPrice.gross.amount,
                 orderStatus,
