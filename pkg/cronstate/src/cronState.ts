@@ -17,8 +17,8 @@ type SyncEntity =
   | "bankaccounts";
 
 type CronJobReturn = CronJobState & {
-  currentlyLocked: boolean
-}
+  currentlyLocked: boolean;
+};
 
 interface CronStateConfig {
   db: PrismaClient;
