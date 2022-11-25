@@ -1071,6 +1071,7 @@ Table CronJobState {
   id String [pk]
   lastRun DateTime
   lastRunStatus CronJobStatus
+  locked Boolean [not null, default: false, note: 'You can lock cron runs to prevent running in parallel for sensitive services like Xentral']
 }
 
 Table SaleorZohoIntegration {

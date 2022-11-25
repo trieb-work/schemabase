@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
 /* eslint-disable prettier/prettier */
+import { CronStateHandler } from "@eci/pkg/cronstate";
 import { ILogger } from "@eci/pkg/logger";
 import { arrayFromAsyncGenerator } from "@eci/pkg/miscHelper/array";
 import { Carrier, PrismaClient, XentralCarrier, XentralProxyApp } from "@eci/pkg/prisma";
@@ -40,6 +41,8 @@ export class XentralProxyOrderSyncService {
 
   private readonly db: PrismaClient;
 
+  private readonly cronState: CronStateHandler;
+
   public xentralCarriers :XentralCarrier[] | undefined;
 
   public constructor(config: XentralProxyOrderSyncServiceConfig) {
@@ -50,6 +53,12 @@ export class XentralProxyOrderSyncService {
     this.db = config.db;
     this.xentralXmlClient = config.xentralXmlClient;
     this.xentralRestClient = config.xentralRestClient;
+    this.cronState = new CronStateHandler({
+      tenantId: this.xentralProxyApp.tenantId,
+      appId: this.xentralProxyApp.id,
+      db: this.db,
+      syncEntity: "orders",
+    });
   }
 
   /**
@@ -81,6 +90,14 @@ export class XentralProxyOrderSyncService {
    */
   public async syncFromECI(): Promise<void> {
     this.logger.info("Starting sync of ECI Orders to XentralProxy Aufträge");
+
+    const cronState = await this.cronState.get(true);
+    if (cronState.currentlyLocked) {
+      this.logger.info(`Xentral Auftrag sync for Xentral app ${this.xentralProxyApp.id} - ${this.xentralProxyApp.url} is currently locked. Finishing sync`)
+      return;
+    }
+
+
     const orders = await this.db.order.findMany({
       where: {
         orderStatus: "confirmed",
@@ -399,5 +416,11 @@ export class XentralProxyOrderSyncService {
         },
       );
     }
+
+    await this.cronState.set({
+      lastRun: new Date(),
+      lastRunStatus: "success",
+      locked: false
+    });
   }
 }

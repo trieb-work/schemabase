@@ -16,6 +16,10 @@ type SyncEntity =
   | "braintreeTransactions"
   | "bankaccounts";
 
+type CronJobReturn = CronJobState & {
+  currentlyLocked: boolean
+}
+
 interface CronStateConfig {
   db: PrismaClient;
 
@@ -58,6 +62,7 @@ export class CronStateHandler {
   private async upsert(
     id: string,
     upsertObject: Prisma.CronJobStateCreateInput,
+    currentlyLocked: boolean,
   ) {
     const cronState = await this.db.cronJobState.upsert({
       where: {
@@ -67,20 +72,43 @@ export class CronStateHandler {
       update: upsertObject,
     });
 
-    return cronState;
+    return { ...cronState, currentlyLocked };
   }
 
-  public async get(): Promise<CronJobState> {
-    const id = this.generateId();
-    return this.upsert(id, { id });
+  private async getEntry(id: string) {
+    return this.db.cronJobState.findUnique({
+      where: {
+        id,
+      },
+    });
   }
 
-  public async set(opts: { lastRun: Date; lastRunStatus?: CronJobStatus }) {
+  /**
+   * Get the cron state. Can optionally lock the entry, to prevent parallel
+   * transactions. Returns false if currently locked
+   * @param lock
+   * @returns
+   */
+  public async get(lock?: boolean): Promise<CronJobReturn> {
     const id = this.generateId();
-    const updateObject = {
+    const existingState = await this.getEntry(id);
+    let currentlyLocked = false;
+    if (existingState?.locked) currentlyLocked = true;
+    const locked = lock ?? undefined;
+    return this.upsert(id, { id, locked }, currentlyLocked);
+  }
+
+  public async set(opts: {
+    lastRun: Date;
+    lastRunStatus?: CronJobStatus;
+    locked?: boolean;
+  }) {
+    const id = this.generateId();
+    const updateObject: Prisma.CronJobStateCreateInput = {
       id,
       lastRun: opts.lastRun,
       lastRunStatus: opts.lastRunStatus,
+      locked: opts.locked,
     };
     return this.upsert(id, updateObject);
   }

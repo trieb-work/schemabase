@@ -313,6 +313,7 @@ export class XentralProxyLieferscheinSyncService {
         loggingFields = {
           ...loggingFields,
           carrierTrackingUrl,
+          carrier,
         }
         this.logger.info(`Upserting ${packageNumber}`, loggingFields)
         const upsertedPackage = await this.db.package.upsert({

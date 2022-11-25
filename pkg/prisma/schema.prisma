@@ -1978,6 +1978,8 @@ model CronJobState {
   id            String         @id
   lastRun       DateTime?
   lastRunStatus CronJobStatus?
+  /// You can lock cron runs to prevent running in parallel for sensitive services like Xentral
+  locked        Boolean @default(false)
 }
 
 // The saleor zoho integration consists of several, individual sync jobs
