@@ -2,6 +2,7 @@
 import { ILogger } from "@eci/pkg/logger";
 import {
   PaymentChargeStatusEnum,
+  PaymentCreateMutation,
   queryWithPagination,
   SaleorCronPaymentsQuery,
 } from "@eci/pkg/saleor";
@@ -12,18 +13,22 @@ import {
   PrismaClient,
 } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { format, subHours, subYears } from "date-fns";
+import { subHours, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { checkCurrency } from "@eci/pkg/normalization/src/currency";
-// import { id } from "@eci/pkg/ids";
 
 interface SaleorPaymentSyncServiceConfig {
   saleorClient: {
     saleorCronPayments: (variables: {
       first: number;
       after: string;
-      createdGte: string;
+      createdGte?: string;
+      updatedAtGte: string;
     }) => Promise<SaleorCronPaymentsQuery>;
+    paymentCreate: (variables: {
+      id: string;
+      amount: number;
+    }) => Promise<PaymentCreateMutation>;
   };
   installedSaleorAppId: string;
   tenantId: string;
@@ -37,8 +42,13 @@ export class SaleorPaymentSyncService {
     saleorCronPayments: (variables: {
       first: number;
       after: string;
-      createdGte: string;
+      createdGte?: string;
+      updatedAtGte: string;
     }) => Promise<SaleorCronPaymentsQuery>;
+    paymentCreate: (variables: {
+      id: string;
+      amount: number;
+    }) => Promise<PaymentCreateMutation>;
   };
 
   private readonly logger: ILogger;
@@ -68,32 +78,29 @@ export class SaleorPaymentSyncService {
     });
   }
 
-  /**
-   * Pull payment metadata from braintree
-   */
-  //   private async braintreeGetPaymentDetails() {}
-
   public async syncToECI(): Promise<void> {
     const cronState = await this.cronState.get(); // TODO add gte date filter for better scheduling so orders are most likely synced first
 
     const now = new Date();
     let createdGte: string;
     if (!cronState.lastRun) {
-      createdGte = format(subYears(now, 1), "yyyy-MM-dd");
+      createdGte = subYears(now, 2).toISOString();
       this.logger.info(
         // eslint-disable-next-line max-len
-        `This seems to be our first sync run. Syncing data from now - 1 Year to: ${createdGte}`,
+        `This seems to be our first sync run. Syncing data from: ${createdGte}`,
       );
     } else {
-      createdGte = format(subHours(cronState.lastRun, 3), "yyyy-MM-dd");
-      this.logger.info(`Setting GTE date to ${createdGte}`);
+      createdGte = subHours(cronState.lastRun, 3).toISOString();
+      this.logger.info(
+        `Setting GTE date to ${createdGte}. Asking Saleor for all orders with lastUpdated GTE.`,
+      );
     }
 
     const result = await queryWithPagination(({ first, after }) =>
       this.saleorClient.saleorCronPayments({
         first,
         after,
-        createdGte,
+        updatedAtGte: createdGte,
       }),
     );
 
@@ -165,13 +172,6 @@ export class SaleorPaymentSyncService {
           );
         }
       }
-      const paymentReference = successfullTransactions?.[0]?.token;
-      if (!paymentReference) {
-        this.logger.warn(
-          `No payment gateway transaction Id given. We use this value as internal payment reference. Cant't sync ${payment.id}`,
-        );
-        continue;
-      }
 
       // TODO include payment status failed, fully charged etc. somehow!!
       // TODO test failed payments etc.
@@ -240,12 +240,37 @@ export class SaleorPaymentSyncService {
             tenantId: this.tenantId,
           },
         },
+        include: {
+          payments: true,
+        },
       });
       if (!orderExist) {
         this.logger.info(
           `No ECI order with number ${prefixedOrderNumber} found! Skipping..`,
         );
         continue;
+      }
+      let paymentReference = successfullTransactions?.[0]?.token;
+      if (!paymentReference || paymentReference === "NONE_VORKASSE_TOKEN") {
+        // check, if we received this payment from a different system and need to connect them together
+        const matchingPayment = orderExist.payments.find(
+          (p) => p.amount === payment.total?.amount,
+        );
+        if (matchingPayment) {
+          /**
+           * Setting the reference number to the already existing one, to correctly match this saleor payment
+           * with an internal eci payment
+           */
+          paymentReference = matchingPayment.referenceNumber;
+          this.logger.info(
+            `Connecting saleor payment ${payment.id} - order ${payment.order.number} with ECI payment ${paymentReference}`,
+          );
+        } else {
+          this.logger.warn(
+            `No payment gateway transaction Id / or NONE_VORKASSE_TOKEN given. We use this value as internal payment reference. Cant't sync ${payment.id}`,
+          );
+          continue;
+        }
       }
       const orderConnect:
         | Prisma.OrderCreateNestedOneWithoutPaymentsInput
@@ -282,7 +307,7 @@ export class SaleorPaymentSyncService {
       await this.db.saleorPayment.upsert({
         where: {
           id_installedSaleorAppId: {
-            id: payment?.id,
+            id: payment.id,
             installedSaleorAppId: this.installedSaleorAppId,
           },
         },
@@ -393,7 +418,7 @@ export class SaleorPaymentSyncService {
               saleorOrders: {
                 some: {
                   installedSaleorAppId: {
-                    contains: this.installedSaleorAppId,
+                    equals: this.installedSaleorAppId,
                   },
                 },
               },
@@ -403,23 +428,88 @@ export class SaleorPaymentSyncService {
             saleorPayment: {
               none: {
                 installedSaleorAppId: {
-                  contains: this.installedSaleorAppId,
+                  equals: this.installedSaleorAppId,
                 },
               },
             },
           },
         ],
       },
+      include: {
+        order: {
+          select: {
+            saleorOrders: {
+              select: {
+                id: true,
+                installedSaleorAppId: true,
+              },
+            },
+          },
+        },
+      },
     });
     this.logger.info(
       `Received ${paymentsNotYetInSaleor.length} orders that have a payment and are saleor orders`,
+      {
+        paymentIds: paymentsNotYetInSaleor.map((p) => p.id),
+      },
     );
 
-    // for (const payment of paymentsNotYetInSaleor) {
+    for (const payment of paymentsNotYetInSaleor) {
+      const saleorOrder = payment.order?.saleorOrders.find(
+        (o) => o.installedSaleorAppId === this.installedSaleorAppId,
+      )?.id;
+      if (!saleorOrder) {
+        this.logger.error(`Something went wrong`);
+        continue;
+      }
+      this.logger.info(
+        `Working on payment ${payment.id} - ${payment.referenceNumber} for saleor order ${saleorOrder}`,
+      );
 
-    //   // Pull current order data from saleor - only capture payment, if payment
-    //   // does not exit yet. Uses the orderCapture mutation from saleor
+      // Pull current order data from saleor - only capture payment, if payment
+      // does not exit yet. Uses the orderCapture mutation from saleor
+      try {
+        const data = await this.saleorClient.paymentCreate({
+          id: saleorOrder,
+          amount: payment.amount,
+        });
+        if (data.orderCapture && data?.orderCapture?.errors?.length > 0) {
+          this.logger.error(JSON.stringify(data.orderCapture?.errors));
+          continue;
+        }
+        const allPayments = data.orderCapture?.order?.payments;
+        /**
+         * Check, if we really have a payment in saleor, that is matching the one we expected to be created
+         */
+        const matchingPayment = allPayments?.find(
+          (p) =>
+            p.capturedAmount?.amount === payment.amount &&
+            p.chargeStatus === PaymentChargeStatusEnum.FullyCharged,
+        );
 
-    // }
+        if (matchingPayment) {
+          await this.db.saleorPayment.create({
+            data: {
+              id: matchingPayment.id,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              installedSaleorApp: {
+                connect: {
+                  id: this.installedSaleorAppId,
+                },
+              },
+              payment: {
+                connect: {
+                  id: payment.id,
+                },
+              },
+            },
+          });
+        }
+      } catch (error) {
+        this.logger.error(JSON.stringify(error));
+      }
+    }
   }
 }

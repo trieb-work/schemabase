@@ -35,7 +35,7 @@ interface SaleorOrderSyncServiceConfig {
       channel: string;
       after: string;
       createdGte?: string;
-      updatedAtGte: string;
+      updatedAtGte?: string;
     }) => Promise<SaleorCronOrdersOverviewQuery>;
   };
   channelSlug: string;
@@ -56,7 +56,7 @@ export class SaleorOrderSyncService {
       channel: string;
       after: string;
       createdGte?: string;
-      updatedAtGte: string;
+      updatedAtGte?: string;
     }) => Promise<SaleorCronOrdersOverviewQuery>;
   };
 

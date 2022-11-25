@@ -1,0 +1,18 @@
+mutation paymentCreate($id: ID! $amount: PositiveDecimal!) {
+  orderCapture(id: $id, amount: $amount) {
+    errors {
+      field
+      message
+    }
+    order {
+      paymentStatus
+      payments {
+        id
+        chargeStatus
+        capturedAmount {
+            amount
+        }
+      }
+    }
+  }
+}

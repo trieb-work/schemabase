@@ -13041,6 +13041,33 @@ export type SaleorCreatePackageMutation = {
   } | null;
 };
 
+export type PaymentCreateMutationVariables = Exact<{
+  id: Scalars["ID"];
+  amount: Scalars["PositiveDecimal"];
+}>;
+
+export type PaymentCreateMutation = {
+  __typename?: "Mutation";
+  orderCapture?: {
+    __typename?: "OrderCapture";
+    errors: Array<{
+      __typename?: "OrderError";
+      field?: string | null;
+      message?: string | null;
+    }>;
+    order?: {
+      __typename?: "Order";
+      paymentStatus: PaymentChargeStatusEnum;
+      payments: Array<{
+        __typename?: "Payment";
+        id: string;
+        chargeStatus: PaymentChargeStatusEnum;
+        capturedAmount?: { __typename?: "Money"; amount: number } | null;
+      }>;
+    } | null;
+  } | null;
+};
+
 export type ProductChannelListingUpdateMutationVariables = Exact<{
   id: Scalars["ID"];
   input: ProductChannelListingUpdateInput;
@@ -13432,6 +13459,7 @@ export type PaymentGatewaysQuery = {
 export type SaleorCronPaymentsQueryVariables = Exact<{
   createdGte?: InputMaybe<Scalars["Date"]>;
   after?: InputMaybe<Scalars["String"]>;
+  updatedAtGte?: InputMaybe<Scalars["DateTime"]>;
 }>;
 
 export type SaleorCronPaymentsQuery = {
@@ -13753,6 +13781,26 @@ export const SaleorCreatePackageDocument = gql`
         message
         code
         orderLines
+      }
+    }
+  }
+`;
+export const PaymentCreateDocument = gql`
+  mutation paymentCreate($id: ID!, $amount: PositiveDecimal!) {
+    orderCapture(id: $id, amount: $amount) {
+      errors {
+        field
+        message
+      }
+      order {
+        paymentStatus
+        payments {
+          id
+          chargeStatus
+          capturedAmount {
+            amount
+          }
+        }
       }
     }
   }
@@ -14083,11 +14131,18 @@ export const PaymentGatewaysDocument = gql`
   }
 `;
 export const SaleorCronPaymentsDocument = gql`
-  query saleorCronPayments($createdGte: Date, $after: String) {
+  query saleorCronPayments(
+    $createdGte: Date
+    $after: String
+    $updatedAtGte: DateTime
+  ) {
     orders(
       first: 100
       after: $after
-      filter: { created: { gte: $createdGte } }
+      filter: {
+        created: { gte: $createdGte }
+        updatedAt: { gte: $updatedAtGte }
+      }
     ) {
       totalCount
       pageInfo {
@@ -14353,6 +14408,16 @@ export function getSdk<C>(requester: Requester<C>) {
         SaleorCreatePackageMutation,
         SaleorCreatePackageMutationVariables
       >(SaleorCreatePackageDocument, variables, options);
+    },
+    paymentCreate(
+      variables: PaymentCreateMutationVariables,
+      options?: C,
+    ): Promise<PaymentCreateMutation> {
+      return requester<PaymentCreateMutation, PaymentCreateMutationVariables>(
+        PaymentCreateDocument,
+        variables,
+        options,
+      );
     },
     productChannelListingUpdate(
       variables: ProductChannelListingUpdateMutationVariables,
