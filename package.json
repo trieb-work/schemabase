@@ -98,7 +98,7 @@
     "@geist-ui/react": "^2.2.5",
     "@jest/console": "^29.0.2",
     "@prisma/client": "^4.6.0",
-    "@trieb.work/zoho-ts": "^0.5.67",
+    "@trieb.work/zoho-ts": "^0.5.68",
     "apollo-datasource": "^3.3.1",
     "apollo-server": "^3.6.7",
     "apollo-server-core": "^3.6.7",

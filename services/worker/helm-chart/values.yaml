@@ -4,6 +4,7 @@ eciEnv: development
 image:
   imageName: registry.gitlab.com/trieb.work/ecommerce-integrations/worker
 
+replicas: 2
 databaseUrl: postgres://
 databaseUrlPool: postgres://
 signingKey: wrgkpw35ipo2i5p

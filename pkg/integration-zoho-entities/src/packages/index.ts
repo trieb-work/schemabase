@@ -1,4 +1,4 @@
-import { Zoho } from "@trieb.work/zoho-ts";
+import { Zoho, ZohoApiError } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { Carrier, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 // import { id } from "@eci/pkg/ids";
@@ -524,8 +524,46 @@ export class ZohoPackageSyncService {
       this.logger.info(
         `Marking package ${p.id} - Zoho shipment id ${zohoShipmentId} as delivered`,
       );
-      await this.zoho.package.markDelivered(zohoShipmentId, new Date());
-      this.db.zohoPackage.update({
+
+      try {
+        await this.zoho.package.markDelivered(zohoShipmentId, new Date());
+      } catch (error) {
+        if (error instanceof ZohoApiError) {
+          if (error.code === 37135) {
+            this.logger.info(
+              `Package ${p.id} - shipment ${zohoShipmentId} is already delivered. Marking it in DB`,
+            );
+            await this.db.zohoPackage.update({
+              where: {
+                id_zohoAppId: {
+                  id: zohoPackageId,
+                  zohoAppId: this.zohoApp.id,
+                },
+              },
+              data: {
+                shipmentStatus: "delivered",
+              },
+            });
+          } else if (error.code === 43) {
+            this.logger.error(
+              "We are blocked by Zoho for this IP address. We don't continue",
+            );
+            return;
+          } else {
+            this.logger.error(
+              `ZohoAPI error: ${error.code} - ${error.message}`,
+            );
+          }
+        } else {
+          this.logger.error(
+            `Not expected error happend: ${JSON.stringify(error)}`,
+          );
+        }
+        sleep(600);
+        continue;
+      }
+
+      await this.db.zohoPackage.update({
         where: {
           id_zohoAppId: {
             id: zohoPackageId,
@@ -536,7 +574,7 @@ export class ZohoPackageSyncService {
           shipmentStatus: "delivered",
         },
       });
-      sleep(200);
+      sleep(600);
     }
   }
 }
