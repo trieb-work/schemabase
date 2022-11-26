@@ -559,7 +559,7 @@ export class ZohoPackageSyncService {
             `Not expected error happend: ${JSON.stringify(error)}`,
           );
         }
-        sleep(600);
+        sleep(1000);
         continue;
       }
 
@@ -574,7 +574,7 @@ export class ZohoPackageSyncService {
           shipmentStatus: "delivered",
         },
       });
-      sleep(600);
+      sleep(1000);
     }
   }
 }
