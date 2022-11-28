@@ -14,6 +14,20 @@ generator client {
   previewFeatures = ["referentialIntegrity"]
 }
 
+
+/// ECI Internal model to store cookies / additional headers, that
+/// might be needed for some apps
+model Cookies {
+  id  String @id @default(cuid())
+
+  key     String
+  value   String
+
+  installedSaleorApp    InstalledSaleorApp? @relation(fields: [installedSaleorAppId], references: [id])
+  installedSaleorAppId  String?
+
+}
+
 // ------------------------------------------------------------------------------------------------
 //
 //  SALEOR SPECIFIC MODELS
@@ -663,6 +677,11 @@ model Contact {
 
   zohoContactPersons ZohoContactPerson[]
   addresses          Address[]
+
+  /// If we have the users permission to send tracking emails
+  trackingEmailsConsent   Boolean @default(true)
+  /// If we have the users consent to send marketing emails
+  marketingEmailsConstent Boolean @default(false)
 
   @@unique([email, tenantId])
   @@index([companyId])
@@ -1845,6 +1864,8 @@ model InstalledSaleorApp {
   saleorApp   SaleorApp @relation(fields: [saleorAppId, domain], references: [id, domain], onDelete: Cascade)
   saleorAppId String
   domain      String
+
+  cookies Cookies[]
 
   saleorZohoIntegration SaleorZohoIntegration[]
 

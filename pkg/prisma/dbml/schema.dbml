@@ -2,6 +2,17 @@
 //// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 //// ------------------------------------------------------
 
+Table Cookies {
+  id String [pk]
+  key String [not null]
+  value String [not null]
+  installedSaleorApp InstalledSaleorApp
+  installedSaleorAppId String
+
+  Note: 'ECI Internal model to store cookies / additional headers, that
+might be needed for some apps'
+}
+
 Table SaleorOrder {
   id String [not null, note: 'Saleor Internal Id']
   createdAt DateTime [not null]
@@ -425,6 +436,8 @@ Table Contact {
   tenantId String [not null]
   zohoContactPersons ZohoContactPerson [not null]
   addresses Address [not null]
+  trackingEmailsConsent Boolean [not null, default: true, note: 'If we have the users permission to send tracking emails']
+  marketingEmailsConstent Boolean [not null, default: false, note: 'If we have the users consent to send marketing emails']
 
   indexes {
     (email, tenantId) [unique]
@@ -972,6 +985,7 @@ Table InstalledSaleorApp {
   saleorApp SaleorApp [not null]
   saleorAppId String [not null]
   domain String [not null]
+  cookies Cookies [not null]
   saleorZohoIntegration SaleorZohoIntegration [not null]
   productDataFeedIntegration ProductDataFeedIntegration [not null]
   saleorPayment SaleorPayment [not null]
@@ -1570,6 +1584,8 @@ Enum CronJobStatus {
   success
   failure
 }
+
+Ref: Cookies.installedSaleorAppId > InstalledSaleorApp.id
 
 Ref: SaleorOrder.(orderId, orderNumber) > Order.(id, orderNumber) [delete: Cascade]
 
