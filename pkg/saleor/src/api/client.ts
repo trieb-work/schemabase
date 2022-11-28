@@ -4,6 +4,7 @@ import { GraphQLClient } from "graphql-request";
 import { ECI_TRACE_HEADER } from "@eci/pkg/constants";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
+import { sleep } from "@eci/pkg/miscHelper/time";
 
 export interface SaleorServiceConfig {
   /**
@@ -37,6 +38,10 @@ export function createSaleorClient({
       );
     const graphqlClient = new GraphQLClient(graphqlEndpoint);
     graphqlClient.setHeader(ECI_TRACE_HEADER, traceId);
+    graphqlClient.setHeader(
+      "user-agent",
+      "eci-service/1.0 (+https://trieb.work)",
+    );
     if (token) {
       graphqlClient.setHeader("Authorization", `Bearer ${token}`);
     }
@@ -151,6 +156,10 @@ export async function queryWithPagination<
     if (singleEntryValue.pageInfo.hasNextPage) {
       if (!singleEntryValue.pageInfo.endCursor)
         throw new Error(`No endCursor provided by query result. res: ${res}`);
+      /**
+       * A little sleep to not run into throttling issues
+       */
+      await sleep(800);
       return recQueryWithPagination(
         firstInner,
         singleEntryValue.pageInfo.endCursor,
