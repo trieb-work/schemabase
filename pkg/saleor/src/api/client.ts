@@ -78,7 +78,7 @@ export async function getSaleorClientAndEntry(
       `Could not find zoho app with provided id ${installedSaleorAppId}`,
     );
   const client = createSaleorClient({
-    graphqlEndpoint: `https://${installedSaleorApp.domain}/graphql/`,
+    graphqlEndpoint: `${installedSaleorApp.domain}`,
     token: installedSaleorApp.token,
     traceId: id.id("trace"),
   });
