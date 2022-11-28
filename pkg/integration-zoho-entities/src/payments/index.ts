@@ -493,6 +493,7 @@ export class ZohoPaymentSyncService {
           eciPaymentId: payment.id,
           eciPaymentReferenceNumber: payment.referenceNumber,
           eciOrderId: payment.orderId,
+          orderNumber: payment.order?.orderNumber,
         };
         if (err instanceof Warning) {
           this.logger.warn(err.message, defaultLogFields);
