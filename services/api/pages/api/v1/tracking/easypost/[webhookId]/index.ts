@@ -150,9 +150,9 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   if (!state) {
     ctx.logger.error(
       // eslint-disable-next-line max-len
-      `Could not parse EasyPost state to our internal package state. Easypost: ${result.status}. Failing`,
+      `Could not parse EasyPost state to our internal package state. Easypost: ${result.status}.`,
     );
-    throw new HttpError(400, `State not parsable: ${result.status}`);
+    return;
   }
 
   const createdAtDate = new Date(result.created_at);
