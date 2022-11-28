@@ -59,16 +59,16 @@ const parseState = (state: string): PackageState | null => {
 const eventObject = z.object({
   id: z.string(),
   object: z.string(),
-  created_at: z.date(),
-  updated_at: z.date(),
+  created_at: z.string(),
+  updated_at: z.string(),
   description: z.string(),
   mode: z.enum(["test", "production"]),
   previous_attributes: z.any(),
   result: z.object({
     id: z.string(),
     object: z.string(),
-    created_at: z.date(),
-    updated_at: z.date(),
+    created_at: z.string(),
+    updated_at: z.string(),
     tracking_code: z.string(),
     status: z.enum([
       "unknown",
