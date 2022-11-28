@@ -257,7 +257,7 @@ export class ZohoContactSyncService {
     for (const newContact of newContacts) {
       if (newContact.firstName == null || newContact.lastName == null) {
         this.logger.error(
-          `First and Last Name not set for contact ${newContact.id} - They are mandatory for Zoho`,
+          `First and Last Name not set for contact ${newContact.id}, ${newContact.email} - They are mandatory for Zoho`,
         );
         continue;
       }
@@ -268,6 +268,12 @@ export class ZohoContactSyncService {
       const defaultAddress =
         newContact.addresses.length > 0 ? newContact.addresses[0] : undefined;
 
+      /**
+       * All addresses, apart from the default one
+       */
+      const remainingAddresses = newContact.addresses.filter(
+        (a) => a.id !== defaultAddress?.id,
+      );
       const defaultZohoAddr = defaultAddress
         ? addresses(
             this.db,
@@ -323,7 +329,48 @@ export class ZohoContactSyncService {
           },
         },
       });
-      // TODO: all all other maybe existing addresses to Zoho
+      for (const addr of remainingAddresses) {
+        const zohoAddrObj = addresses(
+          this.db,
+          this.zohoApp.tenantId,
+          this.zohoApp.id,
+          this.logger,
+          zohoContact.contact_id,
+        ).createZohoAddressFromECI(
+          addr,
+          this.zohoApp.orgLanguage.toLowerCase(),
+        );
+
+        const zohoAddr = await this.zoho.contact.addAddress(
+          zohoContact.contact_id,
+          zohoAddrObj,
+        );
+        await this.db.address.update({
+          where: {
+            id: addr.id,
+          },
+          data: {
+            zohoAddress: {
+              create: {
+                id: zohoAddr,
+                zohoContact: {
+                  connect: {
+                    id_zohoAppId: {
+                      id: zohoContact.contact_id,
+                      zohoAppId: this.zohoApp.id,
+                    },
+                  },
+                },
+                zohoApp: {
+                  connect: {
+                    id: this.zohoApp.id,
+                  },
+                },
+              },
+            },
+          },
+        });
+      }
 
       if (defaultAddress) {
         this.logger.info(
