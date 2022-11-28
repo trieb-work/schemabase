@@ -155,9 +155,10 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     throw new HttpError(400, `State not parsable: ${result.status}`);
   }
 
+  const createdAtDate = new Date(result.created_at);
   const packageEvent: EventSchemaRegistry.PackageUpdate["message"] = {
     trackingId,
-    time: result.created_at.getTime() / 1000,
+    time: createdAtDate.getTime() / 1000,
     location: "",
     state,
     trackingIntegrationId: integration.id,
