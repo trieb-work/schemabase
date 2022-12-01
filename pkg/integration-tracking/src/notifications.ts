@@ -108,7 +108,10 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
       );
 
       if (!template) {
-        throw new Error("No matching language for this template found");
+        throw new Error(
+          "No matching language for this template found." +
+            `Language: ${packageEvent.package.order.language}`,
+        );
       }
 
       const send = async () => {
