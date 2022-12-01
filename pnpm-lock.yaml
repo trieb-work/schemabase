@@ -77,6 +77,7 @@ specifiers:
   graphql-modules: ^2.0.0
   graphql-request: ^3.7.0
   graphql-tag: ^2.12.6
+  html-entities: ^2.3.3
   html-to-text: ^8.2.0
   husky: ^7.0.4
   i18n-iso-countries: ^7.5.0
@@ -137,6 +138,7 @@ dependencies:
   graphql-modules: 2.0.0_graphql@15.8.0
   graphql-request: 3.7.0_graphql@15.8.0
   graphql-tag: 2.12.6_graphql@15.8.0
+  html-entities: 2.3.3
   html-to-text: 8.2.0
   i18n-iso-countries: 7.5.0
   ioredis: 5.0.6
@@ -6785,6 +6787,10 @@ packages:
     dependencies:
       whatwg-encoding: 1.0.5
     dev: true
+
+  /html-entities/2.3.3:
+    resolution: {integrity: sha512-DV5Ln36z34NNTDgnz0EWGBLZENelNAtkiFA4kyNOG2tDI6Mz1uSWiq1wAKdyjnJwyDiDO7Fa2SO1CTxPXL8VxA==}
+    dev: false
 
   /html-escaper/2.0.2:
     resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}

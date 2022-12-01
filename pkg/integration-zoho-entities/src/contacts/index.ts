@@ -288,9 +288,11 @@ export class ZohoContactSyncService {
         : undefined;
 
       this.logger.info(`Creating Zoho Contact now for ECI id ${newContact.id}`);
-      const zohoContact = await this.zoho.contact.create({
+      const contactCreateObject = {
         contact_name: `${newContact.firstName} ${newContact.lastName}`,
-        customer_sub_type: newContact?.companyId ? "business" : "individual",
+        customer_sub_type: newContact?.companyId
+          ? "business"
+          : ("individual" as "business" | "individual"),
         company_name: newContact.company?.name,
         shipping_address: defaultZohoAddr,
         billing_address: defaultZohoAddr,
@@ -301,7 +303,9 @@ export class ZohoContactSyncService {
             email: newContact.email,
           },
         ],
-      });
+      };
+      this.logger.debug(`Sending this object`, contactCreateObject);
+      const zohoContact = await this.zoho.contact.create(contactCreateObject);
       await this.db.contact.update({
         where: {
           id: newContact.id,
@@ -341,6 +345,10 @@ export class ZohoContactSyncService {
           this.zohoApp.orgLanguage.toLowerCase(),
         );
 
+        this.logger.debug(
+          `Sending this address update for contact ${zohoContact.contact_id}`,
+          zohoAddrObj,
+        );
         const zohoAddr = await this.zoho.contact.addAddress(
           zohoContact.contact_id,
           zohoAddrObj,
