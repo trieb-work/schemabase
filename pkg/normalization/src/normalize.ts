@@ -20,6 +20,10 @@ class NormalizationUtility {
     return this.standardNormalize(input);
   }
 
+  public itemSKU(input: string) {
+    return input.replace(/\s*/, "");
+  }
+
   /**
    * Normalize Company Names
    * @param input

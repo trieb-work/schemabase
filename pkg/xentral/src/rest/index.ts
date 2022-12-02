@@ -157,6 +157,7 @@ export class XentralRestClient {
       headers,
     );
   }
+
   public async *getTrackingnummern(
     params?: TrackingnummerParams,
     items: number = DEFAULT_ITEM_COUNT,
@@ -171,6 +172,7 @@ export class XentralRestClient {
       headers,
     );
   }
+
   public async *getLieferscheine(
     params?: LieferscheinParams,
     items: number = DEFAULT_ITEM_COUNT,
@@ -185,6 +187,7 @@ export class XentralRestClient {
       headers,
     );
   }
+
   public async *getAuftraege(
     params?: AuftragParams,
     items: number = DEFAULT_ITEM_COUNT,
