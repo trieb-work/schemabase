@@ -285,6 +285,7 @@ model ZohoContactPerson {
   @@unique([id, zohoAppId])
   @@index([contactId])
   @@index([zohoContactId])
+  @@index([zohoContactId, zohoAppId])
   @@index([zohoAppId])
   @@index([active])
   @@index([isPrimary])
@@ -445,6 +446,7 @@ model ZohoTax {
   @@unique([id, zohoAppId])
   @@index([id])
   @@index([zohoAppId])
+  @@index([taxId])
 }
 
 model ZohoOrderLineItem {
@@ -515,6 +517,7 @@ model Invoice {
   @@unique([invoiceNumber, tenantId])
   @@index([invoiceNumber])
   @@index([tenantId])
+  @@index([mainContactId])
 }
 
 // Internal model to save taxes information
@@ -585,6 +588,7 @@ model Payment {
   @@unique([referenceNumber, tenantId])
   @@index([orderId])
   @@index([tenantId])
+  @@index([paymentMethodId])
 }
 
 /// categorize payments by payment method type
@@ -629,6 +633,7 @@ model PaymentMethod {
 
   @@unique([gatewayType, methodType, currency, tenantId])
   @@index([tenantId])
+  @@index([saleorPaymentGatewayId, saleorPaymentGatewayInstalledSaleorAppId])
 }
 
 model Company {
@@ -774,6 +779,8 @@ model OrderLineItem {
   @@index([uniqueString])
   @@index([tenantId])
   @@index([sku])
+  @@index([productVariantId, sku])
+  @@index([taxId])
 }
 
 model PackageLineItem {
@@ -816,6 +823,7 @@ model PackageLineItem {
   @@index([uniqueString])
   @@index([tenantId])
   @@index([sku])
+  @@index([tenantId, sku])
 }
 
 enum OrderStatus {
@@ -942,6 +950,7 @@ model Order {
   @@index([paymentStatus])
   @@index([createdAt])
   @@index([tenantId])
+  @@index([mainContactId])
 }
 
 enum CountryCode {
@@ -1335,6 +1344,7 @@ model ProductVariant {
   @@unique([id, sku])
   @@index([productId])
   @@index([tenantId])
+  @@index([salesTaxId])
 }
 
 model BillOfMaterial {
@@ -1373,6 +1383,7 @@ model XentralCarrier {
 
   @@index([eciCarrier])
   @@index([name])
+  @@index([xentralProxyAppId])
 
 }
 
@@ -1413,6 +1424,7 @@ model XentralLieferschein {
   @@unique([xentralBelegNr, xentralProxyAppId])
   @@index([xentralProxyAppId])
   @@index([id])
+  @@index([packageId])
 }
 
 model StockEntries {
@@ -1440,6 +1452,7 @@ model StockEntries {
   @@unique([warehouseId, productVariantId, tenantId])
   @@index([productVariantId])
   @@index([warehouseId])
+  @@index([tenantId])
 }
 
 /// Internal model to store braintree payment gateway settings for tenants
@@ -1488,6 +1501,7 @@ model BraintreeTransaction {
 
   @@unique([id, braintreeAppId])
   @@index([braintreeAppId])
+  @@index([paymentId])
 }
 
 enum PackageState {
@@ -1625,6 +1639,7 @@ model PackageEvent {
   // `Nürnberg, Deutschland` for example
   location  String?
   sentEmail TransactionalEmail?
+  @@index([packageId])
 }
 
 model TransactionalEmail {
@@ -1647,6 +1662,7 @@ model TrackingEmailApp {
   sender            String
   replyTo           String
   integration       TrackingIntegration[]
+  @@index([tenantId])
 }
 
 enum Language {
