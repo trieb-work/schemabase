@@ -172,40 +172,40 @@ export class XentralProxyProductVariantSyncService {
           "Creating Artikel in Xentral-Stammdaten)",
           loggerFields,
         );
-        // xentralResData = await xentralXmlClient.ArtikelCreate(artikel);
-        // const createdXentralArtikel = await this.db.xentralArtikel.upsert({
-        //   where: {
-        //     xentralNummer_xentralProxyAppId: {
-        //       xentralNummer: xentralResData.nummer,
-        //       xentralProxyAppId: this.xentralProxyApp.id,
-        //     },
-        //   },
-        //   create: {
-        //     id: xentralResData.id.toString(),
-        //     xentralNummer: xentralResData.nummer,
-        //     xentralProxyApp: {
-        //       connect: {
-        //         id: this.xentralProxyApp.id,
-        //       },
-        //     },
-        //     productVariant: {
-        //       connect: {
-        //         id: productVariant.id,
-        //       },
-        //     },
-        //   },
-        //   update: {},
-        // });
-        // this.logger.info(
-        //   `Created new xentralArtikel for current productVariant`,
-        //   {
-        //     productVariantId: productVariant.id,
-        //     tenantId: this.tenantId,
-        //     productVariantName: productVariant.variantName,
-        //     xentralArtikelId: createdXentralArtikel.id,
-        //     xentralArtikelNummer: createdXentralArtikel.xentralNummer,
-        //   },
-        // );
+        xentralResData = await xentralXmlClient.ArtikelCreate(artikel);
+        const createdXentralArtikel = await this.db.xentralArtikel.upsert({
+          where: {
+            xentralNummer_xentralProxyAppId: {
+              xentralNummer: xentralResData.nummer,
+              xentralProxyAppId: this.xentralProxyApp.id,
+            },
+          },
+          create: {
+            id: xentralResData.id.toString(),
+            xentralNummer: xentralResData.nummer,
+            xentralProxyApp: {
+              connect: {
+                id: this.xentralProxyApp.id,
+              },
+            },
+            productVariant: {
+              connect: {
+                id: productVariant.id,
+              },
+            },
+          },
+          update: {},
+        });
+        this.logger.info(
+          `Created new xentralArtikel for current productVariant`,
+          {
+            productVariantId: productVariant.id,
+            tenantId: this.tenantId,
+            productVariantName: productVariant.variantName,
+            xentralArtikelId: createdXentralArtikel.id,
+            xentralArtikelNummer: createdXentralArtikel.xentralNummer,
+          },
+        );
       }
     }
   }
