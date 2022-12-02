@@ -448,6 +448,9 @@ export class ZohoPackageSyncService {
           },
           salesOrderId,
         );
+
+        await sleep(800);
+
         const shipment = await this.zoho.package.createShipment(
           {
             date: format(p.createdAt, "yyyy-MM-dd"),
@@ -481,9 +484,15 @@ export class ZohoPackageSyncService {
           },
         });
       } catch (error) {
-        this.logger.error(
-          `Error working on package ${p.id} - ${p.number}. ${error}. `,
-        );
+        if (error instanceof ZohoApiError) {
+          this.logger.error(
+            `Error working on package ${p.id} - ${p.number}. ${error}. Code: ${error.code} `,
+          );
+        } else {
+          this.logger.error(
+            `Error working on package ${p.id} - ${p.number}. ${error}. Undefined error`,
+          );
+        }
       }
     }
 
