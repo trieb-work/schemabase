@@ -132,6 +132,20 @@ export class XentralProxyProductVariantSyncService {
       let xentralResData: ArtikelCreateResponse;
       if (existingXentralArtikel) {
         // INFO: make sure to keep this object in sync with the ArtikelCreateRequest line 91
+        if (existingXentralArtikel.id.toString() !== productVariant.xentralArtikel[0].id) {
+          this.logger.info(`Our Xentral ID ${productVariant.xentralArtikel[0].id} is different than the Xentral ID ${existingXentralArtikel.id}. Updating in our DB`)
+          await this.db.xentralArtikel.update({
+            where: {
+              id_xentralProxyAppId: {
+                id: productVariant.xentralArtikel[0].id,
+                xentralProxyAppId: this.xentralProxyApp.id
+              }
+            },
+            data: {
+              id: existingXentralArtikel.id.toString()
+            }
+          })
+        }
         if (
           (existingXentralArtikel.projekt || null) ===
             (artikel.projekt || null) &&
@@ -145,7 +159,7 @@ export class XentralProxyProductVariantSyncService {
           (existingXentralArtikel.zolltarifnummer || null) ===
             (artikel.zolltarifnummer || null) &&
           (existingXentralArtikel.herkunftsland || null) ===
-            (artikel.herkunftsland || null) &&            
+            (artikel.herkunftsland || null) &&                 
           (existingXentralArtikel.typ || null) === (artikel.typ || null)
         ) {
           this.logger.debug(
