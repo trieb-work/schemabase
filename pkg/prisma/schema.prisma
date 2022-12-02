@@ -1520,6 +1520,8 @@ enum Carrier {
   HERMES
   PICKUP
   UNKNOWN
+  /// Used for Bulk actions
+  BULK
 }
 
 model ElasticCluster {
