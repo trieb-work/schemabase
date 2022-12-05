@@ -132,7 +132,7 @@ export class XentralProxyProductVariantSyncService {
       let xentralResData: ArtikelCreateResponse;
       if (existingXentralArtikel) {
         // INFO: make sure to keep this object in sync with the ArtikelCreateRequest line 91
-        if (existingXentralArtikel.id.toString() !== productVariant.xentralArtikel[0].id) {
+        if (productVariant.xentralArtikel?.[0]?.id && (existingXentralArtikel.id.toString() !== productVariant.xentralArtikel?.[0]?.id)) {
           this.logger.info(`Our Xentral ID ${productVariant.xentralArtikel[0].id} is different than the Xentral ID ${existingXentralArtikel.id}. Updating in our DB`)
           await this.db.xentralArtikel.update({
             where: {
@@ -145,6 +145,33 @@ export class XentralProxyProductVariantSyncService {
               id: existingXentralArtikel.id.toString()
             }
           })
+        }
+        if (!productVariant.xentralArtikel?.[0]?.id) {
+          this.logger.info(`We don't have an internal xentral article mapped to this one. Maybe it got deleted in our DB. Creating it again, connecting it to product variant ${productVariant.sku}` +
+          `Xentral nummer: ${existingXentralArtikel.nummer}`)
+          await this.db.xentralArtikel.upsert({
+            where: {
+              xentralNummer_xentralProxyAppId: {
+                xentralNummer: existingXentralArtikel.nummer,
+                xentralProxyAppId: this.xentralProxyApp.id,
+              },
+            },
+            create: {
+              id: existingXentralArtikel.id.toString(),
+              xentralNummer: existingXentralArtikel.nummer,
+              xentralProxyApp: {
+                connect: {
+                  id: this.xentralProxyApp.id,
+                },
+              },
+              productVariant: {
+                connect: {
+                  id: productVariant.id,
+                },
+              },
+            },
+            update: {},
+          });
         }
         if (
           (existingXentralArtikel.projekt || null) ===

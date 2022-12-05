@@ -59,6 +59,7 @@ model SaleorOrder {
   @@index([installedSaleorAppId])
   @@index([orderNumber])
   @@index([id])
+  @@index([orderId, orderNumber])
 }
 
 model SaleorPackage {
@@ -311,6 +312,7 @@ model ZohoAddress {
   @@index([id])
   @@index([zohoAppId])
   @@index([addressId])
+  @@index([zohoContactId, zohoAppId])
 }
 
 enum ZohoSalesOrderStatus {
@@ -346,6 +348,8 @@ model ZohoSalesOrder {
   @@index([orderId])
   @@index([zohoAppId])
   @@index([id])
+  @@index([zohoContactPersonId, zohoContactPersonZohoAppId])
+  @@index([zohoContactId, zohoAppId])
 }
 
 // Zoho specific model.
@@ -415,6 +419,7 @@ model ZohoBankAccount {
 
   @@unique([id, zohoAppId])
   @@index([zohoAppId])
+  @@index([paymentMethodId])
 }
 
 model ZohoWarehouse {
@@ -589,6 +594,7 @@ model Payment {
   @@index([orderId])
   @@index([tenantId])
   @@index([paymentMethodId])
+  @@index([mainContactId])
 }
 
 /// categorize payments by payment method type
@@ -1582,6 +1588,7 @@ model ElasticLogDrainIntegration {
   logDrainAppId    String            @unique
   elasticCluster   ElasticCluster    @relation(fields: [elasticClusterId], references: [id])
   elasticClusterId String            @unique
+  @@index([tenantId])
 }
 
 // The ECI Internal Package model
@@ -1898,6 +1905,8 @@ model InstalledSaleorApp {
   saleorPackage              SaleorPackage[]
 
   @@unique([domain, channelSlug])
+  @@index([saleorAppId, domain])
+  @@index([defaultWarehouseId])
 }
 
 // One tenant per company
@@ -2164,6 +2173,7 @@ model XentralProxyApp {
   @@index([tenantId])
   @@index([enabled])
   @@index([warehouseId])
+  @@index([subscriptionId])
 
 }
 
@@ -2219,6 +2229,8 @@ model IncomingWebhook {
   @@index([easyPostAppId])
   @@index([vercelLogDrainAppId])
   @@index([zohoAppId])
+  @@index([installedSaleorAppId])
+  @@index([productDataFeedAppId])
 }
 
 model SecretKey {
