@@ -1986,6 +1986,9 @@ model TrackingIntegration {
   trackingEmailAppId String
   zohoApp            ZohoApp?         @relation(fields: [zohoAppId], references: [id])
   zohoAppId          String?
+  @@index([zohoAppId])
+  @@index([trackingEmailAppId])
+  @@index([tenantId])
 }
 
 model ProductDataFeedIntegration {
@@ -2006,6 +2009,8 @@ model ProductDataFeedIntegration {
 
   installedSaleorApp   InstalledSaleorApp? @relation(fields: [installedSaleorAppId], references: [id])
   installedSaleorAppId String?
+  @@index([installedSaleorAppId])
+  @@index([tenantId])
 }
 
 enum CronJobStatus {
@@ -2122,6 +2127,7 @@ model StrapiApp {
   tenantId String
 
   integration StrapiToZohoIntegration?
+  @@index([tenantId])
 }
 
 model XentralProxyApp {
@@ -2157,6 +2163,8 @@ model XentralProxyApp {
 
   @@index([tenantId])
   @@index([enabled])
+  @@index([warehouseId])
+
 }
 
 model XentralProxyAuftrag {
@@ -2173,6 +2181,7 @@ model XentralProxyAuftrag {
   @@unique([id, xentralProxyAppId])
   @@unique([xentralBelegNr, xentralProxyAppId])
   @@index([orderId])
+  @@index([xentralProxyAppId])
 }
 
 // ----------------------------------------------------------------------------
@@ -2208,6 +2217,8 @@ model IncomingWebhook {
   @@index([id])
   @@index([dpdAppId])
   @@index([easyPostAppId])
+  @@index([vercelLogDrainAppId])
+  @@index([zohoAppId])
 }
 
 model SecretKey {

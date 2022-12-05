@@ -13,6 +13,7 @@ import {
 import { InstalledSaleorApp, PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { subHours, subMonths, subYears } from "date-fns";
+import { closestsMatch } from "@eci/pkg/miscHelper/closestMatch";
 
 interface SaleorPackageSyncServiceConfig {
   saleorClient: {
@@ -392,48 +393,83 @@ export class SaleorPackageSyncService {
         continue;
       }
 
-      const lines: OrderFulfillLineInput[] = parcel.packageLineItems
-        .map((packageOrderLine) => {
-          // Get the corresponding order to this package and lookup the saleor Order Line
-          // using the product SKU
-          const orderLineId = saleorOrder.order.orderLineItems.find(
-            (item) => item.sku === packageOrderLine.sku,
-          )?.saleorOrderLineItems[0]?.id;
-          if (!orderLineId) {
-            this.logger.error(
-              `Can't find a saleor orderLine for order ${saleorOrder.orderNumber}, LineItem SKU ${packageOrderLine.sku} - This happens for example when you add orderlines to an order in a different system.`,
+      const saleorLines: OrderFulfillLineInput[] =
+        saleorOrder.order.orderLineItems
+          .map((line) => {
+            if (!line.saleorOrderLineItems?.[0]?.id) {
+              this.logger.info(
+                `No saleor order line for order line ${line.id}. Can't fulfill this orderline`,
+              );
+              return undefined;
+            }
+            const saleorOrderLineId = line.saleorOrderLineItems[0].id;
+
+            const filteredForSKU = parcel.packageLineItems.filter(
+              (x) => x.sku === line.sku,
             );
-          }
-          return {
-            // The OrderLine ID of the saleor order
-            orderLineId,
-            stocks: [
-              {
-                warehouse:
-                  (packageOrderLine.warehouse?.saleorWarehouse?.[0]
-                    .id as string) ||
-                  (defaultWarehouse?.saleorWarehouse?.[0].id as string),
-                quantity: packageOrderLine.quantity,
-              },
-            ],
-          };
-        })
-        .filter((x) => x.orderLineId);
-      // Continue, if the lines array is missing the orderline Id
-      const fulfillmentLinesCheck = lines.every((i) => {
+            if (filteredForSKU.length === 0) {
+              this.logger.warn(
+                `Can't find a package line item for orderline with SKU ${line.sku}`,
+              );
+              return undefined;
+            }
+            const bestMatchByQuantity = closestsMatch(
+              filteredForSKU,
+              line.quantity,
+              "quantity",
+            );
+            if (bestMatchByQuantity.sku !== line.sku) {
+              this.logger.error(
+                `Security check failed! The best match is from a wrong SKU`,
+              );
+              return undefined;
+            }
+            /**
+             * Find the saleor warehouse id. Use the default warehouse if non given
+             * @returns
+             */
+            const saleorWarehouse = () => {
+              const warehouseSearch =
+                bestMatchByQuantity.warehouse?.saleorWarehouse?.[0];
+              if (
+                warehouseSearch &&
+                warehouseSearch.installedSaleorAppId ===
+                  this.installedSaleorAppId
+              )
+                return warehouseSearch.id;
+              return defaultWarehouse?.saleorWarehouse?.[0].id as string;
+            };
+            return {
+              orderLineId: saleorOrderLineId,
+              stocks: [
+                {
+                  warehouse: saleorWarehouse(),
+                  quantity: bestMatchByQuantity.quantity,
+                },
+              ],
+            };
+          })
+          .filter(
+            (x) => typeof x?.orderLineId === "string",
+          ) as OrderFulfillLineInput[];
+
+      const fulfillmentLinesCheck = saleorLines.every((i) => {
         if (!i.orderLineId) return false;
         return true;
       });
-      if (!fulfillmentLinesCheck || lines.length === 0) continue;
+      if (!fulfillmentLinesCheck || saleorLines.length === 0) continue;
 
       this.logger.info(
         `Creating fulfillment now in Saleor ${saleorOrder.id} - ${parcel.number} - ${parcel.orderId}`,
       );
-      this.logger.debug("Saleor line items:" + JSON.stringify(lines));
+      this.logger.debug(
+        `Saleor line items for saleor order ${saleorOrder.id}:` +
+          JSON.stringify(saleorLines),
+      );
       const response = await this.saleorClient.saleorCreatePackage({
         order: saleorOrder.id,
         input: {
-          lines,
+          lines: saleorLines,
         },
       });
 
