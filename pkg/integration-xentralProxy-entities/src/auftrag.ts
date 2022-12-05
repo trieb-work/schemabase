@@ -186,7 +186,7 @@ export class XentralProxyOrderSyncService {
       /**
        * These checks are just needed, when the order is not a PICKUP order
        */
-      if (order.carrier !== "PICKUP") {
+      if ( !["PICKUP", "BULK"].includes(order.carrier || "")) {
         if (!order.shippingAddress?.fullname) {
           // TODO add try/catch block from other services -> use Error Class
           this.logger.error(
