@@ -11,7 +11,6 @@ generator dbml {
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["referentialIntegrity"]
 }
 
 
@@ -25,6 +24,8 @@ model Cookies {
 
   installedSaleorApp    InstalledSaleorApp? @relation(fields: [installedSaleorAppId], references: [id])
   installedSaleorAppId  String?
+
+  @@index([installedSaleorAppId])
 
 }
 
@@ -132,6 +133,7 @@ model SaleorPayment {
   @@index([paymentId])
   @@index([installedSaleorAppId])
   @@index([saleorOrderId])
+  @@index([saleorOrderId, installedSaleorAppId])
 }
 
 // Saleor specific model for product variant.
@@ -1351,6 +1353,7 @@ model ProductVariant {
   @@index([productId])
   @@index([tenantId])
   @@index([salesTaxId])
+  @@index([defaultWarehouseId])
 }
 
 model BillOfMaterial {
@@ -2104,6 +2107,9 @@ model LogisticsIntegration {
 
   logisticsApp   LogisticsApp @relation(fields: [logisticsAppId], references: [id])
   logisticsAppId String       @unique
+
+  @@index([tenantId])
+  @@index([zohoAppId])
 }
 
 model StrapiToZohoIntegration {
@@ -2231,6 +2237,8 @@ model IncomingWebhook {
   @@index([zohoAppId])
   @@index([installedSaleorAppId])
   @@index([productDataFeedAppId])
+  @@index([strapiAppId])
+  @@index([logisticsAppId])
 }
 
 model SecretKey {
