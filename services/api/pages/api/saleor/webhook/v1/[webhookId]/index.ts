@@ -5,6 +5,13 @@ import { handleWebhook, Webhook } from "@eci/pkg/http";
 import { VorkassePaymentService } from "@eci/pkg/integration-saleor-payment";
 import { IncomingWebhook, SecretKey } from "@eci/pkg/prisma";
 
+/**
+ * We use the edge runtime here. SOME THINGS MIGHT BREAK! TEST IT
+ */
+export const config = {
+  runtime: "experimental-edge",
+};
+
 const requestValidation = z.object({
   query: z.object({
     webhookId: z.string(),
@@ -53,7 +60,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
 }): Promise<void> => {
   const {
     query: { webhookId },
-    headers: { "saleor-event": saleorEvent },
+    headers: { "saleor-event": saleorEvent, "saleor-domain": saleorDomain },
   } = req;
 
   const isPaymentWebhook = [
@@ -66,50 +73,19 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
   ctx.logger.info(
-    `Incoming saleor webhook: ${webhookId}, saleor-event: ${saleorEvent}`,
+    `Incoming saleor webhook: ${webhookId}, saleor-event: ${saleorEvent}.` +
+      `Saleor Domain: ${saleorDomain}`,
   );
-  const webhook =
-    webhookCache?.[webhookId] ||
-    (await ctx.prisma.incomingWebhook.findUnique({
-      where: {
-        id: webhookId,
-      },
-      include: {
-        secret: true,
-        installedSaleorApp: {
-          select: {
-            id: true,
-            channelSlug: true,
-            saleorApp: { select: { id: true, domain: true } },
-          },
-        },
-      },
-    }));
 
-  if (webhook == null) {
-    ctx.logger.error(`Webhook not found: ${webhookId}`);
-    throw new HttpError(404, `Webhook not found: ${webhookId}`);
-  }
-
-  webhookCache[webhookId] = webhook;
-
-  const { installedSaleorApp } = webhook;
-
-  if (installedSaleorApp == null) {
-    ctx.logger.error("Saleor App is not configured");
-    throw new HttpError(404, "Saleor App is not configured");
-  }
-
-  const { saleorApp } = installedSaleorApp;
-
-  ctx.logger.info("Received valid saleor webhook");
-
+  /**
+   * We currently don't look-up the Webhook in the DB,
+   * We always just respond with the vorkasse payment service
+   */
   if (isPaymentWebhook) {
     const vorkassePaymentService = new VorkassePaymentService({
       logger: ctx.logger.with({
         saleor: {
-          domain: saleorApp.domain,
-          channel: installedSaleorApp.channelSlug,
+          domain: saleorDomain,
         },
       }),
     });
@@ -145,6 +121,42 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
       return res.json(response);
     }
   }
+
+  const webhook =
+    webhookCache?.[webhookId] ||
+    (await ctx.prisma.incomingWebhook.findUnique({
+      where: {
+        id: webhookId,
+      },
+      include: {
+        secret: true,
+        installedSaleorApp: {
+          select: {
+            id: true,
+            channelSlug: true,
+            saleorApp: { select: { id: true, domain: true } },
+          },
+        },
+      },
+    }));
+
+  if (webhook == null) {
+    ctx.logger.error(`Webhook not found: ${webhookId}`);
+    throw new HttpError(404, `Webhook not found: ${webhookId}`);
+  }
+
+  webhookCache[webhookId] = webhook;
+
+  const { installedSaleorApp } = webhook;
+
+  if (installedSaleorApp == null) {
+    ctx.logger.error("Saleor App is not configured");
+    throw new HttpError(404, "Saleor App is not configured");
+  }
+
+  const { saleorApp } = installedSaleorApp;
+
+  ctx.logger.info(`Received valid saleor webhook ${saleorApp.id}`);
 
   res.send(req);
 };
