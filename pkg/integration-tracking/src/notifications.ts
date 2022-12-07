@@ -121,7 +121,9 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
           this.logger.warn(`No Email Address found for contact ${contact}`);
           return "";
         }
-        if (!contact.firstName) {
+        const firstName =
+          packageEvent.package.order.firstName || contact.firstName;
+        if (!firstName) {
           this.logger.warn(
             `First Name not set! Can't send email. Contact object: ${JSON.stringify(
               contact,

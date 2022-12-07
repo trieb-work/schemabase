@@ -551,6 +551,9 @@ Discounts never get applied on shipping costs']
   totalPriceGross Float [not null]
   mainContact Contact [not null, note: 'The person who has created this Order (In other systems this can also be a Useraccount)']
   mainContactId String [not null]
+  firstName String [note: 'First and Lastname as extra fields only for this order. The main contact is not sufficient here
+fields are used for example for tracking notifications']
+  lastName String
   language Language [not null, default: 'DE']
   packages Package [not null]
   shippingAddress Address

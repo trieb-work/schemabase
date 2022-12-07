@@ -286,6 +286,8 @@ export class SaleorOrderSyncService {
                   carrier,
                   paymentStatus, // TODO: how will this thing be updated and kept in sync by other services? -> Maybe move it into Payment.status and access it via payments[0].status?
                   mainContact: contactCreateOrConnect,
+                  firstName: order.billingAddress?.firstName,
+                  lastName: order.billingAddress?.lastName, 
                   shippingAddress: {},
                   billingAddress: {},
                   readyToFullfill:

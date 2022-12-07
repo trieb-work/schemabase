@@ -927,6 +927,11 @@ model Order {
   mainContact   Contact @relation(references: [id], fields: [mainContactId])
   mainContactId String
 
+  /// First and Lastname as extra fields only for this order. The main contact is not sufficient here
+  /// fields are used for example for tracking notifications
+  firstName     String?
+  lastName      String?
+
   language Language  @default(DE)
   packages Package[]
 
