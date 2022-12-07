@@ -1,5 +1,3 @@
-import { z } from "zod";
-import { handleWebhook, Webhook } from "@eci/pkg/http";
 import { VorkassePaymentService } from "@eci/pkg/integration-saleor-payment";
 import { NextRequest } from "next/server";
 
@@ -9,23 +7,6 @@ import { NextRequest } from "next/server";
 export const config = {
   runtime: "experimental-edge",
 };
-
-const requestValidation = z.object({
-  query: z.object({
-    webhookId: z.string(),
-  }),
-  headers: z.object({
-    "saleor-domain": z.string(),
-    "saleor-event": z.enum([
-      "payment_list_gateways",
-      "payment_process",
-      "payment_confirm",
-      "payment_capture",
-      "payment_void",
-      "product_variant_out_of_stock",
-    ]),
-  }),
-});
 
 const jsonResponseOk = (input: object) => {
   return new Response(JSON.stringify(input), {

@@ -2,9 +2,7 @@ import { extendContext, setupPrisma } from "@eci/pkg/webhook-context";
 import { z } from "zod";
 import { HttpError } from "@eci/pkg/errors";
 import { handleWebhook, Webhook } from "@eci/pkg/http";
-import { VorkassePaymentService } from "@eci/pkg/integration-saleor-payment";
 import { IncomingWebhook, SecretKey } from "@eci/pkg/prisma";
-import { NoopLogger } from "@eci/pkg/logger";
 
 const requestValidation = z.object({
   query: z.object({
@@ -56,56 +54,6 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     query: { webhookId },
     headers: { "saleor-event": saleorEvent, "saleor-domain": saleorDomain },
   } = req;
-
-  const isPaymentWebhook = [
-    "payment_list_gateways",
-    "payment_process",
-    "payment_confirm",
-    "payment_capture",
-    "payment_void",
-  ].includes(saleorEvent);
-
-  /**
-   * We currently don't look-up the Webhook in the DB,
-   * We always just respond with the vorkasse payment service
-   */
-  if (isPaymentWebhook) {
-    const noopLogger = new NoopLogger();
-    const vorkassePaymentService = new VorkassePaymentService({
-      logger: noopLogger,
-    });
-    if (saleorEvent === "payment_list_gateways") {
-      const paymentGateways = await vorkassePaymentService.paymentListGateways(
-        "EUR",
-      );
-      noopLogger.info(
-        `Responding with payment gateway list. Config: ${JSON.stringify(
-          paymentGateways[0].config,
-        )}`,
-      );
-      return res.json(paymentGateways);
-    }
-    if (saleorEvent === "payment_process") {
-      const response = await vorkassePaymentService.paymentProcess();
-      noopLogger.info("Responding with payment process answer");
-      return res.json(response);
-    }
-    if (saleorEvent === "payment_confirm") {
-      const response = await vorkassePaymentService.paymentConfirm();
-      noopLogger.info("Payment confirm request. Responding with confirmation");
-      return res.json(response);
-    }
-    if (saleorEvent === "payment_capture") {
-      const response = await vorkassePaymentService.paymentCapture();
-      noopLogger.info("Payment capture request. Responding with confirmation");
-      return res.json(response);
-    }
-    if (saleorEvent === "payment_void") {
-      const response = await vorkassePaymentService.paymentVoid();
-      noopLogger.info("Payment void request. Responding with confirmation");
-      return res.json(response);
-    }
-  }
 
   const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
