@@ -1,10 +1,14 @@
-import { extendContext, setupPrisma } from "@eci/pkg/webhook-context";
 import { z } from "zod";
-import { HttpError } from "@eci/pkg/errors";
 import { handleWebhook, Webhook } from "@eci/pkg/http";
 import { VorkassePaymentService } from "@eci/pkg/integration-saleor-payment";
-import { IncomingWebhook, SecretKey } from "@eci/pkg/prisma";
 import { NoopLogger } from "@eci/pkg/logger";
+
+/**
+ * We use the edge runtime here. SOME THINGS MIGHT BREAK! TEST IT
+ */
+export const config = {
+  runtime: "experimental-edge",
+};
 
 const requestValidation = z.object({
   query: z.object({
@@ -24,37 +28,15 @@ const requestValidation = z.object({
 });
 
 /**
- * Cache responses from Prisma to only query Webhook Metadata for this
- * webhook once per running lambda.
- */
-const webhookCache: {
-  [webhookId: string]:
-    | (IncomingWebhook & {
-        secret: SecretKey | null;
-        installedSaleorApp: {
-          id: string;
-          channelSlug: string | null;
-          saleorApp: {
-            id: string;
-            domain: string;
-          };
-        } | null;
-      })
-    | null;
-} = {};
-
-/**
  * The product data feed returns a google standard .csv file from products and
  * their attributes in your shop.#
  */
 const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
-  backgroundContext,
   req,
   res,
 }): Promise<void> => {
   const {
-    query: { webhookId },
-    headers: { "saleor-event": saleorEvent, "saleor-domain": saleorDomain },
+    headers: { "saleor-event": saleorEvent },
   } = req;
 
   const isPaymentWebhook = [
@@ -65,12 +47,13 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     "payment_void",
   ].includes(saleorEvent);
 
+  const noopLogger = new NoopLogger();
+
   /**
    * We currently don't look-up the Webhook in the DB,
    * We always just respond with the vorkasse payment service
    */
   if (isPaymentWebhook) {
-    const noopLogger = new NoopLogger();
     const vorkassePaymentService = new VorkassePaymentService({
       logger: noopLogger,
     });
@@ -107,48 +90,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     }
   }
 
-  const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
-
-  ctx.logger.info(
-    `Incoming saleor webhook: ${webhookId}, saleor-event: ${saleorEvent}.` +
-      `Saleor Domain: ${saleorDomain}`,
-  );
-
-  const webhook =
-    webhookCache?.[webhookId] ||
-    (await ctx.prisma.incomingWebhook.findUnique({
-      where: {
-        id: webhookId,
-      },
-      include: {
-        secret: true,
-        installedSaleorApp: {
-          select: {
-            id: true,
-            channelSlug: true,
-            saleorApp: { select: { id: true, domain: true } },
-          },
-        },
-      },
-    }));
-
-  if (webhook == null) {
-    ctx.logger.error(`Webhook not found: ${webhookId}`);
-    throw new HttpError(404, `Webhook not found: ${webhookId}`);
-  }
-
-  webhookCache[webhookId] = webhook;
-
-  const { installedSaleorApp } = webhook;
-
-  if (installedSaleorApp == null) {
-    ctx.logger.error("Saleor App is not configured");
-    throw new HttpError(404, "Saleor App is not configured");
-  }
-
-  const { saleorApp } = installedSaleorApp;
-
-  ctx.logger.info(`Received valid saleor webhook ${saleorApp.id}`);
+  noopLogger.info(`Received a non payment webhook`);
 
   res.send(req);
 };
