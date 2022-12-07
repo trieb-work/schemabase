@@ -1,5 +1,4 @@
 /* eslint-disable camelcase */
-import type { ILogger } from "@eci/pkg/logger";
 
 interface PaymentListGatewaysResponse {
   id: string;
@@ -38,22 +37,12 @@ export interface VorkasseService {
   ) => Promise<PaymentListGatewaysResponse[]>;
 }
 
-export interface VorkasseServiceConfig {
-  logger: ILogger;
-}
-
 export class VorkassePaymentService implements VorkasseService {
-  private readonly logger: ILogger;
-
-  public constructor(config: VorkasseServiceConfig) {
-    this.logger = config.logger;
-  }
-
   public async paymentListGateways(
     currency: "USD" | "EUR",
   ): Promise<PaymentListGatewaysResponse[]> {
     if (currency !== "EUR") {
-      this.logger.error("We can only handle payments in EUR");
+      console.error("We can only handle payments in EUR");
       throw new Error("We can only handle payments in EUR");
     }
 

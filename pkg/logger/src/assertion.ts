@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Fields, ILogger, LogDrain } from "./logger";
+import { Fields, ILogger, LogDrain } from "./types";
 
 type ConsoleLevel = "debug" | "log" | "info" | "warn" | "error";
 type AnyFields = Fields & {

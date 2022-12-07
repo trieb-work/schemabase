@@ -1,7 +1,8 @@
-import { Logger, LoggerConfig } from "./logger";
+import { Logger } from "./logger";
 import ecsFormat from "@elastic/ecs-winston-format";
 import { ElasticsearchTransport } from "winston-elasticsearch";
 import { env } from "@eci/pkg/env";
+import { LoggerConfig } from "./types";
 
 export class LoggerWithElastic extends Logger {
   private elasticSearchTransport?: ElasticsearchTransport;

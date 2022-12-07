@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Fields, ILogger, LogDrain } from "./logger";
+import type { Fields, ILogger, LogDrain } from "./types";
 
-export class NoopLogger implements ILogger {
+export class NoopLogger {
   public withLogDrain(_logDrain: LogDrain): ILogger {
     return new NoopLogger();
   }

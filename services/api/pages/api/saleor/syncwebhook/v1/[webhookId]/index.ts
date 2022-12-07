@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { handleWebhook, Webhook } from "@eci/pkg/http";
 import { VorkassePaymentService } from "@eci/pkg/integration-saleor-payment";
-import { NoopLogger } from "@eci/pkg/logger";
+import { NextRequest } from "next/server";
 
 /**
  * We use the edge runtime here. SOME THINGS MIGHT BREAK! TEST IT
@@ -27,17 +27,21 @@ const requestValidation = z.object({
   }),
 });
 
+const jsonResponseOk = (input: object) => {
+  return new Response(JSON.stringify(input), {
+    status: 200,
+    headers: {
+      "content-type": "application/json",
+    },
+  });
+};
+
 /**
  * The product data feed returns a google standard .csv file from products and
  * their attributes in your shop.#
  */
-const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
-  req,
-  res,
-}): Promise<void> => {
-  const {
-    headers: { "saleor-event": saleorEvent },
-  } = req;
+export default async function handler(req: NextRequest): Promise<Response> {
+  const saleorEvent = req.headers.get("saleor-event") || "";
 
   const isPaymentWebhook = [
     "payment_list_gateways",
@@ -47,58 +51,52 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     "payment_void",
   ].includes(saleorEvent);
 
-  const noopLogger = new NoopLogger();
-
   /**
    * We currently don't look-up the Webhook in the DB,
    * We always just respond with the vorkasse payment service
    */
   if (isPaymentWebhook) {
-    const vorkassePaymentService = new VorkassePaymentService({
-      logger: noopLogger,
-    });
+    const vorkassePaymentService = new VorkassePaymentService();
     if (saleorEvent === "payment_list_gateways") {
       const paymentGateways = await vorkassePaymentService.paymentListGateways(
         "EUR",
       );
-      noopLogger.info(
+      console.info(
         `Responding with payment gateway list. Config: ${JSON.stringify(
           paymentGateways[0].config,
         )}`,
       );
-      return res.json(paymentGateways);
+      return jsonResponseOk(paymentGateways);
     }
     if (saleorEvent === "payment_process") {
       const response = await vorkassePaymentService.paymentProcess();
-      noopLogger.info("Responding with payment process answer");
-      return res.json(response);
+      console.info("Responding with payment process answer");
+      return jsonResponseOk(response);
     }
     if (saleorEvent === "payment_confirm") {
       const response = await vorkassePaymentService.paymentConfirm();
-      noopLogger.info("Payment confirm request. Responding with confirmation");
-      return res.json(response);
+      console.info("Payment confirm request. Responding with confirmation");
+      return jsonResponseOk(response);
     }
     if (saleorEvent === "payment_capture") {
       const response = await vorkassePaymentService.paymentCapture();
-      noopLogger.info("Payment capture request. Responding with confirmation");
-      return res.json(response);
+      console.info("Payment capture request. Responding with confirmation");
+      return jsonResponseOk(response);
     }
     if (saleorEvent === "payment_void") {
       const response = await vorkassePaymentService.paymentVoid();
-      noopLogger.info("Payment void request. Responding with confirmation");
-      return res.json(response);
+      console.info("Payment void request. Responding with confirmation");
+      return jsonResponseOk(response);
     }
   }
 
-  noopLogger.info(`Received a non payment webhook`);
+  return jsonResponseOk({});
+}
 
-  res.send(req);
-};
-
-export default handleWebhook({
-  webhook,
-  validation: {
-    http: { allowedMethods: ["POST"] },
-    request: requestValidation,
-  },
-});
+// export default handleWebhook({
+//   webhook,
+//   validation: {
+//     http: { allowedMethods: ["POST"] },
+//     request: requestValidation,
+//   },
+// });
