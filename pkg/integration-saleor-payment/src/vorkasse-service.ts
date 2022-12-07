@@ -1,5 +1,4 @@
 /* eslint-disable camelcase */
-import { id } from "@eci/pkg/ids";
 import { ILogger } from "@eci/pkg/logger";
 
 interface PaymentListGatewaysResponse {
@@ -63,7 +62,12 @@ export class VorkassePaymentService implements VorkasseService {
         id: "triebwork.payments.rechnung",
         name: "Vorkasse",
         currencies: ["EUR"],
-        config: [{ field: "transaction_id", value: id.id("payment") }],
+        config: [
+          {
+            field: "transaction_id",
+            value: (Math.random() + 1).toString(36).substring(2),
+          },
+        ],
       },
     ];
 
@@ -87,7 +91,7 @@ export class VorkassePaymentService implements VorkasseService {
       //   type: "Credit card",
       // },
 
-      transaction_id: id.id("payment"),
+      transaction_id: (Math.random() + 1).toString(36).substring(2),
     };
     return returnObject;
   }
