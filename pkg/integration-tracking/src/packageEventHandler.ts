@@ -70,7 +70,7 @@ export class PackageEventHandler {
       );
       /**
        * TODO: We return here, so that this message is not blocking the queue. Might be good here
-       * to use a retry queue and try again in 20 mins, as the package often takes time to 
+       * to use a retry queue and try again in 20 mins, as the package often takes time to
        * be processed
        */
       return;

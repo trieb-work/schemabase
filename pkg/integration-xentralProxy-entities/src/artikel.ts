@@ -93,8 +93,8 @@ export class XentralProxyProductVariantSyncService {
     this.logger.info(
       `Syncing ${productVariants.length} (creating: ${missingProductVariants.length} / updating: ${existingProductVariants.length}) productVariant(s) to xentral Artikel-Stammdaten`,
       {
-        creatingProductVariantSKUs: missingProductVariants.map((x) => x.sku)
-      }
+        creatingProductVariantSKUs: missingProductVariants.map((x) => x.sku),
+      },
     );
 
     for (const productVariant of productVariants) {
@@ -132,23 +132,31 @@ export class XentralProxyProductVariantSyncService {
       let xentralResData: ArtikelCreateResponse;
       if (existingXentralArtikel) {
         // INFO: make sure to keep this object in sync with the ArtikelCreateRequest line 91
-        if (productVariant.xentralArtikel?.[0]?.id && (existingXentralArtikel.id.toString() !== productVariant.xentralArtikel?.[0]?.id)) {
-          this.logger.info(`Our Xentral ID ${productVariant.xentralArtikel[0].id} is different than the Xentral ID ${existingXentralArtikel.id}. Updating in our DB`)
+        if (
+          productVariant.xentralArtikel?.[0]?.id &&
+          existingXentralArtikel.id.toString() !==
+            productVariant.xentralArtikel?.[0]?.id
+        ) {
+          this.logger.info(
+            `Our Xentral ID ${productVariant.xentralArtikel[0].id} is different than the Xentral ID ${existingXentralArtikel.id}. Updating in our DB`,
+          );
           await this.db.xentralArtikel.update({
             where: {
               id_xentralProxyAppId: {
                 id: productVariant.xentralArtikel[0].id,
-                xentralProxyAppId: this.xentralProxyApp.id
-              }
+                xentralProxyAppId: this.xentralProxyApp.id,
+              },
             },
             data: {
-              id: existingXentralArtikel.id.toString()
-            }
-          })
+              id: existingXentralArtikel.id.toString(),
+            },
+          });
         }
         if (!productVariant.xentralArtikel?.[0]?.id) {
-          this.logger.info(`We don't have an internal xentral article mapped to this one. Maybe it got deleted in our DB. Creating it again, connecting it to product variant ${productVariant.sku}` +
-          `Xentral nummer: ${existingXentralArtikel.nummer}`)
+          this.logger.info(
+            `We don't have an internal xentral article mapped to this one. Maybe it got deleted in our DB. Creating it again, connecting it to product variant ${productVariant.sku}` +
+              `Xentral nummer: ${existingXentralArtikel.nummer}`,
+          );
           await this.db.xentralArtikel.upsert({
             where: {
               xentralNummer_xentralProxyAppId: {
@@ -186,7 +194,7 @@ export class XentralProxyProductVariantSyncService {
           (existingXentralArtikel.zolltarifnummer || null) ===
             (artikel.zolltarifnummer || null) &&
           (existingXentralArtikel.herkunftsland || null) ===
-            (artikel.herkunftsland || null) &&                 
+            (artikel.herkunftsland || null) &&
           (existingXentralArtikel.typ || null) === (artikel.typ || null)
         ) {
           this.logger.debug(

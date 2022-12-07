@@ -87,9 +87,10 @@ export class XentralProxyLieferscheinSyncService {
       },
     });
     this.logger.info(
-      `Will sync Xentral Lieferscheine to Packages for ${orders.length} Orders with Xentral.`, {
-        orderNumbers: orders.map((o) => o.orderNumber)
-      }
+      `Will sync Xentral Lieferscheine to Packages for ${orders.length} Orders with Xentral.`,
+      {
+        orderNumbers: orders.map((o) => o.orderNumber),
+      },
     );
     for (const order of orders) {
       let loggingFields: Record<string, any> = {
@@ -196,31 +197,33 @@ export class XentralProxyLieferscheinSyncService {
         // Handle stornierte Lieferscheine
         for (const l of lieferscheine) {
           if (l.status === "storniert") {
-            this.logger.info(`Xentral Lieferschein belegnr ${l.belegnr} for Auftrag ${l.auftrag} is in status "storniert". Marking as deleted in DB`)
+            this.logger.info(
+              `Xentral Lieferschein belegnr ${l.belegnr} for Auftrag ${l.auftrag} is in status "storniert". Marking as deleted in DB`,
+            );
             try {
               await this.db.xentralLieferschein.update({
                 where: {
                   id_xentralProxyAppId: {
                     id: l.id,
-                    xentralProxyAppId: this.xentralProxyApp.id
-                  }
+                    xentralProxyAppId: this.xentralProxyApp.id,
+                  },
                 },
                 data: {
                   status: "storniert",
                   package: {
                     update: {
-                      active: false
-                    }
-                  }
-                }
-              })
-              
-            } catch (error) {
-            }
+                      active: false,
+                    },
+                  },
+                },
+              });
+            } catch (error) {}
           }
         }
 
-        const filteredLieferscheine = lieferscheine.filter((l) => l.status !== "storniert")
+        const filteredLieferscheine = lieferscheine.filter(
+          (l) => l.status !== "storniert",
+        );
 
         if (filteredLieferscheine.length > 1) {
           this.logger.error(
@@ -306,16 +309,19 @@ export class XentralProxyLieferscheinSyncService {
         }
         // TODO: lieferschein.belegnr is unique and should be enough but only if we do not use the workaround described in line 190
         // const packageNumber = `LF-${lieferschein.belegnr}_TRN-${matchingTrackingnummer.tracking}`;
-        const packageNumber = `LF-${lieferschein.belegnr}`
+        const packageNumber = `LF-${lieferschein.belegnr}`;
         const packageCreateId = id.id("package");
-        const trackingId = matchingTrackingnummer.tracking
-        const carrierTrackingUrl = (carrier && trackingId) ? generateTrackingPortalURL(carrier, order.language, trackingId) : undefined;
+        const trackingId = matchingTrackingnummer.tracking;
+        const carrierTrackingUrl =
+          carrier && trackingId
+            ? generateTrackingPortalURL(carrier, order.language, trackingId)
+            : undefined;
         loggingFields = {
           ...loggingFields,
           carrierTrackingUrl,
           carrier,
-        }
-        this.logger.info(`Upserting ${packageNumber}`, loggingFields)
+        };
+        this.logger.info(`Upserting ${packageNumber}`, loggingFields);
         const upsertedPackage = await this.db.package.upsert({
           where: {
             number_tenantId: {
@@ -423,7 +429,7 @@ export class XentralProxyLieferscheinSyncService {
             orderNumber: order.orderNumber,
           });
           return false;
-        } 
+        }
         /// This check is disabled, as we can have this case for Just-in-time bundled articles. We might need to improve this check
         // else if (packagedItems[li.sku] > li.quantity) {
         //   this.logger.error(
@@ -436,7 +442,7 @@ export class XentralProxyLieferscheinSyncService {
         //     },
         //   );
         //   return true;
-        // } 
+        // }
         else {
           // is same as: if (packagedItems[li.sku] === li.quantity)
           return true;

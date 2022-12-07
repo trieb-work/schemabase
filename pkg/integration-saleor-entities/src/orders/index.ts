@@ -97,18 +97,19 @@ export class SaleorOrderSyncService {
 
   /**
    * Lookup table, that is storing all available taxes to save DB calls
-   * @param taxPercentage 
+   * @param taxPercentage
    */
-  public async lookupECITax(taxPercentage :number): Promise<string|undefined> {
+  public async lookupECITax(
+    taxPercentage: number,
+  ): Promise<string | undefined> {
     if (this.eciTaxes.length === 0) {
       this.eciTaxes = await this.db.tax.findMany({
         where: {
-          tenantId: this.tenantId
-        }
-      })  
+          tenantId: this.tenantId,
+        },
+      });
     }
     return this.eciTaxes.find((t) => t.percentage === taxPercentage)?.id;
-    
   }
 
   private matchLanguage(language: LanguageCodeEnum): Language {
@@ -118,7 +119,7 @@ export class SaleorOrderSyncService {
       case LanguageCodeEnum.En:
         return Language.EN;
       default:
-        return Language.EN;    
+        return Language.EN;
     }
   }
 
@@ -139,7 +140,7 @@ export class SaleorOrderSyncService {
         `Setting GTE date to ${createdGte}. Asking Saleor for all orders with lastUpdated GTE.`,
       );
     }
-    
+
     const result = await queryWithPagination(({ first, after }) =>
       this.saleorClient.saleorCronOrdersOverview({
         first,
@@ -171,7 +172,7 @@ export class SaleorOrderSyncService {
         const email = order.userEmail.toLowerCase();
         const companyName = order.billingAddress?.companyName;
 
-        const discountCode = order.voucher?.code
+        const discountCode = order.voucher?.code;
 
         const companyCreateOrConnect: Prisma.CompanyCreateNestedOneWithoutContactsInput =
           companyName
@@ -287,7 +288,7 @@ export class SaleorOrderSyncService {
                   paymentStatus, // TODO: how will this thing be updated and kept in sync by other services? -> Maybe move it into Payment.status and access it via payments[0].status?
                   mainContact: contactCreateOrConnect,
                   firstName: order.billingAddress?.firstName,
-                  lastName: order.billingAddress?.lastName, 
+                  lastName: order.billingAddress?.lastName,
                   shippingAddress: {},
                   billingAddress: {},
                   readyToFullfill:
@@ -313,7 +314,8 @@ export class SaleorOrderSyncService {
                 orderStatus,
                 discountCode,
                 mainContact: contactCreateOrConnect,
-                paymentStatus: paymentStatus !== "unpaid" ? paymentStatus : undefined,
+                paymentStatus:
+                  paymentStatus !== "unpaid" ? paymentStatus : undefined,
               },
             },
           },
@@ -341,22 +343,33 @@ export class SaleorOrderSyncService {
         /**
          * The highest Tax Rate is used as the shipping tax rate
          */
-        const highestTaxRate = order.shippingPrice.gross.amount > 0 ? await this.lookupECITax(Math.round(Math.max(...lineItems.map((i) => i.taxRate)) * 100 )) : undefined;
+        const highestTaxRate =
+          order.shippingPrice.gross.amount > 0
+            ? await this.lookupECITax(
+                Math.round(Math.max(...lineItems.map((i) => i.taxRate)) * 100),
+              )
+            : undefined;
 
-        if (order.shippingPrice.gross.amount > 0 && !upsertedOrder.order.shippingPriceTaxId && highestTaxRate){
-          this.logger.info(`Upserting shipping price tax id to ${highestTaxRate} for order ${upsertedOrder.orderNumber} - ${upsertedOrder.orderId}`)
+        if (
+          order.shippingPrice.gross.amount > 0 &&
+          !upsertedOrder.order.shippingPriceTaxId &&
+          highestTaxRate
+        ) {
+          this.logger.info(
+            `Upserting shipping price tax id to ${highestTaxRate} for order ${upsertedOrder.orderNumber} - ${upsertedOrder.orderId}`,
+          );
           await this.db.order.update({
             where: {
-              id: upsertedOrder.orderId
+              id: upsertedOrder.orderId,
             },
             data: {
               shippingPriceTax: {
                 connect: {
-                  id: highestTaxRate
-                }
-              }
-            }
-          })
+                  id: highestTaxRate,
+                },
+              },
+            },
+          });
         }
 
         // loop through all line items and upsert them in the DB
@@ -392,7 +405,10 @@ export class SaleorOrderSyncService {
             lineItem.quantity,
           );
 
-          const lineItemTotalDiscountNet = round(lineItem.unitDiscount.amount * lineItem.quantity, 2)
+          const lineItemTotalDiscountNet = round(
+            lineItem.unitDiscount.amount * lineItem.quantity,
+            2,
+          );
 
           if (lineItemTotalDiscountNet < 0) {
             throw new Error(
@@ -401,12 +417,16 @@ export class SaleorOrderSyncService {
           }
 
           const taxPercentage = Math.round(lineItem.taxRate * 100);
-          let eciTax = await this.lookupECITax(taxPercentage)
+          let eciTax = await this.lookupECITax(taxPercentage);
 
           if (!eciTax) {
-            this.logger.warn(`We could not find an internal tax for tax rate ${taxPercentage} for order ${order.number}. We are using the products default now`)
+            this.logger.warn(
+              `We could not find an internal tax for tax rate ${taxPercentage} for order ${order.number}. We are using the products default now`,
+            );
             if (!productSku.salesTaxId) {
-              this.logger.error(`Product ${productSku.sku} - ${productSku.id} has no default sales tax set! Can't proceed`)
+              this.logger.error(
+                `Product ${productSku.sku} - ${productSku.id} has no default sales tax set! Can't proceed`,
+              );
               continue;
             }
             eciTax = productSku.salesTaxId;
@@ -455,7 +475,7 @@ export class SaleorOrderSyncService {
                     totalPriceGross: lineItem.totalPrice.gross.amount,
                     tax: {
                       connect: {
-                        id: eciTax
+                        id: eciTax,
                       },
                     },
                     productVariant: {
@@ -483,7 +503,7 @@ export class SaleorOrderSyncService {
                     lineItem.undiscountedUnitPrice.gross.amount,
                   tax: {
                     connect: {
-                      id: eciTax
+                      id: eciTax,
                     },
                   },
                   productVariant: {

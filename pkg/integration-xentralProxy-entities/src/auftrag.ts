@@ -3,7 +3,12 @@
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { ILogger } from "@eci/pkg/logger";
 import { arrayFromAsyncGenerator } from "@eci/pkg/miscHelper/array";
-import { Carrier, PrismaClient, XentralCarrier, XentralProxyApp } from "@eci/pkg/prisma";
+import {
+  Carrier,
+  PrismaClient,
+  XentralCarrier,
+  XentralProxyApp,
+} from "@eci/pkg/prisma";
 import {
   XentralRestClient,
   XentralRestNotFoundError,
@@ -43,7 +48,7 @@ export class XentralProxyOrderSyncService {
 
   private readonly cronState: CronStateHandler;
 
-  public xentralCarriers :XentralCarrier[] | undefined;
+  public xentralCarriers: XentralCarrier[] | undefined;
 
   public constructor(config: XentralProxyOrderSyncServiceConfig) {
     this.logger = config.logger;
@@ -63,25 +68,27 @@ export class XentralProxyOrderSyncService {
 
   /**
    * Returns either a custom carrier from our DB or the regular one
-   * @param carrier 
-   * @returns 
+   * @param carrier
+   * @returns
    */
-  private async versandArt(carrier :Carrier) {
-
+  private async versandArt(carrier: Carrier) {
     /**
      * Pull all xentral carriers one time
      */
-    if (!this.xentralCarriers) this.xentralCarriers = await this.db.xentralCarrier.findMany({
-      where: {
-        xentralProxyAppId: this.xentralProxyApp.id
-      }
-    })
+    if (!this.xentralCarriers)
+      this.xentralCarriers = await this.db.xentralCarrier.findMany({
+        where: {
+          xentralProxyAppId: this.xentralProxyApp.id,
+        },
+      });
 
     if (this.xentralCarriers.length > 0) {
-      return this.xentralCarriers.find((x) => x.eciCarrier === carrier)?.name || carrier
+      return (
+        this.xentralCarriers.find((x) => x.eciCarrier === carrier)?.name ||
+        carrier
+      );
     }
     return carrier;
-
   }
 
   /**
@@ -93,10 +100,11 @@ export class XentralProxyOrderSyncService {
 
     const cronState = await this.cronState.get(true);
     if (cronState.currentlyLocked) {
-      this.logger.info(`Xentral Auftrag sync for Xentral app ${this.xentralProxyApp.id} - ${this.xentralProxyApp.url} is currently locked. Finishing sync`)
+      this.logger.info(
+        `Xentral Auftrag sync for Xentral app ${this.xentralProxyApp.id} - ${this.xentralProxyApp.url} is currently locked. Finishing sync`,
+      );
       return;
     }
-
 
     const orders = await this.db.order.findMany({
       where: {
@@ -186,7 +194,7 @@ export class XentralProxyOrderSyncService {
       /**
        * These checks are just needed, when the order is not a PICKUP order
        */
-      if ( !["PICKUP", "BULK"].includes(order.carrier || "")) {
+      if (!["PICKUP", "BULK"].includes(order.carrier || "")) {
         if (!order.shippingAddress?.fullname) {
           // TODO add try/catch block from other services -> use Error Class
           this.logger.error(
@@ -276,8 +284,9 @@ export class XentralProxyOrderSyncService {
         }
       }
 
-      const versandart = order.carrier ?  await this.versandArt(order.carrier) : undefined;
-
+      const versandart = order.carrier
+        ? await this.versandArt(order.carrier)
+        : undefined;
 
       const auftrag: AuftragCreateRequest = {
         kundennummer: "NEW",
@@ -287,7 +296,9 @@ export class XentralProxyOrderSyncService {
          */
         ansprechpartner: order?.shippingAddress?.fullname || "",
         name:
-          order?.shippingAddress?.company || order?.shippingAddress?.fullname || "",
+          order?.shippingAddress?.company ||
+          order?.shippingAddress?.fullname ||
+          "",
         strasse: order?.shippingAddress?.street || "",
         adresszusatz: order.shippingAddress?.additionalAddressLine || "",
         plz: order?.shippingAddress?.plz || "",
@@ -296,7 +307,7 @@ export class XentralProxyOrderSyncService {
         // Ihre Bestellnummer scheint eher für Dropshipping etc. verwendung zu finden
         // ihrebestellnummer: order.orderNumber,
         internet: order.orderNumber,
-        telefon: order.shippingAddress?.phone ||"",
+        telefon: order.shippingAddress?.phone || "",
         projekt: String(this.xentralProxyApp.projectId),
         // email: order.mainContact.email // TODO disabled for now because we want to send tracking emails by our own, and do not want to risk that kramer sends some emails
         // INFO: do not remove date otherwise search will not work anymore!
@@ -306,10 +317,11 @@ export class XentralProxyOrderSyncService {
         versandart,
         artikelliste: {
           position: order.orderLineItems.map((lineItem) => {
+            const price = lineItem.totalPriceGross || lineItem.totalPriceNet;
 
-            const price = lineItem.totalPriceGross || lineItem.totalPriceNet
-
-            const encodedPrice = price ? price.toString().replace(',', '').replace('.',',') : undefined; 
+            const encodedPrice = price
+              ? price.toString().replace(",", "").replace(".", ",")
+              : undefined;
 
             if (!lineItem?.productVariant?.xentralArtikel?.[0]?.xentralNummer) {
               throw new Error(
@@ -352,15 +364,20 @@ export class XentralProxyOrderSyncService {
       const createOrUpdateXentralAuftrag = async () => {
         if (existingXentralAuftrag) {
           if (existingXentralAuftrag.status === "abgeschlossen") {
-            this.logger.info(`Existing Xentral Auftrag ${existingXentralAuftrag.id} - ${existingXentralAuftrag.internet} is already closed. Don't update anything`);
+            this.logger.info(
+              `Existing Xentral Auftrag ${existingXentralAuftrag.id} - ${existingXentralAuftrag.internet} is already closed. Don't update anything`,
+            );
             return existingXentralAuftrag;
           }
           // TODO: maybe don't do anything if auftrag is not in status "freigegeben"
           this.logger.info(
             `Updating Existing Xentral Auftrag ${existingXentralAuftrag.id} - ${existingXentralAuftrag.internet}`,
           );
-          // TODO: how to make sure, that the shipment status is correct? 
-          const auftragsStatus = order.shipmentStatus === "shipped" ? "abgeschlossen" : existingXentralAuftrag.status;
+          // TODO: how to make sure, that the shipment status is correct?
+          const auftragsStatus =
+            order.shipmentStatus === "shipped"
+              ? "abgeschlossen"
+              : existingXentralAuftrag.status;
           const auftragUpdate: AuftragEditRequest = {
             ...auftrag,
             status: auftragsStatus,
@@ -421,7 +438,7 @@ export class XentralProxyOrderSyncService {
     await this.cronState.set({
       lastRun: new Date(),
       lastRunStatus: "success",
-      locked: false
+      locked: false,
     });
   }
 }

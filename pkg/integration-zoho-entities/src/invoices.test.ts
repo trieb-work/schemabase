@@ -26929,7 +26929,7 @@ describe("Zoho Inventory Invoice Sync", () => {
       logger: zohoInvoiceLogger,
       db: new PrismaClient(),
       zohoApp,
-      createdTimeOffset: 1
+      createdTimeOffset: 1,
     });
   });
 

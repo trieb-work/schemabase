@@ -93,8 +93,9 @@ export class ZohoContactSyncService {
         this.logger.info(`Upserting Zoho contact ${contact.contact_id}`);
         const email = contact.email.toLowerCase();
         const companyName = contact?.company_name;
-        const mainContactPerson = contact.contact_persons.find((x) => x.is_primary_contact);
-
+        const mainContactPerson = contact.contact_persons.find(
+          (x) => x.is_primary_contact,
+        );
 
         // Only create a company if the contact is marked as "business" in Zoho
         const companyCreate: Prisma.CompanyCreateNestedOneWithoutContactsInput =
