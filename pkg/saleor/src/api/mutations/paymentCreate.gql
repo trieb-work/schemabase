@@ -1,4 +1,4 @@
-mutation paymentCreate($id: ID! $amount: PositiveDecimal!) {
+mutation paymentCreate($id: ID!, $amount: PositiveDecimal!) {
   orderCapture(id: $id, amount: $amount) {
     errors {
       field
@@ -10,7 +10,7 @@ mutation paymentCreate($id: ID! $amount: PositiveDecimal!) {
         id
         chargeStatus
         capturedAmount {
-            amount
+          amount
         }
       }
     }

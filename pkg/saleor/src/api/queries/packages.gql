@@ -11,12 +11,10 @@ query saleorCronPackagesOverview(
     first: $first
     after: $after
     sortBy: { field: $orderSortField, direction: $orderDirection }
-    filter: { 
-      created: { 
-        gte: $createdGte 
-      }
+    filter: {
+      created: { gte: $createdGte }
       status: $orderStatusFilter
-      updatedAt: { gte: $updatedAtGte } 
+      updatedAt: { gte: $updatedAtGte }
     }
   ) {
     pageInfo {

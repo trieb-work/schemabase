@@ -1,11 +1,12 @@
-query saleorCronPayments($createdGte: Date, $after: String, $updatedAtGte: DateTime) {
+query saleorCronPayments(
+  $createdGte: Date
+  $after: String
+  $updatedAtGte: DateTime
+) {
   orders(
-    first: 100, 
-    after: $after, 
-    filter: { 
-      created: { gte: $createdGte } 
-      updatedAt: { gte: $updatedAtGte }  
-    }
+    first: 100
+    after: $after
+    filter: { created: { gte: $createdGte }, updatedAt: { gte: $updatedAtGte } }
   ) {
     totalCount
     pageInfo {

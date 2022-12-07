@@ -12,18 +12,16 @@ fragment standardAddressValues on Address {
   }
 }
 
-query saleorCronOrdersOverview($createdGte: Date, $after: String, $first: Int, $updatedAtGte: DateTime) {
+query saleorCronOrdersOverview(
+  $createdGte: Date
+  $after: String
+  $first: Int
+  $updatedAtGte: DateTime
+) {
   orders(
     first: $first
     after: $after
-    filter: { 
-      created: { 
-        gte: $createdGte 
-      }
-      updatedAt: { 
-        gte: $updatedAtGte 
-      } 
-    }
+    filter: { created: { gte: $createdGte }, updatedAt: { gte: $updatedAtGte } }
   ) {
     pageInfo {
       hasNextPage
@@ -93,7 +91,7 @@ query saleorCronOrderDetails($id: ID!) {
       }
       quantity
       unitDiscountType
-      unitDiscount{ 
+      unitDiscount {
         amount
       }
       undiscountedUnitPrice {
