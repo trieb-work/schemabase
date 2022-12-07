@@ -45,4 +45,4 @@ USER nextjs
 ENV PORT 3000
 EXPOSE ${PORT}
 
-CMD ["node_modules/.bin/next", "start", "--port=${PORT}"]
+CMD ["node_modules/.bin/next", "start"]
