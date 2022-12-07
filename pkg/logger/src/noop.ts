@@ -14,15 +14,15 @@ export class NoopLogger implements ILogger {
     console.debug(message);
   }
 
-  public info(message: string, _fields: Fields): void {
+  public info(message: string, _fields?: Fields): void {
     console.info(message);
   }
 
-  public warn(message: string, _fields: Fields): void {
+  public warn(message: string, _fields?: Fields): void {
     console.warn(message);
   }
 
-  public error(message: string, _fields: Fields): void {
+  public error(message: string, _fields?: Fields): void {
     console.error(message);
   }
 

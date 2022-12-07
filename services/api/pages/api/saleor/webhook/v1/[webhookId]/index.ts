@@ -4,6 +4,7 @@ import { HttpError } from "@eci/pkg/errors";
 import { handleWebhook, Webhook } from "@eci/pkg/http";
 import { VorkassePaymentService } from "@eci/pkg/integration-saleor-payment";
 import { IncomingWebhook, SecretKey } from "@eci/pkg/prisma";
+import { NoopLogger } from "@eci/pkg/logger";
 
 /**
  * We use the edge runtime here. SOME THINGS MIGHT BREAK! TEST IT
@@ -70,30 +71,21 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     "payment_capture",
     "payment_void",
   ].includes(saleorEvent);
-  const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
-
-  ctx.logger.info(
-    `Incoming saleor webhook: ${webhookId}, saleor-event: ${saleorEvent}.` +
-      `Saleor Domain: ${saleorDomain}`,
-  );
 
   /**
    * We currently don't look-up the Webhook in the DB,
    * We always just respond with the vorkasse payment service
    */
   if (isPaymentWebhook) {
+    const noopLogger = new NoopLogger();
     const vorkassePaymentService = new VorkassePaymentService({
-      logger: ctx.logger.with({
-        saleor: {
-          domain: saleorDomain,
-        },
-      }),
+      logger: noopLogger,
     });
     if (saleorEvent === "payment_list_gateways") {
       const paymentGateways = await vorkassePaymentService.paymentListGateways(
         "EUR",
       );
-      ctx.logger.info(
+      noopLogger.info(
         `Responding with payment gateway list. Config: ${JSON.stringify(
           paymentGateways[0].config,
         )}`,
@@ -102,25 +94,32 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     }
     if (saleorEvent === "payment_process") {
       const response = await vorkassePaymentService.paymentProcess();
-      ctx.logger.info("Responding with payment process answer");
+      noopLogger.info("Responding with payment process answer");
       return res.json(response);
     }
     if (saleorEvent === "payment_confirm") {
       const response = await vorkassePaymentService.paymentConfirm();
-      ctx.logger.info("Payment confirm request. Responding with confirmation");
+      noopLogger.info("Payment confirm request. Responding with confirmation");
       return res.json(response);
     }
     if (saleorEvent === "payment_capture") {
       const response = await vorkassePaymentService.paymentCapture();
-      ctx.logger.info("Payment capture request. Responding with confirmation");
+      noopLogger.info("Payment capture request. Responding with confirmation");
       return res.json(response);
     }
     if (saleorEvent === "payment_void") {
       const response = await vorkassePaymentService.paymentVoid();
-      ctx.logger.info("Payment void request. Responding with confirmation");
+      noopLogger.info("Payment void request. Responding with confirmation");
       return res.json(response);
     }
   }
+
+  const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
+
+  ctx.logger.info(
+    `Incoming saleor webhook: ${webhookId}, saleor-event: ${saleorEvent}.` +
+      `Saleor Domain: ${saleorDomain}`,
+  );
 
   const webhook =
     webhookCache?.[webhookId] ||
