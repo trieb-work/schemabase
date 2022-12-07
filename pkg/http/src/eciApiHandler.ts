@@ -1,6 +1,5 @@
 import type { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
 import { ILogger, Logger } from "@eci/pkg/logger";
-import { id } from "@eci/pkg/ids";
 import { HttpError } from "@eci/pkg/errors";
 import { Context } from "@eci/pkg/webhook-context";
 import { ECI_TRACE_HEADER } from "@eci/pkg/constants";
@@ -65,7 +64,9 @@ export function handleWebhook<TRequest>({
     /**
      * A unique id for this trace. This is useful for searching the logs.
      */
-    const traceId = (req.headers[ECI_TRACE_HEADER] as string) ?? id.id("trace");
+    const traceId =
+      (req.headers[ECI_TRACE_HEADER] as string) ??
+      `tr_${(Math.random() + 1).toString(36).substring(2)}`;
 
     res.setHeader(ECI_TRACE_HEADER, traceId);
 
