@@ -54,6 +54,7 @@ specifiers:
   body-parser: ^1.20.0
   braintree: ^3.11.0
   browserify-zlib: ^0.2.0
+  buffer: ^6.0.3
   bullmq: ^1.86.1
   commitlint: ^15.0.0
   connect-ensure-login: ^0.1.1
@@ -129,6 +130,7 @@ dependencies:
   body-parser: 1.20.0
   braintree: 3.11.0
   browserify-zlib: 0.2.0
+  buffer: 6.0.3
   bullmq: 1.86.1
   connect-ensure-login: 0.1.1
   date-fns: 2.28.0
@@ -3918,7 +3920,6 @@ packages:
 
   /base64-js/1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
-    dev: true
 
   /base64url/3.0.1:
     resolution: {integrity: sha512-ir1UPr3dkwexU7FdV8qBBbNDRUhMmIekYMFZfi+C/sLNnRESKPl23nB9b2pltqfOQNnGzsDdId90AEtG5tCx4A==}
@@ -4087,6 +4088,13 @@ packages:
       base64-js: 1.5.1
       ieee754: 1.2.1
     dev: true
+
+  /buffer/6.0.3:
+    resolution: {integrity: sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA==}
+    dependencies:
+      base64-js: 1.5.1
+      ieee754: 1.2.1
+    dev: false
 
   /bullmq/1.86.1:
     resolution: {integrity: sha512-53zY4WvC7/Py6Ac/+uIg2arf6n3SWhPrTVo0QZ5Am0OyX8H2AGhWIBa8a5FtZWxu3lKDH9/GHwb2e8kpjRnr5A==}
@@ -6958,7 +6966,6 @@ packages:
 
   /ieee754/1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
-    dev: true
 
   /ignore/4.0.6:
     resolution: {integrity: sha512-cyFDKrqc/YdcWFniJhzI42+AzS+gNwmUzOSFcRCQYwySuBBBy/KjuxWLZ/FHEH6Moq1NizMOBWyTcv8O4OZIMg==}

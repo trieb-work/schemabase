@@ -9,6 +9,7 @@ module.exports = {
     }
     if (nextRuntime === "edge") {
       config.resolve.alias.zlib = require.resolve("browserify-zlib");
+      config.resolve.alias.buffer = require.resolve("buffer/");
     }
 
     return config;
