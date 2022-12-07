@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { ILogger } from "@eci/pkg/logger";
+import type { ILogger } from "@eci/pkg/logger";
 
 interface PaymentListGatewaysResponse {
   id: string;
