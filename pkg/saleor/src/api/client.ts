@@ -3,7 +3,6 @@ import { DocumentNode } from "graphql";
 import { GraphQLClient } from "graphql-request";
 import { ECI_TRACE_HEADER } from "@eci/pkg/constants";
 import { PrismaClient } from "@eci/pkg/prisma";
-import { id } from "@eci/pkg/ids";
 import { sleep } from "@eci/pkg/miscHelper/time";
 
 export interface SaleorServiceConfig {
@@ -80,7 +79,7 @@ export async function getSaleorClientAndEntry(
   const client = createSaleorClient({
     graphqlEndpoint: `${installedSaleorApp.domain}`,
     token: installedSaleorApp.token,
-    traceId: id.id("trace"),
+    traceId: `tr_${(Math.random() + 1).toString(36).substring(2)}`,
   });
   return { client, installedSaleorApp };
 }
