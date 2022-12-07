@@ -2,10 +2,13 @@ module.exports = {
   experimental: {
     externalDir: true,
   },
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, nextRuntime }) => {
     if (!isServer) {
       config.resolve.fallback.net = false;
       config.resolve.fallback.fs = false;
+    }
+    if (nextRuntime === "edge") {
+      config.resolve.alias.zlib = require.resolve("browserify-zlib");
     }
 
     return config;

@@ -1,7 +1,5 @@
 import winston from "winston";
-import { ElasticsearchTransport } from "winston-elasticsearch";
 import { env } from "@eci/pkg/env";
-import ecsFormat from "@elastic/ecs-winston-format";
 
 export interface LogDrain {
   log: (message: string) => void;
@@ -30,15 +28,13 @@ export interface ILogger {
   info(message: string, fields?: Fields): void;
   warn(message: string, fields?: Fields): void;
   error(message: string, fields?: Fields): void;
-  flush(): Promise<void>;
+  // flush(): Promise<void>;
 }
 
 export class Logger implements ILogger {
-  private logger: winston.Logger;
+  public logger: winston.Logger;
 
   private meta: Record<string, unknown>;
-
-  private elasticSearchTransport?: ElasticsearchTransport;
 
   private logDrains: LogDrain[] = [];
 
@@ -67,35 +63,6 @@ export class Logger implements ILogger {
               depth: 10,
             }),
     });
-
-    if (config?.enableElasticLogDrain) {
-      this.info("Enabling elastic transport");
-      // this.apm ??= APMAgent.start({ serviceName: "eci-v2" });
-
-      /**
-       * ECS requires a special logging format.
-       * This overwrites the prettyprint or json format.
-       *
-       * @see https://www.elastic.co/guide/en/ecs-logging/nodejs/current/winston.html
-       */
-      this.logger.format = ecsFormat({ convertReqRes: true });
-
-      /**
-       * Ships all our logs to elasticsearch
-       */
-      this.elasticSearchTransport = new ElasticsearchTransport({
-        level: "info", // log info and above, not debug
-        dataStream: true,
-        clientOpts: {
-          node: env.require("ELASTIC_LOGGING_SERVER"),
-          auth: {
-            username: env.require("ELASTIC_LOGGING_USERNAME"),
-            password: env.require("ELASTIC_LOGGING_PASSWORD"),
-          },
-        },
-      });
-      this.logger.add(this.elasticSearchTransport);
-    }
   }
 
   public withLogDrain(logDrain: LogDrain): ILogger {
@@ -151,9 +118,5 @@ export class Logger implements ILogger {
 
   public error(message: string, fields: Fields = {}): void {
     return this.log("error", message, fields);
-  }
-
-  public async flush(): Promise<void> {
-    await Promise.all([this.elasticSearchTransport?.flush()]);
   }
 }

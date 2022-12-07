@@ -1,4 +1,3 @@
-import { Logger } from "@eci/pkg/logger";
 // import * as bulkorder from "@eci/pkg/integration-bulkorders";
 import { env } from "@eci/pkg/env";
 // import { StrapiEntryUpdate } from "./handler/strapiEntryUpdate";
@@ -17,9 +16,10 @@ import {
 import * as tracking from "@eci/pkg/integration-tracking";
 import { Sendgrid } from "@eci/pkg/email/src/emailSender";
 import { CronTable } from "./crontable";
+import { LoggerWithElastic } from "@eci/pkg/logger/src/loggerWithElastic";
 
 async function main() {
-  const logger = new Logger({
+  const logger = new LoggerWithElastic({
     meta: {
       env: env.require("ECI_ENV"),
     },
@@ -139,7 +139,7 @@ async function main() {
 }
 
 main().catch((err) => {
-  const logger = new Logger(/* TODO: */);
+  const logger = new LoggerWithElastic(/* TODO: */);
   logger.error("Main process failed", err);
   console.error(err);
   process.exit(1);

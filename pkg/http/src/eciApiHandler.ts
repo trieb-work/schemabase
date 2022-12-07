@@ -73,6 +73,7 @@ export function handleWebhook<TRequest>({
       meta: {
         traceId,
       },
+      enableElasticLogDrain: false,
     });
     logger.info("Receiving webhook");
     /**
