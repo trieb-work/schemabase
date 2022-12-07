@@ -1,8 +1,6 @@
 import winston from "winston";
 import { env } from "@eci/pkg/env";
-import { ILogger, LogDrain, LoggerConfig } from "./types";
-
-
+import { Fields, ILogger, LogDrain, LoggerConfig } from "./types";
 
 export class Logger implements ILogger {
   public logger: winston.Logger;
