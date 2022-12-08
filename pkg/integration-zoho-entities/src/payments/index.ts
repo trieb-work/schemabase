@@ -96,7 +96,9 @@ export class ZohoPaymentSyncService {
         continue;
       }
 
-      this.logger.info(`Upserting Zoho Payment ${payment.payment_id}`);
+      this.logger.info(
+        `Upserting Zoho Payment ${payment.payment_id} from date ${payment.created_time}`,
+      );
 
       let eciContactId: string | undefined;
       /**
@@ -122,8 +124,9 @@ export class ZohoPaymentSyncService {
       });
       if (!eciContact?.zohoContactPerson?.[0]?.contactId) {
         this.logger.warn(
-          `Can't find an internal contact for Zoho Contact Id ${payment.customer_id}`,
+          `Can't find an internal contact for Zoho Contact Id ${payment.customer_id}. Can't create payment`,
         );
+        continue;
       } else {
         eciContactId = eciContact.zohoContactPerson[0].contactId;
       }
@@ -155,6 +158,17 @@ export class ZohoPaymentSyncService {
           ? payment.invoice_numbers_array[0]
           : undefined;
 
+      const relatedEciInvoice = relatedInvoice
+        ? await this.db.zohoInvoice.findUnique({
+            where: {
+              id_zohoAppId: {
+                id: relatedInvoice,
+                zohoAppId: this.zohoApp.id,
+              },
+            },
+          })
+        : undefined;
+      const relatedInvoiceConnect = relatedEciInvoice?.invoiceId;
       // connect or create the Zoho Payment with our internal payment entity
       const paymentConnectOrCreate: Prisma.PaymentCreateNestedOneWithoutZohoPaymentInput =
         {
@@ -226,13 +240,10 @@ export class ZohoPaymentSyncService {
           payment: {
             ...paymentConnectOrCreate,
             update: {
-              invoices: relatedInvoice
+              invoices: relatedInvoiceConnect
                 ? {
                     connect: {
-                      invoiceNumber_tenantId: {
-                        invoiceNumber: relatedInvoice,
-                        tenantId: this.zohoApp.tenantId,
-                      },
+                      id: relatedInvoiceConnect,
                     },
                   }
                 : undefined,
@@ -280,7 +291,6 @@ export class ZohoPaymentSyncService {
                   where: {
                     zohoAppId: this.zohoApp.id,
                     active: true,
-                    isPrimary: true,
                   },
                 },
               },
