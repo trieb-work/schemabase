@@ -133,7 +133,9 @@ export class SaleorPaymentSyncService {
         continue;
       }
       const saleorOrder = payment.order;
-      this.logger.info(`Processing payment for order ${saleorOrder.number}`);
+      this.logger.info(
+        `Processing payment for order ${saleorOrder.number} - ${payment.id}`,
+      );
       if (typeof saleorOrder.number !== "string") continue;
 
       /**

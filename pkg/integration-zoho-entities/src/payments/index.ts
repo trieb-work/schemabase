@@ -158,6 +158,9 @@ export class ZohoPaymentSyncService {
           ? payment.invoice_numbers_array[0]
           : undefined;
 
+      /**
+       * Search for the invoice number in our DB to connect the payment to it
+       */
       const relatedEciInvoice = relatedInvoice
         ? await this.db.zohoInvoice.findUnique({
             where: {
@@ -200,13 +203,10 @@ export class ZohoPaymentSyncService {
                   id: this.zohoApp.tenantId,
                 },
               },
-              invoices: relatedInvoice
+              invoices: relatedInvoiceConnect
                 ? {
                     connect: {
-                      invoiceNumber_tenantId: {
-                        invoiceNumber: relatedInvoice,
-                        tenantId: this.zohoApp.tenantId,
-                      },
+                      id: relatedInvoiceConnect,
                     },
                   }
                 : undefined,
