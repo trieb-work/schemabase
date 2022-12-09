@@ -554,6 +554,7 @@ Discounts never get applied on shipping costs']
   firstName String [note: 'First and Lastname as extra fields only for this order. The main contact is not sufficient here
 fields are used for example for tracking notifications']
   lastName String
+  trackingNotificationsEnabled Boolean [not null, default: true, note: 'We can disable tracking notifications on user, order and package level']
   language Language [not null, default: 'DE']
   packages Package [not null]
   shippingAddress Address
@@ -930,6 +931,7 @@ Table ZohoApp {
   customFieldReadyToFulfill String [note: 'the cf_api name from Zoho Settings of the custom field']
   customFieldVoucherCode String [note: 'the cf_api name from Zoho Settings of the custom field']
   customFieldCustomerNote String [note: 'the cf_api name from Zoho Settings of the custom field used to save a note to the customer']
+  customFieldTrackingNotifications String [note: 'the cf_api name for Zoho settings of the custom field used to enable or disable tracking notifications']
   cronSchedule String [not null, default: '*/30 * * * *']
   cronTimeout Int [not null, default: 800]
   syncContacts Boolean [not null, default: false]

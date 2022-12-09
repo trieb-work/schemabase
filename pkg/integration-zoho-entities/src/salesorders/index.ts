@@ -34,6 +34,7 @@ import {
 } from "@trieb.work/zoho-ts/dist/types/salesOrder";
 import { shippingMethodMatch } from "@eci/pkg/miscHelper/shippingMethodMatch";
 import { sleep } from "@eci/pkg/miscHelper/time";
+import { parseBoolean } from "@eci/pkg/miscHelper/parseBoolean";
 
 export interface ZohoSalesOrdersSyncConfig {
   logger: ILogger;
@@ -231,6 +232,13 @@ export class ZohoSalesOrdersSyncService {
         ? (salesorder?.[this.zohoApp.customFieldCustomerNote] as string)
         : undefined;
 
+      const trackingNotificationsEnabled = this.zohoApp
+        .customFieldTrackingNotifications
+        ? parseBoolean(
+            salesorder?.[this.zohoApp.customFieldTrackingNotifications],
+          )
+        : undefined;
+
       if (!salesorder.email) {
         this.logger.error(
           `Salesorder ${salesorder.salesorder_number} - ${salesorder.salesorder_id} has no related email address. Can't sync`,
@@ -286,6 +294,7 @@ export class ZohoSalesOrdersSyncService {
               orderStatus: salesOrderStatus,
               mainContact: contactConnectOrCreate,
               readyToFullfill,
+              trackingNotificationsEnabled,
               customerNote,
               tenant: {
                 connect: {
@@ -353,6 +362,7 @@ export class ZohoSalesOrdersSyncService {
               ),
               mainContact: contactConnectOrCreate,
               readyToFullfill,
+              trackingNotificationsEnabled,
               invoiceStatus,
               orderStatus: salesOrderStatus,
             },

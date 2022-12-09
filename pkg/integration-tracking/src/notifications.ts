@@ -66,7 +66,14 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
       packageEvent.sentEmail == null &&
       isValidTransition(event.previousState, packageEvent.state)
     ) {
-      this.logger.info("Sending transactional email", {
+      if (!packageEvent.package.order.trackingNotificationsEnabled) {
+        this.logger.info(
+          "Tracking notification emails are disable for order" +
+            `${packageEvent.package.order.orderNumber}`,
+        );
+      }
+      const customerEmail = packageEvent.package.order.mainContact.email;
+      this.logger.info(`Sending transactional email to ${customerEmail}`, {
         packageEventId: packageEvent.id,
         state: packageEvent.state,
         trackingId: packageEvent.package.trackingId,

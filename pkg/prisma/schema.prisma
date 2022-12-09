@@ -899,7 +899,6 @@ model Order {
   referenceNumber String?
 
   orderLineItems OrderLineItem[]
-  // packageLineItems PackageLineItem[] // TODO I think this does not make sense, maybe double check
 
   shippingPriceNet   Float?
   shippingPriceGross Float?
@@ -931,6 +930,9 @@ model Order {
   /// fields are used for example for tracking notifications
   firstName     String?
   lastName      String?
+
+  /// We can disable tracking notifications on user, order and package level
+  trackingNotificationsEnabled    Boolean @default(true)
 
   language Language  @default(DE)
   packages Package[]
@@ -1789,6 +1791,9 @@ model ZohoApp {
   customFieldVoucherCode   String?
   /// the cf_api name from Zoho Settings of the custom field used to save a note to the customer
   customFieldCustomerNote   String?
+
+  /// the cf_api name for Zoho settings of the custom field used to enable or disable tracking notifications
+  customFieldTrackingNotifications  String?
 
   cronSchedule String @default("*/30 * * * *")
   cronTimeout  Int    @default(800)
