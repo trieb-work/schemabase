@@ -133,7 +133,8 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
         }
         if (!variant.quantityAvailable) {
           this.logger.warn(
-            `No variant quantity available given for ${variant.id}`,
+            `No variant quantity available given for variant ${variant.id}` +
+              `- Product: ${title}`,
           );
           continue;
         }
