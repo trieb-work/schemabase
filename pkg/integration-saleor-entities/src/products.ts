@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { ILogger } from "@eci/pkg/logger";
 import {
   ProductVariantStockEntryUpdateMutation,

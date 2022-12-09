@@ -6,7 +6,7 @@ import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { SyncStocks } from "./stocks";
-import { isAfter } from "date-fns";
+import { isAfter, subHours, subYears } from "date-fns";
 import { setBOMinECI } from "./billofmaterial";
 import { getProductAndVariantName } from "./itemAndVariantNames";
 
@@ -42,9 +42,26 @@ export class ZohoItemSyncService {
   }
 
   public async syncToECI(): Promise<void> {
+    const cronState = await this.cronState.get();
+
+    const now = new Date();
+    let gteDate: Date;
+
+    if (cronState.lastRun === null) {
+      gteDate = subYears(now, 2);
+      this.logger.info(
+        `This seems to be our first sync run. Setting GTE date to ${gteDate}`,
+      );
+    } else {
+      gteDate = subHours(cronState.lastRun, 1);
+      this.logger.info(`Setting GTE date to ${gteDate}`);
+    }
+
     // Get all Items from Zoho. We don't filter out non-active products, as we
     // might need them for older orderlines etc.
-    const items = await this.zoho.item.list({});
+    const items = await this.zoho.item.list({
+      lastModifiedTime: gteDate,
+    });
     const tenantId = this.zohoApp.tenantId;
 
     this.logger.info(`Upserting ${items.length} items with the internal DB`);
