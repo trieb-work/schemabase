@@ -151,6 +151,15 @@ export class ZohoPackageSyncService {
         },
         select: {
           updatedAt: true,
+          package: {
+            select: {
+              packageLineItems: {
+                select: {
+                  _count: true,
+                },
+              },
+            },
+          },
         },
       });
 
@@ -221,7 +230,8 @@ export class ZohoPackageSyncService {
       if (
         !packageBefore ||
         packageBefore.updatedAt.toISOString() !==
-          currentPackage.updatedAt.toISOString()
+          currentPackage.updatedAt.toISOString() ||
+        packageBefore.package.packageLineItems.length === 1
       ) {
         this.logger.info(
           `Pulling full package data for ${parcel.package_id} - ${
@@ -479,7 +489,7 @@ export class ZohoPackageSyncService {
               },
             },
             createdAt: new Date(createdPackage.created_time),
-            updatedAt: new Date(createdPackage.last_modified_time),
+            updatedAt: new Date(shipment.last_modified_time),
             shipmentId: shipment.shipment_id,
           },
         });
