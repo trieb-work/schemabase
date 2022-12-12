@@ -36,7 +36,7 @@ class Addresses {
   }
 
   /**
-   * function, that splits a general street with address field. Should be only used 
+   * function, that splits a general street with address field. Should be only used
    * for austria and germany right now
    * @param input
    */
@@ -59,7 +59,7 @@ class Addresses {
         `Received non valid country code: ${address.country.code}`,
       );
 
-    const splitted = this.splitStreetAndHouseNumber(address.streetAddress1)
+    const splitted = this.splitStreetAndHouseNumber(address.streetAddress1);
     /**
      * The address object
      * to use as the customer fullname. If not set, we construct
