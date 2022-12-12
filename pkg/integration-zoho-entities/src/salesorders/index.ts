@@ -1002,7 +1002,7 @@ export class ZohoSalesOrdersSyncService {
     }
     try {
       if (salesordersToConfirm.length > 0) {
-        await sleep(100);
+        await sleep(500);
         await this.zoho.salesOrder.confirm(
           salesordersToConfirm.map((so) => so.salesorder_id),
         );
