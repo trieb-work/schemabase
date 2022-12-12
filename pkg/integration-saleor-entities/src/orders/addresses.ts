@@ -35,6 +35,19 @@ class Addresses {
     this.contactId = config.contactId;
   }
 
+  /**
+   * function, that splits a general street with address field. Should be only used 
+   * for austria and germany right now
+   * @param input
+   */
+  private splitStreetAndHouseNumber(input: string) {
+    const street = input.substring(0, input.match(/[0-9]+/)?.index)?.trim();
+    const inputMatch = input.match(/[0-9]+/)?.index;
+    const housenumber = inputMatch ? input.substr(inputMatch) : "";
+
+    return { street, housenumber };
+  }
+
   private createObjectAndUniqueString(address: StandardAddressValuesFragment) {
     // TODO: check the country_code for validity. Just two letters or other
     const countryCodeValid = Object.values(CountryCode).includes(
@@ -46,8 +59,9 @@ class Addresses {
         `Received non valid country code: ${address.country.code}`,
       );
 
+    const splitted = this.splitStreetAndHouseNumber(address.streetAddress1)
     /**
-     * The address object - we first try to use the Zoho "attention" field
+     * The address object
      * to use as the customer fullname. If not set, we construct
      * the name from the contactPersonDetails field
      */
@@ -59,7 +73,10 @@ class Addresses {
       plz: address.postalCode,
       city: address.city,
       countryCode: address.country.code as CountryCode,
+      houseNumber: splitted?.housenumber,
+      streetWithoutHouseNumber: splitted?.street,
     };
+    this.logger.debug("Constructed Address", addObj);
     const uniqueString = uniqueStringAddress(addObj);
 
     return { addObj, uniqueString };

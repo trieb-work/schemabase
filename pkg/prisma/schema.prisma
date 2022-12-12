@@ -1244,6 +1244,10 @@ model Address {
   phone                 String?
   fullname              String?
 
+  /// Optional field
+  houseNumber           String?
+  streetWithoutHouseNumber  String?
+
   /// One address can have multiple contacts connected to it.
   /// Sometimes, you have orders from different email addresses, sending to the same address..
   contact   Contact[]

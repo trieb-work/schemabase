@@ -3,7 +3,7 @@ import { ILogger } from "@eci/pkg/logger";
 import { Carrier, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 // import { id } from "@eci/pkg/ids";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { format, setHours, subDays, subMonths, subYears } from "date-fns";
+import { format, isAfter, setHours, subDays, subMonths, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { uniqueStringPackageLineItem } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { generateTrackingPortalURL } from "@eci/pkg/integration-tracking";
@@ -229,9 +229,8 @@ export class ZohoPackageSyncService {
       // We also pull the full package data if the package has no line items
       if (
         !packageBefore ||
-        packageBefore.updatedAt.toISOString() !==
-          currentPackage.updatedAt.toISOString() ||
-        packageBefore.package.packageLineItems.length === 1
+        isAfter(currentPackage.updatedAt, packageBefore.updatedAt) ||
+        packageBefore.package.packageLineItems.length === 0
       ) {
         this.logger.info(
           `Pulling full package data for ${parcel.package_id} - ${
