@@ -308,7 +308,7 @@ export class ZohoContactSyncService {
       };
       this.logger.debug(`Sending this object`, contactCreateObject);
       const zohoContact = await this.zoho.contact.create(contactCreateObject);
-      await sleep(1000);
+
       await this.db.contact.update({
         where: {
           id: newContact.id,
@@ -338,6 +338,7 @@ export class ZohoContactSyncService {
           },
         },
       });
+      await sleep(1000);
       for (const addr of remainingAddresses) {
         const zohoAddrObj = addresses(
           this.db,
