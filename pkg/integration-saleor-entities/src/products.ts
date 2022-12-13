@@ -435,6 +435,7 @@ export class SaleorProductSyncService {
             },
           ],
         });
+        this.logger.debug(`Updated stock entry ${variant.id}`);
       }
     }
   }
