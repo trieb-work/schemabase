@@ -15,6 +15,7 @@ import {
 import { id } from "@eci/pkg/ids";
 import { Warning } from "./utils";
 import { checkCurrency } from "@eci/pkg/normalization/src/currency";
+import { sleep } from "@eci/pkg/miscHelper/time";
 
 export interface ZohoInvoiceSyncConfig {
   logger: ILogger;
@@ -359,6 +360,7 @@ export class ZohoInvoiceSyncService {
           },
         );
         invoicesToConfirm.push(createdInvoice);
+        await sleep(1000);
       } catch (err) {
         if (err instanceof Warning) {
           this.logger.warn(err.message, {
