@@ -141,7 +141,7 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
         const res = await this.emailTemplateSender.sendTemplate(
           template.templateId,
           integration.trackingEmailApp.sender,
-          "test@trieb.work",
+          contact.email,
           {
             time: packageEvent.time.toLocaleString(
               packageEvent.package.order.language,
