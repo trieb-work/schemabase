@@ -76,21 +76,16 @@ export class ZohoSalesOrdersSyncService {
     }
   }
 
-  /**
-   * Maps the Zoho SalesOrder status to our internal status
-   * @param zohoStatus
-   * @returns OrderStatus
-   */
-  public parserOrderStatus(zohoStatus: SalesOrderStatus) {
-    switch (zohoStatus) {
-      case "void":
-        return OrderStatus.canceled;
-      case "confirmed":
-        return OrderStatus.confirmed;
-      default:
-        return OrderStatus.draft;
-    }
-  }
+  // public parserOrderStatus(zohoStatus: SalesOrderStatus) {
+  //   switch (zohoStatus) {
+  //     case "void":
+  //       return OrderStatus.canceled;
+  //     case "confirmed":
+  //       return OrderStatus.confirmed;
+  //     default:
+  //       return OrderStatus.draft;
+  //   }
+  // }
 
   public parseShipmentStatus(zohoStatus: SalesOrderShippedStatus) {
     switch (zohoStatus) {
@@ -121,6 +116,11 @@ export class ZohoSalesOrdersSyncService {
     }
   }
 
+  /**
+   * Maps the Zoho SalesOrder status to our internal status
+   * @param zohoStatus
+   * @returns OrderStatus
+   */
   public parseSalesOrderStatus(
     zohoStatus: SalesOrderStatus,
   ): OrderStatus | undefined {
@@ -129,6 +129,8 @@ export class ZohoSalesOrdersSyncService {
         return OrderStatus.confirmed;
       case "closed":
         return OrderStatus.confirmed;
+      case "void":
+        return OrderStatus.canceled;
       default:
         return undefined;
     }
@@ -219,6 +221,10 @@ export class ZohoSalesOrdersSyncService {
       const invoiceStatus = this.parseInvoiceStatus(
         salesorder.invoiced_status as string,
       );
+
+      /**
+       * The current order status
+       */
       const salesOrderStatus = this.parseSalesOrderStatus(
         salesorder.order_status,
       );
