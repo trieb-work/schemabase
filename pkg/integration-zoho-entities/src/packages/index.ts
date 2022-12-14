@@ -465,7 +465,7 @@ export class ZohoPackageSyncService {
           salesOrderId,
         );
 
-        await sleep(800);
+        await sleep(1000);
 
         const shipment = await this.zoho.package.createShipment(
           {
