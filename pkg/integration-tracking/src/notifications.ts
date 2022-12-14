@@ -172,8 +172,8 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
       await this.onSuccess(ctx, { emailId });
     } else {
       this.logger.info(
-        `Not sending a transactional email. No valid transition: \
-        ${event.previousState}  ${packageEvent.state}`,
+        `Not sending a transactional email. No valid transition:` +
+          `Previous state: ${event.previousState}, Current state: ${packageEvent.state}`,
       );
     }
   }
