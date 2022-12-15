@@ -474,6 +474,7 @@ export class ZohoPackageSyncService {
               this.carrierToAftership(p.carrier) || undefined,
             delivery_method: p.carrier,
             tracking_number: p.trackingId || "",
+            tracking_link: p.carrierTrackingUrl || "",
             notes: p.carrierTrackingUrl || undefined,
           },
           salesOrderId,
@@ -599,7 +600,7 @@ export class ZohoPackageSyncService {
           shipmentStatus: "delivered",
         },
       });
-      sleep(1000);
+      await sleep(1000);
     }
   }
 }
