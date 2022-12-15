@@ -572,7 +572,7 @@ export class ZohoPackageSyncService {
             });
           } else if (error.code === 43) {
             this.logger.error(
-              "We are blocked by Zoho for this IP address. We don't continue",
+              "We are blocked by Zoho for this API account. We don't continue",
             );
             return;
           } else {
