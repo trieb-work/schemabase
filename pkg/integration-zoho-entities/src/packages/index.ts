@@ -448,13 +448,21 @@ export class ZohoPackageSyncService {
           continue;
         }
 
+        const salesOrderId = orderLineItems.zohoSalesOrders[0]?.id;
+
+        if (!salesOrderId) {
+          this.logger.info(
+            `No salesorder id found for order ${p.orderId} - ${orderLineItems.orderNumber}.` +
+              `Package ${p.number}. Maybe the salesorder sync did not create it yet!`,
+          );
+          continue;
+        }
+
         const lineItems = packageToZohoLineItems(
           orderLineItems.orderLineItems,
           p.packageLineItems,
           this.logger,
         );
-
-        const salesOrderId = orderLineItems.zohoSalesOrders[0].id;
 
         const createdPackage = await this.zoho.package.create(
           {
