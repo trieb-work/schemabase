@@ -128,7 +128,7 @@ export class ZohoSalesOrdersSyncService {
       case "confirmed":
         return OrderStatus.confirmed;
       case "closed":
-        return OrderStatus.confirmed;
+        return OrderStatus.closed;
       case "void":
         return OrderStatus.canceled;
       default:
@@ -379,6 +379,8 @@ export class ZohoSalesOrdersSyncService {
           orderId: true,
           order: {
             select: {
+              firstName: true,
+              lastName: true,
               billingAddressId: true,
               shippingAddress: true,
               mainContactId: true,
@@ -616,6 +618,28 @@ export class ZohoSalesOrdersSyncService {
           }
         } catch (error) {
           this.logger.error(error as any);
+        }
+
+        const contactPerson = fullSalesorder.contact_person_details?.[0];
+        if (!createdSalesOrder.order.firstName && contactPerson) {
+          try {
+            this.logger.info(
+              `Updating first and last name (${contactPerson.first_name} ${contactPerson.last_name}) in our DB`,
+            );
+            await this.db.order.update({
+              where: {
+                id: createdSalesOrder.orderId,
+              },
+              data: {
+                firstName: contactPerson.first_name,
+                lastName: contactPerson.last_name,
+              },
+            });
+          } catch (error) {
+            this.logger.error(
+              `Error updating order first and lastname: ${error}`,
+            );
+          }
         }
 
         /**

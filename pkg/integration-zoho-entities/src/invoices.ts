@@ -170,6 +170,9 @@ export class ZohoInvoiceSyncService {
                 orders: orderConnect,
               },
             },
+            update: {
+              invoiceTotalGross: invoice.total,
+            },
           },
         },
       });

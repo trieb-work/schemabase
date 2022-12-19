@@ -108,7 +108,9 @@ export class XentralProxyOrderSyncService {
 
     const orders = await this.db.order.findMany({
       where: {
-        orderStatus: "confirmed",
+        orderStatus: {
+          in: ["confirmed", "closed"]
+        },
         shipmentStatus: {
           in: ["pending", "partiallyShipped"],
         },
@@ -379,8 +381,8 @@ export class XentralProxyOrderSyncService {
           // TODO: how to make sure, that the shipment status is correct?
           const auftragsStatus =
             order.shipmentStatus === "shipped"
-              ? "abgeschlossen"
-              : existingXentralAuftrag.status;
+              ? "versendet"
+              :  order.orderStatus === "closed" ? "abgeschlossen" : existingXentralAuftrag.status;
           const auftragUpdate: AuftragEditRequest = {
             ...auftrag,
             status: auftragsStatus,
