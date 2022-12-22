@@ -109,7 +109,7 @@ export class XentralProxyOrderSyncService {
     const orders = await this.db.order.findMany({
       where: {
         orderStatus: {
-          in: ["confirmed", "closed"]
+          in: ["confirmed", "closed", "canceled"]
         },
         shipmentStatus: {
           in: ["pending", "partiallyShipped"],
