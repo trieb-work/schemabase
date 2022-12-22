@@ -46,11 +46,11 @@ export function packageToZohoLineItems(
         );
         return undefined;
       }
-      if (!i.zohoOrderLineItems?.[0].id) {
+      if (!i.zohoOrderLineItems?.[0]?.id) {
         return undefined;
       }
       return {
-        so_line_item_id: i.zohoOrderLineItems[0].id,
+        so_line_item_id: i.zohoOrderLineItems[0]?.id,
         quantity: match.quantity,
       };
     })
