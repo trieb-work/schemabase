@@ -324,7 +324,9 @@ export class XentralProxyOrderSyncService {
             // const encodedPrice = price
             //   ? price.toString().replace(",", "").replace(".", ",")
             //   : undefined;
-            const encodedPrice = price ? price?.toFixed(2) : undefined
+            const encodedPrice = price
+              ? (price / (lineItem?.quantity ?? 1))?.toFixed(2)
+              : undefined;
 
             if (!lineItem?.productVariant?.xentralArtikel?.[0]?.xentralNummer) {
               throw new Error(
