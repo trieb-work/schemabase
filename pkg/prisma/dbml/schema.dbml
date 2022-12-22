@@ -1191,6 +1191,7 @@ Table XentralProxyAuftrag {
   xentralProxyAppId String [not null]
   order Order [not null]
   orderId String [not null]
+  status String [note: 'The status in Xentral']
 
   indexes {
     (id, xentralProxyAppId) [unique]

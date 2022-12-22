@@ -2208,6 +2208,9 @@ model XentralProxyAuftrag {
   order   Order  @relation(fields: [orderId], references: [id])
   orderId String
 
+  /// The status in Xentral
+  status  String? 
+
   @@unique([id, xentralProxyAppId])
   @@unique([xentralBelegNr, xentralProxyAppId])
   @@index([orderId])
