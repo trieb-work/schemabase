@@ -2,7 +2,6 @@ import { AssertionLogger } from "@eci/pkg/logger";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { beforeEach, describe, jest, test } from "@jest/globals";
 import "@eci/pkg/jest-utils/consoleFormatter";
-import { SaleorPaymentSyncService } from "./payments";
 import { getSaleorClientAndEntry } from "@eci/pkg/saleor";
 import { SaleorProductSyncService } from "./products";
 
@@ -36,7 +35,7 @@ describe("Zoho Entity Sync Orders Test", () => {
       tenantId: tenant.id,
       channelSlug: "storefront",
     });
-    await service.syncToECI();
-    // await service.syncFromECI();
+    // await service.syncToECI();
+    await service.syncFromECI();
   }, 1000000);
 });

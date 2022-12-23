@@ -4,14 +4,7 @@ import type { Invoice, Zoho, ZohoApiError } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import {
-  addMinutes,
-  format,
-  setHours,
-  subDays,
-  subMonths,
-  subYears,
-} from "date-fns";
+import { addMinutes, subHours, subMonths, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { Warning } from "./utils";
 import { checkCurrency } from "@eci/pkg/normalization/src/currency";
@@ -56,25 +49,23 @@ export class ZohoInvoiceSyncService {
   }
 
   public async syncToECI(): Promise<void> {
-    // const tenantId = this.zohoApp.tenantId;
-
     const cronState = await this.cronState.get();
 
     const now = new Date();
-    const yesterdayMidnight = setHours(subDays(now, 1), 0);
-    let gteDate = format(yesterdayMidnight, "yyyy-MM-dd");
+    let gteDate: Date;
 
     if (cronState.lastRun === null) {
-      gteDate = format(subYears(now, 1), "yyyy-MM-dd");
+      gteDate = subYears(now, 2);
       this.logger.info(
         `This seems to be our first sync run. Setting GTE date to ${gteDate}`,
       );
     } else {
+      gteDate = subHours(cronState.lastRun, 1);
       this.logger.info(`Setting GTE date to ${gteDate}`);
     }
 
     const invoices = await this.zoho.invoice.list({
-      createdDateStart: gteDate,
+      lastModifiedTime: gteDate,
     });
 
     this.logger.info(
@@ -106,6 +97,9 @@ export class ZohoInvoiceSyncService {
           }
         : undefined;
 
+      this.logger.info(
+        `Upserting invoice ${invoice.invoice_number} - ${invoice.invoice_id}`,
+      );
       await this.db.zohoInvoice.upsert({
         where: {
           id_zohoAppId: {

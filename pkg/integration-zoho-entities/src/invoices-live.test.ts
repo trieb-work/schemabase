@@ -3,7 +3,7 @@ import { PrismaClient } from "@eci/pkg/prisma";
 import { beforeEach, describe, jest, test } from "@jest/globals";
 import "@eci/pkg/jest-utils/consoleFormatter";
 import { getZohoClientAndEntry } from "@eci/pkg/zoho";
-import { ZohoPackageSyncService } from ".";
+import { ZohoInvoiceSyncService } from "./invoices";
 
 /// Use this file to locally run this service
 
@@ -14,7 +14,7 @@ beforeEach(() => {
 describe("Zoho Entity Sync Orders Test", () => {
   const prismaClient = new PrismaClient();
 
-  test("It should work to sync orders to Xentral via Zoho", async () => {
+  test("It should work to sync invoices", async () => {
     const tenant = await prismaClient.tenant.findUnique({
       where: {
         id: "pk_7f16573fece94114847dc81d3214eef4",
@@ -29,14 +29,15 @@ describe("Zoho Entity Sync Orders Test", () => {
       undefined,
     );
 
-    const service = new ZohoPackageSyncService({
+    const service = new ZohoInvoiceSyncService({
       zoho,
       zohoApp,
       logger: new AssertionLogger(),
       db: prismaClient,
+      createdTimeOffset: 1,
     });
-    // await service.syncToECI();
+    await service.syncToECI();
 
-    await service.syncFromECI();
+    await service.syncFromECI_autocreateInvoiceFromSalesorder();
   }, 1000000);
 });

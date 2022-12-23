@@ -26,7 +26,7 @@ specifiers:
   '@trieb.work/eslint-config-base': ^1.10.0
   '@trieb.work/prettier-base': ^0.1.2
   '@trieb.work/tsconfig-base': ^1.6.4
-  '@trieb.work/zoho-ts': ^0.5.71
+  '@trieb.work/zoho-ts': ^0.5.72
   '@types/async': ^3.2.13
   '@types/body-parser': ^1.19.2
   '@types/braintree': ^3.3.2
@@ -120,7 +120,7 @@ dependencies:
   '@geist-ui/react': 2.2.5_biqbaboplfbrettd7655fr4n2y
   '@jest/console': 29.0.2
   '@prisma/client': 4.7.1_prisma@4.7.1
-  '@trieb.work/zoho-ts': 0.5.71
+  '@trieb.work/zoho-ts': 0.5.72
   apollo-datasource: 3.3.1
   apollo-server: 3.6.7_graphql@15.8.0
   apollo-server-core: 3.6.7_graphql@15.8.0
@@ -2762,8 +2762,8 @@ packages:
     resolution: {integrity: sha512-DTHkbsRuE9fEl+rwMPNoVXcs/JCSKHIFFluE11MgsMXleOotrw+XdzpQU15xrAFiGHpcY92a3XJwxkr3HBoNqw==}
     dev: true
 
-  /@trieb.work/zoho-ts/0.5.71:
-    resolution: {integrity: sha512-LbAekzixksvKH/xFuXicHJJngLqlnwpQa5wjujApnEPAyG335Cxx6N6/5He8oCv78KWYAoIKLMG/syyOrz5FsA==}
+  /@trieb.work/zoho-ts/0.5.72:
+    resolution: {integrity: sha512-CU7EVdk8SHGK/aPtkUUeX/THJKhBXCi3wbTfOmzrqAxxVVwYS8iuby/MYnRSqqscAl4bF2AQRkT/fg5PBL2zvA==}
     dependencies:
       async-retry: 1.3.3
       await-timeout: 1.1.1
@@ -5108,8 +5108,8 @@ packages:
       jake: 10.8.5
     dev: true
 
-  /elastic-apm-http-client/11.0.3:
-    resolution: {integrity: sha512-y+P9ByvfxjZbnLejgGaCAnwEe+FWMVshoMmjeLEEEVlQTLiFUHy7vhYyCQVqgbZzQ6zpaGPqPU2woKglKW4RHw==}
+  /elastic-apm-http-client/11.0.4:
+    resolution: {integrity: sha512-449Qj/STi9hgnIk2KQ7719E7lpM3/i4Afs7NUhSOX8wV3sxn/+ItIHx9kKJthzhDDezxIfQcH83v83AF67GspQ==}
     engines: {node: ^8.6.0 || 10 || >=12}
     dependencies:
       agentkeepalive: 4.2.1
@@ -5126,8 +5126,8 @@ packages:
     dev: false
     optional: true
 
-  /elastic-apm-node/3.40.1:
-    resolution: {integrity: sha512-vdyEZ7BPKJP2a1PkCsg350XXGZj03bwOiGrZdqgflocYxns5QwFbhvMKaVq7hWWWS8/sACesrLLELyQgdOpFsw==}
+  /elastic-apm-node/3.41.1:
+    resolution: {integrity: sha512-bLCVIyAgQC+ZfY5fd/UaAId+8dh3vusaxZF2A0YtHBAwx1YGpIA3dqOt5zc1UuYmbjCdsEAiUjaUEAHOWdjTzA==}
     engines: {node: ^8.6.0 || 10 || 12 || 14 || 16 || 17 || 18 || 19}
     requiresBuild: true
     dependencies:
@@ -5139,7 +5139,7 @@ packages:
       basic-auth: 2.0.1
       cookie: 0.5.0
       core-util-is: 1.0.3
-      elastic-apm-http-client: 11.0.3
+      elastic-apm-http-client: 11.0.4
       end-of-stream: 1.4.4
       error-callsites: 2.0.4
       error-stack-parser: 2.1.4
@@ -5296,8 +5296,8 @@ packages:
       string.prototype.trimstart: 1.0.5
       unbox-primitive: 1.0.2
 
-  /es-abstract/1.20.4:
-    resolution: {integrity: sha512-0UtvRN79eMe2L+UNEF1BwRe364sj/DXhQ/k5FmivgoSdpM90b8Jc0mDzKMGo7QS0BVbOP/bTwBKNnDc9rNzaPA==}
+  /es-abstract/1.20.5:
+    resolution: {integrity: sha512-7h8MM2EQhsCA7pU/Nv78qOXFpD8Rhqd12gYiSJVkrH9+e8VuA8JlPJK/hQjjlLv6pJvx/z1iRFKzYb0XT/RuAQ==}
     engines: {node: '>= 0.4'}
     dependencies:
       call-bind: 1.0.2
@@ -5306,10 +5306,11 @@ packages:
       function.prototype.name: 1.1.5
       get-intrinsic: 1.1.3
       get-symbol-description: 1.0.0
+      gopd: 1.0.1
       has: 1.0.3
       has-property-descriptors: 1.0.0
       has-symbols: 1.0.3
-      internal-slot: 1.0.3
+      internal-slot: 1.0.4
       is-callable: 1.2.7
       is-negative-zero: 2.0.2
       is-regex: 1.1.4
@@ -6599,6 +6600,13 @@ packages:
       slash: 3.0.0
     dev: true
 
+  /gopd/1.0.1:
+    resolution: {integrity: sha512-d65bNlIadxvpb/A2abVdlqKqV563juRnZ1Wtk6s1sIR8uNsXR70xqIzVqxVf1eTqDunwT2MkczEeaezCKTZhwA==}
+    dependencies:
+      get-intrinsic: 1.1.3
+    dev: false
+    optional: true
+
   /got/9.6.0:
     resolution: {integrity: sha512-R7eWptXuGYxwijs0eV+v3o6+XH1IqVK8dJOEecQfTmkncw9AV4dcw/Dhxi8MdlqPthxxpZyizMzyg8RTmEsG+Q==}
     engines: {node: '>=8.6'}
@@ -7077,6 +7085,16 @@ packages:
       get-intrinsic: 1.1.2
       has: 1.0.3
       side-channel: 1.0.4
+
+  /internal-slot/1.0.4:
+    resolution: {integrity: sha512-tA8URYccNzMo94s5MQZgH8NB/XTa6HsOo0MLfXTKKEnHVVdegzaQoFZ7Jp44bdvLvY2waT5dc+j5ICEswhi7UQ==}
+    engines: {node: '>= 0.4'}
+    dependencies:
+      get-intrinsic: 1.1.3
+      has: 1.0.3
+      side-channel: 1.0.4
+    dev: false
+    optional: true
 
   /invariant/2.2.4:
     resolution: {integrity: sha512-phJfQVBuaJM5raOpJjSfkiD6BpbCE4Ns//LaXl6wGYtUBY83nWS6Rf9tXm2e8VaK60JEjYldbPif/A2B1C2gNA==}
@@ -9075,7 +9093,7 @@ packages:
     dependencies:
       call-bind: 1.0.2
       define-properties: 1.1.4
-      es-abstract: 1.20.4
+      es-abstract: 1.20.5
     dev: false
     optional: true
 
@@ -10626,7 +10644,7 @@ packages:
     dependencies:
       call-bind: 1.0.2
       define-properties: 1.1.4
-      es-abstract: 1.20.4
+      es-abstract: 1.20.5
     dev: false
     optional: true
 
@@ -10642,7 +10660,7 @@ packages:
     dependencies:
       call-bind: 1.0.2
       define-properties: 1.1.4
-      es-abstract: 1.20.4
+      es-abstract: 1.20.5
     dev: false
     optional: true
 
@@ -11532,7 +11550,7 @@ packages:
       winston: 3.8.2
       winston-transport: 4.5.0
     optionalDependencies:
-      elastic-apm-node: 3.40.1
+      elastic-apm-node: 3.41.1
     transitivePeerDependencies:
       - supports-color
     dev: false
