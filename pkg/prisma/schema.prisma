@@ -1736,6 +1736,18 @@ model EasyPostApp {
   @@index([integrationId])
 }
 
+/// DHL Tracking App model
+model DHLTrackingApp {
+  id            String               @id
+
+  tenant        Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId      String               @unique
+  /// From the developer portal. Is different for sandbox and prod
+  apiKey        String
+
+
+}
+
 model ProductDataFeedApp {
   id String @id
 
@@ -1969,6 +1981,7 @@ model Tenant {
   addresses                   Address[]
   billOfMaterial              BillOfMaterial[]
   easyPost                    EasyPostApp[]
+  DHLTrackingApps             DHLTrackingApp[]
 }
 
 // A subscription indicates a tenant has payed for one integration.

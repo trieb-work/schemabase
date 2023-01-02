@@ -14,6 +14,7 @@ type SyncEntity =
   | "packages"
   | "salesorders"
   | "braintreeTransactions"
+  | "packageState"
   | "bankaccounts";
 
 type CronJobReturn = CronJobState & {
