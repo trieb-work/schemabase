@@ -72,6 +72,7 @@ export class DHLTrackingSyncService {
   }
 
   public async syncToECI(): Promise<void> {
+    await this.cronState.get();
     const dhlClient = this.createAPIClient(this.dhlTrackingApp.apiKey);
 
     /// get all DHL packages, that are not delivered
