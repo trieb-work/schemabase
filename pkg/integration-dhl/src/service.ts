@@ -1,10 +1,22 @@
 import { CronStateHandler } from "@eci/pkg/cronstate";
+import { env } from "@eci/pkg/env";
+import {
+  EventSchemaRegistry,
+  KafkaProducer,
+  Message,
+  Signer,
+  Topic,
+} from "@eci/pkg/events";
+import { id } from "@eci/pkg/ids";
 import { ILogger } from "@eci/pkg/logger";
 import { sleep } from "@eci/pkg/miscHelper/time";
-import { DHLTrackingApp, PrismaClient } from "@eci/pkg/prisma";
+import { DHLTrackingApp, PackageState, PrismaClient } from "@eci/pkg/prisma";
 import { subMonths } from "date-fns";
-import { Configuration, DefaultApi } from "./typescript-axios-client";
-import { RequiredError } from "./typescript-axios-client/base";
+import {
+  Configuration,
+  DefaultApi,
+  SupermodelIoLogisticsTrackingShipmentEventStatusCodeEnum,
+} from "./typescript-axios-client";
 
 interface DHLTrackingSyncServiceConfig {
   dhlTrackingApp: DHLTrackingApp;
@@ -32,6 +44,27 @@ export class DHLTrackingSyncService {
       syncEntity: "packageState",
     });
   }
+
+  parseState = (
+    state: SupermodelIoLogisticsTrackingShipmentEventStatusCodeEnum,
+  ): PackageState | null => {
+    switch (state) {
+      case "pre-transit":
+        return PackageState.INFORMATION_RECEIVED;
+
+      case "transit":
+        return PackageState.IN_TRANSIT;
+
+      case "delivered":
+        return PackageState.DELIVERED;
+
+      case "failure":
+        return PackageState.EXCEPTION;
+
+      default:
+        return null;
+    }
+  };
 
   private createAPIClient(apiKey: string): DefaultApi {
     const conf = new Configuration({ apiKey });
@@ -94,8 +127,51 @@ export class DHLTrackingSyncService {
       if (!shipment) {
         continue;
       }
-      this.logger.info(JSON.stringify(shipment.status));
-      await sleep(2000);
+      if (!shipment.status?.statusCode || !shipment?.status?.timestamp)
+        continue;
+      const internalState = this.parseState(shipment.status?.statusCode);
+      if (!internalState) {
+        this.logger.error(
+          `Could not parse package state ${shipment.status?.statusCode}` +
+            `to our internal package state for ${p.trackingId}`,
+        );
+        continue;
+      }
+      this.logger.info(internalState);
+
+      if (!this.dhlTrackingApp.trackingIntegrationId) {
+        this.logger.info(
+          `There is no tracking integration configured for DHL App ${this.dhlTrackingApp.id}.` +
+            "Not updating package state",
+        );
+        continue;
+      }
+
+      const time = new Date(shipment.status.timestamp as string);
+      const packageEvent: EventSchemaRegistry.PackageUpdate["message"] = {
+        trackingId: p.trackingId,
+        time: time.getTime() / 1000,
+        location: shipment.status.location?.address?.addressLocality || "",
+        state: internalState,
+        trackingIntegrationId: this.dhlTrackingApp.trackingIntegrationId,
+      };
+
+      const kafka = await KafkaProducer.new<
+        EventSchemaRegistry.PackageUpdate["message"]
+      >({
+        signer: new Signer({ signingKey: env.require("SIGNING_KEY") }),
+      });
+
+      const message = new Message({
+        header: {
+          traceId: id.id("trace"),
+        },
+        content: packageEvent,
+      });
+
+      const { messageId } = await kafka.produce(Topic.PACKAGE_UPDATE, message);
+      this.logger.info(`Created Kafka message with ID ${messageId}`);
+      await sleep(5000);
     }
   }
 }

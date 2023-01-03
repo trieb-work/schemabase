@@ -904,6 +904,8 @@ Table DHLTrackingApp {
   tenant Tenant [not null]
   tenantId String [unique, not null]
   apiKey String [not null, note: 'From the developer portal. Is different for sandbox and prod']
+  trackingIntegration TrackingIntegration
+  trackingIntegrationId String
 
   Note: 'DHL Tracking App model'
 }
@@ -1079,6 +1081,7 @@ Table TrackingIntegration {
   tenant Tenant [not null]
   tenantId String [not null]
   dpdApps DpdApp [not null]
+  dhlTrackingApps DHLTrackingApp [not null]
   easyPostApps EasyPostApp [not null]
   trackingEmailApp TrackingEmailApp [not null]
   trackingEmailAppId String [not null]
@@ -1819,6 +1822,8 @@ Ref: EasyPostApp.tenantId > Tenant.id [delete: Cascade]
 Ref: EasyPostApp.integrationId > TrackingIntegration.id
 
 Ref: DHLTrackingApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: DHLTrackingApp.trackingIntegrationId > TrackingIntegration.id
 
 Ref: ProductDataFeedApp.tenantId > Tenant.id [delete: Cascade]
 

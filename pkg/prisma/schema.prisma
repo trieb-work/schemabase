@@ -1745,6 +1745,11 @@ model DHLTrackingApp {
   /// From the developer portal. Is different for sandbox and prod
   apiKey        String
 
+  trackingIntegration           TrackingIntegration? @relation(fields: [trackingIntegrationId], references: [id])
+  trackingIntegrationId         String?
+
+  @@index([trackingIntegrationId])
+
 
 }
 
@@ -2020,6 +2025,7 @@ model TrackingIntegration {
   tenant             Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId           String
   dpdApps            DpdApp[]
+  dhlTrackingApps    DHLTrackingApp[]
   easyPostApps       EasyPostApp[]
   trackingEmailApp   TrackingEmailApp @relation(fields: [trackingEmailAppId], references: [id])
   trackingEmailAppId String
