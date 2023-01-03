@@ -1736,6 +1736,29 @@ model EasyPostApp {
   @@index([integrationId])
 }
 
+/// DHL Tracking App model
+model DHLTrackingApp {
+  id            String               @id
+
+  enabled       Boolean @default(false)
+
+  tenant        Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId      String               @unique
+  /// From the developer portal. Is different for sandbox and prod
+  apiKey        String
+
+  trackingIntegration           TrackingIntegration? @relation(fields: [trackingIntegrationId], references: [id])
+  trackingIntegrationId         String?
+
+  cronSchedule String @default("0 */4 * * *")
+  // Time in seconds how long one workflow can run before a timeout occurs.
+  cronTimeout  Int    @default(800)
+
+  @@index([trackingIntegrationId])
+
+
+}
+
 model ProductDataFeedApp {
   id String @id
 
@@ -1969,6 +1992,7 @@ model Tenant {
   addresses                   Address[]
   billOfMaterial              BillOfMaterial[]
   easyPost                    EasyPostApp[]
+  DHLTrackingApps             DHLTrackingApp[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
@@ -2007,6 +2031,7 @@ model TrackingIntegration {
   tenant             Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId           String
   dpdApps            DpdApp[]
+  dhlTrackingApps    DHLTrackingApp[]
   easyPostApps       EasyPostApp[]
   trackingEmailApp   TrackingEmailApp @relation(fields: [trackingEmailAppId], references: [id])
   trackingEmailAppId String

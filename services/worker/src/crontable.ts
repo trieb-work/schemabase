@@ -6,6 +6,7 @@ import {
 } from "@eci/pkg/scheduler/scheduler";
 import { createWorkflowFactory } from "@eci/pkg/scheduler/workflow";
 import { BraintreeTransactionSyncWorkflow } from "./workflows";
+import { DHLTrackingSyncWorkflow } from "./workflows/dhlTrackingSync";
 import { SaleorOrderSyncWorkflow } from "./workflows/saleorOrderSync";
 import { SaleorPackageSyncWorkflow } from "./workflows/saleorPackageSync";
 import { SaleorPaymentSyncWorkflow } from "./workflows/saleorPaymentSync";
@@ -63,6 +64,13 @@ export class CronTable {
         },
       });
 
+    const enabledDhlTrackingApps =
+      await this.clients.prisma.dHLTrackingApp.findMany({
+        where: {
+          enabled: true,
+        },
+      });
+
     /**
      * XentralApp Workflows
      */
@@ -111,6 +119,26 @@ export class CronTable {
           [tenantId, id],
         );
       }
+    }
+
+    for (const enabledDhlTrackingApp of enabledDhlTrackingApps) {
+      const { id, cronTimeout, cronSchedule, tenantId } = enabledDhlTrackingApp;
+      const commonCronConfig = {
+        cron: cronSchedule,
+        timeout: cronTimeout,
+      };
+      const commonWorkflowConfig = {
+        dhlTrackingApp: enabledDhlTrackingApp,
+      };
+      new WorkflowScheduler(this.clients).schedule(
+        createWorkflowFactory(
+          DHLTrackingSyncWorkflow,
+          this.clients,
+          commonWorkflowConfig,
+        ),
+        { ...commonCronConfig, offset: 0 },
+        [tenantId, id],
+      );
     }
 
     /**
