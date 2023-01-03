@@ -901,11 +901,14 @@ Table EasyPostApp {
 
 Table DHLTrackingApp {
   id String [pk]
+  enabled Boolean [not null, default: false]
   tenant Tenant [not null]
   tenantId String [unique, not null]
   apiKey String [not null, note: 'From the developer portal. Is different for sandbox and prod']
   trackingIntegration TrackingIntegration
   trackingIntegrationId String
+  cronSchedule String [not null, default: '0 */4 * * *']
+  cronTimeout Int [not null, default: 800]
 
   Note: 'DHL Tracking App model'
 }

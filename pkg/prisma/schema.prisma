@@ -1740,6 +1740,8 @@ model EasyPostApp {
 model DHLTrackingApp {
   id            String               @id
 
+  enabled       Boolean @default(false)
+
   tenant        Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId      String               @unique
   /// From the developer portal. Is different for sandbox and prod
@@ -1747,6 +1749,10 @@ model DHLTrackingApp {
 
   trackingIntegration           TrackingIntegration? @relation(fields: [trackingIntegrationId], references: [id])
   trackingIntegrationId         String?
+
+  cronSchedule String @default("0 */4 * * *")
+  // Time in seconds how long one workflow can run before a timeout occurs.
+  cronTimeout  Int    @default(800)
 
   @@index([trackingIntegrationId])
 
