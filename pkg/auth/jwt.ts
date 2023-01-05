@@ -14,9 +14,9 @@ export const payload = z.object({
 
 export type Claims = z.infer<typeof payload>;
 export class JWT {
-  private static readonly issuer = "https://auth.permolto.com";
+  private static readonly issuer = "https://auth.trieb.work";
 
-  private static readonly audience = "https://api.permolto.com";
+  private static readonly audience = "https://api.trieb.work";
 
   private static readonly algorithm = "HS256";
 
