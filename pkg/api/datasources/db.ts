@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@eci/pkg/prisma";
 import { DataSource } from "apollo-datasource";
 /**
  * Wrapper around prisma to turn it into a DataSource
