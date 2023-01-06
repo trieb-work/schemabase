@@ -1,4 +1,8 @@
-import { GraphQLResolveInfo } from "graphql";
+import {
+  GraphQLResolveInfo,
+  GraphQLScalarType,
+  GraphQLScalarTypeConfig,
+} from "graphql";
 import {
   OrderModel,
   PackageModel,
@@ -26,15 +30,42 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  DateTime: any;
+};
+
+export type AuthPayload = {
+  __typename?: "AuthPayload";
+  token?: Maybe<Scalars["String"]>;
+  user?: Maybe<User>;
 };
 
 export type Carrier = "DPD";
 
 export type Language = "DE" | "EN";
 
+export type Membership = {
+  __typename?: "Membership";
+  createdAt: Scalars["DateTime"];
+  role: User_Tenant_Role;
+  updatedAt: Scalars["DateTime"];
+};
+
 export type Mutation = {
   __typename?: "Mutation";
   _empty?: Maybe<Scalars["Boolean"]>;
+  login?: Maybe<AuthPayload>;
+  signup?: Maybe<AuthPayload>;
+};
+
+export type MutationLoginArgs = {
+  email: Scalars["String"];
+  password: Scalars["String"];
+};
+
+export type MutationSignupArgs = {
+  email: Scalars["String"];
+  name: Scalars["String"];
+  password: Scalars["String"];
 };
 
 export type Order = {
@@ -90,6 +121,12 @@ export type QueryPackageByTrackingIdArgs = {
   trackingId: Scalars["ID"];
 };
 
+export type Tenant = {
+  __typename?: "Tenant";
+  id: Scalars["ID"];
+  role: User_Tenant_Role;
+};
+
 export type TransactionalEmail = {
   __typename?: "TransactionalEmail";
   email: Scalars["String"];
@@ -97,6 +134,16 @@ export type TransactionalEmail = {
   packageEvent: PackageEvent;
   time: Scalars["Int"];
 };
+
+export type User = {
+  __typename?: "User";
+  email: Scalars["String"];
+  id: Scalars["ID"];
+  name?: Maybe<Scalars["String"]>;
+  tenants?: Maybe<Array<Tenant>>;
+};
+
+export type User_Tenant_Role = "MEMBER" | "OWNER";
 
 export type WithIndex<TObject> = TObject & Record<string, any>;
 export type ResolversObject<TObject> = WithIndex<TObject>;
@@ -208,11 +255,14 @@ export type DirectiveResolverFn<
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
+  AuthPayload: ResolverTypeWrapper<AuthPayload>;
   Boolean: ResolverTypeWrapper<Scalars["Boolean"]>;
   Carrier: Carrier;
+  DateTime: ResolverTypeWrapper<Scalars["DateTime"]>;
   ID: ResolverTypeWrapper<Scalars["ID"]>;
   Int: ResolverTypeWrapper<Scalars["Int"]>;
   Language: Language;
+  Membership: ResolverTypeWrapper<Membership>;
   Mutation: ResolverTypeWrapper<{}>;
   Order: ResolverTypeWrapper<OrderModel>;
   Package: ResolverTypeWrapper<PackageModel>;
@@ -220,21 +270,53 @@ export type ResolversTypes = ResolversObject<{
   PackageState: PackageState;
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars["String"]>;
+  Tenant: ResolverTypeWrapper<Tenant>;
   TransactionalEmail: ResolverTypeWrapper<TransactionalEmailModel>;
+  User: ResolverTypeWrapper<User>;
+  User_Tenant_Role: User_Tenant_Role;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
+  AuthPayload: AuthPayload;
   Boolean: Scalars["Boolean"];
+  DateTime: Scalars["DateTime"];
   ID: Scalars["ID"];
   Int: Scalars["Int"];
+  Membership: Membership;
   Mutation: {};
   Order: OrderModel;
   Package: PackageModel;
   PackageEvent: PackageEventModel;
   Query: {};
   String: Scalars["String"];
+  Tenant: Tenant;
   TransactionalEmail: TransactionalEmailModel;
+  User: User;
+}>;
+
+export type AuthPayloadResolvers<
+  ContextType = GraphQLModules.Context,
+  ParentType extends ResolversParentTypes["AuthPayload"] = ResolversParentTypes["AuthPayload"],
+> = ResolversObject<{
+  token?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>;
+  user?: Resolver<Maybe<ResolversTypes["User"]>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export interface DateTimeScalarConfig
+  extends GraphQLScalarTypeConfig<ResolversTypes["DateTime"], any> {
+  name: "DateTime";
+}
+
+export type MembershipResolvers<
+  ContextType = GraphQLModules.Context,
+  ParentType extends ResolversParentTypes["Membership"] = ResolversParentTypes["Membership"],
+> = ResolversObject<{
+  createdAt?: Resolver<ResolversTypes["DateTime"], ParentType, ContextType>;
+  role?: Resolver<ResolversTypes["User_Tenant_Role"], ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes["DateTime"], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MutationResolvers<
@@ -242,6 +324,18 @@ export type MutationResolvers<
   ParentType extends ResolversParentTypes["Mutation"] = ResolversParentTypes["Mutation"],
 > = ResolversObject<{
   _empty?: Resolver<Maybe<ResolversTypes["Boolean"]>, ParentType, ContextType>;
+  login?: Resolver<
+    Maybe<ResolversTypes["AuthPayload"]>,
+    ParentType,
+    ContextType,
+    RequireFields<MutationLoginArgs, "email" | "password">
+  >;
+  signup?: Resolver<
+    Maybe<ResolversTypes["AuthPayload"]>,
+    ParentType,
+    ContextType,
+    RequireFields<MutationSignupArgs, "email" | "name" | "password">
+  >;
 }>;
 
 export type OrderResolvers<
@@ -313,6 +407,15 @@ export type QueryResolvers<
   >;
 }>;
 
+export type TenantResolvers<
+  ContextType = GraphQLModules.Context,
+  ParentType extends ResolversParentTypes["Tenant"] = ResolversParentTypes["Tenant"],
+> = ResolversObject<{
+  id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
+  role?: Resolver<ResolversTypes["User_Tenant_Role"], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type TransactionalEmailResolvers<
   ContextType = GraphQLModules.Context,
   ParentType extends ResolversParentTypes["TransactionalEmail"] = ResolversParentTypes["TransactionalEmail"],
@@ -328,11 +431,33 @@ export type TransactionalEmailResolvers<
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type UserResolvers<
+  ContextType = GraphQLModules.Context,
+  ParentType extends ResolversParentTypes["User"] = ResolversParentTypes["User"],
+> = ResolversObject<{
+  email?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>;
+  tenants?: Resolver<
+    Maybe<Array<ResolversTypes["Tenant"]>>,
+    ParentType,
+    ContextType
+  >;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type Resolvers<ContextType = GraphQLModules.Context> = ResolversObject<{
+  AuthPayload?: AuthPayloadResolvers<ContextType>;
+  DateTime?: GraphQLScalarType;
+  Membership?: MembershipResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Order?: OrderResolvers<ContextType>;
   Package?: PackageResolvers<ContextType>;
   PackageEvent?: PackageEventResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  Tenant?: TenantResolvers<ContextType>;
   TransactionalEmail?: TransactionalEmailResolvers<ContextType>;
+  User?: UserResolvers<ContextType>;
 }>;
+
+export type DateTime = Scalars["DateTime"];

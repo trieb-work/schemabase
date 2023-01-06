@@ -14355,12 +14355,12 @@ export const WarehousesDocument = gql`
     }
   }
 `;
-export type Requester<C = {}> = <R, V>(
+export type Requester<C = {}, E = unknown> = <R, V>(
   doc: DocumentNode,
   vars?: V,
   options?: C,
-) => Promise<R>;
-export function getSdk<C>(requester: Requester<C>) {
+) => Promise<R> | AsyncIterable<R>;
+export function getSdk<C, E>(requester: Requester<C, E>) {
   return {
     appInstall(
       variables: AppInstallMutationVariables,
@@ -14370,7 +14370,7 @@ export function getSdk<C>(requester: Requester<C>) {
         AppInstallDocument,
         variables,
         options,
-      );
+      ) as Promise<AppInstallMutation>;
     },
     appTokenVerify(
       variables: AppTokenVerifyMutationVariables,
@@ -14380,7 +14380,7 @@ export function getSdk<C>(requester: Requester<C>) {
         AppTokenVerifyDocument,
         variables,
         options,
-      );
+      ) as Promise<AppTokenVerifyMutation>;
     },
     categoryCreate(
       variables: CategoryCreateMutationVariables,
@@ -14390,7 +14390,7 @@ export function getSdk<C>(requester: Requester<C>) {
         CategoryCreateDocument,
         variables,
         options,
-      );
+      ) as Promise<CategoryCreateMutation>;
     },
     channelCreate(
       variables: ChannelCreateMutationVariables,
@@ -14400,7 +14400,7 @@ export function getSdk<C>(requester: Requester<C>) {
         ChannelCreateDocument,
         variables,
         options,
-      );
+      ) as Promise<ChannelCreateMutation>;
     },
     saleorCreatePackage(
       variables: SaleorCreatePackageMutationVariables,
@@ -14409,7 +14409,11 @@ export function getSdk<C>(requester: Requester<C>) {
       return requester<
         SaleorCreatePackageMutation,
         SaleorCreatePackageMutationVariables
-      >(SaleorCreatePackageDocument, variables, options);
+      >(
+        SaleorCreatePackageDocument,
+        variables,
+        options,
+      ) as Promise<SaleorCreatePackageMutation>;
     },
     paymentCreate(
       variables: PaymentCreateMutationVariables,
@@ -14419,7 +14423,7 @@ export function getSdk<C>(requester: Requester<C>) {
         PaymentCreateDocument,
         variables,
         options,
-      );
+      ) as Promise<PaymentCreateMutation>;
     },
     productChannelListingUpdate(
       variables: ProductChannelListingUpdateMutationVariables,
@@ -14428,7 +14432,11 @@ export function getSdk<C>(requester: Requester<C>) {
       return requester<
         ProductChannelListingUpdateMutation,
         ProductChannelListingUpdateMutationVariables
-      >(ProductChannelListingUpdateDocument, variables, options);
+      >(
+        ProductChannelListingUpdateDocument,
+        variables,
+        options,
+      ) as Promise<ProductChannelListingUpdateMutation>;
     },
     productCreate(
       variables: ProductCreateMutationVariables,
@@ -14438,7 +14446,7 @@ export function getSdk<C>(requester: Requester<C>) {
         ProductCreateDocument,
         variables,
         options,
-      );
+      ) as Promise<ProductCreateMutation>;
     },
     productTypeCreate(
       variables: ProductTypeCreateMutationVariables,
@@ -14447,7 +14455,11 @@ export function getSdk<C>(requester: Requester<C>) {
       return requester<
         ProductTypeCreateMutation,
         ProductTypeCreateMutationVariables
-      >(ProductTypeCreateDocument, variables, options);
+      >(
+        ProductTypeCreateDocument,
+        variables,
+        options,
+      ) as Promise<ProductTypeCreateMutation>;
     },
     productVariantChannelListingUpdate(
       variables: ProductVariantChannelListingUpdateMutationVariables,
@@ -14456,7 +14468,11 @@ export function getSdk<C>(requester: Requester<C>) {
       return requester<
         ProductVariantChannelListingUpdateMutation,
         ProductVariantChannelListingUpdateMutationVariables
-      >(ProductVariantChannelListingUpdateDocument, variables, options);
+      >(
+        ProductVariantChannelListingUpdateDocument,
+        variables,
+        options,
+      ) as Promise<ProductVariantChannelListingUpdateMutation>;
     },
     productVariantCreate(
       variables: ProductVariantCreateMutationVariables,
@@ -14465,7 +14481,11 @@ export function getSdk<C>(requester: Requester<C>) {
       return requester<
         ProductVariantCreateMutation,
         ProductVariantCreateMutationVariables
-      >(ProductVariantCreateDocument, variables, options);
+      >(
+        ProductVariantCreateDocument,
+        variables,
+        options,
+      ) as Promise<ProductVariantCreateMutation>;
     },
     productVariantStockEntryUpdate(
       variables: ProductVariantStockEntryUpdateMutationVariables,
@@ -14474,7 +14494,11 @@ export function getSdk<C>(requester: Requester<C>) {
       return requester<
         ProductVariantStockEntryUpdateMutation,
         ProductVariantStockEntryUpdateMutationVariables
-      >(ProductVariantStockEntryUpdateDocument, variables, options);
+      >(
+        ProductVariantStockEntryUpdateDocument,
+        variables,
+        options,
+      ) as Promise<ProductVariantStockEntryUpdateMutation>;
     },
     tokenCreate(
       variables: TokenCreateMutationVariables,
@@ -14484,7 +14508,7 @@ export function getSdk<C>(requester: Requester<C>) {
         TokenCreateDocument,
         variables,
         options,
-      );
+      ) as Promise<TokenCreateMutation>;
     },
     webhookCreate(
       variables: WebhookCreateMutationVariables,
@@ -14494,14 +14518,14 @@ export function getSdk<C>(requester: Requester<C>) {
         WebhookCreateDocument,
         variables,
         options,
-      );
+      ) as Promise<WebhookCreateMutation>;
     },
     app(variables?: AppQueryVariables, options?: C): Promise<AppQuery> {
       return requester<AppQuery, AppQueryVariables>(
         AppDocument,
         variables,
         options,
-      );
+      ) as Promise<AppQuery>;
     },
     saleorCronOrdersOverview(
       variables?: SaleorCronOrdersOverviewQueryVariables,
@@ -14510,7 +14534,11 @@ export function getSdk<C>(requester: Requester<C>) {
       return requester<
         SaleorCronOrdersOverviewQuery,
         SaleorCronOrdersOverviewQueryVariables
-      >(SaleorCronOrdersOverviewDocument, variables, options);
+      >(
+        SaleorCronOrdersOverviewDocument,
+        variables,
+        options,
+      ) as Promise<SaleorCronOrdersOverviewQuery>;
     },
     saleorCronOrderDetails(
       variables: SaleorCronOrderDetailsQueryVariables,
@@ -14519,7 +14547,11 @@ export function getSdk<C>(requester: Requester<C>) {
       return requester<
         SaleorCronOrderDetailsQuery,
         SaleorCronOrderDetailsQueryVariables
-      >(SaleorCronOrderDetailsDocument, variables, options);
+      >(
+        SaleorCronOrderDetailsDocument,
+        variables,
+        options,
+      ) as Promise<SaleorCronOrderDetailsQuery>;
     },
     saleorCronPackagesOverview(
       variables: SaleorCronPackagesOverviewQueryVariables,
@@ -14528,7 +14560,11 @@ export function getSdk<C>(requester: Requester<C>) {
       return requester<
         SaleorCronPackagesOverviewQuery,
         SaleorCronPackagesOverviewQueryVariables
-      >(SaleorCronPackagesOverviewDocument, variables, options);
+      >(
+        SaleorCronPackagesOverviewDocument,
+        variables,
+        options,
+      ) as Promise<SaleorCronPackagesOverviewQuery>;
     },
     paymentGateways(
       variables?: PaymentGatewaysQueryVariables,
@@ -14538,7 +14574,7 @@ export function getSdk<C>(requester: Requester<C>) {
         PaymentGatewaysDocument,
         variables,
         options,
-      );
+      ) as Promise<PaymentGatewaysQuery>;
     },
     saleorCronPayments(
       variables?: SaleorCronPaymentsQueryVariables,
@@ -14547,7 +14583,11 @@ export function getSdk<C>(requester: Requester<C>) {
       return requester<
         SaleorCronPaymentsQuery,
         SaleorCronPaymentsQueryVariables
-      >(SaleorCronPaymentsDocument, variables, options);
+      >(
+        SaleorCronPaymentsDocument,
+        variables,
+        options,
+      ) as Promise<SaleorCronPaymentsQuery>;
     },
     products(
       variables: ProductsQueryVariables,
@@ -14557,7 +14597,7 @@ export function getSdk<C>(requester: Requester<C>) {
         ProductsDocument,
         variables,
         options,
-      );
+      ) as Promise<ProductsQuery>;
     },
     saleorEntitySyncProducts(
       variables: SaleorEntitySyncProductsQueryVariables,
@@ -14566,7 +14606,11 @@ export function getSdk<C>(requester: Requester<C>) {
       return requester<
         SaleorEntitySyncProductsQuery,
         SaleorEntitySyncProductsQueryVariables
-      >(SaleorEntitySyncProductsDocument, variables, options);
+      >(
+        SaleorEntitySyncProductsDocument,
+        variables,
+        options,
+      ) as Promise<SaleorEntitySyncProductsQuery>;
     },
     saleorProductVariantStocks(
       variables: SaleorProductVariantStocksQueryVariables,
@@ -14575,7 +14619,11 @@ export function getSdk<C>(requester: Requester<C>) {
       return requester<
         SaleorProductVariantStocksQuery,
         SaleorProductVariantStocksQueryVariables
-      >(SaleorProductVariantStocksDocument, variables, options);
+      >(
+        SaleorProductVariantStocksDocument,
+        variables,
+        options,
+      ) as Promise<SaleorProductVariantStocksQuery>;
     },
     warehouses(
       variables?: WarehousesQueryVariables,
@@ -14585,7 +14633,7 @@ export function getSdk<C>(requester: Requester<C>) {
         WarehousesDocument,
         variables,
         options,
-      );
+      ) as Promise<WarehousesQuery>;
     },
   };
 }
