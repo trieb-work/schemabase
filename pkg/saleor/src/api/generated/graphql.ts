@@ -1717,6 +1717,7 @@ export enum CheckoutErrorCode {
   EmailNotSet = "EMAIL_NOT_SET",
   GiftCardNotApplicable = "GIFT_CARD_NOT_APPLICABLE",
   GraphqlError = "GRAPHQL_ERROR",
+  InactivePayment = "INACTIVE_PAYMENT",
   InsufficientStock = "INSUFFICIENT_STOCK",
   Invalid = "INVALID",
   InvalidShippingMethod = "INVALID_SHIPPING_METHOD",
@@ -11094,6 +11095,7 @@ export type Shop = {
   phonePrefixes: Array<Scalars["String"]>;
   reserveStockDurationAnonymousUser?: Maybe<Scalars["Int"]>;
   reserveStockDurationAuthenticatedUser?: Maybe<Scalars["Int"]>;
+  schemaVersion: Scalars["String"];
   staffNotificationRecipients?: Maybe<Array<StaffNotificationRecipient>>;
   trackInventoryByDefault?: Maybe<Scalars["Boolean"]>;
   translation?: Maybe<ShopTranslation>;
@@ -14355,7 +14357,7 @@ export const WarehousesDocument = gql`
     }
   }
 `;
-export type Requester<C = {}, E = unknown> = <R, V>(
+export type Requester<C = {}, _E = unknown> = <R, V>(
   doc: DocumentNode,
   vars?: V,
   options?: C,
