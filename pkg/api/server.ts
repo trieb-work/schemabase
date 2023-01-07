@@ -11,7 +11,8 @@ export interface ServerConfig {
 
 export const server = (config?: ServerConfig): ApolloServer => {
   return new ApolloServer({
-    schema: application.createSchemaForApollo(),
+    schema: application.schema,
+    executor: application.createApolloExecutor(),
     context,
     dataSources: () => ({
       db: new DB(),

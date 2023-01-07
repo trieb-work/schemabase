@@ -14,6 +14,7 @@ export interface Context {
     authorizer?: (claims: Claims) => void | Promise<void>,
   ) => Promise<Claims>;
   logger: ILogger;
+  currentUserId: string | null;
 }
 
 export const context = (ctx: { req: IncomingMessage }) => {

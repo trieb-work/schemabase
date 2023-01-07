@@ -1,5 +1,8 @@
 import { PrismaClient } from "@eci/pkg/prisma";
 import { DataSource } from "apollo-datasource";
+
+let prismaGlobal: PrismaClient;
+
 /**
  * Wrapper around prisma to turn it into a DataSource
  */
@@ -8,7 +11,8 @@ export class DB extends DataSource {
 
   constructor() {
     super();
-    this.prisma = new PrismaClient();
+    this.prisma = prismaGlobal || new PrismaClient();
+    prismaGlobal = this.prisma;
   }
 
   public get client() {

@@ -24,6 +24,7 @@ export class RBAC {
       "update:transactionalEmail",
       "delete:transactionalEmail",
     ],
+    user: [],
   };
 
   static getPermissions(roles: Role[]): Permission[] {

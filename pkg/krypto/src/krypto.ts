@@ -1,10 +1,11 @@
 import { encryptString, decryptString } from "@47ng/cloak";
+import { env } from "@eci/pkg/env";
 
 class Encrypt {
   private readonly secretKey: string;
 
   constructor(secretKey?: string) {
-    this.secretKey = secretKey || process.env.SECRET_KEY || "";
+    this.secretKey = secretKey || env.get("SECRET_KEY") || "";
   }
 
   private checkSecretKey(secretKey?: string) {

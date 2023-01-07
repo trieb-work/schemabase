@@ -1,7 +1,9 @@
+/* eslint-disable camelcase */
 import jwt from "jsonwebtoken";
 import { z } from "zod";
 import { env } from "@eci/pkg/env";
 import { Role, rolesValidation } from "./roles";
+import { eci_User_Tenant_Role } from "@eci/pkg/prisma";
 
 export const payload = z.object({
   iss: z.string(),
@@ -10,6 +12,7 @@ export const payload = z.object({
   aud: z.string(),
   sub: z.string(),
   roles: rolesValidation,
+  tenants: z.array(z.object({ id: z.string(), role: z.string() })).optional(),
 });
 
 export type Claims = z.infer<typeof payload>;
@@ -20,14 +23,24 @@ export class JWT {
 
   private static readonly algorithm = "HS256";
 
-  public static sign(subject: string, opts: { roles: Role[] }): string {
+  public static sign(
+    subject: string,
+    opts: {
+      roles: Role[];
+      tenants?: {
+        id: string;
+        role: eci_User_Tenant_Role;
+      }[];
+    },
+  ): string {
     const secret = env.require("JWT_SIGNING_KEY");
 
-    const { roles } = opts;
+    const { roles, tenants } = opts;
 
     return jwt.sign(
       {
         roles,
+        tenants,
       },
       secret,
       {

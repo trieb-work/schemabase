@@ -1,7 +1,6 @@
 datasource db {
-  provider             = "mysql"
-  url                  = env("DATABASE_URL")
-  // shadowDatabaseUrl    = env("SHADOW_DATABASE_URL")
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
 
@@ -10,23 +9,61 @@ generator dbml {
 }
 
 generator client {
-  provider        = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
+/// ECI Internal models are prefixed with eci_ - these models store internal data like ECI users
+///
+model eci_User {
+  id String @id @default(cuid())
+
+  /// A user's fullname
+  name     String?
+  email    String  @unique
+  password String?
+
+  /// The tenants, that the user is member of
+  eci_User_Tenants eci_User_Tenant[]
+
+  @@index([email])
+}
+
+enum eci_User_Tenant_Role {
+  MEMBER
+  OWNER
+}
+
+/// Mapping of user to tenant and their related rights. User tenant membership
+model eci_User_Tenant {
+  id     String   @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   eci_User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  role eci_User_Tenant_Role
+
+  @@index([tenantId])
+  @@index([userId])
+}
 
 /// ECI Internal model to store cookies / additional headers, that
 /// might be needed for some apps
 model Cookies {
-  id  String @id @default(cuid())
+  id String @id @default(cuid())
 
-  key     String
-  value   String
+  key   String
+  value String
 
-  installedSaleorApp    InstalledSaleorApp? @relation(fields: [installedSaleorAppId], references: [id])
-  installedSaleorAppId  String?
+  installedSaleorApp   InstalledSaleorApp? @relation(fields: [installedSaleorAppId], references: [id])
+  installedSaleorAppId String?
 
   @@index([installedSaleorAppId])
-
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -304,8 +341,8 @@ model ZohoAddress {
 
   /// Zoho Addresses are valid only per zoho contact. Sometimes, we have different
   /// customers with the same address. To not get any issues, we need to store the customer id
-  zohoContact    ZohoContact? @relation(fields: [zohoContactId, zohoAppId], references: [id, zohoAppId], onDelete: Cascade)
-  zohoContactId  String?
+  zohoContact   ZohoContact? @relation(fields: [zohoContactId, zohoAppId], references: [id, zohoAppId], onDelete: Cascade)
+  zohoContactId String?
 
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String
@@ -544,7 +581,7 @@ model Tax {
   /// An array of lineitems where this tax is used as the tax for the line item
   taxInLineItems      OrderLineItem[]
 
-  productVariants      ProductVariant[]
+  productVariants ProductVariant[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -677,7 +714,7 @@ model Contact {
   firstName String?
   lastName  String?
 
-  orders Order[]
+  orders   Order[]
   invoices Invoice[]
   payments Payment[]
 
@@ -692,7 +729,7 @@ model Contact {
   addresses          Address[]
 
   /// If we have the users permission to send tracking emails
-  trackingEmailsConsent   Boolean @default(true)
+  trackingEmailsConsent   Boolean @default(true)
   /// If we have the users consent to send marketing emails
   marketingEmailsConstent Boolean @default(false)
 
@@ -713,11 +750,11 @@ model Warehouse {
   // Lowercase, trim, whitespace remove, special characters remove
   normalizedName String
 
-  tenant          Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId        String
-  zohoWarehouse   ZohoWarehouse[]
-  saleorWarehouse SaleorWarehouse[]
-  xentralProxyApp XentralProxyApp[]
+  tenant             Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId           String
+  zohoWarehouse      ZohoWarehouse[]
+  saleorWarehouse    SaleorWarehouse[]
+  xentralProxyApp    XentralProxyApp[]
   installedSaleorApp InstalledSaleorApp[]
 
   packageLineItems     PackageLineItem[]
@@ -879,10 +916,10 @@ model Order {
   expectedShippingDate DateTime?
 
   /// The expected shipment carrier for this order
-  carrier   Carrier?
+  carrier Carrier?
 
   /// Add messages, that will be printed on order and shipping documents for the customer
-  customerNote  String?
+  customerNote String?
 
   orderStatus    OrderStatus         @default(draft)
   paymentStatus  OrderPaymentStatus  @default(unpaid)
@@ -928,11 +965,11 @@ model Order {
 
   /// First and Lastname as extra fields only for this order. The main contact is not sufficient here
   /// fields are used for example for tracking notifications
-  firstName     String?
-  lastName      String?
+  firstName String?
+  lastName  String?
 
   /// We can disable tracking notifications on user, order and package level
-  trackingNotificationsEnabled    Boolean @default(true)
+  trackingNotificationsEnabled Boolean @default(true)
 
   language Language  @default(DE)
   packages Package[]
@@ -1232,7 +1269,7 @@ model Address {
 
   /// Optional information, if this address is the default for a certain contact.
   /// This information can be used by some systems like Zoho
-  isDefault   Boolean? 
+  isDefault Boolean?
 
   street                String?
   additionalAddressLine String?
@@ -1245,13 +1282,12 @@ model Address {
   fullname              String?
 
   /// Optional field
-  houseNumber           String?
-  streetWithoutHouseNumber  String?
+  houseNumber              String?
+  streetWithoutHouseNumber String?
 
   /// One address can have multiple contacts connected to it.
   /// Sometimes, you have orders from different email addresses, sending to the same address..
-  contact   Contact[]
-
+  contact Contact[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -1316,7 +1352,7 @@ model ProductVariant {
   ean         String?
 
   /// The weight in KG for this product variant
-  weight      Float?
+  weight Float?
 
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String
@@ -1328,8 +1364,8 @@ model ProductVariant {
   defaultWarehouseId String?
 
   /// The default tax rate of this article. Might be different for purchase and sales
-  salesTax      Tax?    @relation(fields: [salesTaxId], references: [id])
-  salesTaxId    String?
+  salesTax   Tax?    @relation(fields: [salesTaxId], references: [id])
+  salesTaxId String?
 
   stockEntries StockEntries[]
 
@@ -1347,11 +1383,11 @@ model ProductVariant {
   stockOnHand Int?
 
   // if this product variant is a bundle / composite product
-  isBundleProduct      Boolean          @default(false)
+  isBundleProduct Boolean @default(false)
 
   /// if this product is actually a "just-in-time" bundle, not a composite item.
   /// normally, product bundles don't allocate stock on the individual products
-  isProductBundle     Boolean           @default(false)
+  isProductBundle      Boolean          @default(false)
   // A product variant can be a bundle product and can
   // have just one Bill of Material related
   billOfMaterial       BillOfMaterial[]
@@ -1394,9 +1430,9 @@ model BillOfMaterial {
 /// Carriers can have different names in Xentral - depending on the manually created shipping zone. We have to match them to our internal carrier
 /// This is a manually created mapping table.
 model XentralCarrier {
-  id String @id @default(cuid())
-  eciCarrier  Carrier
-  name        String
+  id         String  @id @default(cuid())
+  eciCarrier Carrier
+  name       String
 
   xentralProxyApp   XentralProxyApp @relation(fields: [xentralProxyAppId], references: [id])
   xentralProxyAppId String
@@ -1404,7 +1440,6 @@ model XentralCarrier {
   @@index([eciCarrier])
   @@index([name])
   @@index([xentralProxyAppId])
-
 }
 
 model XentralArtikel {
@@ -1602,23 +1637,24 @@ model ElasticLogDrainIntegration {
   logDrainAppId    String            @unique
   elasticCluster   ElasticCluster    @relation(fields: [elasticClusterId], references: [id])
   elasticClusterId String            @unique
+
   @@index([tenantId])
 }
 
 // The ECI Internal Package model
 model Package {
   /// internal id
-  id        String       @id
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   /// If this entity is active or got deleted somewhere
-  active   Boolean  @default(true)
+  active Boolean @default(true)
 
-  carrier   Carrier
-  
+  carrier Carrier
+
   /// The package shipment state
-  state     PackageState @default(INIT)
+  state PackageState @default(INIT)
 
   /// A unique identifier for this package like PKG-0034
   number             String
@@ -1660,6 +1696,7 @@ model PackageEvent {
   // `Nürnberg, Deutschland` for example
   location  String?
   sentEmail TransactionalEmail?
+
   @@index([packageId])
 }
 
@@ -1683,6 +1720,7 @@ model TrackingEmailApp {
   sender            String
   replyTo           String
   integration       TrackingIntegration[]
+
   @@index([tenantId])
 }
 
@@ -1738,25 +1776,23 @@ model EasyPostApp {
 
 /// DHL Tracking App model
 model DHLTrackingApp {
-  id            String               @id
+  id String @id
 
-  enabled       Boolean @default(false)
+  enabled Boolean @default(false)
 
-  tenant        Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId      String               @unique
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String @unique
   /// From the developer portal. Is different for sandbox and prod
-  apiKey        String
+  apiKey   String
 
-  trackingIntegration           TrackingIntegration? @relation(fields: [trackingIntegrationId], references: [id])
-  trackingIntegrationId         String?
+  trackingIntegration   TrackingIntegration? @relation(fields: [trackingIntegrationId], references: [id])
+  trackingIntegrationId String?
 
   cronSchedule String @default("0 */4 * * *")
   // Time in seconds how long one workflow can run before a timeout occurs.
   cronTimeout  Int    @default(800)
 
   @@index([trackingIntegrationId])
-
-
 }
 
 model ProductDataFeedApp {
@@ -1794,7 +1830,6 @@ model LogisticsApp {
 
   webhooks    IncomingWebhook[]
   integration LogisticsIntegration?
-
 }
 
 model ZohoApp {
@@ -1815,12 +1850,12 @@ model ZohoApp {
   /// the cf_api name from Zoho Settings of the custom field
   customFieldReadyToFulfill String?
   /// the cf_api name from Zoho Settings of the custom field
-  customFieldVoucherCode   String?
+  customFieldVoucherCode    String?
   /// the cf_api name from Zoho Settings of the custom field used to save a note to the customer
   customFieldCustomerNote   String?
 
   /// the cf_api name for Zoho settings of the custom field used to enable or disable tracking notifications
-  customFieldTrackingNotifications  String?
+  customFieldTrackingNotifications String?
 
   cronSchedule String @default("*/30 * * * *")
   cronTimeout  Int    @default(800)
@@ -1915,8 +1950,8 @@ model InstalledSaleorApp {
   webhooks IncomingWebhook[]
 
   /// The default warehouse is always used, when warehouse information is missing for example for packages or items
-  defaultWarehouse    Warehouse? @relation(fields: [defaultWarehouseId], references: [id])
-  defaultWarehouseId  String?
+  defaultWarehouse   Warehouse? @relation(fields: [defaultWarehouseId], references: [id])
+  defaultWarehouseId String?
 
   // Unlike regular users, Saleor Apps use a bearer token. The token is
   // assigned at App installation time and needs to be stored in a secure manner.
@@ -1993,6 +2028,7 @@ model Tenant {
   billOfMaterial              BillOfMaterial[]
   easyPost                    EasyPostApp[]
   DHLTrackingApps             DHLTrackingApp[]
+  eci_User_Tenants             eci_User_Tenant[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
@@ -2037,6 +2073,7 @@ model TrackingIntegration {
   trackingEmailAppId String
   zohoApp            ZohoApp?         @relation(fields: [zohoAppId], references: [id])
   zohoAppId          String?
+
   @@index([zohoAppId])
   @@index([trackingEmailAppId])
   @@index([tenantId])
@@ -2060,6 +2097,7 @@ model ProductDataFeedIntegration {
 
   installedSaleorApp   InstalledSaleorApp? @relation(fields: [installedSaleorAppId], references: [id])
   installedSaleorAppId String?
+
   @@index([installedSaleorAppId])
   @@index([tenantId])
 }
@@ -2078,7 +2116,7 @@ model CronJobState {
   lastRun       DateTime?
   lastRunStatus CronJobStatus?
   /// You can lock cron runs to prevent running in parallel for sensitive services like Xentral
-  locked        Boolean @default(false)
+  locked        Boolean        @default(false)
 }
 
 // The saleor zoho integration consists of several, individual sync jobs
@@ -2181,6 +2219,7 @@ model StrapiApp {
   tenantId String
 
   integration StrapiToZohoIntegration?
+
   @@index([tenantId])
 }
 
@@ -2206,9 +2245,9 @@ model XentralProxyApp {
   cronSchedule String @default("*/30 * * * *")
   cronTimeout  Int    @default(800)
 
-  syncOrders        Boolean @default(false)
-  syncProducts      Boolean @default(false)
-  syncPackages      Boolean @default(false)
+  syncOrders   Boolean @default(false)
+  syncProducts Boolean @default(false)
+  syncPackages Boolean @default(false)
 
   xentralProxyAuftraege XentralProxyAuftrag[]
   xentralArtikel        XentralArtikel[]
@@ -2219,7 +2258,6 @@ model XentralProxyApp {
   @@index([enabled])
   @@index([warehouseId])
   @@index([subscriptionId])
-
 }
 
 model XentralProxyAuftrag {
@@ -2234,7 +2272,7 @@ model XentralProxyAuftrag {
   orderId String
 
   /// The status in Xentral
-  status  String? 
+  status String?
 
   @@unique([id, xentralProxyAppId])
   @@unique([xentralBelegNr, xentralProxyAppId])
