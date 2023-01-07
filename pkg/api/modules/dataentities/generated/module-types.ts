@@ -3,6 +3,8 @@ import * as gm from "graphql-modules";
 export namespace DataentitiesModule {
   interface DefinedFields {
     Query: "orders" | "order";
+    OrdersResponse: "edges" | "pageInfo";
+    PageInfo: "endCursor" | "hasNextPage";
     Order:
       | "id"
       | "language"
@@ -111,12 +113,22 @@ export namespace DataentitiesModule {
 
   interface DefinedInputFields {
     OrderBy: "date" | "updatedAt";
+    OrdersInput: "first" | "cursor" | "orderBy";
   }
 
   export type OrderDirection = DefinedEnumValues["OrderDirection"];
   export type OrderBy = Pick<Types.OrderBy, DefinedInputFields["OrderBy"]>;
+  export type OrdersInput = Pick<
+    Types.OrdersInput,
+    DefinedInputFields["OrdersInput"]
+  >;
   export type Query = Pick<Types.Query, DefinedFields["Query"]>;
+  export type OrdersResponse = Pick<
+    Types.OrdersResponse,
+    DefinedFields["OrdersResponse"]
+  >;
   export type Order = Pick<Types.Order, DefinedFields["Order"]>;
+  export type PageInfo = Pick<Types.PageInfo, DefinedFields["PageInfo"]>;
   export type Language = DefinedEnumValues["Language"];
   export type DateTime = Types.DateTime;
   export type Package = Pick<Types.Package, DefinedFields["Package"]>;
@@ -152,6 +164,14 @@ export namespace DataentitiesModule {
   export type QueryResolvers = Pick<
     Types.QueryResolvers,
     DefinedFields["Query"]
+  >;
+  export type OrdersResponseResolvers = Pick<
+    Types.OrdersResponseResolvers,
+    DefinedFields["OrdersResponse"] | "__isTypeOf"
+  >;
+  export type PageInfoResolvers = Pick<
+    Types.PageInfoResolvers,
+    DefinedFields["PageInfo"] | "__isTypeOf"
   >;
   export type OrderResolvers = Pick<
     Types.OrderResolvers,
@@ -196,6 +216,8 @@ export namespace DataentitiesModule {
 
   export interface Resolvers {
     Query?: QueryResolvers;
+    OrdersResponse?: OrdersResponseResolvers;
+    PageInfo?: PageInfoResolvers;
     Order?: OrderResolvers;
     OrderLineItem?: OrderLineItemResolvers;
     Contact?: ContactResolvers;
@@ -216,6 +238,16 @@ export namespace DataentitiesModule {
       "*"?: gm.Middleware[];
       orders?: gm.Middleware[];
       order?: gm.Middleware[];
+    };
+    OrdersResponse?: {
+      "*"?: gm.Middleware[];
+      edges?: gm.Middleware[];
+      pageInfo?: gm.Middleware[];
+    };
+    PageInfo?: {
+      "*"?: gm.Middleware[];
+      endCursor?: gm.Middleware[];
+      hasNextPage?: gm.Middleware[];
     };
     Order?: {
       "*"?: gm.Middleware[];

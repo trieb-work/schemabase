@@ -10,9 +10,24 @@ export default gql`
     date: OrderDirection
     updatedAt: OrderDirection
   }
+  input OrdersInput {
+    first: Int!
+    cursor: ID
+    orderBy: OrderBy
+  }
   extend type Query {
-    orders(limit: Int! = 200, orderBy: OrderBy): [Order]
+    orders(input: OrdersInput!): OrdersResponse
     order(id: ID, orderNumber: String): Order
+  }
+
+  type OrdersResponse {
+    edges: [Order!]!
+    pageInfo: PageInfo!
+  }
+
+  type PageInfo {
+    endCursor: ID
+    hasNextPage: Boolean!
   }
 
   enum Language {

@@ -136,6 +136,18 @@ export type OrderLineItem = {
   updatedAt: Scalars["DateTime"];
 };
 
+export type OrdersInput = {
+  cursor?: InputMaybe<Scalars["ID"]>;
+  first: Scalars["Int"];
+  orderBy?: InputMaybe<OrderBy>;
+};
+
+export type OrdersResponse = {
+  __typename?: "OrdersResponse";
+  edges: Array<Order>;
+  pageInfo: PageInfo;
+};
+
 export type Package = {
   __typename?: "Package";
   carrier: Carrier;
@@ -171,6 +183,12 @@ export type PackageState =
   | "OUT_FOR_DELIVERY"
   | "PENDING";
 
+export type PageInfo = {
+  __typename?: "PageInfo";
+  endCursor?: Maybe<Scalars["ID"]>;
+  hasNextPage: Scalars["Boolean"];
+};
+
 export type Payment = {
   __typename?: "Payment";
   amount?: Maybe<Scalars["Float"]>;
@@ -189,7 +207,7 @@ export type Query = {
   __typename?: "Query";
   healthCheck: Scalars["Boolean"];
   order?: Maybe<Order>;
-  orders?: Maybe<Array<Maybe<Order>>>;
+  orders?: Maybe<OrdersResponse>;
   packageByTrackingId?: Maybe<Package>;
 };
 
@@ -199,8 +217,7 @@ export type QueryOrderArgs = {
 };
 
 export type QueryOrdersArgs = {
-  limit?: Scalars["Int"];
-  orderBy?: InputMaybe<OrderBy>;
+  input: OrdersInput;
 };
 
 export type QueryPackageByTrackingIdArgs = {
@@ -391,9 +408,14 @@ export type ResolversTypes = ResolversObject<{
   OrderLineItem: ResolverTypeWrapper<
     Omit<OrderLineItem, "order"> & { order: ResolversTypes["Order"] }
   >;
+  OrdersInput: OrdersInput;
+  OrdersResponse: ResolverTypeWrapper<
+    Omit<OrdersResponse, "edges"> & { edges: Array<ResolversTypes["Order"]> }
+  >;
   Package: ResolverTypeWrapper<PackageModel>;
   PackageEvent: ResolverTypeWrapper<PackageEventModel>;
   PackageState: PackageState;
+  PageInfo: ResolverTypeWrapper<PageInfo>;
   Payment: ResolverTypeWrapper<
     Omit<Payment, "mainContact" | "order"> & {
       mainContact?: Maybe<ResolversTypes["Contact"]>;
@@ -436,8 +458,13 @@ export type ResolversParentTypes = ResolversObject<{
   OrderLineItem: Omit<OrderLineItem, "order"> & {
     order: ResolversParentTypes["Order"];
   };
+  OrdersInput: OrdersInput;
+  OrdersResponse: Omit<OrdersResponse, "edges"> & {
+    edges: Array<ResolversParentTypes["Order"]>;
+  };
   Package: PackageModel;
   PackageEvent: PackageEventModel;
+  PageInfo: PageInfo;
   Payment: Omit<Payment, "mainContact" | "order"> & {
     mainContact?: Maybe<ResolversParentTypes["Contact"]>;
     order?: Maybe<ResolversParentTypes["Order"]>;
@@ -667,6 +694,15 @@ export type OrderLineItemResolvers<
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type OrdersResponseResolvers<
+  ContextType = GraphQLModules.Context,
+  ParentType extends ResolversParentTypes["OrdersResponse"] = ResolversParentTypes["OrdersResponse"],
+> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes["Order"]>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes["PageInfo"], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type PackageResolvers<
   ContextType = GraphQLModules.Context,
   ParentType extends ResolversParentTypes["Package"] = ResolversParentTypes["Package"],
@@ -713,6 +749,15 @@ export type PackageEventResolvers<
     ContextType
   >;
   time?: Resolver<Maybe<ResolversTypes["DateTime"]>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type PageInfoResolvers<
+  ContextType = GraphQLModules.Context,
+  ParentType extends ResolversParentTypes["PageInfo"] = ResolversParentTypes["PageInfo"],
+> = ResolversObject<{
+  endCursor?: Resolver<Maybe<ResolversTypes["ID"]>, ParentType, ContextType>;
+  hasNextPage?: Resolver<ResolversTypes["Boolean"], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -769,10 +814,10 @@ export type QueryResolvers<
     Partial<QueryOrderArgs>
   >;
   orders?: Resolver<
-    Maybe<Array<Maybe<ResolversTypes["Order"]>>>,
+    Maybe<ResolversTypes["OrdersResponse"]>,
     ParentType,
     ContextType,
-    RequireFields<QueryOrdersArgs, "limit">
+    RequireFields<QueryOrdersArgs, "input">
   >;
   packageByTrackingId?: Resolver<
     Maybe<ResolversTypes["Package"]>,
@@ -886,8 +931,10 @@ export type Resolvers<ContextType = GraphQLModules.Context> = ResolversObject<{
   Mutation?: MutationResolvers<ContextType>;
   Order?: OrderResolvers<ContextType>;
   OrderLineItem?: OrderLineItemResolvers<ContextType>;
+  OrdersResponse?: OrdersResponseResolvers<ContextType>;
   Package?: PackageResolvers<ContextType>;
   PackageEvent?: PackageEventResolvers<ContextType>;
+  PageInfo?: PageInfoResolvers<ContextType>;
   Payment?: PaymentResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   SaleorOrder?: SaleorOrderResolvers<ContextType>;
