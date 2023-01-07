@@ -78,7 +78,7 @@ specifiers:
   express-session: ^1.17.3
   faker: 5.5.3
   fast-xml-parser: ^4.0.9
-  graphql: ^16.0.0
+  graphql: ^16.6.0
   graphql-fields: ^2.0.3
   graphql-modules: ^2.1.0
   graphql-request: ^3.7.0

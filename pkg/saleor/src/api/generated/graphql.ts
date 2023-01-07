@@ -14357,7 +14357,7 @@ export const WarehousesDocument = gql`
     }
   }
 `;
-export type Requester<C = {}, _E = unknown> = <R, V>(
+export type Requester<C = {}, E = unknown> = <R, V>(
   doc: DocumentNode,
   vars?: V,
   options?: C,
