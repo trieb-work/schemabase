@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { gql } from "graphql-modules";
 
 export default gql`
@@ -10,13 +11,8 @@ export default gql`
     updatedAt: OrderDirection
   }
   extend type Query {
-    orders: [Order]
-    order(
-      id: ID
-      orderNumber: String
-      limit: Int = 200
-      orderBy: OrderBy
-    ): Order
+    orders(limit: Int! = 200, orderBy: OrderBy): [Order]
+    order(id: ID, orderNumber: String): Order
   }
 
   enum Language {
@@ -38,12 +34,52 @@ export default gql`
     totalPriceGross: Float
     firstName: String
     lastName: String
+    mainContact: Contact
+    mainContactId: String
+
+    orderLineItems: [OrderLineItem]
 
     saleorOrders: [SaleorOrder]
     zohoSalesOrders: [ZohoSalesOrder]
     xentralProxyAuftraege: [XentralProxyAuftrag]
   }
 
+  type OrderLineItem {
+    # eci internal id
+    id: String!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+
+    order: Order!
+    orderId: String!
+
+    quantity: Float
+    sku: String
+    # tax      Tax    @relation(fields: [taxId], references: [id], onDelete: Cascade)
+    # taxId    String
+
+    # The total net price (price excluding taxes) of all line item. Optional, as we might have just one of the two values on hand
+    totalPriceNet: Float
+    # The total gross price (price including taxes) of all line item. Optional, as we might have just one of the two values on hand
+    totalPriceGross: Float
+
+    # The unit net price (price excluding taxes) of one line item. Optional, as we might have just one of the two values on hand
+    undiscountedUnitPriceNet: Float
+    # The unit gross price (price including taxes) of one line item. Optional, as we might have just one of the two values on hand
+    undiscountedUnitPriceGross: Float
+
+    #/ The disount amount, that is applied to the net price (discount excluding taxes).
+    discountValueNet: Float
+    #/ The disount amount, that is applied to the gross price (discount including taxes).
+    #discountValueGross Float @default(0)
+
+    # productVariant   ProductVariant @relation(fields: [productVariantId, sku], references: [id, sku])
+    # productVariantId String
+
+    # zohoPackageLineItems ZohoPackageLineItem[]
+    # saleorOrderLineItems SaleorOrderLineItem[]
+    # zohoOrderLineItems   ZohoOrderLineItem[]
+  }
   type Contact {
     # eci internal id
     id: String

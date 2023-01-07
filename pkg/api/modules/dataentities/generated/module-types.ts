@@ -17,9 +17,25 @@ export namespace DataentitiesModule {
       | "totalPriceGross"
       | "firstName"
       | "lastName"
+      | "mainContact"
+      | "mainContactId"
+      | "orderLineItems"
       | "saleorOrders"
       | "zohoSalesOrders"
       | "xentralProxyAuftraege";
+    OrderLineItem:
+      | "id"
+      | "createdAt"
+      | "updatedAt"
+      | "order"
+      | "orderId"
+      | "quantity"
+      | "sku"
+      | "totalPriceNet"
+      | "totalPriceGross"
+      | "undiscountedUnitPriceNet"
+      | "undiscountedUnitPriceGross"
+      | "discountValueNet";
     Contact:
       | "id"
       | "createdAt"
@@ -104,6 +120,11 @@ export namespace DataentitiesModule {
   export type Language = DefinedEnumValues["Language"];
   export type DateTime = Types.DateTime;
   export type Package = Pick<Types.Package, DefinedFields["Package"]>;
+  export type Contact = Pick<Types.Contact, DefinedFields["Contact"]>;
+  export type OrderLineItem = Pick<
+    Types.OrderLineItem,
+    DefinedFields["OrderLineItem"]
+  >;
   export type SaleorOrder = Pick<
     Types.SaleorOrder,
     DefinedFields["SaleorOrder"]
@@ -116,7 +137,6 @@ export namespace DataentitiesModule {
     Types.XentralProxyAuftrag,
     DefinedFields["XentralProxyAuftrag"]
   >;
-  export type Contact = Pick<Types.Contact, DefinedFields["Contact"]>;
   export type Payment = Pick<Types.Payment, DefinedFields["Payment"]>;
   export type PackageState = DefinedEnumValues["PackageState"];
   export type Carrier = DefinedEnumValues["Carrier"];
@@ -136,6 +156,10 @@ export namespace DataentitiesModule {
   export type OrderResolvers = Pick<
     Types.OrderResolvers,
     DefinedFields["Order"] | "__isTypeOf"
+  >;
+  export type OrderLineItemResolvers = Pick<
+    Types.OrderLineItemResolvers,
+    DefinedFields["OrderLineItem"] | "__isTypeOf"
   >;
   export type ContactResolvers = Pick<
     Types.ContactResolvers,
@@ -173,6 +197,7 @@ export namespace DataentitiesModule {
   export interface Resolvers {
     Query?: QueryResolvers;
     Order?: OrderResolvers;
+    OrderLineItem?: OrderLineItemResolvers;
     Contact?: ContactResolvers;
     Payment?: PaymentResolvers;
     ZohoSalesOrder?: ZohoSalesOrderResolvers;
@@ -207,9 +232,27 @@ export namespace DataentitiesModule {
       totalPriceGross?: gm.Middleware[];
       firstName?: gm.Middleware[];
       lastName?: gm.Middleware[];
+      mainContact?: gm.Middleware[];
+      mainContactId?: gm.Middleware[];
+      orderLineItems?: gm.Middleware[];
       saleorOrders?: gm.Middleware[];
       zohoSalesOrders?: gm.Middleware[];
       xentralProxyAuftraege?: gm.Middleware[];
+    };
+    OrderLineItem?: {
+      "*"?: gm.Middleware[];
+      id?: gm.Middleware[];
+      createdAt?: gm.Middleware[];
+      updatedAt?: gm.Middleware[];
+      order?: gm.Middleware[];
+      orderId?: gm.Middleware[];
+      quantity?: gm.Middleware[];
+      sku?: gm.Middleware[];
+      totalPriceNet?: gm.Middleware[];
+      totalPriceGross?: gm.Middleware[];
+      undiscountedUnitPriceNet?: gm.Middleware[];
+      undiscountedUnitPriceGross?: gm.Middleware[];
+      discountValueNet?: gm.Middleware[];
     };
     Contact?: {
       "*"?: gm.Middleware[];

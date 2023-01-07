@@ -4,7 +4,7 @@ import { PrismaSelect } from "@paljs/plugins";
 
 export const resolvers: Resolvers<Context> = {
   Query: {
-    orders: async (_parent, _args, ctx, info) => {
+    orders: async (_parent, args, ctx, info) => {
       const claims = await ctx.authorizeUser([]);
       const select = new PrismaSelect(info).value;
 
@@ -16,6 +16,8 @@ export const resolvers: Resolvers<Context> = {
             in: claims.tenants.map((t) => t.id),
           },
         },
+        take: args.limit,
+        orderBy: args.orderBy,
         ...select,
       });
     },
@@ -33,8 +35,6 @@ export const resolvers: Resolvers<Context> = {
           id: args.id,
           orderNumber: args.orderNumber,
         },
-        take: args.limit,
-        orderBy: args.orderBy,
         ...select,
       });
     },
