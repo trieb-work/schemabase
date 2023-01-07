@@ -1,6 +1,5 @@
 import { Context } from "../../context";
 import { Resolvers } from "../../generated/schema-types";
-// import { OrderRelationsResolver } from "@generated/type-graphql";
 import { PrismaSelect } from "@paljs/plugins";
 
 export const resolvers: Resolvers<Context> = {
