@@ -47,16 +47,17 @@ export const resolvers: Resolvers<Context> = {
       if ((await krypto.decrypt(eciUser.password || "")) !== args.password)
         throw new Error(`Wrong PW`);
 
-      const token = JWT.sign(eciUser.id, { roles: ["user"] });
+      const tenants = eciUser.eci_User_Tenants.map((x) => ({
+        id: x.tenantId,
+        role: x.role,
+      }));
+      const token = JWT.sign(eciUser.id, { roles: ["user"], tenants });
 
       const user = {
         id: eciUser.id,
         email: eciUser.email,
         name: eciUser.name,
-        tenants: eciUser.eci_User_Tenants.map((x) => ({
-          id: x.tenantId,
-          role: x.role,
-        })),
+        tenants,
       };
 
       return {
