@@ -110,6 +110,13 @@ export type Order = {
   zohoSalesOrders?: Maybe<Array<Maybe<ZohoSalesOrder>>>;
 };
 
+export type OrderBy = {
+  date?: InputMaybe<OrderDirection>;
+  updatedAt?: InputMaybe<OrderDirection>;
+};
+
+export type OrderDirection = "asc" | "desc";
+
 export type Package = {
   __typename?: "Package";
   carrier: Carrier;
@@ -169,6 +176,8 @@ export type Query = {
 
 export type QueryOrderArgs = {
   id?: InputMaybe<Scalars["ID"]>;
+  limit?: InputMaybe<Scalars["Int"]>;
+  orderBy?: InputMaybe<OrderBy>;
   orderNumber?: InputMaybe<Scalars["String"]>;
 };
 
@@ -355,6 +364,8 @@ export type ResolversTypes = ResolversObject<{
   Membership: ResolverTypeWrapper<Membership>;
   Mutation: ResolverTypeWrapper<{}>;
   Order: ResolverTypeWrapper<OrderModel>;
+  OrderBy: OrderBy;
+  OrderDirection: OrderDirection;
   Package: ResolverTypeWrapper<PackageModel>;
   PackageEvent: ResolverTypeWrapper<PackageEventModel>;
   PackageState: PackageState;
@@ -396,6 +407,7 @@ export type ResolversParentTypes = ResolversObject<{
   Membership: Membership;
   Mutation: {};
   Order: OrderModel;
+  OrderBy: OrderBy;
   Package: PackageModel;
   PackageEvent: PackageEventModel;
   Payment: Omit<Payment, "mainContact" | "order"> & {
@@ -672,7 +684,7 @@ export type QueryResolvers<
     Maybe<ResolversTypes["Order"]>,
     ParentType,
     ContextType,
-    Partial<QueryOrderArgs>
+    RequireFields<QueryOrderArgs, "limit">
   >;
   orders?: Resolver<
     Maybe<Array<Maybe<ResolversTypes["Order"]>>>,

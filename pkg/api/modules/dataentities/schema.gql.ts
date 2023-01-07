@@ -1,9 +1,22 @@
 import { gql } from "graphql-modules";
 
 export default gql`
+  enum OrderDirection {
+    asc
+    desc
+  }
+  input OrderBy {
+    date: OrderDirection
+    updatedAt: OrderDirection
+  }
   extend type Query {
     orders: [Order]
-    order(id: ID, orderNumber: String): Order
+    order(
+      id: ID
+      orderNumber: String
+      limit: Int = 200
+      orderBy: OrderBy
+    ): Order
   }
 
   enum Language {

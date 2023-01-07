@@ -77,6 +77,7 @@ export namespace DataentitiesModule {
   }
 
   interface DefinedEnumValues {
+    OrderDirection: "asc" | "desc";
     Language: "DE" | "EN";
     PackageState:
       | "INIT"
@@ -92,6 +93,12 @@ export namespace DataentitiesModule {
     Carrier: "DPD" | "DHL" | "UPS" | "HERMES" | "PICKUP" | "UNKNOWN" | "BULK";
   }
 
+  interface DefinedInputFields {
+    OrderBy: "date" | "updatedAt";
+  }
+
+  export type OrderDirection = DefinedEnumValues["OrderDirection"];
+  export type OrderBy = Pick<Types.OrderBy, DefinedInputFields["OrderBy"]>;
   export type Query = Pick<Types.Query, DefinedFields["Query"]>;
   export type Order = Pick<Types.Order, DefinedFields["Order"]>;
   export type Language = DefinedEnumValues["Language"];

@@ -33,6 +33,8 @@ export const resolvers: Resolvers<Context> = {
           id: args.id,
           orderNumber: args.orderNumber,
         },
+        take: args.limit,
+        orderBy: args.orderBy,
         ...select,
       });
     },
