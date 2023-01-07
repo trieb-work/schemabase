@@ -39,7 +39,7 @@ specifiers:
   '@types/faker': ^5.5.9
   '@types/graphql-fields': ^1.3.4
   '@types/html-to-text': ^8.1.0
-  '@types/jest': ^27.4.1
+  '@types/jest': ^29.2.5
   '@types/jsonwebtoken': ^8.5.8
   '@types/morgan': ^1.9.3
   '@types/node': ^17.0.23
@@ -201,7 +201,7 @@ devDependencies:
   '@types/faker': 5.5.9
   '@types/graphql-fields': 1.3.4
   '@types/html-to-text': 8.1.0
-  '@types/jest': 27.4.1
+  '@types/jest': 29.2.5
   '@types/jsonwebtoken': 8.5.8
   '@types/morgan': 1.9.3
   '@types/node': 17.0.23
@@ -3514,11 +3514,11 @@ packages:
     dependencies:
       '@types/istanbul-lib-report': 3.0.0
 
-  /@types/jest/27.4.1:
-    resolution: {integrity: sha512-23iPJADSmicDVrWk+HT58LMJtzLAnB2AgIzplQuq/bSrGaxCrlvRFjGbXmamnnk/mAmCdLStiGqggu28ocUyiw==}
+  /@types/jest/29.2.5:
+    resolution: {integrity: sha512-H2cSxkKgVmqNHXP7TC2L/WUorrZu8ZigyRywfVzv6EyBlxj39n4C00hjXYQWsbwqgElaj/CiAeSRmk5GoaKTgw==}
     dependencies:
-      jest-matcher-utils: 27.5.1
-      pretty-format: 27.5.1
+      expect: 29.3.1
+      pretty-format: 29.3.1
     dev: true
 
   /@types/js-yaml/4.0.5:
@@ -8219,7 +8219,7 @@ packages:
       chalk: 4.1.2
       graceful-fs: 4.2.10
       micromatch: 4.0.5
-      pretty-format: 29.0.2
+      pretty-format: 29.3.1
       slash: 3.0.0
       stack-utils: 2.0.5
     dev: false
@@ -9861,15 +9861,6 @@ packages:
       react-is: 17.0.2
     dev: true
 
-  /pretty-format/29.0.2:
-    resolution: {integrity: sha512-wp3CdtUa3cSJVFn3Miu5a1+pxc1iPIQTenOAn+x5erXeN1+ryTcLesV5pbK/rlW5EKwp27x38MoYfNGaNXDDhg==}
-    engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
-    dependencies:
-      '@jest/schemas': 29.0.0
-      ansi-styles: 5.2.0
-      react-is: 18.2.0
-    dev: false
-
   /pretty-format/29.3.1:
     resolution: {integrity: sha512-FyLnmb1cYJV8biEIiRyzRFvs2lry7PPIvOqKVe1GCUEYg4YGmlx1qG9EJNMxArYm7piII4qb8UV1Pncq5dxmcg==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
@@ -9877,7 +9868,6 @@ packages:
       '@jest/schemas': 29.0.0
       ansi-styles: 5.2.0
       react-is: 18.2.0
-    dev: true
 
   /prettysize/2.0.0:
     resolution: {integrity: sha512-VVtxR7sOh0VsG8o06Ttq5TrI1aiZKmC+ClSn4eBPaNf4SHr5lzbYW+kYGX3HocBL/MfpVrRfFZ9V3vCbLaiplg==}
