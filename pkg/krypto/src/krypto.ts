@@ -5,6 +5,7 @@ class Encrypt {
   private readonly secretKey: string;
 
   constructor(secretKey?: string) {
+    env.get("SECRET_KEY");
     this.secretKey = secretKey || env.get("SECRET_KEY") || "";
   }
 

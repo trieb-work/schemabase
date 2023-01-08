@@ -6,7 +6,12 @@ export const resolvers: Resolvers<Context> = {
   Query: {
     orders: async (_parent, { input }, ctx, info) => {
       const claims = await ctx.authorizeUser([]);
-      const select = new PrismaSelect(info).value;
+      /**
+       * The SELECT statement for Prisma - we have to filter
+       * the resulting select, as "edges" is just the input data format
+       */
+      const select = new PrismaSelect(info).value.select?.edges;
+      console.log(select);
 
       if (!claims.tenants || claims.tenants.length <= 0)
         throw new Error(`You don't have access to any tenants`);
