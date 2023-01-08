@@ -929,6 +929,10 @@ model Order {
   /// In PuF: if the Order is not readyToFullfill it woll not get transfered to logistics partner (kramer); default is false
   readyToFullfill Boolean @default(false)
 
+  /// An order token, that can be used to pull this order unauthenticated.
+  /// can be manually set, but we also use a cuid by default
+  token     String?     @default(cuid())
+
   /// Order-Numbers have to be unique per Tenant!
   /// We use them as unique identifier between systems
   orderNumber     String

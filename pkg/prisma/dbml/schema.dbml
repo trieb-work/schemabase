@@ -556,6 +556,8 @@ Table Order {
   shipmentStatus OrderShipmentStatus [not null, default: 'pending']
   invoiceStatus OrderInvoiceStatus [not null, default: 'notInvoiced']
   readyToFullfill Boolean [not null, default: false, note: 'In PuF: if the Order is not readyToFullfill it woll not get transfered to logistics partner (kramer); default is false']
+  token String [note: 'An order token, that can be used to pull this order unauthenticated.
+can be manually set, but we also use a cuid by default']
   orderNumber String [not null, note: 'Order-Numbers have to be unique per Tenant!
 We use them as unique identifier between systems']
   referenceNumber String [note: 'if source system has a second ID which is benefitial to the user, we can provide it here']

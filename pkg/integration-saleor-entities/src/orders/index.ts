@@ -123,6 +123,17 @@ export class SaleorOrderSyncService {
     }
   }
 
+  /**
+   * Function to convert the saleor order id to the saleor order token
+   * @param saleorId 
+   * @returns 
+   */
+  private idToToken(saleorId: string): string {
+
+    return Buffer.from(saleorId, 'base64').toString('utf8').split("Order:")[1]  
+
+  }
+
   public async syncToECI(): Promise<void> {
     const cronState = await this.cronState.get();
 
@@ -173,6 +184,8 @@ export class SaleorOrderSyncService {
         const companyName = order.billingAddress?.companyName;
 
         const discountCode = order.voucher?.code;
+
+        const orderToken = this.idToToken(order.id);
 
         const companyCreateOrConnect: Prisma.CompanyCreateNestedOneWithoutContactsInput =
           companyName
@@ -283,6 +296,7 @@ export class SaleorOrderSyncService {
                   totalPriceGross: order.total.gross.amount,
                   language: this.matchLanguage(order.languageCodeEnum),
                   orderStatus,
+                  token: orderToken,
                   discountCode,
                   carrier,
                   paymentStatus, // TODO: how will this thing be updated and kept in sync by other services? -> Maybe move it into Payment.status and access it via payments[0].status?
