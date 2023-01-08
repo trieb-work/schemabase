@@ -1007,6 +1007,7 @@ model Order {
   @@index([createdAt])
   @@index([tenantId])
   @@index([mainContactId])
+  @@index([token])
 }
 
 enum CountryCode {
