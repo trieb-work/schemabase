@@ -11,7 +11,6 @@ export const resolvers: Resolvers<Context> = {
        * the resulting select, as "edges" is just the input data format
        */
       const select = new PrismaSelect(info).value.select?.edges;
-      console.log(select);
 
       if (!claims.tenants || claims.tenants.length <= 0)
         throw new Error(`You don't have access to any tenants`);
