@@ -207,7 +207,7 @@ export default gql`
     carrier: Carrier!
     state: PackageState!
     trackingId: ID!
-    carrierTrackingUrl: String!
+    carrierTrackingUrl: String
     order: Order!
     events(orderBy: PackageEventsOrderBy): [PackageEvent!]!
   }
