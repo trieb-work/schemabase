@@ -6,14 +6,17 @@ export default gql`
     asc
     desc
   }
-  input OrderBy {
+  input OrdersOrderBy {
     date: OrderDirection
     updatedAt: OrderDirection
+  }
+  input PackageEventsOrderBy {
+    time: OrderDirection
   }
   input OrdersInput {
     first: Int!
     cursor: ID
-    orderBy: OrderBy
+    orderBy: OrdersOrderBy
   }
   extend type Query {
     orders(input: OrdersInput!): OrdersResponse
@@ -206,7 +209,7 @@ export default gql`
     trackingId: ID!
     carrierTrackingUrl: String!
     order: Order!
-    events: [PackageEvent!]!
+    events(orderBy: PackageEventsOrderBy): [PackageEvent!]!
   }
   type PackageEvent {
     id: String

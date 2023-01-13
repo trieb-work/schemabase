@@ -112,12 +112,20 @@ export namespace DataentitiesModule {
   }
 
   interface DefinedInputFields {
-    OrderBy: "date" | "updatedAt";
+    OrdersOrderBy: "date" | "updatedAt";
+    PackageEventsOrderBy: "time";
     OrdersInput: "first" | "cursor" | "orderBy";
   }
 
   export type OrderDirection = DefinedEnumValues["OrderDirection"];
-  export type OrderBy = Pick<Types.OrderBy, DefinedInputFields["OrderBy"]>;
+  export type OrdersOrderBy = Pick<
+    Types.OrdersOrderBy,
+    DefinedInputFields["OrdersOrderBy"]
+  >;
+  export type PackageEventsOrderBy = Pick<
+    Types.PackageEventsOrderBy,
+    DefinedInputFields["PackageEventsOrderBy"]
+  >;
   export type OrdersInput = Pick<
     Types.OrdersInput,
     DefinedInputFields["OrdersInput"]

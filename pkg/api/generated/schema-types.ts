@@ -113,11 +113,6 @@ export type Order = {
   zohoSalesOrders?: Maybe<Array<Maybe<ZohoSalesOrder>>>;
 };
 
-export type OrderBy = {
-  date?: InputMaybe<OrderDirection>;
-  updatedAt?: InputMaybe<OrderDirection>;
-};
-
 export type OrderDirection = "asc" | "desc";
 
 export type OrderLineItem = {
@@ -139,7 +134,12 @@ export type OrderLineItem = {
 export type OrdersInput = {
   cursor?: InputMaybe<Scalars["ID"]>;
   first: Scalars["Int"];
-  orderBy?: InputMaybe<OrderBy>;
+  orderBy?: InputMaybe<OrdersOrderBy>;
+};
+
+export type OrdersOrderBy = {
+  date?: InputMaybe<OrderDirection>;
+  updatedAt?: InputMaybe<OrderDirection>;
 };
 
 export type OrdersResponse = {
@@ -159,6 +159,10 @@ export type Package = {
   trackingId: Scalars["ID"];
 };
 
+export type PackageEventsArgs = {
+  orderBy?: InputMaybe<PackageEventsOrderBy>;
+};
+
 export type PackageEvent = {
   __typename?: "PackageEvent";
   id?: Maybe<Scalars["String"]>;
@@ -169,6 +173,10 @@ export type PackageEvent = {
   sentEmail?: Maybe<TransactionalEmail>;
   state?: Maybe<PackageState>;
   time?: Maybe<Scalars["DateTime"]>;
+};
+
+export type PackageEventsOrderBy = {
+  time?: InputMaybe<OrderDirection>;
 };
 
 export type PackageState =
@@ -403,17 +411,18 @@ export type ResolversTypes = ResolversObject<{
   Membership: ResolverTypeWrapper<Membership>;
   Mutation: ResolverTypeWrapper<{}>;
   Order: ResolverTypeWrapper<OrderModel>;
-  OrderBy: OrderBy;
   OrderDirection: OrderDirection;
   OrderLineItem: ResolverTypeWrapper<
     Omit<OrderLineItem, "order"> & { order: ResolversTypes["Order"] }
   >;
   OrdersInput: OrdersInput;
+  OrdersOrderBy: OrdersOrderBy;
   OrdersResponse: ResolverTypeWrapper<
     Omit<OrdersResponse, "edges"> & { edges: Array<ResolversTypes["Order"]> }
   >;
   Package: ResolverTypeWrapper<PackageModel>;
   PackageEvent: ResolverTypeWrapper<PackageEventModel>;
+  PackageEventsOrderBy: PackageEventsOrderBy;
   PackageState: PackageState;
   PageInfo: ResolverTypeWrapper<PageInfo>;
   Payment: ResolverTypeWrapper<
@@ -454,16 +463,17 @@ export type ResolversParentTypes = ResolversObject<{
   Membership: Membership;
   Mutation: {};
   Order: OrderModel;
-  OrderBy: OrderBy;
   OrderLineItem: Omit<OrderLineItem, "order"> & {
     order: ResolversParentTypes["Order"];
   };
   OrdersInput: OrdersInput;
+  OrdersOrderBy: OrdersOrderBy;
   OrdersResponse: Omit<OrdersResponse, "edges"> & {
     edges: Array<ResolversParentTypes["Order"]>;
   };
   Package: PackageModel;
   PackageEvent: PackageEventModel;
+  PackageEventsOrderBy: PackageEventsOrderBy;
   PageInfo: PageInfo;
   Payment: Omit<Payment, "mainContact" | "order"> & {
     mainContact?: Maybe<ResolversParentTypes["Contact"]>;
@@ -716,7 +726,8 @@ export type PackageResolvers<
   events?: Resolver<
     Array<ResolversTypes["PackageEvent"]>,
     ParentType,
-    ContextType
+    ContextType,
+    Partial<PackageEventsArgs>
   >;
   id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
   order?: Resolver<ResolversTypes["Order"], ParentType, ContextType>;
