@@ -59,6 +59,7 @@ export type Contact = {
   marketingEmailsConstent?: Maybe<Scalars["Boolean"]>;
   orders?: Maybe<Array<Maybe<Order>>>;
   payments?: Maybe<Array<Maybe<Payment>>>;
+  totalOrders?: Maybe<Scalars["Int"]>;
   trackingEmailsConsent?: Maybe<Scalars["Boolean"]>;
   updatedAt?: Maybe<Scalars["DateTime"]>;
 };
@@ -126,7 +127,9 @@ export type OrderLineItem = {
   sku?: Maybe<Scalars["String"]>;
   totalPriceGross?: Maybe<Scalars["Float"]>;
   totalPriceNet?: Maybe<Scalars["Float"]>;
+  /** The unit gross price (price including taxes) of one line item. Optional, as we might have just one of the two values on hand */
   undiscountedUnitPriceGross?: Maybe<Scalars["Float"]>;
+  /** The unit net price (price excluding taxes) of one line item. Optional, as we might have just one of the two values on hand */
   undiscountedUnitPriceNet?: Maybe<Scalars["Float"]>;
   updatedAt: Scalars["DateTime"];
 };
@@ -151,7 +154,7 @@ export type OrdersResponse = {
 export type Package = {
   __typename?: "Package";
   carrier: Carrier;
-  carrierTrackingUrl: Scalars["String"];
+  carrierTrackingUrl?: Maybe<Scalars["String"]>;
   events: Array<PackageEvent>;
   id: Scalars["ID"];
   order: Order;
@@ -536,6 +539,7 @@ export type ContactResolvers<
     ParentType,
     ContextType
   >;
+  totalOrders?: Resolver<Maybe<ResolversTypes["Int"]>, ParentType, ContextType>;
   trackingEmailsConsent?: Resolver<
     Maybe<ResolversTypes["Boolean"]>,
     ParentType,
@@ -719,7 +723,7 @@ export type PackageResolvers<
 > = ResolversObject<{
   carrier?: Resolver<ResolversTypes["Carrier"], ParentType, ContextType>;
   carrierTrackingUrl?: Resolver<
-    ResolversTypes["String"],
+    Maybe<ResolversTypes["String"]>,
     ParentType,
     ContextType
   >;

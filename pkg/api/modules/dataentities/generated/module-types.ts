@@ -45,6 +45,7 @@ export namespace DataentitiesModule {
       | "email"
       | "firstName"
       | "lastName"
+      | "totalOrders"
       | "orders"
       | "payments"
       | "trackingEmailsConsent"
@@ -302,6 +303,7 @@ export namespace DataentitiesModule {
       email?: gm.Middleware[];
       firstName?: gm.Middleware[];
       lastName?: gm.Middleware[];
+      totalOrders?: gm.Middleware[];
       orders?: gm.Middleware[];
       payments?: gm.Middleware[];
       trackingEmailsConsent?: gm.Middleware[];

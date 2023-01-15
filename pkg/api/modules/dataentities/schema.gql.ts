@@ -81,9 +81,13 @@ export default gql`
     # The total gross price (price including taxes) of all line item. Optional, as we might have just one of the two values on hand
     totalPriceGross: Float
 
-    # The unit net price (price excluding taxes) of one line item. Optional, as we might have just one of the two values on hand
+    """
+    The unit net price (price excluding taxes) of one line item. Optional, as we might have just one of the two values on hand
+    """
     undiscountedUnitPriceNet: Float
-    # The unit gross price (price including taxes) of one line item. Optional, as we might have just one of the two values on hand
+    """
+    The unit gross price (price including taxes) of one line item. Optional, as we might have just one of the two values on hand
+    """
     undiscountedUnitPriceGross: Float
 
     #/ The disount amount, that is applied to the net price (discount excluding taxes).
@@ -108,6 +112,8 @@ export default gql`
 
     firstName: String
     lastName: String
+
+    totalOrders: Int
 
     orders: [Order]
     # invoices: [Invoice]

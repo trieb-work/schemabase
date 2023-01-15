@@ -2,6 +2,19 @@ import { Context } from "../../context";
 import { Resolvers } from "../../generated/schema-types";
 import { PrismaSelect } from "@paljs/plugins";
 
+const defaultFields: {
+  [key: string]:
+    | { [key: string]: boolean }
+    | ((select: any) => { [key: string]: boolean });
+} = {
+  /**
+   * When we query for contact we always selet minimum the ID, as this is needed
+   * for the manually added Contact resolver to work
+   * @returns
+   */
+  Contact: () => ({ id: true }),
+};
+
 export const resolvers: Resolvers<Context> = {
   Query: {
     orders: async (_parent, { input }, ctx, info) => {
@@ -58,8 +71,15 @@ export const resolvers: Resolvers<Context> = {
       };
     },
     order: async (_parent, args, ctx, info) => {
+      /**
+       * The select statement for Prisma and the "Order" model. We filter for
+       * Order only, as we have also some custom resolvers that can't be created
+       * in just one select statement
+       **/
+      const select = new PrismaSelect(info, { defaultFields }).valueWithFilter(
+        "Order",
+      );
       const claims = await ctx.authorizeUser([]);
-      const select = new PrismaSelect(info).value;
 
       if (!claims.tenants || claims.tenants.length <= 0)
         throw new Error(`You don't have access to any tenants`);
@@ -73,6 +93,20 @@ export const resolvers: Resolvers<Context> = {
         },
         ...select,
       });
+    },
+  },
+  Contact: {
+    totalOrders: async (parent, _args, ctx) => {
+      if (!parent.id) return null;
+      const orderCount = await ctx.dataSources.db.client.order.aggregate({
+        where: {
+          mainContactId: parent.id,
+        },
+        _count: {
+          _all: true,
+        },
+      });
+      return orderCount._count._all;
     },
   },
 };
