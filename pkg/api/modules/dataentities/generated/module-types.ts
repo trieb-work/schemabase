@@ -5,6 +5,22 @@ export namespace DataentitiesModule {
     Query: "orders" | "order";
     OrdersResponse: "edges" | "pageInfo";
     PageInfo: "endCursor" | "hasNextPage";
+    Address:
+      | "id"
+      | "createdAt"
+      | "updatedAt"
+      | "street"
+      | "additionalAddressLine"
+      | "plz"
+      | "city"
+      | "countryCode"
+      | "countryArea"
+      | "company"
+      | "phone"
+      | "fullname"
+      | "houseNumber"
+      | "streetWithoutHouseNumber"
+      | "normalizedName";
     Order:
       | "id"
       | "language"
@@ -21,6 +37,8 @@ export namespace DataentitiesModule {
       | "lastName"
       | "mainContact"
       | "mainContactId"
+      | "shippingAddress"
+      | "billingAddress"
       | "orderLineItems"
       | "saleorOrders"
       | "zohoSalesOrders"
@@ -110,6 +128,257 @@ export namespace DataentitiesModule {
       | "EXPIRED"
       | "PENDING";
     Carrier: "DPD" | "DHL" | "UPS" | "HERMES" | "PICKUP" | "UNKNOWN" | "BULK";
+    CountryCode:
+      | "AD"
+      | "AE"
+      | "AF"
+      | "AG"
+      | "AI"
+      | "AL"
+      | "AM"
+      | "AO"
+      | "AQ"
+      | "AR"
+      | "AS"
+      | "AT"
+      | "AU"
+      | "AW"
+      | "AX"
+      | "AZ"
+      | "BA"
+      | "BB"
+      | "BD"
+      | "BE"
+      | "BF"
+      | "BG"
+      | "BH"
+      | "BI"
+      | "BJ"
+      | "BL"
+      | "BM"
+      | "BN"
+      | "BO"
+      | "BQ"
+      | "BR"
+      | "BS"
+      | "BT"
+      | "BV"
+      | "BW"
+      | "BY"
+      | "BZ"
+      | "CA"
+      | "CC"
+      | "CD"
+      | "CF"
+      | "CG"
+      | "CH"
+      | "CI"
+      | "CK"
+      | "CL"
+      | "CM"
+      | "CN"
+      | "CO"
+      | "CR"
+      | "CU"
+      | "CV"
+      | "CW"
+      | "CX"
+      | "CY"
+      | "CZ"
+      | "DE"
+      | "DJ"
+      | "DK"
+      | "DM"
+      | "DO"
+      | "DZ"
+      | "EC"
+      | "EE"
+      | "EG"
+      | "EH"
+      | "ER"
+      | "ES"
+      | "ET"
+      | "EU"
+      | "FI"
+      | "FJ"
+      | "FK"
+      | "FM"
+      | "FO"
+      | "FR"
+      | "GA"
+      | "GB"
+      | "GD"
+      | "GE"
+      | "GF"
+      | "GG"
+      | "GH"
+      | "GI"
+      | "GL"
+      | "GM"
+      | "GN"
+      | "GP"
+      | "GQ"
+      | "GR"
+      | "GS"
+      | "GT"
+      | "GU"
+      | "GW"
+      | "GY"
+      | "HK"
+      | "HM"
+      | "HN"
+      | "HR"
+      | "HT"
+      | "HU"
+      | "ID"
+      | "IE"
+      | "IL"
+      | "IM"
+      | "IN"
+      | "IO"
+      | "IQ"
+      | "IR"
+      | "IS"
+      | "IT"
+      | "JE"
+      | "JM"
+      | "JO"
+      | "JP"
+      | "KE"
+      | "KG"
+      | "KH"
+      | "KI"
+      | "KM"
+      | "KN"
+      | "KP"
+      | "KR"
+      | "KW"
+      | "KY"
+      | "KZ"
+      | "LA"
+      | "LB"
+      | "LC"
+      | "LI"
+      | "LK"
+      | "LR"
+      | "LS"
+      | "LT"
+      | "LU"
+      | "LV"
+      | "LY"
+      | "MA"
+      | "MC"
+      | "MD"
+      | "ME"
+      | "MF"
+      | "MG"
+      | "MH"
+      | "MK"
+      | "ML"
+      | "MM"
+      | "MN"
+      | "MO"
+      | "MP"
+      | "MQ"
+      | "MR"
+      | "MS"
+      | "MT"
+      | "MU"
+      | "MV"
+      | "MW"
+      | "MX"
+      | "MY"
+      | "MZ"
+      | "NA"
+      | "NC"
+      | "NE"
+      | "NF"
+      | "NG"
+      | "NI"
+      | "NL"
+      | "NO"
+      | "NP"
+      | "NR"
+      | "NU"
+      | "NZ"
+      | "OM"
+      | "PA"
+      | "PE"
+      | "PF"
+      | "PG"
+      | "PH"
+      | "PK"
+      | "PL"
+      | "PM"
+      | "PN"
+      | "PR"
+      | "PS"
+      | "PT"
+      | "PW"
+      | "PY"
+      | "QA"
+      | "RE"
+      | "RO"
+      | "RS"
+      | "RU"
+      | "RW"
+      | "SA"
+      | "SB"
+      | "SC"
+      | "SD"
+      | "SE"
+      | "SG"
+      | "SH"
+      | "SI"
+      | "SJ"
+      | "SK"
+      | "SL"
+      | "SM"
+      | "SN"
+      | "SO"
+      | "SR"
+      | "SS"
+      | "ST"
+      | "SV"
+      | "SX"
+      | "SY"
+      | "SZ"
+      | "TC"
+      | "TD"
+      | "TF"
+      | "TG"
+      | "TH"
+      | "TJ"
+      | "TK"
+      | "TL"
+      | "TM"
+      | "TN"
+      | "TO"
+      | "TR"
+      | "TT"
+      | "TV"
+      | "TW"
+      | "TZ"
+      | "UA"
+      | "UG"
+      | "UM"
+      | "US"
+      | "UY"
+      | "UZ"
+      | "VA"
+      | "VC"
+      | "VE"
+      | "VG"
+      | "VI"
+      | "VN"
+      | "VU"
+      | "WF"
+      | "WS"
+      | "YE"
+      | "YT"
+      | "ZA"
+      | "ZM"
+      | "ZW";
   }
 
   interface DefinedInputFields {
@@ -139,7 +408,9 @@ export namespace DataentitiesModule {
   export type Order = Pick<Types.Order, DefinedFields["Order"]>;
   export type PageInfo = Pick<Types.PageInfo, DefinedFields["PageInfo"]>;
   export type Language = DefinedEnumValues["Language"];
+  export type Address = Pick<Types.Address, DefinedFields["Address"]>;
   export type DateTime = Types.DateTime;
+  export type CountryCode = DefinedEnumValues["CountryCode"];
   export type Package = Pick<Types.Package, DefinedFields["Package"]>;
   export type Contact = Pick<Types.Contact, DefinedFields["Contact"]>;
   export type OrderLineItem = Pick<
@@ -181,6 +452,10 @@ export namespace DataentitiesModule {
   export type PageInfoResolvers = Pick<
     Types.PageInfoResolvers,
     DefinedFields["PageInfo"] | "__isTypeOf"
+  >;
+  export type AddressResolvers = Pick<
+    Types.AddressResolvers,
+    DefinedFields["Address"] | "__isTypeOf"
   >;
   export type OrderResolvers = Pick<
     Types.OrderResolvers,
@@ -227,6 +502,7 @@ export namespace DataentitiesModule {
     Query?: QueryResolvers;
     OrdersResponse?: OrdersResponseResolvers;
     PageInfo?: PageInfoResolvers;
+    Address?: AddressResolvers;
     Order?: OrderResolvers;
     OrderLineItem?: OrderLineItemResolvers;
     Contact?: ContactResolvers;
@@ -258,6 +534,24 @@ export namespace DataentitiesModule {
       endCursor?: gm.Middleware[];
       hasNextPage?: gm.Middleware[];
     };
+    Address?: {
+      "*"?: gm.Middleware[];
+      id?: gm.Middleware[];
+      createdAt?: gm.Middleware[];
+      updatedAt?: gm.Middleware[];
+      street?: gm.Middleware[];
+      additionalAddressLine?: gm.Middleware[];
+      plz?: gm.Middleware[];
+      city?: gm.Middleware[];
+      countryCode?: gm.Middleware[];
+      countryArea?: gm.Middleware[];
+      company?: gm.Middleware[];
+      phone?: gm.Middleware[];
+      fullname?: gm.Middleware[];
+      houseNumber?: gm.Middleware[];
+      streetWithoutHouseNumber?: gm.Middleware[];
+      normalizedName?: gm.Middleware[];
+    };
     Order?: {
       "*"?: gm.Middleware[];
       id?: gm.Middleware[];
@@ -275,6 +569,8 @@ export namespace DataentitiesModule {
       lastName?: gm.Middleware[];
       mainContact?: gm.Middleware[];
       mainContactId?: gm.Middleware[];
+      shippingAddress?: gm.Middleware[];
+      billingAddress?: gm.Middleware[];
       orderLineItems?: gm.Middleware[];
       saleorOrders?: gm.Middleware[];
       zohoSalesOrders?: gm.Middleware[];

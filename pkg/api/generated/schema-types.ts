@@ -34,6 +34,28 @@ export type Scalars = {
   DateTime: any;
 };
 
+export type Address = {
+  __typename?: "Address";
+  additionalAddressLine?: Maybe<Scalars["String"]>;
+  city?: Maybe<Scalars["String"]>;
+  company?: Maybe<Scalars["String"]>;
+  countryArea?: Maybe<Scalars["String"]>;
+  countryCode?: Maybe<CountryCode>;
+  /** Created and updated at the ECI DB */
+  createdAt?: Maybe<Scalars["DateTime"]>;
+  fullname?: Maybe<Scalars["String"]>;
+  houseNumber?: Maybe<Scalars["String"]>;
+  /** eci internal id */
+  id: Scalars["String"];
+  /** A unique string identifying this address for easy lookup */
+  normalizedName?: Maybe<Scalars["String"]>;
+  phone?: Maybe<Scalars["String"]>;
+  plz?: Maybe<Scalars["String"]>;
+  street?: Maybe<Scalars["String"]>;
+  streetWithoutHouseNumber?: Maybe<Scalars["String"]>;
+  updatedAt?: Maybe<Scalars["DateTime"]>;
+};
+
 export type AuthPayload = {
   __typename?: "AuthPayload";
   token?: Maybe<Scalars["String"]>;
@@ -64,6 +86,258 @@ export type Contact = {
   updatedAt?: Maybe<Scalars["DateTime"]>;
 };
 
+export type CountryCode =
+  | "AD"
+  | "AE"
+  | "AF"
+  | "AG"
+  | "AI"
+  | "AL"
+  | "AM"
+  | "AO"
+  | "AQ"
+  | "AR"
+  | "AS"
+  | "AT"
+  | "AU"
+  | "AW"
+  | "AX"
+  | "AZ"
+  | "BA"
+  | "BB"
+  | "BD"
+  | "BE"
+  | "BF"
+  | "BG"
+  | "BH"
+  | "BI"
+  | "BJ"
+  | "BL"
+  | "BM"
+  | "BN"
+  | "BO"
+  | "BQ"
+  | "BR"
+  | "BS"
+  | "BT"
+  | "BV"
+  | "BW"
+  | "BY"
+  | "BZ"
+  | "CA"
+  | "CC"
+  | "CD"
+  | "CF"
+  | "CG"
+  | "CH"
+  | "CI"
+  | "CK"
+  | "CL"
+  | "CM"
+  | "CN"
+  | "CO"
+  | "CR"
+  | "CU"
+  | "CV"
+  | "CW"
+  | "CX"
+  | "CY"
+  | "CZ"
+  | "DE"
+  | "DJ"
+  | "DK"
+  | "DM"
+  | "DO"
+  | "DZ"
+  | "EC"
+  | "EE"
+  | "EG"
+  | "EH"
+  | "ER"
+  | "ES"
+  | "ET"
+  | "EU"
+  | "FI"
+  | "FJ"
+  | "FK"
+  | "FM"
+  | "FO"
+  | "FR"
+  | "GA"
+  | "GB"
+  | "GD"
+  | "GE"
+  | "GF"
+  | "GG"
+  | "GH"
+  | "GI"
+  | "GL"
+  | "GM"
+  | "GN"
+  | "GP"
+  | "GQ"
+  | "GR"
+  | "GS"
+  | "GT"
+  | "GU"
+  | "GW"
+  | "GY"
+  | "HK"
+  | "HM"
+  | "HN"
+  | "HR"
+  | "HT"
+  | "HU"
+  | "ID"
+  | "IE"
+  | "IL"
+  | "IM"
+  | "IN"
+  | "IO"
+  | "IQ"
+  | "IR"
+  | "IS"
+  | "IT"
+  | "JE"
+  | "JM"
+  | "JO"
+  | "JP"
+  | "KE"
+  | "KG"
+  | "KH"
+  | "KI"
+  | "KM"
+  | "KN"
+  | "KP"
+  | "KR"
+  | "KW"
+  | "KY"
+  | "KZ"
+  | "LA"
+  | "LB"
+  | "LC"
+  | "LI"
+  | "LK"
+  | "LR"
+  | "LS"
+  | "LT"
+  | "LU"
+  | "LV"
+  | "LY"
+  | "MA"
+  | "MC"
+  | "MD"
+  | "ME"
+  | "MF"
+  | "MG"
+  | "MH"
+  | "MK"
+  | "ML"
+  | "MM"
+  | "MN"
+  | "MO"
+  | "MP"
+  | "MQ"
+  | "MR"
+  | "MS"
+  | "MT"
+  | "MU"
+  | "MV"
+  | "MW"
+  | "MX"
+  | "MY"
+  | "MZ"
+  | "NA"
+  | "NC"
+  | "NE"
+  | "NF"
+  | "NG"
+  | "NI"
+  | "NL"
+  | "NO"
+  | "NP"
+  | "NR"
+  | "NU"
+  | "NZ"
+  | "OM"
+  | "PA"
+  | "PE"
+  | "PF"
+  | "PG"
+  | "PH"
+  | "PK"
+  | "PL"
+  | "PM"
+  | "PN"
+  | "PR"
+  | "PS"
+  | "PT"
+  | "PW"
+  | "PY"
+  | "QA"
+  | "RE"
+  | "RO"
+  | "RS"
+  | "RU"
+  | "RW"
+  | "SA"
+  | "SB"
+  | "SC"
+  | "SD"
+  | "SE"
+  | "SG"
+  | "SH"
+  | "SI"
+  | "SJ"
+  | "SK"
+  | "SL"
+  | "SM"
+  | "SN"
+  | "SO"
+  | "SR"
+  | "SS"
+  | "ST"
+  | "SV"
+  | "SX"
+  | "SY"
+  | "SZ"
+  | "TC"
+  | "TD"
+  | "TF"
+  | "TG"
+  | "TH"
+  | "TJ"
+  | "TK"
+  | "TL"
+  | "TM"
+  | "TN"
+  | "TO"
+  | "TR"
+  | "TT"
+  | "TV"
+  | "TW"
+  | "TZ"
+  | "UA"
+  | "UG"
+  | "UM"
+  | "US"
+  | "UY"
+  | "UZ"
+  | "VA"
+  | "VC"
+  | "VE"
+  | "VG"
+  | "VI"
+  | "VN"
+  | "VU"
+  | "WF"
+  | "WS"
+  | "YE"
+  | "YT"
+  | "ZA"
+  | "ZM"
+  | "ZW";
+
 export type Language = "DE" | "EN";
 
 export type Membership = {
@@ -93,6 +367,7 @@ export type MutationSignupArgs = {
 
 export type Order = {
   __typename?: "Order";
+  billingAddress?: Maybe<Address>;
   createdAt?: Maybe<Scalars["DateTime"]>;
   date?: Maybe<Scalars["DateTime"]>;
   discountCode?: Maybe<Scalars["String"]>;
@@ -107,6 +382,7 @@ export type Order = {
   orderNumber: Scalars["String"];
   packages: Array<Package>;
   saleorOrders?: Maybe<Array<Maybe<SaleorOrder>>>;
+  shippingAddress?: Maybe<Address>;
   totalPriceGross?: Maybe<Scalars["Float"]>;
   totalPriceNet?: Maybe<Scalars["Float"]>;
   updatedAt?: Maybe<Scalars["DateTime"]>;
@@ -397,6 +673,7 @@ export type DirectiveResolverFn<
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
+  Address: ResolverTypeWrapper<Address>;
   AuthPayload: ResolverTypeWrapper<AuthPayload>;
   Boolean: ResolverTypeWrapper<Scalars["Boolean"]>;
   Carrier: Carrier;
@@ -406,6 +683,7 @@ export type ResolversTypes = ResolversObject<{
       payments?: Maybe<Array<Maybe<ResolversTypes["Payment"]>>>;
     }
   >;
+  CountryCode: CountryCode;
   DateTime: ResolverTypeWrapper<Scalars["DateTime"]>;
   Float: ResolverTypeWrapper<Scalars["Float"]>;
   ID: ResolverTypeWrapper<Scalars["ID"]>;
@@ -453,6 +731,7 @@ export type ResolversTypes = ResolversObject<{
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
+  Address: Address;
   AuthPayload: AuthPayload;
   Boolean: Scalars["Boolean"];
   Contact: Omit<Contact, "orders" | "payments"> & {
@@ -496,6 +775,60 @@ export type ResolversParentTypes = ResolversObject<{
   ZohoSalesOrder: Omit<ZohoSalesOrder, "order"> & {
     order: ResolversParentTypes["Order"];
   };
+}>;
+
+export type AddressResolvers<
+  ContextType = GraphQLModules.Context,
+  ParentType extends ResolversParentTypes["Address"] = ResolversParentTypes["Address"],
+> = ResolversObject<{
+  additionalAddressLine?: Resolver<
+    Maybe<ResolversTypes["String"]>,
+    ParentType,
+    ContextType
+  >;
+  city?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>;
+  company?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>;
+  countryArea?: Resolver<
+    Maybe<ResolversTypes["String"]>,
+    ParentType,
+    ContextType
+  >;
+  countryCode?: Resolver<
+    Maybe<ResolversTypes["CountryCode"]>,
+    ParentType,
+    ContextType
+  >;
+  createdAt?: Resolver<
+    Maybe<ResolversTypes["DateTime"]>,
+    ParentType,
+    ContextType
+  >;
+  fullname?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>;
+  houseNumber?: Resolver<
+    Maybe<ResolversTypes["String"]>,
+    ParentType,
+    ContextType
+  >;
+  id?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  normalizedName?: Resolver<
+    Maybe<ResolversTypes["String"]>,
+    ParentType,
+    ContextType
+  >;
+  phone?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>;
+  plz?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>;
+  street?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>;
+  streetWithoutHouseNumber?: Resolver<
+    Maybe<ResolversTypes["String"]>,
+    ParentType,
+    ContextType
+  >;
+  updatedAt?: Resolver<
+    Maybe<ResolversTypes["DateTime"]>,
+    ParentType,
+    ContextType
+  >;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AuthPayloadResolvers<
@@ -591,6 +924,11 @@ export type OrderResolvers<
   ContextType = GraphQLModules.Context,
   ParentType extends ResolversParentTypes["Order"] = ResolversParentTypes["Order"],
 > = ResolversObject<{
+  billingAddress?: Resolver<
+    Maybe<ResolversTypes["Address"]>,
+    ParentType,
+    ContextType
+  >;
   createdAt?: Resolver<
     Maybe<ResolversTypes["DateTime"]>,
     ParentType,
@@ -638,6 +976,11 @@ export type OrderResolvers<
   >;
   saleorOrders?: Resolver<
     Maybe<Array<Maybe<ResolversTypes["SaleorOrder"]>>>,
+    ParentType,
+    ContextType
+  >;
+  shippingAddress?: Resolver<
+    Maybe<ResolversTypes["Address"]>,
     ParentType,
     ContextType
   >;
@@ -939,6 +1282,7 @@ export type ZohoSalesOrderResolvers<
 }>;
 
 export type Resolvers<ContextType = GraphQLModules.Context> = ResolversObject<{
+  Address?: AddressResolvers<ContextType>;
   AuthPayload?: AuthPayloadResolvers<ContextType>;
   Contact?: ContactResolvers<ContextType>;
   DateTime?: GraphQLScalarType;
