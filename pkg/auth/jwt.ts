@@ -45,7 +45,7 @@ export class JWT {
       secret,
       {
         algorithm: JWT.algorithm,
-        expiresIn: "15m",
+        expiresIn: "1h",
         audience: JWT.audience,
         issuer: JWT.issuer,
         subject,
