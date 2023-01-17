@@ -604,6 +604,10 @@ model Payment {
   /// Unique identifier for a customer payment. We use the payment gateway id as reference.
   referenceNumber String
 
+  /// The order date. You can also create an order in the past for example. 
+  /// Some systems just use a date here
+  date DateTime?
+
   amount Float
 
   /// Costs for this transaction, for example bank charges, gateway charges, paypal charges
@@ -909,7 +913,8 @@ model Order {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // the order date
+  /// The order date. You can also create an order in the past for example. 
+  /// Some systems just use a date here
   date DateTime
 
   /// The Date, that we expect this order to be shipped.
