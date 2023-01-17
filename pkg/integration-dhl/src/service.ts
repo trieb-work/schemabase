@@ -174,5 +174,10 @@ export class DHLTrackingSyncService {
       this.logger.info(`Created Kafka message with ID ${messageId}`);
       await sleep(5000);
     }
+
+    await this.cronState.set({
+      lastRun: new Date(),
+      lastRunStatus: "success",
+    });
   }
 }
