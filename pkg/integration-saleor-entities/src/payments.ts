@@ -336,6 +336,7 @@ export class SaleorPaymentSyncService {
                 id: id.id("payment"),
                 amount: payment.total?.amount as number,
                 referenceNumber: paymentReference,
+                date: payment.created,
                 mainContact: {
                   connect: {
                     email_tenantId: {
@@ -390,6 +391,7 @@ export class SaleorPaymentSyncService {
             },
             update: {
               order: orderConnect,
+              date: payment.created,
             },
           },
         },
@@ -407,52 +409,81 @@ export class SaleorPaymentSyncService {
    * and related payments. Tries to create these payments in saleor
    */
   public async syncFromECI(): Promise<void> {
+    this.logger.info(
+      "Asking DB for all Payments, that we need to create in Saleor",
+    );
     /**
      * We search all payments that have a related saleor order, but that don't have any related payments in saleor,
      * but related payment in our DB. This happens, when you charge the customer in a 3rd party system
      *
      * This query is expensive right now! It uses many to many relation, which is not possible to improve / index
      */
+
     const paymentsNotYetInSaleor = await this.db.payment.findMany({
       where: {
-        AND: [
-          {
-            order: {
-              saleorOrders: {
-                some: {
-                  installedSaleorAppId: {
-                    equals: this.installedSaleorAppId,
-                  },
-                },
-              },
+        order: {
+          saleorOrders: {
+            some: {
+              installedSaleorAppId: this.installedSaleorAppId,
             },
           },
-          {
-            saleorPayment: {
-              none: {
-                installedSaleorAppId: {
-                  equals: this.installedSaleorAppId,
-                },
-              },
-            },
+        },
+        saleorPayment: {
+          none: {
+            installedSaleorAppId: this.installedSaleorAppId,
           },
-        ],
+        },
+        tenantId: this.tenantId,
       },
       include: {
         order: {
           select: {
-            saleorOrders: {
-              select: {
-                id: true,
-                installedSaleorAppId: true,
-              },
-            },
+            saleorOrders: true,
           },
         },
       },
     });
+
+    // const paymentsNotYetInSaleor = await this.db.payment.findMany({
+    //   where: {
+    //     AND: [
+    //       {
+    //         order: {
+    //           saleorOrders: {
+    //             some: {
+    //               installedSaleorAppId: {
+    //                 equals: this.installedSaleorAppId,
+    //               },
+    //             },
+    //           },
+    //         },
+    //       },
+    //       {
+    //         saleorPayment: {
+    //           none: {
+    //             installedSaleorAppId: {
+    //               equals: this.installedSaleorAppId,
+    //             },
+    //           },
+    //         },
+    //       },
+    //     ],
+    //   },
+    //   include: {
+    //     order: {
+    //       select: {
+    //         saleorOrders: {
+    //           select: {
+    //             id: true,
+    //             installedSaleorAppId: true,
+    //           },
+    //         },
+    //       },
+    //     },
+    //   },
+    // });
     this.logger.info(
-      `Received ${paymentsNotYetInSaleor.length} orders that have a payment and are saleor orders`,
+      `Received ${paymentsNotYetInSaleor.length} payments that we try to create in Saleor`,
       {
         paymentIds: paymentsNotYetInSaleor.map((p) => p.id),
       },

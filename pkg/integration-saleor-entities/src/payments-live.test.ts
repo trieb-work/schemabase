@@ -11,7 +11,7 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
-describe("Zoho Entity Sync Orders Test", () => {
+describe("Saleor Entity Sync Orders Test", () => {
   const prismaClient = new PrismaClient();
 
   test("It should work to sync payments", async () => {
@@ -35,7 +35,7 @@ describe("Zoho Entity Sync Orders Test", () => {
       tenantId: tenant.id,
       orderPrefix: "STORE",
     });
-    await service.syncToECI();
-    // await service.syncFromECI();
+    // await service.syncToECI();
+    await service.syncFromECI();
   }, 1000000);
 });
