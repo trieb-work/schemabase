@@ -524,7 +524,9 @@ export class ZohoPackageSyncService {
     const packagesAlreadyDelivered = await this.db.package.findMany({
       where: {
         tenantId: this.zohoApp.tenantId,
-        state: "DELIVERED",
+        state: {
+          in: ["DELIVERED", "AVAILABLE_FOR_PICKUP"],
+        },
         zohoPackage: {
           some: {
             shipmentStatus: {
