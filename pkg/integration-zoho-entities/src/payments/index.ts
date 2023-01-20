@@ -164,14 +164,30 @@ export class ZohoPaymentSyncService {
       const relatedEciInvoice = relatedInvoice
         ? await this.db.zohoInvoice.findUnique({
             where: {
-              id_zohoAppId: {
-                id: relatedInvoice,
+              number_zohoAppId: {
+                number: relatedInvoice,
                 zohoAppId: this.zohoApp.id,
+              },
+            },
+            include: {
+              invoice: {
+                include: {
+                  orders: true,
+                },
               },
             },
           })
         : undefined;
-      const relatedInvoiceConnect = relatedEciInvoice?.invoiceId;
+      const relatedECIInvoiceId = relatedEciInvoice?.invoiceId;
+      /**
+       * The order, that is related to this payment. We try to match it using
+       * the related invoice (from Zoho we just get the related Invoice, not related order)
+       */
+      const relatedOrderId =
+        relatedEciInvoice?.invoice.orders.length === 1
+          ? relatedEciInvoice?.invoice.orders[0].id
+          : undefined;
+
       // connect or create the Zoho Payment with our internal payment entity
       const paymentConnectOrCreate: Prisma.PaymentCreateNestedOneWithoutZohoPaymentInput =
         {
@@ -186,6 +202,13 @@ export class ZohoPaymentSyncService {
               id: id.id("payment"),
               amount: payment.amount,
               referenceNumber,
+              order: relatedOrderId
+                ? {
+                    connect: {
+                      id: relatedOrderId,
+                    },
+                  }
+                : undefined,
               mainContact: eciContactId
                 ? {
                     connect: {
@@ -203,10 +226,10 @@ export class ZohoPaymentSyncService {
                   id: this.zohoApp.tenantId,
                 },
               },
-              invoices: relatedInvoiceConnect
+              invoices: relatedECIInvoiceId
                 ? {
                     connect: {
-                      id: relatedInvoiceConnect,
+                      id: relatedECIInvoiceId,
                     },
                   }
                 : undefined,
@@ -230,20 +253,25 @@ export class ZohoPaymentSyncService {
           },
           createdAt: new Date(payment.created_time),
           updatedAt: new Date(payment.last_modified_time),
-          // zohoContact: zohoContactConnect,
           payment: paymentConnectOrCreate,
         },
         update: {
           createdAt: new Date(payment.created_time),
           updatedAt: new Date(payment.last_modified_time),
-          // zohoContact: zohoContactConnect,
           payment: {
             ...paymentConnectOrCreate,
             update: {
-              invoices: relatedInvoiceConnect
+              order: relatedOrderId
                 ? {
                     connect: {
-                      id: relatedInvoiceConnect,
+                      id: relatedOrderId,
+                    },
+                  }
+                : undefined,
+              invoices: relatedECIInvoiceId
+                ? {
+                    connect: {
+                      id: relatedECIInvoiceId,
                     },
                   }
                 : undefined,
