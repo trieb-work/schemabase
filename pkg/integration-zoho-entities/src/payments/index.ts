@@ -153,6 +153,8 @@ export class ZohoPaymentSyncService {
         continue;
       }
 
+      const paymentDate = new Date(payment.date);
+
       const relatedInvoice =
         payment.invoice_numbers_array.length === 1
           ? payment.invoice_numbers_array[0]
@@ -202,6 +204,7 @@ export class ZohoPaymentSyncService {
               id: id.id("payment"),
               amount: payment.amount,
               referenceNumber,
+              date: paymentDate,
               order: relatedOrderId
                 ? {
                     connect: {
@@ -261,6 +264,7 @@ export class ZohoPaymentSyncService {
           payment: {
             ...paymentConnectOrCreate,
             update: {
+              date: paymentDate,
               order: relatedOrderId
                 ? {
                     connect: {
