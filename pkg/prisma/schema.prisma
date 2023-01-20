@@ -632,12 +632,13 @@ model Payment {
   saleorPayment         SaleorPayment[]
   braintreeTransactions BraintreeTransaction[]
 
-  @@unique([orderId, tenantId])
   @@unique([referenceNumber, tenantId])
   @@index([orderId])
   @@index([tenantId])
   @@index([paymentMethodId])
   @@index([mainContactId])
+  @@index([orderId, tenantId])
+
 }
 
 /// categorize payments by payment method type

@@ -400,7 +400,6 @@ Some systems just use a date here']
   braintreeTransactions BraintreeTransaction [not null]
 
   indexes {
-    (orderId, tenantId) [unique]
     (referenceNumber, tenantId) [unique]
   }
 
