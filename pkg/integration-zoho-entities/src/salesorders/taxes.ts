@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { ZohoTax, Tax } from "@prisma/client";
 import { Warning } from "../utils";
 
@@ -13,7 +14,7 @@ export function taxToZohoTaxId(tax: ExtendedTax): string {
   }
   if (tax.zohoTaxes.length > 1) {
     throw new Error(
-      "Multiple zohoTaxes set for this tax. Aborting sync of this order.",
+      `Multiple zohoTaxes set for this tax. Percentage:${tax.percentage}. Aborting sync of this order.`,
     );
   }
   return tax.zohoTaxes[0].id;

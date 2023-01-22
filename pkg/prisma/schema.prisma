@@ -484,6 +484,9 @@ model ZohoTax {
   /// ID of eci internal Tax Object
   taxId String
 
+  /// The name could be used to match a tax better when multiple taxes exist
+  name String?
+
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String
 

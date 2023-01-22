@@ -303,6 +303,7 @@ Table ZohoTax {
   id String [not null, note: 'internal ID of tax in Zoho']
   tax Tax [not null]
   taxId String [not null, note: 'ID of eci internal Tax Object']
+  name String [note: 'The name could be used to match a tax better when multiple taxes exist']
   zohoApp ZohoApp [not null]
   zohoAppId String [not null]
 
