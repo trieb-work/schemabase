@@ -1005,6 +1005,8 @@ model Order {
   @@unique([orderNumber, tenantId])
   // Adding this unique constraint just for relational purposes
   @@unique([id, orderNumber])
+  @@index([id, orderNumber])
+  @@index([id])
   @@index([shippingAddressId])
   @@index([billingAddressId])
   @@index([shippingPriceTaxId])
@@ -1996,6 +1998,7 @@ model InstalledSaleorApp {
   @@unique([domain, channelSlug])
   @@index([saleorAppId, domain])
   @@index([defaultWarehouseId])
+  @@index([id])
 }
 
 // One tenant per company
