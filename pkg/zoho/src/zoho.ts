@@ -11,6 +11,7 @@ export async function prismaZohoAppEntryToClient(
     await ZohoApiClient.fromOAuth({
       orgId: zohoApp.orgId,
       dc,
+      scope: "ZohoInventory.FullAccess.all,ZohoBooks.FullAccess.all",
       client: {
         id: zohoApp.clientId,
         secret: zohoApp.clientSecret,

@@ -4,6 +4,7 @@ import { beforeEach, describe, jest, test } from "@jest/globals";
 import "@eci/pkg/jest-utils/consoleFormatter";
 import { getZohoClientAndEntry } from "@eci/pkg/zoho";
 import { ZohoPaymentSyncService } from ".";
+import { ZohoBankAccountsSyncService } from "../bankaccounts";
 
 /// Use this file to locally run this service
 
@@ -36,7 +37,15 @@ describe("Zoho Entity Sync Orders Test", () => {
       db: prismaClient,
       createdTimeOffset: 1,
     });
+    const zohoBankAccountsSyncService = new ZohoBankAccountsSyncService({
+      logger: new AssertionLogger(),
+      zoho,
+      db: prismaClient,
+      zohoApp,
+    });
+
     await service.syncToECI();
+    await zohoBankAccountsSyncService.syncToECI();
 
     await service.syncFromECI();
   }, 1000000);

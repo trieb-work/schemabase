@@ -43,7 +43,8 @@ export class ZohoBankAccountsSyncService {
         };
 
         /**
-         * Upsert the Zoho Bank Accounts. Don't link internal payment methods. We have to do that manually
+         * Upsert the Zoho Bank Accounts. Don't link internal payment methods.
+         * We have to do that manually
          */
         await this.db.zohoBankAccount.upsert({
           where: {
