@@ -16,7 +16,7 @@
     "@graphql-codegen/typescript-graphql-files-modules": "^2.1.1",
     "@graphql-codegen/typescript-operations": "^2.5.12",
     "@graphql-codegen/typescript-resolvers": "^2.7.1",
-    "@jest/globals": "^27.5.1",
+    "@jest/globals": "^29.4.0",
     "@paljs/generator": "^5.2.0",
     "@swc/core": "^1.2.165",
     "@swc/jest": "^0.2.20",
