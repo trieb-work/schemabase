@@ -446,6 +446,7 @@ export class ZohoSalesOrdersSyncService {
               salesorder.salesorder_number,
               lineItem.sku,
               lineItem.quantity,
+              lineItem.item_order,
             );
 
             // Lookup of the product variant SKU in our internal DB

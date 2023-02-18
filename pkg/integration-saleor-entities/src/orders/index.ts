@@ -387,7 +387,7 @@ export class SaleorOrderSyncService {
         }
 
         // loop through all line items and upsert them in the DB
-        for (const lineItem of lineItems) {
+        for (const [i, lineItem] of lineItems.entries()) {
           if (!lineItem?.id) {
             throw new Error(
               `Lineitem of Order has a missing id in saleor response.`,
@@ -417,6 +417,8 @@ export class SaleorOrderSyncService {
             prefixedOrderNumber,
             lineItem.productSku,
             lineItem.quantity,
+            // the first item is always "1". Saleor does not natively offer the order of line items, so we take the array index + 1
+            i + 1
           );
 
           const lineItemTotalDiscountNet = round(

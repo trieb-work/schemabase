@@ -843,7 +843,7 @@ model PackageLineItem {
   updatedAt DateTime @updatedAt
 
   // Unique string to identify this LineItem
-  // between different systems.
+  // between different systems. See: uniqueStringOrderLine package
   // For packages: ${packageNumber}${sku}${quantity} 
   uniqueString String
 
