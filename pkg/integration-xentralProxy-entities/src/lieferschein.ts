@@ -148,6 +148,7 @@ export class XentralProxyLieferscheinSyncService {
         xentralChildAndParentAuftraegeBelegnrs:
           xentralChildAndParentAuftraege.map((a) => a.belegnr),
       };
+      // In Xentral it's possible, that we receive empty trackingnumbers back. Maybe a failed attempt or something
       let trackingnummern: Trackingnummer[];
       try {
         trackingnummern = await arrayFromAsyncGenerator(
@@ -167,6 +168,7 @@ export class XentralProxyLieferscheinSyncService {
         }
         throw err;
       }
+      trackingnummern = trackingnummern.filter((x) => x.tracking)
       if (trackingnummern.length === 0) {
         this.logger.info(
           "Length = 0: No Trackingnumbers found with this belegnr. Seems like this Auftrag has not been processed by logisitics yet.",
