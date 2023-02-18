@@ -448,6 +448,7 @@ export async function upsertLineItem1(
         orderNumber,
         `test-l1-${orderNumber}`,
         10,
+        1,
       ),
       tax: {
         connect: {
@@ -494,6 +495,7 @@ export async function upsertLineItemWithRealProductVariantFromZoho(
         orderNumber,
         `test-l1-1-${orderNumber}`,
         10,
+        1,
       ),
       tax: {
         connect: {

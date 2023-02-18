@@ -60,6 +60,7 @@ describe("Zoho Inventory SalesOrders Sync from internal ECI DB", () => {
       logger: zohoSalesOrdersLogger,
       db: new PrismaClient(),
       zohoApp,
+      createdTimeOffset: 0,
     });
   });
   afterAll(async () => {

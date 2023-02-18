@@ -26954,6 +26954,7 @@ describe("Zoho Inventory Invoice Sync", () => {
       logger: new NoopLogger(),
       db: new PrismaClient(),
       zohoApp,
+      createdTimeOffset: 0,
     });
     await xx.syncToECI();
   }, 90000);
