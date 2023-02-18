@@ -542,6 +542,7 @@ export async function upsertLineItem2(
         orderNumber,
         `test-l2-${orderNumber}`,
         5,
+        1,
       ),
       tax: {
         connect: {
