@@ -274,6 +274,7 @@ export class ZohoPackageSyncService {
             parcel.package_number,
             lineItem.sku,
             lineItem.quantity,
+            lineItem.item_order,
           );
 
           if (!lineItem.warehouse_id) {
