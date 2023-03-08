@@ -928,6 +928,19 @@ Table EasyPostApp {
   Note: 'EasyPost Model'
 }
 
+Table NordigenApp {
+  id String [pk]
+  enabled Boolean [not null, default: false]
+  secretId String [not null]
+  secretKey String [not null]
+  accessToken String
+  refreshToken String
+  cronSchedule String [not null, default: '0 */4 * * *']
+  cronTimeout Int [not null, default: 800]
+
+  Note: 'Nordigen App model. One Nordigen App for whole schemabase, so no tenant given'
+}
+
 Table DHLTrackingApp {
   id String [pk]
   enabled Boolean [not null, default: false]

@@ -1790,6 +1790,27 @@ model EasyPostApp {
   @@index([integrationId])
 }
 
+/// Nordigen App model. One Nordigen App for whole schemabase, so no tenant given
+model NordigenApp {
+  id String @id
+
+  enabled Boolean @default(false)
+
+  secretId    String
+  secretKey   String
+
+  accessToken String?
+  refreshToken String?
+
+
+
+  cronSchedule String @default("0 */4 * * *")
+  // Time in seconds how long one workflow can run before a timeout occurs.
+  cronTimeout  Int    @default(800)
+
+}
+
+
 /// DHL Tracking App model
 model DHLTrackingApp {
   id String @id
