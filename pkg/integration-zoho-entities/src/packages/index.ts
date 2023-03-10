@@ -67,8 +67,8 @@ export class ZohoPackageSyncService {
     const cronState = await this.cronState.get();
 
     const now = new Date();
-    const yesterdayMidnight = setHours(subDays(now, 1), 0);
-    let gteDate = format(yesterdayMidnight, "yyyy-MM-dd");
+    const nowMinus20Days = setHours(subDays(now, 20), 0);
+    let gteDate = format(nowMinus20Days, "yyyy-MM-dd");
 
     if (cronState.lastRun === null) {
       gteDate = format(subYears(now, 2), "yyyy-MM-dd");
@@ -76,11 +76,18 @@ export class ZohoPackageSyncService {
         `This seems to be our first sync run. Setting GTE date to ${gteDate}`,
       );
     } else {
-      this.logger.info(`Setting GTE date to ${gteDate}`);
+      this.logger.info(`Setting GTE date for package creation to ${gteDate}`);
     }
 
+    /**
+     * Packages can't be filtered by "last modified time". We have to
+     * try and do it like this, but its not nice..
+     */
     const packages = await this.zoho.package.list({
-      createdDateStart: gteDate,
+      // createdDateStart: gteDate,
+      sortColumn: "last_modified_time",
+      sortOrder: "descending",
+      limit: 200,
     });
 
     this.logger.info(

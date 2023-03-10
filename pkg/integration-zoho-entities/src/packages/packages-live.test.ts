@@ -37,6 +37,6 @@ describe("Zoho Entity Sync Orders Test", () => {
     });
     // await service.syncToECI();
 
-    await service.syncFromECI();
+    await service.syncToECI();
   }, 1000000);
 });
