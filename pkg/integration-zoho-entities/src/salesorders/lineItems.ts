@@ -52,6 +52,12 @@ function calculateLineItemDiscount(
   return calculateDiscount(undefined, "fixed");
 }
 
+/**
+ * Transform ECI lines items from an order to valid Zoho line items
+ * @param order
+ * @param discount_type
+ * @returns
+ */
 export function orderToZohoLineItems(
   order: OrderWithZohoItemsAndZohoWarehouse,
   discount_type: CreateSalesOrder["discount_type"],
@@ -112,6 +118,7 @@ export function orderToZohoLineItems(
       tax_id: taxToZohoTaxId(lineItem.tax),
       rate: lineItem.undiscountedUnitPriceGross,
       discount: calculateLineItemDiscount(lineItem, discount_type),
+      item_order: lineItem.itemOrder || undefined,
     };
   });
 }

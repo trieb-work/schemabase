@@ -130,7 +130,7 @@ export class SaleorOrderSyncService {
    */
   private idToToken(saleorId: string): string {
 
-    return Buffer.from(saleorId, 'base64').toString('utf8').split("Order:")[1]  
+    return Buffer.from(saleorId, 'base64').toString('utf8').split("Order:")[1]
 
   }
 
@@ -190,26 +190,26 @@ export class SaleorOrderSyncService {
         const companyCreateOrConnect: Prisma.CompanyCreateNestedOneWithoutContactsInput =
           companyName
             ? {
-                connectOrCreate: {
-                  where: {
-                    normalizedName_tenantId: {
-                      normalizedName:
-                        normalizeStrings.companyNames(companyName),
-                      tenantId: this.tenantId,
-                    },
+              connectOrCreate: {
+                where: {
+                  normalizedName_tenantId: {
+                    normalizedName:
+                      normalizeStrings.companyNames(companyName),
+                    tenantId: this.tenantId,
                   },
-                  create: {
-                    id: id.id("company"),
-                    name: companyName,
-                    normalizedName: normalizeStrings.companyNames(companyName),
-                    tenant: {
-                      connect: {
-                        id: this.tenantId,
-                      },
+                },
+                create: {
+                  id: id.id("company"),
+                  name: companyName,
+                  normalizedName: normalizeStrings.companyNames(companyName),
+                  tenant: {
+                    connect: {
+                      id: this.tenantId,
                     },
                   },
                 },
-              }
+              },
+            }
             : {};
         const contactCreateOrConnect = {
           connectOrCreate: {
@@ -334,7 +334,18 @@ export class SaleorOrderSyncService {
             },
           },
           include: {
-            order: true,
+            order: {
+              select: {
+                id: true,
+                mainContactId: true,
+                shippingPriceTaxId: true,
+                orderLineItems: {
+                  select: {
+                    id: true
+                  }
+                }
+              }
+            },
           },
         });
 
@@ -360,8 +371,8 @@ export class SaleorOrderSyncService {
         const highestTaxRate =
           order.shippingPrice.gross.amount > 0
             ? await this.lookupECITax(
-                Math.round(Math.max(...lineItems.map((i) => i.taxRate)) * 100),
-              )
+              Math.round(Math.max(...lineItems.map((i) => i.taxRate)) * 100),
+            )
             : undefined;
 
         if (
@@ -386,6 +397,11 @@ export class SaleorOrderSyncService {
           });
         }
 
+        /**
+         * The order line item ids that are currently valid
+        */
+        const allEciOrderLineItems: { id: string }[] = [];
+        
         // loop through all line items and upsert them in the DB
         for (const [i, lineItem] of lineItems.entries()) {
           if (!lineItem?.id) {
@@ -413,12 +429,14 @@ export class SaleorOrderSyncService {
             );
           }
 
+          // the first item is always "1". Saleor does not natively offer the order of line items, so we take the array index + 1
+          const lineItemOrder = i + 1
+
           const uniqueString = uniqueStringOrderLine(
             prefixedOrderNumber,
             lineItem.productSku,
             lineItem.quantity,
-            // the first item is always "1". Saleor does not natively offer the order of line items, so we take the array index + 1
-            i + 1
+            lineItemOrder,
           );
 
           const lineItemTotalDiscountNet = round(
@@ -451,7 +469,7 @@ export class SaleorOrderSyncService {
           // TODO: would it not be better to inline this into db.saleorOrder.upsert (line 209) so we do not have partiall order data in ECI db if something fails?
           // Otherwise we would maybe need a parialdata flag (or commited flag) which is true on create and will be updated to false once all lineitems etc. have been created.
           // Then we can filter for the next steps for partial data = true;
-          await this.db.saleorOrderLineItem.upsert({
+          const upsertedLineItem = await this.db.saleorOrderLineItem.upsert({
             where: {
               id_installedSaleorAppId: {
                 id: lineItem.id,
@@ -481,6 +499,7 @@ export class SaleorOrderSyncService {
                         id: upsertedOrder.orderId,
                       },
                     },
+                    itemOrder: lineItemOrder,
                     quantity: lineItem.quantity,
                     discountValueNet: lineItemTotalDiscountNet,
                     undiscountedUnitPriceNet:
@@ -511,6 +530,7 @@ export class SaleorOrderSyncService {
             update: {
               orderLineItem: {
                 update: {
+                  itemOrder: lineItemOrder,
                   quantity: lineItem.quantity,
                   discountValueNet: lineItemTotalDiscountNet,
                   totalPriceNet: lineItem.totalPrice.net.amount,
@@ -534,6 +554,29 @@ export class SaleorOrderSyncService {
                     },
                   },
                 },
+              },
+            },
+          });
+
+          allEciOrderLineItems.push({
+            id: upsertedLineItem.orderLineItemId,
+          });
+        }
+
+        const oldOrderLines = upsertedOrder.order.orderLineItems;
+
+        const toBeDeleted = oldOrderLines.filter((x) => {
+          return !allEciOrderLineItems.map((all) => all.id).includes(x.id);
+        });
+
+        if (toBeDeleted.length > 0) {
+          this.logger.info(
+            `To be deleted orderlines: ${JSON.stringify(toBeDeleted)}`,
+          );
+          await this.db.orderLineItem.deleteMany({
+            where: {
+              id: {
+                in: toBeDeleted.map((d) => d.id),
               },
             },
           });

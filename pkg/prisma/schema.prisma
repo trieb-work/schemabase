@@ -793,6 +793,9 @@ model OrderLineItem {
   // For packages: ${packageNumber}${sku}${quantity} 
   uniqueString String
 
+  /// The order of this line item in the order. Starts with 1
+  itemOrder Int?
+
   order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId String
 

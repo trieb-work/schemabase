@@ -437,7 +437,7 @@ export class ZohoSalesOrdersSyncService {
         // Line Items logic
         try {
           /**
-           * The order line item ids that are currently correct
+           * The order line item ids that are currently valid
            */
           const allEciOrderLineItems: { id: string }[] = [];
 
@@ -492,6 +492,7 @@ export class ZohoSalesOrdersSyncService {
                           id: internalOrderId,
                         },
                       },
+                      itemOrder: lineItem.item_order,
                       quantity: lineItem.quantity,
                       discountValueNet: lineItem.discount_amount,
                       tax: {
@@ -534,6 +535,8 @@ export class ZohoSalesOrdersSyncService {
               update: {
                 orderLineItem: {
                   update: {
+                    uniqueString,
+                    itemOrder: lineItem.item_order,
                     quantity: lineItem.quantity,
                     discountValueNet: lineItem.discount_amount,
                     tax: {
