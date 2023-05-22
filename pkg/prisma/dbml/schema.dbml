@@ -177,6 +177,8 @@ Table ZohoContact {
   id String [not null]
   createdAt DateTime
   updatedAt DateTime
+  datevId Int [note: 'When using the DATEV integration from Zoho Books, this field might come in handy.
+/ Needs customFieldDatevContact in ZohoApp set']
   zohoApp ZohoApp [not null]
   zohoAppId String [not null]
   zohoContactPerson ZohoContactPerson [not null]

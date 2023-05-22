@@ -29,7 +29,7 @@ specifiers:
   '@trieb.work/eslint-config-base': ^1.10.0
   '@trieb.work/prettier-base': ^0.1.2
   '@trieb.work/tsconfig-base': ^1.6.4
-  '@trieb.work/zoho-ts': 0.7.3
+  '@trieb.work/zoho-ts': 0.8.0
   '@types/async': ^3.2.13
   '@types/body-parser': ^1.19.2
   '@types/braintree': ^3.3.2
@@ -127,7 +127,7 @@ dependencies:
   '@jest/console': 29.0.2
   '@paljs/plugins': 5.2.0_ny3xkydxbj7m35pkcway5bca5m
   '@prisma/client': 4.8.1_prisma@4.8.1
-  '@trieb.work/zoho-ts': 0.7.3
+  '@trieb.work/zoho-ts': 0.8.0
   apollo-datasource: 3.3.1
   apollo-server: 3.6.7_graphql@16.6.0
   apollo-server-core: 3.6.7_graphql@16.6.0
@@ -3413,8 +3413,8 @@ packages:
     resolution: {integrity: sha512-DTHkbsRuE9fEl+rwMPNoVXcs/JCSKHIFFluE11MgsMXleOotrw+XdzpQU15xrAFiGHpcY92a3XJwxkr3HBoNqw==}
     dev: true
 
-  /@trieb.work/zoho-ts/0.7.3:
-    resolution: {integrity: sha512-69TrFBOGoJasu1gsVILEYaFUHuMKsO1YgaBvCRnuKxyqeLEkFg4Q8Ll4Kxf4DYIp+dDFZsv7Ja6ILTxYa+EzEg==}
+  /@trieb.work/zoho-ts/0.8.0:
+    resolution: {integrity: sha512-ELdFiGX3yW9LxJREFPdjd7Wng1OQcm6teQMQjHTfiQbuKmrOGAtdxiAL9vjC9Z19EG+gWerwdOzT4UuA6V49aw==}
     dependencies:
       async-retry: 1.3.3
       await-timeout: 1.1.1

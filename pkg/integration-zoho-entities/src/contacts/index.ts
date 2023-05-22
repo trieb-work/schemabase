@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import { Zoho, Address } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
-import { Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
+import { DatevApp, Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { subHours, subMonths, subYears } from "date-fns";
@@ -15,6 +15,7 @@ export interface ZohoContactSyncConfig {
   zoho: Zoho;
   db: PrismaClient;
   zohoApp: ZohoApp;
+  datevApp?: DatevApp;
 }
 
 export class ZohoContactSyncService {
@@ -26,6 +27,8 @@ export class ZohoContactSyncService {
 
   private readonly zohoApp: ZohoApp;
 
+  private readonly datevApp: DatevApp | undefined;
+
   private readonly cronState: CronStateHandler;
 
   public constructor(config: ZohoContactSyncConfig) {
@@ -33,6 +36,7 @@ export class ZohoContactSyncService {
     this.zoho = config.zoho;
     this.db = config.db;
     this.zohoApp = config.zohoApp;
+    this.datevApp = config.datevApp;
     this.cronState = new CronStateHandler({
       tenantId: this.zohoApp.tenantId,
       appId: this.zohoApp.id,
@@ -510,6 +514,56 @@ export class ZohoContactSyncService {
                   },
                 },
               },
+            },
+          });
+        }
+      }
+    }
+
+    if (this.datevApp && this.zohoApp.customFieldDatevCustomerId) {
+      const datevUpdates = await this.db.zohoContact.findMany({
+        where: {
+          zohoAppId: this.zohoApp.id,
+          datevId: null,
+        },
+        select: {
+          id: true,
+          zohoContactPerson: {
+            select: {
+              contact: {
+                select: {
+                  datevContacts: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      this.logger.info(
+        `DATEV integration active and ${datevUpdates.length} Zoho contacts need to be updated with a DATEV customer id`,
+      );
+      for (const dContact of datevUpdates) {
+        const datevNummer =
+          dContact.zohoContactPerson?.[0].contact?.datevContacts?.[0]
+            ?.datevNummer;
+        if (datevNummer) {
+          this.logger.info(
+            `Updating Zoho Contact ${dContact.id} with Datev Nummer ${datevNummer}`,
+          );
+          await this.zoho.contact.update({
+            contact_id: dContact.id,
+            [this.zohoApp.customFieldDatevCustomerId]: datevNummer,
+          });
+          await this.db.zohoContact.update({
+            where: {
+              id_zohoAppId: {
+                id: dContact.id,
+                zohoAppId: this.zohoApp.id,
+              },
+            },
+            data: {
+              datevId: datevNummer,
             },
           });
         }

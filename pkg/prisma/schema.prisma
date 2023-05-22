@@ -284,7 +284,7 @@ model ZohoContact {
 
   /// When using the DATEV integration from Zoho Books, this field might come in handy.
   //// Needs customFieldDatevContact in ZohoApp set
-  datevId String?
+  datevId Int?
 
   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id], onDelete: Cascade)
   zohoAppId String

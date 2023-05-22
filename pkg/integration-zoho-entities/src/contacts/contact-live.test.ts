@@ -18,6 +18,9 @@ describe("Zoho Entity Sync Orders Test", () => {
         id: "pk_7f16573fece94114847dc81d3214eef4",
         // id: "test",
       },
+      include: {
+        datevApps: true,
+      },
     });
     if (!tenant)
       throw new Error("Testing Tenant or zoho app/integration not found in DB");
@@ -32,6 +35,7 @@ describe("Zoho Entity Sync Orders Test", () => {
       zohoApp,
       logger: new AssertionLogger(),
       db: prismaClient,
+      datevApp: tenant.datevApps?.[0] ?? undefined,
     });
     await service.syncToECI();
 
