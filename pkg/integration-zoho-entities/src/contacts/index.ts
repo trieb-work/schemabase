@@ -270,7 +270,7 @@ export class ZohoContactSyncService {
       }
 
       /**
-       * Always just chosing the first address to at least have default addresses
+       * Always just chosing the first address to at least have one default address
        */
       const defaultAddress =
         newContact.addresses.length > 0 ? newContact.addresses[0] : undefined;
