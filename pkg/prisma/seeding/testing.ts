@@ -57,8 +57,8 @@ async function main() {
     create: {
       id: "test",
       orgId: "20070434578",
-      clientId: "1000.O4V6IZ9VXZ0FE3INNQ8HKLILJBAM0R",
-      clientSecret: "7380507184e37a8df4b4074ed2cf7bd8d84b9dca5e",
+      clientId: "XYZZZZZ",
+      clientSecret: "XYZZ",
       tenant: {
         connect: {
           id: "test",
@@ -94,7 +94,7 @@ async function main() {
     create: {
       id: "test",
       username: "protonea",
-      password: "2b995033dd61455591ce",
+      password: "adfhgrthwretherh",
       projectId: 2,
       url: "https://62fb63a4bdbf9.xentral.biz",
       warehouse: {
