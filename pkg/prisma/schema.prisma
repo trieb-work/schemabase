@@ -567,6 +567,38 @@ model Invoice {
   @@index([mainContactId])
 }
 
+enum DatevContactType {
+  DEBITOR
+  KREDITOR
+}
+// DATEV model for debitoren, kreditoren
+model DatevContact {
+  // we set the internal database id in this case!
+  id    String @id
+
+  
+  /// The datev ID has to follow the DATEV rules: for SKR04 10000-69999 = debitoren, 
+  /// 70000-99999 = Kreditoren
+  datevNummer Int
+
+  type DatevContactType
+
+  contact Contact @relation(references: [id], fields: [contactId], onDelete: Cascade)
+  contactId  String
+
+  datevApp  DatevApp @relation(references: [id], fields: [datevAppId], onDelete: Cascade)
+  datevAppId String
+
+  @@index([contactId])
+  @@index([datevAppId])
+  
+
+}
+
+
+
+/// ==================================================== ///////
+
 // Internal model to save taxes information
 model Tax {
   // eci internal id
@@ -722,6 +754,12 @@ model Contact {
   firstName String?
   lastName  String?
 
+  /// is this contact a customer / debitor? Can be customer and/or vendor
+  customer  Boolean @default(true)
+
+  /// is this contact a vendor / kreditor? Can be customer and/or vendor
+  vendor    Boolean @default(false)
+
   orders   Order[]
   invoices Invoice[]
   payments Payment[]
@@ -734,6 +772,7 @@ model Contact {
   tenantId String
 
   zohoContactPersons ZohoContactPerson[]
+  datevContacts      DatevContact[]
   addresses          Address[]
 
   /// If we have the users permission to send tracking emails
@@ -1829,6 +1868,25 @@ model ProductDataFeedApp {
   @@index([tenantId])
 }
 
+// Datev APP
+model DatevApp {
+  id String @id
+
+  enabled Boolean @default(false)
+
+  cronSchedule String @default("0 0 * * *")
+  // Time in seconds how long one workflow can run before a timeout occurs.
+  cronTimeout  Int    @default(800)
+
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String @unique
+
+  datevContacts DatevContact[]
+
+  @@index([id])
+}
+
 model LogisticsApp {
   id String @id
 
@@ -1875,6 +1933,9 @@ model ZohoApp {
 
   /// the cf_api name for Zoho settings of the custom field used to enable or disable tracking notifications
   customFieldTrackingNotifications String?
+
+  /// the cf_api name where we store the DATEV kreditor / debitor ID, if we have a running datev integration
+  customFieldDatevCustomerId      String?
 
   cronSchedule String @default("*/30 * * * *")
   cronTimeout  Int    @default(800)
@@ -2048,7 +2109,8 @@ model Tenant {
   billOfMaterial              BillOfMaterial[]
   easyPost                    EasyPostApp[]
   DHLTrackingApps             DHLTrackingApp[]
-  eci_User_Tenants             eci_User_Tenant[]
+  datevApps                   DatevApp[]
+  eci_User_Tenants            eci_User_Tenant[]
 }
 
 // A subscription indicates a tenant has payed for one integration.

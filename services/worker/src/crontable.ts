@@ -23,6 +23,7 @@ import { ZohoPaymentSyncWorkflow } from "./workflows/zohoPaymentSync";
 import { ZohoSalesOrderSyncWorkflow } from "./workflows/zohoSalesOrderSync";
 import { ZohoTaxSyncWorkflow } from "./workflows/zohoTaxSync";
 import { ZohoWarehouseSyncWorkflow } from "./workflows/zohoWarehouseSync";
+import { DatevContactSyncWorkflow } from "./workflows/datevContactSync";
 
 interface CronClients {
   logger: ILogger;
@@ -70,6 +71,33 @@ export class CronTable {
           enabled: true,
         },
       });
+
+    const enabledDatevApps = await this.clients.prisma.datevApp.findMany({
+      where: {
+        enabled: true,
+      },
+    });
+
+    for (const enabledDatevApp of enabledDatevApps) {
+      const { id, cronTimeout, cronSchedule, tenantId } = enabledDatevApp;
+      const commonCronConfig = {
+        cron: cronSchedule,
+        timeout: cronTimeout,
+      };
+      const commonWorkflowConfig = {
+        datevApp: enabledDatevApp,
+      };
+
+      new WorkflowScheduler(this.clients).schedule(
+        createWorkflowFactory(
+          DatevContactSyncWorkflow,
+          this.clients,
+          commonWorkflowConfig,
+        ),
+        { ...commonCronConfig, offset: 0 },
+        [tenantId, id],
+      );
+    }
 
     /**
      * XentralApp Workflows

@@ -60,8 +60,6 @@ export class ZohoContactSyncService {
     }
 
     const contacts = await this.zoho.contact.list({
-      // filterBy: "active",
-      contactType: "customer",
       lastModifiedTime: gteDate,
     });
 
@@ -89,6 +87,9 @@ export class ZohoContactSyncService {
           );
           continue;
         }
+
+        const isVendor = (contact.contact_type as any) === "vendor";
+        const isCustomer = contact.contact_type === "customer";
 
         this.logger.info(`Upserting Zoho contact ${contact.contact_id}`);
         const email = contact.email.toLowerCase();
@@ -149,6 +150,8 @@ export class ZohoContactSyncService {
           update: {
             company: companyCreate,
             email,
+            vendor: isVendor,
+            customer: isCustomer,
           },
           create: {
             id: id.id("contact"),
@@ -156,6 +159,8 @@ export class ZohoContactSyncService {
             email,
             firstName: contact?.first_name,
             lastName: contact?.last_name,
+            vendor: isVendor,
+            customer: isCustomer,
             tenant: {
               connect: {
                 id: tenantId,

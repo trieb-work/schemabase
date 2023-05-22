@@ -15,7 +15,8 @@ type SyncEntity =
   | "salesorders"
   | "braintreeTransactions"
   | "packageState"
-  | "bankaccounts";
+  | "bankaccounts"
+  | "datev";
 
 type CronJobReturn = CronJobState & {
   currentlyLocked: boolean;

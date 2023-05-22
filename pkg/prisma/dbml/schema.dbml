@@ -358,6 +358,17 @@ Table Invoice {
   }
 }
 
+Table DatevContact {
+  id String [pk]
+  datevNummer Int [not null, note: 'The datev ID has to follow the DATEV rules: for SKR04 10000-69999 = debitoren, 
+70000-99999 = Kreditoren']
+  type DatevContactType [not null]
+  contact Contact [not null]
+  contactId String [not null]
+  datevApp DatevApp [not null]
+  datevAppId String [not null]
+}
+
 Table Tax {
   id String [pk]
   createdAt DateTime [default: `now()`, not null]
@@ -453,6 +464,8 @@ Table Contact {
   email String [not null]
   firstName String
   lastName String
+  customer Boolean [not null, default: true, note: 'is this contact a customer / debitor? Can be customer and/or vendor']
+  vendor Boolean [not null, default: false, note: 'is this contact a vendor / kreditor? Can be customer and/or vendor']
   orders Order [not null]
   invoices Invoice [not null]
   payments Payment [not null]
@@ -461,6 +474,7 @@ Table Contact {
   tenant Tenant [not null]
   tenantId String [not null]
   zohoContactPersons ZohoContactPerson [not null]
+  datevContacts DatevContact [not null]
   addresses Address [not null]
   trackingEmailsConsent Boolean [not null, default: true, note: 'If we have the users permission to send tracking emails']
   marketingEmailsConstent Boolean [not null, default: false, note: 'If we have the users consent to send marketing emails']
@@ -952,6 +966,16 @@ Table ProductDataFeedApp {
   integration ProductDataFeedIntegration
 }
 
+Table DatevApp {
+  id String [pk]
+  enabled Boolean [not null, default: false]
+  cronSchedule String [not null, default: '0 0 * * *']
+  cronTimeout Int [not null, default: 800]
+  tenant Tenant [not null]
+  tenantId String [unique, not null]
+  datevContacts DatevContact [not null]
+}
+
 Table LogisticsApp {
   id String [pk]
   currentOrdersCustomViewId String [not null]
@@ -978,6 +1002,7 @@ Table ZohoApp {
   customFieldVoucherCode String [note: 'the cf_api name from Zoho Settings of the custom field']
   customFieldCustomerNote String [note: 'the cf_api name from Zoho Settings of the custom field used to save a note to the customer']
   customFieldTrackingNotifications String [note: 'the cf_api name for Zoho settings of the custom field used to enable or disable tracking notifications']
+  customFieldDatevCustomerId String [note: 'the cf_api name where we store the DATEV kreditor / debitor ID, if we have a running datev integration']
   cronSchedule String [not null, default: '*/30 * * * *']
   cronTimeout Int [not null, default: 800]
   syncContacts Boolean [not null, default: false]
@@ -1090,6 +1115,7 @@ Table Tenant {
   billOfMaterial BillOfMaterial [not null]
   easyPost EasyPostApp [not null]
   DHLTrackingApps DHLTrackingApp [not null]
+  datevApps DatevApp [not null]
   eci_User_Tenants eci_User_Tenant [not null]
 }
 
@@ -1304,6 +1330,11 @@ Enum ZohoSalesOrderStatus {
   confirmed
   fulfilled
   shipped
+}
+
+Enum DatevContactType {
+  DEBITOR
+  KREDITOR
 }
 
 Enum PaymentMethodType {
@@ -1748,6 +1779,10 @@ Ref: Invoice.tenantId > Tenant.id [delete: Cascade]
 
 Ref: Invoice.mainContactId > Contact.id
 
+Ref: DatevContact.contactId > Contact.id [delete: Cascade]
+
+Ref: DatevContact.datevAppId > DatevApp.id [delete: Cascade]
+
 Ref: Tax.tenantId > Tenant.id [delete: Cascade]
 
 Ref: Payment.orderId > Order.id
@@ -1869,6 +1904,8 @@ Ref: DHLTrackingApp.tenantId > Tenant.id [delete: Cascade]
 Ref: DHLTrackingApp.trackingIntegrationId > TrackingIntegration.id
 
 Ref: ProductDataFeedApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: DatevApp.tenantId > Tenant.id [delete: Cascade]
 
 Ref: LogisticsApp.tenantId > Tenant.id [delete: Cascade]
 

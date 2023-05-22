@@ -37,6 +37,7 @@ const prefixes = {
   xentralAuftrag: "x_af",
   xentralArtikel: "x_at",
   billOfMaterial: "bom",
+  datevContact: "datev_c",
 };
 
 export const id = new IdGenerator(prefixes);
