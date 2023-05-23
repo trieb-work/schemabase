@@ -84,13 +84,13 @@ jobs:
 
       - run: cat ~/.docker/config.json
 
-      - name: Create the image-pull-secret in Kubernetes
-        run: |
-          kubectl create secret docker-registry regcred \
-            --save-config --dry-run=client \
-            --from-file=.dockerconfigjson=$HOME/.docker/config.json\
-            -o yaml |
-          kubectl apply -f -
+      # - name: Create the image-pull-secret in Kubernetes
+      #   run: |
+      #     kubectl create secret docker-registry regcred \
+      #       --save-config --dry-run=client \
+      #       --from-file=.dockerconfigjson=$HOME/.docker/config.json\
+      #       -o yaml |
+      #     kubectl apply -f -
 
       - name: Run helm deploy
         run: >
