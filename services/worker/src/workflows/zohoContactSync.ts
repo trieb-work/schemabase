@@ -41,11 +41,18 @@ export class ZohoContactSyncWorkflow implements Workflow {
       this.prisma,
       undefined,
     );
+    const datevApp = await this.prisma.datevApp.findFirst({
+      where: {
+        tenantId: zohoApp.tenantId,
+        enabled: true,
+      },
+    });
     const zohoContactSyncService = new ZohoContactSyncService({
       logger: this.logger,
       zoho,
       db: this.prisma,
       zohoApp,
+      datevApp: datevApp ?? undefined,
     });
     await zohoContactSyncService.syncToECI();
     await zohoContactSyncService.syncFromECI();
