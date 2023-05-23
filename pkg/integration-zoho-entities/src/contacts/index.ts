@@ -566,6 +566,8 @@ export class ZohoContactSyncService {
               datevId: datevNummer,
             },
           });
+          // ZOHO API limits
+          await sleep(1000);
         }
       }
     }
