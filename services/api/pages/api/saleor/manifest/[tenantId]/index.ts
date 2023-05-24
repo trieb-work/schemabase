@@ -9,6 +9,10 @@ const requestValidation = z.object({
 
 /**
  * Return an app manifest including the tenantId
+ * TODO: we should offer different manifests for different services.
+ * Following different apps:
+ * Orders / Users / Shipments
+ * Payment Gateway pre-payment
  */
 const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   backgroundContext: ctx,
