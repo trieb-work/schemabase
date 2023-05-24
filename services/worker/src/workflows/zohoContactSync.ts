@@ -11,7 +11,7 @@ export type ZohoContactSyncWorkflowConfig = {
   zohoAppId: string;
 };
 
-export class ZohoContactSyncWorkflow implements Workflow {
+export class ZohoContactSyncWf implements Workflow {
   private logger: ILogger;
 
   private prisma: PrismaClient;
@@ -25,7 +25,7 @@ export class ZohoContactSyncWorkflow implements Workflow {
   ) {
     this.zohoAppId = config.zohoAppId;
     this.logger = ctx.logger.with({
-      workflow: ZohoContactSyncWorkflow.name,
+      workflow: ZohoContactSyncWf.name,
       zohoAppId: this.zohoAppId,
     });
     this.prisma = clients.prisma;

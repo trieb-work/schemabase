@@ -567,7 +567,7 @@ export class ZohoContactSyncService {
             },
           });
           // ZOHO API limits
-          await sleep(1000);
+          await sleep(1100);
         }
       }
     }

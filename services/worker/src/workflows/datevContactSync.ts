@@ -11,7 +11,7 @@ export type DatevContactSyncWorkflowConfig = {
   datevApp: DatevApp;
 };
 
-export class DatevContactSyncWorkflow implements Workflow {
+export class DatevContactSyncWf implements Workflow {
   private logger: ILogger;
 
   private prisma: PrismaClient;
@@ -24,7 +24,7 @@ export class DatevContactSyncWorkflow implements Workflow {
     config: DatevContactSyncWorkflowConfig,
   ) {
     this.logger = ctx.logger.with({
-      workflow: DatevContactSyncWorkflow.name,
+      workflow: DatevContactSyncWf.name,
     });
     this.logger = ctx.logger;
     this.prisma = clients.prisma;

@@ -5,25 +5,25 @@ import {
   WorkflowScheduler,
 } from "@eci/pkg/scheduler/scheduler";
 import { createWorkflowFactory } from "@eci/pkg/scheduler/workflow";
-import { BraintreeTransactionSyncWorkflow } from "./workflows";
-import { DHLTrackingSyncWorkflow } from "./workflows/dhlTrackingSync";
-import { SaleorOrderSyncWorkflow } from "./workflows/saleorOrderSync";
-import { SaleorPackageSyncWorkflow } from "./workflows/saleorPackageSync";
-import { SaleorPaymentSyncWorkflow } from "./workflows/saleorPaymentSync";
-import { SaleorProductSyncWorkflow } from "./workflows/saleorProductSync";
-import { SaleorWarehouseSyncWorkflow } from "./workflows/saleorWarehouseSync";
-import { XentralArtikelSyncWorkflow } from "./workflows/xentralArtikelSync";
-import { XentralAuftragSyncWorkflow } from "./workflows/xentralAuftragSync";
-import { XentralLieferscheinSyncWorkflow } from "./workflows/xentralLieferscheinSync";
-import { ZohoContactSyncWorkflow } from "./workflows/zohoContactSync";
-import { ZohoInvoiceSyncWorkflow } from "./workflows/zohoInvoiceSync";
-import { ZohoItemSyncWorkflow } from "./workflows/zohoItemSync";
-import { ZohoPackageSyncWorkflow } from "./workflows/zohoPackageSync";
-import { ZohoPaymentSyncWorkflow } from "./workflows/zohoPaymentSync";
-import { ZohoSalesOrderSyncWorkflow } from "./workflows/zohoSalesOrderSync";
-import { ZohoTaxSyncWorkflow } from "./workflows/zohoTaxSync";
-import { ZohoWarehouseSyncWorkflow } from "./workflows/zohoWarehouseSync";
-import { DatevContactSyncWorkflow } from "./workflows/datevContactSync";
+import { BraintreeTransactionSyncWf } from "./workflows";
+import { DHLTrackingSyncWf } from "./workflows/dhlTrackingSync";
+import { SaleorOrderSyncWf } from "./workflows/saleorOrderSync";
+import { SaleorPackageSyncWf } from "./workflows/saleorPackageSync";
+import { SaleorPaymentSyncWf } from "./workflows/saleorPaymentSync";
+import { SaleorProductSyncWf } from "./workflows/saleorProductSync";
+import { SaleorWarehouseSyncWf } from "./workflows/saleorWarehouseSync";
+import { XentralArtikelSyncWf } from "./workflows/xentralArtikelSync";
+import { XentralAuftragSyncWf } from "./workflows/xentralAuftragSync";
+import { XentralLieferscheinSyncWf } from "./workflows/xentralLieferscheinSync";
+import { ZohoContactSyncWf } from "./workflows/zohoContactSync";
+import { ZohoInvoiceSyncWf } from "./workflows/zohoInvoiceSync";
+import { ZohoItemSyncWf } from "./workflows/zohoItemSync";
+import { ZohoPackageSyncWf } from "./workflows/zohoPackageSync";
+import { ZohoPaymentSyncWf } from "./workflows/zohoPaymentSync";
+import { ZohoSalesOrderSyncWf } from "./workflows/zohoSalesOrderSync";
+import { ZohoTaxSyncWf } from "./workflows/zohoTaxSync";
+import { ZohoWarehouseSyncWf } from "./workflows/zohoWarehouseSync";
+import { DatevContactSyncWf } from "./workflows/datevContactSync";
 
 interface CronClients {
   logger: ILogger;
@@ -90,12 +90,12 @@ export class CronTable {
 
       new WorkflowScheduler(this.clients).schedule(
         createWorkflowFactory(
-          DatevContactSyncWorkflow,
+          DatevContactSyncWf,
           this.clients,
           commonWorkflowConfig,
         ),
         { ...commonCronConfig, offset: 0 },
-        [tenantId, id],
+        [tenantId.substring(0, 5), id.substring(0, 5)],
       );
     }
 
@@ -115,36 +115,36 @@ export class CronTable {
       if (enabledXentralApp.syncProducts) {
         new WorkflowScheduler(this.clients).schedule(
           createWorkflowFactory(
-            XentralArtikelSyncWorkflow,
+            XentralArtikelSyncWf,
             this.clients,
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 0 },
-          [tenantId, id],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
 
       if (enabledXentralApp.syncOrders) {
         new WorkflowScheduler(this.clients).schedule(
           createWorkflowFactory(
-            XentralAuftragSyncWorkflow,
+            XentralAuftragSyncWf,
             this.clients,
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 20 },
-          [tenantId, id],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
 
       if (enabledXentralApp.syncPackages) {
         new WorkflowScheduler(this.clients).schedule(
           createWorkflowFactory(
-            XentralLieferscheinSyncWorkflow,
+            XentralLieferscheinSyncWf,
             this.clients,
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 30 },
-          [tenantId, id],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
     }
@@ -160,12 +160,12 @@ export class CronTable {
       };
       new WorkflowScheduler(this.clients).schedule(
         createWorkflowFactory(
-          DHLTrackingSyncWorkflow,
+          DHLTrackingSyncWf,
           this.clients,
           commonWorkflowConfig,
         ),
         { ...commonCronConfig, offset: 0 },
-        [tenantId, id],
+        [tenantId.substring(0, 5), id.substring(0, 5)],
       );
     }
 
@@ -185,84 +185,84 @@ export class CronTable {
       if (enabledZohoApp.syncWarehouses) {
         new WorkflowScheduler(this.clients).schedule(
           createWorkflowFactory(
-            ZohoWarehouseSyncWorkflow,
+            ZohoWarehouseSyncWf,
             this.clients,
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 0 },
-          [tenantId, id],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
 
       if (enabledZohoApp.syncTaxes) {
         this.scheduler.schedule(
           createWorkflowFactory(
-            ZohoTaxSyncWorkflow,
+            ZohoTaxSyncWf,
             this.clients,
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 1 },
-          [tenantId, id],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
 
       if (enabledZohoApp.syncContacts) {
         this.scheduler.schedule(
           createWorkflowFactory(
-            ZohoContactSyncWorkflow,
+            ZohoContactSyncWf,
             this.clients,
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 2 },
-          [tenantId, id],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
 
       if (enabledZohoApp.syncProducts) {
         this.scheduler.schedule(
           createWorkflowFactory(
-            ZohoItemSyncWorkflow,
+            ZohoItemSyncWf,
             this.clients,
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 3 },
-          [tenantId, id],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
 
       if (enabledZohoApp.syncOrders) {
         this.scheduler.schedule(
           createWorkflowFactory(
-            ZohoSalesOrderSyncWorkflow,
+            ZohoSalesOrderSyncWf,
             this.clients,
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 4 },
-          [tenantId, id],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
 
       if (enabledZohoApp.syncInvoices) {
         new WorkflowScheduler(this.clients).schedule(
           createWorkflowFactory(
-            ZohoInvoiceSyncWorkflow,
+            ZohoInvoiceSyncWf,
             this.clients,
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 8 },
-          [tenantId, id],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
 
       if (enabledZohoApp.syncPayments) {
         this.scheduler.schedule(
           createWorkflowFactory(
-            ZohoPaymentSyncWorkflow,
+            ZohoPaymentSyncWf,
             this.clients,
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 10 },
-          [tenantId, id],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
     }
@@ -291,67 +291,67 @@ export class CronTable {
       if (enabledZohoIntegration.syncWarehouses) {
         new WorkflowScheduler(this.clients).schedule(
           createWorkflowFactory(
-            SaleorWarehouseSyncWorkflow,
+            SaleorWarehouseSyncWf,
             this.clients,
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 0 },
-          [tenantId, id],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
 
       if (enabledZohoIntegration.syncProducts) {
         this.scheduler.schedule(
           createWorkflowFactory(
-            SaleorProductSyncWorkflow,
+            SaleorProductSyncWf,
             this.clients,
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 3 },
-          [tenantId, id],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
       if (enabledZohoIntegration.syncOrders) {
         this.scheduler.schedule(
           createWorkflowFactory(
-            SaleorOrderSyncWorkflow,
+            SaleorOrderSyncWf,
             this.clients,
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 4 },
-          [tenantId, id],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
 
       if (enabledZohoIntegration.syncPayments) {
         new WorkflowScheduler(this.clients).schedule(
           createWorkflowFactory(
-            SaleorPaymentSyncWorkflow,
+            SaleorPaymentSyncWf,
             this.clients,
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 10 },
-          [tenantId, id],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
       if (enabledZohoIntegration.syncPackages) {
         this.scheduler.schedule(
           createWorkflowFactory(
-            ZohoPackageSyncWorkflow,
+            ZohoPackageSyncWf,
             this.clients,
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 9 },
-          [tenantId, id],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
         this.scheduler.schedule(
           createWorkflowFactory(
-            SaleorPackageSyncWorkflow,
+            SaleorPackageSyncWf,
             this.clients,
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 9 },
-          [tenantId, id],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
     }
@@ -372,11 +372,11 @@ export class CronTable {
         timeout: cronTimeout,
       };
       new WorkflowScheduler(this.clients).schedule(
-        createWorkflowFactory(BraintreeTransactionSyncWorkflow, this.clients, {
+        createWorkflowFactory(BraintreeTransactionSyncWf, this.clients, {
           braintreeAppId: app.id,
         }),
         { ...commonCronConfig, offset: 0 },
-        [tenantId, id],
+        [tenantId.substring(0, 5), id.substring(0, 5)],
       );
     }
   }

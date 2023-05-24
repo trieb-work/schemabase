@@ -12,7 +12,7 @@ export type XentralAuftragSyncWorkflowConfig = {
   xentralProxyApp: XentralProxyApp;
 };
 
-export class XentralAuftragSyncWorkflow implements Workflow {
+export class XentralAuftragSyncWf implements Workflow {
   private logger: ILogger;
 
   private prisma: PrismaClient;
@@ -26,7 +26,7 @@ export class XentralAuftragSyncWorkflow implements Workflow {
   ) {
     this.xentralProxyApp = config.xentralProxyApp;
     this.logger = ctx.logger.with({
-      workflow: XentralAuftragSyncWorkflow.name,
+      workflow: XentralAuftragSyncWf.name,
       xentralProxyApp: this.xentralProxyApp,
     });
     this.logger = ctx.logger;

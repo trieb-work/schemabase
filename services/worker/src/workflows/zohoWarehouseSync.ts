@@ -14,7 +14,7 @@ export type ZohoWarehouseSyncWorkflowConfig = {
 /**
  * Workflow to sync needed "surrounding" entities from Zoho like Warehouses, Taxes, etc.
  */
-export class ZohoWarehouseSyncWorkflow implements Workflow {
+export class ZohoWarehouseSyncWf implements Workflow {
   private logger: ILogger;
 
   private prisma: PrismaClient;
@@ -28,7 +28,7 @@ export class ZohoWarehouseSyncWorkflow implements Workflow {
   ) {
     this.zohoAppId = config.zohoAppId;
     this.logger = ctx.logger.with({
-      workflow: ZohoWarehouseSyncWorkflow.name,
+      workflow: ZohoWarehouseSyncWf.name,
       zohoAppId: this.zohoAppId,
     });
     this.prisma = clients.prisma;

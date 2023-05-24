@@ -12,7 +12,7 @@ export type SaleorOrderSyncWorkflowConfig = {
   orderPrefix: string;
 };
 
-export class SaleorOrderSyncWorkflow implements Workflow {
+export class SaleorOrderSyncWf implements Workflow {
   private logger: ILogger;
 
   private prisma: PrismaClient;
@@ -28,7 +28,7 @@ export class SaleorOrderSyncWorkflow implements Workflow {
   ) {
     this.installedSaleorAppId = config.installedSaleorAppId;
     this.logger = ctx.logger.with({
-      workflow: SaleorOrderSyncWorkflow.name,
+      workflow: SaleorOrderSyncWf.name,
       installedSaleorAppId: this.installedSaleorAppId,
     });
     this.logger = ctx.logger;

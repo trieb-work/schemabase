@@ -71,6 +71,7 @@ async function main() {
    * A queue name always look like this:
    * bull:eci:<TenantId>:<IntegrationId>:<queueName>
    * bull:eci:pk_7f16573fece94114847dc81d3214eef4:id_wrtrgwqrg:SaleorProductSyncWorkflow
+   * Getting all redis keys from the namespace "bull"
    */
   const keys = await redis.keys("bull:eci:*");
   const queuesUnsorted: string[] = [];
