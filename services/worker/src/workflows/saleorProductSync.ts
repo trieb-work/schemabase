@@ -11,7 +11,7 @@ export type SaleorProductSyncWorkflowConfig = {
   installedSaleorAppId: string;
 };
 
-export class SaleorProductSyncWorkflow implements Workflow {
+export class SaleorProductSyncWf implements Workflow {
   private logger: ILogger;
 
   private prisma: PrismaClient;
@@ -25,7 +25,7 @@ export class SaleorProductSyncWorkflow implements Workflow {
   ) {
     this.installedSaleorAppId = config.installedSaleorAppId;
     this.logger = ctx.logger.with({
-      workflow: SaleorProductSyncWorkflow.name,
+      workflow: SaleorProductSyncWf.name,
       installedSaleorAppId: this.installedSaleorAppId,
     });
     this.prisma = clients.prisma;

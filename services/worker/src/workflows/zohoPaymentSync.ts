@@ -12,7 +12,7 @@ export type ZohoPaymentSyncWorkflowConfig = {
   zohoAppId: string;
 };
 
-export class ZohoPaymentSyncWorkflow implements Workflow {
+export class ZohoPaymentSyncWf implements Workflow {
   private logger: ILogger;
 
   private prisma: PrismaClient;
@@ -26,7 +26,7 @@ export class ZohoPaymentSyncWorkflow implements Workflow {
   ) {
     this.zohoAppId = config.zohoAppId;
     this.logger = ctx.logger.with({
-      workflow: ZohoPaymentSyncWorkflow.name,
+      workflow: ZohoPaymentSyncWf.name,
       zohoAppId: this.zohoAppId,
     });
     this.prisma = clients.prisma;

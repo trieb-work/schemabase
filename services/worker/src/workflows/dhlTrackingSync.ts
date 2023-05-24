@@ -10,7 +10,7 @@ export type DHLTrackingSyncWorkflowConfig = {
   dhlTrackingApp: DHLTrackingApp;
 };
 
-export class DHLTrackingSyncWorkflow implements Workflow {
+export class DHLTrackingSyncWf implements Workflow {
   private logger: ILogger;
 
   private prisma: PrismaClient;
@@ -24,7 +24,7 @@ export class DHLTrackingSyncWorkflow implements Workflow {
   ) {
     this.dhlTrackingApp = config.dhlTrackingApp;
     this.logger = ctx.logger.with({
-      workflow: DHLTrackingSyncWorkflow.name,
+      workflow: DHLTrackingSyncWf.name,
       dhlTrackingApp: this.dhlTrackingApp.id,
     });
     this.prisma = clients.prisma;
