@@ -95,7 +95,7 @@ export class CronTable {
           commonWorkflowConfig,
         ),
         { ...commonCronConfig, offset: 0 },
-        [tenantId.substring(0, 4), id.substring(0, 4)],
+        [tenantId.substring(0, 5), id.substring(0, 5)],
       );
     }
 
@@ -120,7 +120,7 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 0 },
-          [tenantId.substring(0, 4), id.substring(0, 4)],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
 
@@ -132,7 +132,7 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 20 },
-          [tenantId.substring(0, 4), id.substring(0, 4)],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
 
@@ -144,7 +144,7 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 30 },
-          [tenantId.substring(0, 4), id.substring(0, 4)],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
     }
@@ -165,7 +165,7 @@ export class CronTable {
           commonWorkflowConfig,
         ),
         { ...commonCronConfig, offset: 0 },
-        [tenantId.substring(0, 4), id.substring(0, 4)],
+        [tenantId.substring(0, 5), id.substring(0, 5)],
       );
     }
 
@@ -190,7 +190,7 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 0 },
-          [tenantId.substring(0, 4), id.substring(0, 4)],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
 
@@ -202,7 +202,7 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 1 },
-          [tenantId.substring(0, 4), id.substring(0, 4)],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
 
@@ -214,7 +214,7 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 2 },
-          [tenantId.substring(0, 4), id.substring(0, 4)],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
 
@@ -226,7 +226,7 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 3 },
-          [tenantId.substring(0, 4), id.substring(0, 4)],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
 
@@ -238,7 +238,7 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 4 },
-          [tenantId.substring(0, 4), id.substring(0, 4)],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
 
@@ -250,7 +250,7 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 8 },
-          [tenantId.substring(0, 4), id.substring(0, 4)],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
 
@@ -262,7 +262,7 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 10 },
-          [tenantId.substring(0, 4), id.substring(0, 4)],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
     }
@@ -296,7 +296,7 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 0 },
-          [tenantId.substring(0, 4), id.substring(0, 4)],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
 
@@ -308,7 +308,7 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 3 },
-          [tenantId.substring(0, 4), id.substring(0, 4)],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
       if (enabledZohoIntegration.syncOrders) {
@@ -319,7 +319,7 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 4 },
-          [tenantId.substring(0, 4), id.substring(0, 4)],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
 
@@ -331,7 +331,7 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 10 },
-          [tenantId.substring(0, 4), id.substring(0, 4)],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
       if (enabledZohoIntegration.syncPackages) {
@@ -342,7 +342,7 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 9 },
-          [tenantId.substring(0, 4), id.substring(0, 4)],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
         this.scheduler.schedule(
           createWorkflowFactory(
@@ -351,7 +351,7 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 9 },
-          [tenantId.substring(0, 4), id.substring(0, 4)],
+          [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }
     }
@@ -376,7 +376,7 @@ export class CronTable {
           braintreeAppId: app.id,
         }),
         { ...commonCronConfig, offset: 0 },
-        [tenantId.substring(0, 4), id.substring(0, 4)],
+        [tenantId.substring(0, 5), id.substring(0, 5)],
       );
     }
   }
