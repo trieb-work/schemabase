@@ -1,7 +1,9 @@
 import React, { PropsWithChildren } from "react";
 import dynamic from "next/dynamic";
 
-const Wrapper = (props: PropsWithChildren<{}>) => <React.Fragment>{props.children}</React.Fragment>;
+const Wrapper = (props: PropsWithChildren<{}>) => (
+  <React.Fragment>{props.children}</React.Fragment>
+);
 
 /**
  * Saleor App can be rendered only as a Saleor Dashboard iframe.
