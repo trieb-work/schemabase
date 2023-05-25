@@ -1038,7 +1038,8 @@ Table ZohoApp {
 
 Table SaleorApp {
   id String [pk]
-  domain String [not null]
+  domain String [unique, not null]
+  apiUrl String [unique, note: 'the full saleor api url, inclusive /graphql: https://testing--saleor-puf.eu.saleor.cloud/graphql/']
   name String [not null]
   installedSaleorApps InstalledSaleorApp [not null]
   tenant Tenant

@@ -1989,6 +1989,9 @@ model SaleorApp {
   // If no protocol is specified, https:// is assumed.
   domain String
 
+  /// the full saleor api url, inclusive /graphql: https://testing--saleor-puf.eu.saleor.cloud/graphql/
+  apiUrl String?
+
   name String
 
   installedSaleorApps InstalledSaleorApp[]
@@ -1997,6 +2000,8 @@ model SaleorApp {
   tenantId String?
 
   @@unique([domain, tenantId])
+  @@unique([domain])
+  @@unique([apiUrl])
   // Just for relational purposes
   @@unique([id, domain])
   @@index([tenantId])

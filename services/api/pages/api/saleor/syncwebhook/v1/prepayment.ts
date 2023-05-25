@@ -1,6 +1,5 @@
 import { VorkassePaymentService } from "@eci/pkg/integration-saleor-payment";
 import { NextRequest } from "next/server";
-import { verifyJWT } from "@saleor/app-sdk/verify-jwt";
 
 /**
  * We use the edge runtime here. SOME THINGS MIGHT BREAK! TEST IT

@@ -1,51 +1,37 @@
-import { APL, AuthData } from "@saleor/app-sdk/apl";
+import { APL, AuthData } from "@saleor/app-sdk/APL";
 import { PrismaClient } from "@eci/pkg/prisma";
+import { id } from "@eci/pkg/ids";
 
 const prismaClient = new PrismaClient();
 
 const prismaAPL: APL = {
   get: async (saleorApiUrl: string) => {
-    const response = await prismaClient.
-    const response = await client.get(saleorApiUrl);
-    if (response) {
-      return JSON.parse(response);
-    }
+    console.log(
+      "Get is not implemented, as we need the AppId, not only saleorApiURL (not unique in our DB)",
+    );
+    const t = { saleorApiUrl } as AuthData;
+    return t;
   },
   set: async (authData: AuthData) => {
     const token = authData.token;
-    const app = await prismaClient.installedSaleorApp.upsert({
+    if (!authData.domain) throw new Error("No domain set! This is mandatory");
+    await prismaClient.installedSaleorApp.upsert({
       where: {
         id: authData.appId,
       },
       create: {
         id: authData.appId,
         token,
-        webhooks: {
-          create: {
-            id: id.id("publicKey"),
-            name: "Catch all",
-            secret: {
-              create: {
-                id: id.id("publicKey"),
-                secret: id.id("secretKey"),
-              },
-            },
-          },
-        },
         saleorApp: {
           connectOrCreate: {
             where: {
-              domain_tenantId: {
-                domain,
-                tenantId,
-              },
+              domain: authData.domain,
             },
             create: {
               id: id.id("publicKey"),
-              name: "eCommerce Integration",
-              // channelSlug: "",
-              tenantId,
-              domain,
+              name: "schemabase saleor app",
+              domain: authData.domain,
+              apiUrl: authData.saleorApiUrl,
             },
           },
         },
@@ -55,32 +41,20 @@ const prismaAPL: APL = {
         saleorApp: {
           connectOrCreate: {
             where: {
-              domain_tenantId: {
-                domain,
-                tenantId,
-              },
+              domain: authData.domain,
             },
             create: {
               id: id.id("publicKey"),
-              name: "eCommerce Integration",
-              // channelSlug: "",
-              tenantId,
-              domain,
+              name: "schemabase saleor app",
+              domain: authData.domain,
             },
           },
         },
       },
-      include: {
-        saleorApp: true,
-        webhooks: {
-          include: { secret: true },
-        },
-      },
     });
-
   },
   delete: async (saleorApiUrl: string) => {
-    await client.del(saleorApiUrl);
+    console.log("DELETE request for saleorApiUrl", saleorApiUrl);
   },
   getAll: async () => {
     throw new Error("Not implemented.");
