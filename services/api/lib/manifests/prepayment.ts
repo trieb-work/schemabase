@@ -8,6 +8,9 @@ const getWebhookManifest = (baseUrl: string): WebhookManifest[] => {
   const syncWebhook: WebhookManifest = {
     name: "Payment processing",
     targetUrl: `${baseUrl}/api/saleor/syncwebhook/v1/prepayment`,
+    query:
+      // eslint-disable-next-line max-len
+      "subscription { event { ... on PaymentAuthorize { __typename } ... on PaymentListGateways { __typename } } }",
     syncEvents: [
       "PAYMENT_AUTHORIZE",
       "PAYMENT_CAPTURE",
