@@ -1,11 +1,20 @@
 import { z } from "zod";
-import { env } from "@eci/pkg/env";
+import packageJson from "../../../../../../../package.json";
 import { handleWebhook, Webhook } from "@eci/pkg/http";
 import { AppManifest } from "@saleor/app-sdk/types";
+import { IncomingHttpHeaders } from "http";
+import { getBaseUrl } from "@eci/services/api/lib/getBaseUrl";
+import { prepayment } from "@eci/services/api/lib/manifests/prepayment";
+import { entitysync } from "@eci/services/api/lib/manifests/entitysync";
 const requestValidation = z.object({
+  headers: z.any(),
   query: z.object({
     tenantId: z.string().optional(),
-    apptype: z.enum(["sync", "prepayment"]),
+    /**
+     * The schemabase saleor app type - we install individual
+     * apps for different saleor use-cases
+     */
+    apptype: z.enum(["entitysync", "prepayment"]),
   }),
 });
 
@@ -26,41 +35,34 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   } = req;
   ctx.logger = ctx.logger.with({ tenantId });
   ctx.logger.info(`Saleor app manifest requested. App type: ${apptype}`);
-  console.log(req)
 
-  const baseUrl = env.require("ECI_BASE_URL");
+  const { host, "x-forwarded-proto": protocol = "http" } =
+    req.headers as IncomingHttpHeaders;
+
+  ctx.logger.debug(
+    `Middleware called with host: ${host}, protocol ${protocol}`,
+  );
+
+  const baseUrl = getBaseUrl(req.headers);
+
+  const activeManifestType = apptype === "entitysync" ? entitysync : prepayment;
 
   const manifest: AppManifest = {
     id: "schemabase",
-    version: "0.1.0",
+    version: packageJson.version,
     name: "schemabase",
-    about: "ECI is cool",
+    about:
+      "schemabase is your e-commerce datahub, powering the world of composable commerce",
     author: "trieb.work OHG",
-    permissions: [
-      "HANDLE_PAYMENTS",
-      "HANDLE_CHECKOUTS",
-      "MANAGE_CHECKOUTS",
-      "MANAGE_DISCOUNTS",
-      "MANAGE_GIFT_CARD",
-      "MANAGE_MENUS",
-      "MANAGE_ORDERS",
-      "MANAGE_PAGES",
-      "MANAGE_PLUGINS",
-      "MANAGE_PRODUCT_TYPES_AND_ATTRIBUTES",
-      "MANAGE_PRODUCTS",
-      "MANAGE_SETTINGS",
-      "MANAGE_SHIPPING",
-      "MANAGE_STAFF",
-      "MANAGE_TRANSLATIONS",
-      "MANAGE_USERS",
-    ],
-    appUrl: "http://localhost:3000/app",
-    configurationUrl: `${baseUrl}/saleor/configuration/${tenantId}`,
-    tokenTargetUrl: `${baseUrl}/api/saleor/register/${tenantId}`,
-    dataPrivacy: "Lorem ipsum",
-    dataPrivacyUrl: "http://localhost:3000/app-data-privacy",
+    permissions: activeManifestType.getPermissions(),
+    appUrl: baseUrl,
+    configurationUrl: baseUrl,
+    tokenTargetUrl: `${baseUrl}/api/saleor/register?tenantId=${tenantId ?? ""}`,
+    dataPrivacy: "",
+    dataPrivacyUrl: "https://trieb.work/privacy-policy",
     homepageUrl: "https://trieb.work",
-    supportUrl: "http://localhost:3000/support",
+    supportUrl: "https://trieb.work/contact",
+    webhooks: activeManifestType.getWebhookManifest(baseUrl),
   };
 
   ctx.logger.info("Manifest", { manifest });
