@@ -1993,8 +1993,8 @@ model SaleorApp {
 
   installedSaleorApps InstalledSaleorApp[]
 
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId String
+  tenant   Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String?
 
   @@unique([domain, tenantId])
   // Just for relational purposes

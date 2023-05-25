@@ -1,9 +1,11 @@
 import { z } from "zod";
 import { env } from "@eci/pkg/env";
 import { handleWebhook, Webhook } from "@eci/pkg/http";
+import { AppManifest } from "@saleor/app-sdk/types";
 const requestValidation = z.object({
   query: z.object({
-    tenantId: z.string(),
+    tenantId: z.string().optional(),
+    apptype: z.enum(["sync", "prepayment"]),
   }),
 });
 
@@ -11,8 +13,8 @@ const requestValidation = z.object({
  * Return an app manifest including the tenantId
  * TODO: we should offer different manifests for different services.
  * Following different apps:
- * Orders / Users / Shipments
- * Payment Gateway pre-payment
+ * Orders / Users / Shipments -> apptype "sync"
+ * Payment Gateway pre-payment -> apptype "prepayment"
  */
 const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   backgroundContext: ctx,
@@ -20,22 +22,23 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   res,
 }): Promise<void> => {
   const {
-    query: { tenantId },
+    query: { tenantId, apptype },
   } = req;
   ctx.logger = ctx.logger.with({ tenantId });
-  ctx.logger.info("Saleor app manifest requested");
+  ctx.logger.info(`Saleor app manifest requested. App type: ${apptype}`);
+  console.log(req)
 
   const baseUrl = env.require("ECI_BASE_URL");
 
-  const manifest = {
-    id: "triebwork.eci",
-    version: "1.0.0",
-    name: "eCommerce Integrations for Saleor",
+  const manifest: AppManifest = {
+    id: "schemabase",
+    version: "0.1.0",
+    name: "schemabase",
     about: "ECI is cool",
+    author: "trieb.work OHG",
     permissions: [
       "HANDLE_PAYMENTS",
       "HANDLE_CHECKOUTS",
-      "MANAGE_APPS",
       "MANAGE_CHECKOUTS",
       "MANAGE_DISCOUNTS",
       "MANAGE_GIFT_CARD",

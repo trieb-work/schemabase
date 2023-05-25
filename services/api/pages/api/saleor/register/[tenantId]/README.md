@@ -1,1 +1,0 @@
-Receive the token from saleor and create the data inside our db.

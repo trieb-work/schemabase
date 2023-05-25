@@ -1041,8 +1041,8 @@ Table SaleorApp {
   domain String [not null]
   name String [not null]
   installedSaleorApps InstalledSaleorApp [not null]
-  tenant Tenant [not null]
-  tenantId String [not null]
+  tenant Tenant
+  tenantId String
 
   indexes {
     (domain, tenantId) [unique]

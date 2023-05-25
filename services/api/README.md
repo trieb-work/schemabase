@@ -1,6 +1,13 @@
-Nextjs application used to incoming webhooks and synchronous requests.
+Nextjs application used for incoming webhooks and to be installed as Saleor app.
 
-Initially I though appending the version at the end was a good idea because you could version them individually, however that disallows renaming the path for a new version, so I think starting with `/api/vX/.../[webhookId]/index.ts` is best.
+## Saleor App
+schemabase offers different app-types with different permissions and webhooks.
+We create a manifest URL per per app-type that can be installed like this:
+[YOUR_SALEOR_DASHBOARD_URL]/apps/install?manifestUrl=[YOUR_APP_TUNNEL_MANIFEST_URL]
+
+Adding a tenant id as querystring is optional - like this we can enable the app and connect it 
+directly with an existing tenant. In the future we want customers to use the App configuration page to manage their schemabase account/tenant and see their sync status etc.
+
 
 # Webhooks
 
