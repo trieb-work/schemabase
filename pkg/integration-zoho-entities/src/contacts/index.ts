@@ -551,21 +551,26 @@ export class ZohoContactSyncService {
           this.logger.info(
             `Updating Zoho Contact ${dContact.id} with Datev Nummer ${datevNummer}`,
           );
-          await this.zoho.contact.update({
-            contact_id: dContact.id,
-            [this.zohoApp.customFieldDatevCustomerId]: datevNummer,
-          });
-          await this.db.zohoContact.update({
-            where: {
-              id_zohoAppId: {
-                id: dContact.id,
-                zohoAppId: this.zohoApp.id,
+          try {
+            await this.zoho.contact.update({
+              contact_id: dContact.id,
+              [this.zohoApp.customFieldDatevCustomerId]: datevNummer,
+            });
+            await this.db.zohoContact.update({
+              where: {
+                id_zohoAppId: {
+                  id: dContact.id,
+                  zohoAppId: this.zohoApp.id,
+                },
               },
-            },
-            data: {
-              datevId: datevNummer,
-            },
-          });
+              data: {
+                datevId: datevNummer,
+              },
+            });
+          } catch (error) {
+            this.logger.error(`Error updating user with datev id: ${error}`);
+          }
+
           // ZOHO API limits
           await sleep(1100);
         }
