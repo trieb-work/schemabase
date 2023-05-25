@@ -23,7 +23,7 @@ describe("XentralProxy Entity Sync Orders Test", () => {
     const tenant = await prismaClient.tenant.findUnique({
       where: {
         // id: "test",
-        id: "pk_7f16573fece94114847dc81d3214eef4",
+        id: "pk_7f165pf-prod",
       },
     });
 
