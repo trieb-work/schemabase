@@ -545,7 +545,7 @@ export class ZohoContactSyncService {
       );
       for (const dContact of datevUpdates) {
         const datevNummer =
-          dContact.zohoContactPerson?.[0].contact?.datevContacts?.[0]
+          dContact.zohoContactPerson?.[0]?.contact?.datevContacts?.[0]
             ?.datevNummer;
         if (datevNummer) {
           this.logger.info(
