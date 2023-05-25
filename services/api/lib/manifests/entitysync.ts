@@ -1,5 +1,7 @@
 import { AppPermission, WebhookManifest } from "@saleor/app-sdk/types";
 
+const getName = () => "schemabase datahub";
+
 const getPermissions = (): AppPermission[] => {
   return [
     "MANAGE_ORDERS",
@@ -18,4 +20,4 @@ const getWebhookManifest = (_baseUrl: string): WebhookManifest[] => {
   return [];
 };
 
-export const entitysync = { getPermissions, getWebhookManifest };
+export const entitysync = { getPermissions, getWebhookManifest, getName };

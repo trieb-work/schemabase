@@ -3,6 +3,7 @@ import { AppPermission, WebhookManifest } from "@saleor/app-sdk/types";
 const getPermissions = (): AppPermission[] => {
   return ["HANDLE_PAYMENTS"];
 };
+const getName = () => "pre-payment";
 
 const getWebhookManifest = (baseUrl: string): WebhookManifest[] => {
   const syncWebhook: WebhookManifest = {
@@ -24,4 +25,4 @@ const getWebhookManifest = (baseUrl: string): WebhookManifest[] => {
   return [syncWebhook];
 };
 
-export const prepayment = { getPermissions, getWebhookManifest };
+export const prepayment = { getPermissions, getWebhookManifest, getName };

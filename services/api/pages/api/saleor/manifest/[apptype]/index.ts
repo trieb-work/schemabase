@@ -48,9 +48,9 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
   const activeManifestType = apptype === "entitysync" ? entitysync : prepayment;
 
   const manifest: AppManifest = {
-    id: "schemabase",
+    id: `schemabase-${apptype}`,
     version: packageJson.version,
-    name: "schemabase",
+    name: activeManifestType.getName(),
     about:
       "schemabase is your e-commerce datahub, powering the world of composable commerce",
     author: "trieb.work OHG",
@@ -58,7 +58,6 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     appUrl: baseUrl,
     configurationUrl: baseUrl,
     tokenTargetUrl: `${baseUrl}/api/saleor/register?tenantId=${tenantId ?? ""}`,
-    dataPrivacy: "",
     dataPrivacyUrl: "https://trieb.work/privacy-policy",
     homepageUrl: "https://trieb.work",
     supportUrl: "https://trieb.work/contact",
