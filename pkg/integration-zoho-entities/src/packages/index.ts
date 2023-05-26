@@ -1,7 +1,6 @@
 import { Zoho, ZohoApiError } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
 import { Carrier, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
-// import { id } from "@eci/pkg/ids";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import {
   format,
@@ -10,6 +9,7 @@ import {
   subDays,
   subMonths,
   subYears,
+  isEqual,
 } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { uniqueStringPackageLineItem } from "@eci/pkg/miscHelper/uniqueStringOrderline";
@@ -62,8 +62,6 @@ export class ZohoPackageSyncService {
   }
 
   public async syncToECI(): Promise<void> {
-    // const tenantId = this.zohoApp.tenantId;
-
     const cronState = await this.cronState.get();
 
     const now = new Date();
@@ -81,17 +79,17 @@ export class ZohoPackageSyncService {
 
     /**
      * Packages can't be filtered by "last modified time". We have to
-     * try and do it like this, but its not nice..
+     * try and do it like this, but its not nice.. We limit to 200 and always
+     * just get the last 200 packages, that got updated last
      */
     const packages = await this.zoho.package.list({
-      // createdDateStart: gteDate,
       sortColumn: "last_modified_time",
       sortOrder: "descending",
       limit: 200,
     });
 
     this.logger.info(
-      `We have ${packages.length} packages that we need to sync.`,
+      `We have ${packages.length} packages that we compare now with our internal DB.`,
     );
     if (packages.length === 0) {
       await this.cronState.set({
@@ -101,7 +99,26 @@ export class ZohoPackageSyncService {
       return;
     }
 
+    const currentPackagesInDB = await this.db.zohoPackage.findMany({
+      where: {
+        id: {
+          in: packages.map((p) => p.package_id),
+        },
+      },
+    });
+
     for (const parcel of packages) {
+      const currentPackageInDB = currentPackagesInDB.find(
+        (p) => p.id === parcel.package_id,
+      );
+      if (
+        currentPackageInDB &&
+        isEqual(
+          currentPackageInDB.updatedAt,
+          new Date(parcel.last_modified_time),
+        )
+      )
+        continue;
       const orderExist = await this.db.order.findUnique({
         where: {
           orderNumber_tenantId: {
