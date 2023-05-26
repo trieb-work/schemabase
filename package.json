@@ -104,7 +104,7 @@
     "@jest/console": "^29.0.2",
     "@paljs/plugins": "^5.2.0",
     "@prisma/client": "^4.8.1",
-    "@trieb.work/zoho-ts": "0.8.0",
+    "@trieb.work/zoho-ts": "0.8.1",
     "apollo-datasource": "^3.3.1",
     "apollo-server": "^3.6.7",
     "apollo-server-core": "^3.6.7",

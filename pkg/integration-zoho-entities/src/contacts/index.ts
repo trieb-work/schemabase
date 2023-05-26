@@ -552,21 +552,34 @@ export class ZohoContactSyncService {
             `Updating Zoho Contact ${dContact.id} with Datev Nummer ${datevNummer}`,
           );
           try {
-            await this.zoho.contact.update({
+            const res = await this.zoho.contact.update({
               contact_id: dContact.id,
-              [this.zohoApp.customFieldDatevCustomerId]: datevNummer,
-            });
-            await this.db.zohoContact.update({
-              where: {
-                id_zohoAppId: {
-                  id: dContact.id,
-                  zohoAppId: this.zohoApp.id,
+              custom_fields: [
+                {
+                  api_name: this.zohoApp.customFieldDatevCustomerId,
+                  value: datevNummer,
                 },
-              },
-              data: {
-                datevId: datevNummer,
-              },
+              ],
             });
+
+            if (
+              (res as any)?.[
+                this.zohoApp.customFieldDatevCustomerId
+              ].toString() === datevNummer.toString()
+            ) {
+              // Updating the just updated DatevID in our DB
+              await this.db.zohoContact.update({
+                where: {
+                  id_zohoAppId: {
+                    id: dContact.id,
+                    zohoAppId: this.zohoApp.id,
+                  },
+                },
+                data: {
+                  datevId: datevNummer,
+                },
+              });
+            }
           } catch (error) {
             this.logger.error(`Error updating user with datev id: ${error}`);
           }
