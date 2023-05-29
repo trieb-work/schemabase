@@ -7,12 +7,12 @@ import {
   Signer,
   Topic,
 } from "@eci/pkg/events";
-import upsApi from "ups-api";
 import { id } from "@eci/pkg/ids";
 import { ILogger } from "@eci/pkg/logger";
 import { sleep } from "@eci/pkg/miscHelper/time";
 import { UPSTrackingApp, PackageState, PrismaClient } from "@eci/pkg/prisma";
 import { subMonths, parse } from "date-fns";
+const upsApi = require("ups-api");
 
 interface UPSTrackingSyncServiceConfig {
   upsTrackingApp: UPSTrackingApp;
