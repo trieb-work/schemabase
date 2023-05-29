@@ -97,7 +97,7 @@ export class PackageEventHandler {
             time: new Date(event.time * 1000),
             state: event.state,
             location: event.location,
-            message: event.message ?? "No message",
+            message: event.message ?? null,
           },
         },
       },

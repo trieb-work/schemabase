@@ -8,17 +8,17 @@ import {
   Topic,
 } from "@eci/pkg/events";
 import upsApi from "ups-api";
-
 import { id } from "@eci/pkg/ids";
 import { ILogger } from "@eci/pkg/logger";
 import { sleep } from "@eci/pkg/miscHelper/time";
 import { UPSTrackingApp, PackageState, PrismaClient } from "@eci/pkg/prisma";
-import { subMonths } from "date-fns";
+import { subMonths, parse } from "date-fns";
 
 interface UPSTrackingSyncServiceConfig {
   upsTrackingApp: UPSTrackingApp;
   db: PrismaClient;
   logger: ILogger;
+  testMode?: boolean;
 }
 
 export class UPSTrackingSyncService {
@@ -44,17 +44,36 @@ export class UPSTrackingSyncService {
 
   parseState = (state: string): PackageState | null => {
     switch (state) {
-      case "pre-transit":
+      // M Billing Information Received
+      case "M":
         return PackageState.INFORMATION_RECEIVED;
 
-      case "transit":
+      case "I":
         return PackageState.IN_TRANSIT;
 
-      case "delivered":
+      case "D":
         return PackageState.DELIVERED;
 
-      case "failure":
+      // Delivered Origin CFS (Freight Only)
+      case "DO":
+        return PackageState.DELIVERED;
+
+      //  Delivered Destination CFS (Freight Only)
+      case "DD":
+        return PackageState.DELIVERED;
+
+      case "X":
         return PackageState.EXCEPTION;
+
+      // P Pickup - package got picked-up
+      case "P":
+        return PackageState.DELIVERED;
+
+      case "NA":
+        return PackageState.PENDING;
+
+      case "O":
+        return PackageState.OUT_FOR_DELIVERY;
 
       default:
         return null;
@@ -73,7 +92,6 @@ export class UPSTrackingSyncService {
 
     /// get all UPS packages, that are not delivered
     // with last status update older than 2 hours, to prevent too many API calls
-
     const upsPackages = await this.db.package.findMany({
       where: {
         tenantId: this.upsTrackingApp.tenantId,
@@ -100,22 +118,32 @@ export class UPSTrackingSyncService {
 
       const fullPackage = await upsClient.getTrackingDetails(p.trackingId);
 
-      const shipment = fullPackage?.data?.shipments?.[0];
+      const shipment = fullPackage?.trackResponse?.shipment[0]?.package?.[0];
 
       if (!shipment) {
         continue;
       }
-      if (!shipment.status?.statusCode || !shipment?.status?.timestamp)
-        continue;
-      const internalState = this.parseState(shipment.status?.statusCode);
+
+      // The last = most recent package tracking update
+      const lastState = shipment.activity[0];
+
+      const internalState = this.parseState(lastState.status?.type);
       if (!internalState) {
         this.logger.error(
-          `Could not parse package state ${shipment.status?.statusCode}` +
+          `Could not parse package state ${lastState.status?.type}` +
             `to our internal package state for ${p.trackingId}`,
         );
         continue;
       }
-      this.logger.info(internalState);
+      this.logger.debug(internalState);
+
+      /**
+       * The status message coming from UPS - like: "Processing at UPS Facility"
+       */
+      const statusMessage = lastState.status.description as string;
+
+      // eslint-disable-next-line max-len
+      const shipmentLocation = `${lastState.location.address.city}, ${lastState.location.address.stateProvince}, ${lastState.location.address.countryCode}`;
 
       if (!this.upsTrackingApp.trackingIntegrationId) {
         this.logger.info(
@@ -125,13 +153,21 @@ export class UPSTrackingSyncService {
         continue;
       }
 
-      const time = new Date(shipment.status.timestamp as string);
+      /**
+       * Parse date & time - UPS gives us "localtime", so we might need to fix the timezone select
+       */
+      const time = parse(
+        `${lastState.date} ${lastState.time}`,
+        "yyyyMMdd HHMMSS",
+        new Date(),
+      );
       const packageEvent: EventSchemaRegistry.PackageUpdate["message"] = {
         trackingId: p.trackingId,
         time: time.getTime() / 1000,
-        location: shipment.status.location?.address?.addressLocality || "",
+        location: shipmentLocation,
         state: internalState,
         trackingIntegrationId: this.upsTrackingApp.trackingIntegrationId,
+        message: statusMessage,
       };
 
       const kafka = await KafkaProducer.new<
