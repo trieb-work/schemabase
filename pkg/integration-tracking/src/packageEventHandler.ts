@@ -57,7 +57,11 @@ export class PackageEventHandler {
         trackingId: event.trackingId,
       },
       include: {
-        events: true,
+        events: {
+          orderBy: {
+            time: "desc",
+          },
+        },
         order: true,
       },
     });
@@ -77,6 +81,17 @@ export class PackageEventHandler {
     }
     const currentState = storedPackage.state;
 
+    const existingEvents = storedPackage.events;
+
+    const eventDate = new Date(event.time * 1000);
+
+    if (existingEvents && existingEvents.some((e) => e.time === eventDate)) {
+      this.logger
+        .info(`The current event date is the same as from an existing one in \
+      our DB: ${eventDate}. Assuming, that we already have this event in our DB. Skipping..`);
+      return;
+    }
+
     const eventId = id.id("event");
 
     this.logger.info("Updating package state", {
@@ -94,7 +109,7 @@ export class PackageEventHandler {
         events: {
           create: {
             id: eventId,
-            time: new Date(event.time * 1000),
+            time: eventDate,
             state: event.state,
             location: event.location,
             message: event.message ?? null,
