@@ -154,6 +154,9 @@ dependencies:
   tslog:
     specifier: ^3.3.3
     version: 3.3.3
+  ups-api:
+    specifier: ^0.4.2
+    version: 0.4.2
   winston:
     specifier: ^3.8.2
     version: 3.8.2
@@ -11831,6 +11834,15 @@ packages:
       tslib: 2.4.1
     dev: true
 
+  /ups-api@0.4.2:
+    resolution: {integrity: sha512-F8txE186get9TmvqUKQ/c6cDCh/1LLJK4siwbw77ktHND/qj6aWfM8+OMQlqFXex6ZVxc+qqUWhJcFWzVMT33Q==}
+    dependencies:
+      xml-js: 1.6.11
+      yonius: 0.11.7
+    transitivePeerDependencies:
+      - encoding
+    dev: false
+
   /uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
     dependencies:
@@ -12108,6 +12120,13 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
+  /xml-js@1.6.11:
+    resolution: {integrity: sha512-7rVi2KMfwfWFl+GpPg6m80IVMWXLRjO+PxTq7V2CDhoGak0wzYzFgUY2m4XJ47OGdXd8eLE8EmwfAmdjw7lC1g==}
+    hasBin: true
+    dependencies:
+      sax: 1.2.4
+    dev: false
+
   /xml2js@0.4.23:
     resolution: {integrity: sha512-ySPiMjM0+pLDftHgXY4By0uswI3SPKLDw/i3UXbnO8M/p28zqexCUoPmQFrYD+/1BzhGJSs2i1ERWKJAtiLrug==}
     engines: {node: '>=4.0.0'}
@@ -12212,6 +12231,14 @@ packages:
   /yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
+
+  /yonius@0.11.7:
+    resolution: {integrity: sha512-aYXFJdROpeCWXhjCAR4O0FwqYr7raIEs3F78Q5vlfjZIeLk4PKFmRh9E5gpKdAQRldzn74LUHS9b1r/guI8M9g==}
+    dependencies:
+      node-fetch: 2.6.7
+    transitivePeerDependencies:
+      - encoding
+    dev: false
 
   /zip-stream@4.1.0:
     resolution: {integrity: sha512-zshzwQW7gG7hjpBlgeQP9RuyPGNxvJdzR8SUM3QhxCnLjWN2E7j3dOvpeDcQoETfHx0urRS7EtmVToql7YpU4A==}

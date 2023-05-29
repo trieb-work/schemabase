@@ -24,6 +24,7 @@ import { ZohoSalesOrderSyncWf } from "./workflows/zohoSalesOrderSync";
 import { ZohoTaxSyncWf } from "./workflows/zohoTaxSync";
 import { ZohoWarehouseSyncWf } from "./workflows/zohoWarehouseSync";
 import { DatevContactSyncWf } from "./workflows/datevContactSync";
+import { UPSTrackingSyncWf } from "./workflows/upsTrackingSync";
 
 interface CronClients {
   logger: ILogger;
@@ -67,6 +68,13 @@ export class CronTable {
 
     const enabledDhlTrackingApps =
       await this.clients.prisma.dHLTrackingApp.findMany({
+        where: {
+          enabled: true,
+        },
+      });
+
+    const enabledUpsTrackingApps =
+      await this.clients.prisma.uPSTrackingApp.findMany({
         where: {
           enabled: true,
         },
@@ -149,6 +157,9 @@ export class CronTable {
       }
     }
 
+    /**
+     * DHL Tracking App Workflow
+     */
     for (const enabledDhlTrackingApp of enabledDhlTrackingApps) {
       const { id, cronTimeout, cronSchedule, tenantId } = enabledDhlTrackingApp;
       const commonCronConfig = {
@@ -161,6 +172,29 @@ export class CronTable {
       new WorkflowScheduler(this.clients).schedule(
         createWorkflowFactory(
           DHLTrackingSyncWf,
+          this.clients,
+          commonWorkflowConfig,
+        ),
+        { ...commonCronConfig, offset: 0 },
+        [tenantId.substring(0, 5), id.substring(0, 5)],
+      );
+    }
+
+    /**
+     * UPS Tracking App Workflow
+     */
+    for (const enabledUpsTrackingApp of enabledUpsTrackingApps) {
+      const { id, cronTimeout, cronSchedule, tenantId } = enabledUpsTrackingApp;
+      const commonCronConfig = {
+        cron: cronSchedule,
+        timeout: cronTimeout,
+      };
+      const commonWorkflowConfig = {
+        upsTrackingApp: enabledUpsTrackingApp,
+      };
+      new WorkflowScheduler(this.clients).schedule(
+        createWorkflowFactory(
+          UPSTrackingSyncWf,
           this.clients,
           commonWorkflowConfig,
         ),
