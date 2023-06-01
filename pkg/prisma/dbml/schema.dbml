@@ -570,7 +570,7 @@ Table Order {
 Some systems just use a date here']
   expectedShippingDate DateTime [note: 'The Date, that we expect this order to be shipped.']
   carrier Carrier [note: 'The expected shipment carrier for this order']
-  customerNote String [note: 'Add messages, that will be printed on order and shipping documents for the customer']
+  customerNote String [note: 'Add messages, that will be printed on order and shipping documents for the customer. We are hitting text limits  strangely, so we added @db.Text']
   orderStatus OrderStatus [not null, default: 'draft']
   paymentStatus OrderPaymentStatus [not null, default: 'unpaid']
   shipmentStatus OrderShipmentStatus [not null, default: 'pending']
@@ -1057,8 +1057,8 @@ Table SaleorApp {
   domain String [not null]
   name String [not null]
   installedSaleorApps InstalledSaleorApp [not null]
-  tenant Tenant [not null]
-  tenantId String [not null]
+  tenant Tenant
+  tenantId String
 
   indexes {
     (domain, tenantId) [unique]

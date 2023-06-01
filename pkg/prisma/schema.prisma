@@ -971,8 +971,8 @@ model Order {
   /// The expected shipment carrier for this order
   carrier Carrier?
 
-  /// Add messages, that will be printed on order and shipping documents for the customer
-  customerNote String?
+  /// Add messages, that will be printed on order and shipping documents for the customer. We are hitting text limits  strangely, so we added @db.Text
+  customerNote String? @db.Text
 
   orderStatus    OrderStatus         @default(draft)
   paymentStatus  OrderPaymentStatus  @default(unpaid)
@@ -2017,8 +2017,8 @@ model SaleorApp {
 
   installedSaleorApps InstalledSaleorApp[]
 
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId String
+  tenant   Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String?
 
   @@unique([domain, tenantId])
   // Just for relational purposes
