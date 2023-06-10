@@ -207,8 +207,6 @@ jobs:
       #       --from-file=.dockerconfigjson=$HOME/.docker/config.json\
       #       -o yaml |
       #     kubectl apply -f -
-      - name: Test something out
-        run: kubectl --v=9 get nodes   
 
       - name: Create the wildcard certificate for *.eci-prod.eu.fsn1.trwrk.xyz
         run: kubectl --v=8 -n ${{ env.NAMESPACE }} --validate=false apply -f ./wildcard-cert-eci.yml   

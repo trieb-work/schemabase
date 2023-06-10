@@ -18,6 +18,8 @@ const HOST = process.env.HOST;
 if (!HOST)
   throw new Error("$HOST not set! Can't create the callback URL for google");
 
+const allowedLoginDomains = process.env.ALLOWED_LOGIN_DOMAINS;
+
 passport.use(
   new GoogleStrategy(
     {
@@ -32,7 +34,10 @@ passport.use(
       profile: any,
       cb: (arg0: any, arg1?: any) => any,
     ) {
-      if (profile._json.hd === "trieb.work" && profile._json.email_verified) {
+      if (
+        allowedLoginDomains?.includes(profile._json.hd) &&
+        profile._json.email_verified
+      ) {
         console.info(`Allowing access for user ${profile._json.email}`);
         return cb(undefined, profile);
       }
