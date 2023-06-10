@@ -5,7 +5,7 @@ import { NextRequest } from "next/server";
  * We use the edge runtime here. SOME THINGS MIGHT BREAK! TEST IT
  */
 export const config = {
-  runtime: "experimental-edge",
+  runtime: "edge",
 };
 
 const jsonResponseOk = (input: object) => {
@@ -22,7 +22,13 @@ const jsonResponseOk = (input: object) => {
  * their attributes in your shop.#
  */
 export default async function handler(req: NextRequest): Promise<Response> {
-  const saleorEvent = req.headers.get("saleor-event") || "";
+  const saleorEvent = req.headers.get("saleor-event");
+  const saleorDomain = req.headers.get("saleor-domain");
+  const saleorApiUrl = req.headers.get("saleor-api-url");
+  const saleorSignature = req.headers.get("saleor-signature");
+
+  if (!saleorEvent || !saleorDomain || !saleorApiUrl || !saleorSignature)
+    throw new Error("Required saleor headers missing");
 
   const isPaymentWebhook = [
     "payment_list_gateways",
@@ -73,11 +79,3 @@ export default async function handler(req: NextRequest): Promise<Response> {
 
   return jsonResponseOk({});
 }
-
-// export default handleWebhook({
-//   webhook,
-//   validation: {
-//     http: { allowedMethods: ["POST"] },
-//     request: requestValidation,
-//   },
-// });

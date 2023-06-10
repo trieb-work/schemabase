@@ -51,6 +51,12 @@ const parseState = (state: string): PackageState | null => {
     case "error_return":
       return PackageState.EXCEPTION;
 
+    case "no_pickup_by_consignee":
+      return PackageState.EXCEPTION;
+
+    case "pickup_by_consignee":
+      return PackageState.DELIVERED;
+
     default:
       return null;
   }
@@ -85,6 +91,10 @@ const requestValidation = z.object({
       "error_pickup",
       // System-Retoure zurück an den Versender
       "error_return",
+      // Paketabholung im Pickup Paketshop durch den Empfänger.
+      "pickup_by_consignee",
+      // Empfänger hat das Paket im Pickup Paketshop nicht abgeholt.
+      "no_pickup_by_consignee",
     ]),
     statusdate: z.string(),
   }),

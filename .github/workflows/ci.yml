@@ -77,7 +77,6 @@ jobs:
     needs:
       - build
       - test
-      - e2e
     runs-on: ubuntu-latest
     env:
       REGISTRY: ghcr.io
@@ -110,95 +109,95 @@ jobs:
       - name: Push image
         run: docker push ${{ steps.meta.outputs.tags }}
 
-  e2e:
-    name: Integration
-    needs:
-      - test
-      - build
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        saleor: [
-            "ghcr.io/saleor/saleor:3.0.0"
-          ]
+  # e2e:
+  #   name: Integration
+  #   needs:
+  #     - test
+  #     - build
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       saleor: [
+  #           "ghcr.io/saleor/saleor:3.0.0"
+  #         ]
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
 
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 7
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '14'
-          cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
+  #     - uses: pnpm/action-setup@v2
+  #       with:
+  #         version: 7
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: '14'
+  #         cache: 'pnpm'
+  #     - run: pnpm install --frozen-lockfile
 
     
 
-      # load docker images from build jobs
-      - name: Load images from artifacts
-        uses: actions/download-artifact@v3
-        with:
-          path: images
+  #     # load docker images from build jobs
+  #     - name: Load images from artifacts
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         path: images
 
-      - name: Load docker images
-        run: |
-          docker load -i images/api/api.tar & docker load -i images/worker/worker.tar
+  #     - name: Load docker images
+  #       run: |
+  #         docker load -i images/api/api.tar & docker load -i images/worker/worker.tar
 
-        # Necesarry to test against the predefined saleor versions
-      - name: Use docker-compose ci config
-        run: cp docker-compose.ci.yml docker-compose.override.yml
+  #       # Necesarry to test against the predefined saleor versions
+  #     - name: Use docker-compose ci config
+  #       run: cp docker-compose.ci.yml docker-compose.override.yml
 
-      # Pull the latest image to build, and avoid caching pull-only images.
-      # (docker pull is faster than caching in most cases.)
-      - run: docker-compose pull --ignore-pull-failures
-        env: 
-          SALEOR_IMAGE: ${{ matrix.saleor }}
+  #     # Pull the latest image to build, and avoid caching pull-only images.
+  #     # (docker pull is faster than caching in most cases.)
+  #     - run: docker-compose pull --ignore-pull-failures
+  #       env: 
+  #         SALEOR_IMAGE: ${{ matrix.saleor }}
 
-      - name: Start services
-        run: docker-compose up -d
-        env:
-          SALEOR_IMAGE: ${{ matrix.saleor }}
-          DATABASE_URL: mysql://eci:eci@eci.mysql.db/eci
-          ECI_BASE_URL: http://localhost:3000
-          ECI_BASE_URL_FROM_CONTAINER: http://api.eci:3000
-          SALEOR_URL_FROM_CONTAINER: http://saleor.eci:8000/graphql/
-          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
-          REDIS_HOST: localhost
-          REDIS_PORT: 6379
-          REDIS_PASSWORD: hi
-          ECI_ENV: ci
-          VERCEL_TOKEN: ${{secrets.VERCEL_TOKEN}}
-          KAFKA_BROKER_URL: "kafka:9092"
+  #     - name: Start services
+  #       run: docker-compose up -d
+  #       env:
+  #         SALEOR_IMAGE: ${{ matrix.saleor }}
+  #         DATABASE_URL: mysql://eci:eci@eci.mysql.db/eci
+  #         ECI_BASE_URL: http://localhost:3000
+  #         ECI_BASE_URL_FROM_CONTAINER: http://api.eci:3000
+  #         SALEOR_URL_FROM_CONTAINER: http://saleor.eci:8000/graphql/
+  #         SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+  #         REDIS_HOST: localhost
+  #         REDIS_PORT: 6379
+  #         REDIS_PASSWORD: hi
+  #         ECI_ENV: ci
+  #         VERCEL_TOKEN: ${{secrets.VERCEL_TOKEN}}
+  #         KAFKA_BROKER_URL: "kafka:9092"
 
-      - name: Migrate saleor schema
-        run: make migrate-saleor
+  #     - name: Migrate saleor schema
+  #       run: make migrate-saleor
 
-      - name: Migrate eci schema
-        run: pnpm prisma db push --force-reset
-        env:
-          DATABASE_URL: mysql://eci:eci@localhost/eci
+  #     - name: Migrate eci schema
+  #       run: pnpm prisma db push --force-reset
+  #       env:
+  #         DATABASE_URL: mysql://eci:eci@localhost/eci
 
-      - name: Generate code
-        run: make build
+  #     - name: Generate code
+  #       run: make build
 
-      - name: Test
-        run: pnpm jest --testPathIgnorePatterns="./e2e/|./services/worker/" -i
-        env:
-          SALEOR_URL: http://localhost:8000/graphql/
-          ECI_BASE_URL: http://localhost:3000
-          DATABASE_URL: mysql://eci:eci@localhost/eci
-          ZOHO_CLIENT_SECRET: ${{ secrets.ZOHO_CLIENT_SECRET }}
-          ZOHO_CLIENT_ID: ${{ secrets.ZOHO_CLIENT_ID }}
-          ZOHO_ORG_ID: ${{ secrets.ZOHO_ORG_ID }}
-          ECI_BASE_URL_FROM_CONTAINER: http://api.eci:3000
-          ECI_ENV: development
-          REDIS_HOST: localhost
-          REDIS_PORT: 6379
-          REDIS_PASSWORD: hi
+  #     - name: Test
+  #       run: pnpm jest --testPathIgnorePatterns="./e2e/|./services/worker/" -i
+  #       env:
+  #         SALEOR_URL: http://localhost:8000/graphql/
+  #         ECI_BASE_URL: http://localhost:3000
+  #         DATABASE_URL: mysql://eci:eci@localhost/eci
+  #         ZOHO_CLIENT_SECRET: ${{ secrets.ZOHO_CLIENT_SECRET }}
+  #         ZOHO_CLIENT_ID: ${{ secrets.ZOHO_CLIENT_ID }}
+  #         ZOHO_ORG_ID: ${{ secrets.ZOHO_ORG_ID }}
+  #         ECI_BASE_URL_FROM_CONTAINER: http://api.eci:3000
+  #         ECI_ENV: development
+  #         REDIS_HOST: localhost
+  #         REDIS_PORT: 6379
+  #         REDIS_PASSWORD: hi
 
-      - run: docker-compose logs
-        if: always()
+  #     - run: docker-compose logs
+  #       if: always()

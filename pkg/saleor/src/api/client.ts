@@ -2,7 +2,7 @@ import { getSdk, PageInfoMetaFragment, Sdk } from "./generated/graphql";
 import { DocumentNode } from "graphql";
 import { GraphQLClient } from "graphql-request";
 import { ECI_TRACE_HEADER } from "@eci/pkg/constants";
-import { PrismaClient } from "@eci/pkg/prisma";
+import { InstalledSaleorApp, PrismaClient, SaleorApp } from "@eci/pkg/prisma";
 import { sleep } from "@eci/pkg/miscHelper/time";
 
 export interface SaleorServiceConfig {
@@ -56,6 +56,10 @@ export function createSaleorClient({
   return getSdk(requester);
 }
 
+interface SaleorAppMandatoryTenantId extends SaleorApp {
+  tenantId: string;
+}
+
 /**
  * Get all needed authentication data from the db and create a valid saleor client from it
  * @param installedSaleorAppId
@@ -76,12 +80,21 @@ export async function getSaleorClientAndEntry(
     throw new Error(
       `Could not find zoho app with provided id ${installedSaleorAppId}`,
     );
+  if (!installedSaleorApp.saleorApp.tenantId)
+    throw new Error(
+      `Saleor App ${installedSaleorApp.saleorApp.id} has no tenant connected`,
+    );
   const client = createSaleorClient({
     graphqlEndpoint: `${installedSaleorApp.domain}`,
     token: installedSaleorApp.token,
     traceId: `tr_${(Math.random() + 1).toString(36).substring(2)}`,
   });
-  return { client, installedSaleorApp };
+  return {
+    client,
+    installedSaleorApp: installedSaleorApp as InstalledSaleorApp & {
+      saleorApp: SaleorAppMandatoryTenantId;
+    },
+  };
 }
 
 type PagedSaleorResult<ResultNode, EntryName extends string> = Record<
