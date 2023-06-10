@@ -96,6 +96,7 @@ jobs:
       - name: Run helm deploy
         run: >
           helm upgrade eci-worker-v2 ./services/worker/helm-chart
+          --debug
           --install
           --create-namespace
           --namespace=eci-prod
