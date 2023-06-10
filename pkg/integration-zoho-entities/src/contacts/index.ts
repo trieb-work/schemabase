@@ -545,27 +545,45 @@ export class ZohoContactSyncService {
       );
       for (const dContact of datevUpdates) {
         const datevNummer =
-          dContact.zohoContactPerson?.[0].contact?.datevContacts?.[0]
+          dContact.zohoContactPerson?.[0]?.contact?.datevContacts?.[0]
             ?.datevNummer;
         if (datevNummer) {
           this.logger.info(
             `Updating Zoho Contact ${dContact.id} with Datev Nummer ${datevNummer}`,
           );
-          await this.zoho.contact.update({
-            contact_id: dContact.id,
-            [this.zohoApp.customFieldDatevCustomerId]: datevNummer,
-          });
-          await this.db.zohoContact.update({
-            where: {
-              id_zohoAppId: {
-                id: dContact.id,
-                zohoAppId: this.zohoApp.id,
-              },
-            },
-            data: {
-              datevId: datevNummer,
-            },
-          });
+          try {
+            const res = await this.zoho.contact.update({
+              contact_id: dContact.id,
+              custom_fields: [
+                {
+                  api_name: this.zohoApp.customFieldDatevCustomerId,
+                  value: datevNummer,
+                },
+              ],
+            });
+
+            if (
+              (res as any)?.[
+                this.zohoApp.customFieldDatevCustomerId
+              ].toString() === datevNummer.toString()
+            ) {
+              // Updating the just updated DatevID in our DB
+              await this.db.zohoContact.update({
+                where: {
+                  id_zohoAppId: {
+                    id: dContact.id,
+                    zohoAppId: this.zohoApp.id,
+                  },
+                },
+                data: {
+                  datevId: datevNummer,
+                },
+              });
+            }
+          } catch (error) {
+            this.logger.error(`Error updating user with datev id: ${error}`);
+          }
+
           // ZOHO API limits
           await sleep(1100);
         }

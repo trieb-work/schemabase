@@ -15,7 +15,7 @@ describe("Zoho Entity Sync Orders Test", () => {
   test("It should work to sync orders to Xentral via Zoho", async () => {
     const tenant = await prismaClient.tenant.findUnique({
       where: {
-        id: "pk_7f16573fece94114847dc81d3214eef4",
+        id: "pk_7f165pf-prod",
         // id: "test",
       },
       include: {
@@ -29,6 +29,7 @@ describe("Zoho Entity Sync Orders Test", () => {
       prismaClient,
       undefined,
     );
+    console.log(tenant.datevApps)
 
     const service = new ZohoContactSyncService({
       zoho,

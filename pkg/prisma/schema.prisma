@@ -971,8 +971,8 @@ model Order {
   /// The expected shipment carrier for this order
   carrier Carrier?
 
-  /// Add messages, that will be printed on order and shipping documents for the customer
-  customerNote String?
+  /// Add messages, that will be printed on order and shipping documents for the customer. We are hitting text limits  strangely, so we added @db.Text
+  customerNote String? @db.Text
 
   orderStatus    OrderStatus         @default(draft)
   paymentStatus  OrderPaymentStatus  @default(unpaid)
@@ -1842,8 +1842,32 @@ model DHLTrackingApp {
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String @unique
-  /// From the developer portal. Is different for sandbox and prod
+  /// From the developer portal. Is different for sandbox and prod. API keys are multi-tenant by default
+  /// so we might use them for multiple customer
   apiKey   String
+
+  trackingIntegration   TrackingIntegration? @relation(fields: [trackingIntegrationId], references: [id])
+  trackingIntegrationId String?
+
+  cronSchedule String @default("0 */4 * * *")
+  // Time in seconds how long one workflow can run before a timeout occurs.
+  cronTimeout  Int    @default(800)
+
+  @@index([trackingIntegrationId])
+}
+
+/// UPS Tracking App model
+model UPSTrackingApp {
+  id String @id
+
+  enabled Boolean @default(false)
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String @unique
+  
+  /// From the developer portal. Is the same for sandbox and prod. API keys are multi-tenant by default
+  /// so we might use them for multiple customer. It is not clear, how much traffic we can produce with one key
+  accessKey   String
 
   trackingIntegration   TrackingIntegration? @relation(fields: [trackingIntegrationId], references: [id])
   trackingIntegrationId String?
@@ -2117,6 +2141,7 @@ model Tenant {
   easyPost                    EasyPostApp[]
   DHLTrackingApps             DHLTrackingApp[]
   datevApps                   DatevApp[]
+  UPSTrackingApps             UPSTrackingApp[]
   eci_User_Tenants            eci_User_Tenant[]
 }
 
@@ -2157,6 +2182,7 @@ model TrackingIntegration {
   tenantId           String
   dpdApps            DpdApp[]
   dhlTrackingApps    DHLTrackingApp[]
+  upsTrackingApps    UPSTrackingApp[]
   easyPostApps       EasyPostApp[]
   trackingEmailApp   TrackingEmailApp @relation(fields: [trackingEmailAppId], references: [id])
   trackingEmailAppId String

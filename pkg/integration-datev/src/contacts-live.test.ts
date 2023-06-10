@@ -16,7 +16,7 @@ describe("DATEV customer creation flow", () => {
   test("It should work to sync contacts", async () => {
     const tenant = await prismaClient.tenant.findUnique({
       where: {
-        id: "pk_7f16573fece94114847dc81d3214eef4",
+        id: "pk_7f165pf-prod",
         // id: "test",
       },
       include: {

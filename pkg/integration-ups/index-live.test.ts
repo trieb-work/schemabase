@@ -2,8 +2,7 @@ import { AssertionLogger } from "@eci/pkg/logger";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { beforeEach, describe, jest, test } from "@jest/globals";
 import "@eci/pkg/jest-utils/consoleFormatter";
-import { SaleorPaymentSyncService } from "./payments";
-import { getSaleorClientAndEntry } from "@eci/pkg/saleor";
+import { UPSTrackingSyncService } from "./index";
 
 /// Use this file to locally run this service
 
@@ -11,10 +10,10 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
-describe("Saleor Entity Sync Orders Test", () => {
+describe("UPS package sync", () => {
   const prismaClient = new PrismaClient();
 
-  test("It should work to sync payments", async () => {
+  test("It should work to sync packages", async () => {
     const tenant = await prismaClient.tenant.findUnique({
       where: {
         id: "pk_7f165pf-prod",
@@ -24,18 +23,19 @@ describe("Saleor Entity Sync Orders Test", () => {
     if (!tenant)
       throw new Error("Testing Tenant or zoho app/integration not found in DB");
 
-    const { client: saleorClient, installedSaleorApp } =
-      await getSaleorClientAndEntry("QXBwOjE2", prismaClient);
+    const upsTrackingApp = await prismaClient.uPSTrackingApp.findUnique({
+      where: {
+        id: "ups_tr_vqw435068q0uj1q34ojt",
+      },
+    });
+    if (!upsTrackingApp) throw new Error("UPS Tracking App not found");
 
-    const service = new SaleorPaymentSyncService({
-      saleorClient,
-      installedSaleorAppId: installedSaleorApp.id,
+    const service = new UPSTrackingSyncService({
       logger: new AssertionLogger(),
       db: prismaClient,
-      tenantId: tenant.id,
-      orderPrefix: "STORE",
+      upsTrackingApp,
     });
-    // await service.syncToECI();
-    await service.syncFromECI();
+
+    await service.syncToECI();
   }, 1000000);
 });

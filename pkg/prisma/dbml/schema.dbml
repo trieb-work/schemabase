@@ -570,7 +570,7 @@ Table Order {
 Some systems just use a date here']
   expectedShippingDate DateTime [note: 'The Date, that we expect this order to be shipped.']
   carrier Carrier [note: 'The expected shipment carrier for this order']
-  customerNote String [note: 'Add messages, that will be printed on order and shipping documents for the customer']
+  customerNote String [note: 'Add messages, that will be printed on order and shipping documents for the customer. We are hitting text limits  strangely, so we added @db.Text']
   orderStatus OrderStatus [not null, default: 'draft']
   paymentStatus OrderPaymentStatus [not null, default: 'unpaid']
   shipmentStatus OrderShipmentStatus [not null, default: 'pending']
@@ -950,13 +950,29 @@ Table DHLTrackingApp {
   enabled Boolean [not null, default: false]
   tenant Tenant [not null]
   tenantId String [unique, not null]
-  apiKey String [not null, note: 'From the developer portal. Is different for sandbox and prod']
+  apiKey String [not null, note: 'From the developer portal. Is different for sandbox and prod. API keys are multi-tenant by default
+so we might use them for multiple customer']
   trackingIntegration TrackingIntegration
   trackingIntegrationId String
   cronSchedule String [not null, default: '0 */4 * * *']
   cronTimeout Int [not null, default: 800]
 
   Note: 'DHL Tracking App model'
+}
+
+Table UPSTrackingApp {
+  id String [pk]
+  enabled Boolean [not null, default: false]
+  tenant Tenant [not null]
+  tenantId String [unique, not null]
+  accessKey String [not null, note: 'From the developer portal. Is the same for sandbox and prod. API keys are multi-tenant by default
+so we might use them for multiple customer. It is not clear, how much traffic we can produce with one key']
+  trackingIntegration TrackingIntegration
+  trackingIntegrationId String
+  cronSchedule String [not null, default: '0 */4 * * *']
+  cronTimeout Int [not null, default: 800]
+
+  Note: 'UPS Tracking App model'
 }
 
 Table ProductDataFeedApp {
@@ -1119,6 +1135,7 @@ Table Tenant {
   easyPost EasyPostApp [not null]
   DHLTrackingApps DHLTrackingApp [not null]
   datevApps DatevApp [not null]
+  UPSTrackingApps UPSTrackingApp [not null]
   eci_User_Tenants eci_User_Tenant [not null]
 }
 
@@ -1145,6 +1162,7 @@ Table TrackingIntegration {
   tenantId String [not null]
   dpdApps DpdApp [not null]
   dhlTrackingApps DHLTrackingApp [not null]
+  upsTrackingApps UPSTrackingApp [not null]
   easyPostApps EasyPostApp [not null]
   trackingEmailApp TrackingEmailApp [not null]
   trackingEmailAppId String [not null]
@@ -1905,6 +1923,10 @@ Ref: EasyPostApp.integrationId > TrackingIntegration.id
 Ref: DHLTrackingApp.tenantId > Tenant.id [delete: Cascade]
 
 Ref: DHLTrackingApp.trackingIntegrationId > TrackingIntegration.id
+
+Ref: UPSTrackingApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: UPSTrackingApp.trackingIntegrationId > TrackingIntegration.id
 
 Ref: ProductDataFeedApp.tenantId > Tenant.id [delete: Cascade]
 

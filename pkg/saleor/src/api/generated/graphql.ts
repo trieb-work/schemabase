@@ -13043,6 +13043,23 @@ export type SaleorCreatePackageMutation = {
   } | null;
 };
 
+export type CancelOrderMutationVariables = Exact<{
+  id: Scalars["ID"];
+}>;
+
+export type CancelOrderMutation = {
+  __typename?: "Mutation";
+  orderCancel?: {
+    __typename?: "OrderCancel";
+    order?: { __typename?: "Order"; id: string; status: OrderStatus } | null;
+    errors: Array<{
+      __typename?: "OrderError";
+      field?: string | null;
+      message?: string | null;
+    }>;
+  } | null;
+};
+
 export type PaymentCreateMutationVariables = Exact<{
   id: Scalars["ID"];
   amount: Scalars["PositiveDecimal"];
@@ -13788,6 +13805,20 @@ export const SaleorCreatePackageDocument = gql`
     }
   }
 `;
+export const CancelOrderDocument = gql`
+  mutation cancelOrder($id: ID!) {
+    orderCancel(id: $id) {
+      order {
+        id
+        status
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`;
 export const PaymentCreateDocument = gql`
   mutation paymentCreate($id: ID!, $amount: PositiveDecimal!) {
     orderCapture(id: $id, amount: $amount) {
@@ -14416,6 +14447,16 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
         variables,
         options,
       ) as Promise<SaleorCreatePackageMutation>;
+    },
+    cancelOrder(
+      variables: CancelOrderMutationVariables,
+      options?: C,
+    ): Promise<CancelOrderMutation> {
+      return requester<CancelOrderMutation, CancelOrderMutationVariables>(
+        CancelOrderDocument,
+        variables,
+        options,
+      ) as Promise<CancelOrderMutation>;
     },
     paymentCreate(
       variables: PaymentCreateMutationVariables,
