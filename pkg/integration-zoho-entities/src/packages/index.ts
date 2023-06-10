@@ -168,6 +168,7 @@ export class ZohoPackageSyncService {
             trackingId: parcel.tracking_number,
             carrier,
             carrierTrackingUrl,
+            status: parcel.status,
           }
         : {};
 
