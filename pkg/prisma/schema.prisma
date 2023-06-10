@@ -1369,6 +1369,62 @@ model Address {
   @@index([updatedAt])
 }
 
+
+
+enum AttributeType {
+
+  DROPDOWN
+  MULTISELECT
+  FILE
+  REFERENCE
+  NUMERIC
+  RICH_TEXT
+  PLAIN_TEXT
+  SWATCH
+  BOOLEAN
+  DATE
+  DATE_TIME
+
+}
+
+model Attribute {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name String
+  type AttributeType
+
+  /// Is the attribute mandatory to be set, or can it be left blank
+  required Boolean? @default(false)
+
+  values  AttributeValue[]
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  @@index([tenantId])
+
+
+}
+
+model AttributeValue {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// Represent value of the attribute value (e.g. color values for swatch attributes)
+  value     String?
+
+  attribute Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  attributeId String
+
+  @@index([attributeId])
+
+}
+
 // The ECI internal Product model
 // We use the ProductVariant more, as only variants have unique identifier like the SKU. Products can be matched only via the product name
 model Product {
@@ -2142,6 +2198,7 @@ model Tenant {
   DHLTrackingApps             DHLTrackingApp[]
   datevApps                   DatevApp[]
   UPSTrackingApps             UPSTrackingApp[]
+  attributes                  Attribute[]
   eci_User_Tenants            eci_User_Tenant[]
 }
 

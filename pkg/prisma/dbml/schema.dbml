@@ -652,6 +652,27 @@ Sometimes, you have orders from different email addresses, sending to the same a
   }
 }
 
+Table Attribute {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  name String [not null]
+  type AttributeType [not null]
+  required Boolean [default: false, note: 'Is the attribute mandatory to be set, or can it be left blank']
+  values AttributeValue [not null]
+  tenant Tenant [not null]
+  tenantId String [not null]
+}
+
+Table AttributeValue {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  value String [note: 'Represent value of the attribute value (e.g. color values for swatch attributes)']
+  attribute Attribute [not null]
+  attributeId String [not null]
+}
+
 Table Product {
   id String [pk]
   createdAt DateTime [default: `now()`, not null]
@@ -1136,6 +1157,7 @@ Table Tenant {
   DHLTrackingApps DHLTrackingApp [not null]
   datevApps DatevApp [not null]
   UPSTrackingApps UPSTrackingApp [not null]
+  attributes Attribute [not null]
   eci_User_Tenants eci_User_Tenant [not null]
 }
 
@@ -1657,6 +1679,20 @@ Enum CountryCode {
   ZW
 }
 
+Enum AttributeType {
+  DROPDOWN
+  MULTISELECT
+  FILE
+  REFERENCE
+  NUMERIC
+  RICH_TEXT
+  PLAIN_TEXT
+  SWATCH
+  BOOLEAN
+  DATE
+  DATE_TIME
+}
+
 Enum PackageState {
   INIT
   INFORMATION_RECEIVED
@@ -1853,6 +1889,10 @@ Ref: Order.billingAddressId > Address.id [delete: Cascade]
 Ref: Order.tenantId > Tenant.id [delete: Cascade]
 
 Ref: Address.tenantId > Tenant.id [delete: Cascade]
+
+Ref: Attribute.tenantId > Tenant.id [delete: Cascade]
+
+Ref: AttributeValue.attributeId > Attribute.id [delete: Cascade]
 
 Ref: Product.tenantId > Tenant.id [delete: Cascade]
 
