@@ -1,4 +1,8 @@
-lockfileVersion: '6.0'
+lockfileVersion: '6.1'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
 
 dependencies:
   '@47ng/cloak':
@@ -32,8 +36,8 @@ dependencies:
     specifier: ^4.8.1
     version: 4.8.1(prisma@4.8.1)
   '@trieb.work/zoho-ts':
-    specifier: 0.8.1
-    version: 0.8.1
+    specifier: ^0.8.2
+    version: 0.8.2
   apollo-datasource:
     specifier: ^3.3.1
     version: 3.3.1
@@ -3528,8 +3532,8 @@ packages:
     resolution: {integrity: sha512-DTHkbsRuE9fEl+rwMPNoVXcs/JCSKHIFFluE11MgsMXleOotrw+XdzpQU15xrAFiGHpcY92a3XJwxkr3HBoNqw==}
     dev: true
 
-  /@trieb.work/zoho-ts@0.8.1:
-    resolution: {integrity: sha512-1Cqx2WbuwVP1nzeGK6ENhjiRrwU2P1hUlSAoLdhj8U42keto/5fVwxvdxX75c+PHtXPRHIzGppVKKIOqVO0PGg==}
+  /@trieb.work/zoho-ts@0.8.2:
+    resolution: {integrity: sha512-awk7Fsm8n0+N3aZiLA3LuAANg8nXKh+r6neyJfsGdEJtifmKYzSPfFSIK835YBOYg4/U3J3768TbpKgAdZhCBw==}
     dependencies:
       async-retry: 1.3.3
       await-timeout: 1.1.1
