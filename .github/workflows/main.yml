@@ -71,7 +71,11 @@ jobs:
 
       - uses: azure/setup-kubectl@v3
         with:
-           version: v1.25.2     
+           version: v1.25.2  
+     
+      - uses: azure/setup-helm@v3
+        with:
+          version: 'v3.10.0'      
 
       - name: Set Kubernetes Context
         uses: azure/k8s-set-context@v3
@@ -85,6 +89,9 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: kubectl version
+        run: kubectl version    
 
       # - name: Create the image-pull-secret in Kubernetes
       #   run: |
