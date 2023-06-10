@@ -82,7 +82,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: cat ~/.docker/config.json
+      - name: debug
+        run: kubectl get ns
 
       # - name: Create the image-pull-secret in Kubernetes
       #   run: |
