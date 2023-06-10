@@ -7,6 +7,8 @@ We create a manifest URL per per app-type that can be installed like this:
 
 Adding a tenant id as querystring is optional - like this we can enable the app and connect it 
 directly with an existing tenant. In the future we want customers to use the App configuration page to manage their schemabase account/tenant and see their sync status etc.
+The manifest url looks like this: [ECI_URL]/api/saleor/manifest/[APPTYPE]?tenantId=XXX
+apptype can be "entitysync" or "prepayment"
 
 
 # Webhooks
