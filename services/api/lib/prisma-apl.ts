@@ -55,6 +55,7 @@ const prismaAPL: APL = {
               id: id.id("publicKey"),
               name: "schemabase saleor app",
               domain: authData.domain,
+              apiUrl: authData.saleorApiUrl,
             },
           },
           update: {
