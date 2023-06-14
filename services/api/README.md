@@ -10,6 +10,11 @@ directly with an existing tenant. In the future we want customers to use the App
 The manifest url looks like this: [ECI_URL]/api/saleor/manifest/[APPTYPE]?tenantId=XXX
 apptype can be "entitysync" or "prepayment"
 
+For testing purposes, you can install the Saleor Apps using our cloud hosted service: cloud.schemabase.app
+
+To install the pre-payment payment gateway: https://cloud.schemabase.app/api/saleor/manifest/prepayment
+
+
 
 # Webhooks
 
