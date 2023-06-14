@@ -2033,7 +2033,6 @@ model ZohoApp {
   syncPackages      Boolean @default(false)
   syncTaxes         Boolean @default(false)
 
-  strapiToZohoIntegrations StrapiToZohoIntegration[]
   logisticsIntegrations    LogisticsIntegration[]
   trackingIntegrations     TrackingIntegration[]
 
@@ -2090,10 +2089,8 @@ model SaleorApp {
 // And the different AppTypes have different settings / webhooks / permissions
 enum SaleorAppType {
   productdatafeed
-  zohointegration
-  mailchimpintegration
-  paymentgatewaybanktransfer
-  paymentgatewaybraintree
+  entitysync
+  prepayment
 }
 
 // We can have different Installed Saleor Apps for the same Saleor instance. We also have one Installed Saleor App per Channel
@@ -2103,10 +2100,13 @@ model InstalledSaleorApp {
   // mutations to identify the app.
   id String @id
 
+  enabled Boolean @default(true)
+
   // should be made mandatory later.
   type SaleorAppType?
 
   cronSchedule String @default("*/30 * * * *")
+  cronTimeout  Int    @default(800)
 
   // The order prefix we use to identify orders coming from this Saleor.
   orderPrefix String @default("STORE")
@@ -2132,6 +2132,16 @@ model InstalledSaleorApp {
   domain      String
 
   cookies Cookies[]
+
+  syncContacts      Boolean @default(false)
+  syncWarehouses    Boolean @default(false)
+  syncOrders        Boolean @default(false)
+  syncInvoices      Boolean @default(false)
+  syncPayments      Boolean @default(false)
+  syncProductStocks Boolean @default(false)
+  syncProducts      Boolean @default(false)
+  syncPackages      Boolean @default(false)
+  syncTaxes         Boolean @default(false)
 
 
   productDataFeedIntegration ProductDataFeedIntegration[]
@@ -2166,7 +2176,6 @@ model Tenant {
   productdatafeedApps         ProductDataFeedApp[]
   strapiApps                  StrapiApp[]
   productDataFeedIntegrations ProductDataFeedIntegration[]
-  strapiToZohoIntegrations    StrapiToZohoIntegration[]
   logisticsIntegrations       LogisticsIntegration[]
   logisticsApps               LogisticsApp[]
   trackingEmailApps           TrackingEmailApp[]
@@ -2209,7 +2218,6 @@ model Subscription {
   payedUntil DateTime?
 
   productDataFeedIntegration ProductDataFeedIntegration?
-  strapiToZohoIntegration    StrapiToZohoIntegration?
   logisticsIntegration       LogisticsIntegration?
   trackingIntegration        TrackingIntegration?
   elasticLogDrainIntegration ElasticLogDrainIntegration[]
@@ -2357,24 +2365,6 @@ model LogisticsIntegration {
   @@index([zohoAppId])
 }
 
-model StrapiToZohoIntegration {
-  id         String    @id
-  payedUntil DateTime?
-  enabled    Boolean   @default(true)
-
-  // The Content type of BulkOrders
-  strapiContentType String @default("bulkorder")
-
-  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
-  subscriptionId String?       @unique
-
-  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId    String
-  strapiApp   StrapiApp @relation(fields: [strapiAppId], references: [id])
-  strapiAppId String    @unique
-  zohoApp     ZohoApp   @relation(fields: [zohoAppId], references: [id])
-  zohoAppId   String
-}
 
 // Every tenant can have multiple strapi instances
 model StrapiApp {
@@ -2385,8 +2375,6 @@ model StrapiApp {
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
-
-  integration StrapiToZohoIntegration?
 
   @@index([tenantId])
 }

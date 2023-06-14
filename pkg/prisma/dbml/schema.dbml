@@ -1053,7 +1053,6 @@ Table ZohoApp {
   syncProducts Boolean [not null, default: false]
   syncPackages Boolean [not null, default: false]
   syncTaxes Boolean [not null, default: false]
-  strapiToZohoIntegrations StrapiToZohoIntegration [not null]
   logisticsIntegrations LogisticsIntegration [not null]
   trackingIntegrations TrackingIntegration [not null]
   webhooks IncomingWebhook [not null]
@@ -1089,8 +1088,10 @@ Table SaleorApp {
 
 Table InstalledSaleorApp {
   id String [pk]
+  enabled Boolean [not null, default: true]
   type SaleorAppType
   cronSchedule String [not null, default: '*/30 * * * *']
+  cronTimeout Int [not null, default: 800]
   orderPrefix String [not null, default: 'STORE']
   webhooks IncomingWebhook [not null]
   defaultWarehouse Warehouse [note: 'The default warehouse is always used, when warehouse information is missing for example for packages or items']
@@ -1101,6 +1102,15 @@ Table InstalledSaleorApp {
   saleorAppId String [not null]
   domain String [not null]
   cookies Cookies [not null]
+  syncContacts Boolean [not null, default: false]
+  syncWarehouses Boolean [not null, default: false]
+  syncOrders Boolean [not null, default: false]
+  syncInvoices Boolean [not null, default: false]
+  syncPayments Boolean [not null, default: false]
+  syncProductStocks Boolean [not null, default: false]
+  syncProducts Boolean [not null, default: false]
+  syncPackages Boolean [not null, default: false]
+  syncTaxes Boolean [not null, default: false]
   productDataFeedIntegration ProductDataFeedIntegration [not null]
   saleorPayment SaleorPayment [not null]
   saleorPaymentGateway SaleorPaymentGateway [not null]
@@ -1125,7 +1135,6 @@ Table Tenant {
   productdatafeedApps ProductDataFeedApp [not null]
   strapiApps StrapiApp [not null]
   productDataFeedIntegrations ProductDataFeedIntegration [not null]
-  strapiToZohoIntegrations StrapiToZohoIntegration [not null]
   logisticsIntegrations LogisticsIntegration [not null]
   logisticsApps LogisticsApp [not null]
   trackingEmailApps TrackingEmailApp [not null]
@@ -1164,7 +1173,6 @@ Table Subscription {
   tenantId String [not null]
   payedUntil DateTime
   productDataFeedIntegration ProductDataFeedIntegration
-  strapiToZohoIntegration StrapiToZohoIntegration
   logisticsIntegration LogisticsIntegration
   trackingIntegration TrackingIntegration
   elasticLogDrainIntegration ElasticLogDrainIntegration [not null]
@@ -1221,28 +1229,12 @@ Table LogisticsIntegration {
   logisticsAppId String [unique, not null]
 }
 
-Table StrapiToZohoIntegration {
-  id String [pk]
-  payedUntil DateTime
-  enabled Boolean [not null, default: true]
-  strapiContentType String [not null, default: 'bulkorder']
-  subscription Subscription
-  subscriptionId String [unique]
-  tenant Tenant [not null]
-  tenantId String [not null]
-  strapiApp StrapiApp [not null]
-  strapiAppId String [unique, not null]
-  zohoApp ZohoApp [not null]
-  zohoAppId String [not null]
-}
-
 Table StrapiApp {
   id String [pk]
   name String [not null]
   webhooks IncomingWebhook [not null]
   tenant Tenant [not null]
   tenantId String [not null]
-  integration StrapiToZohoIntegration
 }
 
 Table XentralProxyApp {
@@ -1315,21 +1307,6 @@ Table SecretKey {
   createdAt DateTime [default: `now()`, not null]
   incomingWebhook IncomingWebhook [not null]
   incomingWebhookId String [unique, not null]
-}
-
-Table InvoiceToPayment {
-  paymentsId String [ref: > Payment.id]
-  invoicesId String [ref: > Invoice.id]
-}
-
-Table InvoiceToOrder {
-  ordersId String [ref: > Order.id]
-  invoicesId String [ref: > Invoice.id]
-}
-
-Table AddressToContact {
-  addressesId String [ref: > Address.id]
-  contactId String [ref: > Contact.id]
 }
 
 Enum eci_User_Tenant_Role {
@@ -1692,10 +1669,8 @@ Enum Language {
 
 Enum SaleorAppType {
   productdatafeed
-  zohointegration
-  mailchimpintegration
-  paymentgatewaybanktransfer
-  paymentgatewaybraintree
+  entitysync
+  prepayment
 }
 
 Enum CronJobStatus {
@@ -1976,14 +1951,6 @@ Ref: LogisticsIntegration.tenantId > Tenant.id [delete: Cascade]
 Ref: LogisticsIntegration.zohoAppId > ZohoApp.id
 
 Ref: LogisticsIntegration.logisticsAppId - LogisticsApp.id
-
-Ref: StrapiToZohoIntegration.subscriptionId - Subscription.id
-
-Ref: StrapiToZohoIntegration.tenantId > Tenant.id [delete: Cascade]
-
-Ref: StrapiToZohoIntegration.strapiAppId - StrapiApp.id
-
-Ref: StrapiToZohoIntegration.zohoAppId > ZohoApp.id
 
 Ref: StrapiApp.tenantId > Tenant.id [delete: Cascade]
 
