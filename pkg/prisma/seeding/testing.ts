@@ -26,6 +26,7 @@ async function main() {
       id: "test",
       name: "test",
       domain: "test",
+      apiUrl: "https://test/graphql",
       tenant: {
         connect: {
           id: "test",
