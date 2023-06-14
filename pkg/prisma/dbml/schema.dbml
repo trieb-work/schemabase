@@ -1057,7 +1057,6 @@ Table ZohoApp {
   logisticsIntegrations LogisticsIntegration [not null]
   trackingIntegrations TrackingIntegration [not null]
   webhooks IncomingWebhook [not null]
-  saleorZohoIntegration SaleorZohoIntegration [not null]
   zohoPayments ZohoPayment [not null]
   zohoItems ZohoItem [not null]
   zohoWarehouses ZohoWarehouse [not null]
@@ -1102,7 +1101,6 @@ Table InstalledSaleorApp {
   saleorAppId String [not null]
   domain String [not null]
   cookies Cookies [not null]
-  saleorZohoIntegration SaleorZohoIntegration [not null]
   productDataFeedIntegration ProductDataFeedIntegration [not null]
   saleorPayment SaleorPayment [not null]
   saleorPaymentGateway SaleorPaymentGateway [not null]
@@ -1138,7 +1136,6 @@ Table Tenant {
   order Order [not null]
   contact Contact [not null]
   company Company [not null]
-  saleorZohoIntegration SaleorZohoIntegration [not null]
   product Product [not null]
   productVariant ProductVariant [not null]
   payment Payment [not null]
@@ -1171,7 +1168,6 @@ Table Subscription {
   logisticsIntegration LogisticsIntegration
   trackingIntegration TrackingIntegration
   elasticLogDrainIntegration ElasticLogDrainIntegration [not null]
-  saleorZohoIntegration SaleorZohoIntegration [not null]
   xentralProxyApp XentralProxyApp [not null]
 }
 
@@ -1210,33 +1206,6 @@ Table CronJobState {
   lastRun DateTime
   lastRunStatus CronJobStatus
   locked Boolean [not null, default: false, note: 'You can lock cron runs to prevent running in parallel for sensitive services like Xentral']
-}
-
-Table SaleorZohoIntegration {
-  id String [pk]
-  enabled Boolean [not null, default: true]
-  subscription Subscription
-  subscriptionId String [unique]
-  tenant Tenant [not null]
-  tenantId String [not null]
-  zohoApp ZohoApp [not null]
-  zohoAppId String [not null]
-  installedSaleorApp InstalledSaleorApp [not null]
-  installedSaleorAppId String [not null]
-  orderPrefix String [not null, default: 'STORE']
-  syncContacts Boolean [not null, default: false]
-  syncWarehouses Boolean [not null, default: false]
-  syncOrders Boolean [not null, default: false]
-  syncInvoices Boolean [not null, default: false]
-  syncPayments Boolean [not null, default: false]
-  syncProductStocks Boolean [not null, default: false]
-  syncProducts Boolean [not null, default: false]
-  syncPackages Boolean [not null, default: false]
-  syncTaxes Boolean [not null, default: false]
-  cronScheduleZoho String [not null, default: '*/30 * * * *']
-  cronScheduleSaleor String [not null, default: '*/30 * * * *']
-  cronTimeoutZoho Int [not null, default: 800]
-  cronTimeoutSaleor Int [not null, default: 600]
 }
 
 Table LogisticsIntegration {
@@ -1999,14 +1968,6 @@ Ref: ProductDataFeedIntegration.tenantId > Tenant.id [delete: Cascade]
 Ref: ProductDataFeedIntegration.productDataFeedAppId - ProductDataFeedApp.id
 
 Ref: ProductDataFeedIntegration.installedSaleorAppId > InstalledSaleorApp.id
-
-Ref: SaleorZohoIntegration.subscriptionId > Subscription.id
-
-Ref: SaleorZohoIntegration.tenantId > Tenant.id [delete: Cascade]
-
-Ref: SaleorZohoIntegration.zohoAppId > ZohoApp.id
-
-Ref: SaleorZohoIntegration.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
 
 Ref: LogisticsIntegration.subscriptionId - Subscription.id
 

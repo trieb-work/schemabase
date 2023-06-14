@@ -44,16 +44,7 @@ export class CronTable {
 
   public async scheduleTenantWorkflows(): Promise<void> {
     this.clients.logger.info("Starting the scheduling of all workflows...");
-    /**
-     * Scheduling of Zoho + Saleor Workflows
-     */
-    const enabledZohoIntegrations =
-      await this.clients.prisma.saleorZohoIntegration.findMany({
-        where: {
-          enabled: true,
-          // TODO + filter auf active subscription
-        },
-      });
+
     const enabledZohoApps = await this.clients.prisma.zohoApp.findMany({
       where: {
         enabled: true,
@@ -296,95 +287,6 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 10 },
-          [tenantId.substring(0, 5), id.substring(0, 5)],
-        );
-      }
-    }
-
-    /// LEGACY - Using Integrations, not data hub setup
-    for (const enabledZohoIntegration of enabledZohoIntegrations) {
-      const {
-        zohoAppId,
-        installedSaleorAppId,
-        tenantId,
-        id,
-        cronScheduleZoho,
-        cronTimeoutZoho,
-        orderPrefix,
-      } = enabledZohoIntegration;
-      const commonCronConfig = {
-        cron: cronScheduleZoho,
-        timeout: cronTimeoutZoho,
-      };
-      const commonWorkflowConfig = {
-        zohoAppId,
-        installedSaleorAppId,
-        orderPrefix,
-      };
-
-      if (enabledZohoIntegration.syncWarehouses) {
-        new WorkflowScheduler(this.clients).schedule(
-          createWorkflowFactory(
-            SaleorWarehouseSyncWf,
-            this.clients,
-            commonWorkflowConfig,
-          ),
-          { ...commonCronConfig, offset: 0 },
-          [tenantId.substring(0, 5), id.substring(0, 5)],
-        );
-      }
-
-      if (enabledZohoIntegration.syncProducts) {
-        this.scheduler.schedule(
-          createWorkflowFactory(
-            SaleorProductSyncWf,
-            this.clients,
-            commonWorkflowConfig,
-          ),
-          { ...commonCronConfig, offset: 3 },
-          [tenantId.substring(0, 5), id.substring(0, 5)],
-        );
-      }
-      if (enabledZohoIntegration.syncOrders) {
-        this.scheduler.schedule(
-          createWorkflowFactory(
-            SaleorOrderSyncWf,
-            this.clients,
-            commonWorkflowConfig,
-          ),
-          { ...commonCronConfig, offset: 4 },
-          [tenantId.substring(0, 5), id.substring(0, 5)],
-        );
-      }
-
-      if (enabledZohoIntegration.syncPayments) {
-        new WorkflowScheduler(this.clients).schedule(
-          createWorkflowFactory(
-            SaleorPaymentSyncWf,
-            this.clients,
-            commonWorkflowConfig,
-          ),
-          { ...commonCronConfig, offset: 10 },
-          [tenantId.substring(0, 5), id.substring(0, 5)],
-        );
-      }
-      if (enabledZohoIntegration.syncPackages) {
-        this.scheduler.schedule(
-          createWorkflowFactory(
-            ZohoPackageSyncWf,
-            this.clients,
-            commonWorkflowConfig,
-          ),
-          { ...commonCronConfig, offset: 9 },
-          [tenantId.substring(0, 5), id.substring(0, 5)],
-        );
-        this.scheduler.schedule(
-          createWorkflowFactory(
-            SaleorPackageSyncWf,
-            this.clients,
-            commonWorkflowConfig,
-          ),
-          { ...commonCronConfig, offset: 9 },
           [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }

@@ -2038,7 +2038,6 @@ model ZohoApp {
   trackingIntegrations     TrackingIntegration[]
 
   webhooks              IncomingWebhook[]
-  saleorZohoIntegration SaleorZohoIntegration[]
   zohoPayments          ZohoPayment[]
   zohoItems             ZohoItem[]
   zohoWarehouses        ZohoWarehouse[]
@@ -2134,7 +2133,6 @@ model InstalledSaleorApp {
 
   cookies Cookies[]
 
-  saleorZohoIntegration SaleorZohoIntegration[]
 
   productDataFeedIntegration ProductDataFeedIntegration[]
   saleorPayment              SaleorPayment[]
@@ -2179,7 +2177,6 @@ model Tenant {
   order                       Order[]
   contact                     Contact[]
   company                     Company[]
-  saleorZohoIntegration       SaleorZohoIntegration[]
   product                     Product[]
   productVariant              ProductVariant[]
   payment                     Payment[]
@@ -2216,7 +2213,6 @@ model Subscription {
   logisticsIntegration       LogisticsIntegration?
   trackingIntegration        TrackingIntegration?
   elasticLogDrainIntegration ElasticLogDrainIntegration[]
-  saleorZohoIntegration      SaleorZohoIntegration[]
   xentralProxyApp            XentralProxyApp[]
 
   @@index([tenantId])
@@ -2295,48 +2291,48 @@ model CronJobState {
 // The code is located in the "integration-entity-sync-saleor" and "integration-entity-sync-zoho"
 // - from both sides to the internal ECI database and from the ECI database to the other system
 // a customer can make settings here.
-model SaleorZohoIntegration {
-  id String @id
+// model SaleorZohoIntegration {
+//   id String @id
 
-  // Allow the user to manually enabled or disable the integration
-  // Regardless of current subscription state.
-  enabled Boolean @default(true)
+//   // Allow the user to manually enabled or disable the integration
+//   // Regardless of current subscription state.
+//   enabled Boolean @default(true)
 
-  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
-  subscriptionId String?       @unique
+//   subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+//   subscriptionId String?       @unique
 
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId String
+//   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+//   tenantId String
 
-  zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id])
-  zohoAppId String
+//   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id])
+//   zohoAppId String
 
-  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
-  installedSaleorAppId String
+//   installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+//   installedSaleorAppId String
 
-  // The order prefix we use in Zoho to identify orders coming from Saleor
-  orderPrefix String @default("STORE")
+//   // The order prefix we use in Zoho to identify orders coming from Saleor
+//   orderPrefix String @default("STORE")
 
-  // We can create the needed bull jobs for every sync entity, that is enabled
-  syncContacts      Boolean @default(false)
-  syncWarehouses    Boolean @default(false)
-  syncOrders        Boolean @default(false)
-  syncInvoices      Boolean @default(false)
-  syncPayments      Boolean @default(false)
-  syncProductStocks Boolean @default(false)
-  syncProducts      Boolean @default(false)
-  syncPackages      Boolean @default(false)
-  syncTaxes         Boolean @default(false)
+//   // We can create the needed bull jobs for every sync entity, that is enabled
+//   syncContacts      Boolean @default(false)
+//   syncWarehouses    Boolean @default(false)
+//   syncOrders        Boolean @default(false)
+//   syncInvoices      Boolean @default(false)
+//   syncPayments      Boolean @default(false)
+//   syncProductStocks Boolean @default(false)
+//   syncProducts      Boolean @default(false)
+//   syncPackages      Boolean @default(false)
+//   syncTaxes         Boolean @default(false)
 
-  // How frequent the synchronisation should run. Default once per hour.
-  cronScheduleZoho   String @default("*/30 * * * *")
-  cronScheduleSaleor String @default("*/30 * * * *")
-  // Time in seconds how long one workflow can run before a timeout occurs.
-  cronTimeoutZoho    Int    @default(800)
-  cronTimeoutSaleor  Int    @default(600)
+//   // How frequent the synchronisation should run. Default once per hour.
+//   cronScheduleZoho   String @default("*/30 * * * *")
+//   cronScheduleSaleor String @default("*/30 * * * *")
+//   // Time in seconds how long one workflow can run before a timeout occurs.
+//   cronTimeoutZoho    Int    @default(800)
+//   cronTimeoutSaleor  Int    @default(600)
 
-  @@index([enabled])
-}
+//   @@index([enabled])
+// }
 
 model LogisticsIntegration {
   id String @id
