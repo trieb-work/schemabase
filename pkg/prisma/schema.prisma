@@ -2068,7 +2068,7 @@ model SaleorApp {
   domain String
 
   /// the full saleor api url, inclusive /graphql: https://testing--saleor-puf.eu.saleor.cloud/graphql/
-  apiUrl String?
+  apiUrl String
 
   name String
 

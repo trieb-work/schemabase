@@ -85,7 +85,7 @@ export async function getSaleorClientAndEntry(
       `Saleor App ${installedSaleorApp.saleorApp.id} has no tenant connected`,
     );
   const client = createSaleorClient({
-    graphqlEndpoint: `${installedSaleorApp.domain}`,
+    graphqlEndpoint: installedSaleorApp.saleorApp.apiUrl,
     token: installedSaleorApp.token,
     traceId: `tr_${(Math.random() + 1).toString(36).substring(2)}`,
   });
