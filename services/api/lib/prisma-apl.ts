@@ -20,6 +20,7 @@ const prismaAPL: APL = {
   set: async (authData: AuthDataWithTenant) => {
     const token = authData.token;
     if (!authData.domain) throw new Error("No domain set! This is mandatory");
+
     await prismaClient.installedSaleorApp.upsert({
       where: {
         id: authData.appId,
@@ -27,7 +28,7 @@ const prismaAPL: APL = {
       create: {
         id: authData.appId,
         token,
-        type: authData.saleorAppType,
+        type: authData?.saleorAppType,
         saleorApp: {
           connectOrCreate: {
             where: {
@@ -44,6 +45,7 @@ const prismaAPL: APL = {
       },
       update: {
         token,
+        type: authData?.saleorAppType,
         saleorApp: {
           connectOrCreate: {
             where: {
@@ -56,11 +58,13 @@ const prismaAPL: APL = {
             },
           },
           update: {
-            tenant: {
-              connect: {
-                id: authData.tenantId,
-              },
-            },
+            tenant: authData?.tenantId
+              ? {
+                  connect: {
+                    id: authData?.tenantId,
+                  },
+                }
+              : undefined,
           },
         },
       },

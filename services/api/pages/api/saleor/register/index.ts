@@ -19,11 +19,10 @@ const additionalSchemabaseHandler = async (
     respondWithError: any;
   },
 ) => {
-  console.log("being called", request.params, context?.authData?.appId);
-  if (context?.authData?.appId && request?.params?.appType) {
+  if (context?.authData?.appId && request?.params?.saleorAppType) {
     let saleorAppType: SaleorAppType | undefined;
     const tenantId = request?.params?.tenantId ?? undefined;
-    switch (request?.params?.appType) {
+    switch (request?.params?.saleorAppType) {
       case "entitysync":
         saleorAppType = SaleorAppType.entitysync;
 
