@@ -4,7 +4,8 @@ const prisma = new PrismaClient();
 
 async function main() {
   console.log("Seeding DB started");
-  // TODO move to new package pkg/prisma-seeding-utils/eci, pkg/prisma-seeding-utils/zoho, pkg/prisma-seeding-utils/saleor
+  // TODO move to new package pkg/prisma-seeding-utils/eci,
+  // pkg/prisma-seeding-utils/zoho, pkg/prisma-seeding-utils/saleor
   await prisma.tenant.upsert({
     where: {
       id: "test",
@@ -110,31 +111,6 @@ async function main() {
     },
   });
   console.log("created xentralProxyApp");
-  await prisma.saleorZohoIntegration.upsert({
-    where: {
-      id: "test",
-    },
-    update: {},
-    create: {
-      id: "test",
-      tenant: {
-        connect: {
-          id: "test",
-        },
-      },
-      zohoApp: {
-        connect: {
-          id: "test",
-        },
-      },
-      installedSaleorApp: {
-        connect: {
-          id: "test",
-        },
-      },
-    },
-  });
-  console.log("created saleorZohoIntegration");
 
   await prisma.braintreeApp.upsert({
     where: {
