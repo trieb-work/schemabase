@@ -1434,7 +1434,6 @@ describe("Zoho Inventory SalesOrders Sync", () => {
             tax_rounding: "entity_level",
             order_status: "confirmed",
             invoiced_status: "not_invoiced",
-            paid_status: "unpaid",
             shipped_status: "pending",
             sales_channel: "direct_sales",
             sales_channel_formatted: "Direct Sales",

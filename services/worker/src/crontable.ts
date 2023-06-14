@@ -50,6 +50,17 @@ export class CronTable {
         enabled: true,
       },
     });
+
+    const enabledSaleorApps =
+      await this.clients.prisma.installedSaleorApp.findMany({
+        where: {
+          enabled: true,
+          type: "entitysync",
+        },
+        include: {
+          saleorApp: true,
+        },
+      });
     const enabledXentralApps =
       await this.clients.prisma.xentralProxyApp.findMany({
         where: {
@@ -279,6 +290,18 @@ export class CronTable {
         );
       }
 
+      if (enabledZohoApp.syncPackages) {
+        this.scheduler.schedule(
+          createWorkflowFactory(
+            ZohoPackageSyncWf,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 9 },
+          [tenantId.substring(0, 5), id.substring(0, 5)],
+        );
+      }
+
       if (enabledZohoApp.syncPayments) {
         this.scheduler.schedule(
           createWorkflowFactory(
@@ -287,6 +310,82 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 10 },
+          [tenantId.substring(0, 5), id.substring(0, 5)],
+        );
+      }
+    }
+
+    /**
+     * Saleor entity sync apps
+     */
+    for (const enabledSaleorApp of enabledSaleorApps) {
+      const { saleorApp, id, cronSchedule, cronTimeout, orderPrefix } =
+        enabledSaleorApp;
+      const tenantId = saleorApp.tenantId;
+      if (!tenantId) return;
+      const commonCronConfig = {
+        cron: cronSchedule,
+        timeout: cronTimeout,
+      };
+      const commonWorkflowConfig = {
+        installedSaleorAppId: id,
+        orderPrefix,
+      };
+
+      if (enabledSaleorApp.syncWarehouses) {
+        new WorkflowScheduler(this.clients).schedule(
+          createWorkflowFactory(
+            SaleorWarehouseSyncWf,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 0 },
+          [tenantId.substring(0, 5), id.substring(0, 5)],
+        );
+      }
+
+      if (enabledSaleorApp.syncProducts) {
+        this.scheduler.schedule(
+          createWorkflowFactory(
+            SaleorProductSyncWf,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 3 },
+          [tenantId.substring(0, 5), id.substring(0, 5)],
+        );
+      }
+      if (enabledSaleorApp.syncOrders) {
+        this.scheduler.schedule(
+          createWorkflowFactory(
+            SaleorOrderSyncWf,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 4 },
+          [tenantId.substring(0, 5), id.substring(0, 5)],
+        );
+      }
+
+      if (enabledSaleorApp.syncPayments) {
+        new WorkflowScheduler(this.clients).schedule(
+          createWorkflowFactory(
+            SaleorPaymentSyncWf,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 10 },
+          [tenantId.substring(0, 5), id.substring(0, 5)],
+        );
+      }
+      if (enabledSaleorApp.syncPackages) {
+        this.scheduler.schedule(
+          createWorkflowFactory(
+            SaleorPackageSyncWf,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 9 },
           [tenantId.substring(0, 5), id.substring(0, 5)],
         );
       }

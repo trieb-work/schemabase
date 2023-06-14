@@ -56,7 +56,9 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     permissions: activeManifestType.getPermissions(),
     appUrl: baseUrl,
     configurationUrl: baseUrl,
-    tokenTargetUrl: `${baseUrl}/api/saleor/register?tenantId=${tenantId ?? ""}`,
+    tokenTargetUrl: `${baseUrl}/api/saleor/register?tenantId=${
+      tenantId ?? ""
+    }&saleorAppType=${apptype}`,
     dataPrivacyUrl: "https://trieb.work/privacy-policy",
     homepageUrl: "https://trieb.work",
     supportUrl: "https://trieb.work/contact",

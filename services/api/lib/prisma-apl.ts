@@ -1,8 +1,13 @@
 import { APL, AuthData } from "@saleor/app-sdk/APL";
-import { PrismaClient } from "@eci/pkg/prisma";
+import { PrismaClient, SaleorAppType } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
 
 const prismaClient = new PrismaClient();
+
+interface AuthDataWithTenant extends AuthData {
+  tenantId?: string;
+  saleorAppType?: SaleorAppType;
+}
 
 const prismaAPL: APL = {
   get: async (saleorApiUrl: string) => {
@@ -12,7 +17,7 @@ const prismaAPL: APL = {
     const t = { saleorApiUrl } as AuthData;
     return t;
   },
-  set: async (authData: AuthData) => {
+  set: async (authData: AuthDataWithTenant) => {
     const token = authData.token;
     if (!authData.domain) throw new Error("No domain set! This is mandatory");
     await prismaClient.installedSaleorApp.upsert({
@@ -22,6 +27,7 @@ const prismaAPL: APL = {
       create: {
         id: authData.appId,
         token,
+        type: authData.saleorAppType,
         saleorApp: {
           connectOrCreate: {
             where: {
@@ -47,6 +53,13 @@ const prismaAPL: APL = {
               id: id.id("publicKey"),
               name: "schemabase saleor app",
               domain: authData.domain,
+            },
+          },
+          update: {
+            tenant: {
+              connect: {
+                id: authData.tenantId,
+              },
             },
           },
         },
