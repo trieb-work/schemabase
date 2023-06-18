@@ -53,6 +53,19 @@ Table SaleorOrder {
   }
 }
 
+Table SaleorCustomer {
+  id String [not null, note: 'Saleor Internal Id']
+  createdAt DateTime [not null]
+  customer Contact [not null]
+  customerId String [not null]
+  installedSaleorApp InstalledSaleorApp [not null]
+  installedSaleorAppId String [not null]
+
+  indexes {
+    (id, installedSaleorAppId) [unique]
+  }
+}
+
 Table SaleorPackage {
   id String [not null, note: 'Saleor Internal Id']
   createdAt DateTime [not null]
@@ -478,6 +491,7 @@ Table Contact {
   zohoContactPersons ZohoContactPerson [not null]
   datevContacts DatevContact [not null]
   addresses Address [not null]
+  saleorCustomers SaleorCustomer [not null]
   trackingEmailsConsent Boolean [not null, default: true, note: 'If we have the users permission to send tracking emails']
   marketingEmailsConstent Boolean [not null, default: false, note: 'If we have the users consent to send marketing emails']
 
@@ -1120,6 +1134,7 @@ Table InstalledSaleorApp {
   saleorOrderLineItem SaleorOrderLineItem [not null]
   saleorFulfilmentLines SaleorFulfillmentLine [not null]
   saleorPackage SaleorPackage [not null]
+  saleorCustomers SaleorCustomer [not null]
 
   indexes {
     (domain, channelSlug) [unique]
@@ -1687,6 +1702,10 @@ Ref: Cookies.installedSaleorAppId > InstalledSaleorApp.id
 Ref: SaleorOrder.(orderId, orderNumber) > Order.(id, orderNumber) [delete: Cascade]
 
 Ref: SaleorOrder.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
+
+Ref: SaleorCustomer.customerId > Contact.id [delete: Cascade]
+
+Ref: SaleorCustomer.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
 
 Ref: SaleorPackage.packageId > Package.id [delete: Cascade]
 

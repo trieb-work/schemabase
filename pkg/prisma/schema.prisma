@@ -100,6 +100,26 @@ model SaleorOrder {
   @@index([orderId, orderNumber])
 }
 
+model SaleorCustomer {
+  /// Saleor Internal Id
+  id String
+
+  createdAt DateTime
+
+  customer  Contact @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId String
+
+
+
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String
+
+  @@unique([id, installedSaleorAppId])
+  @@index([customerId])
+  @@index([installedSaleorAppId])
+  @@index([id])
+}
+
 model SaleorPackage {
   /// Saleor Internal Id
   id String
@@ -776,6 +796,7 @@ model Contact {
   zohoContactPersons ZohoContactPerson[]
   datevContacts      DatevContact[]
   addresses          Address[]
+  saleorCustomers    SaleorCustomer[]
 
   /// If we have the users permission to send tracking emails
   trackingEmailsConsent   Boolean @default(true)
@@ -2153,6 +2174,7 @@ model InstalledSaleorApp {
   saleorOrderLineItem        SaleorOrderLineItem[]
   saleorFulfilmentLines      SaleorFulfillmentLine[]
   saleorPackage              SaleorPackage[]
+  saleorCustomers            SaleorCustomer[]
 
   @@unique([domain, channelSlug])
   @@index([saleorAppId, domain])

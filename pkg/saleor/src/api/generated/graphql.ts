@@ -13265,6 +13265,54 @@ export type AppQuery = {
   } | null;
 };
 
+export type SaleorCronCustomersQueryVariables = Exact<{
+  updatedAtGte?: InputMaybe<Scalars["DateTime"]>;
+  first?: InputMaybe<Scalars["Int"]>;
+  after?: InputMaybe<Scalars["String"]>;
+}>;
+
+export type SaleorCronCustomersQuery = {
+  __typename?: "Query";
+  customers?: {
+    __typename?: "UserCountableConnection";
+    pageInfo: {
+      __typename?: "PageInfo";
+      hasNextPage: boolean;
+      startCursor?: string | null;
+      endCursor?: string | null;
+    };
+    edges: Array<{
+      __typename?: "UserCountableEdge";
+      node: {
+        __typename?: "User";
+        id: string;
+        isActive: boolean;
+        firstName: string;
+        lastName: string;
+        email: string;
+        languageCode: LanguageCodeEnum;
+        dateJoined: any;
+        updatedAt: any;
+        addresses: Array<{
+          __typename?: "Address";
+          id: string;
+          firstName: string;
+          lastName: string;
+          streetAddress1: string;
+          streetAddress2: string;
+          postalCode: string;
+          city: string;
+          companyName: string;
+          phone?: string | null;
+          isDefaultBillingAddress?: boolean | null;
+          isDefaultShippingAddress?: boolean | null;
+          country: { __typename?: "CountryDisplay"; code: string };
+        }>;
+      };
+    }>;
+  } | null;
+};
+
 export type PageInfoMetaFragment = {
   __typename?: "PageInfo";
   hasNextPage: boolean;
@@ -13978,6 +14026,54 @@ export const AppDocument = gql`
     }
   }
 `;
+export const SaleorCronCustomersDocument = gql`
+  query saleorCronCustomers(
+    $updatedAtGte: DateTime
+    $first: Int
+    $after: String
+  ) {
+    customers(
+      first: $first
+      after: $after
+      filter: { updatedAt: { gte: $updatedAtGte } }
+    ) {
+      pageInfo {
+        hasNextPage
+        startCursor
+        endCursor
+      }
+      edges {
+        node {
+          id
+          isActive
+          firstName
+          lastName
+          email
+          languageCode
+          isActive
+          dateJoined
+          updatedAt
+          addresses {
+            id
+            firstName
+            lastName
+            streetAddress1
+            streetAddress2
+            postalCode
+            city
+            country {
+              code
+            }
+            companyName
+            phone
+            isDefaultBillingAddress
+            isDefaultShippingAddress
+          }
+        }
+      }
+    }
+  }
+`;
 export const SaleorCronOrdersOverviewDocument = gql`
   query saleorCronOrdersOverview(
     $createdGte: Date
@@ -14569,6 +14665,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
         variables,
         options,
       ) as Promise<AppQuery>;
+    },
+    saleorCronCustomers(
+      variables?: SaleorCronCustomersQueryVariables,
+      options?: C,
+    ): Promise<SaleorCronCustomersQuery> {
+      return requester<
+        SaleorCronCustomersQuery,
+        SaleorCronCustomersQueryVariables
+      >(
+        SaleorCronCustomersDocument,
+        variables,
+        options,
+      ) as Promise<SaleorCronCustomersQuery>;
     },
     saleorCronOrdersOverview(
       variables?: SaleorCronOrdersOverviewQueryVariables,
