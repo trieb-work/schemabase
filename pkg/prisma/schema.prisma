@@ -105,6 +105,7 @@ model SaleorCustomer {
   id String
 
   createdAt DateTime
+  updatedAt DateTime
 
   customer  Contact @relation(fields: [customerId], references: [id], onDelete: Cascade)
   customerId String

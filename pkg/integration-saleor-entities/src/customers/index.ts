@@ -5,6 +5,7 @@ import { PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 
 import { subHours } from "date-fns";
+import { id } from "@eci/pkg/ids";
 
 interface SaleorCustomerSyncServiceConfig {
   saleorClient: {
@@ -95,21 +96,36 @@ export class SaleorCustomerSyncService {
         },
         create: {
           id: contact.id,
+          createdAt: new Date(contact.dateJoined),
+          updatedAt: new Date(contact.updatedAt),
           customer: {
             connectOrCreate: {
               where: {
-                
+                email_tenantId: {
+                  email: contact.email.toLowerCase(),
+                  tenantId: this.tenantId,
+                },
               },
               create: {
-                
-
-              }
+                id: id.id("contact"),
+                email: contact.email.toLowerCase(),
+                tenant: {
+                  connect: {
+                    id: this.tenantId,
+                  },
+                },
+              },
+            },
+          },
+          installedSaleorApp: {
+            connect: {
+              id: this.installedSaleorAppId,
             },
           },
         },
         update: {
-          
-        }
+          updatedAt: new Date(contact.updatedAt),
+       },
       });
     }
   }
