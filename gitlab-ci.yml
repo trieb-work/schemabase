@@ -1,11 +1,35 @@
+variables:   
+
+  # Enabled:
+  STAGING_ENABLED: 1
+  CI_KUBERNETES_ACTIVE: 1
+
 stages:
   - review
   - production
 
 
+.auto-deploy:
+  before_script:
+    - set +e && chmod 600 $CI_PROJECT_DIR.tmp/KUBECONFIG && set -e
+    - if [ -n "$KUBE_CONTEXT" ]; then kubectl config use-context "$KUBE_CONTEXT"; fi
+    - chmod 400 $KUBECONFIG
+  image: "registry.gitlab.com/gitlab-org/cluster-integration/auto-deploy-image:v2.48.0"
+  dependencies: []
 
+
+
+## Review job is deploying automatically on every push to "staging" branch
 review:
+  extends: .auto-deploy
   stage: review
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    # Bullboard URL
+    url: https://$AUTO_DEVOPS_COMMON_NAME
+    on_stop: stop_review
+  script:
+    - helm repo add azure-marketplace https://marketplace.azurecr.io/helm/v1/repo
   rules:
     - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
       when: never
@@ -13,11 +37,40 @@ review:
       when: never
     - if: "($CI_COMMIT_REF_PROTECTED == 'true' || $CI_COMMIT_TAG)"
       when: never
-    - if: "$CI_COMMIT_BRANCH"    
+    - if: '$CI_COMMIT_REF_NAME == "staging"' 
 
+## Review job is deploying automatically on every push to "prod" branch
 production:
+  extends: .auto-deploy
   stage: production
+  script: 
+  environment:
+    name: production
+    # Bullboard URL
+    url: ""
   rules:
     - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
       when: never
+    - if: '$CI_COMMIT_REF_NAME == "prod"' 
+
+stop_review:
+  extends: .auto-deploy
+  stage: cleanup
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - auto-deploy delete
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    action: stop
+  allow_failure: true
+  rules:
+    - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == "v1"'
+      when: never
+    - if: "$REVIEW_DISABLED"
+      when: never
+    - if: "$CI_COMMIT_TAG || $CI_COMMIT_BRANCH"
+      when: manual
 
