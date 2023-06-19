@@ -5,20 +5,9 @@ variables:
   CI_KUBERNETES_ACTIVE: 1
 
 stages:
-  - build
-  - test
-  - deploy # dummy stage to follow the template guidelines
   - review
-  - dast
   - staging
-  - canary
   - production
-  - release
-  - incremental rollout 10%
-  - incremental rollout 25%
-  - incremental rollout 50%
-  - incremental rollout 100%
-  - performance
   - cleanup
 
 
@@ -88,7 +77,4 @@ stop_review:
     - if: "$CI_COMMIT_TAG || $CI_COMMIT_BRANCH"
       when: manual
 
-
-include:
-  - template: Auto-DevOps.gitlab-ci.yml
 
