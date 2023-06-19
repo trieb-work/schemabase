@@ -5,8 +5,21 @@ variables:
   CI_KUBERNETES_ACTIVE: 1
 
 stages:
+  - build
+  - test
+  - deploy # dummy stage to follow the template guidelines
   - review
+  - dast
+  - staging
+  - canary
   - production
+  - release
+  - incremental rollout 10%
+  - incremental rollout 25%
+  - incremental rollout 50%
+  - incremental rollout 100%
+  - performance
+  - cleanup
 
 
 .auto-deploy:
@@ -37,13 +50,14 @@ review:
       when: never
     - if: "($CI_COMMIT_REF_PROTECTED == 'true' || $CI_COMMIT_TAG)"
       when: never
-    - if: '$CI_COMMIT_REF_NAME == "staging"' 
+    - if: "$CI_COMMIT_REF_NAME == 'staging'"
 
 ## Review job is deploying automatically on every push to "prod" branch
 production:
   extends: .auto-deploy
   stage: production
   script: 
+    - helm repo add azure-marketplace https://marketplace.azurecr.io/helm/v1/repo
   environment:
     name: production
     # Bullboard URL
@@ -73,4 +87,8 @@ stop_review:
       when: never
     - if: "$CI_COMMIT_TAG || $CI_COMMIT_BRANCH"
       when: manual
+
+
+include:
+  - template: Auto-DevOps.gitlab-ci.yml
 
