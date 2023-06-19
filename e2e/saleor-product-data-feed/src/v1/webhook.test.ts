@@ -162,7 +162,8 @@ beforeAll(async () => {
           token: "3545",
         },
       },
-      domain: "http://saleor.eci:8000",
+      domain: "saleor.eci",
+      apiUrl: "http://saleor.eci:8000/graphql",
     },
   });
   const productDataFeed = await prisma.productDataFeedApp.create({
