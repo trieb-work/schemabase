@@ -1,3 +1,4 @@
+import nodeCrypto from "node:crypto";
 import { IdGenerator } from "@chronark/prefixed-id";
 
 const prefixes = {
@@ -40,4 +41,4 @@ const prefixes = {
   datevContact: "datev_c",
 };
 
-export const id = new IdGenerator(prefixes);
+export const id = new IdGenerator({ crypto: nodeCrypto, prefixes });
