@@ -25,6 +25,7 @@ import { ZohoTaxSyncWf } from "./workflows/zohoTaxSync";
 import { ZohoWarehouseSyncWf } from "./workflows/zohoWarehouseSync";
 import { DatevContactSyncWf } from "./workflows/datevContactSync";
 import { UPSTrackingSyncWf } from "./workflows/upsTrackingSync";
+import { SaleorCustomerSyncWf } from "./workflows/saleorCustomerSync";
 
 interface CronClients {
   logger: ILogger;
@@ -382,6 +383,17 @@ export class CronTable {
         this.scheduler.schedule(
           createWorkflowFactory(
             SaleorPackageSyncWf,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 9 },
+          [tenantId.substring(0, 5), id.substring(0, 5)],
+        );
+      }
+      if (enabledSaleorApp.syncCustomers) {
+        this.scheduler.schedule(
+          createWorkflowFactory(
+            SaleorCustomerSyncWf,
             this.clients,
             commonWorkflowConfig,
           ),

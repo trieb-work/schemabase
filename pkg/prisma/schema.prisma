@@ -2155,7 +2155,7 @@ model InstalledSaleorApp {
 
   cookies Cookies[]
 
-  syncContacts      Boolean @default(false)
+  syncCustomers     Boolean @default(false)
   syncWarehouses    Boolean @default(false)
   syncOrders        Boolean @default(false)
   syncInvoices      Boolean @default(false)
