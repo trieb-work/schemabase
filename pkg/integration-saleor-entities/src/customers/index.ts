@@ -67,7 +67,7 @@ export class SaleorCustomerSyncService {
     } else {
       createdGte = subHours(cronState.lastRun, 3);
       this.logger.info(
-        `Setting GTE date to ${createdGte}. Asking Saleor for all (partially) fulfilled orders with lastUpdated GTE.`,
+        `Setting GTE date to ${createdGte}. Asking Saleor for customers with lastUpdated GTE.`,
       );
     }
 
@@ -85,6 +85,8 @@ export class SaleorCustomerSyncService {
       this.logger.info("Saleor returned no contacts. Finishing sync run");
       return;
     }
+
+    this.logger.info(`Saleor returned ${contacts.length} contacts`);
 
     for (const contact of contacts) {
       await this.db.saleorCustomer.upsert({
@@ -109,6 +111,8 @@ export class SaleorCustomerSyncService {
               create: {
                 id: id.id("contact"),
                 email: contact.email.toLowerCase(),
+                firstName: contact.firstName,
+                lastName: contact.lastName,
                 tenant: {
                   connect: {
                     id: this.tenantId,
@@ -125,8 +129,13 @@ export class SaleorCustomerSyncService {
         },
         update: {
           updatedAt: new Date(contact.updatedAt),
-       },
+        },
       });
     }
+
+    await this.cronState.set({
+      lastRun: new Date(),
+      lastRunStatus: "success",
+    });
   }
 }
