@@ -6,7 +6,7 @@ import { StandardAddressValuesFragment } from "@eci/pkg/saleor";
 
 interface AddressesConfig {
   db: PrismaClient;
-  eciOrderId: string;
+  eciOrderId?: string;
   tenantId: string;
   logger: ILogger;
   contactId: string;
@@ -15,7 +15,7 @@ interface AddressesConfig {
 class Addresses {
   private db: PrismaClient;
 
-  private eciOrderId: string;
+  private eciOrderId?: string;
 
   private tenantId: string;
 
@@ -83,7 +83,7 @@ class Addresses {
   }
 
   /**
-   * Sync Saleor Addresses with ECI DB and connect them to an ECI order
+   * Sync Saleor Addresses with ECI DB and optionally connect them to an ECI order
    * @param shippingAddress
    * @param billingAddress
    *
@@ -96,32 +96,97 @@ class Addresses {
     const shippingAddr = this.createObjectAndUniqueString(shippingAddress);
     const billingAddr = this.createObjectAndUniqueString(billingAddress);
 
-    await this.db.order.update({
-      where: {
-        id: this.eciOrderId,
-      },
-      data: {
-        billingAddress: {
-          connectOrCreate: {
-            where: {
-              normalizedName_tenantId: {
-                normalizedName: billingAddr.uniqueString,
-                tenantId: this.tenantId,
-              },
-            },
-            create: {
-              id: id.id("address"),
-              ...billingAddr.addObj,
-              normalizedName: billingAddr.uniqueString,
-              tenant: {
-                connect: {
-                  id: this.tenantId,
+    if (this.eciOrderId) {
+      this.logger.debug(
+        `Syncing address with internal order id ${this.eciOrderId}`,
+      );
+      await this.db.order.update({
+        where: {
+          id: this.eciOrderId,
+        },
+        data: {
+          billingAddress: {
+            connectOrCreate: {
+              where: {
+                normalizedName_tenantId: {
+                  normalizedName: billingAddr.uniqueString,
+                  tenantId: this.tenantId,
                 },
               },
+              create: {
+                id: id.id("address"),
+                ...billingAddr.addObj,
+                normalizedName: billingAddr.uniqueString,
+                tenant: {
+                  connect: {
+                    id: this.tenantId,
+                  },
+                },
+                contact: {
+                  connect: {
+                    id: this.contactId,
+                  },
+                },
+              },
+            },
+            update: {
               contact: {
                 connect: {
                   id: this.contactId,
                 },
+              },
+            },
+          },
+          shippingAddress: {
+            connectOrCreate: {
+              where: {
+                normalizedName_tenantId: {
+                  normalizedName: shippingAddr.uniqueString,
+                  tenantId: this.tenantId,
+                },
+              },
+              create: {
+                id: id.id("address"),
+                ...shippingAddr.addObj,
+                normalizedName: shippingAddr.uniqueString,
+                tenant: {
+                  connect: {
+                    id: this.tenantId,
+                  },
+                },
+                contact: {
+                  connect: {
+                    id: this.contactId,
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+    } else {
+      this.logger.info(`Sycing address only without related order`);
+
+      for (const addr of [shippingAddr, billingAddr]) {
+        await this.db.address.upsert({
+          where: {
+            normalizedName_tenantId: {
+              normalizedName: addr.uniqueString,
+              tenantId: this.tenantId,
+            },
+          },
+          create: {
+            id: id.id("address"),
+            normalizedName: addr.uniqueString,
+            tenant: {
+              connect: {
+                id: this.tenantId,
+              },
+            },
+            ...addr.addObj,
+            contact: {
+              connect: {
+                id: this.contactId,
               },
             },
           },
@@ -132,34 +197,9 @@ class Addresses {
               },
             },
           },
-        },
-        shippingAddress: {
-          connectOrCreate: {
-            where: {
-              normalizedName_tenantId: {
-                normalizedName: shippingAddr.uniqueString,
-                tenantId: this.tenantId,
-              },
-            },
-            create: {
-              id: id.id("address"),
-              ...shippingAddr.addObj,
-              normalizedName: shippingAddr.uniqueString,
-              tenant: {
-                connect: {
-                  id: this.tenantId,
-                },
-              },
-              contact: {
-                connect: {
-                  id: this.contactId,
-                },
-              },
-            },
-          },
-        },
-      },
-    });
+        });
+      }
+    }
   }
 }
 const addresses = (
