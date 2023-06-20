@@ -1117,7 +1117,7 @@ Table InstalledSaleorApp {
   saleorAppId String [not null]
   domain String [not null]
   cookies Cookies [not null]
-  syncContacts Boolean [not null, default: false]
+  syncCustomers Boolean [not null, default: false]
   syncWarehouses Boolean [not null, default: false]
   syncOrders Boolean [not null, default: false]
   syncInvoices Boolean [not null, default: false]

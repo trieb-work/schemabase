@@ -78,7 +78,7 @@ export async function getSaleorClientAndEntry(
   });
   if (!installedSaleorApp)
     throw new Error(
-      `Could not find zoho app with provided id ${installedSaleorAppId}`,
+      `Could not find installed saleor app with provided id ${installedSaleorAppId}`,
     );
   if (!installedSaleorApp.saleorApp.tenantId)
     throw new Error(

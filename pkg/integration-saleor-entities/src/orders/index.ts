@@ -23,7 +23,7 @@ import { id } from "@eci/pkg/ids";
 import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { round } from "reliable-round";
 import { normalizeStrings } from "@eci/pkg/normalization";
-import addresses from "./addresses";
+import addresses from "../addresses";
 import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils";
 import { shippingMethodMatch } from "@eci/pkg/miscHelper/shippingMethodMatch";
 
