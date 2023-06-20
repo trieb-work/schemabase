@@ -40,25 +40,23 @@ review:
     
     - >
           helm upgrade worker-schemabase-staging ./services/worker/helm-chart
-          --debug
           --install
           --namespace=$KUBE_NAMESPACE
-          --set=image.imageName="${{ env.REGISTRY }}/${{ github.repository }}/worker:sha-$(git rev-parse --short HEAD)"
+          --set=image.imageName="ghcr.io/trieb-work/schemabase/worker:main"
           --set=eciEnv="staging"
-          --set=databaseUrl="${{ secrets.DATABASE_URL }}"
-          --set=signingKey="${{ secrets.SIGNING_KEY }}"
-          --set=redis.host="${{ secrets.REDIS_HOST }}"
-          --set=redis.port="${{ secrets.REDIS_PORT }}"
-          --set=redis.password="${{ secrets.REDIS_PASSWORD }}"
-          --set=elasticsearch.host="${{ secrets.ELASTIC_LOGGING_SERVER }}"
-          --set=elasticsearch.username="${{ secrets.ELASTIC_LOGGING_USERNAME }}"
-          --set=elasticsearch.password="${{ secrets.ELASTIC_LOGGING_PASSWORD }}"
-          --set=kafka.brokerUrl="${{ secrets.PROD_KAFKA_BROKER_URL }}"
+          --set=databaseUrl="$DATABASE_URL"
+          --set=signingKey="$SECRET_KEY_WORKER"
+          --set=redis.host="redis-schemabase-staging-master"
+          --set=redis.password="$REDIS_PASSWORD"
+          --set=elasticsearch.host=""
+          --set=elasticsearch.username=""
+          --set=elasticsearch.password=""
+          --set=kafka.brokerUrl=""
           --set=kafka.saslMechanism="scram-sha-256"
-          --set=kafka.username="${{ secrets.PROD_KAFKA_USERNAME }}"
-          --set=kafka.password="${{ secrets.PROD_KAFKA_PASSWORD }}"
-          --set=sendgridApiKey=${{ secrets.SENDGRID_API_KEY }}
-          --set=secretKey=$SECRET_KEY_WORKER
+          --set=kafka.username=""
+          --set=kafka.password=""
+          --set=sendgridApiKey=""
+          --set=secretKey="$SECRET_KEY_WORKER"
 
 
   rules:
