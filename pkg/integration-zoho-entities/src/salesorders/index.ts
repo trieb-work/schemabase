@@ -279,6 +279,10 @@ export class ZohoSalesOrdersSyncService {
         },
       };
 
+      const expectedShippingDate = salesorder.shipment_date
+        ? new Date(salesorder.shipment_date)
+        : undefined;
+
       // Create or connect the internal order using the salesorder number as identifier
       const orderCreateOrConnect: Prisma.OrderUpdateOneRequiredWithoutZohoSalesOrdersNestedInput =
         {
@@ -293,7 +297,7 @@ export class ZohoSalesOrdersSyncService {
               id: id.id("order"),
               orderNumber: salesorder.salesorder_number,
               date: new Date(salesorder.date),
-              expectedShippingDate: new Date(salesorder.shipment_date),
+              expectedShippingDate,
               carrier,
               totalPriceGross: salesorder.total,
               invoiceStatus,
@@ -360,7 +364,7 @@ export class ZohoSalesOrdersSyncService {
           order: {
             update: {
               date: new Date(salesorder.date),
-              expectedShippingDate: new Date(salesorder.shipment_date),
+              expectedShippingDate,
               customerNote,
               carrier,
               shipmentStatus: this.parseShipmentStatus(
