@@ -25,6 +25,7 @@ stages:
 review:
   extends: .auto-deploy
   stage: review
+  needs: ["review"]
   environment:
     name: review/$CI_COMMIT_REF_NAME
     # Bullboard URL
@@ -59,19 +60,44 @@ review:
           --set=secretKey="$SECRET_KEY_WORKER"
     # Generate a DATABASE_URL using the mysql service. Use the public ip address of the kubernetes nodes and the nodeport of the mysql service. The hosts are comma separated.
     - export DATABASE_URL="mysql://schemabase:$MYSQL_PASSWORD@$(kubectl get nodes -o jsonpath='{ $.items[*].status.addresses[?(@.type=="ExternalIP")].address }' | tr ' ' ','):$(kubectl -n $KUBE_NAMESPACE get service mysql-schemabase-staging -o jsonpath='{.spec.ports[?(@.name=="mysql")].nodePort}')/schemabase"
+    # persist the database url, so that the review-vercel job can use it
+    - echo "DATABASE_URL=$DATABASE_URL" >> $CI_PROJECT_DIR.tmp/variables.env
+
     
-    - npm install --global pnpm
-    # Push the database schema to the database
-    - pnpm prisma db push
-    # Deploy the API service to vercel
-    - npm install --global vercel
-    - vercel pull --yes --environment=preview --token=$VERCEL_TOKEN
-    - vercel build --token=$VERCEL_TOKEN
-    - export URL="$(vercel deploy --token=$VERCEL_TOKEN --meta gitlabCommitRef=$CI_COMMIT_REF_SLUG --meta gitlabCommitSha=$CI_COMMIT_SHA --meta gitlabDeployment=1 --meta gitlabCommitAuthorName="$GITLAB_USER_NAME" --meta gitlabProjectPath=$CI_PROJECT_PATH)"
-    - vercel alias --token=$VERCEL_TOKEN set "$URL" $CI_PROJECT_ID-$CI_COMMIT_REF_SLUG.vc.review-kencove.com --scope $VERCEL_ORG_ID
 
-
-
+  rules:
+    - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
+      when: never
+    - if: "$REVIEW_DISABLED"
+      when: never
+    - if: "($CI_COMMIT_REF_PROTECTED == 'true' || $CI_COMMIT_TAG)"
+      when: never
+    - if: "$CI_COMMIT_REF_NAME == 'staging'"
+review-vercel:
+  image: node:18
+  stage: review
+  before_script:
+    - corepack enable
+    - corepack prepare pnpm@latest-8 --activate
+    - pnpm config set store-dir .pnpm-store
+  cache:
+    key:
+      files:
+        - pnpm-lock.yaml
+    paths:
+      - .pnpm-store  
+    script:
+      - npm install --global pnpm
+      # Export the DATABASE_URL variable from the review job
+      - export $(grep -v '^#' $CI_PROJECT_DIR.tmp/variables.env | xargs)
+      # Push the database schema to the database
+      - pnpm prisma db push
+      # Deploy the API service to vercel
+      - npm install --global vercel
+      - vercel pull --yes --environment=preview --token=$VERCEL_TOKEN
+      - vercel build --token=$VERCEL_TOKEN
+      - export URL="$(vercel deploy --token=$VERCEL_TOKEN --meta gitlabCommitRef=$CI_COMMIT_REF_SLUG --meta gitlabCommitSha=$CI_COMMIT_SHA --meta gitlabDeployment=1 --meta gitlabCommitAuthorName="$GITLAB_USER_NAME" --meta gitlabProjectPath=$CI_PROJECT_PATH)"
+      - vercel alias --token=$VERCEL_TOKEN set "$URL" $CI_PROJECT_ID-$CI_COMMIT_REF_SLUG.vc.review-kencove.com --scope $VERCEL_ORG_ID
   rules:
     - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
       when: never
