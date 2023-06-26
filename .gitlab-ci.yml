@@ -75,6 +75,7 @@ review:
 review-vercel:
   image: node:18
   stage: review
+  needs: ["review"]
   before_script:
     - corepack enable
     - corepack prepare pnpm@latest-8 --activate
@@ -86,7 +87,6 @@ review-vercel:
     paths:
       - .pnpm-store  
   script:
-    - npm install --global pnpm
     # Export the DATABASE_URL variable from the review job
     - export $(grep -v '^#' $CI_PROJECT_DIR.tmp/variables.env | xargs)
     # Push the database schema to the database
