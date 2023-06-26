@@ -63,8 +63,6 @@ review:
     # persist the database url, so that the review-vercel job can use it
     - echo "DATABASE_URL=$DATABASE_URL" >> $CI_PROJECT_DIR.tmp/variables.env
 
-    
-
   rules:
     - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
       when: never
@@ -73,6 +71,7 @@ review:
     - if: "($CI_COMMIT_REF_PROTECTED == 'true' || $CI_COMMIT_TAG)"
       when: never
     - if: "$CI_COMMIT_REF_NAME == 'staging'"
+
 review-vercel:
   image: node:18
   stage: review
@@ -86,18 +85,18 @@ review-vercel:
         - pnpm-lock.yaml
     paths:
       - .pnpm-store  
-    script:
-      - npm install --global pnpm
-      # Export the DATABASE_URL variable from the review job
-      - export $(grep -v '^#' $CI_PROJECT_DIR.tmp/variables.env | xargs)
-      # Push the database schema to the database
-      - pnpm prisma db push
-      # Deploy the API service to vercel
-      - npm install --global vercel
-      - vercel pull --yes --environment=preview --token=$VERCEL_TOKEN
-      - vercel build --token=$VERCEL_TOKEN
-      - export URL="$(vercel deploy --token=$VERCEL_TOKEN --meta gitlabCommitRef=$CI_COMMIT_REF_SLUG --meta gitlabCommitSha=$CI_COMMIT_SHA --meta gitlabDeployment=1 --meta gitlabCommitAuthorName="$GITLAB_USER_NAME" --meta gitlabProjectPath=$CI_PROJECT_PATH)"
-      - vercel alias --token=$VERCEL_TOKEN set "$URL" $CI_PROJECT_ID-$CI_COMMIT_REF_SLUG.vc.review-kencove.com --scope $VERCEL_ORG_ID
+  script:
+    - npm install --global pnpm
+    # Export the DATABASE_URL variable from the review job
+    - export $(grep -v '^#' $CI_PROJECT_DIR.tmp/variables.env | xargs)
+    # Push the database schema to the database
+    - pnpm prisma db push
+    # Deploy the API service to vercel
+    - npm install --global vercel
+    - vercel pull --yes --environment=preview --token=$VERCEL_TOKEN
+    - vercel build --token=$VERCEL_TOKEN
+    - export URL="$(vercel deploy --token=$VERCEL_TOKEN --meta gitlabCommitRef=$CI_COMMIT_REF_SLUG --meta gitlabCommitSha=$CI_COMMIT_SHA --meta gitlabDeployment=1 --meta gitlabCommitAuthorName="$GITLAB_USER_NAME" --meta gitlabProjectPath=$CI_PROJECT_PATH)"
+    - vercel alias --token=$VERCEL_TOKEN set "$URL" $CI_PROJECT_ID-$CI_COMMIT_REF_SLUG.vc.review-kencove.com --scope $VERCEL_ORG_ID
   rules:
     - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
       when: never
