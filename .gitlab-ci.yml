@@ -30,13 +30,23 @@ review:
     # Bullboard URL
     url: https://$AUTO_DEVOPS_COMMON_NAME
     on_stop: stop_review
+  before_script:
+    - corepack enable
+    - corepack prepare pnpm@latest-8 --activate
+    - pnpm config set store-dir .pnpm-store
+  cache:
+    key:
+      files:
+        - pnpm-lock.yaml
+    paths:
+      - .pnpm-store    
   script:
 
     - helm repo add azure-marketplace https://marketplace.azurecr.io/helm/v1/repo
     # Add a redis deployment with nodeport service, limit CPU and memory, set a password, set standard persistent storage 3 GB. Name: redis-schemabase-staging
     - helm upgrade --install --create-namespace -n $KUBE_NAMESPACE redis-schemabase-staging azure-marketplace/redis --set architecture="standalone" --set auth.password="$REDIS_PASSWORD" --set resources.requests.cpu=100m --set resources.requests.memory=128Mi --set resources.limits.cpu=200m --set resources.limits.memory=256Mi --set persistence.size=3Gi --set service.type=NodePort
     # Add a mysql deployment with 5 GB storage and nodeport service, limit CPU and memory, set a password, set standard persistent storage 3 GB. Name: mysql-schemabase-staging
-    - helm upgrade --install -n $KUBE_NAMESPACE mysql-schemabase-staging azure-marketplace/mysql --set auth.database="schemabase" --set auth.username="schemabase" --set auth.password="$MYSQL_PASSWORD" --set resources.requests.cpu=100m --set resources.requests.memory=128Mi --set resources.limits.cpu=200m --set resources.limits.memory=256Mi --set persistence.size=5Gi --set service.type=NodePort
+    - helm upgrade --install -n $KUBE_NAMESPACE mysql-schemabase-staging azure-marketplace/mysql --set auth.database="schemabase" --set auth.username="schemabase" --set auth.password="$MYSQL_PASSWORD" --set resources.requests.cpu=100m --set resources.requests.memory=128Mi --set resources.limits.cpu=200m --set resources.limits.memory=256Mi --set persistence.size=5Gi --set primary.service.type=NodePort
     
     - >
           helm upgrade worker-schemabase-staging ./services/worker/helm-chart
@@ -57,7 +67,14 @@ review:
           --set=kafka.password="$KAFKA_PASSWORD"
           --set=sendgridApiKey=""
           --set=secretKey="$SECRET_KEY_WORKER"
-
+    # Generate a DATABASE_URL using the mysql service. Use the public ip address of the kubernetes nodes and the nodeport of the mysql service. The hosts are comma separated.
+    - export DATABASE_URL="mysql://schemabase:$MYSQL_PASSWORD@$(kubectl get nodes -o jsonpath='{ $.items[*].status.addresses[?(@.type=="ExternalIP")].address }' | tr ' ' ','):$(kubectl -n $KUBE_NAMESPACE get service mysql-schemabase-staging -o jsonpath='{.spec.ports[?(@.name=="mysql")].nodePort}')/schemabase"
+    # Deploy the API service to vercel
+    - npm install --global vercel
+    - vercel pull --yes --environment=preview --token=$VERCEL_TOKEN
+    - vercel build --token=$VERCEL_TOKEN
+    - export URL="$(vercel deploy --prebuilt  --token=$VERCEL_TOKEN --meta gitlabCommitRef=$CI_COMMIT_REF_SLUG --meta gitlabCommitSha=$CI_COMMIT_SHA --meta gitlabDeployment=1 --meta gitlabCommitAuthorName="$GITLAB_USER_NAME" --meta gitlabProjectPath=$CI_PROJECT_PATH)"
+    - vercel alias --token=$VERCEL_TOKEN set "$URL" $CI_PROJECT_ID-$CI_COMMIT_REF_SLUG.vc.review-kencove.com --scope $VERCEL_ORG_ID
 
   rules:
     - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
@@ -72,10 +89,27 @@ review:
 production:
   extends: .auto-deploy
   stage: production
+  before_script:
+    - corepack enable
+    - corepack prepare pnpm@latest-8 --activate
+    - pnpm config set store-dir .pnpm-store
+  cache:
+    key:
+      files:
+        - pnpm-lock.yaml
+    paths:
+      - .pnpm-store  
   script: 
     - helm repo add azure-marketplace https://marketplace.azurecr.io/helm/v1/repo
     # Add a redis deployment with nodeport service, limit CPU and memory, set a password, set standard persistent storage 3 GB. Name: redis-schemabase-production
     # Add a mysql deployment with nodeport service, limit CPU and memory, set a password, set standard persistent storage 30 GB. Name: mysql-schemabase-production
+
+    # Deploy the API service to vercel
+    - npm install --global vercel
+    - vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+    - vercel build --token=$VERCEL_TOKEN services/api
+    - export URL="$(vercel deploy --prebuilt --prod  --token=$VERCEL_TOKEN --meta gitlabCommitRef=$CI_COMMIT_REF_SLUG --meta gitlabCommitSha=$CI_COMMIT_SHA --meta gitlabDeployment=1 --meta gitlabCommitAuthorName="$GITLAB_USER_NAME" --meta gitlabProjectPath=$CI_PROJECT_PATH)"
+    - vercel alias --token=$VERCEL_TOKEN set "$URL" $CI_PROJECT_ID-$CI_COMMIT_REF_SLUG.vc.review-kencove.com --scope $VERCEL_ORG_ID
   environment:
     name: production
     # Bullboard URL
