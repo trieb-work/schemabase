@@ -25,7 +25,9 @@ passport.use(
     {
       clientID: env.require("GOOGLE_OAUTH_ID"),
       clientSecret: env.require("GOOGLE_OAUTH_SECRET"),
-      callbackURL: `https://${HOST}/login/callback`,
+      callbackURL: `${
+        HOST.includes("localhost") ? "http" : "https"
+      }://${HOST}/login/callback`,
     },
     // check, that only users with the correct domain can access
     function (

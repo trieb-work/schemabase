@@ -1674,7 +1674,7 @@ describe("Saleor Entity Sync payments Test", () => {
       },
     });
     const saleorZohoIntegration =
-      await prismaClient.saleorZohoIntegration.findUnique({
+      await prismaClient.installedSaleorApp.findUnique({
         where: {
           id: "test",
         },

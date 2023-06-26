@@ -51,10 +51,10 @@ review:
           --set=elasticsearch.host=""
           --set=elasticsearch.username=""
           --set=elasticsearch.password=""
-          --set=kafka.brokerUrl=""
+          --set=kafka.brokerUrl="$KAFKA_URL"
           --set=kafka.saslMechanism="scram-sha-256"
-          --set=kafka.username=""
-          --set=kafka.password=""
+          --set=kafka.username="$KAFKA_USERNAME"
+          --set=kafka.password="$KAFKA_PASSWORD"
           --set=sendgridApiKey=""
           --set=secretKey="$SECRET_KEY_WORKER"
 

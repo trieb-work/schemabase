@@ -1,9 +1,6 @@
-import { EntryEvent } from "@eci/pkg/integration-bulkorders";
 import { PackageState, Language } from "@eci/pkg/prisma";
 export enum Topic {
   BULKORDER_SYNCED = "bulkorder.synced",
-  STRAPI_ENTRY_CREATE = "strapi.entry.create",
-  STRAPI_ENTRY_UPDATE = "strapi.entry.update",
   PACKAGE_UPDATE = "tracking.package.update",
   PACKAGE_STATE_TRANSITION = "tracking.package.state.transition",
   NOTIFICATION_EMAIL_SENT = "tracking.package.notification.email.sent",
@@ -23,11 +20,6 @@ export namespace EventSchemaRegistry {
       orderId: string;
     }
   >;
-  export type StrapiEntryCreate = EventSchema<
-    Topic.STRAPI_ENTRY_CREATE,
-    EntryEvent & { zohoAppId: string }
-  >;
-  export type StrapiEntryUpdate = EventSchema<Topic.STRAPI_ENTRY_UPDATE, {}>;
 
   export type PackageUpdate = EventSchema<
     Topic.PACKAGE_UPDATE,
