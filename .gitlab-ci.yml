@@ -57,10 +57,21 @@ review:
           --set=kafka.password="$KAFKA_PASSWORD"
           --set=sendgridApiKey=""
           --set=secretKey="$SECRET_KEY_WORKER"
+    - > 
+        helm upgrade eci-bullboard ./services/bullboard/helm-chart
+          --install
+          --namespace=$KUBE_NAMESPACE
+          --set=image.imageName="ghcr.io/trieb-work/schemabase/worker:bullboard"
+          --set=nodeEnv="production"
+          --set=redis.host="redis-schemabase-staging-master"
+          --set=redis.password="$REDIS_PASSWORD"
+          --set=ingress.host=$CI_PROJECT_ID-$CI_COMMIT_REF_SLUG.gc.review-kencove.com
+          --set=google.clientId="${{ secrets.GOOGLE_OAUTH_ID }}"
+          --set=google.clientSecret="${{ secrets.GOOGLE_OAUTH_SECRET }}"      
     # Generate a DATABASE_URL using the mysql service. Use the public ip address of the kubernetes nodes and the nodeport of the mysql service. The hosts are comma separated.
     - export DATABASE_URL="mysql://schemabase:$MYSQL_PASSWORD@$(kubectl get nodes -o jsonpath='{ $.items[*].status.addresses[?(@.type=="ExternalIP")].address }' | tr ' ' ','):$(kubectl -n $KUBE_NAMESPACE get service mysql-schemabase-staging -o jsonpath='{.spec.ports[?(@.name=="mysql")].nodePort}')/schemabase"
-    # persist the database url, so that the review-vercel job can use it
-    - echo "DATABASE_URL=$DATABASE_URL" >> $CI_PROJECT_DIR.tmp/variables.env
+    # persist the database url, so that it can be used in the following jobs
+    - echo "DATABASE_URL=$DATABASE_URL" > $CI_PROJECT_DIR/variables.env
 
   rules:
     - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
@@ -87,7 +98,7 @@ review-vercel:
       - .pnpm-store  
   script:
     # Export the DATABASE_URL variable from the review job
-    - export $(grep -v '^#' $CI_PROJECT_DIR.tmp/variables.env | xargs)
+    - export $(grep -v '^#' $CI_PROJECT_DIR/variables.env | xargs)
     # Push the database schema to the database
     - pnpm prisma db push
     # Deploy the API service to vercel
