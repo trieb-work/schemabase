@@ -25,7 +25,6 @@ stages:
 review:
   extends: .auto-deploy
   stage: review
-  needs: ["review"]
   environment:
     name: review/$CI_COMMIT_REF_NAME
     # Bullboard URL
