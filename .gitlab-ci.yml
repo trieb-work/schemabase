@@ -58,7 +58,7 @@ review:
           --set=sendgridApiKey=""
           --set=secretKey="$SECRET_KEY_WORKER"
     - > 
-        helm upgrade eci-bullboard ./services/bullboard/helm-chart
+          helm upgrade queue-dashboard-schemabase ./services/bullboard/helm-chart
           --install
           --namespace=$KUBE_NAMESPACE
           --set=image.imageName="ghcr.io/trieb-work/schemabase/worker:bullboard"
