@@ -14,7 +14,7 @@ beforeEach(() => {
 describe("Zoho Entity Sync Orders Test", () => {
   const prismaClient = new PrismaClient();
 
-  test("It should work to sync orders to Xentral via Zoho", async () => {
+  test("It should work to sync packages with Zoho", async () => {
     const tenant = await prismaClient.tenant.findUnique({
       where: {
         id: "pk_7f165pf-prod",
@@ -35,7 +35,6 @@ describe("Zoho Entity Sync Orders Test", () => {
       logger: new AssertionLogger(),
       db: prismaClient,
     });
-    // await service.syncToECI();
 
     await service.syncToECI();
     await service.syncFromECI();

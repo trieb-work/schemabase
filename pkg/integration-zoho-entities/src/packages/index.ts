@@ -547,6 +547,10 @@ export class ZohoPackageSyncService {
       }
     }
 
+    /**
+     * Getting all packages, that are marked as delivered in our DB, but that
+     * do not have a shipment status in Zoho or that are not yet marked as delivered in Zoho
+     */
     const packagesAlreadyDelivered = await this.db.package.findMany({
       where: {
         tenantId: this.zohoApp.tenantId,
@@ -555,9 +559,11 @@ export class ZohoPackageSyncService {
         },
         zohoPackage: {
           some: {
-            shipmentStatus: {
-              equals: "shipped",
-            },
+            zohoAppId: this.zohoApp.id,
+            OR: [
+              { shipmentStatus: null },
+              { shipmentStatus: { not: "delivered" } },
+            ],
           },
         },
       },
@@ -580,7 +586,7 @@ export class ZohoPackageSyncService {
     );
 
     for (const p of packagesAlreadyDelivered) {
-      const zohoShipmentId = p.zohoPackage[0].shipmentId;
+      const zohoShipmentId = p.zohoPackage[0]?.shipmentId;
       const zohoPackageId = p.zohoPackage[0].id;
       if (!zohoShipmentId) continue;
       this.logger.info(
