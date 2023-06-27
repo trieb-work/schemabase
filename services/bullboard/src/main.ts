@@ -68,7 +68,7 @@ async function main() {
 
   const connection = {
     host: env.require("REDIS_HOST"),
-    port: Number.parseInt(env.require("REDIS_PORT")),
+    port: Number.parseInt(env.get("REDIS_PORT", "6379")!),
     password: env.require("REDIS_PASSWORD"),
   };
 
