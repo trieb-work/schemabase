@@ -61,7 +61,7 @@ review:
           helm upgrade queue-dashboard-schemabase ./services/bullboard/helm-chart
           --install
           --namespace=$KUBE_NAMESPACE
-          --set=image.imageName="ghcr.io/trieb-work/schemabase/worker:bullboard"
+          --set=image.imageName="ghcr.io/trieb-work/schemabase/bullboard:main"
           --set=redis.host="redis-schemabase-staging-master"
           --set=redis.password="$REDIS_PASSWORD"
           --set=ingress.host=$CI_PROJECT_ID-$CI_COMMIT_REF_SLUG.gc.review-kencove.com
