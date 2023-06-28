@@ -1492,6 +1492,11 @@ model ProductVariant {
   /// The weight in KG for this product variant
   weight Float?
 
+
+  /// Product rating based on customer reviews from services like reviews.io
+  averageRating Float?
+  ratingCount   Int?
+
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String
 
@@ -2013,6 +2018,18 @@ model LogisticsApp {
   integration LogisticsIntegration?
 }
 
+model ReviewsioApp {
+  id String @id
+
+  enabled Boolean @default(false)
+
+  storeId String
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String @unique
+
+}
+
 model ZohoApp {
   id String @id
 
@@ -2228,6 +2245,7 @@ model Tenant {
   datevApps                   DatevApp[]
   UPSTrackingApps             UPSTrackingApp[]
   attributes                  Attribute[]
+  rewiewsioApps               ReviewsioApp[]
   eci_User_Tenants            eci_User_Tenant[]
 }
 

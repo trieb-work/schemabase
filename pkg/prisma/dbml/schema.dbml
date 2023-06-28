@@ -715,6 +715,8 @@ Table ProductVariant {
   variantName String
   ean String
   weight Float [note: 'The weight in KG for this product variant']
+  averageRating Float [note: 'Product rating based on customer reviews']
+  ratingCount Int
   product Product [not null]
   productId String [not null]
   tenant Tenant [not null]
@@ -1042,6 +1044,14 @@ Table LogisticsApp {
   integration LogisticsIntegration
 }
 
+Table ReviewsioApp {
+  id String [pk]
+  enabled Boolean [not null, default: false]
+  storeId String [not null]
+  tenant Tenant [not null]
+  tenantId String [unique, not null]
+}
+
 Table ZohoApp {
   id String [pk]
   enabled Boolean [not null, default: true]
@@ -1180,6 +1190,7 @@ Table Tenant {
   datevApps DatevApp [not null]
   UPSTrackingApps UPSTrackingApp [not null]
   attributes Attribute [not null]
+  rewiewsioApps ReviewsioApp [not null]
   eci_User_Tenants eci_User_Tenant [not null]
 }
 
@@ -1937,6 +1948,8 @@ Ref: ProductDataFeedApp.tenantId > Tenant.id [delete: Cascade]
 Ref: DatevApp.tenantId > Tenant.id [delete: Cascade]
 
 Ref: LogisticsApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: ReviewsioApp.tenantId > Tenant.id [delete: Cascade]
 
 Ref: ZohoApp.tenantId > Tenant.id [delete: Cascade]
 
