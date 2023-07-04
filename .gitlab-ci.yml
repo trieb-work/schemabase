@@ -102,6 +102,7 @@ review-vercel:
   script:
     # Export the DATABASE_URL variable from the review job
     - export $(grep -v '^#' $CI_PROJECT_DIR/variables.env | xargs)
+    - pnpm install
     # Push the database schema to the database
     - pnpm prisma db push
     # Deploy the API service to vercel
