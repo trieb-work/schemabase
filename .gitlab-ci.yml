@@ -42,11 +42,6 @@ review:
     # Add a mysql deployment with 5 GB storage and nodeport service, limit CPU and memory, set a password, set standard persistent storage 3 GB. Name: mysql-schemabase-staging
     - helm upgrade --install -n $KUBE_NAMESPACE mysql-schemabase-staging azure-marketplace/mysql --set auth.database="schemabase" --set auth.username="schemabase" --set auth.password="$MYSQL_PASSWORD" --set resources.requests.cpu=100m --set resources.requests.memory=128Mi --set resources.limits.cpu=200m --set resources.limits.memory=256Mi --set persistence.size=5Gi --set primary.service.type=NodePort
 
-    # Generate a DATABASE_URL using the mysql service. Use the public ip address of the kubernetes nodes and the nodeport of the mysql service. The hosts are comma separated.
-    - export DATABASE_URL="mysql://schemabase:$MYSQL_PASSWORD@$(kubectl get nodes -o jsonpath='{ $.items[*].status.addresses[?(@.type=="ExternalIP")].address }' | tr ' ' ','):$(kubectl -n $KUBE_NAMESPACE get service mysql-schemabase-staging -o jsonpath='{.spec.ports[?(@.name=="mysql")].nodePort}')/schemabase"
-    # persist the database url, so that it can be used in the following jobs. Upload the file to the artifacts.
-    - echo "DATABASE_URL=$DATABASE_URL" > variables.env
-
     - >
           helm upgrade worker-schemabase-staging ./services/worker/helm-chart
           --install
@@ -75,7 +70,12 @@ review:
           --set=redis.password="$REDIS_PASSWORD"
           --set=ingress.host=$CI_PROJECT_ID-$CI_COMMIT_REF_SLUG.gc.review-kencove.com
           --set=google.clientId="$GC_CLIENT_ID"
-          --set=google.clientSecret="$GC_CLIENT_SECRET"      
+          --set=google.clientSecret="$GC_CLIENT_SECRET"
+                
+    # Generate a DATABASE_URL using the mysql service. Use the public ip address of the kubernetes nodes and the nodeport of the mysql service. The hosts are comma separated.
+    - export DATABASE_URL="mysql://schemabase:$MYSQL_PASSWORD@$(kubectl get nodes -o jsonpath='{ $.items[*].status.addresses[?(@.type=="ExternalIP")].address }' | tr ' ' ','):$(kubectl -n $KUBE_NAMESPACE get service mysql-schemabase-staging -o jsonpath='{.spec.ports[?(@.name=="mysql")].nodePort}')/schemabase"
+    # persist the database url, so that it can be used in the following jobs. Upload the file to the artifacts.
+    - echo "DATABASE_URL=$DATABASE_URL" > variables.env
 
   rules:
     - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
