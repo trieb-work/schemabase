@@ -59,7 +59,7 @@ review:
           --set=kafka.saslMechanism="scram-sha-256"
           --set=kafka.username="$KAFKA_USERNAME"
           --set=kafka.password="$KAFKA_PASSWORD"
-          --set=sendgridApiKey=""
+          --set=sendgridApiKey="TO_BE_ADDED"
           --set=secretKey="$SECRET_KEY_WORKER"
     - > 
           helm upgrade queue-dashboard-schemabase ./services/bullboard/helm-chart
@@ -71,7 +71,7 @@ review:
           --set=ingress.host=$CI_PROJECT_ID-$CI_COMMIT_REF_SLUG.gc.review-kencove.com
           --set=google.clientId="$GC_CLIENT_ID"
           --set=google.clientSecret="$GC_CLIENT_SECRET"
-                
+
     # Generate a DATABASE_URL using the mysql service. Use the public ip address of the kubernetes nodes and the nodeport of the mysql service. The hosts are comma separated.
     - export DATABASE_URL="mysql://schemabase:$MYSQL_PASSWORD@$(kubectl get nodes -o jsonpath='{ $.items[*].status.addresses[?(@.type=="ExternalIP")].address }' | tr ' ' ','):$(kubectl -n $KUBE_NAMESPACE get service mysql-schemabase-staging -o jsonpath='{.spec.ports[?(@.name=="mysql")].nodePort}')/schemabase"
     # persist the database url, so that it can be used in the following jobs. Upload the file to the artifacts.
@@ -85,24 +85,6 @@ review:
     - if: "($CI_COMMIT_REF_PROTECTED == 'true' || $CI_COMMIT_TAG)"
       when: never
     - if: "$CI_COMMIT_REF_NAME == 'staging'"
-
-db-push-review:
-  image: node:18
-  needs: ["review"]
-  stage: review
-  script:
-    - export DATABASE_URL=mysql://schemabase:$MYSQL_PASSWORD@mysql-schemabase-staging/schemabase
-    # Try to push the database schema to the database.
-    - npx prisma db push
-  rules:
-    - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
-      when: never
-    - if: "$REVIEW_DISABLED"
-      when: never
-    - if: "($CI_COMMIT_REF_PROTECTED == 'true' || $CI_COMMIT_TAG)"
-      when: never
-    - if: "$CI_COMMIT_REF_NAME == 'staging'"   
-
 
 
 review-vercel:
