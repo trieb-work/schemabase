@@ -651,6 +651,7 @@ This information can be used by some systems like Zoho']
   company String
   phone String
   fullname String
+  state String [note: 'The state of the address. This is not the country, but the state of the country. Like NY']
   houseNumber String [note: 'Optional field']
   streetWithoutHouseNumber String
   contact Contact [not null, note: 'One address can have multiple contacts connected to it.

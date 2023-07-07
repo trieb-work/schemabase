@@ -1,3 +1,4 @@
+/// our default provider is planetScale/mysql.
 datasource db {
   provider     = "mysql"
   url          = env("DATABASE_URL")
