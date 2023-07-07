@@ -39,9 +39,7 @@ review:
     - helm repo add azure-marketplace https://marketplace.azurecr.io/helm/v1/repo
     # Add a redis deployment with nodeport service, limit CPU and memory, set a password, set standard persistent storage 3 GB. Name: redis-schemabase-staging
     - helm upgrade --install --create-namespace -n $KUBE_NAMESPACE redis-schemabase-staging azure-marketplace/redis --set architecture="standalone" --set auth.password="$REDIS_PASSWORD" --set resources.requests.cpu=100m --set resources.requests.memory=128Mi --set resources.limits.cpu=200m --set resources.limits.memory=256Mi --set persistence.size=3Gi --set service.type=NodePort
-    # Add a mysql deployment with 5 GB storage and nodeport service, limit CPU and memory, set a password, set standard persistent storage 3 GB. Name: mysql-schemabase-staging
-    - helm upgrade --install -n $KUBE_NAMESPACE mysql-schemabase-staging azure-marketplace/mysql --set auth.database="schemabase" --set auth.username="schemabase" --set auth.password="$MYSQL_PASSWORD" --set resources.requests.cpu=100m --set resources.requests.memory=128Mi --set resources.limits.cpu=200m --set resources.limits.memory=256Mi --set persistence.size=5Gi --set primary.service.type=NodePort
-
+ 
     - >
           helm upgrade worker-schemabase-staging ./services/worker/helm-chart
           --install
