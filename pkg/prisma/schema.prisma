@@ -1362,6 +1362,8 @@ model Address {
   company               String?
   phone                 String?
   fullname              String?
+  /// The state of the address. This is not the country, but the state of the country. Like NY
+  state                 String?
 
   /// Optional field
   houseNumber              String?
