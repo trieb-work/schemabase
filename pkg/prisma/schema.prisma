@@ -2024,7 +2024,12 @@ model ReviewsioApp {
 
   enabled Boolean @default(false)
 
+  /// The store id coming from reviews.io. For example "snocks" or "kencove-com"
   storeId String
+
+  cronSchedule String @default("0 8 * * *")
+  // Time in seconds how long one workflow can run before a timeout occurs.
+  cronTimeout  Int    @default(800)
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String @unique
