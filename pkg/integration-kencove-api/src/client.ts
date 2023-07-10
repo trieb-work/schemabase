@@ -2,7 +2,7 @@
 // This is a singleton class, so it can be imported and used anywhere in the app.
 // It is initialized here and is taking care of the authentication process.
 // It takes the KencoveApiApp model as a parameter.
-// It should use the url from "tokenEndpoint" to authenticate and then use the url 
+// It should use the url from "tokenEndpoint" to authenticate and then use the url
 // from "apiEndpoint" to make the actual request.
 // The model is defined in the file: pkg/integration-kencove-api/src/client.ts
 
@@ -48,7 +48,7 @@ export class KencoveApiClient {
   }
 
   public async getAccessToken(): Promise<string> {
-    // get the access token from the api using the client credentials flow. 
+    // get the access token from the api using the client credentials flow.
     // Follow AWS Cognito OAuth2 documentation.
     // Handle errors
     // and return the access token.
