@@ -2022,6 +2022,34 @@ model LogisticsApp {
   integration LogisticsIntegration?
 }
 
+/// The custom app for the kencove api. Using OAuth for authentication
+model KencoveApiApp {
+  id String @id
+
+  enabled Boolean @default(false)
+
+  cronSchedule String @default("0 8 * * *")
+  // Time in seconds how long one workflow can run before a timeout occurs.
+  cronTimeout  Int    @default(800)
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String @unique
+
+  clientId     String
+  clientSecret String
+  /// Token endpoint for the OAuth flow
+  tokenEndpoint String
+  /// The actual api endpoint. Is different for sandbox and prod
+  apiEndpoint String
+
+  /// The scopes we need to access the api. Just comma separated list
+  scope String
+
+
+
+
+}
+
 model ReviewsioApp {
   id String @id
 
@@ -2256,6 +2284,7 @@ model Tenant {
   attributes                  Attribute[]
   rewiewsioApps               ReviewsioApp[]
   eci_User_Tenants            eci_User_Tenant[]
+  kencoveApiApps              KencoveApiApp[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
