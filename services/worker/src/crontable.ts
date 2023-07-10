@@ -26,6 +26,7 @@ import { ZohoWarehouseSyncWf } from "./workflows/zohoWarehouseSync";
 import { DatevContactSyncWf } from "./workflows/datevContactSync";
 import { UPSTrackingSyncWf } from "./workflows/upsTrackingSync";
 import { SaleorCustomerSyncWf } from "./workflows/saleorCustomerSync";
+import { ReviewsioSyncWf } from "./workflows/reviewsioSync";
 
 interface CronClients {
   logger: ILogger;
@@ -89,6 +90,39 @@ export class CronTable {
       },
     });
 
+    const enabledReviewsioApps =
+      await this.clients.prisma.reviewsioApp.findMany({
+        where: {
+          enabled: true,
+        },
+      });
+
+    /**
+     * reviews.io App Workflows
+     */
+    for (const enabledReviewsioApp of enabledReviewsioApps) {
+      const { id, cronTimeout, cronSchedule, tenantId } = enabledReviewsioApp;
+      const commonCronConfig = {
+        cron: cronSchedule,
+        timeout: cronTimeout,
+      };
+      const commonWorkflowConfig = {
+        reviewsioApp: enabledReviewsioApp,
+      };
+      new WorkflowScheduler(this.clients).schedule(
+        createWorkflowFactory(
+          ReviewsioSyncWf,
+          this.clients,
+          commonWorkflowConfig,
+        ),
+        { ...commonCronConfig, offset: 0 },
+        [tenantId.substring(0, 5), id.substring(0, 5)],
+      );
+    }
+
+    /**
+     * Datev App Workflows
+     */
     for (const enabledDatevApp of enabledDatevApps) {
       const { id, cronTimeout, cronSchedule, tenantId } = enabledDatevApp;
       const commonCronConfig = {

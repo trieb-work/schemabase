@@ -1495,6 +1495,12 @@ model ProductVariant {
   /// The weight in KG for this product variant
   weight Float?
 
+
+  /// Product rating based on customer reviews from services like reviews.io
+  averageRating Float?
+  /// Number of ratings for this product variant
+  ratingCount   Int?
+
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String
 
@@ -2016,6 +2022,23 @@ model LogisticsApp {
   integration LogisticsIntegration?
 }
 
+model ReviewsioApp {
+  id String @id
+
+  enabled Boolean @default(false)
+
+  /// The store id coming from reviews.io. For example "snocks" or "kencove-com"
+  storeId String
+
+  cronSchedule String @default("0 8 * * *")
+  // Time in seconds how long one workflow can run before a timeout occurs.
+  cronTimeout  Int    @default(800)
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String @unique
+
+}
+
 model ZohoApp {
   id String @id
 
@@ -2231,6 +2254,7 @@ model Tenant {
   datevApps                   DatevApp[]
   UPSTrackingApps             UPSTrackingApp[]
   attributes                  Attribute[]
+  rewiewsioApps               ReviewsioApp[]
   eci_User_Tenants            eci_User_Tenant[]
 }
 
