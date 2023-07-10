@@ -31,7 +31,6 @@ export class SaleorPaymentSyncWf implements Workflow {
       workflow: SaleorPaymentSyncWf.name,
       installedSaleorAppId: this.installedSaleorAppId,
     });
-    this.logger = ctx.logger;
     this.orderPrefix = config.orderPrefix;
     this.prisma = clients.prisma;
     this.installedSaleorAppId = config.installedSaleorAppId;
