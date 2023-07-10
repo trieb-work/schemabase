@@ -1,6 +1,6 @@
 import { ILogger } from "@eci/pkg/logger";
 import { PrismaClient, ReviewsioApp } from "@eci/pkg/prisma";
-import axios, { AxiosError } from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 
 interface ReviewsioProductRatingSyncServiceConfig {
   logger: ILogger;
@@ -9,9 +9,7 @@ interface ReviewsioProductRatingSyncServiceConfig {
 }
 
 export class ReviewsioProductRatingSyncService {
-  // get all productVariants and call the reviews.io api for each one. URL: https://api.reviews.io/product/review?store=STORE-ID&sku=SKU
-  // make a random pause between 1ms and 200ms between each call. You need the reviews.io app and logger as variables.
-  // if the call is succesfull, update the product variant with the new rating and the number of reviews.
+  // get all productVariants and call the reviews.io api for each one. URL: https://api.reviews.io/product/rating-batch?store=STORE-ID&sku=SKU1;SKU2;SKU3
   // if the call is not succesfull, log the error and continue with the next product variant.
   private readonly logger: ILogger;
 
@@ -36,55 +34,90 @@ export class ReviewsioProductRatingSyncService {
       `Found ${allProductVariants.length} product variants to pull data from reviews.io`,
     );
 
-    for (const productVariant of allProductVariants) {
-      const reviewsResponse = await axios({
-        method: "get",
-        url: "https://api.reviews.io/product/review",
-        params: {
-          store: this.reviewsioApp.storeId,
-          sku: productVariant.sku,
-        },
-      }).catch((error: Error | AxiosError) => {
-        if (axios.isAxiosError(error)) {
-          if (error.response?.status === 401) {
-            this.logger.error(
-              `Unauthorized request to reviews.io API. Check your store ID.${error.message}`,
-            );
-          }
-        }
-      });
+    // use one API call to get all product ratings for all SKU's. Use rating-batch API endpoint.
+    // The returning data looks like this:
+    // [
+    //   {
+    //       "sku": "00-8URW-4EH6",
+    //       "average_rating": "4.7059",
+    //       "num_ratings": 51,
+    //       "name": "Sneaker Socken Mix (Schwarz\/Wei\u00df\/Grau) \/ 43 - 46 \/ 6 Paar"
+    //   },
+    //   {
+    //       "sku": "06-BNOF-39IM",
+    //       "average_rating": "5.0000",
+    //       "num_ratings": 1,
+    //       "name": "Jogginghose Schwarz - NEU \/ 2XL \/ 1 St\u00fcck"
+    //   }
+    //   ]
 
-      if (reviewsResponse) {
-        const { data } = reviewsResponse;
-        const stats = data.stats;
-
-        if (!stats) {
+    const reviewsResponse: void | AxiosResponse<
+      { sku: string; average_rating: string; num_ratings: number }[]
+    > = await axios({
+      method: "get",
+      url: "https://api.reviews.io/product/rating-batch",
+      params: {
+        store: this.reviewsioApp.storeId,
+        sku: allProductVariants.map((pv) => pv.sku).join(";"),
+      },
+    }).catch((error: Error | AxiosError) => {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
           this.logger.error(
-            `data returned from reviews.io API does not contain stats.${JSON.stringify(
-              data,
-            )}`,
+            `Unauthorized request to reviews.io API. Check your store ID.${error.message}`,
           );
-          continue;
+        } else {
+          this.logger.error(
+            `Error while calling reviews.io API: ${error.message}`,
+          );
         }
+      } else {
+        this.logger.error(
+          `Error while calling reviews.io API: ${
+            error.message
+          } - ${JSON.stringify(error)}`,
+        );
+      }
+    });
 
+    if (!reviewsResponse || !reviewsResponse.data) {
+      this.logger.error("No response from reviews.io API");
+      return;
+    }
+
+    const { data } = reviewsResponse;
+
+    this.logger.debug(
+      `Received following data from reviews.io: ${JSON.stringify(data)}`,
+    );
+
+    for (const rating of data) {
+      const productVariant = allProductVariants.find(
+        (pv) => pv.sku === rating.sku,
+      );
+
+      if (!productVariant) {
+        this.logger.error(
+          `No internal product variant found for SKU ${rating.sku}`,
+        );
+        continue;
+      }
+      const numericAverageRating = parseFloat(rating.average_rating);
+      if (productVariant.averageRating !== numericAverageRating) {
         this.logger.info(
           // eslint-disable-next-line max-len
-          `Updating product variant ${productVariant.id}, ${productVariant.sku} with rating ${stats.average} and ${stats.count} reviews.`,
+          `Updating product variant ${productVariant.id} - ${productVariant.sku} with new rating ${numericAverageRating} and ${rating.num_ratings} ratings`,
         );
-
         await this.db.productVariant.update({
           where: {
             id: productVariant.id,
           },
           data: {
-            averageRating: stats.average,
-            ratingCount: stats.count,
+            averageRating: numericAverageRating,
+            ratingCount: rating.num_ratings,
           },
         });
       }
-
-      const randomPause = Math.floor(Math.random() * 200) + 1;
-      await new Promise((resolve) => setTimeout(resolve, randomPause));
     }
   }
 }

@@ -1495,6 +1495,7 @@ model ProductVariant {
 
   /// Product rating based on customer reviews from services like reviews.io
   averageRating Float?
+  /// Number of ratings for this product variant
   ratingCount   Int?
 
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
