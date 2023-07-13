@@ -799,6 +799,7 @@ model Contact {
   datevContacts      DatevContact[]
   addresses          Address[]
   saleorCustomers    SaleorCustomer[]
+  kencoveApiContacts    KencoveApiContact[]
 
   /// If we have the users permission to send tracking emails
   trackingEmailsConsent   Boolean @default(true)
@@ -1382,6 +1383,8 @@ model Address {
 
   /// An array of zoho addresses. Can be multiple if the same address is synced to different zoho apps
   zohoAddress ZohoAddress[]
+
+  kencoveApiAddress KencoveApiAddress[]
 
   /// An array of orders where this address is used as the shipping address
   shippingAddressInOrders Order[] @relation("orderShippingAddresses")
@@ -2045,7 +2048,47 @@ model KencoveApiApp {
   /// The scopes we need to access the api. Just comma separated list
   scope String
 
+  kencoveApiContacts KencoveApiContact[]
+  kencoveApiAddresses KencoveApiAddress[]
 
+
+}
+
+/// Kencove custom address model. Relation between internal address
+/// object and kencove address object
+model KencoveApiAddress {
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  address   Address @relation(fields: [addressId], references: [id])
+  addressId String
+
+  kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id])
+  kencoveApiAppId String
+
+
+  @@unique([id, kencoveApiAppId])
+  @@index([kencoveApiAppId])
+  @@index([addressId])
+
+
+}
+
+/// Kencove custom customer model. Relation between internal customer
+/// object and kencove customer object
+model KencoveApiContact {
+  id String
+  customer   Contact @relation(fields: [customerId], references: [id])
+  customerId String
+
+  kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id])
+  kencoveApiAppId String
+
+  @@unique([customerId, kencoveApiAppId])
+  @@index([kencoveApiAppId])
+  @@index([customerId])
 
 
 }

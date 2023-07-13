@@ -493,6 +493,7 @@ Table Contact {
   datevContacts DatevContact [not null]
   addresses Address [not null]
   saleorCustomers SaleorCustomer [not null]
+  kencoveApiContacts KencoveApiContact [not null]
   trackingEmailsConsent Boolean [not null, default: true, note: 'If we have the users permission to send tracking emails']
   marketingEmailsConstent Boolean [not null, default: false, note: 'If we have the users consent to send marketing emails']
 
@@ -660,6 +661,7 @@ Sometimes, you have orders from different email addresses, sending to the same a
   tenantId String [not null]
   normalizedName String [not null, note: 'A unique string identifying this address for easy lookup']
   zohoAddress ZohoAddress [not null, note: 'An array of zoho addresses. Can be multiple if the same address is synced to different zoho apps']
+  kencoveApiAddress KencoveApiAddress [not null]
   shippingAddressInOrders Order [not null, note: 'An array of orders where this address is used as the shipping address']
   billingAddressInOrders Order [not null, note: 'An array of orders where this address is used as the billing address']
 
@@ -1057,8 +1059,42 @@ Table KencoveApiApp {
   tokenEndpoint String [not null, note: 'Token endpoint for the OAuth flow']
   apiEndpoint String [not null, note: 'The actual api endpoint. Is different for sandbox and prod']
   scope String [not null, note: 'The scopes we need to access the api. Just comma separated list']
+  kencoveApiContacts KencoveApiContact [not null]
+  kencoveApiAddresses KencoveApiAddress [not null]
 
   Note: 'The custom app for the kencove api. Using OAuth for authentication'
+}
+
+Table KencoveApiAddress {
+  id String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  address Address [not null]
+  addressId String [not null]
+  kencoveApiApp KencoveApiApp [not null]
+  kencoveApiAppId String [not null]
+
+  indexes {
+    (id, kencoveApiAppId) [unique]
+  }
+
+  Note: 'Kencove custom address model. Relation between internal address
+object and kencove address object'
+}
+
+Table KencoveApiContact {
+  id String [not null]
+  customer Contact [not null]
+  customerId String [not null]
+  kencoveApiApp KencoveApiApp [not null]
+  kencoveApiAppId String [not null]
+
+  indexes {
+    (customerId, kencoveApiAppId) [unique]
+  }
+
+  Note: 'Kencove custom customer model. Relation between internal customer
+object and kencove customer object'
 }
 
 Table ReviewsioApp {
@@ -1970,6 +2006,14 @@ Ref: DatevApp.tenantId > Tenant.id [delete: Cascade]
 Ref: LogisticsApp.tenantId > Tenant.id [delete: Cascade]
 
 Ref: KencoveApiApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: KencoveApiAddress.addressId > Address.id
+
+Ref: KencoveApiAddress.kencoveApiAppId > KencoveApiApp.id
+
+Ref: KencoveApiContact.customerId > Contact.id
+
+Ref: KencoveApiContact.kencoveApiAppId > KencoveApiApp.id
 
 Ref: ReviewsioApp.tenantId > Tenant.id [delete: Cascade]
 
