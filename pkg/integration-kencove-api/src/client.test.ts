@@ -1,7 +1,7 @@
 // test the client.ts file. Use the KencoveApiApp from the database with id "test". Use the prismaClient to get the app from the database. Import
 // the prisma client from @eci/pkg/prisma
 // This is a test file, so it is not included in the build.
-import { KencoveApiApp, PrismaClient } from "@eci/pkg/prisma";
+import { PrismaClient } from "@eci/pkg/prisma";
 import { KencoveApiClient } from "./client";
 import { beforeAll, describe, expect, it } from "@jest/globals";
 import { subDays } from "date-fns";

@@ -11,15 +11,17 @@ import { KencoveApiApp } from "@eci/pkg/prisma";
 import url from "url";
 
 type KencoveApiAddress = {
-  street: string | null;
+  id: string;
+  customerId: string;
+  street: string;
   additionalAddressLine: string | null;
   zip: string | null;
-  city: string | null;
+  city: string;
   countryCode: string | null;
   countryArea: string | null;
   company: string | null;
   phone: string | null;
-  fullname: string | null;
+  fullname: string;
   state: string | null;
   createdAt: string;
   updatedAt: string;
@@ -111,6 +113,7 @@ export class KencoveApiClient {
       );
       console.debug(response);
       addresses.push(...response.addresses);
+
       nextPage = response.next_page;
       offset += 200;
     } while (nextPage);
@@ -122,7 +125,11 @@ export class KencoveApiClient {
     fromDate: Date,
     offset: number,
     accessToken: string,
-  ): Promise<any> {
+  ): Promise<{
+    addresses: KencoveApiAddress[];
+    result_count: number;
+    next_page: string;
+  }> {
     const response = await this.axiosInstance.get(
       `/ecom/address/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
       {

@@ -1,10 +1,10 @@
-// address sync class. Defines the address sync method syncToEci(). Use the already defined client.ts client library.
-
-import { KencoveApiApp, PrismaClient } from "@eci/pkg/prisma";
+import { CountryCode, KencoveApiApp, PrismaClient } from "@eci/pkg/prisma";
 import { ILogger } from "@eci/pkg/logger";
 import { KencoveApiClient } from "./client";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { subHours, subYears } from "date-fns";
+import { isSameHour, subHours, subYears } from "date-fns";
+import { uniqueStringAddress } from "@eci/pkg/miscHelper/uniqueStringAddress";
+import { id } from "@eci/pkg/ids";
 
 interface KencoveApiAppAddressSyncServiceConfig {
   logger: ILogger;
@@ -52,5 +52,95 @@ export class KencoveApiAppAddressSyncService {
     const client = new KencoveApiClient(this.kencoveApiApp);
     const addresses = await client.getAddresses(createdGte);
     this.logger.info(`Found ${addresses.length} addresses to sync`);
+    const existingAddresses = await this.db.kencoveApiAddress.findMany({
+      where: {
+        kencoveApiAppId: this.kencoveApiApp.id,
+        id: {
+          in: addresses.map((a) => a.id),
+        },
+      },
+    });
+
+    for (const address of addresses) {
+      if (!address.street || !address.city || !address.fullname) {
+        this.logger.warn(
+          `Address ${address.id} has no street/city/fullname.\
+           Skipping: ${JSON.stringify(address)}`,
+        );
+        continue;
+      }
+      const existingAddress = existingAddresses.find(
+        (a) => a.id === address.id,
+      );
+
+      const createdAt = new Date(address.createdAt);
+      const updatedAt = new Date(address.updatedAt);
+
+      const normalizedName = uniqueStringAddress(address);
+
+      const countryCodeValid = Object.values(CountryCode).includes(
+        address.countryCode as any,
+      );
+
+      /**
+       * Only update or create if the address does not exist or if the address
+       * has been updated since the last sync
+       */
+      if (
+        !existingAddress ||
+        !isSameHour(existingAddress.updatedAt, createdAt)
+      ) {
+        const internalAddress = await this.db.address.upsert({
+          where: {
+            normalizedName_tenantId: {
+              normalizedName,
+              tenantId: this.kencoveApiApp.tenantId,
+            },
+          },
+          create: {
+            id: id.id("address"),
+            normalizedName,
+            tenant: {
+              connect: {
+                id: this.kencoveApiApp.tenantId,
+              },
+            },
+            street: address.street,
+            additionalAddressLine: address.additionalAddressLine,
+            plz: address.zip,
+            city: address.city,
+            countryCode: countryCodeValid
+              ? (address.countryCode as CountryCode)
+              : undefined,
+            company: address.company,
+            phone: address.phone,
+            fullname: address.fullname,
+            state: address.state,
+          },
+          update: {},
+        });
+
+        await this.db.kencoveApiAddress.upsert({
+          where: {
+            id_kencoveApiAppId: {
+              id: address.id,
+              kencoveApiAppId: this.kencoveApiApp.id,
+            },
+          },
+          create: {
+            id: address.id,
+            createdAt,
+            updatedAt,
+            kencoveApiAppId: this.kencoveApiApp.id,
+            addressId: internalAddress.id,
+          },
+          update: {
+            createdAt,
+            updatedAt,
+            addressId: internalAddress.id,
+          },
+        });
+      }
+    }
   }
 }
