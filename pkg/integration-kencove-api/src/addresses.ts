@@ -140,6 +140,10 @@ export class KencoveApiAppAddressSyncService {
             addressId: internalAddress.id,
           },
         });
+
+        /**
+         * Todo: connect to Contact
+         */
       }
     }
   }

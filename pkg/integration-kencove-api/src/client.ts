@@ -112,7 +112,7 @@ export class KencoveApiClient {
         accessToken,
       );
       console.debug(response);
-      addresses.push(...response.addresses);
+      addresses.push(...response.data);
 
       nextPage = response.next_page;
       offset += 200;
@@ -126,7 +126,7 @@ export class KencoveApiClient {
     offset: number,
     accessToken: string,
   ): Promise<{
-    addresses: KencoveApiAddress[];
+    data: KencoveApiAddress[];
     result_count: number;
     next_page: string;
   }> {

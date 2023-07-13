@@ -5,8 +5,11 @@ import { PrismaClient } from "@eci/pkg/prisma";
 import { KencoveApiClient } from "./client";
 import { beforeAll, describe, expect, it } from "@jest/globals";
 import { subDays } from "date-fns";
+import { NoopLogger } from "@eci/pkg/logger";
+import { KencoveApiAppAddressSyncService } from "./addresses";
 
 const prisma = new PrismaClient();
+
 
 describe("KencoveApiClient", () => {
   let app: any;
@@ -15,6 +18,19 @@ describe("KencoveApiClient", () => {
     app = await prisma.kencoveApiApp.findUnique({
       where: {
         id: "test",
+      },
+    });
+    const cronId = `${app.tenantId}_${app.id}_addresses`;
+    await prisma.cronJobState.upsert({
+      where: {
+        id: cronId,
+      },
+      update: {
+        lastRun: subDays(new Date(), 2),
+      },
+      create: {
+        id: cronId,
+        lastRun: subDays(new Date(), 2),
       },
     });
   });
@@ -29,7 +45,16 @@ describe("KencoveApiClient", () => {
     const client = new KencoveApiClient(app);
     // test the getAddresses method with a date from two days in the past
     const addresses = await client.getAddresses(subDays(new Date(), 2));
-    console.debug(addresses);
+    console.debug(addresses.length);
     expect(addresses.length).toBeGreaterThan(0);
   });
+
+  it("should work to run the syncToEci function", async () => {
+    const client = new KencoveApiAppAddressSyncService({
+      logger: new NoopLogger(),
+      db: prisma,
+      kencoveApiApp: app,
+    });
+    await client.syncToEci();
+  }, 400000);
 });
