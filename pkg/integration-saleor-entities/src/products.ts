@@ -7,12 +7,11 @@ import {
   SaleorProductVariantStocksQuery,
   StockInput,
 } from "@eci/pkg/saleor";
-import { PrismaClient } from "@eci/pkg/prisma";
+import { PrismaClient, Prisma } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 // import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils";
 
 interface SaleorProductSyncServiceConfig {
@@ -297,8 +296,7 @@ export class SaleorProductSyncService {
               stack: err.stack,
             });
           } else if (err instanceof Error) {
-            // if(err.name)
-            if (err instanceof PrismaClientKnownRequestError) {
+            if (err instanceof Prisma.PrismaClientKnownRequestError) {
               if (
                 err.code === "P2025" &&
                 (err?.meta?.cause as string).includes("No 'Warehouse' record")
