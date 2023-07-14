@@ -90,6 +90,15 @@ export class KencoveApiAppAddressSyncService {
         !existingAddress ||
         !isSameHour(existingAddress.updatedAt, createdAt)
       ) {
+        const internalContact = await this.db.kencoveApiContact.findUnique({
+          where: {
+            id_kencoveApiAppId: {
+              id: address.customerId,
+              kencoveApiAppId: this.kencoveApiApp.id,
+            },
+          },
+        });
+
         const internalAddress = await this.db.address.upsert({
           where: {
             normalizedName_tenantId: {
@@ -116,6 +125,9 @@ export class KencoveApiAppAddressSyncService {
             phone: address.phone,
             fullname: address.fullname,
             state: address.state,
+            contact: internalContact
+              ? { connect: { id: internalContact.id } }
+              : {},
           },
           update: {},
         });
@@ -140,10 +152,6 @@ export class KencoveApiAppAddressSyncService {
             addressId: internalAddress.id,
           },
         });
-
-        /**
-         * Todo: connect to Contact
-         */
       }
     }
   }

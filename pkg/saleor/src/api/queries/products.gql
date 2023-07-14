@@ -122,13 +122,17 @@ query saleorEntitySyncProducts($first: Int!, $channel: String, $after: String) {
   }
 }
 
-query saleorProductVariantStocks($id: ID!) {
+query saleorProductVariantBasicData($id: ID!) {
   productVariant(id: $id) {
     id
     name
     product {
       id
       name
+    }
+    metadata {
+      key
+      value
     }
     stocks {
       warehouse {

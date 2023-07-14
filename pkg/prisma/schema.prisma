@@ -2080,15 +2080,15 @@ model KencoveApiAddress {
 /// object and kencove customer object
 model KencoveApiContact {
   id String
-  customer   Contact @relation(fields: [customerId], references: [id])
-  customerId String
+  contact   Contact @relation(fields: [contactId], references: [id])
+  contactId String
 
   kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id])
   kencoveApiAppId String
 
-  @@unique([customerId, kencoveApiAppId])
+  @@unique([id, kencoveApiAppId])
   @@index([kencoveApiAppId])
-  @@index([customerId])
+  @@index([contactId])
 
 
 }

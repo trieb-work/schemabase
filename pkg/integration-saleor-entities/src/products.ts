@@ -4,7 +4,8 @@ import {
   ProductVariantStockEntryUpdateMutation,
   queryWithPagination,
   SaleorEntitySyncProductsQuery,
-  SaleorProductVariantStocksQuery,
+  SaleorProductVariantBasicDataQuery,
+  SaleorUpdateMetadataMutation,
   StockInput,
 } from "@eci/pkg/saleor";
 import { PrismaClient, Prisma } from "@eci/pkg/prisma";
@@ -12,6 +13,7 @@ import { CronStateHandler } from "@eci/pkg/cronstate";
 import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils";
+import { subHours, subYears } from "date-fns";
 // import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils";
 
 interface SaleorProductSyncServiceConfig {
@@ -21,13 +23,21 @@ interface SaleorProductSyncServiceConfig {
       channel?: string;
       after: string;
     }) => Promise<SaleorEntitySyncProductsQuery>;
-    saleorProductVariantStocks: (variables: {
+    saleorProductVariantBasicData: (variables: {
       id: string;
-    }) => Promise<SaleorProductVariantStocksQuery>;
+    }) => Promise<SaleorProductVariantBasicDataQuery>;
     productVariantStockEntryUpdate: (variables: {
       variantId: string;
       stocks: StockInput[];
     }) => Promise<ProductVariantStockEntryUpdateMutation>;
+    saleorUpdateMetadata: (variables: {
+      id: string;
+      input: {
+        key: string;
+        value: string;
+        __typename?: "MetadataItem" | undefined;
+      }[];
+    }) => Promise<SaleorUpdateMetadataMutation>;
   };
   channelSlug: string;
   installedSaleorAppId: string;
@@ -43,13 +53,21 @@ export class SaleorProductSyncService {
       channel?: string;
       after: string;
     }) => Promise<SaleorEntitySyncProductsQuery>;
-    saleorProductVariantStocks: (variables: {
+    saleorProductVariantBasicData: (variables: {
       id: string;
-    }) => Promise<SaleorProductVariantStocksQuery>;
+    }) => Promise<SaleorProductVariantBasicDataQuery>;
     productVariantStockEntryUpdate: (variables: {
       variantId: string;
       stocks: StockInput[];
     }) => Promise<ProductVariantStockEntryUpdateMutation>;
+    saleorUpdateMetadata: (variables: {
+      id: string;
+      input: {
+        key: string;
+        value: string;
+        __typename?: "MetadataItem" | undefined;
+      }[];
+    }) => Promise<SaleorUpdateMetadataMutation>;
   };
 
   public readonly channelSlug: string;
@@ -329,22 +347,56 @@ export class SaleorProductSyncService {
   }
 
   public async syncFromECI(): Promise<void> {
-    const saleorProducts = await this.db.saleorProductVariant.findMany({
+    const cronState = await this.cronState.get();
+    const now = new Date();
+    let createdGte: Date;
+    if (!cronState.lastRun) {
+      createdGte = subYears(now, 1);
+      this.logger.info(
+        // eslint-disable-next-line max-len
+        `This seems to be our first sync run. Syncing data from: ${createdGte}`,
+      );
+    } else {
+      // for security purposes, we sync one hour more than the last run
+      createdGte = subHours(cronState.lastRun, 1);
+      this.logger.info(`Setting GTE date to ${createdGte}.`);
+    }
+
+    /**
+     * get all saleor productVariants where related stockEntries have been updated since last run or where related productVariants have been updated since last run
+     */
+    const saleorProductVariants = await this.db.saleorProductVariant.findMany({
       where: {
-        installedSaleorApp: {
-          id: this.installedSaleorAppId,
-        },
+        OR: [
+          {
+            updatedAt: {
+              gte: createdGte,
+            },
+          },
+          {
+            productVariant: {
+              updatedAt: {
+                gte: createdGte,
+              },
+            },
+          },
+        ],
       },
       select: {
         id: true,
         productVariant: {
-          include: {
+          select: {
+            id: true,
+            sku: true,
             stockEntries: true,
+            averageRating: true,
+            ratingCount: true,
           },
         },
       },
     });
-    if (saleorProducts.length === 0) {
+
+    if (saleorProductVariants.length === 0) {
       this.logger.info(
         "We have no saleor products in our DB. Returning nothing",
       );
@@ -352,7 +404,7 @@ export class SaleorProductSyncService {
     }
 
     this.logger.info(
-      `Setting stock level for ${saleorProducts.length} saleor products`,
+      `Setting stock level for ${saleorProductVariants.length} saleor product variants`,
     );
 
     /**
@@ -368,10 +420,10 @@ export class SaleorProductSyncService {
       },
     });
 
-    for (const variant of saleorProducts) {
+    for (const variant of saleorProductVariants) {
       // Get the current commited stock of this product variant from saleor
       const saleorProductVariant =
-        await this.saleorClient.saleorProductVariantStocks({
+        await this.saleorClient.saleorProductVariantBasicData({
           id: variant.id,
         });
       if (
@@ -435,6 +487,43 @@ export class SaleorProductSyncService {
         });
         this.logger.debug(`Updated stock entry ${variant.id}`);
       }
+
+      const productRating = JSON.parse(
+        saleorProductVariant.productVariant.metadata.find(
+          (m) => m.key === "customerRatings",
+        )?.value || "",
+      );
+      if (
+        !productRating?.averageRating ||
+        productRating?.averageRating !== variant.productVariant.averageRating
+      ) {
+        this.logger.info(
+          `Updating average rating for ${variant.id} to ${variant.productVariant.averageRating}`,
+        );
+        const metadataNew: {
+          __typename?: "MetadataItem" | undefined;
+          key: string;
+          value: string;
+        }[] = saleorProductVariant.productVariant.metadata.filter(
+          (x) => x.key !== "customerRatings",
+        );
+        metadataNew.push({
+          key: "customerRatings",
+          value: JSON.stringify({
+            averageRating: variant.productVariant.averageRating,
+            ratingCount: variant.productVariant.ratingCount,
+          }),
+        });
+        await this.saleorClient.saleorUpdateMetadata({
+          id: saleorProductVariant.productVariant.id,
+          input: metadataNew,
+        });
+      }
     }
+
+    await this.cronState.set({
+      lastRun: new Date(),
+      lastRunStatus: "success",
+    });
   }
 }

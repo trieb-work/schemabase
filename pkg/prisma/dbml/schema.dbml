@@ -1084,13 +1084,13 @@ object and kencove address object'
 
 Table KencoveApiContact {
   id String [not null]
-  customer Contact [not null]
-  customerId String [not null]
+  contact Contact [not null]
+  contactId String [not null]
   kencoveApiApp KencoveApiApp [not null]
   kencoveApiAppId String [not null]
 
   indexes {
-    (customerId, kencoveApiAppId) [unique]
+    (id, kencoveApiAppId) [unique]
   }
 
   Note: 'Kencove custom customer model. Relation between internal customer
@@ -2011,7 +2011,7 @@ Ref: KencoveApiAddress.addressId > Address.id
 
 Ref: KencoveApiAddress.kencoveApiAppId > KencoveApiApp.id
 
-Ref: KencoveApiContact.customerId > Contact.id
+Ref: KencoveApiContact.contactId > Contact.id
 
 Ref: KencoveApiContact.kencoveApiAppId > KencoveApiApp.id
 

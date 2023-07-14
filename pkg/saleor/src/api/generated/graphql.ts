@@ -13228,6 +13228,32 @@ export type TokenCreateMutation = {
   } | null;
 };
 
+export type SaleorUpdateMetadataMutationVariables = Exact<{
+  id: Scalars["ID"];
+  input: Array<MetadataInput> | MetadataInput;
+  keysToDelete: Array<Scalars["String"]> | Scalars["String"];
+}>;
+
+export type SaleorUpdateMetadataMutation = {
+  __typename?: "Mutation";
+  updateMetadata?: {
+    __typename?: "UpdateMetadata";
+    errors: Array<{
+      __typename?: "MetadataError";
+      field?: string | null;
+      message?: string | null;
+    }>;
+  } | null;
+  deleteMetadata?: {
+    __typename?: "DeleteMetadata";
+    errors: Array<{
+      __typename?: "MetadataError";
+      field?: string | null;
+      message?: string | null;
+    }>;
+  } | null;
+};
+
 export type WebhookCreateMutationVariables = Exact<{
   input: WebhookCreateInput;
 }>;
@@ -13732,17 +13758,22 @@ export type SaleorEntitySyncProductsQuery = {
   } | null;
 };
 
-export type SaleorProductVariantStocksQueryVariables = Exact<{
+export type SaleorProductVariantBasicDataQueryVariables = Exact<{
   id: Scalars["ID"];
 }>;
 
-export type SaleorProductVariantStocksQuery = {
+export type SaleorProductVariantBasicDataQuery = {
   __typename?: "Query";
   productVariant?: {
     __typename?: "ProductVariant";
     id: string;
     name: string;
     product: { __typename?: "Product"; id: string; name: string };
+    metadata: Array<{
+      __typename?: "MetadataItem";
+      key: string;
+      value: string;
+    }>;
     stocks?: Array<{
       __typename?: "Stock";
       quantity: number;
@@ -13992,6 +14023,26 @@ export const TokenCreateDocument = gql`
       user {
         email
       }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`;
+export const SaleorUpdateMetadataDocument = gql`
+  mutation saleorUpdateMetadata(
+    $id: ID!
+    $input: [MetadataInput!]!
+    $keysToDelete: [String!]!
+  ) {
+    updateMetadata(id: $id, input: $input) {
+      errors {
+        field
+        message
+      }
+    }
+    deleteMetadata(id: $id, keys: $keysToDelete) {
       errors {
         field
         message
@@ -14452,14 +14503,18 @@ export const SaleorEntitySyncProductsDocument = gql`
     }
   }
 `;
-export const SaleorProductVariantStocksDocument = gql`
-  query saleorProductVariantStocks($id: ID!) {
+export const SaleorProductVariantBasicDataDocument = gql`
+  query saleorProductVariantBasicData($id: ID!) {
     productVariant(id: $id) {
       id
       name
       product {
         id
         name
+      }
+      metadata {
+        key
+        value
       }
       stocks {
         warehouse {
@@ -14649,6 +14704,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
         options,
       ) as Promise<TokenCreateMutation>;
     },
+    saleorUpdateMetadata(
+      variables: SaleorUpdateMetadataMutationVariables,
+      options?: C,
+    ): Promise<SaleorUpdateMetadataMutation> {
+      return requester<
+        SaleorUpdateMetadataMutation,
+        SaleorUpdateMetadataMutationVariables
+      >(
+        SaleorUpdateMetadataDocument,
+        variables,
+        options,
+      ) as Promise<SaleorUpdateMetadataMutation>;
+    },
     webhookCreate(
       variables: WebhookCreateMutationVariables,
       options?: C,
@@ -14764,18 +14832,18 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
         options,
       ) as Promise<SaleorEntitySyncProductsQuery>;
     },
-    saleorProductVariantStocks(
-      variables: SaleorProductVariantStocksQueryVariables,
+    saleorProductVariantBasicData(
+      variables: SaleorProductVariantBasicDataQueryVariables,
       options?: C,
-    ): Promise<SaleorProductVariantStocksQuery> {
+    ): Promise<SaleorProductVariantBasicDataQuery> {
       return requester<
-        SaleorProductVariantStocksQuery,
-        SaleorProductVariantStocksQueryVariables
+        SaleorProductVariantBasicDataQuery,
+        SaleorProductVariantBasicDataQueryVariables
       >(
-        SaleorProductVariantStocksDocument,
+        SaleorProductVariantBasicDataDocument,
         variables,
         options,
-      ) as Promise<SaleorProductVariantStocksQuery>;
+      ) as Promise<SaleorProductVariantBasicDataQuery>;
     },
     warehouses(
       variables?: WarehousesQueryVariables,
