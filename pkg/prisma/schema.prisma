@@ -800,6 +800,7 @@ model Contact {
   datevContacts      DatevContact[]
   addresses          Address[]
   saleorCustomers    SaleorCustomer[]
+  kencoveApiContacts    KencoveApiContact[]
 
   /// If we have the users permission to send tracking emails
   trackingEmailsConsent   Boolean @default(true)
@@ -1384,6 +1385,8 @@ model Address {
   /// An array of zoho addresses. Can be multiple if the same address is synced to different zoho apps
   zohoAddress ZohoAddress[]
 
+  kencoveApiAddress KencoveApiAddress[]
+
   /// An array of orders where this address is used as the shipping address
   shippingAddressInOrders Order[] @relation("orderShippingAddresses")
   /// An array of orders where this address is used as the billing address
@@ -1472,6 +1475,7 @@ model Product {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
+
   @@unique([name, tenantId])
   @@unique([normalizedName, tenantId])
   @@index([tenantId])
@@ -1526,6 +1530,8 @@ model ProductVariant {
   xentralArtikel XentralArtikel[]
 
   saleorProductVariant SaleorProductVariant[]
+
+  kencoveApiProductVariant KencoveApiProductVariant[]
 
   // Available physical stock over all warehouses
   stockOnHand Int?
@@ -2023,6 +2029,92 @@ model LogisticsApp {
   integration LogisticsIntegration?
 }
 
+/// The custom app for the kencove api. Using OAuth for authentication
+model KencoveApiApp {
+  id String @id
+
+  enabled Boolean @default(false)
+
+  cronSchedule String @default("0 8 * * *")
+  // Time in seconds how long one workflow can run before a timeout occurs.
+  cronTimeout  Int    @default(800)
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String @unique
+
+  clientId     String
+  clientSecret String
+  /// Token endpoint for the OAuth flow
+  tokenEndpoint String
+  /// The actual api endpoint. Is different for sandbox and prod
+  apiEndpoint String
+
+  /// The scopes we need to access the api. Just comma separated list
+  scope String
+
+  kencoveApiContacts KencoveApiContact[]
+  kencoveApiAddresses KencoveApiAddress[]
+  kencoveApiProductVariants KencoveApiProductVariant[]
+
+  @@index([tenantId])
+
+
+}
+
+/// Kencove custom productVariant model
+model KencoveApiProductVariant {
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+  productVariantId String
+
+  kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id], onDelete: Cascade)
+  kencoveApiAppId String
+
+  @@unique([id, kencoveApiAppId])
+  @@index([productVariantId])
+  @@index([kencoveApiAppId])
+}
+
+/// Kencove custom address model. Relation between internal address
+/// object and kencove address object
+model KencoveApiAddress {
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  address   Address @relation(fields: [addressId], references: [id])
+  addressId String
+
+  kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id])
+  kencoveApiAppId String
+
+
+  @@unique([id, kencoveApiAppId])
+  @@index([kencoveApiAppId])
+  @@index([addressId])
+}
+
+/// Kencove custom customer model. Relation between internal customer
+/// object and kencove customer object
+model KencoveApiContact {
+  id String
+  contact   Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  contactId String
+
+  kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id], onDelete: Cascade)
+  kencoveApiAppId String
+
+  @@unique([id, kencoveApiAppId])
+  @@index([kencoveApiAppId])
+  @@index([contactId])
+
+}
+
 model ReviewsioApp {
   id String @id
 
@@ -2036,7 +2128,9 @@ model ReviewsioApp {
   cronTimeout  Int    @default(800)
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId String @unique
+  tenantId String
+
+  @@index([tenantId])
 
 }
 
@@ -2257,6 +2351,7 @@ model Tenant {
   attributes                  Attribute[]
   rewiewsioApps               ReviewsioApp[]
   eci_User_Tenants            eci_User_Tenant[]
+  kencoveApiApps              KencoveApiApp[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
