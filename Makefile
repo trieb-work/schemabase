@@ -93,7 +93,13 @@ build: install
 	$(MAKE) build-prod
 
 build-prod: 
+# check the environment variable DATABASE_URL - when it includes "prisma://" use the command prisma generate --data-proxy, otherwise use prisma generate
+ifneq (,$(findstring prisma://,$(DATABASE_URL)))
+	pnpm prisma generate --data-proxy	
+else
 	pnpm prisma generate
+endif
+
 	pnpm graphql-codegen -c pkg/api/codegen.yml
 	pnpm graphql-codegen -c pkg/saleor/codegen.yml
 
