@@ -60,7 +60,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npm install --no-package-lock --no-save @semantic-release/git
+          npm install @semantic-release/git -D
           npx semantic-release     
 
   deploy-worker:
