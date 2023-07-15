@@ -14,7 +14,6 @@ import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils";
 import { subHours, subYears } from "date-fns";
-// import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils";
 
 interface SaleorProductSyncServiceConfig {
   saleorClient: {
@@ -32,7 +31,6 @@ interface SaleorProductSyncServiceConfig {
     }) => Promise<ProductVariantStockEntryUpdateMutation>;
     saleorUpdateMetadata: (variables: {
       id: string;
-      keysToDelete: string[];
       input: {
         key: string;
         value: string;
@@ -63,7 +61,6 @@ export class SaleorProductSyncService {
     }) => Promise<ProductVariantStockEntryUpdateMutation>;
     saleorUpdateMetadata: (variables: {
       id: string;
-      keysToDelete: string[];
       input: {
         key: string;
         value: string;

@@ -1,11 +1,5 @@
- mutation saleorUpdateMetadata($id: ID!, $input: [MetadataInput!]!, $keysToDelete: [String!]!) {
+ mutation saleorUpdateMetadata($id: ID!, $input: [MetadataInput!]!) {
   updateMetadata(id: $id, input: $input) {
-    errors {
-      field
-      message
-    }
-  }
-  deleteMetadata(id: $id, keys: $keysToDelete) {
     errors {
       field
       message

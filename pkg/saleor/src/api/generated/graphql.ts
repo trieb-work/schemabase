@@ -13231,21 +13231,12 @@ export type TokenCreateMutation = {
 export type SaleorUpdateMetadataMutationVariables = Exact<{
   id: Scalars["ID"];
   input: Array<MetadataInput> | MetadataInput;
-  keysToDelete: Array<Scalars["String"]> | Scalars["String"];
 }>;
 
 export type SaleorUpdateMetadataMutation = {
   __typename?: "Mutation";
   updateMetadata?: {
     __typename?: "UpdateMetadata";
-    errors: Array<{
-      __typename?: "MetadataError";
-      field?: string | null;
-      message?: string | null;
-    }>;
-  } | null;
-  deleteMetadata?: {
-    __typename?: "DeleteMetadata";
     errors: Array<{
       __typename?: "MetadataError";
       field?: string | null;
@@ -14031,18 +14022,8 @@ export const TokenCreateDocument = gql`
   }
 `;
 export const SaleorUpdateMetadataDocument = gql`
-  mutation saleorUpdateMetadata(
-    $id: ID!
-    $input: [MetadataInput!]!
-    $keysToDelete: [String!]!
-  ) {
+  mutation saleorUpdateMetadata($id: ID!, $input: [MetadataInput!]!) {
     updateMetadata(id: $id, input: $input) {
-      errors {
-        field
-        message
-      }
-    }
-    deleteMetadata(id: $id, keys: $keysToDelete) {
       errors {
         field
         message

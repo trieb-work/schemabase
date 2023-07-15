@@ -14,7 +14,6 @@ describe("Zoho Inventory payment Sync", () => {
 
   let zoho: Zoho;
   let zohoApp: ZohoApp;
-  let zohoPaymentSyncService: ZohoPaymentSyncService;
   let zohoPaymentLogger: AssertionLogger;
 
   const mockedZohoClient = {
