@@ -27,6 +27,27 @@ type KencoveApiAddress = {
   updatedAt: string;
 };
 
+type KencoveApiProductVariant = {
+  id: string;
+  sku: string;
+  weight: number;
+  attributeValues: {
+    name: string;
+    value: string;
+  }[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+type KencoveApiProduct = {
+  id: string;
+  name: string;
+  countryOfOrigin: "CN";
+  variants: KencoveApiProductVariant[];
+  createdAt: string;
+  updatedAt: string;
+};
+
 export class KencoveApiClient {
   private static instance: KencoveApiClient;
   private axiosInstance: AxiosInstance;
@@ -111,7 +132,6 @@ export class KencoveApiClient {
         offset,
         accessToken,
       );
-      console.debug(response);
       addresses.push(...response.data);
 
       nextPage = response.next_page;
@@ -132,6 +152,45 @@ export class KencoveApiClient {
   }> {
     const response = await this.axiosInstance.get(
       `/ecom/address/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+    return response.data;
+  }
+
+  public async getProducts(fromDate: Date): Promise<KencoveApiProduct[]> {
+    const accessToken = await this.getAccessToken();
+    const products: KencoveApiProduct[] = [];
+    let nextPage: string | null = null;
+    let offset: number = 0;
+    do {
+      const response = await this.getProductsPage(
+        fromDate,
+        offset,
+        accessToken,
+      );
+      products.push(...response.data);
+      nextPage = response.next_page;
+      offset += 200;
+    } while (nextPage);
+    console.debug(`Found ${products.length} products`);
+    return products;
+  }
+
+  private async getProductsPage(
+    fromDate: Date,
+    offset: number,
+    accessToken: string,
+  ): Promise<{
+    data: KencoveApiProduct[];
+    result_count: number;
+    next_page: string;
+  }> {
+    const response = await this.axiosInstance.get(
+      `/ecom/product/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,

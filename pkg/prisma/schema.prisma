@@ -1475,6 +1475,7 @@ model Product {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
+
   @@unique([name, tenantId])
   @@unique([normalizedName, tenantId])
   @@index([tenantId])
@@ -1529,6 +1530,8 @@ model ProductVariant {
   xentralArtikel XentralArtikel[]
 
   saleorProductVariant SaleorProductVariant[]
+
+  kencoveApiProductVariant KencoveApiProductVariant[]
 
   // Available physical stock over all warehouses
   stockOnHand Int?
@@ -2051,8 +2054,29 @@ model KencoveApiApp {
 
   kencoveApiContacts KencoveApiContact[]
   kencoveApiAddresses KencoveApiAddress[]
+  kencoveApiProductVariants KencoveApiProductVariant[]
+
+  @@index([tenantId])
 
 
+}
+
+/// Kencove custom productVariant model
+model KencoveApiProductVariant {
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+  productVariantId String
+
+  kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id], onDelete: Cascade)
+  kencoveApiAppId String
+
+  @@unique([id, kencoveApiAppId])
+  @@index([productVariantId])
+  @@index([kencoveApiAppId])
 }
 
 /// Kencove custom address model. Relation between internal address
@@ -2073,24 +2097,21 @@ model KencoveApiAddress {
   @@unique([id, kencoveApiAppId])
   @@index([kencoveApiAppId])
   @@index([addressId])
-
-
 }
 
 /// Kencove custom customer model. Relation between internal customer
 /// object and kencove customer object
 model KencoveApiContact {
   id String
-  contact   Contact @relation(fields: [contactId], references: [id])
+  contact   Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
   contactId String
 
-  kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id])
+  kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id], onDelete: Cascade)
   kencoveApiAppId String
 
   @@unique([id, kencoveApiAppId])
   @@index([kencoveApiAppId])
   @@index([contactId])
-
 
 }
 
@@ -2107,7 +2128,9 @@ model ReviewsioApp {
   cronTimeout  Int    @default(800)
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId String @unique
+  tenantId String
+
+  @@index([tenantId])
 
 }
 

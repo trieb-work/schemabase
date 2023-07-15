@@ -734,6 +734,7 @@ Table ProductVariant {
   zohoItem ZohoItem [not null]
   xentralArtikel XentralArtikel [not null]
   saleorProductVariant SaleorProductVariant [not null]
+  kencoveApiProductVariant KencoveApiProductVariant [not null]
   stockOnHand Int
   isBundleProduct Boolean [not null, default: false]
   isProductBundle Boolean [not null, default: false, note: 'if this product is actually a "just-in-time" bundle, not a composite item.
@@ -1061,8 +1062,25 @@ Table KencoveApiApp {
   scope String [not null, note: 'The scopes we need to access the api. Just comma separated list']
   kencoveApiContacts KencoveApiContact [not null]
   kencoveApiAddresses KencoveApiAddress [not null]
+  kencoveApiProductVariants KencoveApiProductVariant [not null]
 
   Note: 'The custom app for the kencove api. Using OAuth for authentication'
+}
+
+Table KencoveApiProductVariant {
+  id String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  productVariant ProductVariant [not null]
+  productVariantId String [not null]
+  kencoveApiApp KencoveApiApp [not null]
+  kencoveApiAppId String [not null]
+
+  indexes {
+    (id, kencoveApiAppId) [unique]
+  }
+
+  Note: 'Kencove custom productVariant model'
 }
 
 Table KencoveApiAddress {
@@ -1104,7 +1122,7 @@ Table ReviewsioApp {
   cronSchedule String [not null, default: '0 8 * * *']
   cronTimeout Int [not null, default: 800]
   tenant Tenant [not null]
-  tenantId String [unique, not null]
+  tenantId String [not null]
 }
 
 Table ZohoApp {
@@ -2007,13 +2025,17 @@ Ref: LogisticsApp.tenantId > Tenant.id [delete: Cascade]
 
 Ref: KencoveApiApp.tenantId > Tenant.id [delete: Cascade]
 
+Ref: KencoveApiProductVariant.productVariantId > ProductVariant.id [delete: Cascade]
+
+Ref: KencoveApiProductVariant.kencoveApiAppId > KencoveApiApp.id [delete: Cascade]
+
 Ref: KencoveApiAddress.addressId > Address.id
 
 Ref: KencoveApiAddress.kencoveApiAppId > KencoveApiApp.id
 
-Ref: KencoveApiContact.contactId > Contact.id
+Ref: KencoveApiContact.contactId > Contact.id [delete: Cascade]
 
-Ref: KencoveApiContact.kencoveApiAppId > KencoveApiApp.id
+Ref: KencoveApiContact.kencoveApiAppId > KencoveApiApp.id [delete: Cascade]
 
 Ref: ReviewsioApp.tenantId > Tenant.id [delete: Cascade]
 
