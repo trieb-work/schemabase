@@ -60,7 +60,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npm install @semantic-release/git -D
+          pnpm i -g @semantic-release/git
           npx semantic-release     
 
   deploy-worker:
