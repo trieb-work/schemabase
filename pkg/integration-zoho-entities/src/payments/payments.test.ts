@@ -15,6 +15,7 @@ describe("Zoho Inventory payment Sync", () => {
   let zoho: Zoho;
   let zohoApp: ZohoApp;
   let zohoPaymentLogger: AssertionLogger;
+  // let zohoPaymentSyncService: ZohoPaymentSyncService;
 
   const mockedZohoClient = {
     payment: {
@@ -1147,7 +1148,8 @@ describe("Zoho Inventory payment Sync", () => {
       }),
     );
     zohoPaymentLogger = new AssertionLogger();
-    zohoPaymentSyncService = new ZohoPaymentSyncService({
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-new
+    new ZohoPaymentSyncService({
       zoho,
       logger: zohoPaymentLogger,
       db: new PrismaClient(),
