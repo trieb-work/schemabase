@@ -52,6 +52,20 @@
 - **External**: Zoho, Strapi, Saleor etc, we receive webhooks and make http calls to them.
 - **Postgres**: Our internal db in k8s
 
+# Current integrations
+schemabase has the following integrations already in place:
+- Xentral
+- Zoho Books
+- Zoho Inventory
+- Saleor
+- reviews.io
+- DHL
+- UPS
+- DPD
+- Track&Trace (custom Track&Trace solution supporting multilanguage notification emails on every package tracking update from the supported carriers)
+- Braintree (pulling transaction costs)
+- 
+
 # Setup
 
 Run install, codegen and database migration in one command:
@@ -69,13 +83,6 @@ Run install, codegen and database migration in one command:
    5.1 `make rebuild-api`
    5.2 `make test`
 
-# How do I get the zoho cookies?
-
-1. login in zoho info@trieb.work
-2. network tab
-3. network request an inventory.zoho.com raussuchen
-4. Cookie aus request kopieren `ZOHO_COOKIES="..."`
-5. X-ZCSRF-TOKEN aus request kopieren: `ZOHO_ZCSRF_TOKEN="zomcsparam=4fd4929a3....0bc4233"`
 
 # Glossary
 

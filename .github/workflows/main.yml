@@ -59,7 +59,9 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release     
+        run: |
+          npm i @semantic-release/git
+          npx semantic-release     
 
   deploy-worker:
     name: Deploy Worker
