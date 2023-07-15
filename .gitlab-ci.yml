@@ -111,7 +111,7 @@ review-vercel:
     - vercel --scope kencove pull --yes --environment=preview --token=$VERCEL_TOKEN
     - vercel build --token=$VERCEL_TOKEN
     - export URL="$(vercel deploy --prebuilt --token=$VERCEL_TOKEN --meta gitlabCommitRef=$CI_COMMIT_REF_SLUG --meta gitlabCommitSha=$CI_COMMIT_SHA --meta gitlabDeployment=1 --meta gitlabCommitAuthorName="$GITLAB_USER_NAME" --meta gitlabProjectPath=$CI_PROJECT_PATH)"
-    - vercel alias --token=$VERCEL_TOKEN set "$URL" $CI_PROJECT_ID-$CI_COMMIT_REF_SLUG.vc.review-kencove.com --scope $VERCEL_ORG_ID
+    - vercel alias --token=$VERCEL_TOKEN set "$URL" $CI_PROJECT_ID-$CI_COMMIT_REF_SLUG.vc.review-kencove.com --scope kencove
   rules:
     - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
       when: never
