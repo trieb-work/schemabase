@@ -103,6 +103,8 @@ review-vercel:
     # Export the DATABASE_URL variable from the review job
     - export $(grep -v '^#' $CI_PROJECT_DIR/variables.env | xargs)
     - pnpm install
+    # Setting the DATABASE_URL to the prisma connection string for vercel
+    - export DATABASE_URL=$PRISMA_CONNECTION_STRING
 
     # Deploy the API service to vercel
     - npm install --global vercel
