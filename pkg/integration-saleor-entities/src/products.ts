@@ -32,6 +32,7 @@ interface SaleorProductSyncServiceConfig {
     }) => Promise<ProductVariantStockEntryUpdateMutation>;
     saleorUpdateMetadata: (variables: {
       id: string;
+      keysToDelete: string[];
       input: {
         key: string;
         value: string;
@@ -62,6 +63,7 @@ export class SaleorProductSyncService {
     }) => Promise<ProductVariantStockEntryUpdateMutation>;
     saleorUpdateMetadata: (variables: {
       id: string;
+      keysToDelete: string[];
       input: {
         key: string;
         value: string;
