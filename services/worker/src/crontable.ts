@@ -27,6 +27,7 @@ import { DatevContactSyncWf } from "./workflows/datevContactSync";
 import { UPSTrackingSyncWf } from "./workflows/upsTrackingSync";
 import { SaleorCustomerSyncWf } from "./workflows/saleorCustomerSync";
 import { ReviewsioSyncWf } from "./workflows/reviewsioSync";
+import { KencoveApiProductSyncWf } from "./workflows/kencoveApiProductSync";
 
 interface CronClients {
   logger: ILogger;
@@ -90,12 +91,42 @@ export class CronTable {
       },
     });
 
+    const enabledKencoveApiApps =
+      await this.clients.prisma.kencoveApiApp.findMany({
+        where: {
+          enabled: true,
+        },
+      });
+
     const enabledReviewsioApps =
       await this.clients.prisma.reviewsioApp.findMany({
         where: {
           enabled: true,
         },
       });
+
+    /**
+     * Kencove Api App Workflows
+     */
+    for (const enabledKencoveApiApp of enabledKencoveApiApps) {
+      const { id, cronTimeout, cronSchedule, tenantId } = enabledKencoveApiApp;
+      const commonCronConfig = {
+        cron: cronSchedule,
+        timeout: cronTimeout,
+      };
+      const commonWorkflowConfig = {
+        kencoveApiApp: enabledKencoveApiApp,
+      };
+      new WorkflowScheduler(this.clients).schedule(
+        createWorkflowFactory(
+          KencoveApiProductSyncWf,
+          this.clients,
+          commonWorkflowConfig,
+        ),
+        { ...commonCronConfig, offset: 0 },
+        [tenantId.substring(0, 5), id.substring(0, 5)],
+      );
+    }
 
     /**
      * reviews.io App Workflows
