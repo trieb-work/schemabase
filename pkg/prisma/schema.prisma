@@ -11,7 +11,7 @@ generator dbml {
 
 generator client {
   provider = "prisma-client-js"
-  binaryTargets = ["rhel-openssl-1.0.x"]
+  binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
 /// ECI Internal models are prefixed with eci_ - these models store internal data like ECI users
