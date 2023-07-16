@@ -509,6 +509,7 @@ export class SaleorProductSyncService {
         !productRating?.averageRating ||
         productRating?.averageRating !== variant.productVariant.averageRating
       ) {
+        if (variant.productVariant.averageRating === null) continue;
         this.logger.info(
           `Updating average rating for ${variant.id} to ${variant.productVariant.averageRating}`,
         );
