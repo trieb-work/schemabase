@@ -403,7 +403,7 @@ export class SaleorProductSyncService {
     }
 
     this.logger.info(
-      `Setting stock level for ${saleorProductVariants.length} saleor product variants`,
+      `Working on ${saleorProductVariants.length} saleor product variants..`,
     );
 
     /**
