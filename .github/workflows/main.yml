@@ -64,7 +64,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           pnpm i @semantic-release/git semantic-release
-          pnpm semantic-release     
+          pnpm semantic-release 
+      # Extract the current package version from package.json and set it as an output variable
+      - name: Set tag
+        id: set_tag
+        run: |
+          echo ::set-output name=tag::$(node -p "require('./package.json').version")
+
+      - name: Push docker tag
+        run: |
+          docker tag ghcr.io/${{ env.IMAGE_NAME }}:latest ghcr.io/${{ env.IMAGE_NAME }}:${{ steps.set_tag.outputs.tag }}
+          docker push ghcr.io/${{ env.IMAGE_NAME }}:${{ steps.set_tag.outputs.tag }}   
 
   deploy-worker:
     name: Deploy Worker
