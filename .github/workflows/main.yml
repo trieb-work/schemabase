@@ -63,8 +63,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pnpm i -g @semantic-release/git
-          npx semantic-release     
+          pnpm i @semantic-release/git semantic-release
+          pnpm semantic-release     
 
   deploy-worker:
     name: Deploy Worker
