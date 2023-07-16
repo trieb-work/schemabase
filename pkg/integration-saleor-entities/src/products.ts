@@ -487,11 +487,24 @@ export class SaleorProductSyncService {
         this.logger.debug(`Updated stock entry ${variant.id}`);
       }
 
-      const productRating = JSON.parse(
-        saleorProductVariant.productVariant.metadata.find(
-          (m) => m.key === "customerRatings",
-        )?.value || "",
-      );
+      // parse the product rating from the metadata. Don't fail, when no metadata is present
+      let productRating: {
+        averageRating: number;
+        ratingCount: number;
+      } | null = null;
+      try {
+        const metadata = saleorProductVariant.productVariant.metadata.find(
+          (x) => x.key === "customerRatings",
+        );
+        if (metadata) {
+          productRating = JSON.parse(metadata.value);
+        }
+      } catch (error) {
+        this.logger.info(
+          `No metadata customerRatings found for ${variant.id}: ${error}`,
+        );
+      }
+
       if (
         !productRating?.averageRating ||
         productRating?.averageRating !== variant.productVariant.averageRating
