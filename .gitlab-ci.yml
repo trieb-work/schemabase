@@ -40,13 +40,16 @@ review:
 
     - helm repo add azure-marketplace https://marketplace.azurecr.io/helm/v1/repo
     # Add a redis deployment with nodeport service, limit CPU and memory, set a password, set standard persistent storage 3 GB. Name: redis-schemabase-staging
-    - helm upgrade --install --create-namespace -n $KUBE_NAMESPACE redis-schemabase-staging azure-marketplace/redis --set architecture="standalone" --set auth.password="$REDIS_PASSWORD" --set resources.requests.cpu=100m --set resources.requests.memory=128Mi --set resources.limits.cpu=200m --set resources.limits.memory=256Mi --set persistence.size=3Gi --set service.type=NodePort
+    - helm upgrade --install --create-namespace -n $KUBE_NAMESPACE redis-schemabase-staging azure-marketplace/redis --set architecture="standalone" --set auth.password="$REDIS_PASSWORD" --set resources.requests.cpu=100m --set resources.requests.memory=250Mi --set resources.limits.cpu=200m --set resources.limits.memory=256Mi --set persistence.size=3Gi --set service.type=NodePort
  
+    # Get the current version from package.json to use it as docker version tag later. We don't have node available
+    # in the image, so we use jq to parse the json file.
+    - export SCHEMA_VERSION=$(jq -r '.version' package.json)
     - >
           helm upgrade worker-schemabase-staging ./services/worker/helm-chart
           --install
           --namespace=$KUBE_NAMESPACE
-          --set=image.imageName="ghcr.io/trieb-work/schemabase/worker:main"
+          --set=image.imageName="ghcr.io/trieb-work/schemabase/worker:SCHEMA_VERSION"
           --set=eciEnv="staging"
           --set=databaseUrl="$DATABASE_URL"
           --set=signingKey="$SECRET_KEY_WORKER"
