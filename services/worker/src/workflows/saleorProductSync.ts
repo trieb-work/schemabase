@@ -33,14 +33,14 @@ export class SaleorProductSyncWf implements Workflow {
   }
 
   /**
-   * Sync all zoho invoices into ECI-DB
+   * Sync all saleor products with the schemabase database
    */
   public async run(): Promise<void> {
     this.logger.info("Starting saleor product sync workflow run");
     const { client: saleorClient, installedSaleorApp } =
       await getSaleorClientAndEntry(this.installedSaleorAppId, this.prisma);
 
-    const zohoContactSyncService = new SaleorProductSyncService({
+    const saleorProductSyncService = new SaleorProductSyncService({
       logger: this.logger,
       saleorClient,
       db: this.prisma,
@@ -48,8 +48,8 @@ export class SaleorProductSyncWf implements Workflow {
       installedSaleorAppId: this.installedSaleorAppId,
       channelSlug: installedSaleorApp.channelSlug || "",
     });
-    await zohoContactSyncService.syncToECI();
-    await zohoContactSyncService.syncFromECI();
+    await saleorProductSyncService.syncToECI();
+    await saleorProductSyncService.syncFromECI();
     this.logger.info("Finished saleor product sync workflow run");
   }
 }

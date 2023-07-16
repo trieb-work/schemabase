@@ -31,7 +31,7 @@ export class ReviewsioProductRatingSyncService {
     });
 
     this.logger.info(
-      `Found ${allProductVariants.length} product variants to pull data from reviews.io`,
+      `Found ${allProductVariants.length} product variants to pull data from reviews.io now..`,
     );
 
     // use one API call to get all product ratings for all SKU's. Use rating-batch API endpoint.
@@ -91,6 +91,9 @@ export class ReviewsioProductRatingSyncService {
       `Received following data from reviews.io: ${JSON.stringify(data)}`,
     );
 
+    this.logger.info(`Received ${data.length} product ratings from reviews.io`);
+
+    const updateStats = { updated: 0, skipped: 0 };
     for (const rating of data) {
       const productVariant = allProductVariants.find(
         (pv) => pv.sku === rating.sku,
@@ -117,7 +120,15 @@ export class ReviewsioProductRatingSyncService {
             ratingCount: rating.num_ratings,
           },
         });
+        updateStats.updated += 1;
+      } else {
+        updateStats.skipped += 1;
       }
     }
+
+    this.logger.info(
+      // eslint-disable-next-line max-len
+      `Updated ${updateStats.updated} product variants. Skipped ${updateStats.skipped} product variants.`,
+    );
   }
 }
