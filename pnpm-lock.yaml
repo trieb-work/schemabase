@@ -81,8 +81,8 @@ dependencies:
     specifier: ^6.0.3
     version: 6.0.3
   bullmq:
-    specifier: ^1.91.1
-    version: 1.91.1
+    specifier: ^2.1.0
+    version: 2.1.0
   connect-ensure-login:
     specifier: ^0.1.1
     version: 0.1.1
@@ -3837,7 +3837,7 @@ packages:
       nopt: 5.0.0
       npmlog: 5.0.1
       rimraf: 3.0.2
-      semver: 7.5.2
+      semver: 7.5.4
       tar: 6.1.15
     transitivePeerDependencies:
       - encoding
@@ -5583,7 +5583,7 @@ packages:
       read-pkg: 8.0.0
       registry-auth-token: 5.0.2
       semantic-release: 21.0.5
-      semver: 7.5.2
+      semver: 7.5.4
       tempy: 3.0.0
     dev: true
 
@@ -6707,7 +6707,7 @@ packages:
       recast: 0.21.5
       remark-frontmatter: 4.0.1
       remark-mdx-frontmatter: 1.1.1
-      semver: 7.5.2
+      semver: 7.5.4
       sort-package-json: 1.57.0
       tar-fs: 2.1.1
       tsconfig-paths: 4.2.0
@@ -7816,8 +7816,8 @@ packages:
       ieee754: 1.2.1
     dev: false
 
-  /bullmq@1.91.1:
-    resolution: {integrity: sha512-u7dat9I8ZwouZ651AMZkBSvB6NVUPpnAjd4iokd9DM41whqIBnDjuL11h7+kEjcpiDKj6E+wxZiER00FqirZQg==}
+  /bullmq@2.1.0:
+    resolution: {integrity: sha512-/nB0FogLv/LFEtS7sHIsL8tMZj8bDTsegE4UnaBvFprJ8nmCt9EyN8Luce3ULWw3MGlX6e6NDdQSy+c35eFXRQ==}
     dependencies:
       cron-parser: 4.8.1
       get-port: 6.1.2
@@ -7825,7 +7825,7 @@ packages:
       ioredis: 5.3.2
       lodash: 4.17.21
       msgpackr: 1.9.5
-      semver: 7.5.2
+      semver: 7.5.4
       tslib: 2.5.3
       uuid: 9.0.0
     transitivePeerDependencies:
@@ -12518,7 +12518,7 @@ packages:
       jest-util: 29.5.0
       natural-compare: 1.4.0
       pretty-format: 29.5.0
-      semver: 7.5.2
+      semver: 7.5.4
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -14175,7 +14175,7 @@ packages:
     dependencies:
       hosted-git-info: 4.1.0
       is-core-module: 2.12.1
-      semver: 7.5.2
+      semver: 7.5.4
       validate-npm-package-license: 3.0.4
     dev: true
 
@@ -14185,7 +14185,7 @@ packages:
     dependencies:
       hosted-git-info: 6.1.1
       is-core-module: 2.12.1
-      semver: 7.5.2
+      semver: 7.5.4
       validate-npm-package-license: 3.0.4
     dev: true
 
@@ -16037,7 +16037,7 @@ packages:
     resolution: {integrity: sha512-0Ju4+6A8iOnpL/Thra7dZsSlOHYAHIeMxfhWQRI1/VLcT3WDBZKKtQt/QkBOsiIN9ZpuvHE6cGZ0x4glCMmfiA==}
     engines: {node: '>=12'}
     dependencies:
-      semver: 7.5.2
+      semver: 7.5.4
     dev: true
 
   /semver-regex@4.0.5:
@@ -16080,6 +16080,7 @@ packages:
     hasBin: true
     dependencies:
       lru-cache: 6.0.0
+    dev: true
 
   /semver@7.5.4:
     resolution: {integrity: sha512-1bCSESV6Pv+i21Hvpxp3Dx+pSD8lIPt8uVjRrxAUt/nbswYc+tK6Y2btiULjd4+fnq15PX+nqQDC7Oft7WkwcA==}
@@ -16087,7 +16088,6 @@ packages:
     hasBin: true
     dependencies:
       lru-cache: 6.0.0
-    dev: true
 
   /send@0.17.2:
     resolution: {integrity: sha512-UJYB6wFSJE3G00nEivR5rgWp8c2xXvJ3OPWPhmuteU0IKj8nKbG3DrjiOmLwpnHGYWAVwA69zmTm++YG0Hmwww==}

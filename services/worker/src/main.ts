@@ -62,39 +62,6 @@ async function main() {
   await crontable.scheduleTenantWorkflows();
 
   /**
-   *  Strapi
-   */
-  // const strapiEntryCreateConsumer = await KafkaSubscriber.new<
-  //   bulkorder.EntryEvent & { zohoAppId: string }
-  // >({
-  //   topic: Topic.STRAPI_ENTRY_CREATE, // bei bullmq der message name
-  //   signer,
-  //   logger,
-  //   groupId: "strapiEntryCreateConsumer", // bei bullmq nicht benötigt
-  // });
-
-  // strapiEntryCreateConsumer.subscribe(
-  //   // hier wird der message handler registriert
-  //   new StrapiEntryCreate({
-  //     prisma,
-  //     logger,
-  //     onSuccess: publishSuccess(producer, Topic.BULKORDER_SYNCED),
-  //   }),
-  // );
-
-  // const strapiEntryUpdateConsumer = await KafkaSubscriber.new<
-  //   bulkorder.EntryEvent & { zohoAppId: string }
-  // >({
-  //   topic: Topic.STRAPI_ENTRY_UPDATE,
-  //   signer,
-  //   logger,
-  //   groupId: "strapiEntryUpdateConsumer",
-  // });
-  // strapiEntryUpdateConsumer.subscribe(
-  //   new StrapiEntryUpdate({ prisma, logger }),
-  // );
-
-  /**
    * Store package updates
    */
   const packageEventHandler = new PackageEventHandler({

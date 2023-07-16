@@ -1,4 +1,4 @@
-import { Job, Queue, Worker, QueueScheduler, RepeatOptions } from "bullmq";
+import { Job, Queue, Worker, RepeatOptions } from "bullmq";
 import { env } from "@eci/pkg/env";
 import { ILogger } from "@eci/pkg/logger";
 import { WorkflowFactory } from "./workflow";
@@ -26,7 +26,7 @@ export class WorkflowScheduler {
   public readonly queues: Queue[] = [];
   public readonly jobs: Job[] = [];
   public readonly workers: Worker[] = [];
-  public readonly queueSchedulers: QueueScheduler[] = [];
+  // public readonly queueSchedulers: QueueScheduler[] = [];
 
   private readonly redisConnection: RedisConnection;
 
@@ -165,17 +165,17 @@ export class WorkflowScheduler {
     /**
      * Do the retry and scheduling magic
      */
-    this.queueSchedulers.push(
-      new QueueScheduler(queueName, {
-        connection: this.redisConnection,
-      }),
-    );
+    // this.queueSchedulers.push(
+    //   new QueueScheduler(queueName, {
+    //     connection: this.redisConnection,
+    //   }),
+    // );
   }
 
   public async shutdownScheduler() {
     await this.removeAllJobs();
     await this.shutdownAllWorkers();
-    await this.shutdownAllQueueSchedulers();
+    // await this.shutdownAllQueueSchedulers();
     await this.shutdownAllQueues();
   }
 
@@ -188,18 +188,18 @@ export class WorkflowScheduler {
     }
   }
 
-  public async shutdownAllQueueSchedulers() {
-    for (const queueScheduler of this.queueSchedulers) {
-      this.logger.info("Shutting down queuescheduler", {
-        queueSchedulerName: queueScheduler.name,
-      });
-      await queueScheduler.close();
-      await queueScheduler.disconnect();
-      this.logger.info("queuescheduler is offline", {
-        queueSchedulerName: queueScheduler.name,
-      });
-    }
-  }
+  // public async shutdownAllQueueSchedulers() {
+  //   for (const queueScheduler of this.queueSchedulers) {
+  //     this.logger.info("Shutting down queuescheduler", {
+  //       queueSchedulerName: queueScheduler.name,
+  //     });
+  //     await queueScheduler.close();
+  //     await queueScheduler.disconnect();
+  //     this.logger.info("queuescheduler is offline", {
+  //       queueSchedulerName: queueScheduler.name,
+  //     });
+  //   }
+  // }
 
   public async shutdownAllQueues() {
     for (const queue of this.queues) {
