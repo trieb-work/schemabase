@@ -116,11 +116,17 @@ export class WorkflowScheduler {
       new Worker(
         queueName,
         async (job: Job) => {
-          const logger = this.logger.with({
-            jobId: job.id,
-            queueName,
-            workflow: workflow.name,
-          });
+          const logger = this.logger
+            .with({
+              jobId: job.id,
+              queueName,
+              workflow: workflow.name,
+            })
+            .withLogDrain({
+              log: (message: string) => {
+                job.log(message);
+              },
+            });
 
           const runtimeContext = {
             logger,

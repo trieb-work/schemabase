@@ -19,6 +19,12 @@ export type LoggerConfig = {
 };
 
 export interface ILogger {
+  /**
+   * Generic log drain. Copy over all log messages to
+   * a custom function. This is useful to send the logs to a different
+   * target like the Bull Task Queue
+   * @param logDrain
+   */
   withLogDrain(logDrain: LogDrain): ILogger;
   with(additionalMeta: Fields): ILogger;
   debug(message: string, fields?: Fields): void;
