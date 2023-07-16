@@ -49,7 +49,7 @@ review:
           helm upgrade worker-schemabase-staging ./services/worker/helm-chart
           --install
           --namespace=$KUBE_NAMESPACE
-          --set=image.imageName="ghcr.io/trieb-work/schemabase/worker:SCHEMA_VERSION"
+          --set=image.imageName="ghcr.io/trieb-work/schemabase/worker:$SCHEMA_VERSION"
           --set=eciEnv="staging"
           --set=databaseUrl="$DATABASE_URL"
           --set=signingKey="$SECRET_KEY_WORKER"
@@ -68,7 +68,7 @@ review:
           helm upgrade queue-dashboard-schemabase ./services/bullboard/helm-chart
           --install
           --namespace=$KUBE_NAMESPACE
-          --set=image.imageName="ghcr.io/trieb-work/schemabase/bullboard:main"
+          --set=image.imageName="ghcr.io/trieb-work/schemabase/bullboard:$SCHEMA_VERSION"
           --set=redis.host="redis-schemabase-staging-master"
           --set=redis.password="$REDIS_PASSWORD"
           --set=ingress.host=$AUTO_DEVOPS_COMMON_NAME
