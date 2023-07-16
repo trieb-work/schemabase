@@ -79,6 +79,7 @@ jobs:
       # use the image sha from docker-build-push step as the image name. Tag it with the current version from  set_tag. Push it afterwards
       - name: Tag and push image
         run: |
+          docker pull ghcr.io/${{ env.IMAGE_NAME }}@${{ steps.docker-build-push.outputs.digest }}
           docker tag ghcr.io/${{ env.IMAGE_NAME }}@${{ steps.docker-build-push.outputs.digest }} ghcr.io/${{ env.IMAGE_NAME }}:${{ steps.set_tag.outputs.tag }}
           docker push ghcr.io/${{ env.IMAGE_NAME }}:${{ steps.set_tag.outputs.tag }}   
 
