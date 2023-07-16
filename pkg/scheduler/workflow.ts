@@ -28,12 +28,12 @@ export function createWorkflowFactory<
     new (...args: any): Workflow;
   },
 >(
-  workflowClass: TWorkflow,
+  WorkflowClass: TWorkflow,
   clients: ConstructorParameters<TWorkflow>[1],
   config?: ConstructorParameters<TWorkflow>[2],
 ): WorkflowFactory {
   return {
-    name: workflowClass.name,
-    build: (ctx: RuntimeContext) => new workflowClass(ctx, clients, config),
+    name: WorkflowClass.name,
+    build: (ctx: RuntimeContext) => new WorkflowClass(ctx, clients, config),
   };
 }

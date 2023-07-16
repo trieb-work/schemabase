@@ -77,7 +77,7 @@ export class WorkflowScheduler {
       repeat.immediately = true;
       repeat.every = 1 * 60 * 60 * 1000; // 1h --> turn off repeat, only start once at boot
     } else {
-      repeat.cron = config.cron;
+      repeat.pattern = config.cron;
       repeat.tz = "Europe/Berlin";
       repeat.offset = (config?.offset ?? 0) + new Date().getTimezoneOffset();
     }
@@ -101,6 +101,9 @@ export class WorkflowScheduler {
           delay: 60_000, // 1min, 2min, 4min...
         },
         removeOnComplete: {
+          count: env.get("ECI_ENV") === "production" ? 20 : 10,
+        },
+        removeOnFail: {
           count: env.get("ECI_ENV") === "production" ? 20 : 10,
         },
       }),
