@@ -70,6 +70,7 @@ review:
           --set=redis.password="$REDIS_PASSWORD"
           --set=ingress.host=$AUTO_DEVOPS_COMMON_NAME
           --set=google.clientId="$GC_CLIENT_ID"
+          --set=allowedLoginDomains="kencove.com"
           --set=google.clientSecret="$GC_CLIENT_SECRET"
 
     - auto-deploy persist_environment_url

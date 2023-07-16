@@ -7,6 +7,10 @@ ingress:
   host:
   tls:
     secretName:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod  
 redis:
   password:
   host: ""
@@ -18,4 +22,5 @@ google:
   clientId:
   clientSecret:
 
+allowedLoginDomains: ["trieb.work"]
 imagePullSecret: github
