@@ -96,7 +96,7 @@ export class WorkflowScheduler {
         jobId: queueName,
         repeat,
         attempts: config?.attempts ?? 1,
-        // keepLogs: "500",
+        keepLogs: 1000,
         backoff: {
           type: "exponential",
           delay: 60_000, // 1min, 2min, 4min...
