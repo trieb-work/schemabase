@@ -279,4 +279,4 @@ jobs:
           --set=ingress.tls.secretName="eci-trwrk-wildcard"
           --set=google.clientId="${{ secrets.GOOGLE_OAUTH_ID }}"
           --set=google.clientSecret="${{ secrets.GOOGLE_OAUTH_SECRET }}"
-          --set=ingress.annotations."cert-manager.io/cluster-issuer"="letsencrypt-prod"
+          --set=ingress.annotations."cert-manager\.io/cluster-issuer"="letsencrypt-prod"

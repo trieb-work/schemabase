@@ -4,13 +4,13 @@ image:
 
 ingress:
   enabled: true
+  ingressClass: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
   host:
   tls:
     secretName:
-  annotations:
-    kubernetes.io/ingress.class: nginx
-    kubernetes.io/tls-acme: "true"
-    cert-manager.io/cluster-issuer: letsencrypt-prod  
+
 redis:
   password:
   host: ""
