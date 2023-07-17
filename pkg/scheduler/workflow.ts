@@ -1,4 +1,5 @@
 import { ILogger } from "@eci/pkg/logger";
+import { Job } from "bullmq";
 
 export interface Workflow {
   run: () => Promise<void>;
@@ -6,6 +7,7 @@ export interface Workflow {
 
 export type RuntimeContext = {
   logger: ILogger;
+  job: Job;
 };
 
 export type WorkflowFactory = {

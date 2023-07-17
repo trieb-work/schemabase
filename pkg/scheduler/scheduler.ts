@@ -131,6 +131,7 @@ export class WorkflowScheduler {
 
           const runtimeContext = {
             logger,
+            job,
           };
           const wf = workflow.build(runtimeContext);
           const before = Date.now();

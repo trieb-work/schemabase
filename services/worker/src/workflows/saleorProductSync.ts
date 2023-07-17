@@ -18,6 +18,8 @@ export class SaleorProductSyncWf implements Workflow {
 
   private installedSaleorAppId: string;
 
+  private ctx: RuntimeContext;
+
   public constructor(
     ctx: RuntimeContext,
     clients: SaleorProductSyncWorkflowClients,
@@ -29,6 +31,7 @@ export class SaleorProductSyncWf implements Workflow {
       installedSaleorAppId: this.installedSaleorAppId,
     });
     this.prisma = clients.prisma;
+    this.ctx = ctx;
     this.installedSaleorAppId = config.installedSaleorAppId;
   }
 
@@ -49,6 +52,7 @@ export class SaleorProductSyncWf implements Workflow {
       channelSlug: installedSaleorApp.channelSlug || "",
     });
     await saleorProductSyncService.syncToECI();
+    this.ctx.job.updateProgress(50);
     await saleorProductSyncService.syncFromECI();
     this.logger.info("Finished saleor product sync workflow run");
   }
