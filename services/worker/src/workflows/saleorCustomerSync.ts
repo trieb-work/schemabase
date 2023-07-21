@@ -33,7 +33,7 @@ export class SaleorCustomerSyncWf implements Workflow {
   }
 
   /**
-   * Sync all zoho invoices into ECI-DB
+   * Sync all saleor customers
    */
   public async run(): Promise<void> {
     this.logger.info("Starting saleor customer sync workflow run");
