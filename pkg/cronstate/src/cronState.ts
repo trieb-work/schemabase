@@ -17,6 +17,7 @@ type SyncEntity =
   | "packageState"
   | "bankaccounts"
   | "datev"
+  | "attributes"
   | "addresses";
 
 type CronJobReturn = CronJobState & {

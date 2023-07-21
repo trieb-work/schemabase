@@ -88,4 +88,5 @@ describe("KencoveApiClient", () => {
     });
     await client.syncToEci();
   }, 400000);
+
 });

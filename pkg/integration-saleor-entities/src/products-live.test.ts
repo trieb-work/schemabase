@@ -17,7 +17,8 @@ describe("Zoho Entity Sync Orders Test", () => {
   test("It should work to sync products", async () => {
     const tenant = await prismaClient.tenant.findUnique({
       where: {
-        id: "pk_7f165pf-prod",
+        // id: "pk_7f165pf-prod",
+        id: "tn_kencove235",
         // id: "test",
       },
     });
@@ -25,7 +26,8 @@ describe("Zoho Entity Sync Orders Test", () => {
       throw new Error("Testing Tenant or zoho app/integration not found in DB");
 
     const { client: saleorClient, installedSaleorApp } =
-      await getSaleorClientAndEntry("QXBwOjE2", prismaClient);
+      // await getSaleorClientAndEntry("QXBwOjE2", prismaClient);
+      await getSaleorClientAndEntry("QXBwOjk=", prismaClient);
 
     const service = new SaleorProductSyncService({
       saleorClient,
