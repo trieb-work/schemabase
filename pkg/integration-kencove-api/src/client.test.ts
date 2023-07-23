@@ -48,6 +48,19 @@ describe("KencoveApiClient", () => {
         lastRun: subDays(new Date(), 2),
       },
     });
+    const cronIdAttributes = `${app.tenantId}_${app.id}_attributes`;
+    await prisma.cronJobState.upsert({
+      where: {
+        id: cronIdAttributes,
+      },
+      update: {
+        lastRun: subDays(new Date(), 2),
+      },
+      create: {
+        id: cronIdAttributes,
+        lastRun: subDays(new Date(), 2),
+      },
+    });
   });
 
   it("should be able to get an access token", async () => {
@@ -70,6 +83,14 @@ describe("KencoveApiClient", () => {
     const products = await client.getProducts(subDays(new Date(), 2));
     console.debug(products.length);
     expect(products.length).toBeGreaterThan(0);
+  });
+
+  it("should be able to get a list of attributes", async () => {
+    const client = new KencoveApiClient(app);
+    // test the getAttributes method with a date from two days in the past
+    const attributes = await client.getAttributes(subDays(new Date(), 100));
+    console.debug(attributes.length);
+    expect(attributes.length).toBeGreaterThan(0);
   });
 
   it("should work to run the address syncToEci function", async () => {
