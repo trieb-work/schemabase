@@ -1409,6 +1409,7 @@ enum AttributeType {
   NUMERIC
   RICH_TEXT
   PLAIN_TEXT
+  /// Swatch is a special type of dropdown, where the values are represented as colors
   SWATCH
   BOOLEAN
   DATE
@@ -1423,6 +1424,9 @@ model Attribute {
   updatedAt DateTime @updatedAt
 
   name String
+
+  /// normalized attribute name for internal mapping
+  normalizedName  String
   type AttributeType
 
   /// Is the attribute mandatory to be set, or can it be left blank
@@ -1439,6 +1443,8 @@ model Attribute {
   kencoveApiAttributes KencoveApiAttribute[]
 
   @@index([tenantId])
+  @@unique([normalizedName, tenantId])
+  @@index([normalizedName])
 
 
 }

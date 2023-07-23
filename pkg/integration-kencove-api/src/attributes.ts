@@ -1,12 +1,12 @@
 // the kencoveApiAppattributesync class that is used to sync attributes.
 // from kencove to our internal database. It works similar than the product sync
-import { KencoveApiApp, PrismaClient } from "@eci/pkg/prisma";
+import { AttributeType, KencoveApiApp, PrismaClient } from "@eci/pkg/prisma";
 import { ILogger } from "@eci/pkg/logger";
 import { KencoveApiClient } from "./client";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { isSameHour, subHours, subYears } from "date-fns";
-import { uniqueStringAddress } from "@eci/pkg/miscHelper/uniqueStringAddress";
 import { id } from "@eci/pkg/ids";
+import { normalizeStrings } from "@eci/pkg/normalization";
 
 interface KencoveApiAppAttributeSyncServiceConfig {
   logger: ILogger;
@@ -33,6 +33,48 @@ export class KencoveApiAppAttributeSyncService {
       db: this.db,
       syncEntity: "attributes",
     });
+  }
+
+  // takes a string and tries to map it to our internal attribute type.
+  // Switch case that return all possible enums from
+  // DROPDOWN
+  // MULTISELECT
+  // FILE
+  // REFERENCE
+  // NUMERIC
+  // RICH_TEXT
+  // PLAIN_TEXT
+  // SWATCH
+  // BOOLEAN
+  // DATE
+  // DATE_TIME
+  private kenAttributeToEciAttribute(kenAttribute: string): AttributeType {
+    switch (kenAttribute) {
+      case "select":
+        return AttributeType.DROPDOWN;
+      case "radio":
+        return AttributeType.MULTISELECT;
+      case "FILE":
+        return AttributeType.FILE;
+      case "REFERENCE":
+        return AttributeType.REFERENCE;
+      case "NUMERIC":
+        return AttributeType.NUMERIC;
+      case "RICH_TEXT":
+        return AttributeType.RICH_TEXT;
+      case "PLAIN_TEXT":
+        return AttributeType.PLAIN_TEXT;
+      case "color":
+        return AttributeType.SWATCH;
+      case "BOOLEAN":
+        return AttributeType.BOOLEAN;
+      case "DATE":
+        return AttributeType.DATE;
+      case "DATE_TIME":
+        return AttributeType.DATE_TIME;
+      default:
+        throw new Error(`Unknown attribute type: ${kenAttribute}`);
+    }
   }
 
   public async syncToEci() {
@@ -74,11 +116,83 @@ export class KencoveApiAppAttributeSyncService {
         },
       });
 
-    for (const kenAttribute of existingkencoveApiAppAttributes) {
+    for (const kenAttribute of kencoveApiAppattributes) {
       const existingkencoveApiAppAttribute =
         existingkencoveApiAppAttributes.find(
-          (attribute) => attribute.id === kenAttribute.id,
+          (attribute) => attribute.id === kenAttribute.attribute_id,
         );
+      // if the updatedAt timestamp in our db is the same as the one from kencove,
+      // we skip this attribute
+      if (
+        existingkencoveApiAppAttribute &&
+        isSameHour(
+          existingkencoveApiAppAttribute.updatedAt,
+          new Date(kenAttribute.updatedAt),
+        )
+      ) {
+        continue;
+      }
+      const createdAt = new Date(kenAttribute.createdAt);
+      const updatedAt = new Date(kenAttribute.updatedAt);
+      const type = this.kenAttributeToEciAttribute(kenAttribute.display_type);
+      const normalizedName = normalizeStrings.attributeNames(
+        kenAttribute.attribute_name,
+      );
+      await this.db.kencoveApiAttribute.upsert({
+        where: {
+          id_kencoveApiAppId: {
+            id: kenAttribute.attribute_id,
+            kencoveApiAppId: this.kencoveApiApp.id,
+          },
+        },
+        create: {
+          id: kenAttribute.attribute_id,
+          createdAt,
+          updatedAt,
+          kencoveApiApp: {
+            connect: {
+              id: this.kencoveApiApp.id,
+            },
+          },
+          attribute: {
+            connectOrCreate: {
+              where: {
+                normalizedName_tenantId: {
+                  normalizedName: normalizedName,
+                  tenantId: this.kencoveApiApp.tenantId,
+                },
+              },
+              create: {
+                id: id.id("attribute"),
+                tenant: {
+                  connect: {
+                    id: this.kencoveApiApp.tenantId,
+                  },
+                },
+                name: kenAttribute.attribute_name,
+                normalizedName,
+                type: type,
+                slug: kenAttribute.slug,
+              },
+            },
+          },
+        },
+        update: {
+          attribute: {
+            update: {
+              normalizedName,
+              name: kenAttribute.attribute_name,
+              type: type,
+              slug: kenAttribute.slug,
+            },
+          },
+        },
+      });
+
+      await this.cronState.set({
+        lastRun: new Date(),
+        lastRunStatus: "success",
+      });
     }
   }
 }

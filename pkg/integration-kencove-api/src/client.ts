@@ -17,7 +17,8 @@ type KencoveApiAttribute = {
   display_type: string;
   slug: string;
   attribute_type: string;
-  write_date: string;
+  updatedAt: string;
+  createdAt: string;
   values:
     | {
         attribute_value: string;
@@ -246,7 +247,7 @@ export class KencoveApiClient {
     next_page: string;
   }> {
     const response = await this.axiosInstance.get(
-      `/ecom/attributes?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
+      `/ecom/attributes/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,

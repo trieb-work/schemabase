@@ -9,6 +9,7 @@ import { subDays } from "date-fns";
 import { NoopLogger } from "@eci/pkg/logger";
 import { KencoveApiAppAddressSyncService } from "./addresses";
 import { KencoveApiAppProductSyncService } from "./products";
+import { KencoveApiAppAttributeSyncService } from "./attributes";
 
 const prisma = new PrismaClient();
 
@@ -89,4 +90,12 @@ describe("KencoveApiClient", () => {
     await client.syncToEci();
   }, 400000);
 
+  it("should work to run the attribute syncToEci function", async () => {
+    const client = new KencoveApiAppAttributeSyncService({
+      logger: new NoopLogger(),
+      db: prisma,
+      kencoveApiApp: app,
+    });
+    await client.syncToEci();
+  }, 400000);
 });
