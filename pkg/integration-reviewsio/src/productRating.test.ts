@@ -74,7 +74,7 @@ describe("Reviewsio Entity Sync Product Ratings Test", () => {
       db: prismaClient,
       reviewsioApp: reviewsIoApp,
     });
-    await xx.syncToEci();
+    await xx.syncToECI();
 
     const validatingProductVariant =
       await prismaClient.productVariant.findUnique({
