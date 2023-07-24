@@ -85,7 +85,7 @@ query saleorEntitySyncProducts($first: Int!, $channel: String, $after: String, $
     first: $first
     after: $after
     channel: $channel
-    filter: {updatedAt: {gte: $updatedAtGte}}
+    filter: { updatedAt: {gte: $updatedAtGte}}
   ) {
     pageInfo {
       hasNextPage

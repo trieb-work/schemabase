@@ -21,7 +21,7 @@ interface SaleorProductSyncServiceConfig {
       first: number;
       channel?: string;
       after: string;
-      updatedAt?: string;
+      updatedAtGte?: string;
     }) => Promise<SaleorEntitySyncProductsQuery>;
     saleorProductVariantBasicData: (variables: {
       id: string;
@@ -52,7 +52,7 @@ export class SaleorProductSyncService {
       first: number;
       channel?: string;
       after: string;
-      updatedAt?: string;
+      updatedAtGte?: string;
     }) => Promise<SaleorEntitySyncProductsQuery>;
     saleorProductVariantBasicData: (variables: {
       id: string;
@@ -99,14 +99,26 @@ export class SaleorProductSyncService {
   }
 
   public async syncToECI(): Promise<void> {
-    /**
-     * TODO: use the crontState to pull just products that have changed since last run
-     */
+    const cronState = await this.cronState.get();
+    const now = new Date();
+    let createdGte: Date;
+    if (!cronState.lastRun) {
+      createdGte = subYears(now, 1);
+      this.logger.info(
+        // eslint-disable-next-line max-len
+        `This seems to be our first sync run. Syncing data from: ${createdGte}`,
+      );
+    } else {
+      // for security purposes, we sync one hour more than the last run
+      createdGte = subHours(cronState.lastRun, 1);
+      this.logger.info(`Setting GTE date to ${createdGte}.`);
+    }
     const response = await queryWithPagination(({ first, after }) =>
       this.saleorClient.saleorEntitySyncProducts({
         first,
         after,
         channel: this.channelSlug,
+        updatedAtGte: createdGte.toISOString(),
       }),
     );
 
@@ -410,17 +422,8 @@ export class SaleorProductSyncService {
     }
 
     this.logger.info(
-      `Working on ${saleorProductVariants.length} saleor product variants..`,
+      `Working on ${saleorProductVariants.length} saleor product variants, where we have stock or review changes since the last run.`,
     );
-
-    /**
-     * schemabase internal product id
-     */
-    const productId = saleorProductVariants[0].productVariant.productId;
-    /**
-     * saleor internal product id
-     */
-    const saleorProductId = saleorProductVariants[0].productId;
 
     /**
      * All warehouses with saleor id and internal ECI id
@@ -436,10 +439,14 @@ export class SaleorProductSyncService {
     });
 
     /**
-     * identifying if any product variant review has changed. We only calculate the
-     * average product rating then.
+     * A set of products, whose reviews have changed. We need this to update the average rating of the product.
+     * Stores the internal ECI product id and the saleor product id.
      */
-    let reviewsHaveChanged = false;
+    const productsWithReviewsChanged = new Set<{
+      eciProductId: string;
+      saleorProductId: string;
+    }>();
+
     for (const variant of saleorProductVariants) {
       // Get the current commited stock and the metadata of this product variant from saleor.
       // We need fresh data here, as the commited stock can change all the time.
@@ -533,9 +540,15 @@ export class SaleorProductSyncService {
       ) {
         if (variant.productVariant.averageRating === null) continue;
         this.logger.info(
-          `Updating average rating for ${variant.id} to ${variant.productVariant.averageRating}`,
+          `Updating average rating for ${variant.id} / ${variant.productVariant.sku} to ${variant.productVariant.averageRating}`,
         );
-        reviewsHaveChanged = true;
+
+        // adding the product to the set of products with changed reviews
+        productsWithReviewsChanged.add({
+          eciProductId: variant.productVariant.productId,
+          saleorProductId: variant.productId,
+        });
+
         const metadataNew: {
           __typename?: "MetadataItem" | undefined;
           key: string;
@@ -559,10 +572,15 @@ export class SaleorProductSyncService {
 
     // calculate the average product rating and the sum of ratings using the customer rating from all related
     // and active product variants of the current product. Just do it, if one of the reviews has changed.
-    if (reviewsHaveChanged) {
+    for (const productSet of productsWithReviewsChanged) {
+      this.logger.info(
+        `Updating average aggregated product rating for ${JSON.stringify(
+          productSet,
+        )}.`,
+      );
       const productRatings = await this.db.productVariant.aggregate({
         where: {
-          productId,
+          productId: productSet.eciProductId,
           active: true,
         },
         _count: {
@@ -582,8 +600,11 @@ export class SaleorProductSyncService {
           }),
         },
       ];
+      this.logger.debug(
+        `Sending this metadata: ${JSON.stringify(metadataNew)}`,
+      );
       await this.saleorClient.saleorUpdateMetadata({
-        id: saleorProductId,
+        id: productSet.saleorProductId,
         input: metadataNew,
       });
     }

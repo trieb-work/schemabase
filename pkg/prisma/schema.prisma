@@ -1518,6 +1518,7 @@ model ProductVariant {
   ratingCount   Int?
 
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  /// schemabase internal productId
   productId String
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
