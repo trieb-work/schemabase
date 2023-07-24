@@ -35,7 +35,6 @@ describe("Zoho Entity Sync Orders Test", () => {
       logger: new AssertionLogger(),
       db: prismaClient,
       tenantId: tenant.id,
-      channelSlug: "storefront",
     });
     await service.syncToECI();
     await service.syncFromECI();
