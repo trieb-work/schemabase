@@ -21,6 +21,7 @@ interface SaleorProductSyncServiceConfig {
       first: number;
       channel?: string;
       after: string;
+      updatedAt?: string;
     }) => Promise<SaleorEntitySyncProductsQuery>;
     saleorProductVariantBasicData: (variables: {
       id: string;
@@ -38,7 +39,7 @@ interface SaleorProductSyncServiceConfig {
       }[];
     }) => Promise<SaleorUpdateMetadataMutation>;
   };
-  channelSlug: string;
+  channelSlug?: string;
   installedSaleorAppId: string;
   tenantId: string;
   db: PrismaClient;
@@ -51,6 +52,7 @@ export class SaleorProductSyncService {
       first: number;
       channel?: string;
       after: string;
+      updatedAt?: string;
     }) => Promise<SaleorEntitySyncProductsQuery>;
     saleorProductVariantBasicData: (variables: {
       id: string;
@@ -69,7 +71,7 @@ export class SaleorProductSyncService {
     }) => Promise<SaleorUpdateMetadataMutation>;
   };
 
-  public readonly channelSlug: string;
+  public readonly channelSlug?: string;
 
   private readonly logger: ILogger;
 
@@ -97,6 +99,9 @@ export class SaleorProductSyncService {
   }
 
   public async syncToECI(): Promise<void> {
+    /**
+     * TODO: use the crontState to pull just products that have changed since last run
+     */
     const response = await queryWithPagination(({ first, after }) =>
       this.saleorClient.saleorEntitySyncProducts({
         first,
@@ -194,7 +199,6 @@ export class SaleorProductSyncService {
                     },
                   },
                   create: {
-                    // TODO: does it make sense to set stock entries here as well
                     id: id.id("variant"),
                     defaultWarehouse: {
                       connect: {
