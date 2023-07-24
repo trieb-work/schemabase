@@ -38,7 +38,7 @@ export class KencoveApiAttributeSyncWf implements Workflow {
         db: this.prisma,
         kencoveApiApp: this.kencoveApiApp,
       });
-    await kencoveApiAttributeSyncService.syncToEci();
+    await kencoveApiAttributeSyncService.syncToECI();
     this.logger.info("Finished kencove api product sync workflow run");
   }
 }

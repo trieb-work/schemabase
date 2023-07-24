@@ -93,30 +93,30 @@ describe("KencoveApiClient", () => {
     expect(attributes.length).toBeGreaterThan(0);
   });
 
-  it("should work to run the address syncToEci function", async () => {
+  it("should work to run the address syncToECI function", async () => {
     const client = new KencoveApiAppAddressSyncService({
       logger: new NoopLogger(),
       db: prisma,
       kencoveApiApp: app,
     });
-    await client.syncToEci();
+    await client.syncToECI();
   }, 400000);
 
-  it("should work to run the product syncToEci function", async () => {
+  it("should work to run the product syncToECI function", async () => {
     const client = new KencoveApiAppProductSyncService({
       logger: new NoopLogger(),
       db: prisma,
       kencoveApiApp: app,
     });
-    await client.syncToEci();
+    await client.syncToECI();
   }, 400000);
 
-  it("should work to run the attribute syncToEci function", async () => {
+  it("should work to run the attribute syncToECI function", async () => {
     const client = new KencoveApiAppAttributeSyncService({
       logger: new NoopLogger(),
       db: prisma,
       kencoveApiApp: app,
     });
-    await client.syncToEci();
+    await client.syncToECI();
   }, 400000);
 });

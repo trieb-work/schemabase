@@ -27045,7 +27045,7 @@ describe("Zoho Inventory Invoice Sync", () => {
     await zohoInvoiceSyncService.syncFromECI_autocreateInvoiceFromSalesorder();
     zohoInvoiceLogger.assertOneLogMessageMatches(
       "warn",
-      `Aborting sync of this invoice since it was already created. The syncToEci will handle this. Original Error: There are no items in this sales order to be invoiced.`,
+      `Aborting sync of this invoice since it was already created. The syncToECI will handle this. Original Error: There are no items in this sales order to be invoiced.`,
     );
   }, 90000);
 

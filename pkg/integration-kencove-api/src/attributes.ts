@@ -77,7 +77,7 @@ export class KencoveApiAppAttributeSyncService {
     }
   }
 
-  public async syncToEci() {
+  public async syncToECI() {
     const cronState = await this.cronState.get();
     const now = new Date();
     let createdGte: Date;

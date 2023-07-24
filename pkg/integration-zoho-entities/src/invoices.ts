@@ -369,7 +369,7 @@ export class ZohoInvoiceSyncService {
           // if(err as ZohoApiError).code === require(zoho-ts).apiErrorCodes.NoItemsToBeInvoiced){
           if ((err as ZohoApiError).code === 36026) {
             this.logger.warn(
-              "Aborting sync of this invoice since it was already created. The syncToEci will handle this. Original Error: " +
+              "Aborting sync of this invoice since it was already created. The syncToECI will handle this. Original Error: " +
                 err.message,
               {
                 eciOrderId: orderWithoutZohoInvoice.id,

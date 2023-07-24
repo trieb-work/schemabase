@@ -38,6 +38,6 @@ export class ReviewsioSyncWf implements Workflow {
       db: this.prisma,
       reviewsioApp: this.reviewsioApp,
     });
-    await reviewsioSyncService.syncToEci();
+    await reviewsioSyncService.syncToECI();
   }
 }

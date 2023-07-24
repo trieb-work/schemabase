@@ -362,7 +362,8 @@ export class SaleorProductSyncService {
     }
 
     /**
-     * get all saleor productVariants where related stockEntries have been updated since last run or where related productVariants have been updated since last run
+     * get all saleor productVariants where related stockEntries have been updated since last run or where related
+     * productVariants have been updated since last run
      */
     const saleorProductVariants = await this.db.saleorProductVariant.findMany({
       where: {
@@ -383,6 +384,7 @@ export class SaleorProductSyncService {
       },
       select: {
         id: true,
+        productId: true,
         productVariant: {
           select: {
             id: true,
@@ -390,6 +392,7 @@ export class SaleorProductSyncService {
             stockEntries: true,
             averageRating: true,
             ratingCount: true,
+            productId: true,
           },
         },
       },
@@ -407,6 +410,15 @@ export class SaleorProductSyncService {
     );
 
     /**
+     * schemabase internal product id
+     */
+    const productId = saleorProductVariants[0].productVariant.productId;
+    /**
+     * saleor internal product id
+     */
+    const saleorProductId = saleorProductVariants[0].productId;
+
+    /**
      * All warehouses with saleor id and internal ECI id
      */
     const warehouses = await this.db.saleorWarehouse.findMany({
@@ -419,8 +431,14 @@ export class SaleorProductSyncService {
       },
     });
 
+    /**
+     * identifying if any product variant review has changed. We only calculate the
+     * average product rating then.
+     */
+    let reviewsHaveChanged = false;
     for (const variant of saleorProductVariants) {
-      // Get the current commited stock of this product variant from saleor
+      // Get the current commited stock and the metadata of this product variant from saleor.
+      // We need fresh data here, as the commited stock can change all the time.
       const saleorProductVariant =
         await this.saleorClient.saleorProductVariantBasicData({
           id: variant.id,
@@ -501,7 +519,7 @@ export class SaleorProductSyncService {
         }
       } catch (error) {
         this.logger.info(
-          `No metadata customerRatings found for ${variant.id}: ${error}`,
+          `No metadata customerRatings found for ${variant.id}. Creating it now: ${error}`,
         );
       }
 
@@ -513,6 +531,7 @@ export class SaleorProductSyncService {
         this.logger.info(
           `Updating average rating for ${variant.id} to ${variant.productVariant.averageRating}`,
         );
+        reviewsHaveChanged = true;
         const metadataNew: {
           __typename?: "MetadataItem" | undefined;
           key: string;
@@ -532,6 +551,37 @@ export class SaleorProductSyncService {
           input: metadataNew,
         });
       }
+    }
+
+    // calculate the average product rating and the sum of ratings using the customer rating from all related
+    // and active product variants of the current product. Just do it, if one of the reviews has changed.
+    if (reviewsHaveChanged) {
+      const productRatings = await this.db.productVariant.aggregate({
+        where: {
+          productId,
+          active: true,
+        },
+        _count: {
+          ratingCount: true,
+        },
+        _avg: {
+          averageRating: true,
+        },
+      });
+
+      const metadataNew = [
+        {
+          key: "customerRatings",
+          value: JSON.stringify({
+            averageRating: productRatings._avg.averageRating,
+            ratingCount: productRatings._count.ratingCount,
+          }),
+        },
+      ];
+      await this.saleorClient.saleorUpdateMetadata({
+        id: saleorProductId,
+        input: metadataNew,
+      });
     }
 
     await this.cronState.set({
