@@ -675,11 +675,18 @@ Table Attribute {
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   name String [not null]
+  normalizedName String [not null, note: 'normalized attribute name for internal mapping']
   type AttributeType [not null]
   required Boolean [default: false, note: 'Is the attribute mandatory to be set, or can it be left blank']
+  slug String [note: 'An understandable slug']
   values AttributeValue [not null]
   tenant Tenant [not null]
   tenantId String [not null]
+  kencoveApiAttributes KencoveApiAttribute [not null]
+
+  indexes {
+    (normalizedName, tenantId) [unique]
+  }
 }
 
 Table AttributeValue {
@@ -721,7 +728,7 @@ Table ProductVariant {
   averageRating Float [note: 'Product rating based on customer reviews from services like reviews.io']
   ratingCount Int [note: 'Number of ratings for this product variant']
   product Product [not null]
-  productId String [not null]
+  productId String [not null, note: 'schemabase internal productId']
   tenant Tenant [not null]
   tenantId String [not null]
   defaultWarehouse Warehouse
@@ -1051,7 +1058,7 @@ Table LogisticsApp {
 Table KencoveApiApp {
   id String [pk]
   enabled Boolean [not null, default: false]
-  cronSchedule String [not null, default: '0 8 * * *']
+  cronSchedule String [not null, default: '5 * * * *']
   cronTimeout Int [not null, default: 800]
   tenant Tenant [not null]
   tenantId String [unique, not null]
@@ -1063,8 +1070,23 @@ Table KencoveApiApp {
   kencoveApiContacts KencoveApiContact [not null]
   kencoveApiAddresses KencoveApiAddress [not null]
   kencoveApiProductVariants KencoveApiProductVariant [not null]
+  kencoveApiAttributrs KencoveApiAttribute [not null]
 
   Note: 'The custom app for the kencove api. Using OAuth for authentication'
+}
+
+Table KencoveApiAttribute {
+  id String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  attribute Attribute [not null]
+  attributeId String [not null]
+  kencoveApiApp KencoveApiApp [not null]
+  kencoveApiAppId String [not null]
+
+  indexes {
+    (id, kencoveApiAppId) [unique]
+  }
 }
 
 Table KencoveApiProductVariant {
@@ -2024,6 +2046,10 @@ Ref: DatevApp.tenantId > Tenant.id [delete: Cascade]
 Ref: LogisticsApp.tenantId > Tenant.id [delete: Cascade]
 
 Ref: KencoveApiApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: KencoveApiAttribute.attributeId > Attribute.id [delete: Cascade]
+
+Ref: KencoveApiAttribute.kencoveApiAppId > KencoveApiApp.id [delete: Cascade]
 
 Ref: KencoveApiProductVariant.productVariantId > ProductVariant.id [delete: Cascade]
 

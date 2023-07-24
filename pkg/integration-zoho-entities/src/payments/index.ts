@@ -544,7 +544,7 @@ export class ZohoPaymentSyncService {
           // if(err as ZohoApiError).code === require(zoho-ts).apiErrorCodes.NoItemsToBepaymentd){
           if ((err as ZohoApiError).code === 36026) {
             this.logger.warn(
-              "Aborting sync of this payment since it was already created. The syncToEci will handle this. Original Error: " +
+              "Aborting sync of this payment since it was already created. The syncToECI will handle this. Original Error: " +
                 err.message,
               defaultLogFields,
             );

@@ -44,6 +44,13 @@ class NormalizationUtility {
   public lineItemStrings(input: string) {
     return input.trim().toLowerCase();
   }
+
+  /**
+   * normalization for attribute names
+   */
+  public attributeNames(input: string) {
+    return this.standardNormalize(input);
+  }
 }
 
 /**

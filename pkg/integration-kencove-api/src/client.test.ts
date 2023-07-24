@@ -9,6 +9,7 @@ import { subDays } from "date-fns";
 import { NoopLogger } from "@eci/pkg/logger";
 import { KencoveApiAppAddressSyncService } from "./addresses";
 import { KencoveApiAppProductSyncService } from "./products";
+import { KencoveApiAppAttributeSyncService } from "./attributes";
 
 const prisma = new PrismaClient();
 
@@ -47,6 +48,19 @@ describe("KencoveApiClient", () => {
         lastRun: subDays(new Date(), 2),
       },
     });
+    const cronIdAttributes = `${app.tenantId}_${app.id}_attributes`;
+    await prisma.cronJobState.upsert({
+      where: {
+        id: cronIdAttributes,
+      },
+      update: {
+        lastRun: subDays(new Date(), 2),
+      },
+      create: {
+        id: cronIdAttributes,
+        lastRun: subDays(new Date(), 2),
+      },
+    });
   });
 
   it("should be able to get an access token", async () => {
@@ -71,21 +85,38 @@ describe("KencoveApiClient", () => {
     expect(products.length).toBeGreaterThan(0);
   });
 
-  it("should work to run the address syncToEci function", async () => {
+  it("should be able to get a list of attributes", async () => {
+    const client = new KencoveApiClient(app);
+    // test the getAttributes method with a date from two days in the past
+    const attributes = await client.getAttributes(subDays(new Date(), 100));
+    console.debug(attributes.length);
+    expect(attributes.length).toBeGreaterThan(0);
+  });
+
+  it("should work to run the address syncToECI function", async () => {
     const client = new KencoveApiAppAddressSyncService({
       logger: new NoopLogger(),
       db: prisma,
       kencoveApiApp: app,
     });
-    await client.syncToEci();
+    await client.syncToECI();
   }, 400000);
 
-  it("should work to run the product syncToEci function", async () => {
+  it("should work to run the product syncToECI function", async () => {
     const client = new KencoveApiAppProductSyncService({
       logger: new NoopLogger(),
       db: prisma,
       kencoveApiApp: app,
     });
-    await client.syncToEci();
+    await client.syncToECI();
+  }, 400000);
+
+  it("should work to run the attribute syncToECI function", async () => {
+    const client = new KencoveApiAppAttributeSyncService({
+      logger: new NoopLogger(),
+      db: prisma,
+      kencoveApiApp: app,
+    });
+    await client.syncToECI();
   }, 400000);
 });

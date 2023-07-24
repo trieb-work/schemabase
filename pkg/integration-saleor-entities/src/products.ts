@@ -21,6 +21,7 @@ interface SaleorProductSyncServiceConfig {
       first: number;
       channel?: string;
       after: string;
+      updatedAtGte?: string;
     }) => Promise<SaleorEntitySyncProductsQuery>;
     saleorProductVariantBasicData: (variables: {
       id: string;
@@ -38,7 +39,7 @@ interface SaleorProductSyncServiceConfig {
       }[];
     }) => Promise<SaleorUpdateMetadataMutation>;
   };
-  channelSlug: string;
+  channelSlug?: string;
   installedSaleorAppId: string;
   tenantId: string;
   db: PrismaClient;
@@ -51,6 +52,7 @@ export class SaleorProductSyncService {
       first: number;
       channel?: string;
       after: string;
+      updatedAtGte?: string;
     }) => Promise<SaleorEntitySyncProductsQuery>;
     saleorProductVariantBasicData: (variables: {
       id: string;
@@ -69,7 +71,7 @@ export class SaleorProductSyncService {
     }) => Promise<SaleorUpdateMetadataMutation>;
   };
 
-  public readonly channelSlug: string;
+  public readonly channelSlug?: string;
 
   private readonly logger: ILogger;
 
@@ -97,11 +99,26 @@ export class SaleorProductSyncService {
   }
 
   public async syncToECI(): Promise<void> {
+    const cronState = await this.cronState.get();
+    const now = new Date();
+    let createdGte: Date;
+    if (!cronState.lastRun) {
+      createdGte = subYears(now, 1);
+      this.logger.info(
+        // eslint-disable-next-line max-len
+        `This seems to be our first sync run. Syncing data from: ${createdGte}`,
+      );
+    } else {
+      // for security purposes, we sync one hour more than the last run
+      createdGte = subHours(cronState.lastRun, 1);
+      this.logger.info(`Setting GTE date to ${createdGte}.`);
+    }
     const response = await queryWithPagination(({ first, after }) =>
       this.saleorClient.saleorEntitySyncProducts({
         first,
         after,
         channel: this.channelSlug,
+        updatedAtGte: createdGte.toISOString(),
       }),
     );
 
@@ -194,7 +211,6 @@ export class SaleorProductSyncService {
                     },
                   },
                   create: {
-                    // TODO: does it make sense to set stock entries here as well
                     id: id.id("variant"),
                     defaultWarehouse: {
                       connect: {
@@ -362,7 +378,8 @@ export class SaleorProductSyncService {
     }
 
     /**
-     * get all saleor productVariants where related stockEntries have been updated since last run or where related productVariants have been updated since last run
+     * get all saleor productVariants where related stockEntries have been updated since last run or where related
+     * productVariants have been updated since last run
      */
     const saleorProductVariants = await this.db.saleorProductVariant.findMany({
       where: {
@@ -383,6 +400,7 @@ export class SaleorProductSyncService {
       },
       select: {
         id: true,
+        productId: true,
         productVariant: {
           select: {
             id: true,
@@ -390,6 +408,7 @@ export class SaleorProductSyncService {
             stockEntries: true,
             averageRating: true,
             ratingCount: true,
+            productId: true,
           },
         },
       },
@@ -403,7 +422,7 @@ export class SaleorProductSyncService {
     }
 
     this.logger.info(
-      `Working on ${saleorProductVariants.length} saleor product variants..`,
+      `Working on ${saleorProductVariants.length} saleor product variants, where we have stock or review changes since the last run.`,
     );
 
     /**
@@ -419,8 +438,18 @@ export class SaleorProductSyncService {
       },
     });
 
+    /**
+     * A set of products, whose reviews have changed. We need this to update the average rating of the product.
+     * Stores the internal ECI product id and the saleor product id.
+     */
+    const productsWithReviewsChanged = new Set<{
+      eciProductId: string;
+      saleorProductId: string;
+    }>();
+
     for (const variant of saleorProductVariants) {
-      // Get the current commited stock of this product variant from saleor
+      // Get the current commited stock and the metadata of this product variant from saleor.
+      // We need fresh data here, as the commited stock can change all the time.
       const saleorProductVariant =
         await this.saleorClient.saleorProductVariantBasicData({
           id: variant.id,
@@ -501,7 +530,7 @@ export class SaleorProductSyncService {
         }
       } catch (error) {
         this.logger.info(
-          `No metadata customerRatings found for ${variant.id}: ${error}`,
+          `No metadata customerRatings found for ${variant.id}. Creating it now: ${error}`,
         );
       }
 
@@ -511,8 +540,15 @@ export class SaleorProductSyncService {
       ) {
         if (variant.productVariant.averageRating === null) continue;
         this.logger.info(
-          `Updating average rating for ${variant.id} to ${variant.productVariant.averageRating}`,
+          `Updating average rating for ${variant.id} / ${variant.productVariant.sku} to ${variant.productVariant.averageRating}`,
         );
+
+        // adding the product to the set of products with changed reviews
+        productsWithReviewsChanged.add({
+          eciProductId: variant.productVariant.productId,
+          saleorProductId: variant.productId,
+        });
+
         const metadataNew: {
           __typename?: "MetadataItem" | undefined;
           key: string;
@@ -532,6 +568,45 @@ export class SaleorProductSyncService {
           input: metadataNew,
         });
       }
+    }
+
+    // calculate the average product rating and the sum of ratings using the customer rating from all related
+    // and active product variants of the current product. Just do it, if one of the reviews has changed.
+    for (const productSet of productsWithReviewsChanged) {
+      this.logger.info(
+        `Updating average aggregated product rating for ${JSON.stringify(
+          productSet,
+        )}.`,
+      );
+      const productRatings = await this.db.productVariant.aggregate({
+        where: {
+          productId: productSet.eciProductId,
+          active: true,
+        },
+        _count: {
+          ratingCount: true,
+        },
+        _avg: {
+          averageRating: true,
+        },
+      });
+
+      const metadataNew = [
+        {
+          key: "customerRatings",
+          value: JSON.stringify({
+            averageRating: productRatings._avg.averageRating,
+            ratingCount: productRatings._count.ratingCount,
+          }),
+        },
+      ];
+      this.logger.debug(
+        `Sending this metadata: ${JSON.stringify(metadataNew)}`,
+      );
+      await this.saleorClient.saleorUpdateMetadata({
+        id: productSet.saleorProductId,
+        input: metadataNew,
+      });
     }
 
     await this.cronState.set({

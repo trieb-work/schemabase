@@ -10,6 +10,24 @@ import axios, { AxiosInstance } from "axios";
 import { KencoveApiApp } from "@eci/pkg/prisma";
 import url from "url";
 
+type KencoveApiAttribute = {
+  attribute_id: string;
+  attribute_name: string;
+  model: string;
+  display_type: string;
+  slug: string;
+  attribute_type: string;
+  updatedAt: string;
+  createdAt: string;
+  values:
+    | {
+        attribute_value: string;
+        attribute_value_id: string;
+        attribute_id: string;
+      }[]
+    | null;
+};
+
 type KencoveApiAddress = {
   id: string;
   customerId: string;
@@ -191,6 +209,45 @@ export class KencoveApiClient {
   }> {
     const response = await this.axiosInstance.get(
       `/ecom/product/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+    return response.data;
+  }
+
+  public async getAttributes(fromDate: Date): Promise<KencoveApiAttribute[]> {
+    const accessToken = await this.getAccessToken();
+    const attributes: KencoveApiAttribute[] = [];
+    let nextPage: string | null = null;
+    let offset: number = 0;
+    do {
+      const response = await this.getAttributesPage(
+        fromDate,
+        offset,
+        accessToken,
+      );
+      attributes.push(...response.data);
+      nextPage = response.next_page;
+      offset += 200;
+    } while (nextPage);
+    console.debug(`Found ${attributes.length} attributes`);
+    return attributes;
+  }
+
+  private async getAttributesPage(
+    fromDate: Date,
+    offset: number,
+    accessToken: string,
+  ): Promise<{
+    data: KencoveApiAttribute[];
+    result_count: number;
+    next_page: string;
+  }> {
+    const response = await axios.get(
+      `https://23408405-review-ecom-attri-1c8eje.gc.review-kencove.com/ecom/attributes/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,

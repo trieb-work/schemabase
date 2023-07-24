@@ -1409,6 +1409,7 @@ enum AttributeType {
   NUMERIC
   RICH_TEXT
   PLAIN_TEXT
+  /// Swatch is a special type of dropdown, where the values are represented as colors
   SWATCH
   BOOLEAN
   DATE
@@ -1423,17 +1424,27 @@ model Attribute {
   updatedAt DateTime @updatedAt
 
   name String
+
+  /// normalized attribute name for internal mapping
+  normalizedName  String
   type AttributeType
 
   /// Is the attribute mandatory to be set, or can it be left blank
   required Boolean? @default(false)
+
+  /// An understandable slug
+  slug String?
 
   values  AttributeValue[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
+  kencoveApiAttributes KencoveApiAttribute[]
+
   @@index([tenantId])
+  @@unique([normalizedName, tenantId])
+  @@index([normalizedName])
 
 
 }
@@ -1507,6 +1518,7 @@ model ProductVariant {
   ratingCount   Int?
 
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  /// schemabase internal productId
   productId String
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -2035,7 +2047,7 @@ model KencoveApiApp {
 
   enabled Boolean @default(false)
 
-  cronSchedule String @default("0 8 * * *")
+  cronSchedule String @default("5 * * * *")
   // Time in seconds how long one workflow can run before a timeout occurs.
   cronTimeout  Int    @default(800)
 
@@ -2055,9 +2067,28 @@ model KencoveApiApp {
   kencoveApiContacts KencoveApiContact[]
   kencoveApiAddresses KencoveApiAddress[]
   kencoveApiProductVariants KencoveApiProductVariant[]
+  kencoveApiAttributrs KencoveApiAttribute[]
 
   @@index([tenantId])
 
+
+}
+
+model KencoveApiAttribute {
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime 
+
+  attribute Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  attributeId String
+
+  kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id], onDelete: Cascade)
+  kencoveApiAppId String
+
+  @@unique([id, kencoveApiAppId])
+  @@index([attributeId])
+  @@index([kencoveApiAppId])
 
 }
 

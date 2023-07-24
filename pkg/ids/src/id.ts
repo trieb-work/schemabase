@@ -39,6 +39,7 @@ const prefixes = {
   xentralArtikel: "x_at",
   billOfMaterial: "bom",
   datevContact: "datev_c",
+  attribute: "attr",
 };
 
 export const id = new IdGenerator({ crypto: nodeCrypto, prefixes });

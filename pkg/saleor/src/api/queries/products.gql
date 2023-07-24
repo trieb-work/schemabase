@@ -80,8 +80,13 @@ query products($first: Int!, $channel: String) {
   }
 }
 
-query saleorEntitySyncProducts($first: Int!, $channel: String, $after: String) {
-  products(first: $first, after: $after, channel: $channel) {
+query saleorEntitySyncProducts($first: Int!, $channel: String, $after: String, $updatedAtGte: DateTime) {
+  products(
+    first: $first
+    after: $after
+    channel: $channel
+    filter: { updatedAt: {gte: $updatedAtGte}}
+  ) {
     pageInfo {
       hasNextPage
       hasPreviousPage
