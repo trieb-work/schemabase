@@ -698,6 +698,29 @@ Table AttributeValue {
   attributeId String [not null]
 }
 
+Table Category {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  name String [not null, note: 'The name of the category']
+  normalizedName String [not null, note: 'The normalized name of the category']
+  slug String [note: 'The slug of the category']
+  parentCategory Category [note: 'The parent category of this category']
+  parentCategoryId String [note: 'The id of the parent category']
+  childrenCategories Category [not null, note: 'The children categories of this category']
+  products Product [not null, note: 'The products in this category']
+  tenant Tenant [not null, note: 'The tenant this category belongs to']
+  tenantId String [not null]
+  kencoveApiCategories KencoveApiCategory [not null, note: 'The kencove categories this category is synced to']
+
+  indexes {
+    (normalizedName, tenantId) [unique]
+  }
+
+  Note: 'The ECI internal category model. Product categories are used to group products together
+and to create a product hierarchy. Categories can be nested'
+}
+
 Table Product {
   id String [pk]
   createdAt DateTime [default: `now()`, not null]
@@ -707,6 +730,8 @@ Table Product {
   hsCode String
   countryOfOrigin CountryCode
   variants ProductVariant [not null]
+  category Category [note: 'The category this product belongs to']
+  categoryId String
   tenant Tenant [not null]
   tenantId String [not null]
 
@@ -1070,9 +1095,24 @@ Table KencoveApiApp {
   kencoveApiContacts KencoveApiContact [not null]
   kencoveApiAddresses KencoveApiAddress [not null]
   kencoveApiProductVariants KencoveApiProductVariant [not null]
-  kencoveApiAttributrs KencoveApiAttribute [not null]
+  kencoveApiAttributes KencoveApiAttribute [not null]
+  kencoveApiCategories KencoveApiCategory [not null]
 
   Note: 'The custom app for the kencove api. Using OAuth for authentication'
+}
+
+Table KencoveApiCategory {
+  id String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  kencoveApiApp KencoveApiApp [not null]
+  kencoveApiAppId String [not null]
+  category Category [not null]
+  categoryId String [not null]
+
+  indexes {
+    (id, kencoveApiAppId) [unique]
+  }
 }
 
 Table KencoveApiAttribute {
@@ -1288,6 +1328,7 @@ Table Tenant {
   rewiewsioApps ReviewsioApp [not null]
   eci_User_Tenants eci_User_Tenant [not null]
   kencoveApiApps KencoveApiApp [not null]
+  categories Category [not null]
 }
 
 Table Subscription {
@@ -1965,6 +2006,12 @@ Ref: Attribute.tenantId > Tenant.id [delete: Cascade]
 
 Ref: AttributeValue.attributeId > Attribute.id [delete: Cascade]
 
+Ref: Category.parentCategoryId - Category.id [delete: No Action]
+
+Ref: Category.tenantId > Tenant.id [delete: Cascade]
+
+Ref: Product.categoryId > Category.id [delete: No Action]
+
 Ref: Product.tenantId > Tenant.id [delete: Cascade]
 
 Ref: ProductVariant.productId > Product.id [delete: Cascade]
@@ -2046,6 +2093,10 @@ Ref: DatevApp.tenantId > Tenant.id [delete: Cascade]
 Ref: LogisticsApp.tenantId > Tenant.id [delete: Cascade]
 
 Ref: KencoveApiApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: KencoveApiCategory.kencoveApiAppId > KencoveApiApp.id [delete: Cascade]
+
+Ref: KencoveApiCategory.categoryId > Category.id [delete: Cascade]
 
 Ref: KencoveApiAttribute.attributeId > Attribute.id [delete: Cascade]
 
