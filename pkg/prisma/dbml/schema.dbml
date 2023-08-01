@@ -698,6 +698,24 @@ Table AttributeValue {
   attributeId String [not null]
 }
 
+Table ProductTag {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  name String [not null, note: 'The name of the tag']
+  normalizedName String [not null, note: 'The normalized name of the tag']
+  tenant Tenant [not null, note: 'The tenant this tag belongs to']
+  tenantId String [not null]
+  products Product [not null, note: 'The products that are tagged with this tag']
+
+  indexes {
+    (normalizedName, tenantId) [unique]
+  }
+
+  Note: 'Product tags are used to group products together. 
+They are not hierarchical, but flat. You can use generic tags like "Sale" or "New" or "Bestseller"'
+}
+
 Table Product {
   id String [pk]
   createdAt DateTime [default: `now()`, not null]
@@ -707,6 +725,7 @@ Table Product {
   hsCode String
   countryOfOrigin CountryCode
   variants ProductVariant [not null]
+  tags ProductTag [not null]
   tenant Tenant [not null]
   tenantId String [not null]
 
@@ -1288,6 +1307,7 @@ Table Tenant {
   rewiewsioApps ReviewsioApp [not null]
   eci_User_Tenants eci_User_Tenant [not null]
   kencoveApiApps KencoveApiApp [not null]
+  productTags ProductTag [not null]
 }
 
 Table Subscription {
@@ -1964,6 +1984,8 @@ Ref: Address.tenantId > Tenant.id [delete: Cascade]
 Ref: Attribute.tenantId > Tenant.id [delete: Cascade]
 
 Ref: AttributeValue.attributeId > Attribute.id [delete: Cascade]
+
+Ref: ProductTag.tenantId > Tenant.id [delete: Cascade]
 
 Ref: Product.tenantId > Tenant.id [delete: Cascade]
 

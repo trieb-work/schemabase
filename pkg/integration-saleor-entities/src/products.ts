@@ -538,12 +538,17 @@ export class SaleorProductSyncService {
         !productRating?.averageRating ||
         productRating?.averageRating !== variant.productVariant.averageRating
       ) {
-        if (variant.productVariant.averageRating === null) continue;
+        if (
+          variant.productVariant.averageRating === null ||
+          variant.productVariant.ratingCount === null
+        )
+          continue;
         this.logger.info(
           `Updating average rating for ${variant.id} / ${variant.productVariant.sku} to ${variant.productVariant.averageRating}`,
         );
 
-        // adding the product to the set of products with changed reviews
+        // adding the product to the set of products with changed reviews, so that we update the
+        // product metadata as well
         productsWithReviewsChanged.add({
           eciProductId: variant.productVariant.productId,
           saleorProductId: variant.productId,
@@ -553,15 +558,21 @@ export class SaleorProductSyncService {
           __typename?: "MetadataItem" | undefined;
           key: string;
           value: string;
-        }[] = saleorProductVariant.productVariant.metadata.filter(
-          (x) => x.key !== "customerRatings",
-        );
+        }[] = [];
         metadataNew.push({
           key: "customerRatings",
           value: JSON.stringify({
             averageRating: variant.productVariant.averageRating,
             ratingCount: variant.productVariant.ratingCount,
           }),
+        });
+        metadataNew.push({
+          key: "customerRatings_averageRating",
+          value: variant.productVariant.averageRating.toString(),
+        });
+        metadataNew.push({
+          key: "customerRatings_ratingCount",
+          value: variant.productVariant.ratingCount.toString(),
         });
         await this.saleorClient.saleorUpdateMetadata({
           id: saleorProductVariant.productVariant.id,
@@ -591,6 +602,18 @@ export class SaleorProductSyncService {
         },
       });
 
+      if (
+        !productRatings._avg.averageRating ||
+        !productRatings._count.ratingCount
+      ) {
+        this.logger.info(
+          `No aggregated product ratings found for ${JSON.stringify(
+            productSet,
+          )}.`,
+        );
+        continue;
+      }
+
       const metadataNew = [
         {
           key: "customerRatings",
@@ -598,6 +621,14 @@ export class SaleorProductSyncService {
             averageRating: productRatings._avg.averageRating,
             ratingCount: productRatings._count.ratingCount,
           }),
+        },
+        {
+          key: "customerRatings_averageRating",
+          value: productRatings._avg.averageRating.toString(),
+        },
+        {
+          key: "customerRatings_ratingCount",
+          value: productRatings._count.ratingCount.toString(),
         },
       ];
       this.logger.debug(
