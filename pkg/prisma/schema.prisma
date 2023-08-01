@@ -1464,7 +1464,6 @@ model AttributeValue {
   @@index([attributeId])
 
 }
-
 /// Product tags are used to group products together. 
 /// They are not hierarchical, but flat. You can use generic tags like "Sale" or "New" or "Bestseller"
 model ProductTag {
@@ -1492,6 +1491,49 @@ model ProductTag {
   @@index([updatedAt])
 }
 
+/// The ECI internal category model. Product categories are used to group products together
+/// and to create a product hierarchy. Categories can be nested
+model Category {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// The name of the category
+  name String
+
+  /// The normalized name of the category
+  normalizedName String
+
+  /// The slug of the category
+  slug String?
+
+  /// The parent category of this category
+  parentCategory Category? @relation("CategoryParentCategory", fields: [parentCategoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  /// The id of the parent category
+  parentCategoryId String?
+
+  /// The children categories of this category
+  childrenCategories Category[] @relation("CategoryParentCategory")
+
+  /// The products in this category
+  products Product[]
+
+  /// The tenant this category belongs to
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+
+  /// The kencove categories this category is synced to
+  kencoveApiCategories KencoveApiCategory[]
+
+  @@unique([normalizedName, tenantId])
+  @@index([tenantId])
+  @@index([id])
+  @@index([parentCategoryId])
+}
+
 // The ECI internal Product model
 // We use the ProductVariant more, as only variants have unique identifier like the SKU. Products can be matched only via the product name
 model Product {
@@ -1511,6 +1553,10 @@ model Product {
   variants ProductVariant[]
   tags     ProductTag[]
 
+  /// The category this product belongs to
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  categoryId String?
+
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
@@ -1518,6 +1564,7 @@ model Product {
   @@unique([name, tenantId])
   @@unique([normalizedName, tenantId])
   @@index([tenantId])
+  @@index([categoryId])
 }
 
 // The ECI internal ProductVariant Model. One product can have one ore many Product Variants
@@ -2095,11 +2142,29 @@ model KencoveApiApp {
   kencoveApiContacts KencoveApiContact[]
   kencoveApiAddresses KencoveApiAddress[]
   kencoveApiProductVariants KencoveApiProductVariant[]
-  kencoveApiAttributrs KencoveApiAttribute[]
+  kencoveApiAttributes KencoveApiAttribute[]
+  kencoveApiCategories KencoveApiCategory[]
 
   @@index([tenantId])
 
 
+}
+
+model KencoveApiCategory {
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id], onDelete: Cascade)
+  kencoveApiAppId String
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId String
+
+  @@unique([id, kencoveApiAppId])
+  @@index([kencoveApiAppId])
+  @@index([categoryId])
 }
 
 model KencoveApiAttribute {
@@ -2412,6 +2477,7 @@ model Tenant {
   eci_User_Tenants            eci_User_Tenant[]
   kencoveApiApps              KencoveApiApp[]
   productTags                 ProductTag[]
+  categories                  Category[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
