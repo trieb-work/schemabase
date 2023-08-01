@@ -1464,6 +1464,32 @@ model AttributeValue {
   @@index([attributeId])
 
 }
+/// Product tags are used to group products together. 
+/// They are not hierarchical, but flat. You can use generic tags like "Sale" or "New" or "Bestseller"
+model ProductTag {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// The name of the tag
+  name String
+
+  /// The normalized name of the tag
+  normalizedName String
+
+  /// The tenant this tag belongs to
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  /// The products that are tagged with this tag
+  products Product[]
+
+  @@unique([normalizedName, tenantId])
+  @@index([tenantId])
+  @@index([id])
+  @@index([updatedAt])
+}
 
 /// The ECI internal category model. Product categories are used to group products together
 /// and to create a product hierarchy. Categories can be nested
@@ -1525,6 +1551,7 @@ model Product {
   countryOfOrigin CountryCode?
 
   variants ProductVariant[]
+  tags     ProductTag[]
 
   /// The category this product belongs to
   category Category? @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -2449,6 +2476,7 @@ model Tenant {
   rewiewsioApps               ReviewsioApp[]
   eci_User_Tenants            eci_User_Tenant[]
   kencoveApiApps              KencoveApiApp[]
+  productTags                 ProductTag[]
   categories                  Category[]
 }
 

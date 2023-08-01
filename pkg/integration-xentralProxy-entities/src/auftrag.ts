@@ -455,5 +455,11 @@ export class XentralProxyOrderSyncService {
       
     }
 
+    await this.cronState.set({
+      lastRun: new Date(),
+      lastRunStatus: "success",
+      locked: false,
+    });
+
   }
 }
