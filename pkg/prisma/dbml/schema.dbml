@@ -1111,6 +1111,8 @@ Table KencoveApiApp {
   tokenEndpoint String [not null, note: 'Token endpoint for the OAuth flow']
   apiEndpoint String [not null, note: 'The actual api endpoint. Is different for sandbox and prod']
   scope String [not null, note: 'The scopes we need to access the api. Just comma separated list']
+  skipCategories String [note: 'A user can manually mark categories, that should be skipped when syncing.
+This is a comma separated list of category ids']
   kencoveApiContacts KencoveApiContact [not null]
   kencoveApiAddresses KencoveApiAddress [not null]
   kencoveApiProductVariants KencoveApiProductVariant [not null]
@@ -1152,6 +1154,7 @@ Table KencoveApiProductVariant {
   id String [not null]
   createdAt DateTime [not null]
   updatedAt DateTime [not null]
+  productId String [note: 'the id of the related product in the kencove api']
   productVariant ProductVariant [not null]
   productVariantId String [not null]
   kencoveApiApp KencoveApiApp [not null]

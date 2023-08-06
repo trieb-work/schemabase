@@ -37,10 +37,16 @@ export class KencoveApiAppCategorySyncService {
   }
 
   public async syncToECI() {
+    /**
+     * When this is the first run, or the last run did not complete,
+     * we mark this, so that we don't skip any category.
+     */
+    let isFirstRun = false;
     const cronState = await this.cronState.get();
     const now = new Date();
     let createdGte: Date;
     if (!cronState.lastRun) {
+      isFirstRun = true;
       createdGte = subYears(now, 1);
       this.logger.info(
         // eslint-disable-next-line max-len
@@ -66,7 +72,20 @@ export class KencoveApiAppCategorySyncService {
       },
     });
 
-    for (const category of categories) {
+    /**
+     * We skip categories that are configured in the app settings.
+     */
+    const categoriesToSkip =
+      this.kencoveApiApp.skipCategories?.split(",") ?? [];
+
+    // remove categories that are configured to be skipped
+    const categoriesToSync = categories.filter(
+      (c) => !categoriesToSkip.includes(c.cateorgyId.toString()),
+    );
+
+    let skipCronStateUpdate = false;
+
+    for (const category of categoriesToSync) {
       const createdAt = new Date(category.createdAt);
       const updatedAt = new Date(category.updatedAt);
 
@@ -87,7 +106,8 @@ export class KencoveApiAppCategorySyncService {
       // we skip this category. If the category doesn't exist, we create it.
       if (
         existingCategory &&
-        existingCategory.updatedAt.getTime() === updatedAt.getTime()
+        existingCategory.updatedAt.getTime() === updatedAt.getTime() &&
+        !isFirstRun
       ) {
         this.logger.info(
           `Category ${category.cateorgyId} hasn't changed. Skipping.`,
@@ -95,20 +115,28 @@ export class KencoveApiAppCategorySyncService {
         continue;
       }
 
+      console.debug(`Working on category ${JSON.stringify(category)}.`);
+
       // for the parent and all children categories of this category, we need to get our
-      // corresponding internal ids
-      // to be able to connect them to together. We do this by merging together all
-      // the category ids and then
+      // corresponding internal ids to be able to connect them to together.
+      // We do this by merging together all the category ids and then
       // querying our db for all categories with those ids.
-      const lookupKencoveIds = [category.parentCategoryId.toString()];
+      const lookupKencoveIds = [];
       if (category.childrenCategoryIds) {
         lookupKencoveIds.push(...category.childrenCategoryIds);
       }
+      if (category.parentCategoryId)
+        lookupKencoveIds.push(category.parentCategoryId.toString());
+
+      // we have to filter out the categoriesToSkip here as well
+      const filteredLookupKencoveIds = lookupKencoveIds.filter(
+        (c) => !categoriesToSkip.includes(c),
+      );
       const categoriesToConnect = await this.db.kencoveApiCategory.findMany({
         where: {
           kencoveApiAppId: this.kencoveApiApp.id,
           id: {
-            in: lookupKencoveIds,
+            in: filteredLookupKencoveIds,
           },
         },
       });
@@ -120,6 +148,17 @@ export class KencoveApiAppCategorySyncService {
         .filter((c) => c.id !== category.parentCategoryId.toString())
         .map((c) => ({ id: c.categoryId }));
 
+      // when we can't find all internal categories we need to connect,
+      // we mark this run as partial and skip the cron state update, so that the
+      // next run is a full run again.
+      if (categoriesToConnect.length !== filteredLookupKencoveIds.length) {
+        this.logger.warn(
+          // eslint-disable-next-line max-len
+          `Could not find all categories to connect. Skipping cron state update, so that the next run will be a full run again.`,
+        );
+        skipCronStateUpdate = true;
+      }
+
       /**
        * The parent category of the current category with our internal Id.
        */
@@ -127,6 +166,10 @@ export class KencoveApiAppCategorySyncService {
         (c) => c.id === category.parentCategoryId.toString(),
       )?.categoryId;
 
+      this.logger.debug("Updating/creating category in schemabase.", {
+        childrenCategories,
+        parentCategoryId,
+      });
       if (existingCategory) {
         this.logger.info(`Updating category ${category.cateorgyId}.`);
         await this.db.kencoveApiCategory.update({
@@ -141,6 +184,7 @@ export class KencoveApiAppCategorySyncService {
             category: {
               update: {
                 name: category.categoryName,
+                slug: category.categorySlug,
                 parentCategory: parentCategoryId
                   ? {
                       connect: {
@@ -180,6 +224,7 @@ export class KencoveApiAppCategorySyncService {
                 create: {
                   id: id.id("category"),
                   name: category.categoryName,
+                  slug: category.categorySlug,
                   parentCategory: parentCategoryId
                     ? {
                         connect: {
@@ -204,7 +249,8 @@ export class KencoveApiAppCategorySyncService {
       }
 
       // we update the last run timestamp to now
-      await this.cronState.set({ lastRun: now, lastRunStatus: "success" });
+      if (!skipCronStateUpdate)
+        await this.cronState.set({ lastRun: now, lastRunStatus: "success" });
     }
   }
 }
