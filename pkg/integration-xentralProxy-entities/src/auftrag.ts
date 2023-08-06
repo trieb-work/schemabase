@@ -106,17 +106,17 @@ export class XentralProxyOrderSyncService {
         );
         return;
       }
-  
+
       const orders = await this.db.order.findMany({
         where: {
           orderStatus: {
-            in: ["confirmed", "closed", "canceled"]
+            in: ["confirmed", "closed", "canceled"],
           },
           shipmentStatus: {
             in: ["pending", "partiallyShipped"],
           },
           readyToFullfill: true, // TODO: in zukunft wäre es auch möglich hier das shipment date
-  
+
           /**
            * Filter out orders, that are already too old. In this time window, we want to update
            * all orders in Xentral, as we see them as "active"
@@ -124,7 +124,7 @@ export class XentralProxyOrderSyncService {
           updatedAt: {
             gt: subDays(new Date(), 5),
           },
-  
+
           /**
            * only include orders which have not been transfered to the current xentral instance and
            * therefore have no xentralProxyAuftrag with the current xentral instance. We change this logic,
@@ -232,7 +232,7 @@ export class XentralProxyOrderSyncService {
             continue;
           }
         }
-  
+
         let existingXentralAuftrag: Auftrag | undefined;
         try {
           const xentralAuftraegeWithSameDate = await arrayFromAsyncGenerator(
@@ -286,11 +286,11 @@ export class XentralProxyOrderSyncService {
             throw error;
           }
         }
-  
+
         const versandart = order.carrier
           ? await this.versandArt(order.carrier)
           : undefined;
-  
+
         const auftrag: AuftragCreateRequest = {
           kundennummer: "NEW",
           /**
@@ -321,15 +321,17 @@ export class XentralProxyOrderSyncService {
           artikelliste: {
             position: order.orderLineItems.map((lineItem) => {
               const price = lineItem.totalPriceGross || lineItem.totalPriceNet;
-  
+
               // const encodedPrice = price
               //   ? price.toString().replace(",", "").replace(".", ",")
               //   : undefined;
               const encodedPrice = price
                 ? (price / (lineItem?.quantity ?? 1))?.toFixed(2)
                 : undefined;
-  
-              if (!lineItem?.productVariant?.xentralArtikel?.[0]?.xentralNummer) {
+
+              if (
+                !lineItem?.productVariant?.xentralArtikel?.[0]?.xentralNummer
+              ) {
                 throw new Error(
                   `No matching xentral artikel for lineItem (${lineItem.sku}). Please sync new productVariants first to xentral artikel before creating an xentral auftrag.`,
                 );
@@ -366,7 +368,7 @@ export class XentralProxyOrderSyncService {
         ) {
           throw new Error("Can not sync an Auftrag with an empty artikelliste");
         }
-  
+
         const createOrUpdateXentralAuftrag = async () => {
           if (existingXentralAuftrag) {
             if (existingXentralAuftrag.status === "abgeschlossen") {
@@ -383,7 +385,9 @@ export class XentralProxyOrderSyncService {
             const auftragsStatus =
               order.shipmentStatus === "shipped"
                 ? "versendet"
-                :  order.orderStatus === "closed" ? "abgeschlossen" : existingXentralAuftrag.status;
+                : order.orderStatus === "closed"
+                ? "abgeschlossen"
+                : existingXentralAuftrag.status;
             const auftragUpdate: AuftragEditRequest = {
               ...auftrag,
               status: auftragsStatus,
@@ -395,7 +399,7 @@ export class XentralProxyOrderSyncService {
             return this.xentralXmlClient.AuftragCreate(auftrag);
           }
         };
-  
+
         const resData: AuftragEditResponse | AuftragCreateResponse =
           await createOrUpdateXentralAuftrag();
         const createdXentralAuftrag = await this.db.xentralProxyAuftrag.upsert({
@@ -440,8 +444,6 @@ export class XentralProxyOrderSyncService {
           },
         );
       }
-
-      
     } catch (error) {
       this.logger.error("Error while syncing order to xentral", {
         tenantId: this.tenantId,
@@ -452,7 +454,6 @@ export class XentralProxyOrderSyncService {
         lastRunStatus: "failure",
         locked: false,
       });
-      
     }
 
     await this.cronState.set({
@@ -460,6 +461,5 @@ export class XentralProxyOrderSyncService {
       lastRunStatus: "success",
       locked: false,
     });
-
   }
 }

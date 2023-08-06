@@ -1,5 +1,4 @@
-variables:   
-
+variables:
   # Enabled:
   STAGING_ENABLED: 1
   CI_KUBERNETES_ACTIVE: 1
@@ -10,7 +9,6 @@ stages:
   - production
   - cleanup
 
-
 .auto-deploy:
   before_script:
     - set +e && chmod 600 $CI_PROJECT_DIR.tmp/KUBECONFIG && set -e
@@ -18,8 +16,6 @@ stages:
     - chmod 400 $KUBECONFIG
   image: "registry.gitlab.com/gitlab-org/cluster-integration/auto-deploy-image:v2.48.0"
   dependencies: []
-
-
 
 ## Review job is deploying automatically on every push to "staging" branch
 review:
@@ -35,50 +31,48 @@ review:
   artifacts:
     paths:
       - variables.env
-    expire_in: 1 week  
+    expire_in: 1 week
   script:
-
     - helm repo add azure-marketplace https://marketplace.azurecr.io/helm/v1/repo
     # Add a redis deployment with nodeport service, limit CPU and memory, set a password, set standard persistent storage 3 GB. Name: redis-schemabase-staging
     - helm upgrade --install --create-namespace -n $KUBE_NAMESPACE redis-schemabase-staging azure-marketplace/redis --set architecture="standalone" --set auth.password="$REDIS_PASSWORD" --set resources.requests.cpu=100m --set resources.requests.memory=250Mi --set resources.limits.cpu=200m --set resources.limits.memory=256Mi --set persistence.size=3Gi --set service.type=NodePort
- 
+
     # Get the current version from package.json to use it as docker version tag later. We don't have node available
     # in the image, so we use jq to parse the json file.
     - export SCHEMA_VERSION=$(jq -r '.version' package.json)
     - >
-          helm upgrade worker-schemabase-staging ./services/worker/helm-chart
-          --install
-          --namespace=$KUBE_NAMESPACE
-          --set=image.imageName="ghcr.io/trieb-work/schemabase/worker:$SCHEMA_VERSION"
-          --set=eciEnv="staging"
-          --set=databaseUrl="$DATABASE_URL"
-          --set=signingKey="$SECRET_KEY_WORKER"
-          --set=redis.host="redis-schemabase-staging-master"
-          --set=redis.password="$REDIS_PASSWORD"
-          --set=elasticsearch.host=""
-          --set=elasticsearch.username=""
-          --set=elasticsearch.password=""
-          --set=kafka.brokerUrl="$KAFKA_URL"
-          --set=kafka.saslMechanism="scram-sha-256"
-          --set=kafka.username="$KAFKA_USERNAME"
-          --set=kafka.password="$KAFKA_PASSWORD"
-          --set=sendgridApiKey="TO_BE_ADDED"
-          --set=secretKey="$SECRET_KEY_WORKER"
-    - > 
-          helm upgrade queue-dashboard-schemabase ./services/bullboard/helm-chart
-          --install
-          --namespace=$KUBE_NAMESPACE
-          --set=image.imageName="ghcr.io/trieb-work/schemabase/bullboard:$SCHEMA_VERSION"
-          --set=redis.host="redis-schemabase-staging-master"
-          --set=redis.password="$REDIS_PASSWORD"
-          --set=ingress.host=$AUTO_DEVOPS_COMMON_NAME
-          --set=google.clientId="$GC_CLIENT_ID"
-          --set=allowedLoginDomains="kencove.com"
-          --set=google.clientSecret="$GC_CLIENT_SECRET"
+      helm upgrade worker-schemabase-staging ./services/worker/helm-chart
+      --install
+      --namespace=$KUBE_NAMESPACE
+      --set=image.imageName="ghcr.io/trieb-work/schemabase/worker:$SCHEMA_VERSION"
+      --set=eciEnv="staging"
+      --set=databaseUrl="$DATABASE_URL"
+      --set=signingKey="$SECRET_KEY_WORKER"
+      --set=redis.host="redis-schemabase-staging-master"
+      --set=redis.password="$REDIS_PASSWORD"
+      --set=elasticsearch.host=""
+      --set=elasticsearch.username=""
+      --set=elasticsearch.password=""
+      --set=kafka.brokerUrl="$KAFKA_URL"
+      --set=kafka.saslMechanism="scram-sha-256"
+      --set=kafka.username="$KAFKA_USERNAME"
+      --set=kafka.password="$KAFKA_PASSWORD"
+      --set=sendgridApiKey="TO_BE_ADDED"
+      --set=secretKey="$SECRET_KEY_WORKER"
+    - >
+      helm upgrade queue-dashboard-schemabase ./services/bullboard/helm-chart
+      --install
+      --namespace=$KUBE_NAMESPACE
+      --set=image.imageName="ghcr.io/trieb-work/schemabase/bullboard:$SCHEMA_VERSION"
+      --set=redis.host="redis-schemabase-staging-master"
+      --set=redis.password="$REDIS_PASSWORD"
+      --set=ingress.host=$AUTO_DEVOPS_COMMON_NAME
+      --set=google.clientId="$GC_CLIENT_ID"
+      --set=allowedLoginDomains="kencove.com"
+      --set=google.clientSecret="$GC_CLIENT_SECRET"
 
     - auto-deploy persist_environment_url
-    - echo "Queue dashboard deployed to https://$AUTO_DEVOPS_COMMON_NAME"      
-      
+    - echo "Queue dashboard deployed to https://$AUTO_DEVOPS_COMMON_NAME"
 
   rules:
     - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
@@ -88,7 +82,6 @@ review:
     - if: "($CI_COMMIT_REF_PROTECTED == 'true' || $CI_COMMIT_TAG)"
       when: never
     - if: "$CI_COMMIT_REF_NAME == 'staging'"
-
 
 review-vercel:
   image: node:18
@@ -103,7 +96,7 @@ review-vercel:
       files:
         - pnpm-lock.yaml
     paths:
-      - .pnpm-store  
+      - .pnpm-store
   script:
     # Export the DATABASE_URL variable from the review job
     - export $(grep -v '^#' $CI_PROJECT_DIR/variables.env | xargs)
@@ -139,8 +132,8 @@ production:
       files:
         - pnpm-lock.yaml
     paths:
-      - .pnpm-store  
-  script: 
+      - .pnpm-store
+  script:
     - helm repo add azure-marketplace https://marketplace.azurecr.io/helm/v1/repo
     # Add a redis deployment with nodeport service, limit CPU and memory, set a password, set standard persistent storage 3 GB. Name: redis-schemabase-production
     # Add a mysql deployment with nodeport service, limit CPU and memory, set a password, set standard persistent storage 30 GB. Name: mysql-schemabase-production
@@ -158,7 +151,7 @@ production:
   rules:
     - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
       when: never
-    - if: '$CI_COMMIT_REF_NAME == "prod"' 
+    - if: '$CI_COMMIT_REF_NAME == "prod"'
 
 stop_review:
   extends: .auto-deploy
@@ -180,5 +173,3 @@ stop_review:
       when: never
     - if: "$CI_COMMIT_TAG || $CI_COMMIT_BRANCH"
       when: manual
-
-

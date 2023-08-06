@@ -1,8 +1,12 @@
-query saleorCronCustomers($updatedAtGte: DateTime, $first: Int, $after: String) {
+query saleorCronCustomers(
+  $updatedAtGte: DateTime
+  $first: Int
+  $after: String
+) {
   customers(
     first: $first
     after: $after
-    filter: {updatedAt: {gte: $updatedAtGte}}
+    filter: { updatedAt: { gte: $updatedAtGte } }
   ) {
     pageInfo {
       hasNextPage
@@ -20,7 +24,7 @@ query saleorCronCustomers($updatedAtGte: DateTime, $first: Int, $after: String) 
         isActive
         dateJoined
         updatedAt
-        addresses{
+        addresses {
           id
           firstName
           lastName
@@ -28,7 +32,9 @@ query saleorCronCustomers($updatedAtGte: DateTime, $first: Int, $after: String) 
           streetAddress2
           postalCode
           city
-          country{ code }
+          country {
+            code
+          }
           companyName
           phone
           isDefaultBillingAddress

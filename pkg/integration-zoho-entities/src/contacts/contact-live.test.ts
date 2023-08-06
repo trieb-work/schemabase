@@ -29,7 +29,7 @@ describe("Zoho Entity Sync Orders Test", () => {
       prismaClient,
       undefined,
     );
-    console.log(tenant.datevApps)
+    console.log(tenant.datevApps);
 
     const service = new ZohoContactSyncService({
       zoho,

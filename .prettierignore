@@ -33,3 +33,4 @@ dist/
 .next/
 
 .github/workflows/*.yml
+.vercel

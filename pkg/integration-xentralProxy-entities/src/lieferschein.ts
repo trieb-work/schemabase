@@ -168,7 +168,7 @@ export class XentralProxyLieferscheinSyncService {
         }
         throw err;
       }
-      trackingnummern = trackingnummern.filter((x) => x.tracking)
+      trackingnummern = trackingnummern.filter((x) => x.tracking);
       if (trackingnummern.length === 0) {
         this.logger.info(
           "Length = 0: No Trackingnumbers found with this belegnr. Seems like this Auftrag has not been processed by logisitics yet.",

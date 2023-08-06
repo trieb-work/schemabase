@@ -1,11 +1,12 @@
 Nextjs application used for incoming webhooks and to be installed as Saleor app.
 
 ## Saleor App
+
 schemabase offers different app-types with different permissions and webhooks.
 We create a manifest URL per per app-type that can be installed like this:
 [YOUR_SALEOR_DASHBOARD_URL]/apps/install?manifestUrl=[YOUR_APP_TUNNEL_MANIFEST_URL]
 
-Adding a tenant id as querystring is optional - like this we can enable the app and connect it 
+Adding a tenant id as querystring is optional - like this we can enable the app and connect it
 directly with an existing tenant. In the future we want customers to use the App configuration page to manage their schemabase account/tenant and see their sync status etc.
 The manifest url looks like this: [ECI_URL]/api/saleor/manifest/[APPTYPE]?tenantId=XXX
 apptype can be "entitysync" or "prepayment"
@@ -13,8 +14,6 @@ apptype can be "entitysync" or "prepayment"
 For testing purposes, you can install the Saleor Apps using our cloud hosted service: cloud.schemabase.app
 
 To install the pre-payment payment gateway: https://cloud.schemabase.app/api/saleor/manifest/prepayment
-
-
 
 # Webhooks
 

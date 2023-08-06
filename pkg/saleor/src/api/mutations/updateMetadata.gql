@@ -1,4 +1,4 @@
- mutation saleorUpdateMetadata($id: ID!, $input: [MetadataInput!]!) {
+mutation saleorUpdateMetadata($id: ID!, $input: [MetadataInput!]!) {
   updateMetadata(id: $id, input: $input) {
     errors {
       field

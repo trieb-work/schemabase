@@ -125,13 +125,11 @@ export class SaleorOrderSyncService {
 
   /**
    * Function to convert the saleor order id to the saleor order token
-   * @param saleorId 
-   * @returns 
+   * @param saleorId
+   * @returns
    */
   private idToToken(saleorId: string): string {
-
-    return Buffer.from(saleorId, 'base64').toString('utf8').split("Order:")[1]
-
+    return Buffer.from(saleorId, "base64").toString("utf8").split("Order:")[1];
   }
 
   public async syncToECI(): Promise<void> {
@@ -190,26 +188,26 @@ export class SaleorOrderSyncService {
         const companyCreateOrConnect: Prisma.CompanyCreateNestedOneWithoutContactsInput =
           companyName
             ? {
-              connectOrCreate: {
-                where: {
-                  normalizedName_tenantId: {
-                    normalizedName:
-                      normalizeStrings.companyNames(companyName),
-                    tenantId: this.tenantId,
+                connectOrCreate: {
+                  where: {
+                    normalizedName_tenantId: {
+                      normalizedName:
+                        normalizeStrings.companyNames(companyName),
+                      tenantId: this.tenantId,
+                    },
                   },
-                },
-                create: {
-                  id: id.id("company"),
-                  name: companyName,
-                  normalizedName: normalizeStrings.companyNames(companyName),
-                  tenant: {
-                    connect: {
-                      id: this.tenantId,
+                  create: {
+                    id: id.id("company"),
+                    name: companyName,
+                    normalizedName: normalizeStrings.companyNames(companyName),
+                    tenant: {
+                      connect: {
+                        id: this.tenantId,
+                      },
                     },
                   },
                 },
-              },
-            }
+              }
             : {};
         const contactCreateOrConnect = {
           connectOrCreate: {
@@ -341,10 +339,10 @@ export class SaleorOrderSyncService {
                 shippingPriceTaxId: true,
                 orderLineItems: {
                   select: {
-                    id: true
-                  }
-                }
-              }
+                    id: true,
+                  },
+                },
+              },
             },
           },
         });
@@ -371,8 +369,8 @@ export class SaleorOrderSyncService {
         const highestTaxRate =
           order.shippingPrice.gross.amount > 0
             ? await this.lookupECITax(
-              Math.round(Math.max(...lineItems.map((i) => i.taxRate)) * 100),
-            )
+                Math.round(Math.max(...lineItems.map((i) => i.taxRate)) * 100),
+              )
             : undefined;
 
         if (
@@ -399,9 +397,9 @@ export class SaleorOrderSyncService {
 
         /**
          * The order line item ids that are currently valid
-        */
+         */
         const allEciOrderLineItems: { id: string }[] = [];
-        
+
         // loop through all line items and upsert them in the DB
         for (const [i, lineItem] of lineItems.entries()) {
           if (!lineItem?.id) {
@@ -430,7 +428,7 @@ export class SaleorOrderSyncService {
           }
 
           // the first item is always "1". Saleor does not natively offer the order of line items, so we take the array index + 1
-          const lineItemOrder = i + 1
+          const lineItemOrder = i + 1;
 
           const uniqueString = uniqueStringOrderLine(
             prefixedOrderNumber,

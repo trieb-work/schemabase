@@ -53,7 +53,9 @@
 - **Postgres**: Our internal db in k8s
 
 # Current integrations
+
 schemabase has the following integrations already in place:
+
 - Xentral
 - Zoho Books
 - Zoho Inventory
@@ -64,7 +66,7 @@ schemabase has the following integrations already in place:
 - DPD
 - Track&Trace (custom Track&Trace solution supporting multilanguage notification emails on every package tracking update from the supported carriers)
 - Braintree (pulling transaction costs)
-- 
+-
 
 # Setup
 
@@ -82,7 +84,6 @@ Run install, codegen and database migration in one command:
 5. Once you are ready, you can run your full test suite:
    5.1 `make rebuild-api`
    5.2 `make test`
-
 
 # Glossary
 
