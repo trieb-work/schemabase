@@ -2139,6 +2139,10 @@ model KencoveApiApp {
   /// The scopes we need to access the api. Just comma separated list
   scope String
 
+  /// A user can manually mark categories, that should be skipped when syncing.
+  /// This is a comma separated list of category ids
+  skipCategories String?
+
   kencoveApiContacts KencoveApiContact[]
   kencoveApiAddresses KencoveApiAddress[]
   kencoveApiProductVariants KencoveApiProductVariant[]
@@ -2165,6 +2169,7 @@ model KencoveApiCategory {
   @@unique([id, kencoveApiAppId])
   @@index([kencoveApiAppId])
   @@index([categoryId])
+  @@index([id])
 }
 
 model KencoveApiAttribute {
@@ -2192,6 +2197,9 @@ model KencoveApiProductVariant {
   createdAt DateTime
   updatedAt DateTime
 
+  /// the id of the related product in the kencove api
+  productId String?
+
   productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
   productVariantId String
 
@@ -2201,6 +2209,7 @@ model KencoveApiProductVariant {
   @@unique([id, kencoveApiAppId])
   @@index([productVariantId])
   @@index([kencoveApiAppId])
+  @@index([productId])
 }
 
 /// Kencove custom address model. Relation between internal address
@@ -2565,6 +2574,8 @@ model CronJobState {
   lastRunStatus CronJobStatus?
   /// You can lock cron runs to prevent running in parallel for sensitive services like Xentral
   locked        Boolean        @default(false)
+
+  @@index([id])
 }
 
 // The saleor zoho integration consists of several, individual sync jobs

@@ -40,6 +40,7 @@ const prefixes = {
   billOfMaterial: "bom",
   datevContact: "datev_c",
   attribute: "attr",
+  category: "cat",
 };
 
 export const id = new IdGenerator({ crypto: nodeCrypto, prefixes });
