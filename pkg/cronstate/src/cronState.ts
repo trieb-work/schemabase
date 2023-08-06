@@ -18,7 +18,8 @@ type SyncEntity =
   | "bankaccounts"
   | "datev"
   | "attributes"
-  | "addresses";
+  | "addresses"
+  | "categories";
 
 type CronJobReturn = CronJobState & {
   currentlyLocked: boolean;

@@ -51,6 +51,13 @@ class NormalizationUtility {
   public attributeNames(input: string) {
     return this.standardNormalize(input);
   }
+
+  /**
+   * Normalize category names
+   */
+  public categoryNames(input: string) {
+    return this.standardNormalize(input);
+  }
 }
 
 /**

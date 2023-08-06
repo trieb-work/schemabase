@@ -2165,6 +2165,7 @@ model KencoveApiCategory {
   @@unique([id, kencoveApiAppId])
   @@index([kencoveApiAppId])
   @@index([categoryId])
+  @@index([id])
 }
 
 model KencoveApiAttribute {

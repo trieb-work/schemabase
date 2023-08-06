@@ -66,6 +66,19 @@ type KencoveApiProduct = {
   updatedAt: string;
 };
 
+type KencoveApiCategory = {
+  cateorgyId: number;
+  categorySlug: string;
+  categoryName: string;
+  parentCategoryId: string;
+  childrenCategoryIds: string[] | null;
+  // for example: "kencove.com > Clearance > Connectors-Clearance"
+  menuPath: string;
+  productIds: string[] | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export class KencoveApiClient {
   private static instance: KencoveApiClient;
   private axiosInstance: AxiosInstance;
@@ -248,6 +261,45 @@ export class KencoveApiClient {
   }> {
     const response = await axios.get(
       `https://23408405-review-ecom-attri-1c8eje.gc.review-kencove.com/ecom/attributes/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+    return response.data;
+  }
+
+  public async getCategories(fromDate: Date): Promise<KencoveApiCategory[]> {
+    const accessToken = await this.getAccessToken();
+    const categories: KencoveApiCategory[] = [];
+    let nextPage: string | null = null;
+    let offset: number = 0;
+    do {
+      const response = await this.getCategoriesPage(
+        fromDate,
+        offset,
+        accessToken,
+      );
+      categories.push(...response.data);
+      nextPage = response.next_page;
+      offset += 200;
+    } while (nextPage);
+    console.debug(`Found ${categories.length} categories`);
+    return categories;
+  }
+
+  private async getCategoriesPage(
+    fromDate: Date,
+    offset: number,
+    accessToken: string,
+  ): Promise<{
+    data: KencoveApiCategory[];
+    result_count: number;
+    next_page: string;
+  }> {
+    const response = await axios.get(
+      `https://23408405-review-feat-add-e-6oc06f.gc.review-kencove.com/ecom/categories/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
