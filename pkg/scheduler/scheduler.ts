@@ -117,6 +117,8 @@ export class WorkflowScheduler {
       new Worker(
         queueName,
         async (job: Job) => {
+          // this is currently not working and is straming
+          // ALL logs into the job log, not just from the current workflow..
           const logger = this.logger
             .with({
               jobId: job.id,

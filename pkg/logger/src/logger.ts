@@ -1,11 +1,14 @@
 import winston from "winston";
 import { env } from "@eci/pkg/env";
 import { Fields, ILogger, LogDrain, LoggerConfig } from "./types";
+import { ElasticsearchTransport } from "winston-elasticsearch";
 
 export class Logger implements ILogger {
   public logger: winston.Logger;
 
   private meta: Record<string, unknown>;
+
+  public elasticSearchTransport?: ElasticsearchTransport;
 
   private logDrains: LogDrain[] = [];
 
@@ -52,13 +55,18 @@ export class Logger implements ILogger {
    */
   public with(additionalMeta: Fields): ILogger {
     // TODO: fix this, copy from ANWR --> evtl. move it to a triebwork package
-    const copy = Object.assign(
-      Object.create(Object.getPrototypeOf(this)),
-      this,
-    ) as Logger;
+    // const copy = Object.assign(
+    //   Object.create(Object.getPrototypeOf(this)),
+    //   this,
+    // ) as Logger;
 
-    copy.meta = { ...this.meta, ...additionalMeta };
-    return copy;
+    // copy.meta = { ...this.meta, ...additionalMeta };
+    // return copy;
+    return new Logger({
+      meta: { ...this.meta, ...additionalMeta },
+      enableElasticLogDrain: typeof this.elasticSearchTransport !== "undefined",
+      logDrains: this.logDrains,
+    });
   }
 
   /**

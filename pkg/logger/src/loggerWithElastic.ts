@@ -5,8 +5,6 @@ import { env } from "@eci/pkg/env";
 import { LoggerConfig } from "./types";
 
 export class LoggerWithElastic extends Logger {
-  private elasticSearchTransport?: ElasticsearchTransport;
-
   public constructor(config?: LoggerConfig) {
     super();
     if (config?.enableElasticLogDrain) {

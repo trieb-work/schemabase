@@ -14,8 +14,10 @@ export type LoggerConfig = {
      * Environment
      */
     env?: string;
+    [key: string]: unknown;
   };
   enableElasticLogDrain?: boolean;
+  logDrains?: LogDrain[];
 };
 
 export interface ILogger {
