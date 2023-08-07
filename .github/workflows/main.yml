@@ -64,24 +64,23 @@ jobs:
           node-version: 18
           cache: 'pnpm'        
         
+      # Release the new version to GitHub. 
+      # Set the current version as an output variable    
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           pnpm i @semantic-release/git semantic-release
-          pnpm semantic-release 
-      # Extract the current package version from package.json and set it as an output variable
-      - name: Set tag
-        id: set_tag
-        run: |
-          echo ::set-output name=tag::$(node -p "require('./package.json').version")
-      
+          pnpm semantic-release
+          echo "CURRENT_VERSION=$(pnpm --silent semantic-release --version)" >> $GITHUB_ENV 
+     
+
       # use the image sha from docker-build-push step as the image name. Tag it with the current version from  set_tag. Push it afterwards
       - name: Tag and push image
         run: |
           docker pull ghcr.io/${{ env.IMAGE_NAME }}@${{ steps.docker-build-push.outputs.digest }}
-          docker tag ghcr.io/${{ env.IMAGE_NAME }}@${{ steps.docker-build-push.outputs.digest }} ghcr.io/${{ env.IMAGE_NAME }}:${{ steps.set_tag.outputs.tag }}
-          docker push ghcr.io/${{ env.IMAGE_NAME }}:${{ steps.set_tag.outputs.tag }}   
+          docker tag ghcr.io/${{ env.IMAGE_NAME }}@${{ steps.docker-build-push.outputs.digest }} ghcr.io/${{ env.IMAGE_NAME }}:${{ env.CURRENT_VERSION }}
+          docker push ghcr.io/${{ env.IMAGE_NAME }}:${{ env.CURRENT_VERSION }}   
 
 
 
