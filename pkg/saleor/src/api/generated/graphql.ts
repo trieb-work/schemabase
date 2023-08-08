@@ -13282,6 +13282,38 @@ export type AppQuery = {
   } | null;
 };
 
+export type SaleorCronCategoriesQueryVariables = Exact<{
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+}>;
+
+export type SaleorCronCategoriesQuery = {
+  __typename?: "Query";
+  categories?: {
+    __typename?: "CategoryCountableConnection";
+    edges: Array<{
+      __typename?: "CategoryCountableEdge";
+      node: {
+        __typename?: "Category";
+        id: string;
+        slug: string;
+        description?: any | null;
+        seoTitle?: string | null;
+        level: number;
+        seoDescription?: string | null;
+        parent?: { __typename?: "Category"; id: string } | null;
+        children?: {
+          __typename?: "CategoryCountableConnection";
+          edges: Array<{
+            __typename?: "CategoryCountableEdge";
+            node: { __typename?: "Category"; id: string };
+          }>;
+        } | null;
+      };
+    }>;
+  } | null;
+};
+
 export type SaleorCronCustomersQueryVariables = Exact<{
   updatedAtGte?: InputMaybe<Scalars["DateTime"]>;
   first?: InputMaybe<Scalars["Int"]>;
@@ -14059,6 +14091,32 @@ export const AppDocument = gql`
     }
   }
 `;
+export const SaleorCronCategoriesDocument = gql`
+  query SaleorCronCategories($first: Int, $last: Int) {
+    categories(first: $first, last: $last) {
+      edges {
+        node {
+          id
+          parent {
+            id
+          }
+          slug
+          description
+          seoTitle
+          level
+          seoDescription
+          children(first: 100) {
+            edges {
+              node {
+                id
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
 export const SaleorCronCustomersDocument = gql`
   query saleorCronCustomers(
     $updatedAtGte: DateTime
@@ -14721,6 +14779,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
         variables,
         options,
       ) as Promise<AppQuery>;
+    },
+    SaleorCronCategories(
+      variables?: SaleorCronCategoriesQueryVariables,
+      options?: C,
+    ): Promise<SaleorCronCategoriesQuery> {
+      return requester<
+        SaleorCronCategoriesQuery,
+        SaleorCronCategoriesQueryVariables
+      >(
+        SaleorCronCategoriesDocument,
+        variables,
+        options,
+      ) as Promise<SaleorCronCategoriesQuery>;
     },
     saleorCronCustomers(
       variables?: SaleorCronCustomersQueryVariables,

@@ -53,6 +53,20 @@ Table SaleorOrder {
   }
 }
 
+Table SaleorCategory {
+  id String [not null, note: 'Saleor Internal Id']
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  category Category [not null]
+  categoryId String [not null]
+  installedSaleorApp InstalledSaleorApp [not null]
+  installedSaleorAppId String [not null]
+
+  indexes {
+    (id, installedSaleorAppId) [unique]
+  }
+}
+
 Table SaleorCustomer {
   id String [not null, note: 'Saleor Internal Id']
   createdAt DateTime [not null]
@@ -723,13 +737,16 @@ Table Category {
   name String [not null, note: 'The name of the category']
   normalizedName String [not null, note: 'The normalized name of the category']
   slug String [note: 'The slug of the category']
+  level Int [note: 'if possible, the nesting level of this category, starting with 0']
   parentCategory Category [note: 'The parent category of this category']
   parentCategoryId String [note: 'The id of the parent category']
   childrenCategories Category [not null, note: 'The children categories of this category']
   products Product [not null, note: 'The products in this category']
+  active Boolean [not null, default: true, note: 'Is this category active or not. Old categories can be disabled']
   tenant Tenant [not null, note: 'The tenant this category belongs to']
   tenantId String [not null]
   kencoveApiCategories KencoveApiCategory [not null, note: 'The kencove categories this category is synced to']
+  saleorApiCategories SaleorCategory [not null]
 
   indexes {
     (normalizedName, tenantId) [unique]
@@ -1303,6 +1320,7 @@ Table InstalledSaleorApp {
   saleorFulfilmentLines SaleorFulfillmentLine [not null]
   saleorPackage SaleorPackage [not null]
   saleorCustomers SaleorCustomer [not null]
+  saleorCategory SaleorCategory [not null]
 
   indexes {
     (domain, channelSlug) [unique]
@@ -1874,6 +1892,10 @@ Ref: Cookies.installedSaleorAppId > InstalledSaleorApp.id
 Ref: SaleorOrder.(orderId, orderNumber) > Order.(id, orderNumber) [delete: Cascade]
 
 Ref: SaleorOrder.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
+
+Ref: SaleorCategory.categoryId > Category.id [delete: Cascade]
+
+Ref: SaleorCategory.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
 
 Ref: SaleorCustomer.customerId > Contact.id [delete: Cascade]
 

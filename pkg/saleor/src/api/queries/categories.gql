@@ -1,0 +1,24 @@
+query SaleorCronCategories($first: Int, $last: Int){
+  categories(first: $first, last: $last) {
+    edges {
+      node {
+        id
+        parent{
+          id
+        }
+        slug
+        description
+        seoTitle
+        level
+        seoDescription
+        children(first: 100) {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
+    }
+  }
+}
