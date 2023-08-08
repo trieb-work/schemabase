@@ -554,26 +554,35 @@ export class SaleorProductSyncService {
           saleorProductId: variant.productId,
         });
 
-        const metadataNew: {
-          __typename?: "MetadataItem" | undefined;
-          key: string;
-          value: string;
-        }[] = [];
-        metadataNew.push({
-          key: "customerRatings",
-          value: JSON.stringify({
-            averageRating: variant.productVariant.averageRating,
-            ratingCount: variant.productVariant.ratingCount,
-          }),
-        });
-        metadataNew.push({
-          key: "customerRatings_averageRating",
-          value: variant.productVariant.averageRating.toString(),
-        });
-        metadataNew.push({
-          key: "customerRatings_ratingCount",
-          value: variant.productVariant.ratingCount.toString(),
-        });
+        // to make use of shop facet filters, we create a metadata item with name "customerRatings_facet" and value like this:
+        // [ "1+", "2+" ] showing if a product variant has a rating of 2 or more stars. This can be used to filter all products, that have "minimum 2 stars".
+        // When a product has 5 stars, the value will be [ "1+", "2+", "3+", "4+", "5+" ].
+        const facetValue = [];
+        for (let i = 1; i <= variant.productVariant.averageRating; i++) {
+          facetValue.push(`${i}+`);
+        }
+
+        const metadataNew = [
+          {
+            key: "customerRatings_facet",
+            value: JSON.stringify(facetValue),
+          },
+          {
+            key: "customerRatings",
+            value: JSON.stringify({
+              averageRating: variant.productVariant.averageRating,
+              ratingCount: variant.productVariant.ratingCount,
+            }),
+          },
+          {
+            key: "customerRatings_averageRating",
+            value: variant.productVariant.averageRating.toString(),
+          },
+          {
+            key: "customerRatings_ratingCount",
+            value: variant.productVariant.ratingCount.toString(),
+          },
+        ];
         await this.saleorClient.saleorUpdateMetadata({
           id: saleorProductVariant.productVariant.id,
           input: metadataNew,
@@ -584,65 +593,87 @@ export class SaleorProductSyncService {
     // calculate the average product rating and the sum of ratings using the customer rating from all related
     // and active product variants of the current product. Just do it, if one of the reviews has changed.
     for (const productSet of productsWithReviewsChanged) {
-      this.logger.info(
-        `Updating average aggregated product rating for ${JSON.stringify(
-          productSet,
-        )}.`,
-      );
-      const productRatings = await this.db.productVariant.aggregate({
-        where: {
-          productId: productSet.eciProductId,
-          active: true,
-        },
-        _count: {
-          ratingCount: true,
-        },
-        _avg: {
-          averageRating: true,
-        },
-      });
-
-      if (
-        !productRatings._avg.averageRating ||
-        !productRatings._count.ratingCount
-      ) {
-        this.logger.info(
-          `No aggregated product ratings found for ${JSON.stringify(
-            productSet,
-          )}.`,
-        );
-        continue;
-      }
-
-      const metadataNew = [
-        {
-          key: "customerRatings",
-          value: JSON.stringify({
-            averageRating: productRatings._avg.averageRating,
-            ratingCount: productRatings._count.ratingCount,
-          }),
-        },
-        {
-          key: "customerRatings_averageRating",
-          value: productRatings._avg.averageRating.toString(),
-        },
-        {
-          key: "customerRatings_ratingCount",
-          value: productRatings._count.ratingCount.toString(),
-        },
-      ];
-      this.logger.debug(
-        `Sending this metadata: ${JSON.stringify(metadataNew)}`,
-      );
-      await this.saleorClient.saleorUpdateMetadata({
-        id: productSet.saleorProductId,
-        input: metadataNew,
-      });
+      await this.setAggregatedProductRating(productSet);
     }
 
     await this.cronState.set({
       lastRun: new Date(),
       lastRunStatus: "success",
+    });
+  }
+
+  /**
+   * Aggregate the customer ratings of all variants together and sets the
+   * aggregated data as metadata in saleor
+   * @param productSet
+   */
+  private async setAggregatedProductRating(productSet: {
+    eciProductId: string;
+    saleorProductId: string;
+  }) {
+    this.logger.info(
+      `Updating average aggregated product rating for ${JSON.stringify(
+        productSet,
+      )}.`,
+    );
+    const productRatings = await this.db.productVariant.aggregate({
+      where: {
+        productId: productSet.eciProductId,
+        active: true,
+      },
+      _count: {
+        ratingCount: true,
+      },
+      _avg: {
+        averageRating: true,
+      },
+    });
+
+    if (
+      !productRatings._avg.averageRating ||
+      !productRatings._count.ratingCount
+    ) {
+      this.logger.info(
+        `No aggregated product ratings found for ${JSON.stringify(
+          productSet,
+        )}.`,
+      );
+      return;
+    }
+
+    // to make use of shop facet filters, we create a metadata item with name "customerRatings_facet" and value like this:
+    // [ "1+", "2+" ] showing if a product has a rating of 2 or more stars. This can be used to filter all products, that have "minimum 2 stars".
+    // When a product has 5 stars, the value will be [ "1+", "2+", "3+", "4+", "5+" ].
+    const facetValue = [];
+    for (let i = 1; i <= productRatings._avg.averageRating; i++) {
+      facetValue.push(`${i}+`);
+    }
+
+    const metadataNew = [
+      {
+        key: "customerRatings_facet",
+        value: JSON.stringify(facetValue),
+      },
+      {
+        key: "customerRatings",
+        value: JSON.stringify({
+          averageRating: productRatings._avg.averageRating,
+          ratingCount: productRatings._count.ratingCount,
+        }),
+      },
+      {
+        key: "customerRatings_averageRating",
+        value: productRatings._avg.averageRating.toString(),
+      },
+      {
+        key: "customerRatings_ratingCount",
+        value: productRatings._count.ratingCount.toString(),
+      },
+    ];
+    this.logger.debug(`Sending this metadata: ${JSON.stringify(metadataNew)}`);
+    await this.saleorClient.saleorUpdateMetadata({
+      id: productSet.saleorProductId,
+      input: metadataNew,
     });
   }
 }
