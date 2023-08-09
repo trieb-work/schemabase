@@ -1897,6 +1897,12 @@ model Package {
   /// The package shipment state
   state PackageState @default(INIT)
 
+  /// Optional field if this package is part of a multi piece shipment
+  isMultiPieceShipment Boolean @default(false)
+
+  /// the parcel weight in grams
+  weightGrams Int?
+
   /// A unique identifier for this package like PKG-0034
   number             String
   /// tracking id from the carrier. Optional, as the package can, exist before we created a tracking number

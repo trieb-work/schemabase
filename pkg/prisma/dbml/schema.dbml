@@ -950,6 +950,8 @@ Table Package {
   active Boolean [not null, default: true, note: 'If this entity is active or got deleted somewhere']
   carrier Carrier [not null]
   state PackageState [not null, default: 'INIT', note: 'The package shipment state']
+  isMultiPieceShipment Boolean [not null, default: false, note: 'Optional field if this package is part of a multi piece shipment']
+  weightGrams Int [note: 'the parcel weight in grams']
   number String [not null, note: 'A unique identifier for this package like PKG-0034']
   trackingId String [note: 'tracking id from the carrier. Optional, as the package can, exist before we created a tracking number']
   carrierTrackingUrl String [note: 'A link to the carriers tracking page']

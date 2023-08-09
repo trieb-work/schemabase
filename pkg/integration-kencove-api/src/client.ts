@@ -259,8 +259,8 @@ export class KencoveApiClient {
     result_count: number;
     next_page: string;
   }> {
-    const response = await axios.get(
-      `https://23408405-review-ecom-attri-1c8eje.gc.review-kencove.com/ecom/attributes/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
+    const response = await this.axiosInstance.get(
+      `/ecom/attributes/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
