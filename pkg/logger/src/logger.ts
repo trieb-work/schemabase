@@ -37,6 +37,7 @@ export class Logger implements ILogger {
               depth: 10,
             }),
     });
+    this.logDrains = config?.logDrains ?? [];
   }
 
   public withLogDrain(logDrain: LogDrain): ILogger {
