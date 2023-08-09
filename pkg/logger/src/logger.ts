@@ -40,13 +40,11 @@ export class Logger implements ILogger {
   }
 
   public withLogDrain(logDrain: LogDrain): ILogger {
-    const copy = Object.assign(
-      Object.create(Object.getPrototypeOf(this)),
-      this,
-    ) as Logger;
-
-    copy.logDrains.push(logDrain);
-    return copy;
+    return new Logger({
+      meta: this.meta,
+      enableElasticLogDrain: typeof this.elasticSearchTransport !== "undefined",
+      logDrains: [...this.logDrains, logDrain],
+    });
   }
 
   /**
