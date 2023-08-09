@@ -5,7 +5,7 @@ fragment categoryValues on Category {
   description
   seoTitle
   seoDescription
-  backgroundImage{
+  backgroundImage {
     url
   }
   children(first: 100) {
@@ -15,7 +15,7 @@ fragment categoryValues on Category {
       }
     }
   }
-  parent{
+  parent {
     id
   }
   products(first: 100) {
@@ -27,7 +27,7 @@ fragment categoryValues on Category {
   }
 }
 
-query saleorCronCategories($first: Int, $last: Int){
+query saleorCronCategories($first: Int, $last: Int) {
   categories(first: $first, last: $last) {
     edges {
       node {
