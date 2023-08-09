@@ -13282,6 +13282,72 @@ export type AppQuery = {
   } | null;
 };
 
+export type CategoryValuesFragment = {
+  __typename?: "Category";
+  id: string;
+  name: string;
+  slug: string;
+  description?: any | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  backgroundImage?: { __typename?: "Image"; url: string } | null;
+  children?: {
+    __typename?: "CategoryCountableConnection";
+    edges: Array<{
+      __typename?: "CategoryCountableEdge";
+      node: { __typename?: "Category"; id: string };
+    }>;
+  } | null;
+  parent?: { __typename?: "Category"; id: string } | null;
+  products?: {
+    __typename?: "ProductCountableConnection";
+    edges: Array<{
+      __typename?: "ProductCountableEdge";
+      node: { __typename?: "Product"; id: string };
+    }>;
+  } | null;
+};
+
+export type SaleorCronCategoriesQueryVariables = Exact<{
+  first?: InputMaybe<Scalars["Int"]>;
+  last?: InputMaybe<Scalars["Int"]>;
+}>;
+
+export type SaleorCronCategoriesQuery = {
+  __typename?: "Query";
+  categories?: {
+    __typename?: "CategoryCountableConnection";
+    edges: Array<{
+      __typename?: "CategoryCountableEdge";
+      node: {
+        __typename?: "Category";
+        id: string;
+        name: string;
+        slug: string;
+        description?: any | null;
+        seoTitle?: string | null;
+        seoDescription?: string | null;
+        backgroundImage?: { __typename?: "Image"; url: string } | null;
+        children?: {
+          __typename?: "CategoryCountableConnection";
+          edges: Array<{
+            __typename?: "CategoryCountableEdge";
+            node: { __typename?: "Category"; id: string };
+          }>;
+        } | null;
+        parent?: { __typename?: "Category"; id: string } | null;
+        products?: {
+          __typename?: "ProductCountableConnection";
+          edges: Array<{
+            __typename?: "ProductCountableEdge";
+            node: { __typename?: "Product"; id: string };
+          }>;
+        } | null;
+      };
+    }>;
+  } | null;
+};
+
 export type SaleorCronCustomersQueryVariables = Exact<{
   updatedAtGte?: InputMaybe<Scalars["DateTime"]>;
   first?: InputMaybe<Scalars["Int"]>;
@@ -13790,6 +13856,36 @@ export type WarehousesQuery = {
   } | null;
 };
 
+export const CategoryValuesFragmentDoc = gql`
+  fragment categoryValues on Category {
+    id
+    name
+    slug
+    description
+    seoTitle
+    seoDescription
+    backgroundImage {
+      url
+    }
+    children(first: 100) {
+      edges {
+        node {
+          id
+        }
+      }
+    }
+    parent {
+      id
+    }
+    products(first: 100) {
+      edges {
+        node {
+          id
+        }
+      }
+    }
+  }
+`;
 export const PageInfoMetaFragmentDoc = gql`
   fragment PageInfoMeta on PageInfo {
     hasNextPage
@@ -14058,6 +14154,18 @@ export const AppDocument = gql`
       }
     }
   }
+`;
+export const SaleorCronCategoriesDocument = gql`
+  query saleorCronCategories($first: Int, $last: Int) {
+    categories(first: $first, last: $last) {
+      edges {
+        node {
+          ...categoryValues
+        }
+      }
+    }
+  }
+  ${CategoryValuesFragmentDoc}
 `;
 export const SaleorCronCustomersDocument = gql`
   query saleorCronCustomers(
@@ -14721,6 +14829,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
         variables,
         options,
       ) as Promise<AppQuery>;
+    },
+    saleorCronCategories(
+      variables?: SaleorCronCategoriesQueryVariables,
+      options?: C,
+    ): Promise<SaleorCronCategoriesQuery> {
+      return requester<
+        SaleorCronCategoriesQuery,
+        SaleorCronCategoriesQueryVariables
+      >(
+        SaleorCronCategoriesDocument,
+        variables,
+        options,
+      ) as Promise<SaleorCronCategoriesQuery>;
     },
     saleorCronCustomers(
       variables?: SaleorCronCustomersQueryVariables,

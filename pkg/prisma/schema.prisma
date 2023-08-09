@@ -102,6 +102,26 @@ model SaleorOrder {
   @@index([orderId, orderNumber])
 }
 
+model SaleorCategory {
+  /// Saleor Internal Id
+  id String
+
+  // saleor does not provide us this data
+  //createdAt DateTime
+  //updatedAt DateTime
+
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId String
+
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String
+
+  @@unique([id, installedSaleorAppId])
+  @@index([categoryId])
+  @@index([installedSaleorAppId])
+  @@index([id])
+}
+
 model SaleorCustomer {
   /// Saleor Internal Id
   id String
@@ -1508,6 +1528,9 @@ model Category {
   /// The slug of the category
   slug String?
 
+  /// if possible, the nesting level of this category, starting with 0
+  level Int?
+
   /// The parent category of this category
   parentCategory Category? @relation("CategoryParentCategory", fields: [parentCategoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
@@ -1520,6 +1543,9 @@ model Category {
   /// The products in this category
   products Product[]
 
+  /// Is this category active or not. Old categories can be disabled
+  active  Boolean @default(true)
+
   /// The tenant this category belongs to
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -1527,6 +1553,9 @@ model Category {
 
   /// The kencove categories this category is synced to
   kencoveApiCategories KencoveApiCategory[]
+
+  // The saleor categories this category is synced to
+  saleorApiCategories SaleorCategory[]
 
   @@unique([normalizedName, tenantId])
   @@index([tenantId])
@@ -2424,6 +2453,7 @@ model InstalledSaleorApp {
   syncProducts      Boolean @default(false)
   syncPackages      Boolean @default(false)
   syncTaxes         Boolean @default(false)
+  syncCategories    Boolean @default(false)
 
 
   productDataFeedIntegration ProductDataFeedIntegration[]
@@ -2436,6 +2466,7 @@ model InstalledSaleorApp {
   saleorFulfilmentLines      SaleorFulfillmentLine[]
   saleorPackage              SaleorPackage[]
   saleorCustomers            SaleorCustomer[]
+  saleorCategory             SaleorCategory[]
 
   @@unique([domain, channelSlug])
   @@index([saleorAppId, domain])

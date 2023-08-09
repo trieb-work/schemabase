@@ -30,6 +30,7 @@ import { ReviewsioSyncWf } from "./workflows/reviewsioSync";
 import { KencoveApiProductSyncWf } from "./workflows/kencoveApiProductSync";
 import { KencoveApiAttributeSyncWf } from "./workflows/kencoveApiAttributeSync";
 import { KencoveApiCategorySyncWf } from "./workflows/kencoveApiCategorySync";
+import { SaleorCategorySyncWf } from "./workflows/saleorCategorySync";
 
 interface CronClients {
   logger: ILogger;
@@ -417,6 +418,18 @@ export class CronTable {
         installedSaleorAppId: id,
         orderPrefix,
       };
+
+      if (enabledSaleorApp.syncCategories) {
+        new WorkflowScheduler(this.clients).schedule(
+          createWorkflowFactory(
+            SaleorCategorySyncWf,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 0 },
+          [tenantId.substring(0, 5), id.substring(0, 5)],
+        );
+      }
 
       if (enabledSaleorApp.syncWarehouses) {
         new WorkflowScheduler(this.clients).schedule(
