@@ -62,7 +62,7 @@ export class KencoveApiAppAttributeSyncService {
         return AttributeType.NUMERIC;
       case "RICH_TEXT":
         return AttributeType.RICH_TEXT;
-      case "PLAIN_TEXT":
+      case "text":
         return AttributeType.PLAIN_TEXT;
       case "color":
         return AttributeType.SWATCH;
