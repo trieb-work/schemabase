@@ -47,6 +47,7 @@ export class SaleorPaymentGatewaySyncService {
 
     for (const gateway of gateways) {
       try {
+        // eslint-disable-next-line max-len
         const connectOrCreatePaymentMethods: Prisma.Enumerable<Prisma.PaymentMethodCreateOrConnectWithoutSaleorPaymentGatewayInput> =
           gateway.currencies
             .flatMap(
@@ -128,6 +129,7 @@ export class SaleorPaymentGatewaySyncService {
           },
         });
         this.logger.info(
+          // eslint-disable-next-line max-len
           `Updated saleor payment gateway ${gateway.id} with ${connectOrCreatePaymentMethods.length} payment method(s).`,
         );
       } catch (err) {

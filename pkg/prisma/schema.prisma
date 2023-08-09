@@ -106,8 +106,9 @@ model SaleorCategory {
   /// Saleor Internal Id
   id String
 
-  createdAt DateTime
-  updatedAt DateTime
+  // saleor does not provide us this data
+  //createdAt DateTime
+  //updatedAt DateTime
 
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   categoryId String
@@ -2446,6 +2447,7 @@ model InstalledSaleorApp {
   syncProducts      Boolean @default(false)
   syncPackages      Boolean @default(false)
   syncTaxes         Boolean @default(false)
+  syncCategories    Boolean @default(false)
 
 
   productDataFeedIntegration ProductDataFeedIntegration[]

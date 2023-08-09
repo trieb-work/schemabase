@@ -1,23 +1,37 @@
-query SaleorCronCategories($first: Int, $last: Int){
-  categories(first: $first, last: $last) {
+fragment categoryValues on Category {
+  id
+  name
+  slug
+  description
+  seoTitle
+  seoDescription
+  backgroundImage{
+    url
+  }
+  children(first: 100) {
     edges {
       node {
         id
-        parent{
-          id
-        }
-        slug
-        description
-        seoTitle
-        level
-        seoDescription
-        children(first: 100) {
-          edges {
-            node {
-              id
-            }
-          }
-        }
+      }
+    }
+  }
+  parent{
+    id
+  }
+  products(first: 100) {
+    edges {
+      node {
+        id
+      }
+    }
+  }
+}
+
+query saleorCronCategories($first: Int, $last: Int){
+  categories(first: $first, last: $last) {
+    edges {
+      node {
+        ...categoryValues
       }
     }
   }

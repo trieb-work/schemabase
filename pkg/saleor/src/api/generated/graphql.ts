@@ -13282,6 +13282,32 @@ export type AppQuery = {
   } | null;
 };
 
+export type CategoryValuesFragment = {
+  __typename?: "Category";
+  id: string;
+  name: string;
+  slug: string;
+  description?: any | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  backgroundImage?: { __typename?: "Image"; url: string } | null;
+  children?: {
+    __typename?: "CategoryCountableConnection";
+    edges: Array<{
+      __typename?: "CategoryCountableEdge";
+      node: { __typename?: "Category"; id: string };
+    }>;
+  } | null;
+  parent?: { __typename?: "Category"; id: string } | null;
+  products?: {
+    __typename?: "ProductCountableConnection";
+    edges: Array<{
+      __typename?: "ProductCountableEdge";
+      node: { __typename?: "Product"; id: string };
+    }>;
+  } | null;
+};
+
 export type SaleorCronCategoriesQueryVariables = Exact<{
   first?: InputMaybe<Scalars["Int"]>;
   last?: InputMaybe<Scalars["Int"]>;
@@ -13296,17 +13322,25 @@ export type SaleorCronCategoriesQuery = {
       node: {
         __typename?: "Category";
         id: string;
+        name: string;
         slug: string;
         description?: any | null;
         seoTitle?: string | null;
-        level: number;
         seoDescription?: string | null;
-        parent?: { __typename?: "Category"; id: string } | null;
+        backgroundImage?: { __typename?: "Image"; url: string } | null;
         children?: {
           __typename?: "CategoryCountableConnection";
           edges: Array<{
             __typename?: "CategoryCountableEdge";
             node: { __typename?: "Category"; id: string };
+          }>;
+        } | null;
+        parent?: { __typename?: "Category"; id: string } | null;
+        products?: {
+          __typename?: "ProductCountableConnection";
+          edges: Array<{
+            __typename?: "ProductCountableEdge";
+            node: { __typename?: "Product"; id: string };
           }>;
         } | null;
       };
@@ -13822,6 +13856,36 @@ export type WarehousesQuery = {
   } | null;
 };
 
+export const CategoryValuesFragmentDoc = gql`
+  fragment categoryValues on Category {
+    id
+    name
+    slug
+    description
+    seoTitle
+    seoDescription
+    backgroundImage {
+      url
+    }
+    children(first: 100) {
+      edges {
+        node {
+          id
+        }
+      }
+    }
+    parent {
+      id
+    }
+    products(first: 100) {
+      edges {
+        node {
+          id
+        }
+      }
+    }
+  }
+`;
 export const PageInfoMetaFragmentDoc = gql`
   fragment PageInfoMeta on PageInfo {
     hasNextPage
@@ -14092,30 +14156,16 @@ export const AppDocument = gql`
   }
 `;
 export const SaleorCronCategoriesDocument = gql`
-  query SaleorCronCategories($first: Int, $last: Int) {
+  query saleorCronCategories($first: Int, $last: Int) {
     categories(first: $first, last: $last) {
       edges {
         node {
-          id
-          parent {
-            id
-          }
-          slug
-          description
-          seoTitle
-          level
-          seoDescription
-          children(first: 100) {
-            edges {
-              node {
-                id
-              }
-            }
-          }
+          ...categoryValues
         }
       }
     }
   }
+  ${CategoryValuesFragmentDoc}
 `;
 export const SaleorCronCustomersDocument = gql`
   query saleorCronCustomers(
@@ -14780,7 +14830,7 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
         options,
       ) as Promise<AppQuery>;
     },
-    SaleorCronCategories(
+    saleorCronCategories(
       variables?: SaleorCronCategoriesQueryVariables,
       options?: C,
     ): Promise<SaleorCronCategoriesQuery> {
