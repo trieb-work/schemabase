@@ -59,15 +59,18 @@ export class KencoveApiAppCategorySyncService {
     }
 
     const client = new KencoveApiClient(this.kencoveApiApp);
-    const categories = await client.getCategories(createdGte);
 
-    this.logger.info(`Received ${categories.length} categories from Kencove.`);
+    const kenApiCategories = await client.getCategories(createdGte);
+
+    this.logger.info(
+      `Received ${kenApiCategories.length} categories from the api.`,
+    );
 
     const existingCategories = await this.db.kencoveApiCategory.findMany({
       where: {
         kencoveApiAppId: this.kencoveApiApp.id,
         id: {
-          in: categories.map((c) => c.cateorgyId.toString()),
+          in: kenApiCategories.map((c) => c.cateorgyId?.toString()),
         },
       },
     });
@@ -79,7 +82,7 @@ export class KencoveApiAppCategorySyncService {
       this.kencoveApiApp.skipCategories?.split(",") ?? [];
 
     // remove categories that are configured to be skipped
-    const categoriesToSync = categories.filter(
+    const categoriesToSync = kenApiCategories.filter(
       (c) => !categoriesToSkip.includes(c.cateorgyId.toString()),
     );
 
