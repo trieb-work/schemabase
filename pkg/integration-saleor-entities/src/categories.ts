@@ -1,8 +1,11 @@
 // SaleorCategorySyncService is a service that handles the
-// synchronisation of internal categories with Saleor categories, using the normal structure of syncToEci and syncFromEci.
-// we are using our internal database models "Category" and "SaleorCategory". To keep the data in sync.
-// Saleor is missing a updatedAt field for categories, so we need to fetch all categories from Saleor every time.
-// To see, if our internal data is more up to date than the data coming from saleor, we can use the updatedAt field from the Category table.
+// synchronisation of internal categories with Saleor categories, using the normal
+// structure of syncToEci and syncFromEci.
+// we are using our internal database models "Category" and "SaleorCategory".
+// To keep the data in sync. Saleor is missing a updatedAt field for categories,
+// so we need to fetch all categories from Saleor every time. To see, if our internal
+// data is more up to date than the data coming from saleor, we can use the updatedAt
+// field from the Category table.
 
 import { id } from "@eci/pkg/ids";
 import { ILogger } from "@eci/pkg/logger";
@@ -231,6 +234,22 @@ export class SaleorCategorySyncService {
           })
         : null;
 
+      const subCategoryIds = category?.children
+        ? category?.children.edges.map((c) => c.node.id)
+        : [];
+
+      /**
+       * the sub categories of the category we want to create, looked up in our
+       * DB with internal ids
+       */
+      const internalsubCategories = await this.db.saleorCategory.findMany({
+        where: {
+          id: {
+            in: subCategoryIds,
+          },
+        },
+      });
+
       await this.db.saleorCategory.create({
         data: {
           id: category.id,
@@ -259,6 +278,11 @@ export class SaleorCategorySyncService {
                 active: true,
                 normalizedName,
                 slug: category.slug,
+                childrenCategories: {
+                  connect: internalsubCategories.map((c) => ({
+                    id: c.categoryId,
+                  })),
+                },
                 parentCategory: parentCategory
                   ? {
                       connect: {
@@ -302,4 +326,8 @@ export class SaleorCategorySyncService {
       },
     });
   }
+
+  /**
+   * sync from ECI: use our internal updatedAt
+   */
 }

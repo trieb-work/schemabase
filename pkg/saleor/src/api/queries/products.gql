@@ -102,6 +102,9 @@ query saleorEntitySyncProducts(
       node {
         id
         name
+        category {
+          id
+        }
         updatedAt
         variants {
           id

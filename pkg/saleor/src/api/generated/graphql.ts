@@ -13787,6 +13787,7 @@ export type SaleorEntitySyncProductsQuery = {
         id: string;
         name: string;
         updatedAt: any;
+        category?: { __typename?: "Category"; id: string } | null;
         variants?: Array<{
           __typename?: "ProductVariant";
           id: string;
@@ -14569,6 +14570,9 @@ export const SaleorEntitySyncProductsDocument = gql`
         node {
           id
           name
+          category {
+            id
+          }
           updatedAt
           variants {
             id
