@@ -1628,6 +1628,7 @@ model ProductVariant {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
+  /// The default warehouse to assosiate stocks with. 
   defaultWarehouse   Warehouse? @relation(fields: [defaultWarehouseId], references: [id], onDelete: Cascade)
   defaultWarehouseId String?
 

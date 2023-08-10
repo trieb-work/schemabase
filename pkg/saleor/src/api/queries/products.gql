@@ -80,6 +80,31 @@ query products($first: Int!, $channel: String) {
   }
 }
 
+fragment variant on ProductVariant {
+  id
+  name
+  sku
+  metadata {
+    key
+    value
+  }
+  stocks {
+    warehouse {
+      name
+      id
+    }
+  }
+  variantAttributes: attributes(variantSelection: VARIANT_SELECTION) {
+    attribute {
+      name
+    }
+    values {
+      id
+      name
+    }
+  }
+}
+
 query saleorEntitySyncProducts(
   $first: Int!
   $channel: String
@@ -107,28 +132,7 @@ query saleorEntitySyncProducts(
         }
         updatedAt
         variants {
-          id
-          name
-          sku
-          metadata {
-            key
-            value
-          }
-          stocks {
-            warehouse {
-              name
-              id
-            }
-          }
-          variantAttributes: attributes(variantSelection: VARIANT_SELECTION) {
-            attribute {
-              name
-            }
-            values {
-              id
-              name
-            }
-          }
+          ...variant
         }
       }
     }

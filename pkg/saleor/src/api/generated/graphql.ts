@@ -13762,6 +13762,27 @@ export type ProductsQuery = {
   } | null;
 };
 
+export type VariantFragment = {
+  __typename?: "ProductVariant";
+  id: string;
+  name: string;
+  sku?: string | null;
+  metadata: Array<{ __typename?: "MetadataItem"; key: string; value: string }>;
+  stocks?: Array<{
+    __typename?: "Stock";
+    warehouse: { __typename?: "Warehouse"; name: string; id: string };
+  }> | null;
+  variantAttributes: Array<{
+    __typename?: "SelectedAttribute";
+    attribute: { __typename?: "Attribute"; name?: string | null };
+    values: Array<{
+      __typename?: "AttributeValue";
+      id: string;
+      name?: string | null;
+    }>;
+  }>;
+};
+
 export type SaleorEntitySyncProductsQueryVariables = Exact<{
   first: Scalars["Int"];
   channel?: InputMaybe<Scalars["String"]>;
@@ -13906,6 +13927,32 @@ export const StandardAddressValuesFragmentDoc = gql`
     companyName
     country {
       code
+    }
+  }
+`;
+export const VariantFragmentDoc = gql`
+  fragment variant on ProductVariant {
+    id
+    name
+    sku
+    metadata {
+      key
+      value
+    }
+    stocks {
+      warehouse {
+        name
+        id
+      }
+    }
+    variantAttributes: attributes(variantSelection: VARIANT_SELECTION) {
+      attribute {
+        name
+      }
+      values {
+        id
+        name
+      }
     }
   }
 `;
@@ -14575,33 +14622,13 @@ export const SaleorEntitySyncProductsDocument = gql`
           }
           updatedAt
           variants {
-            id
-            name
-            sku
-            metadata {
-              key
-              value
-            }
-            stocks {
-              warehouse {
-                name
-                id
-              }
-            }
-            variantAttributes: attributes(variantSelection: VARIANT_SELECTION) {
-              attribute {
-                name
-              }
-              values {
-                id
-                name
-              }
-            }
+            ...variant
           }
         }
       }
     }
   }
+  ${VariantFragmentDoc}
 `;
 export const SaleorProductVariantBasicDataDocument = gql`
   query saleorProductVariantBasicData($id: ID!) {

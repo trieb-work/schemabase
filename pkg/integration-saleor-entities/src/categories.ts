@@ -181,8 +181,12 @@ export class SaleorCategorySyncService {
       if (
         (parentCategory &&
           category.category.parentCategoryId !== parentCategory.categoryId) ||
-        category.category.normalizedName !== normalizedName
+        category.category.normalizedName !== normalizedName ||
+        category.category.slug !== saleorCategory.slug
       ) {
+        this.logger.info(
+          `Internal fiels differ with the saleor category: ${category.category.name}. Update the category`,
+        );
         await this.db.saleorCategory.update({
           where: {
             id_installedSaleorAppId: {
@@ -195,6 +199,7 @@ export class SaleorCategorySyncService {
               update: {
                 name: saleorCategory.name,
                 normalizedName,
+                slug: saleorCategory.slug,
                 parentCategory: parentCategory
                   ? {
                       connect: {

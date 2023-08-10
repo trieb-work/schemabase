@@ -790,7 +790,7 @@ Table ProductVariant {
   productId String [not null, note: 'schemabase internal productId']
   tenant Tenant [not null]
   tenantId String [not null]
-  defaultWarehouse Warehouse
+  defaultWarehouse Warehouse [note: 'The default warehouse to assosiate stocks with. ']
   defaultWarehouseId String
   salesTax Tax [note: 'The default tax rate of this article. Might be different for purchase and sales']
   salesTaxId String

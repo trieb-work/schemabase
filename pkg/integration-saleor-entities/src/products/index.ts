@@ -7,6 +7,7 @@ import {
   SaleorProductVariantBasicDataQuery,
   SaleorUpdateMetadataMutation,
   StockInput,
+  VariantFragment,
 } from "@eci/pkg/saleor";
 import { PrismaClient, Prisma } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
@@ -98,6 +99,38 @@ export class SaleorProductSyncService {
     });
   }
 
+  /**
+   * Try to extract the default warehouse name from stocks of a variant.
+   */
+  private getDefaultWarehouse(variant: VariantFragment) {
+    try {
+      if (!variant?.stocks || variant.stocks.length === 0) {
+        throw new Error(
+          `Product Variant has no stocks (warehouses) assigned, therefore we can not determine the default warehouse. Aborting sync.`,
+        );
+      }
+      if (variant?.stocks?.length > 1) {
+        throw new Error(
+          `Product Variant has multiple stocks (warehouses) assigned, therefore we can not determine the default warehouse. Aborting sync.`,
+        );
+      }
+      if (!variant.stocks?.[0]?.warehouse?.name) {
+        throw new Error(
+          `First Warehouse of Product Variant (the default warehouse) has no name set. Aborting sync.`,
+        );
+      }
+      const normalizedDefaultWarehouseName = normalizeStrings.warehouseNames(
+        variant.stocks?.[0]?.warehouse.name,
+      );
+      return normalizedDefaultWarehouseName;
+    } catch (error: any) {
+      this.logger.warn(
+        `Error determining the default warehouse: ${error.message}`,
+      );
+      return undefined;
+    }
+  }
+
   public async syncToECI(): Promise<void> {
     const cronState = await this.cronState.get();
     const now = new Date();
@@ -140,6 +173,21 @@ export class SaleorProductSyncService {
         continue;
       }
 
+      /**
+       * The category corresponding to this product. Our internal category
+       * id is stored in the "categoryId" variable
+       */
+      const category = product.category
+        ? await this.db.saleorCategory.findUnique({
+            where: {
+              id_installedSaleorAppId: {
+                id: product.category.id,
+                installedSaleorAppId: this.installedSaleorAppId,
+              },
+            },
+          })
+        : undefined;
+
       const normalizedProductName = normalizeStrings.productNames(product.name);
 
       for (const variant of product.variants) {
@@ -159,25 +207,12 @@ export class SaleorProductSyncService {
               `Product Variant ${variant?.id} has no SKU! Aborting sync`,
             );
           }
-          if (!variant?.stocks || variant.stocks.length === 0) {
-            throw new Error(
-              `Product Variant has no stocks (warehouses) assigned, therefore we can not determine the default warehouse. Aborting sync.`,
-            );
-          }
-          if (variant?.stocks?.length > 1) {
-            throw new Error(
-              `Product Variant has multiple stocks (warehouses) assigned, therefore we can not determine the default warehouse. Aborting sync.`,
-            );
-          }
-          if (!variant.stocks?.[0]?.warehouse?.name) {
-            throw new Error(
-              `First Warehouse of Product Variant (the default warehouse) has no name set. Aborting sync.`,
-            );
-          }
+
+          /**
+           * if set, this is the default warehouse name
+           */
           const normalizedDefaultWarehouseName =
-            normalizeStrings.warehouseNames(
-              variant.stocks?.[0]?.warehouse.name,
-            );
+            this.getDefaultWarehouse(variant);
 
           /**
            * The product variants EAN-13 number. Stored as metadata field in Saleor
@@ -212,14 +247,16 @@ export class SaleorProductSyncService {
                   },
                   create: {
                     id: id.id("variant"),
-                    defaultWarehouse: {
-                      connect: {
-                        normalizedName_tenantId: {
-                          normalizedName: normalizedDefaultWarehouseName,
-                          tenantId: this.tenantId,
-                        },
-                      },
-                    },
+                    defaultWarehouse: normalizedDefaultWarehouseName
+                      ? {
+                          connect: {
+                            normalizedName_tenantId: {
+                              normalizedName: normalizedDefaultWarehouseName,
+                              tenantId: this.tenantId,
+                            },
+                          },
+                        }
+                      : undefined,
                     sku: variant.sku,
                     variantName: variant.name,
                     ean,
@@ -238,6 +275,13 @@ export class SaleorProductSyncService {
                         },
                         create: {
                           id: id.id("product"),
+                          category: category
+                            ? {
+                                connect: {
+                                  id: category.id,
+                                },
+                              }
+                            : undefined,
                           tenant: {
                             connect: {
                               id: this.tenantId,
@@ -266,14 +310,16 @@ export class SaleorProductSyncService {
                   create: {
                     // TODO: does it make sense to set stock entries here as well
                     id: id.id("variant"),
-                    defaultWarehouse: {
-                      connect: {
-                        normalizedName_tenantId: {
-                          normalizedName: normalizedDefaultWarehouseName,
-                          tenantId: this.tenantId,
-                        },
-                      },
-                    },
+                    defaultWarehouse: normalizedDefaultWarehouseName
+                      ? {
+                          connect: {
+                            normalizedName_tenantId: {
+                              normalizedName: normalizedDefaultWarehouseName,
+                              tenantId: this.tenantId,
+                            },
+                          },
+                        }
+                      : undefined,
                     sku: variant.sku,
                     variantName: variant.name,
                     ean,
@@ -297,6 +343,13 @@ export class SaleorProductSyncService {
                               id: this.tenantId,
                             },
                           },
+                          category: category
+                            ? {
+                                connect: {
+                                  id: category.id,
+                                },
+                              }
+                            : undefined,
                           name: product.name,
                           normalizedName: normalizedProductName,
                         },
@@ -307,15 +360,28 @@ export class SaleorProductSyncService {
                 update: {
                   variantName: variant.name,
                   sku: variant.sku,
-                  // TODO: does it make sense to update stock entries here as well
-                  defaultWarehouse: {
-                    connect: {
-                      normalizedName_tenantId: {
-                        normalizedName: normalizedDefaultWarehouseName,
-                        tenantId: this.tenantId,
-                      },
+                  product: {
+                    update: {
+                      category: category
+                        ? {
+                            connect: {
+                              id: category.id,
+                            },
+                          }
+                        : undefined,
                     },
                   },
+                  // TODO: does it make sense to update stock entries here as well
+                  defaultWarehouse: normalizedDefaultWarehouseName
+                    ? {
+                        connect: {
+                          normalizedName_tenantId: {
+                            normalizedName: normalizedDefaultWarehouseName,
+                            tenantId: this.tenantId,
+                          },
+                        },
+                      }
+                    : undefined,
                   ean,
                 },
               },
