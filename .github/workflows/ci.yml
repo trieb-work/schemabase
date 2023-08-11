@@ -1,12 +1,11 @@
 name: CI
 
-# All required 3rd party services are hosted in docker containers.
-#
-# The api service is started inside a docker container as well and all
-# integration tests are being run with a fresh database seed
+## This workflow should run on all PR and test the whole system. It should skip the run,
+## if "chore(release)" is in the commit message.
 
 on:
   pull_request:
+  
 
 jobs:
   test:
