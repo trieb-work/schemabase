@@ -23,7 +23,7 @@ async function main() {
     meta: {
       env: env.require("ECI_ENV"),
     },
-    enableElasticLogDrain: env.get("ECI_ENV") === "production",
+    enableElasticLogDrain: false,
   }).with({ "service.name": "eci" });
 
   logger.info("Starting worker");
