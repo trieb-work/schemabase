@@ -1,3 +1,6 @@
+## We are only using one staging and one production environment.
+## We try to auto-deploy all new version tags to staging and promote them manually to production
+
 variables:
   # Enabled:
   STAGING_ENABLED: 1
@@ -23,7 +26,7 @@ review:
   extends: .auto-deploy
   stage: review
   variables:
-    AUTO_DEVOPS_COMMON_NAME: $CI_PROJECT_ID-$CI_COMMIT_REF_SLUG.gc.review-kencove.com
+    AUTO_DEVOPS_COMMON_NAME: $CI_PROJECT_ID-staging.gc.review-kencove.com
   environment:
     name: review/$CI_COMMIT_REF_NAME
     # Bullboard URL
@@ -114,7 +117,7 @@ review-vercel:
     - vercel --scope kencove pull --yes --environment=preview --token=$VERCEL_TOKEN
     - vercel build --token=$VERCEL_TOKEN
     - export URL="$(vercel deploy --prebuilt --token=$VERCEL_TOKEN --meta gitlabCommitRef=$CI_COMMIT_REF_SLUG --meta gitlabCommitSha=$CI_COMMIT_SHA --meta gitlabDeployment=1 --meta gitlabCommitAuthorName="$GITLAB_USER_NAME" --meta gitlabProjectPath=$CI_PROJECT_PATH)"
-    - vercel alias --token=$VERCEL_TOKEN set "$URL" $CI_PROJECT_ID-$CI_COMMIT_REF_SLUG.vc.review-kencove.com --scope kencove
+    - vercel alias --token=$VERCEL_TOKEN set "$URL" $CI_PROJECT_ID-staging.vc.review-kencove.com --scope kencove
   rules:
     - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
       when: never
