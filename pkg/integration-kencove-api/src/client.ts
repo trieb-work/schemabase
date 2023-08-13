@@ -45,6 +45,51 @@ type KencoveApiAddress = {
   updatedAt: string;
 };
 
+// {
+//   "salesOrderNo": "7322948",
+//   "packageName": "PACK0090241",
+//   "packageId": "90227",
+//   "height": 5.0,
+//   "width": 5.0,
+//   "length": 11.0,
+//   "shippingWeight": 1.0,
+//   "packageItemline": [
+//       {
+//           "itemCode": "TCTXS",
+//           "quantity": 1.0
+//       }
+//   ],
+//   "pickingId": "278285",
+//   "carrierId": null,
+//   "carrierName": "USPS Priority Mail",
+//   "quoteRef": "29a22d8e-c56c-4243-8a49-92884793f80c",
+//   "trackingUrl": "https://tools.usps.com/go/TrackConfirmAction_input?qtc_tLabels1=9405511206238116836795",
+//   "trackingNumber": "9405511206238116836795",
+//   "createdAt": "2023-08-07T13:53:14.356435",
+//   "updatedAt": "2023-08-07T13:53:35.684303"
+// },
+type KencoveApiPackage = {
+  salesOrderNo: string;
+  packageName: string;
+  packageId: string;
+  height: number;
+  width: number;
+  length: number;
+  shippingWeight: number;
+  packageItemline: {
+    itemCode: string;
+    quantity: number;
+  }[];
+  pickingId: string;
+  carrierId: string | null;
+  carrierName: string | null;
+  quoteRef: string;
+  trackingUrl: string;
+  trackingNumber: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 type KencoveApiProductVariant = {
   id: string;
   sku: string;
@@ -60,7 +105,8 @@ type KencoveApiProductVariant = {
 type KencoveApiProduct = {
   id: string;
   name: string;
-  countryOfOrigin: "CN";
+  countryOfOrigin: "CN" | "US";
+  categoryId: number;
   variants: KencoveApiProductVariant[];
   createdAt: string;
   updatedAt: string;
@@ -298,8 +344,47 @@ export class KencoveApiClient {
     result_count: number;
     next_page: string;
   }> {
-    const response = await axios.get(
-      `https://23408405-review-feat-add-e-6oc06f.gc.review-kencove.com/ecom/categories/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
+    const response = await this.axiosInstance.get(
+      `/ecom/categories/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+    return response.data;
+  }
+
+  public async getPackages(fromDate: Date): Promise<KencoveApiPackage[]> {
+    const accessToken = await this.getAccessToken();
+    const packages: KencoveApiPackage[] = [];
+    let nextPage: string | null = null;
+    let offset: number = 0;
+    do {
+      const response = await this.getPackagesPage(
+        fromDate,
+        offset,
+        accessToken,
+      );
+      packages.push(...response.data);
+      nextPage = response.next_page;
+      offset += 200;
+    } while (nextPage);
+    console.debug(`Found ${packages.length} packages`);
+    return packages;
+  }
+
+  private async getPackagesPage(
+    fromDate: Date,
+    offset: number,
+    accessToken: string,
+  ): Promise<{
+    data: KencoveApiPackage[];
+    result_count: number;
+    next_page: string;
+  }> {
+    const response = await this.axiosInstance.get(
+      `/ecom/packages/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
