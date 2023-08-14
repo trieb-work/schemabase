@@ -103,13 +103,17 @@ jobs:
       - name: Tag and push image
         run: |
           docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/worker:sha-${{ env.DOCKER_TAG_SHA }}
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/bullboard:sha-${{ env.DOCKER_TAG_SHA }}
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/logdrain:sha-${{ env.DOCKER_TAG_SHA }}
-          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/worker:sha-${{ env.DOCKER_TAG_SHA }} ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}:${{ env.CURRENT_VERSION }}
-          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/bullboard:sha-${{ env.DOCKER_TAG_SHA }} ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}:${{ env.CURRENT_VERSION }}
-          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/logdrain:sha-${{ env.DOCKER_TAG_SHA }} ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}:${{ env.CURRENT_VERSION }}
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/worker:sha-${{ env.DOCKER_TAG_SHA }} ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/worker:${{ env.CURRENT_VERSION }}
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/worker:${{ env.CURRENT_VERSION }}
+
+          
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/bullboard:sha-${{ env.DOCKER_TAG_SHA }}
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/bullboard:sha-${{ env.DOCKER_TAG_SHA }} ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/bullboard:${{ env.CURRENT_VERSION }}
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/bullboard:${{ env.CURRENT_VERSION }}
+
+
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/logdrain:sha-${{ env.DOCKER_TAG_SHA }}
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/logdrain:sha-${{ env.DOCKER_TAG_SHA }} ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/logdrain:${{ env.CURRENT_VERSION }}
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/logdrain:${{ env.CURRENT_VERSION }}
 
 
