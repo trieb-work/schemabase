@@ -21,14 +21,14 @@ stages:
   dependencies: []
 
 ## Review job is deploying automatically on every new release tag and deploys automatically to the
-## review/staging environment and can be promoted to production with one click
+## staging environment and can be promoted to production with one click
 review:
   extends: .auto-deploy
   stage: review
   variables:
     AUTO_DEVOPS_COMMON_NAME: $CI_PROJECT_ID-staging.gc.review-kencove.com
   environment:
-    name: review/$CI_COMMIT_REF_NAME
+    name: staging
     # Bullboard URL
     url: https://$AUTO_DEVOPS_COMMON_NAME
     on_stop: stop_review
@@ -92,6 +92,8 @@ review-vercel:
   image: node:18
   stage: review
   needs: ["review"]
+  environment:
+    name: staging
   before_script:
     - corepack enable
     - corepack prepare pnpm@latest-8 --activate
@@ -106,12 +108,13 @@ review-vercel:
     # Export the DATABASE_URL variable from the review job
     - export $(grep -v '^#' $CI_PROJECT_DIR/variables.env | xargs)
     - pnpm install
-    # Setting the DATABASE_URL to the prisma connection string for vercel
-    - export DATABASE_URL=$PRISMA_CONNECTION_STRING
+
 
     # Run the prisma db push using the DATABASE_URL_EXTERNAL
     - DATABASE_URL=$DATABASE_URL_EXTERNAL pnpm prisma db push
 
+    # Setting the DATABASE_URL to the prisma connection string for vercel
+    - export DATABASE_URL=$PRISMA_CONNECTION_STRING
     # Deploy the API service to vercel
     - npm install --global vercel
     - vercel --scope kencove pull --yes --environment=preview --token=$VERCEL_TOKEN
@@ -170,7 +173,7 @@ stop_review:
   script:
     - auto-deploy delete
   environment:
-    name: review/$CI_COMMIT_REF_NAME
+    name: staging
     action: stop
   allow_failure: true
   rules:
