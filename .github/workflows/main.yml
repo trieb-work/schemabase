@@ -64,6 +64,26 @@ jobs:
           node-version: 18
           cache: 'pnpm'        
         
+  
+  
+  # after the build job, we have one job, that is tagging all the images with the current version and pushing them to the registry
+  # we are using semantic-release to determine the current version. We use the docker sha from github as the image name       
+  release:
+    runs-on: ubuntu-latest
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_BASE: ${{ github.repository }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      -
+        name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}         
+
       # Release the new version to GitHub. 
       # Set the current version as an output variable    
       - name: Release
@@ -74,14 +94,23 @@ jobs:
           pnpm semantic-release
           echo "CURRENT_VERSION=$(pnpm --silent semantic-release --version)" >> $GITHUB_ENV 
      
+     # get the current sha that github uses as tag. It looks always like this: ghcr.io/trieb-work/schemabase/logdrain:sha-ba89316. The sha is always the first parts of the current commit sha
+      - name: Export docker tag sha
+        run: |
+          echo "DOCKER_TAG_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
 
       # use the image sha from docker-build-push step as the image name. Tag it with the current version from  set_tag. Push it afterwards
       - name: Tag and push image
         run: |
-          docker pull ghcr.io/${{ env.IMAGE_NAME }}@${{ steps.docker-build-push.outputs.digest }}
-          docker tag ghcr.io/${{ env.IMAGE_NAME }}@${{ steps.docker-build-push.outputs.digest }} ghcr.io/${{ env.IMAGE_NAME }}:${{ env.CURRENT_VERSION }}
-          docker push ghcr.io/${{ env.IMAGE_NAME }}:${{ env.CURRENT_VERSION }}   
-
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/worker:${{ env.DOCKER_TAG_SHA }}
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/bullboard:${{ env.DOCKER_TAG_SHA }}
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/logdrain:${{ env.DOCKER_TAG_SHA }}
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/worker:${{ env.DOCKER_TAG_SHA }} ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}:${{ env.CURRENT_VERSION }}
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/bullboard:${{ env.DOCKER_TAG_SHA }} ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}:${{ env.CURRENT_VERSION }}
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/logdrain:${{ env.DOCKER_TAG_SHA }} ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}:${{ env.CURRENT_VERSION }}
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/worker:${{ env.CURRENT_VERSION }}
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/bullboard:${{ env.CURRENT_VERSION }}
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/logdrain:${{ env.CURRENT_VERSION }}
 
 
   deploy-worker:
