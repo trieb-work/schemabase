@@ -45,6 +45,19 @@ type KencoveApiAddress = {
   updatedAt: string;
 };
 
+type KencoveApiProductStock = {
+  productId: number;
+  product_tmpl_id: number;
+  qty_avail: number;
+  able_to_make: number;
+  total_avail: number;
+  warehouse_stock: {
+    qty_avail: number;
+    warehouse_id: number;
+    warehouse_code: string;
+  }[];
+};
+
 // {
 //   "salesOrderNo": "7322948",
 //   "packageName": "PACK0090241",
@@ -385,6 +398,47 @@ export class KencoveApiClient {
   }> {
     const response = await this.axiosInstance.get(
       `/ecom/packages/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+    return response.data;
+  }
+
+  public async getProductStocks(
+    fromDate: Date,
+  ): Promise<KencoveApiProductStock[]> {
+    const accessToken = await this.getAccessToken();
+    const productStocks: KencoveApiProductStock[] = [];
+    let nextPage: string | null = null;
+    let offset: number = 0;
+    do {
+      const response = await this.getProductStocksPage(
+        fromDate,
+        offset,
+        accessToken,
+      );
+      productStocks.push(...response.data);
+      nextPage = response.next_page;
+      offset += 200;
+    } while (nextPage);
+    console.debug(`Found ${productStocks.length} productStocks`);
+    return productStocks;
+  }
+
+  private async getProductStocksPage(
+    fromDate: Date,
+    offset: number,
+    accessToken: string,
+  ): Promise<{
+    data: KencoveApiProductStock[];
+    result_count: number;
+    next_page: string;
+  }> {
+    const response = await this.axiosInstance.get(
+      `/ecom/stock/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
