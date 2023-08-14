@@ -27,6 +27,7 @@ review:
   stage: review
   variables:
     AUTO_DEVOPS_COMMON_NAME: $CI_PROJECT_ID-staging.gc.review-kencove.com
+    KUBE_NAMESPACE: schemabase-staging
   environment:
     name: staging
     # Bullboard URL
@@ -74,6 +75,8 @@ review:
       --set=google.clientId="$GC_CLIENT_ID"
       --set=allowedLoginDomains="kencove.com"
       --set=google.clientSecret="$GC_CLIENT_SECRET"
+      --set=ingress.annotations."kubernetes\.io/tls-acme"="true"
+      --set=ingress.annotations."cert-manager\.io/cluster-issuer"=null
 
     - auto-deploy persist_environment_url
     - echo "Queue dashboard deployed to https://$AUTO_DEVOPS_COMMON_NAME"
