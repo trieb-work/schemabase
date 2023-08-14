@@ -68,8 +68,8 @@ jobs:
       REGISTRY: ghcr.io
       IMAGE_BASE: ${{ github.repository }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      # - name: Checkout
+      #   uses: actions/checkout@v3
       -
         name: Login to GitHub Container Registry
         uses: docker/login-action@v2
@@ -102,12 +102,12 @@ jobs:
       # use the image sha from docker-build-push step as the image name. Tag it with the current version from  set_tag. Push it afterwards
       - name: Tag and push image
         run: |
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/worker:${{ env.DOCKER_TAG_SHA }}
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/bullboard:${{ env.DOCKER_TAG_SHA }}
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/logdrain:${{ env.DOCKER_TAG_SHA }}
-          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/worker:${{ env.DOCKER_TAG_SHA }} ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}:${{ env.CURRENT_VERSION }}
-          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/bullboard:${{ env.DOCKER_TAG_SHA }} ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}:${{ env.CURRENT_VERSION }}
-          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/logdrain:${{ env.DOCKER_TAG_SHA }} ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}:${{ env.CURRENT_VERSION }}
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/worker:sha-${{ env.DOCKER_TAG_SHA }}
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/bullboard:sha-${{ env.DOCKER_TAG_SHA }}
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/logdrain:sha-${{ env.DOCKER_TAG_SHA }}
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/worker:sha-${{ env.DOCKER_TAG_SHA }} ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}:${{ env.CURRENT_VERSION }}
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/bullboard:sha-${{ env.DOCKER_TAG_SHA }} ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}:${{ env.CURRENT_VERSION }}
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/logdrain:sha-${{ env.DOCKER_TAG_SHA }} ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}:${{ env.CURRENT_VERSION }}
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/worker:${{ env.CURRENT_VERSION }}
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/bullboard:${{ env.CURRENT_VERSION }}
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/logdrain:${{ env.CURRENT_VERSION }}
