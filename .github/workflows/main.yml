@@ -70,6 +70,7 @@ jobs:
   # we are using semantic-release to determine the current version. We use the docker sha from github as the image name       
   release:
     runs-on: ubuntu-latest
+    needs: build
     env:
       REGISTRY: ghcr.io
       IMAGE_BASE: ${{ github.repository }}
