@@ -182,7 +182,6 @@ export class KencoveApiClient {
           "Content-Type": "application/x-www-form-urlencoded",
         },
       });
-      console.debug(response.data);
       return response.data.access_token;
     } catch (error) {
       console.error(error);
