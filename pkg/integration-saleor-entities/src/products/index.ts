@@ -724,7 +724,7 @@ export class SaleorProductSyncService {
         key: "customerRatings",
         value: JSON.stringify({
           averageRating: productRatings._avg.averageRating,
-          ratingCount: productRatings._count.ratingCount,
+          ratingCount: productRatings._sum.ratingCount,
         }),
       },
       {
@@ -733,7 +733,7 @@ export class SaleorProductSyncService {
       },
       {
         key: "customerRatings_ratingCount",
-        value: productRatings._count.ratingCount.toString(),
+        value: productRatings._sum.ratingCount.toString(),
       },
     ];
     this.logger.debug(`Sending this metadata: ${JSON.stringify(metadataNew)}`);
