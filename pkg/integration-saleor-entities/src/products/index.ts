@@ -687,7 +687,7 @@ export class SaleorProductSyncService {
         productId: productSet.eciProductId,
         active: true,
       },
-      _count: {
+      _sum: {
         ratingCount: true,
       },
       _avg: {
@@ -697,7 +697,7 @@ export class SaleorProductSyncService {
 
     if (
       !productRatings._avg.averageRating ||
-      !productRatings._count.ratingCount
+      !productRatings._sum.ratingCount
     ) {
       this.logger.info(
         `No aggregated product ratings found for ${JSON.stringify(
