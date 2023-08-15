@@ -5,7 +5,7 @@
 import { KencoveApiApp, PrismaClient } from "@eci/pkg/prisma";
 import { KencoveApiClient } from "./client";
 import { beforeAll, describe, expect, it } from "@jest/globals";
-import { subDays } from "date-fns";
+import { subDays, subYears } from "date-fns";
 import { NoopLogger } from "@eci/pkg/logger";
 import { KencoveApiAppAddressSyncService } from "./addresses";
 import { KencoveApiAppProductSyncService } from "./products";
@@ -91,6 +91,13 @@ describe("KencoveApiClient", () => {
     const attributes = await client.getAttributes(subDays(new Date(), 100));
     console.debug(attributes.length);
     expect(attributes.length).toBeGreaterThan(0);
+  });
+
+  it ("should be able to get a list of categories", async () => {
+    const client = new KencoveApiClient(app);
+    const categories = await client.getCategories(subYears(new Date(), 2));
+    console.debug(categories.length);
+    expect(categories.length).toBeGreaterThan(0);
   });
 
   it("should work to run the address syncToECI function", async () => {

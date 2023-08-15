@@ -76,6 +76,10 @@ export class SaleorCategorySyncService {
       return;
     }
 
+    this.logger.info(
+      `Comparing ${response.categories.edges.length} categories from saleor with our DB`,
+    );
+
     /**
      * All categories coming fresh from the API
      */
