@@ -1,3 +1,5 @@
+// The KencoveApiAppProductSyncService is responsible for syncing products from
+// the Kencove API App to the ECI
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { ILogger } from "@eci/pkg/logger";
 import { KencoveApiApp, PrismaClient } from "@eci/pkg/prisma";
@@ -120,6 +122,7 @@ export class KencoveApiAppProductSyncService {
             },
             createdAt,
             updatedAt,
+            productId: productVariant.productId,
             productVariant: {
               connectOrCreate: {
                 where: {
@@ -164,6 +167,7 @@ export class KencoveApiAppProductSyncService {
           },
           update: {
             updatedAt,
+            productId: productVariant.productId,
             productVariant: {
               connectOrCreate: {
                 where: {

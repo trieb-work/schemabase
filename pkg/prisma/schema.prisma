@@ -2246,6 +2246,8 @@ model KencoveApiProductVariant {
   @@index([productVariantId])
   @@index([kencoveApiAppId])
   @@index([productId])
+  @@index([productId, kencoveApiAppId])
+
 }
 
 /// Kencove custom address model. Relation between internal address
