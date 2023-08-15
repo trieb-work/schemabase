@@ -155,7 +155,7 @@
     "tslog": "^3.3.4",
     "ups-api": "^0.4.2",
     "urql": "^4.0.4",
-    "winston": "^3.9.0",
+    "winston": "^3.10.0",
     "winston-elasticsearch": "^0.16.1",
     "zlib": "^1.0.5",
     "zod": "^3.21.4"
