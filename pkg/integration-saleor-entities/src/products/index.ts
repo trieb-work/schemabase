@@ -625,20 +625,13 @@ export class SaleorProductSyncService {
         // When a product has 5 stars, the value will be [ "1+", "2+", "3+", "4+", "5+" ].
         const facetValue = [];
         for (let i = 1; i <= variant.productVariant.averageRating; i++) {
-          facetValue.push(`${i}+`);
+          facetValue.push(`${i}-and-above`);
         }
 
         const metadataNew = [
           {
             key: "customerRatings_facet",
             value: JSON.stringify(facetValue),
-          },
-          {
-            key: "customerRatings",
-            value: JSON.stringify({
-              averageRating: variant.productVariant.averageRating,
-              ratingCount: variant.productVariant.ratingCount,
-            }),
           },
           {
             key: "customerRatings_averageRating",
@@ -712,20 +705,13 @@ export class SaleorProductSyncService {
     // When a product has 5 stars, the value will be [ "1+", "2+", "3+", "4+", "5+" ].
     const facetValue = [];
     for (let i = 1; i <= productRatings._avg.averageRating; i++) {
-      facetValue.push(`${i}+`);
+      facetValue.push(`${i}-and-above`);
     }
 
     const metadataNew = [
       {
         key: "customerRatings_facet",
         value: JSON.stringify(facetValue),
-      },
-      {
-        key: "customerRatings",
-        value: JSON.stringify({
-          averageRating: productRatings._avg.averageRating,
-          ratingCount: productRatings._sum.ratingCount,
-        }),
       },
       {
         key: "customerRatings_averageRating",

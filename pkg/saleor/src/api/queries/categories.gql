@@ -27,8 +27,8 @@ fragment categoryValues on Category {
   }
 }
 
-query saleorCronCategories($first: Int, $last: Int) {
-  categories(first: $first, last: $last) {
+query saleorCronCategories($first: Int, $last: Int, $after: String) {
+  categories(first: $first, last: $last, after: $after) {
     pageInfo {
       hasNextPage
       startCursor

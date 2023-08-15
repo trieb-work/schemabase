@@ -2233,7 +2233,7 @@ model KencoveApiProductVariant {
   createdAt DateTime
   updatedAt DateTime
 
-  /// the id of the related product in the kencove api
+  /// KENCOVE API product ID - not internal schemabase id
   productId String?
 
   productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)

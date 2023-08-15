@@ -13311,6 +13311,7 @@ export type CategoryValuesFragment = {
 export type SaleorCronCategoriesQueryVariables = Exact<{
   first?: InputMaybe<Scalars["Int"]>;
   last?: InputMaybe<Scalars["Int"]>;
+  after?: InputMaybe<Scalars["String"]>;
 }>;
 
 export type SaleorCronCategoriesQuery = {
@@ -14210,8 +14211,8 @@ export const AppDocument = gql`
   }
 `;
 export const SaleorCronCategoriesDocument = gql`
-  query saleorCronCategories($first: Int, $last: Int) {
-    categories(first: $first, last: $last) {
+  query saleorCronCategories($first: Int, $last: Int, $after: String) {
+    categories(first: $first, last: $last, after: $after) {
       pageInfo {
         hasNextPage
         startCursor
