@@ -13317,6 +13317,12 @@ export type SaleorCronCategoriesQuery = {
   __typename?: "Query";
   categories?: {
     __typename?: "CategoryCountableConnection";
+    pageInfo: {
+      __typename?: "PageInfo";
+      hasNextPage: boolean;
+      startCursor?: string | null;
+      endCursor?: string | null;
+    };
     edges: Array<{
       __typename?: "CategoryCountableEdge";
       node: {
@@ -14206,6 +14212,11 @@ export const AppDocument = gql`
 export const SaleorCronCategoriesDocument = gql`
   query saleorCronCategories($first: Int, $last: Int) {
     categories(first: $first, last: $last) {
+      pageInfo {
+        hasNextPage
+        startCursor
+        endCursor
+      }
       edges {
         node {
           ...categoryValues

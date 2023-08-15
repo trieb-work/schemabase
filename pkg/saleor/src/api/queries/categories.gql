@@ -29,6 +29,11 @@ fragment categoryValues on Category {
 
 query saleorCronCategories($first: Int, $last: Int) {
   categories(first: $first, last: $last) {
+    pageInfo {
+      hasNextPage
+      startCursor
+      endCursor
+    }
     edges {
       node {
         ...categoryValues
