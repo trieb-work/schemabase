@@ -189,6 +189,7 @@ export class SaleorCategorySyncService {
         category.category.slug !== saleorCategory.slug
       ) {
         this.logger.info(
+          // eslint-disable-next-line max-len
           `Internal fiels differ with the saleor category: ${category.category.name}. Update the category`,
         );
         await this.db.saleorCategory.update({
