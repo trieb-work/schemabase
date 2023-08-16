@@ -93,7 +93,7 @@ describe("KencoveApiClient", () => {
     expect(attributes.length).toBeGreaterThan(0);
   });
 
-  it ("should be able to get a list of categories", async () => {
+  it("should be able to get a list of categories", async () => {
     const client = new KencoveApiClient(app);
     const categories = await client.getCategories(subYears(new Date(), 2));
     console.debug(categories.length);

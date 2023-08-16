@@ -64,15 +64,19 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
 
     if (
       packageEvent.sentEmail == null &&
+      packageEvent.package.order &&
+      packageEvent.package.order !== null &&
       isValidTransition(event.previousState, packageEvent.state)
     ) {
-      if (!packageEvent.package.order.trackingNotificationsEnabled) {
+      const order = packageEvent.package.order;
+
+      if (!order.trackingNotificationsEnabled) {
         this.logger.info(
           "Tracking notification emails are disable for order" +
-            `${packageEvent.package.order.orderNumber}`,
+            `${order.orderNumber}`,
         );
       }
-      const customerEmail = packageEvent.package.order.mainContact.email;
+      const customerEmail = order.mainContact.email;
       this.logger.info(`Sending transactional email to ${customerEmail}`, {
         packageEventId: packageEvent.id,
         state: packageEvent.state,
@@ -110,26 +114,23 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
         );
         return;
       }
-      const template = templates.find(
-        (t) => t.language === packageEvent.package.order.language,
-      );
+      const template = templates.find((t) => t.language === order.language);
 
       if (!template) {
         this.logger.error(
           "No matching language for this template found." +
-            `Language: ${packageEvent.package.order.language}`,
+            `Language: ${order.language}`,
         );
         return;
       }
 
       const send = async () => {
-        const contact = packageEvent.package.order.mainContact;
+        const contact = order.mainContact;
         if (!contact.email) {
           this.logger.warn(`No Email Address found for contact ${contact}`);
           return "";
         }
-        const firstName =
-          packageEvent.package.order.firstName || contact.firstName;
+        const firstName = order.firstName || contact.firstName;
         if (!firstName) {
           this.logger.warn(
             `First Name not set! Can't send email. Contact object: ${JSON.stringify(
@@ -143,9 +144,7 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
           integration.trackingEmailApp.sender,
           contact.email,
           {
-            time: packageEvent.time.toLocaleString(
-              packageEvent.package.order.language,
-            ),
+            time: packageEvent.time.toLocaleString(order.language),
             newState: packageEvent.state,
             message: packageEvent.message,
             location: packageEvent.location,

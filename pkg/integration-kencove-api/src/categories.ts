@@ -36,6 +36,42 @@ export class KencoveApiAppCategorySyncService {
     });
   }
 
+  /**
+   * Take an array of KencoveApiProduct Ids and returns an array
+   * of internal productIds to connect to. Fail, if not all ids can be
+   * resolved. We return undefined in that case
+   * @param kencoveIds
+   * @returns
+   */
+  private async getProductIds(kencoveIds: string[]) {
+    const products = await this.db.kencoveApiProductVariant.findMany({
+      where: {
+        kencoveApiAppId: this.kencoveApiApp.id,
+        productId: {
+          in: kencoveIds,
+        },
+      },
+      include: {
+        productVariant: true,
+      },
+    });
+
+    // When we can't resolve all products, we throw an error.
+    if (products.length !== kencoveIds.length) {
+      const missingIds = kencoveIds.filter(
+        (id) => !products.find((p) => p.productId === id),
+      );
+      this.logger.error(
+        `Could not find all products to connect. Missing ids: ${missingIds.join(
+          ", ",
+        )}`,
+      );
+      return undefined;
+    }
+
+    return products.map((p) => p.productVariant.productId);
+  }
+
   public async syncToECI() {
     /**
      * When this is the first run, or the last run did not complete,
@@ -169,6 +205,10 @@ export class KencoveApiAppCategorySyncService {
         (c) => c.id === category.parentCategoryId.toString(),
       )?.categoryId;
 
+      const relatedProducts = await this.getProductIds(
+        category.productIds || [],
+      );
+
       this.logger.debug("Updating/creating category in schemabase.", {
         childrenCategories,
         parentCategoryId,
@@ -198,6 +238,10 @@ export class KencoveApiAppCategorySyncService {
                 childrenCategories: {
                   connect: childrenCategories,
                 },
+                products: {
+                  connect: relatedProducts?.map((p) => ({ id: p })),
+                },
+                descriptionHTML: category.websiteDescription,
               },
             },
           },
@@ -244,6 +288,10 @@ export class KencoveApiAppCategorySyncService {
                       id: this.kencoveApiApp.tenantId,
                     },
                   },
+                  products: {
+                    connect: relatedProducts?.map((p) => ({ id: p })),
+                  },
+                  descriptionHTML: category.websiteDescription,
                 },
               },
             },

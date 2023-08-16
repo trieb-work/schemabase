@@ -741,6 +741,7 @@ Table Category {
   childrenCategories Category [not null, note: 'The children categories of this category']
   products Product [not null, note: 'The products in this category']
   active Boolean [not null, default: true, note: 'Is this category active or not. Old categories can be disabled']
+  descriptionHTML String [note: 'The description text of the category as HTML']
   tenant Tenant [not null, note: 'The tenant this category belongs to']
   tenantId String [not null]
   kencoveApiCategories KencoveApiCategory [not null, note: 'The kencove categories this category is synced to']
@@ -970,13 +971,14 @@ Table Package {
   number String [not null, note: 'A unique identifier for this package like PKG-0034']
   trackingId String [note: 'tracking id from the carrier. Optional, as the package can, exist before we created a tracking number']
   carrierTrackingUrl String [note: 'A link to the carriers tracking page']
-  order Order [not null]
-  orderId String [not null]
+  order Order [note: 'The related order to this package']
+  orderId String
   events PackageEvent [not null]
   packageLineItems PackageLineItem [not null, note: 'Line Items in this package']
   zohoPackage ZohoPackage [not null]
   saleorPackage SaleorPackage [not null]
   xentralLieferschein XentralLieferschein [not null]
+  kencoveApiPackage KencoveApiPackage [not null]
   tenant Tenant [not null]
   tenantId String [not null]
 
@@ -1135,6 +1137,7 @@ This is a comma separated list of category ids']
   kencoveApiProductVariants KencoveApiProductVariant [not null]
   kencoveApiAttributes KencoveApiAttribute [not null]
   kencoveApiCategories KencoveApiCategory [not null]
+  kencoveApiPackages KencoveApiPackage [not null]
 
   Note: 'The custom app for the kencove api. Using OAuth for authentication'
 }
@@ -1159,6 +1162,20 @@ Table KencoveApiAttribute {
   updatedAt DateTime [not null]
   attribute Attribute [not null]
   attributeId String [not null]
+  kencoveApiApp KencoveApiApp [not null]
+  kencoveApiAppId String [not null]
+
+  indexes {
+    (id, kencoveApiAppId) [unique]
+  }
+}
+
+Table KencoveApiPackage {
+  id String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  package Package [not null]
+  packageId String [not null]
   kencoveApiApp KencoveApiApp [not null]
   kencoveApiAppId String [not null]
 
@@ -1864,6 +1881,8 @@ Enum Carrier {
   UPS
   HERMES
   PICKUP
+  FEDEX
+  USPS
   UNKNOWN
   BULK
 }
@@ -2149,6 +2168,10 @@ Ref: KencoveApiCategory.categoryId > Category.id [delete: Cascade]
 Ref: KencoveApiAttribute.attributeId > Attribute.id [delete: Cascade]
 
 Ref: KencoveApiAttribute.kencoveApiAppId > KencoveApiApp.id [delete: Cascade]
+
+Ref: KencoveApiPackage.packageId > Package.id [delete: Cascade]
+
+Ref: KencoveApiPackage.kencoveApiAppId > KencoveApiApp.id [delete: Cascade]
 
 Ref: KencoveApiProductVariant.productVariantId > ProductVariant.id [delete: Cascade]
 

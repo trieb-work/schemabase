@@ -134,6 +134,10 @@ type KencoveApiCategory = {
   // for example: "kencove.com > Clearance > Connectors-Clearance"
   menuPath: string;
   productIds: string[] | null;
+  /**
+   * The description of the category as HTML from Odoo
+   */
+  websiteDescription: string | null;
   createdAt: string;
   updatedAt: string;
 };

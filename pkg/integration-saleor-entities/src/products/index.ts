@@ -582,27 +582,30 @@ export class SaleorProductSyncService {
         this.logger.debug(`Updated stock entry ${variant.id}`);
       }
 
-      // parse the product rating from the metadata. Don't fail, when no metadata is present
-      let productRating: {
-        averageRating: number;
-        ratingCount: number;
-      } | null = null;
-      try {
-        const metadata = saleorProductVariant.productVariant.metadata.find(
-          (x) => x.key === "customerRatings",
-        );
-        if (metadata) {
-          productRating = JSON.parse(metadata.value);
-        }
-      } catch (error) {
-        this.logger.info(
-          `No metadata customerRatings found for ${variant.id}. Creating it now: ${error}`,
-        );
-      }
+      // We parse the current product ratings from the metadata. We create a object productRating with averageRating and ratingCount.
+      // The data is located in the saleor metadata in the fields customerRatings_averageRating  and customerRatings_ratingCount
+      /**
+       * The parsed customer rating from Saleor
+       */
+      const productRatingFromSaleor = {
+        averageRating: 0,
+        ratingCount: 0,
+      };
+
+      const averageRating = saleorProductVariant.productVariant.metadata.find(
+        (x) => x.key === "customerRatings_averageRating",
+      )?.value;
+      productRatingFromSaleor.averageRating = parseFloat(averageRating || "0");
+
+      const ratingCount = saleorProductVariant.productVariant.metadata.find(
+        (x) => x.key === "customerRatings_ratingCount",
+      )?.value;
+      productRatingFromSaleor.ratingCount = parseInt(ratingCount || "0");
 
       if (
-        !productRating?.averageRating ||
-        productRating?.averageRating !== variant.productVariant.averageRating
+        !productRatingFromSaleor?.averageRating ||
+        productRatingFromSaleor?.averageRating !==
+          variant.productVariant.averageRating
       ) {
         if (
           variant.productVariant.averageRating === null ||
@@ -610,7 +613,7 @@ export class SaleorProductSyncService {
         )
           continue;
         this.logger.info(
-          `Updating average rating for ${variant.id} / ${variant.productVariant.sku} to ${variant.productVariant.averageRating}`,
+          `Updating average rating for ${variant.id} / ${variant.productVariant.sku} to ${variant.productVariant.averageRating}. Old rating was ${productRatingFromSaleor?.averageRating}`,
         );
 
         // adding the product to the set of products with changed reviews, so that we update the
