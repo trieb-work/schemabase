@@ -303,6 +303,10 @@ describe("with invalid webhook", () => {
         include: { order: true, events: true },
       });
 
+      if (!storedPackage?.order) {
+        throw new Error("No order found");
+      }
+
       expect(storedPackage).not.toBeNull();
       expect(storedPackage!.order).not.toBeNull();
       // expect(storedPackage!.order.externalOrderId).toEqual(
