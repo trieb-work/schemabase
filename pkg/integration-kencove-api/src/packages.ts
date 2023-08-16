@@ -109,81 +109,94 @@ export class KencoveApiAppPackageSyncService {
       const createdAt = new Date(pkg.createdAt);
       const updatedAt = new Date(pkg.updatedAt);
 
-      await this.db.kencoveApiPackage.upsert({
-        where: {
-          id_kencoveApiAppId: {
-            id: pkg.packageId,
-            kencoveApiAppId: this.kencoveApiApp.id,
-          },
-        },
-        create: {
-          id: pkg.packageId,
-          createdAt,
-          updatedAt,
-          kencoveApiApp: {
-            connect: {
-              id: this.kencoveApiApp.id,
+      try {
+        await this.db.kencoveApiPackage.upsert({
+          where: {
+            id_kencoveApiAppId: {
+              id: pkg.packageId,
+              kencoveApiAppId: this.kencoveApiApp.id,
             },
           },
-          package: {
-            connectOrCreate: {
-              where: {
-                number_tenantId: {
-                  number: pkg.packageName,
-                  tenantId: this.kencoveApiApp.tenantId,
-                },
+          create: {
+            id: pkg.packageId,
+            createdAt,
+            updatedAt,
+            kencoveApiApp: {
+              connect: {
+                id: this.kencoveApiApp.id,
               },
-              create: {
-                id: id.id("package"),
-                number: pkg.packageName,
-                trackingId,
-                carrierTrackingUrl: trackingId ? pkg.trackingUrl : undefined,
-                tenant: {
-                  connect: {
-                    id: this.kencoveApiApp.tenantId,
+            },
+            package: {
+              connectOrCreate: {
+                where: {
+                  number_tenantId: {
+                    number: pkg.packageName,
+                    tenantId: this.kencoveApiApp.tenantId,
                   },
                 },
-                carrier,
-                packageLineItems: {
-                  create: pkg.packageItemline.map((item, index) => ({
-                    id: id.id("packageLineItem"),
-                    uniqueString: uniqueStringOrderLine(
-                      pkg.salesOrderNo,
-                      item.itemCode,
-                      item.quantity,
-                      index,
-                    ),
-                    quantity: item.quantity,
-                    tenant: {
-                      connect: {
-                        id: this.kencoveApiApp.tenantId,
-                      },
+                create: {
+                  id: id.id("package"),
+                  number: pkg.packageName,
+                  trackingId,
+                  carrierTrackingUrl: trackingId ? pkg.trackingUrl : undefined,
+                  tenant: {
+                    connect: {
+                      id: this.kencoveApiApp.tenantId,
                     },
-                    productVariant: {
-                      connect: {
-                        sku_tenantId: {
-                          sku: item.itemCode,
-                          tenantId: this.kencoveApiApp.tenantId,
+                  },
+                  carrier,
+                  packageLineItems: {
+                    // when we miss certain SKUs in our DB, this is going to fail.
+                    // we don't create the package in that case
+                    create: pkg.packageItemline.map((item, index) => ({
+                      id: id.id("packageLineItem"),
+                      uniqueString: uniqueStringOrderLine(
+                        pkg.salesOrderNo,
+                        item.itemCode,
+                        item.quantity,
+                        index,
+                      ),
+                      quantity: item.quantity,
+                      tenant: {
+                        connect: {
+                          id: this.kencoveApiApp.tenantId,
                         },
                       },
-                    },
-                  })),
+                      productVariant: {
+                        connect: {
+                          sku_tenantId: {
+                            sku: item.itemCode,
+                            tenantId: this.kencoveApiApp.tenantId,
+                          },
+                        },
+                      },
+                    })),
+                  },
                 },
               },
             },
           },
-        },
-        update: {
-          createdAt,
-          updatedAt,
-          package: {
-            update: {
-              trackingId,
-              carrierTrackingUrl: trackingId ? pkg.trackingUrl : undefined,
+          update: {
+            createdAt,
+            updatedAt,
+            package: {
+              update: {
+                trackingId,
+                carrierTrackingUrl: trackingId ? pkg.trackingUrl : undefined,
+              },
             },
           },
-        },
-      });
+        });
+      } catch (error) {
+        this.logger.error(
+          `Error while syncing package ${
+            pkg.packageName
+          } from Kencove API to ECI: ${JSON.stringify(error)}`,
+        );
+      }
+
+      // we update the last run date
+      await this.cronState.set({ lastRun: now, lastRunStatus: "success" });
     }
   }
 }
