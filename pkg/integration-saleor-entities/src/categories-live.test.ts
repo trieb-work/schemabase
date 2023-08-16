@@ -17,7 +17,7 @@ describe("Saleor Categories Test", () => {
   test("It should work to sync categoreis", async () => {
     const tenant = await prismaClient.tenant.findUnique({
       where: {
-        id: "pk_7f165pf-prod",
+        id: "tn_kencove235",
         // id: "test",
       },
     });
@@ -25,7 +25,7 @@ describe("Saleor Categories Test", () => {
       throw new Error("Testing Tenant or zoho app/integration not found in DB");
 
     const { client: saleorClient, installedSaleorApp } =
-      await getSaleorClientAndEntry("QXBwOjMy", prismaClient);
+      await getSaleorClientAndEntry("QXBwOjk=", prismaClient);
 
     const service = new SaleorCategorySyncService({
       saleorClient,

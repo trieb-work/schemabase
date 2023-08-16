@@ -933,7 +933,7 @@ model PackageLineItem {
 
   // Unique string to identify this LineItem
   // between different systems. See: uniqueStringOrderLine package
-  // For packages: ${packageNumber}${sku}${quantity} 
+  // For packages: ${packageNumber}${sku}${quantity}${order}
   uniqueString String
 
   // order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -1862,6 +1862,8 @@ enum Carrier {
   UPS
   HERMES
   PICKUP
+  FEDEX
+  USPS
   UNKNOWN
   /// Used for Bulk actions
   BULK
@@ -1942,8 +1944,9 @@ model Package {
   trackingId         String?
   /// A link to the carriers tracking page
   carrierTrackingUrl String?
-  order              Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  orderId            String
+  /// The related order to this package
+  order              Order?          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId            String?
   events             PackageEvent[]
 
   /// Line Items in this package
@@ -1952,6 +1955,7 @@ model Package {
   zohoPackage         ZohoPackage[]
   saleorPackage       SaleorPackage[]
   xentralLieferschein XentralLieferschein[]
+  kencoveApiPackage   KencoveApiPackage[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
@@ -2187,6 +2191,7 @@ model KencoveApiApp {
   kencoveApiProductVariants KencoveApiProductVariant[]
   kencoveApiAttributes KencoveApiAttribute[]
   kencoveApiCategories KencoveApiCategory[]
+  kencoveApiPackages KencoveApiPackage[]
 
   @@index([tenantId])
 
@@ -2228,6 +2233,24 @@ model KencoveApiAttribute {
   @@index([kencoveApiAppId])
 
 }
+
+model KencoveApiPackage {
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  package Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  packageId String
+
+  kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id], onDelete: Cascade)
+  kencoveApiAppId String
+
+  @@unique([id, kencoveApiAppId])
+  @@index([packageId])
+  @@index([kencoveApiAppId])
+}
+
 
 /// Kencove custom productVariant model
 model KencoveApiProductVariant {

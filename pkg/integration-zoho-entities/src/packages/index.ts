@@ -435,6 +435,12 @@ export class ZohoPackageSyncService {
             orderId: p.orderId,
           },
         );
+        if (!p.orderId) {
+          this.logger.warn(
+            `No orderId found for package ${p.id} - ${p.number}. Can't create package in Zoho`,
+          );
+          continue;
+        }
         // fetch the package line items in a seperate call, as this is more efficient
         // with Planetscale
         const orderLineItems = await this.db.order.findUnique({

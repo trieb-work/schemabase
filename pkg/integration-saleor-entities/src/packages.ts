@@ -340,6 +340,13 @@ export class SaleorPackageSyncService {
         continue;
       }
 
+      if (!parcel.orderId) {
+        this.logger.error(
+          `No order id for package ${parcel.id} - ${parcel.number}. Can't create package in Saleor`,
+        );
+        continue;
+      }
+
       const saleorOrder = await this.db.saleorOrder.findUnique({
         where: {
           orderId_installedSaleorAppId: {
