@@ -89,7 +89,7 @@ review:
     - if: "($CI_COMMIT_REF_PROTECTED == 'true')"
       when: never
     # run on every new release tag
-    - if: '$CI_COMMIT_TAG =~ /^v[0-9].*/'
+    - if: "$CI_COMMIT_TAG =~ /^v[0-9].*/"
 
 review-vercel:
   image: node:18
@@ -112,7 +112,6 @@ review-vercel:
     - export $(grep -v '^#' $CI_PROJECT_DIR/variables.env | xargs)
     - pnpm install
 
-
     # Run the prisma db push using the DATABASE_URL_EXTERNAL
     - DATABASE_URL=$DATABASE_URL_EXTERNAL pnpm prisma db push
 
@@ -132,7 +131,7 @@ review-vercel:
     - if: "($CI_COMMIT_REF_PROTECTED == 'true')"
       when: never
     # run on every new release tag
-    - if: '$CI_COMMIT_TAG =~ /^v[0-9].*/'
+    - if: "$CI_COMMIT_TAG =~ /^v[0-9].*/"
 
 ## Review job is deploying automatically on every push to "prod" branch
 production:
