@@ -741,6 +741,7 @@ Table Category {
   childrenCategories Category [not null, note: 'The children categories of this category']
   products Product [not null, note: 'The products in this category']
   active Boolean [not null, default: true, note: 'Is this category active or not. Old categories can be disabled']
+  descriptionHTML String [note: 'The description text of the category as HTML']
   tenant Tenant [not null, note: 'The tenant this category belongs to']
   tenantId String [not null]
   kencoveApiCategories KencoveApiCategory [not null, note: 'The kencove categories this category is synced to']

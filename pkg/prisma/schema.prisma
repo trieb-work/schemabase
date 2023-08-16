@@ -1546,6 +1546,9 @@ model Category {
   /// Is this category active or not. Old categories can be disabled
   active  Boolean @default(true)
 
+  /// The description text of the category as HTML
+  descriptionHTML String? @db.Text
+
   /// The tenant this category belongs to
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
