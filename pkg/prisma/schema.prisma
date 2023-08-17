@@ -2091,7 +2091,11 @@ model UPSTrackingApp {
   
   /// From the developer portal. Is the same for sandbox and prod. API keys are multi-tenant by default
   /// so we might use them for multiple customer. It is not clear, how much traffic we can produce with one key
-  accessKey   String
+  /// Access key only auth is no longer working - we need Oauth2 now
+  accessKey   String?
+
+  clientId String
+  clientSecret String
 
   trackingIntegration   TrackingIntegration? @relation(fields: [trackingIntegrationId], references: [id])
   trackingIntegrationId String?

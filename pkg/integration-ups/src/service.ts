@@ -12,7 +12,7 @@ import { ILogger } from "@eci/pkg/logger";
 import { sleep } from "@eci/pkg/miscHelper/time";
 import { UPSTrackingApp, PackageState, PrismaClient } from "@eci/pkg/prisma";
 import { subMonths, parse } from "date-fns";
-const upsApi = require("ups-api");
+import axios from "axios";
 
 interface UPSTrackingSyncServiceConfig {
   upsTrackingApp: UPSTrackingApp;
@@ -80,15 +80,39 @@ export class UPSTrackingSyncService {
     }
   };
 
-  private createAPIClient(apiKey: string) {
-    return new upsApi.API({
-      license: apiKey,
+  private async createAPIClient(clientId: string, clientSecret: string) {
+    // Oauth2 client credentials flow for UPS. Token URL: https://onlinetools.ups.com/security/v1/oauth/token
+    // return a axios instance with the Bearer Token from the oauth2 flow set.
+    // Send client credentials in header
+    const token = await axios({
+      method: "post",
+      url: "https://onlinetools.ups.com/security/v1/oauth/token",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      auth: {
+        username: clientId,
+        password: clientSecret,
+      },
+      data: "grant_type=client_credentials",
     });
+
+    const instance = axios.create({
+      baseURL: "https://onlinetools.ups.com/api",
+      headers: {
+        Authorization: `Bearer ${token.data.access_token}`,
+      },
+    });
+
+    return instance;
   }
 
   public async syncToECI(): Promise<void> {
     await this.cronState.get();
-    const upsClient = this.createAPIClient(this.upsTrackingApp.accessKey);
+    const upsClient = await this.createAPIClient(
+      this.upsTrackingApp.clientId,
+      this.upsTrackingApp.clientSecret,
+    );
 
     /// get all UPS packages, that are not delivered
     // with last status update older than 2 hours, to prevent too many API calls
@@ -116,9 +140,12 @@ export class UPSTrackingSyncService {
       if (!p.trackingId) continue;
       this.logger.info(`Pulling package data from UPS for ${p.trackingId}`);
 
-      const fullPackage = await upsClient.getTrackingDetails(p.trackingId);
+      const fullPackage = await upsClient.get(
+        `/track/v1/details/${p.trackingId}`,
+      );
 
-      const shipment = fullPackage?.trackResponse?.shipment[0]?.package?.[0];
+      const shipment =
+        fullPackage.data?.trackResponse?.shipment[0]?.package?.[0];
 
       if (!shipment) {
         this.logger.error(
