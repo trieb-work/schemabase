@@ -19,7 +19,8 @@ type SyncEntity =
   | "datev"
   | "attributes"
   | "addresses"
-  | "categories";
+  | "categories"
+  | "itemstocks";
 
 type CronJobReturn = CronJobState & {
   currentlyLocked: boolean;

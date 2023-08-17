@@ -850,6 +850,7 @@ model Warehouse {
   saleorWarehouse    SaleorWarehouse[]
   xentralProxyApp    XentralProxyApp[]
   installedSaleorApp InstalledSaleorApp[]
+  kencoveApiWarehouse KencoveApiWarehouse[]
 
   packageLineItems     PackageLineItem[]
   stockEntries         StockEntries[]
@@ -2196,10 +2197,25 @@ model KencoveApiApp {
   kencoveApiAttributes KencoveApiAttribute[]
   kencoveApiCategories KencoveApiCategory[]
   kencoveApiPackages KencoveApiPackage[]
+  kencoveApiWarehouses KencoveApiWarehouse[]
 
   @@index([tenantId])
 
 
+}
+
+model KencoveApiWarehouse {
+  id String
+
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  warehouseId String
+
+  kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id], onDelete: Cascade)
+  kencoveApiAppId String
+
+  @@unique([id, kencoveApiAppId])
+  @@index([warehouseId])
+  @@index([kencoveApiAppId])
 }
 
 model KencoveApiCategory {

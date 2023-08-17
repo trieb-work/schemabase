@@ -528,6 +528,7 @@ Table Warehouse {
   saleorWarehouse SaleorWarehouse [not null]
   xentralProxyApp XentralProxyApp [not null]
   installedSaleorApp InstalledSaleorApp [not null]
+  kencoveApiWarehouse KencoveApiWarehouse [not null]
   packageLineItems PackageLineItem [not null]
   stockEntries StockEntries [not null]
   isDefaultWarehouseOf ProductVariant [not null]
@@ -1141,8 +1142,21 @@ This is a comma separated list of category ids']
   kencoveApiAttributes KencoveApiAttribute [not null]
   kencoveApiCategories KencoveApiCategory [not null]
   kencoveApiPackages KencoveApiPackage [not null]
+  kencoveApiWarehouses KencoveApiWarehouse [not null]
 
   Note: 'The custom app for the kencove api. Using OAuth for authentication'
+}
+
+Table KencoveApiWarehouse {
+  id String [not null]
+  warehouse Warehouse [not null]
+  warehouseId String [not null]
+  kencoveApiApp KencoveApiApp [not null]
+  kencoveApiAppId String [not null]
+
+  indexes {
+    (id, kencoveApiAppId) [unique]
+  }
 }
 
 Table KencoveApiCategory {
@@ -2163,6 +2177,10 @@ Ref: DatevApp.tenantId > Tenant.id [delete: Cascade]
 Ref: LogisticsApp.tenantId > Tenant.id [delete: Cascade]
 
 Ref: KencoveApiApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: KencoveApiWarehouse.warehouseId > Warehouse.id [delete: Cascade]
+
+Ref: KencoveApiWarehouse.kencoveApiAppId > KencoveApiApp.id [delete: Cascade]
 
 Ref: KencoveApiCategory.kencoveApiAppId > KencoveApiApp.id [delete: Cascade]
 
