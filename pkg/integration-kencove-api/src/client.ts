@@ -13,6 +13,7 @@ import {
   KencoveApiAddress,
   KencoveApiAttribute,
   KencoveApiCategory,
+  KencoveApiOrder,
   KencoveApiPackage,
   KencoveApiProduct,
   KencoveApiProductStock,
@@ -69,27 +70,6 @@ export class KencoveApiClient {
     }
   }
 
-  // The response from the api looks like this:
-  //   {
-  //     "addresses": [
-  //         {
-  //             "street": "586 ARMBRUST TEST RD",
-  //             "additionalAddressLine": null,
-  //             "zip": "15639-1038",
-  //             "city": "HUNKER",
-  //             "countryCode": "US",
-  //             "countryArea": null,
-  //             "company": null,
-  //             "phone": "(724) 734683",
-  //             "fullname": "KEVIN TEST",
-  //             "state": "PA",
-  //             "createdAt": "2023-06-24T13:32:34.426648",
-  //             "updatedAt": "2023-07-10T11:52:17.181158"
-  //         }
-  //     ],
-  //     "result_count": 19,
-  //     "next_page": null
-  // }
   public async getAddresses(fromDate: Date): Promise<KencoveApiAddress[]> {
     const accessToken = await this.getAccessToken();
     const addresses: KencoveApiAddress[] = [];
@@ -318,6 +298,41 @@ export class KencoveApiClient {
   }> {
     const response = await this.axiosInstance.get(
       `/ecom/stock/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+    return response.data;
+  }
+
+  public async getOrders(fromDate: Date): Promise<KencoveApiOrder[]> {
+    const accessToken = await this.getAccessToken();
+    const orders: KencoveApiOrder[] = [];
+    let nextPage: string | null = null;
+    let offset: number = 0;
+    do {
+      const response = await this.getOrdersPage(fromDate, offset, accessToken);
+      orders.push(...response.data);
+      nextPage = response.next_page;
+      offset += 200;
+    } while (nextPage);
+    console.debug(`Found ${orders.length} orders`);
+    return orders;
+  }
+
+  private async getOrdersPage(
+    fromDate: Date,
+    offset: number,
+    accessToken: string,
+  ): Promise<{
+    data: KencoveApiOrder[];
+    result_count: number;
+    next_page: string;
+  }> {
+    const response = await this.axiosInstance.get(
+      `/ecom/orders/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
