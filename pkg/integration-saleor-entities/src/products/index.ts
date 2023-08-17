@@ -603,13 +603,14 @@ export class SaleorProductSyncService {
       productRatingFromSaleor.ratingCount = parseInt(ratingCount || "0");
 
       this.logger.debug(
-        `Parsed product rating: ${productRatingFromSaleor} for ${variant.productVariant.sku}`,
+        `Parsed product rating: ${JSON.stringify(
+          productRatingFromSaleor,
+        )} for ${variant.productVariant.sku}`,
       );
 
       if (
-        !productRatingFromSaleor?.averageRating ||
         productRatingFromSaleor?.averageRating !==
-          variant.productVariant.averageRating
+        variant.productVariant.averageRating
       ) {
         if (
           variant.productVariant.averageRating === null ||
