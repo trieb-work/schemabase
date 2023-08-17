@@ -121,6 +121,11 @@ export class UPSTrackingSyncService {
       const shipment = fullPackage?.trackResponse?.shipment[0]?.package?.[0];
 
       if (!shipment) {
+        this.logger.error(
+          `Could not find package data for ${
+            p.trackingId
+          } in UPS response: ${JSON.stringify(fullPackage)}`,
+        );
         continue;
       }
 
@@ -170,6 +175,7 @@ export class UPSTrackingSyncService {
         message: statusMessage,
       };
 
+      // TODO: replace kafka with a generic function that is using BullMQ
       const kafka = await KafkaProducer.new<
         EventSchemaRegistry.PackageUpdate["message"]
       >({
