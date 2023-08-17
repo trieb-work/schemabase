@@ -482,7 +482,7 @@ export class SaleorProductSyncService {
 
     if (saleorProductVariants.length === 0) {
       this.logger.info(
-        "We have no saleor products in our DB. Returning nothing",
+        "Saleor products did not change since last run or we have none in our DB. Aborting sync.",
       );
       return;
     }
