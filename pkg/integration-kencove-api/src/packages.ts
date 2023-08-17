@@ -88,7 +88,17 @@ export class KencoveApiAppPackageSyncService {
         this.logger.error(`Package ${pkg.packageName} has no carrier name.`);
         continue;
       }
-      const carrier = this.matchCarrier(pkg.carrierName);
+      const carrier = this.matchCarrier(pkg?.carrierName);
+
+      /**
+       * When we find a package with the same salesOrderNo, but a different package name,
+       * we have a multi piece shipment.
+       */
+      const isMultiPieceShipment = !!packages.find(
+        (p) =>
+          p.salesOrderNo === pkg.salesOrderNo &&
+          p.packageName !== pkg.packageName,
+      );
 
       // TEMP: when the trackingNumber is a string like: "1Z2632010391767531+1Z2632010394224148"
       // or "1Z2632010391767531,1Z2632010394224148"
@@ -96,8 +106,8 @@ export class KencoveApiAppPackageSyncService {
       // In that case, we don't write the tracking number to the package
       let trackingId: string | undefined = pkg.trackingNumber;
       if (
-        pkg.trackingNumber.includes("+") ||
-        pkg.trackingNumber.includes(",")
+        pkg?.trackingNumber?.includes("+") ||
+        pkg?.trackingNumber?.includes(",")
       ) {
         this.logger.warn(
           // eslint-disable-next-line max-len
@@ -138,6 +148,7 @@ export class KencoveApiAppPackageSyncService {
                   id: id.id("package"),
                   number: pkg.packageName,
                   trackingId,
+                  isMultiPieceShipment,
                   carrierTrackingUrl: trackingId ? pkg.trackingUrl : undefined,
                   tenant: {
                     connect: {
