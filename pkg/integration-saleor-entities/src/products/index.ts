@@ -602,6 +602,10 @@ export class SaleorProductSyncService {
       )?.value;
       productRatingFromSaleor.ratingCount = parseInt(ratingCount || "0");
 
+      this.logger.debug(
+        `Parsed product rating: ${productRatingFromSaleor} for ${variant.productVariant.sku}`,
+      );
+
       if (
         !productRatingFromSaleor?.averageRating ||
         productRatingFromSaleor?.averageRating !==
