@@ -1,10 +1,8 @@
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { env } from "@eci/pkg/env";
 import {
+  BullMQProducer,
   EventSchemaRegistry,
-  KafkaProducer,
   Message,
-  Signer,
   Topic,
 } from "@eci/pkg/events";
 import { id } from "@eci/pkg/ids";
@@ -142,7 +140,6 @@ export class UPSTrackingSyncService {
       if (!p.trackingId) continue;
       this.logger.info(`Pulling package data from UPS for ${p.trackingId}`);
 
-      
       const fullPackage = await upsClient.get(
         `/track/v1/details/${p.trackingId}`,
       );
@@ -205,12 +202,24 @@ export class UPSTrackingSyncService {
         message: statusMessage,
       };
 
-      // TODO: replace kafka with a generic function that is using BullMQ
-      const kafka = await KafkaProducer.new<
+      // const kafka = await KafkaProducer.new<
+      //   EventSchemaRegistry.PackageUpdate["message"]
+      // >({
+      //   signer: new Signer({ signingKey: env.require("SIGNING_KEY") }),
+      // });
+
+      // const message = new Message({
+      //   header: {
+      //     traceId: id.id("trace"),
+      //   },
+      //   content: packageEvent,
+      // });
+
+      // const { messageId } = await kafka.produce(Topic.PACKAGE_UPDATE, message);
+      // this.logger.info(`Created Kafka message with ID ${messageId}`);
+      const queue = await BullMQProducer.new<
         EventSchemaRegistry.PackageUpdate["message"]
-      >({
-        signer: new Signer({ signingKey: env.require("SIGNING_KEY") }),
-      });
+      >({ topic: Topic.PACKAGE_UPDATE });
 
       const message = new Message({
         header: {
@@ -219,8 +228,9 @@ export class UPSTrackingSyncService {
         content: packageEvent,
       });
 
-      const { messageId } = await kafka.produce(Topic.PACKAGE_UPDATE, message);
-      this.logger.info(`Created Kafka message with ID ${messageId}`);
+      const { messageId } = await queue.produce(Topic.PACKAGE_UPDATE, message);
+      this.logger.info(`Created BullMQ message with ID ${messageId}`);
+
       await sleep(5000);
     }
 

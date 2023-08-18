@@ -1,5 +1,5 @@
 import type { Context } from "@eci/pkg/context";
-import { KafkaProducer } from "./events";
+import { BullMQProducer, KafkaProducer } from "./events";
 import { Message } from "./message";
 import { Topic } from "./registry";
 
@@ -9,7 +9,7 @@ export interface EventHandler<TEvent> {
 export type OnSuccess<TEvent> = (ctx: Context, event: TEvent) => Promise<void>;
 
 export function publishSuccess<TEvent>(
-  producer: KafkaProducer<TEvent>,
+  producer: KafkaProducer<TEvent> | BullMQProducer<TEvent>,
   topic: Topic,
 ): OnSuccess<TEvent> {
   return async (ctx: Context, content: TEvent): Promise<void> => {
