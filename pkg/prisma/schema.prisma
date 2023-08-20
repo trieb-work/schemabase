@@ -853,6 +853,7 @@ model Warehouse {
   kencoveApiWarehouse KencoveApiWarehouse[]
 
   packageLineItems     PackageLineItem[]
+  orderLineItems       OrderLineItem[]
   stockEntries         StockEntries[]
   isDefaultWarehouseOf ProductVariant[]
 
@@ -890,6 +891,11 @@ model OrderLineItem {
   sku      String
   tax      Tax?    @relation(fields: [taxId], references: [id], onDelete: Cascade)
   taxId    String?
+
+  // Warehouse, this line item corresponds to.
+  // Warehouse can be undefined, as we have non-inventory products as well.
+  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
+  warehouseId String?
 
   /// The total net price (price excluding taxes) of all line item. Optional, as we might have just one of the two values on hand
   totalPriceNet   Float?

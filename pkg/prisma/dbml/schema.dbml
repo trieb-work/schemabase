@@ -530,6 +530,7 @@ Table Warehouse {
   installedSaleorApp InstalledSaleorApp [not null]
   kencoveApiWarehouse KencoveApiWarehouse [not null]
   packageLineItems PackageLineItem [not null]
+  orderLineItems OrderLineItem [not null]
   stockEntries StockEntries [not null]
   isDefaultWarehouseOf ProductVariant [not null]
 
@@ -551,6 +552,8 @@ Table OrderLineItem {
   sku String [not null]
   tax Tax
   taxId String
+  warehouse Warehouse
+  warehouseId String
   totalPriceNet Float [note: 'The total net price (price excluding taxes) of all line item. Optional, as we might have just one of the two values on hand']
   totalPriceGross Float [note: 'The total gross price (price including taxes) of all line item. Optional, as we might have just one of the two values on hand']
   undiscountedUnitPriceNet Float [note: 'The unit net price (price excluding taxes) of one line item. Optional, as we might have just one of the two values on hand']
@@ -2075,6 +2078,8 @@ Ref: Warehouse.tenantId > Tenant.id [delete: Cascade]
 Ref: OrderLineItem.orderId > Order.id [delete: Cascade]
 
 Ref: OrderLineItem.taxId > Tax.id [delete: Cascade]
+
+Ref: OrderLineItem.warehouseId > Warehouse.id
 
 Ref: OrderLineItem.(productVariantId, sku) > ProductVariant.(id, sku)
 

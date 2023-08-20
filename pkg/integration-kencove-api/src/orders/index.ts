@@ -15,6 +15,7 @@ import { id } from "@eci/pkg/ids";
 import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { KencoveApiOrder } from "../types";
 import { apiLineItemsWithSchemabase } from "./lineItems";
+import { KencoveApiWarehouseSync } from "../warehouses";
 
 interface KencoveApiAppOrderSyncServiceConfig {
   logger: ILogger;
@@ -128,6 +129,16 @@ export class KencoveApiAppOrderSyncService {
     if (apiOrders.length === 0) {
       return;
     }
+
+    /**
+     * Helper to match warehouse
+     */
+    // const whHelper = new KencoveApiWarehouseSync({
+    //   db: this.db,
+    //   kencoveApiApp: this.kencoveApiApp,
+    //   logger: this.logger,
+    // });
+
     const existingOrders = await this.db.kencoveApiOrder.findMany({
       where: {
         id: {

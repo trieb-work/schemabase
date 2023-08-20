@@ -87,6 +87,7 @@ export type KencoveApiPackage = {
   quoteRef: string;
   trackingUrl: string;
   trackingNumber: string;
+  warehouseCode: string;
   createdAt: string;
   updatedAt: string;
 };
