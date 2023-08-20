@@ -7,6 +7,7 @@ import { subHours, subYears } from "date-fns";
 import { KencoveApiClient } from "./client";
 import { id } from "@eci/pkg/ids";
 import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
+import { KencoveApiWarehouseSync } from "./warehouses";
 
 interface KencoveApiAppPackageSyncServiceConfig {
   logger: ILogger;
@@ -81,6 +82,15 @@ export class KencoveApiAppPackageSyncService {
     const packages = await client.getPackages(createdGte);
     this.logger.info(`Found ${packages.length} packages to sync.`);
 
+    /**
+     * Helper to match warehouse
+     */
+    const whHelper = new KencoveApiWarehouseSync({
+      db: this.db,
+      kencoveApiApp: this.kencoveApiApp,
+      logger: this.logger,
+    });
+
     for (const pkg of packages) {
       // we are using the pkg.packageName as the unique identifier for packages.
       // we work with a upsert command directly.
@@ -89,6 +99,8 @@ export class KencoveApiAppPackageSyncService {
         continue;
       }
       const carrier = this.matchCarrier(pkg?.carrierName);
+
+      const warehouseId = await whHelper.getWareHouseId(pkg.warehouseCode);
 
       /**
        * When we find a package with the same salesOrderNo, but a different package name,
@@ -171,6 +183,11 @@ export class KencoveApiAppPackageSyncService {
                       tenant: {
                         connect: {
                           id: this.kencoveApiApp.tenantId,
+                        },
+                      },
+                      warehouse: {
+                        connect: {
+                          id: warehouseId,
                         },
                       },
                       productVariant: {
