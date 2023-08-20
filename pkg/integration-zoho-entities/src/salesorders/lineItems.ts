@@ -21,7 +21,7 @@ type ExtendedLineItem = OrderLineItem & {
         })
       | null;
   };
-  tax: ExtendedTax;
+  tax?: ExtendedTax | null;
 };
 
 type OrderWithZohoItemsAndZohoWarehouse = Order & {
@@ -109,6 +109,11 @@ export function orderToZohoLineItems(
     if (!lineItem.undiscountedUnitPriceGross) {
       throw new Error(
         `Missing value "undiscountedUnitPriceGross" for this line_item! Aborting sync of this order`,
+      );
+    }
+    if (!lineItem.tax) {
+      throw new Error(
+        `Missing value "tax" for this line_item! Aborting sync of this order`,
       );
     }
     return {

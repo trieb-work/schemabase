@@ -130,11 +130,27 @@ export type KencoveApiCategory = {
   updatedAt: string;
 };
 
+export type KencoveApiOrderLine = {
+  /**
+   * Item SKU
+   */
+  itemCode: "MCCHD";
+  weight: 0.5;
+  quantity: 1.0;
+  discount: 0.0;
+  product_uom: "Units";
+  price_unit: 7.25;
+  description: "[MCCHD] Cut Out Switch -Heavy Duty";
+  price_subtotal: 7.25;
+  productId: 99;
+  warehouseCode: "PA";
+};
+
 export type KencoveApiOrder = {
   id: string;
   orderNumber: string;
   client_order_ref: string | null;
-  state: string;
+  state: "cancel" | "sale" | "sent";
   access_token: string;
   billingAddress: {
     billingAddressId: string;
@@ -182,20 +198,7 @@ export type KencoveApiOrder = {
     payment_method: string;
     payment_token: string;
   };
-  orderLines: {
-    /**
-     * Item SKU
-     */
-    itemCode: string;
-    weight: number;
-    quantity: number;
-    discount: number;
-    product_uom: string;
-    price_unit: number;
-    description: string;
-    price_subtotal: number;
-    productId: number;
-  }[];
+  orderLines: KencoveApiOrderLine[];
   amount_untaxed: number;
   amount_tax: number;
   amount_total: number;

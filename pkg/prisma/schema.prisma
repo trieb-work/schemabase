@@ -888,8 +888,8 @@ model OrderLineItem {
 
   quantity Float
   sku      String
-  tax      Tax    @relation(fields: [taxId], references: [id], onDelete: Cascade)
-  taxId    String
+  tax      Tax?    @relation(fields: [taxId], references: [id], onDelete: Cascade)
+  taxId    String?
 
   /// The total net price (price excluding taxes) of all line item. Optional, as we might have just one of the two values on hand
   totalPriceNet   Float?
@@ -1089,6 +1089,7 @@ model Order {
   saleorOrders          SaleorOrder[]
   zohoSalesOrders       ZohoSalesOrder[]
   xentralProxyAuftraege XentralProxyAuftrag[]
+  kencoveApiOrders      KencoveApiOrder[]
 
   invoices Invoice[]
 
@@ -2198,6 +2199,7 @@ model KencoveApiApp {
   kencoveApiCategories KencoveApiCategory[]
   kencoveApiPackages KencoveApiPackage[]
   kencoveApiWarehouses KencoveApiWarehouse[]
+  kencoveApiOrders KencoveApiOrder[]
 
   @@index([tenantId])
 
@@ -2216,6 +2218,24 @@ model KencoveApiWarehouse {
   @@unique([id, kencoveApiAppId])
   @@index([warehouseId])
   @@index([kencoveApiAppId])
+}
+
+model KencoveApiOrder {
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  order   Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId String
+
+  kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id], onDelete: Cascade)
+  kencoveApiAppId String
+
+  @@unique([id, kencoveApiAppId])
+  @@index([orderId])
+  @@index([kencoveApiAppId])
+  @@index([orderId, kencoveApiAppId])
 }
 
 model KencoveApiCategory {
