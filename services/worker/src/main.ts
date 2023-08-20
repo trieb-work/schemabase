@@ -5,12 +5,10 @@ import { env } from "@eci/pkg/env";
 import { PackageEventHandler } from "@eci/pkg/integration-tracking";
 import { PrismaClient } from "@eci/pkg/prisma";
 import {
+  BullMQProducer,
+  BullMQSubscriber,
   EventSchemaRegistry,
-  KafkaProducer,
-  KafkaSubscriber,
-  newKafkaClient,
   publishSuccess,
-  Signer,
   Topic,
 } from "@eci/pkg/events";
 import * as tracking from "@eci/pkg/integration-tracking";
@@ -28,30 +26,8 @@ async function main() {
 
   logger.info("Starting worker");
 
-  let kafkaConnected = false;
-  const kafka = newKafkaClient().admin();
-  for (let i = 0; i <= 5; i++) {
-    const timeout = 2 ** i;
-    try {
-      await kafka.connect();
-      kafkaConnected = true;
-      break;
-    } catch (e) {
-      logger.warn(`Failed to connect to kafka, retrying in ${timeout} seconds`);
-    }
-
-    // eslint-disable-next-line no-undef
-    await new Promise((resolve) => setTimeout(resolve, 1000 * timeout));
-  }
-  if (!kafkaConnected) {
-    throw new Error("Unable to connect to kafka");
-  }
-  logger.info("Connected to kafka");
-  await kafka.disconnect();
-
-  const signer = new Signer({ signingKey: env.require("SIGNING_KEY") });
   const prisma = new PrismaClient();
-  const producer = await KafkaProducer.new({ signer });
+
   const redisConnection = {
     host: env.require("REDIS_HOST"),
     port: parseInt(env.require("REDIS_PORT")),
@@ -64,39 +40,39 @@ async function main() {
   /**
    * Store package updates
    */
-  const packageEventHandler = new PackageEventHandler({
+  const packageHandlerBull = new PackageEventHandler({
     db: prisma,
-    onSuccess: publishSuccess(producer, Topic.PACKAGE_STATE_TRANSITION),
+    onSuccess: publishSuccess(
+      await BullMQProducer.new({ topic: Topic.PACKAGE_STATE_TRANSITION }),
+      Topic.PACKAGE_STATE_TRANSITION,
+    ),
     logger,
   });
-
-  const packageEventConsumer = await KafkaSubscriber.new<
+  const packageEventConsumerBull = await BullMQSubscriber.new<
     EventSchemaRegistry.PackageUpdate["message"]
   >({
     topic: Topic.PACKAGE_UPDATE,
-    signer,
     logger,
-    groupId: "packageEventHandler",
   });
-
-  packageEventConsumer.subscribe(packageEventHandler);
+  packageEventConsumerBull.subscribe(packageHandlerBull);
 
   /**
    * Send emails when packages update
    */
-  const customerNotifierSubscriber = await KafkaSubscriber.new<
+  const customerNotifierSubscriber = await BullMQSubscriber.new<
     EventSchemaRegistry.PackageStateTransition["message"]
   >({
     topic: Topic.PACKAGE_STATE_TRANSITION,
-    signer,
     logger,
-    groupId: "customerNotifierSubscriber",
   });
 
   customerNotifierSubscriber.subscribe(
     new tracking.CustomerNotifier({
       db: prisma,
-      onSuccess: publishSuccess(producer, Topic.NOTIFICATION_EMAIL_SENT),
+      onSuccess: publishSuccess(
+        await BullMQProducer.new({ topic: Topic.NOTIFICATION_EMAIL_SENT }),
+        Topic.NOTIFICATION_EMAIL_SENT,
+      ),
       logger,
       emailTemplateSender: new Sendgrid(env.require("SENDGRID_API_KEY"), {
         logger,

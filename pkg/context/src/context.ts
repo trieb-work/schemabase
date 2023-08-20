@@ -1,4 +1,4 @@
 export interface Context {
   traceId: string;
-  [key: string]: string;
+  [key: string]: any;
 }

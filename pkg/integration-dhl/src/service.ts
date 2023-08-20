@@ -1,10 +1,8 @@
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { env } from "@eci/pkg/env";
 import {
+  BullMQProducer,
   EventSchemaRegistry,
-  KafkaProducer,
   Message,
-  Signer,
   Topic,
 } from "@eci/pkg/events";
 import { id } from "@eci/pkg/ids";
@@ -157,10 +155,10 @@ export class DHLTrackingSyncService {
         trackingIntegrationId: this.dhlTrackingApp.trackingIntegrationId,
       };
 
-      const kafka = await KafkaProducer.new<
+      const bullmq = await BullMQProducer.new<
         EventSchemaRegistry.PackageUpdate["message"]
       >({
-        signer: new Signer({ signingKey: env.require("SIGNING_KEY") }),
+        topic: Topic.PACKAGE_UPDATE,
       });
 
       const message = new Message({
@@ -170,8 +168,8 @@ export class DHLTrackingSyncService {
         content: packageEvent,
       });
 
-      const { messageId } = await kafka.produce(Topic.PACKAGE_UPDATE, message);
-      this.logger.info(`Created Kafka message with ID ${messageId}`);
+      const { messageId } = await bullmq.produce(Topic.PACKAGE_UPDATE, message);
+      this.logger.info(`Created bullmq message with ID ${messageId}`);
       await sleep(5000);
     }
 

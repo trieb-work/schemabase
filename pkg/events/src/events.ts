@@ -5,21 +5,24 @@ import * as kafka from "kafkajs";
 import { Message } from "./message";
 import { Topic } from "./registry";
 import { EventHandler } from "./handler";
+import { Job, Queue, Worker } from "bullmq";
 
 export interface EventProducer<TContent> {
   produce: (
+    /**
+     * The topic is not needed when using Bull, as it is set
+     * on the queue level. For Kafka on message level
+     */
     topic: string,
     message: Message<TContent>,
     opts?: { key?: string; headers?: Record<string, string> },
-  ) => Promise<{ messageId: string; partition: number; offset?: string }>;
+  ) => Promise<{ messageId: string; partition?: number; offset?: string }>;
 
   /**
    * disconnect
    */
   close: () => Promise<void>;
 }
-
-// TODO: Add a bullMQClient here
 
 export const newKafkaClient = (): kafka.Kafka => {
   const config: kafka.KafkaConfig = {
@@ -38,7 +41,6 @@ export const newKafkaClient = (): kafka.Kafka => {
   return new kafka.Kafka(config);
 };
 
-// TODO: Add the bullMQProducer class here
 export class KafkaProducer<TContent> implements EventProducer<TContent> {
   private readonly producer: kafka.Producer;
 
@@ -92,6 +94,66 @@ export class KafkaProducer<TContent> implements EventProducer<TContent> {
   }
 }
 
+// the bullmq producer class works similar than the kafka producer class,
+// but uses BullMQ instead of Kafka. In Kafka we use topics, in BullMQ we use queues.
+// The topic name is the queue name, prefixed with "eci:"
+export class BullMQProducer<TContent> implements EventProducer<TContent> {
+  private readonly producer: Queue;
+
+  private constructor(config: { producer: Queue; topic: string }) {
+    this.producer = config.producer;
+  }
+
+  static async new<TContent>(config: {
+    topic: string;
+  }): Promise<BullMQProducer<TContent>> {
+    const redisConnection = {
+      host: env.require("REDIS_HOST"),
+      port: parseInt(env.require("REDIS_PORT")),
+      password: env.require("REDIS_PASSWORD"),
+    };
+    const queueName = ["eci", config.topic].join(":");
+    const producer = new Queue(queueName, {
+      connection: redisConnection,
+      defaultJobOptions: {
+        removeOnComplete: 100,
+        removeOnFail: 100,
+        attempts: 3,
+        backoff: { type: "exponential", delay: 80000 },
+      },
+    });
+    return new BullMQProducer({
+      producer,
+      topic: config.topic,
+    });
+  }
+
+  public async produce(
+    topic: string, // TODO: string[] und in alle messages reinschreiben
+    message: Message<TContent>,
+    opts?: { key?: string; headers?: Record<string, string> },
+  ): Promise<{ messageId: string }> {
+    const serialized = message.serialize();
+    const jobData = {
+      key: opts?.key,
+      headers: {
+        ...opts?.headers,
+      },
+      value: serialized,
+    };
+    await this.producer.add(topic, jobData, {
+      jobId: message.header.id,
+    });
+    return {
+      messageId: message.header.id,
+    };
+  }
+
+  public async close(): Promise<void> {
+    this.producer.close();
+  }
+}
+
 export interface EventSubscriber<TContent> {
   subscribe: (handler: EventHandler<TContent>) => Promise<void>;
   /**
@@ -101,6 +163,9 @@ export interface EventSubscriber<TContent> {
   close: () => Promise<void>;
 }
 
+/**
+ * The Kafka subscribe class - process messages from a Kafka topic
+ */
 export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
   private readonly consumer: kafka.Consumer;
 
@@ -154,6 +219,10 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
     ]);
   }
 
+  /**
+   * Subscribe to a topic and process incoming messages using the EventHandler
+   * @param handler
+   */
   public async subscribe(handler: EventHandler<TContent>): Promise<void> {
     this.consumer.run({
       eachMessage: async (payload) => {
@@ -199,5 +268,72 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
         }
       },
     });
+  }
+}
+
+/**
+ * The BullMQ subscribe class - process jobs from the bullmq EVENTS queue.
+ * In comparison to Kafka, we don't need a errorProducer here - errors are handled in the
+ * queue directly and get retried automatically. A kafka consumer is a bull worker.
+ */
+export class BullMQSubscriber<TContent> implements EventSubscriber<TContent> {
+  private readonly topic: Topic;
+
+  private readonly logger: ILogger;
+
+  /**
+   * We initialize a fake worker here, so that
+   * we can call close() on it later.
+   */
+  private consumer: Worker = {} as Worker;
+
+  private constructor(config: { logger: ILogger; topic: Topic }) {
+    this.logger = config.logger;
+    this.topic = config.topic;
+  }
+
+  static async new<TContent>(config: {
+    topic: Topic;
+    logger: ILogger;
+  }): Promise<BullMQSubscriber<TContent>> {
+    return new BullMQSubscriber({
+      topic: config.topic,
+      logger: config.logger,
+    });
+  }
+
+  /**
+   * Subscribe to the events queue and process incoming messages using the EventHandler
+   * @param handler
+   */
+  public async subscribe(handler: EventHandler<TContent>): Promise<void> {
+    const queueName = ["eci", this.topic].join(":");
+    this.consumer = new Worker(queueName, async (job: Job) => {
+      const logger = this.logger
+        .withLogDrain({
+          log: (message: string) => {
+            job.log(message);
+          },
+        })
+        .with({
+          jobId: job.id,
+          queueName,
+        });
+      const message = Message.deserialize<TContent>(job.data.value);
+
+      logger.info("Incoming message from events queue");
+      logger.debug(JSON.stringify(message));
+      const runtimeContext = {
+        logger,
+        job,
+        traceId: message.header.traceId,
+      };
+
+      await handler.handleEvent(runtimeContext, message.content);
+    });
+  }
+
+  public async close(): Promise<void> {
+    await this.consumer.close();
   }
 }
