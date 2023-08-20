@@ -49,8 +49,10 @@ export class KencoveApiAppOrderSyncService {
    * internally if needed. Returns the internal contact Id
    */
   private async syncMainContact(order: KencoveApiOrder) {
-    if (!order.billingAddress?.email)
-      throw new Error(`No email found in order ${order.id}!`);
+    if (!order.billingAddress?.email){
+      this.logger.error(`No email found in order ${order.id}!`);
+      return;
+    }
     const email = order.billingAddress.email.toLowerCase();
     const existingContact = await this.db.contact.findUnique({
       where: {
@@ -158,6 +160,7 @@ export class KencoveApiAppOrderSyncService {
       const updatedAt = new Date(order.updatedAt);
       const createdAt = new Date(order.createdAt);
       const mainContactId = await this.syncMainContact(order);
+      if (!mainContactId) continue;
       await this.db.kencoveApiOrder.create({
         data: {
           id: order.id,
