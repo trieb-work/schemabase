@@ -151,7 +151,9 @@ export class UPSTrackingSyncService {
         this.logger.error(
           `Could not find package data for ${
             p.trackingId
-          } in UPS response: ${JSON.stringify(fullPackage)}`,
+          } in UPS response: ${JSON.stringify(
+            fullPackage.data,
+          )}, ${JSON.stringify(fullPackage.status)}`,
         );
         continue;
       }
