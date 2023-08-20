@@ -142,7 +142,6 @@ export class UPSTrackingSyncService {
       if (!p.trackingId) continue;
       this.logger.info(`Pulling package data from UPS for ${p.trackingId}`);
 
-      
       const fullPackage = await upsClient.get(
         `/track/v1/details/${p.trackingId}`,
       );
