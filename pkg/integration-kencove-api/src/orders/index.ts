@@ -15,7 +15,7 @@ import { id } from "@eci/pkg/ids";
 import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { KencoveApiOrder } from "../types";
 import { apiLineItemsWithSchemabase } from "./lineItems";
-import { KencoveApiWarehouseSync } from "../warehouses";
+// import { KencoveApiWarehouseSync } from "../warehouses";
 
 interface KencoveApiAppOrderSyncServiceConfig {
   logger: ILogger;
