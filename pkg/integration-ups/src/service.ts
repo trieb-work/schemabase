@@ -192,7 +192,7 @@ export class UPSTrackingSyncService {
        */
       const time = parse(
         `${lastState.date} ${lastState.time}`,
-        "yyyyMMdd HHMMSS",
+        "yyyyMMdd HHmmSS",
         new Date(),
       );
       const packageEvent: EventSchemaRegistry.PackageUpdate["message"] = {
