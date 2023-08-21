@@ -7,6 +7,7 @@ import { CronStateHandler } from "@eci/pkg/cronstate";
 import { subHours, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
+import { KencoveApiWarehouseSync } from "./warehouses";
 
 interface KencoveApiAppProductStocksSyncServiceConfig {
   logger: ILogger;
@@ -67,89 +68,89 @@ export class KencoveApiAppProductStockSyncService {
     }
     this.logger.info(`Found ${stocks.length} product stocks to sync`);
 
-    const warehouses = await this.db.kencoveApiWarehouse.findMany({
-      where: {
-        kencoveApiAppId: this.kencoveApiApp.id,
-      },
-    });
-    const warehousesMap = new Map<string, string>();
-    warehouses.forEach((w) => {
-      warehousesMap.set(w.id, w.warehouseId);
-    });
     /**
-     * Create warehouses if needed. Compare the warehouse_id from warehouse_stock
-     * the warehouseMap has the warehouse_id from the kencove api and the warehouseId from our internal db.
-     * When no match is found, we create a new warehouse. We use the warehouse_code as warehouse name.
-     * We use connectOrCreate using the normalized warehouse_code as the unique identifier.
+     * Helper to match warehouse
      */
-    const warehouseIds = stocks.flatMap((s) =>
-      s.warehouse_stock.map((w) => w.warehouse_id),
-    );
-    const warehouseIdsToCreate = warehouseIds.filter(
-      (w) => !warehousesMap.has(w.toString()),
-    );
-    if (warehouseIdsToCreate.length > 0) {
-      this.logger.info(`Creating ${warehouseIdsToCreate.length} warehouses.`);
-      const warehousesToCreate = warehouseIdsToCreate.map((w) => {
-        const warehouseStock = stocks.find((s) =>
-          s.warehouse_stock.some((ws) => ws.warehouse_id === w),
-        );
-        if (!warehouseStock) {
-          throw new Error(
-            `Could not find warehouse stock for warehouse_id ${w}`,
-          );
-        }
-        const warehouseCode = warehouseStock.warehouse_stock.find(
-          (ws) => ws.warehouse_id === w,
-        )?.warehouse_code;
-        if (!warehouseCode) {
-          throw new Error(
-            `Could not find warehouse code for warehouse_id ${w}`,
-          );
-        }
-        return {
-          id: w.toString(),
-          kencoveApiApp: {
-            connect: {
-              id: this.kencoveApiApp.id,
-            },
-          },
-          warehouse: {
-            connectOrCreate: {
-              where: {
-                normalizedName_tenantId: {
-                  normalizedName:
-                    normalizeStrings.warehouseNames(warehouseCode),
-                  tenantId: this.kencoveApiApp.tenantId,
-                },
-              },
-              create: {
-                id: id.id("warehouse"),
-                name: warehouseCode,
-                normalizedName: normalizeStrings.warehouseNames(warehouseCode),
-                tenant: {
-                  connect: {
-                    id: this.kencoveApiApp.tenantId,
-                  },
-                },
-              },
-            },
-          },
-        };
-      });
-      for (const warehouseToCreate of warehousesToCreate) {
-        const resp = await this.db.kencoveApiWarehouse.create({
-          data: warehouseToCreate,
-        });
-        warehousesMap.set(resp.id, resp.warehouseId);
-      }
-    }
+    const whHelper = new KencoveApiWarehouseSync({
+      db: this.db,
+      kencoveApiApp: this.kencoveApiApp,
+      logger: this.logger,
+    });
 
     /**
-     * Create product stocks. We use connectOrCreate using the productId as the unique identifier.
-     * The productId is the kencoveApiApp product id. We look up the product id in the
-     * kencoveApiProduct table. We use the warehouseId from the warehouseMap to connect the
-     * product stock to the warehouse.
+     * Create product stocks. The itemCode is the sku we use to match to an internal
+     * variant. We have one stock entry per warehouse in warehouse_stock
      */
+    for (const variant of stocks) {
+      const internalVariant = await this.db.productVariant.findUnique({
+        where: {
+          sku_tenantId: {
+            sku: variant.itemCode,
+            tenantId: this.kencoveApiApp.tenantId,
+          },
+        },
+      });
+      if (!internalVariant) {
+        this.logger.error(
+          `Could not find internal variant for sku: ${variant.itemCode}`,
+        );
+        continue;
+      }
+      for (const warehouseEntry of variant.warehouse_stock) {
+        const warehouseId = await whHelper.getWareHouseId(
+          warehouseEntry.warehouse_code,
+        );
+
+        const existingStock = await this.db.stockEntries.findUnique({
+          where: {
+            warehouseId_productVariantId_tenantId: {
+              warehouseId: warehouseId,
+              productVariantId: internalVariant.id,
+              tenantId: this.kencoveApiApp.tenantId,
+            },
+          },
+        });
+        if (
+          existingStock &&
+          existingStock.actualAvailableStock !== warehouseEntry.qty_avail
+        ) {
+          this.logger.info(
+            `Updating stock entry for ${internalVariant.sku}` +
+              `from ${existingStock.actualAvailableStock} to ${warehouseEntry.qty_avail}`,
+          );
+          await this.db.stockEntries.update({
+            where: {
+              id: existingStock.id,
+            },
+            data: {
+              updatedAt: new Date(),
+              actualAvailableStock: warehouseEntry.qty_avail,
+            },
+          });
+        } else {
+          await this.db.stockEntries.create({
+            data: {
+              id: id.id("stockEntry"),
+              tenant: {
+                connect: {
+                  id: this.kencoveApiApp.tenantId,
+                },
+              },
+              productVariant: {
+                connect: {
+                  id: internalVariant.id,
+                },
+              },
+              warehouse: {
+                connect: {
+                  id: warehouseId,
+                },
+              },
+              actualAvailableStock: warehouseEntry.qty_avail,
+            },
+          });
+        }
+      }
+    }
   };
 }

@@ -9,7 +9,6 @@ import { ILogger } from "@eci/pkg/logger";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import { KencoveApiApp, PrismaClient } from "@eci/pkg/prisma";
 
-//
 interface KencoveApiWarehouseSyncConfig {
   logger: ILogger;
   db: PrismaClient;

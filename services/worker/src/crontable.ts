@@ -33,6 +33,7 @@ import { KencoveApiCategorySyncWf } from "./workflows/kencoveApiCategorySync";
 import { SaleorCategorySyncWf } from "./workflows/saleorCategorySync";
 import { KencoveApiPackageSyncWf } from "./workflows/kencoveApiPackageSync";
 import { KencoveApiOrderSyncWf } from "./workflows/kencoveApiOrderSync";
+import { KencoveApiProductStockSyncWf } from "./workflows/kencoveApiProductStockSync";
 
 interface CronClients {
   logger: ILogger;
@@ -161,6 +162,15 @@ export class CronTable {
       new WorkflowScheduler(this.clients).schedule(
         createWorkflowFactory(
           KencoveApiOrderSyncWf,
+          this.clients,
+          commonWorkflowConfig,
+        ),
+        { ...commonCronConfig, offset: 10 },
+        [tenantId.substring(0, 5), id.substring(0, 5)],
+      );
+      new WorkflowScheduler(this.clients).schedule(
+        createWorkflowFactory(
+          KencoveApiProductStockSyncWf,
           this.clients,
           commonWorkflowConfig,
         ),

@@ -36,6 +36,7 @@ export type KencoveApiAddress = {
 export type KencoveApiProductStock = {
   productId: number;
   product_tmpl_id: number;
+  itemCode: string;
   qty_avail: number;
   able_to_make: number;
   total_avail: number;
@@ -100,6 +101,7 @@ export type KencoveApiProductVariant = {
     name: string;
     value: string;
   }[];
+  name: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -151,6 +153,9 @@ export type KencoveApiOrder = {
   id: string;
   orderNumber: string;
   client_order_ref: string | null;
+  /**
+   * Sale: confirmed sale. Sent: quote emailed to the customer. Is "draft".
+   */
   state: "cancel" | "sale" | "sent";
   access_token: string;
   billingAddress: {
