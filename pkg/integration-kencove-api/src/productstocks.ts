@@ -6,7 +6,6 @@ import { KencoveApiClient } from "./client";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { subHours, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
-import { normalizeStrings } from "@eci/pkg/normalization";
 import { KencoveApiWarehouseSync } from "./warehouses";
 
 interface KencoveApiAppProductStocksSyncServiceConfig {
