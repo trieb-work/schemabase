@@ -49,7 +49,7 @@ export class KencoveApiAppOrderSyncService {
    * internally if needed. Returns the internal contact Id
    */
   private async syncMainContact(order: KencoveApiOrder) {
-    if (!order.billingAddress?.email){
+    if (!order.billingAddress?.email) {
       this.logger.error(`No email found in order ${order.id}!`);
       return;
     }
