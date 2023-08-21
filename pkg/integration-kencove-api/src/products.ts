@@ -135,6 +135,7 @@ export class KencoveApiAppProductSyncService {
                   id: id.id("variant"),
                   sku: productVariant.sku,
                   weight: productVariant.weight,
+                  variantName: productVariant.name,
                   tenant: {
                     connect: {
                       id: this.kencoveApiApp.tenantId,
@@ -208,6 +209,7 @@ export class KencoveApiAppProductSyncService {
               },
               update: {
                 weight: productVariant.weight,
+                variantName: productVariant.name,
               },
             },
           },
