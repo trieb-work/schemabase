@@ -23,10 +23,17 @@ export interface EventProducer<TContent> {
    */
   close: () => Promise<void>;
 }
-const redisConnection = {
-  host: env.require("REDIS_HOST"),
-  port: parseInt(env.require("REDIS_PORT")),
-  password: env.require("REDIS_PASSWORD"),
+
+/**
+ * load the redis connection from the environment
+ * @returns
+ */
+const redisConnections = () => {
+  return {
+    host: env.require("REDIS_HOST"),
+    port: parseInt(env.require("REDIS_PORT")),
+    password: env.require("REDIS_PASSWORD"),
+  };
 };
 
 export const newKafkaClient = (): kafka.Kafka => {
@@ -119,6 +126,7 @@ export class BullMQProducer<TContent> implements EventProducer<TContent> {
       "events",
       config.topic,
     ].join(":");
+    const redisConnection = redisConnections();
     const producer = new Queue(queueName, {
       connection: redisConnection,
       defaultJobOptions: {
@@ -139,13 +147,12 @@ export class BullMQProducer<TContent> implements EventProducer<TContent> {
     message: Message<TContent>,
     opts?: { key?: string; headers?: Record<string, string> },
   ): Promise<{ messageId: string }> {
-    const serialized = message.serialize();
     const jobData = {
       key: opts?.key,
       headers: {
         ...opts?.headers,
       },
-      value: serialized,
+      value: message,
     };
     await this.producer.add(topic, jobData, {
       jobId: message.header.id,
@@ -322,6 +329,8 @@ export class BullMQSubscriber<TContent> implements EventSubscriber<TContent> {
    * @param handler
    */
   public async subscribe(handler: EventHandler<TContent>): Promise<void> {
+    const redisConnection = redisConnections();
+
     const queueName = [
       "eci",
       this.tenantId.substring(0, 5),
@@ -341,10 +350,8 @@ export class BullMQSubscriber<TContent> implements EventSubscriber<TContent> {
             jobId: job.id,
             queueName,
           });
-        const message = Message.deserialize<TContent>(job.data.value);
+        const message = job.data.value as Message<TContent>;
 
-        logger.info("Incoming message from events queue");
-        logger.debug(JSON.stringify(message));
         const runtimeContext = {
           logger,
           job,

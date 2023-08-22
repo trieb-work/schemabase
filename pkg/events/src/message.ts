@@ -51,6 +51,10 @@ export class Message<TContent> {
     this.content = Object.freeze(message.content);
   }
 
+  /**
+   * serialize the message for kafka. BullMQ does not need this
+   * @returns
+   */
   public serialize(): Buffer {
     return Buffer.from(
       JSON.stringify({
@@ -62,18 +66,12 @@ export class Message<TContent> {
 
   /**
    * Deserialize a message. BullMq is doing the JSON.parse automatically,
-   * so only kafka needs a parsing. We try first to parse the message. If fails,
-   * we try to run the run just the buf.toString(). If that fails just throw
+   * so only kafka needs a parsing.
    * @param buf
    * @returns
    */
   static deserialize<TContent>(buf: Buffer): Message<TContent> {
-    try {
-      const message = JSON.parse(buf.toString()) as Message<TContent>;
-      return new Message(message);
-    } catch (error) {
-      const message = buf.toString() as unknown as Message<TContent>;
-      return new Message(message);
-    }
+    const message = JSON.parse(buf.toString()) as Message<TContent>;
+    return new Message(message);
   }
 }
