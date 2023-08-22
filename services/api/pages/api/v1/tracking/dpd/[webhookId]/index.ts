@@ -6,13 +6,10 @@ import {
 import { z } from "zod";
 import { HttpError } from "@eci/pkg/errors";
 import { handleWebhook, Webhook } from "@eci/pkg/http";
-import { env } from "@eci/pkg/env";
 import {
   BullMQProducer,
   EventSchemaRegistry,
-  KafkaProducer,
   Message,
-  Signer,
   Topic,
 } from "@eci/pkg/events";
 import { PackageState } from "@eci/pkg/prisma";
