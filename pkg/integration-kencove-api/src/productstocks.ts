@@ -109,13 +109,19 @@ export class KencoveApiAppProductStockSyncService {
             },
           },
         });
-        if (
-          existingStock &&
-          existingStock.actualAvailableStock !== warehouseEntry.qty_avail
-        ) {
+        if (existingStock) {
+          if (
+            existingStock.actualAvailableForSaleStock ===
+            warehouseEntry.qty_avail
+          ) {
+            this.logger.info(
+              `Stock entry for ${internalVariant.sku} did not change`,
+            );
+            continue;
+          }
           this.logger.info(
             `Updating stock entry for ${internalVariant.sku}` +
-              `from ${existingStock.actualAvailableStock} to ${warehouseEntry.qty_avail}`,
+              `from ${existingStock.actualAvailableForSaleStock} to ${warehouseEntry.qty_avail}`,
           );
           await this.db.stockEntries.update({
             where: {
@@ -123,7 +129,7 @@ export class KencoveApiAppProductStockSyncService {
             },
             data: {
               updatedAt: new Date(),
-              actualAvailableStock: warehouseEntry.qty_avail,
+              actualAvailableForSaleStock: warehouseEntry.qty_avail,
             },
           });
         } else {
@@ -145,7 +151,7 @@ export class KencoveApiAppProductStockSyncService {
                   id: warehouseId,
                 },
               },
-              actualAvailableStock: warehouseEntry.qty_avail,
+              actualAvailableForSaleStock: warehouseEntry.qty_avail,
             },
           });
         }
