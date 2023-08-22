@@ -70,22 +70,34 @@ export class KencoveApiClient {
     }
   }
 
+  /**
+   * pull the addresses - as we might have a lot here, we send
+   * two api requests in parallel
+   * @param fromDate
+   * @returns
+   */
   public async getAddresses(fromDate: Date): Promise<KencoveApiAddress[]> {
     const accessToken = await this.getAccessToken();
     const addresses: KencoveApiAddress[] = [];
-    let nextPage: string | null = null;
-    let offset: number = 0;
-    do {
-      const response = await this.getAddressesPage(
-        fromDate,
-        offset,
-        accessToken,
-      );
-      addresses.push(...response.data);
 
-      nextPage = response.next_page;
-      offset += 200;
+    let nextPage: string | null = null;
+    let offset1: number = 0;
+    let offset2: number = 200; // start the second call with an offset of 200
+
+    do {
+      const [response1, response2] = await Promise.all([
+        this.getAddressesPage(fromDate, offset1, accessToken),
+        this.getAddressesPage(fromDate, offset2, accessToken),
+      ]);
+
+      addresses.push(...response1.data, ...response2.data);
+
+      nextPage = response1.next_page || response2.next_page;
+
+      offset1 += 400; // increase offset1 by 400 since you're making two requests in parallel
+      offset2 += 400; // increase offset2 by 400
     } while (nextPage);
+
     console.debug(`Found ${addresses.length} addresses`);
     return addresses;
   }
