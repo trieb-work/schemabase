@@ -263,7 +263,7 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
           }
 
           await handler.handleEvent(
-            { traceId: message.header.traceId },
+            { traceId: message.header.traceId, logger: this.logger },
             message.content,
           );
         } catch (error) {
@@ -286,7 +286,7 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
 
 export type RuntimeContextHandler = {
   logger: ILogger;
-  job: Job;
+  job?: Job;
   traceId: string;
 };
 /**

@@ -1,7 +1,6 @@
 import { id } from "@eci/pkg/ids";
 import { PrismaClient } from "@prisma/client";
 import { Context } from "@eci/pkg/context";
-import { ILogger } from "@eci/pkg/logger";
 import { EventSchemaRegistry, RuntimeContextHandler } from "@eci/pkg/events";
 import { isValidTransition } from "./eventSorting";
 
@@ -11,7 +10,6 @@ export interface PackageEventHandlerConfig {
     ctx: Context,
     res: EventSchemaRegistry.PackageStateTransition["message"],
   ) => Promise<void>;
-  logger: ILogger;
 }
 
 /**

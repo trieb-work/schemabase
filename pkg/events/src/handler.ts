@@ -1,10 +1,10 @@
 import type { Context } from "@eci/pkg/context";
-import { BullMQProducer, KafkaProducer } from "./events";
+import { BullMQProducer, KafkaProducer, RuntimeContextHandler } from "./events";
 import { Message } from "./message";
 import { Topic } from "./registry";
 
 export interface EventHandler<TEvent> {
-  handleEvent: (ctx: Context, event: TEvent) => Promise<void>;
+  handleEvent: (ctx: RuntimeContextHandler, event: TEvent) => Promise<void>;
 }
 export type OnSuccess<TEvent> = (ctx: Context, event: TEvent) => Promise<void>;
 

@@ -1,9 +1,13 @@
 import { PrismaClient } from "@prisma/client";
-import { Context } from "@eci/pkg/context";
 import { ILogger } from "@eci/pkg/logger";
 import { isValidTransition } from "./eventSorting";
 import { EmailTemplateSender } from "@eci/pkg/email/src/emailSender";
-import { EventHandler, EventSchemaRegistry, OnSuccess } from "@eci/pkg/events";
+import {
+  EventHandler,
+  EventSchemaRegistry,
+  OnSuccess,
+  RuntimeContextHandler,
+} from "@eci/pkg/events";
 import { id } from "@eci/pkg/ids";
 
 export interface CustomerNotifierConfig {
@@ -29,7 +33,7 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
 
   private readonly onSuccess: OnSuccess<{ emailId: string }>;
 
-  private readonly logger: ILogger;
+  private logger: ILogger;
 
   private readonly emailTemplateSender: EmailTemplateSender;
 
@@ -41,9 +45,10 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
   }
 
   public async handleEvent(
-    ctx: Context,
+    ctx: RuntimeContextHandler,
     event: EventSchemaRegistry.PackageStateTransition["message"],
   ): Promise<void> {
+    this.logger = ctx.logger.with({ handler: "customernotifier" });
     this.logger.debug("New event", { event });
     const packageEvent = await this.db.packageEvent.findUnique({
       where: {

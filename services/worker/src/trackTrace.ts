@@ -48,7 +48,6 @@ export class TrackTrace {
           }),
           Topic.PACKAGE_STATE_TRANSITION,
         ),
-        logger: this.logger,
       });
       const packageEventConsumerBull = await BullMQSubscriber.new<
         EventSchemaRegistry.PackageUpdate["message"]
