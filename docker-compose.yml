@@ -34,7 +34,6 @@ services:
       - ECI_ENV=development
       - JWT_SIGNING_KEY=${JWT_SIGNING_KEY}
 
-
   logdrain:
     build:
       context: .
@@ -65,10 +64,6 @@ services:
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-
-
-
-
 
   redis:
     container_name: redis.eci

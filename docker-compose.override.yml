@@ -1,5 +1,4 @@
 version: "3.9"
-
 # This will apply in local development.
 # In ci this file will be replaced by `docker-compose.ci.yml`
 
