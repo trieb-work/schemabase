@@ -8,6 +8,7 @@ import { HttpError } from "@eci/pkg/errors";
 import { handleWebhook, Webhook } from "@eci/pkg/http";
 import { env } from "@eci/pkg/env";
 import {
+  BullMQProducer,
   EventSchemaRegistry,
   KafkaProducer,
   Message,
@@ -189,10 +190,10 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     trackingIntegrationId: integration.id,
   };
 
-  const kafka = await KafkaProducer.new<
+  const bullMQ = await BullMQProducer.new<
     EventSchemaRegistry.PackageUpdate["message"]
   >({
-    signer: new Signer({ signingKey: env.require("SIGNING_KEY") }),
+    topic: Topic.PACKAGE_UPDATE,
   });
 
   const message = new Message({
@@ -202,9 +203,9 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     content: packageEvent,
   });
 
-  const { messageId } = await kafka.produce(Topic.PACKAGE_UPDATE, message);
+  const { messageId } = await bullMQ.produce(Topic.PACKAGE_UPDATE, message);
 
-  ctx.logger.info("Queued new event", { messageId });
+  ctx.logger.info("Queued new BullmQ event", { messageId });
 
   res.setHeader("Content-Type", "application/xml");
   res.send(`<push><pushid>${pushId}</pushid><status>OK</status></push>`);
