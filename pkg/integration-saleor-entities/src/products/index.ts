@@ -710,9 +710,7 @@ export class SaleorProductSyncService {
       return;
     }
 
-    // to make use of shop facet filters, we create a metadata item with name "customerRatings_facet" and value like this:
-    // [ "1+", "2+" ] showing if a product has a rating of 2 or more stars. This can be used to filter all products, that have "minimum 2 stars".
-    // When a product has 5 stars, the value will be [ "1+", "2+", "3+", "4+", "5+" ].
+    // to make use of shop facet filters, we create a metadata item with name "customerRatings_facet"
     const facetValue = [];
     for (let i = 1; i <= productRatings._avg.averageRating; i++) {
       facetValue.push(`${i}-and-above`);
