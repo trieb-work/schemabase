@@ -60,9 +60,20 @@ export class Message<TContent> {
     );
   }
 
+  /**
+   * Deserialize a message. BullMq is doing the JSON.parse automatically,
+   * so only kafka needs a parsing. We try first to parse the message. If fails,
+   * we try to run the run just the buf.toString(). If that fails just throw
+   * @param buf
+   * @returns
+   */
   static deserialize<TContent>(buf: Buffer): Message<TContent> {
-    const message = JSON.parse(buf.toString()) as Message<TContent>;
-
-    return new Message(message);
+    try {
+      const message = JSON.parse(buf.toString()) as Message<TContent>;
+      return new Message(message);
+    } catch (error) {
+      const message = buf.toString() as unknown as Message<TContent>;
+      return new Message(message);
+    }
   }
 }
