@@ -126,7 +126,7 @@ export class KencoveApiAppAddressSyncService {
             fullname: address.fullname,
             state: address.state,
             contact: internalContact
-              ? { connect: { id: internalContact.id } }
+              ? { connect: { id: internalContact.contactId } }
               : {},
           },
           update: {},
