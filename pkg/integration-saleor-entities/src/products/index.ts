@@ -579,7 +579,9 @@ export class SaleorProductSyncService {
             },
           ],
         });
-        this.logger.debug(`Updated stock entry ${variant.id}`);
+        this.logger.debug(
+          `Updated stock entry for ${variant.productVariant.sku} - id ${variant.id}`,
+        );
       }
 
       // We parse the current product ratings from the metadata. We create a object productRating with averageRating and ratingCount.

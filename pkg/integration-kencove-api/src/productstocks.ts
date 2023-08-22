@@ -120,7 +120,7 @@ export class KencoveApiAppProductStockSyncService {
             continue;
           }
           this.logger.info(
-            `Updating stock entry for ${internalVariant.sku}` +
+            `Updating stock entry for ${internalVariant.sku} ` +
               `from ${existingStock.actualAvailableForSaleStock} to ${warehouseEntry.qty_avail}`,
           );
           await this.db.stockEntries.update({
@@ -128,7 +128,6 @@ export class KencoveApiAppProductStockSyncService {
               id: existingStock.id,
             },
             data: {
-              updatedAt: new Date(),
               actualAvailableForSaleStock: warehouseEntry.qty_avail,
             },
           });
