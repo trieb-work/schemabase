@@ -23,6 +23,11 @@ export interface EventProducer<TContent> {
    */
   close: () => Promise<void>;
 }
+const redisConnection = {
+  host: env.require("REDIS_HOST"),
+  port: parseInt(env.require("REDIS_PORT")),
+  password: env.require("REDIS_PASSWORD"),
+};
 
 export const newKafkaClient = (): kafka.Kafka => {
   const config: kafka.KafkaConfig = {
@@ -107,11 +112,6 @@ export class BullMQProducer<TContent> implements EventProducer<TContent> {
   static async new<TContent>(config: {
     topic: string;
   }): Promise<BullMQProducer<TContent>> {
-    const redisConnection = {
-      host: env.require("REDIS_HOST"),
-      port: parseInt(env.require("REDIS_PORT")),
-      password: env.require("REDIS_PASSWORD"),
-    };
     const queueName = ["eci", config.topic].join(":");
     const producer = new Queue(queueName, {
       connection: redisConnection,
@@ -308,29 +308,35 @@ export class BullMQSubscriber<TContent> implements EventSubscriber<TContent> {
    */
   public async subscribe(handler: EventHandler<TContent>): Promise<void> {
     const queueName = ["eci", this.topic].join(":");
-    this.consumer = new Worker(queueName, async (job: Job) => {
-      const logger = this.logger
-        .withLogDrain({
-          log: (message: string) => {
-            job.log(message);
-          },
-        })
-        .with({
-          jobId: job.id,
-          queueName,
-        });
-      const message = Message.deserialize<TContent>(job.data.value);
+    this.consumer = new Worker(
+      queueName,
+      async (job: Job) => {
+        const logger = this.logger
+          .withLogDrain({
+            log: (message: string) => {
+              job.log(message);
+            },
+          })
+          .with({
+            jobId: job.id,
+            queueName,
+          });
+        const message = Message.deserialize<TContent>(job.data.value);
 
-      logger.info("Incoming message from events queue");
-      logger.debug(JSON.stringify(message));
-      const runtimeContext = {
-        logger,
-        job,
-        traceId: message.header.traceId,
-      };
+        logger.info("Incoming message from events queue");
+        logger.debug(JSON.stringify(message));
+        const runtimeContext = {
+          logger,
+          job,
+          traceId: message.header.traceId,
+        };
 
-      await handler.handleEvent(runtimeContext, message.content);
-    });
+        await handler.handleEvent(runtimeContext, message.content);
+      },
+      {
+        connection: redisConnection,
+      },
+    );
   }
 
   public async close(): Promise<void> {
