@@ -111,8 +111,13 @@ export class BullMQProducer<TContent> implements EventProducer<TContent> {
 
   static async new<TContent>(config: {
     topic: string;
+    tenantId: string;
   }): Promise<BullMQProducer<TContent>> {
-    const queueName = ["eci", config.topic].join(":");
+    const queueName = [
+      "eci",
+      config.tenantId.substring(0, 5),
+      config.topic,
+    ].join(":");
     const producer = new Queue(queueName, {
       connection: redisConnection,
       defaultJobOptions: {
@@ -281,24 +286,33 @@ export class BullMQSubscriber<TContent> implements EventSubscriber<TContent> {
 
   private readonly logger: ILogger;
 
+  private readonly tenantId: string;
+
   /**
    * We initialize a fake worker here, so that
    * we can call close() on it later.
    */
   private consumer: Worker = {} as Worker;
 
-  private constructor(config: { logger: ILogger; topic: Topic }) {
+  private constructor(config: {
+    logger: ILogger;
+    topic: Topic;
+    tenantId: string;
+  }) {
     this.logger = config.logger;
     this.topic = config.topic;
+    this.tenantId = config.tenantId;
   }
 
   static async new<TContent>(config: {
     topic: Topic;
     logger: ILogger;
+    tenantId: string;
   }): Promise<BullMQSubscriber<TContent>> {
     return new BullMQSubscriber({
       topic: config.topic,
       logger: config.logger,
+      tenantId: config.tenantId,
     });
   }
 
@@ -307,7 +321,9 @@ export class BullMQSubscriber<TContent> implements EventSubscriber<TContent> {
    * @param handler
    */
   public async subscribe(handler: EventHandler<TContent>): Promise<void> {
-    const queueName = ["eci", this.topic].join(":");
+    const queueName = ["eci", this.tenantId.substring(0, 5), this.topic].join(
+      ":",
+    );
     this.consumer = new Worker(
       queueName,
       async (job: Job) => {

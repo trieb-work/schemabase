@@ -191,6 +191,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     EventSchemaRegistry.PackageUpdate["message"]
   >({
     topic: Topic.PACKAGE_UPDATE,
+    tenantId: integration.tenantId,
   });
 
   const message = new Message({
