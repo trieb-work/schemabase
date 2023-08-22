@@ -161,6 +161,10 @@ export class KencoveApiAppOrderSyncService {
       existingOrders.find((eo) => eo.id === o.id),
     );
 
+    /// TODO: We want to create ALL orders in our DB, to give customers
+    /// the ability to see their order history. We can push all orders to saleor
+    // as well using the BULK endpoint. There might be very old products, that we don't have in our
+    // db anymore. We need to handle this case.
     for (const order of toCreate) {
       const updatedAt = new Date(order.updatedAt);
       const createdAt = new Date(order.createdAt);
