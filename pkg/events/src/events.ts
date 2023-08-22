@@ -116,6 +116,7 @@ export class BullMQProducer<TContent> implements EventProducer<TContent> {
     const queueName = [
       "eci",
       config.tenantId.substring(0, 5),
+      "events",
       config.topic,
     ].join(":");
     const producer = new Queue(queueName, {
@@ -321,9 +322,12 @@ export class BullMQSubscriber<TContent> implements EventSubscriber<TContent> {
    * @param handler
    */
   public async subscribe(handler: EventHandler<TContent>): Promise<void> {
-    const queueName = ["eci", this.tenantId.substring(0, 5), this.topic].join(
-      ":",
-    );
+    const queueName = [
+      "eci",
+      this.tenantId.substring(0, 5),
+      "events",
+      this.topic,
+    ].join(":");
     this.consumer = new Worker(
       queueName,
       async (job: Job) => {

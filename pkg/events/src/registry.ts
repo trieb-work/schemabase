@@ -1,11 +1,8 @@
-import { PackageState, Language } from "@eci/pkg/prisma";
+import { PackageState } from "@eci/pkg/prisma";
 export enum Topic {
-  BULKORDER_SYNCED = "bulkorder.synced",
-  PACKAGE_UPDATE = "tracking.package.update",
-  PACKAGE_STATE_TRANSITION = "tracking.package.state.transition",
-  NOTIFICATION_EMAIL_SENT = "tracking.package.notification.email.sent",
-  ORDER_UPDATE = "tracking.order.update",
-  ORDER_UPDATE_COMPLETE = "tracking.order.update.complete",
+  PACKAGE_UPDATE = "t&t.update",
+  PACKAGE_STATE_TRANSITION = "t&t.state.transition",
+  NOTIFICATION_EMAIL_SENT = "t&t.notification.email.sent",
 }
 
 export interface EventSchema<TTopic, TMessage> {
@@ -14,13 +11,6 @@ export interface EventSchema<TTopic, TMessage> {
 }
 
 export namespace EventSchemaRegistry {
-  export type BulkorderSynced = EventSchema<
-    Topic.BULKORDER_SYNCED,
-    {
-      orderId: string;
-    }
-  >;
-
   export type PackageUpdate = EventSchema<
     Topic.PACKAGE_UPDATE,
     {
@@ -48,27 +38,5 @@ export namespace EventSchemaRegistry {
   export type NotificationEmailSent = EventSchema<
     Topic.NOTIFICATION_EMAIL_SENT,
     { emailIds: string[] }
-  >;
-
-  export type OrderUpdate = EventSchema<
-    Topic.ORDER_UPDATE,
-    {
-      zohoAppId: string;
-      salesorderId: string;
-      emails: string[];
-      defaultLanguage: Language;
-      packages: {
-        packageId: string;
-        carrier: string;
-        trackingId: string;
-      }[];
-    }
-  >;
-
-  export type OrderUpdateComplete = EventSchema<
-    Topic.ORDER_UPDATE_COMPLETE,
-    {
-      orderId: string;
-    }
   >;
 }
