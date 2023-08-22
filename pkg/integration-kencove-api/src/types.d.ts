@@ -156,7 +156,7 @@ export type KencoveApiOrder = {
   /**
    * Sale: confirmed sale. Sent: quote emailed to the customer. Is "draft".
    */
-  state: "cancel" | "sale" | "sent";
+  state: "cancel" | "sale" | "sent" | "draft";
   access_token: string;
   billingAddress: {
     billingAddressId: string;

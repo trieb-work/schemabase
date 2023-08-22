@@ -106,6 +106,8 @@ export class KencoveApiAppOrderSyncService {
         return OrderStatus.confirmed;
       case "sent":
         return OrderStatus.draft;
+        case "draft":
+          return OrderStatus.draft;        
       case "cancel":
         return OrderStatus.canceled;
       default:
