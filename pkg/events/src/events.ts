@@ -284,6 +284,11 @@ export class KafkaSubscriber<TContent> implements EventSubscriber<TContent> {
   }
 }
 
+export type RuntimeContextHandler = {
+  logger: ILogger;
+  job: Job;
+  traceId: string;
+};
 /**
  * The BullMQ subscribe class - process jobs from the bullmq EVENTS queue.
  * In comparison to Kafka, we don't need a errorProducer here - errors are handled in the
@@ -352,7 +357,7 @@ export class BullMQSubscriber<TContent> implements EventSubscriber<TContent> {
           });
         const message = job.data.value as Message<TContent>;
 
-        const runtimeContext = {
+        const runtimeContext: RuntimeContextHandler = {
           logger,
           job,
           traceId: message.header.traceId,

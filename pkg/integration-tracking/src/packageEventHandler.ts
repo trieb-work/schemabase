@@ -2,7 +2,7 @@ import { id } from "@eci/pkg/ids";
 import { PrismaClient } from "@prisma/client";
 import { Context } from "@eci/pkg/context";
 import { ILogger } from "@eci/pkg/logger";
-import { EventSchemaRegistry } from "@eci/pkg/events";
+import { EventSchemaRegistry, RuntimeContextHandler } from "@eci/pkg/events";
 import { isValidTransition } from "./eventSorting";
 
 export interface PackageEventHandlerConfig {
@@ -33,19 +33,17 @@ export class PackageEventHandler {
     res: EventSchemaRegistry.PackageStateTransition["message"],
   ) => Promise<void>;
 
-  private readonly logger: ILogger;
-
   constructor(config: PackageEventHandlerConfig) {
     this.db = config.db;
     this.onSuccess = config.onSuccess;
-    this.logger = config.logger.with({ handler: "packageeventhandler" });
   }
 
   public async handleEvent(
-    ctx: Context,
+    ctx: RuntimeContextHandler,
     event: EventSchemaRegistry.PackageUpdate["message"],
   ): Promise<void> {
-    this.logger.info(
+    const logger = ctx.logger.with({ handler: "packageeventhandler" });
+    logger.info(
       // eslint-disable-next-line max-len
       `Package Event Handler - new message. State: ${event.state} - Tracking Number: ${event.trackingId}`,
       {
@@ -66,12 +64,9 @@ export class PackageEventHandler {
       },
     });
     if (storedPackage == null) {
-      this.logger.error(
-        `No package found with tracking id: ${event.trackingId}`,
-        {
-          trackingId: event.trackingId,
-        },
-      );
+      logger.error(`No package found with tracking id: ${event.trackingId}`, {
+        trackingId: event.trackingId,
+      });
       /**
        * TODO: We return here, so that this message is not blocking the queue. Might be good here
        * to use a retry queue and try again in 20 mins, as the package often takes time to
@@ -86,15 +81,14 @@ export class PackageEventHandler {
     const eventDate = new Date(event.time * 1000);
 
     if (existingEvents && existingEvents.some((e) => e.time === eventDate)) {
-      this.logger
-        .info(`The current event date is the same as from an existing one in \
+      logger.info(`The current event date is the same as from an existing one in \
       our DB: ${eventDate}. Assuming, that we already have this event in our DB. Skipping..`);
       return;
     }
 
     const eventId = id.id("event");
 
-    this.logger.info("Updating package state", {
+    logger.info("Updating package state", {
       trackingId: event.trackingId,
       state: event.state,
     });
