@@ -221,7 +221,10 @@ export class UPSTrackingSyncService {
       // this.logger.info(`Created Kafka message with ID ${messageId}`);
       const queue = await BullMQProducer.new<
         EventSchemaRegistry.PackageUpdate["message"]
-      >({ topic: Topic.PACKAGE_UPDATE });
+      >({
+        topic: Topic.PACKAGE_UPDATE,
+        tenantId: this.upsTrackingApp.tenantId,
+      });
 
       const message = new Message({
         header: {

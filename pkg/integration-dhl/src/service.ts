@@ -159,6 +159,7 @@ export class DHLTrackingSyncService {
         EventSchemaRegistry.PackageUpdate["message"]
       >({
         topic: Topic.PACKAGE_UPDATE,
+        tenantId: this.dhlTrackingApp.tenantId,
       });
 
       const message = new Message({
