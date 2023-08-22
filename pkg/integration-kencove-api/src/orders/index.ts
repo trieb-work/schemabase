@@ -8,7 +8,12 @@
 // Path: pkg/integration-kencove-api/src/orders.ts
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { ILogger } from "@eci/pkg/logger";
-import { KencoveApiApp, OrderStatus, PrismaClient } from "@eci/pkg/prisma";
+import {
+  KencoveApiApp,
+  OrderStatus,
+  Prisma,
+  PrismaClient,
+} from "@eci/pkg/prisma";
 import { subHours, subYears } from "date-fns";
 import { KencoveApiClient } from "../client";
 import { id } from "@eci/pkg/ids";
@@ -100,7 +105,7 @@ export class KencoveApiAppOrderSyncService {
       case "sale":
         return OrderStatus.confirmed;
       case "sent":
-        return OrderStatus.confirmed;
+        return OrderStatus.draft;
       case "cancel":
         return OrderStatus.canceled;
       default:
@@ -161,72 +166,82 @@ export class KencoveApiAppOrderSyncService {
       const createdAt = new Date(order.createdAt);
       const mainContactId = await this.syncMainContact(order);
       if (!mainContactId) continue;
-      await this.db.kencoveApiOrder.create({
-        data: {
-          id: order.id,
-          updatedAt,
-          createdAt,
-          kencoveApiApp: {
-            connect: {
-              id: this.kencoveApiApp.id,
-            },
-          },
-          order: {
-            connectOrCreate: {
-              where: {
-                orderNumber_tenantId: {
-                  orderNumber: order.orderNumber,
-                  tenantId: this.kencoveApiApp.tenantId,
-                },
+      try {
+        await this.db.kencoveApiOrder.create({
+          data: {
+            id: order.id,
+            updatedAt,
+            createdAt,
+            kencoveApiApp: {
+              connect: {
+                id: this.kencoveApiApp.id,
               },
-              create: {
-                id: id.id("order"),
-                orderStatus: this.matchOrderStatus(order.state),
-                tenant: {
-                  connect: {
-                    id: this.kencoveApiApp.tenantId,
+            },
+            order: {
+              connectOrCreate: {
+                where: {
+                  orderNumber_tenantId: {
+                    orderNumber: order.orderNumber,
+                    tenantId: this.kencoveApiApp.tenantId,
                   },
                 },
-                orderNumber: order.orderNumber,
-                date: new Date(order.date_order),
-                totalPriceGross: order.amount_total,
-                mainContact: {
-                  connect: {
-                    id: mainContactId,
+                create: {
+                  id: id.id("order"),
+                  orderStatus: this.matchOrderStatus(order.state),
+                  tenant: {
+                    connect: {
+                      id: this.kencoveApiApp.tenantId,
+                    },
                   },
-                },
-                orderLineItems: {
-                  create: order.orderLines.map((ol, index) => {
-                    return {
-                      id: id.id("lineItem"),
-                      uniqueString: uniqueStringOrderLine(
-                        order.orderNumber,
-                        ol.itemCode,
-                        ol.quantity,
-                        index,
-                      ),
-                      quantity: ol.quantity,
-                      productVariant: {
-                        connect: {
-                          sku_tenantId: {
-                            sku: ol.itemCode,
-                            tenantId: this.kencoveApiApp.tenantId,
+                  orderNumber: order.orderNumber,
+                  date: new Date(order.date_order),
+                  totalPriceGross: order.amount_total,
+                  mainContact: {
+                    connect: {
+                      id: mainContactId,
+                    },
+                  },
+                  orderLineItems: {
+                    create: order.orderLines.map((ol, index) => {
+                      return {
+                        id: id.id("lineItem"),
+                        uniqueString: uniqueStringOrderLine(
+                          order.orderNumber,
+                          ol.itemCode,
+                          ol.quantity,
+                          index,
+                        ),
+                        quantity: ol.quantity,
+                        productVariant: {
+                          connect: {
+                            sku_tenantId: {
+                              sku: ol.itemCode,
+                              tenantId: this.kencoveApiApp.tenantId,
+                            },
                           },
                         },
-                      },
-                      tenant: {
-                        connect: {
-                          id: this.kencoveApiApp.tenantId,
+                        tenant: {
+                          connect: {
+                            id: this.kencoveApiApp.tenantId,
+                          },
                         },
-                      },
-                    };
-                  }),
+                      };
+                    }),
+                  },
                 },
               },
             },
           },
-        },
-      });
+        });
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+          this.logger.error(
+            `Error while creating order ${order.id}: ${error.message}`,
+          );
+        } else {
+          throw error;
+        }
+      }
     }
 
     for (const order of toUpdate) {
