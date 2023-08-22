@@ -146,7 +146,7 @@ export class KencoveApiAppOrderSyncService {
     //   logger: this.logger,
     // });
 
-    const existingOrders = await this.db.kencoveApiOrder.findMany({
+    const existingKencoveApiOrders = await this.db.kencoveApiOrder.findMany({
       where: {
         id: {
           in: apiOrders.map((o) => o.id),
@@ -155,10 +155,10 @@ export class KencoveApiAppOrderSyncService {
       },
     });
     const toCreate = apiOrders.filter(
-      (o) => !existingOrders.find((eo) => eo.id === o.id),
+      (o) => !existingKencoveApiOrders.find((eo) => eo.id === o.id),
     );
     const toUpdate = apiOrders.filter((o) =>
-      existingOrders.find((eo) => eo.id === o.id),
+      existingKencoveApiOrders.find((eo) => eo.id === o.id),
     );
 
     /// TODO: We want to create ALL orders in our DB, to give customers
@@ -170,6 +170,7 @@ export class KencoveApiAppOrderSyncService {
       const createdAt = new Date(order.createdAt);
       const mainContactId = await this.syncMainContact(order);
       if (!mainContactId) continue;
+      if (!order.amount_total) continue;
       try {
         await this.db.kencoveApiOrder.create({
           data: {
