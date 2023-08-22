@@ -317,8 +317,8 @@ export class KencoveApiClient {
       orders.push(...response.data);
       nextPage = response.next_page;
       offset += 200;
+      console.debug(`Found ${orders.length} orders / offset: ${offset}`);
     } while (nextPage);
-    console.debug(`Found ${orders.length} orders`);
     return orders;
   }
 

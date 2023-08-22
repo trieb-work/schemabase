@@ -206,7 +206,7 @@ export class KencoveApiAppOrderSyncService {
                     },
                   },
                   orderLineItems: {
-                    create: order.orderLines.map((ol, index) => {
+                    create: order?.orderLines?.map((ol, index) => {
                       return {
                         id: id.id("lineItem"),
                         uniqueString: uniqueStringOrderLine(
@@ -243,6 +243,9 @@ export class KencoveApiAppOrderSyncService {
             `Error while creating order ${order.id}: ${error.message}`,
           );
         } else {
+          this.logger.error(
+            `Error working on order: ${order.id} - ${order.orderNumber}`,
+          );
           throw error;
         }
       }
