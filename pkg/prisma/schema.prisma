@@ -1408,7 +1408,7 @@ model Address {
   tenantId String
 
   /// A unique string identifying this address for easy lookup
-  normalizedName String
+  normalizedName String @db.VarChar(300)
 
   /// An array of zoho addresses. Can be multiple if the same address is synced to different zoho apps
   zohoAddress ZohoAddress[]
