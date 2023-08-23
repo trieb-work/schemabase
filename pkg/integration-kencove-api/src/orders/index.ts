@@ -95,6 +95,22 @@ export class KencoveApiAppOrderSyncService {
     return newContact.id;
   }
 
+  private async getAddress(kenAddressId: string) {
+    const existingAddress = await this.db.kencoveApiAddress.findUnique({
+      where: {
+        id_kencoveApiAppId: {
+          id: kenAddressId,
+          kencoveApiAppId: this.kencoveApiApp.id,
+        },
+      },
+    });
+    if (!existingAddress) {
+      this.logger.error(`Address ${kenAddressId} not found!`);
+      return;
+    }
+    return existingAddress.addressId;
+  }
+
   /**
    * Match the order status from the Kencove API (odoo order status)
    * with our internal status
@@ -163,6 +179,10 @@ export class KencoveApiAppOrderSyncService {
       existingKencoveApiOrders.find((eo) => eo.id === o.id),
     );
 
+    this.logger.info(
+      `Got ${toCreate.length} orders to create and ${toUpdate.length} orders to update`,
+    );
+
     /// TODO: We want to create ALL orders in our DB, to give customers
     /// the ability to see their order history. We can push all orders to saleor
     // as well using the BULK endpoint. There might be very old products, that we don't have in our
@@ -171,6 +191,12 @@ export class KencoveApiAppOrderSyncService {
       const updatedAt = new Date(order.updatedAt);
       const createdAt = new Date(order.createdAt);
       const mainContactId = await this.syncMainContact(order);
+      const billingAddressId = await this.getAddress(
+        order.billingAddress.billingAddressId,
+      );
+      const shippingAddressId = await this.getAddress(
+        order.shippingAddress.shippingAddressId,
+      );
       if (!mainContactId) continue;
       if (!order.amount_total) continue;
       try {
@@ -201,6 +227,16 @@ export class KencoveApiAppOrderSyncService {
                     },
                   },
                   orderNumber: order.orderNumber,
+                  billingAddress: {
+                    connect: {
+                      id: billingAddressId,
+                    },
+                  },
+                  shippingAddress: {
+                    connect: {
+                      id: shippingAddressId,
+                    },
+                  },
                   date: new Date(order.date_order),
                   totalPriceGross: order.amount_total,
                   mainContact: {
