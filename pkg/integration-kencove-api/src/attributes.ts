@@ -201,7 +201,6 @@ export class KencoveApiAppAttributeSyncService {
          * the attribute value name. Like Chartreuse, Gray, Peach,..
          */
         // if (type === "SWATCH") {
-          
 
         // }
         await this.db.attributeValue.upsert({
@@ -228,12 +227,13 @@ export class KencoveApiAppAttributeSyncService {
             value: kenAttributeValue.attribute_value,
           },
           update: {},
-      });
+        });
 
-      await this.cronState.set({
-        lastRun: new Date(),
-        lastRunStatus: "success",
-      });
+        await this.cronState.set({
+          lastRun: new Date(),
+          lastRunStatus: "success",
+        });
+      }
     }
   }
 }
