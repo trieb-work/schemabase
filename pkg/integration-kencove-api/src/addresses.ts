@@ -154,5 +154,7 @@ export class KencoveApiAppAddressSyncService {
         });
       }
     }
+
+    await this.cronState.set({ lastRun: now, lastRunStatus: "success" });
   }
 }
