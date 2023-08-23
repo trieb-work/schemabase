@@ -154,7 +154,7 @@ export class KencoveApiAppCategorySyncService {
         continue;
       }
 
-      console.debug(`Working on category ${JSON.stringify(category)}.`);
+      this.logger.debug(`Working on category ${JSON.stringify(category)}.`);
 
       // for the parent and all children categories of this category, we need to get our
       // corresponding internal ids to be able to connect them to together.

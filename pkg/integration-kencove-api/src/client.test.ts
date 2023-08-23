@@ -28,7 +28,7 @@ describe("KencoveApiClient", () => {
         id: cronIdAddresses,
       },
       update: {
-        lastRun: subDays(new Date(), 1),
+        lastRun: subDays(new Date(), 900),
       },
       create: {
         id: cronIdAddresses,
