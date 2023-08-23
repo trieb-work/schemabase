@@ -344,7 +344,8 @@ export class KencoveApiClient {
     next_page: string;
   }> {
     const response = await this.axiosInstance.get(
-      `/ecom/orders/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
+      // eslint-disable-next-line max-len
+      `/ecom/orders/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${new Date().toISOString()}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
