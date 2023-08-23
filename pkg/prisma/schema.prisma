@@ -1566,7 +1566,7 @@ model Category {
   kencoveApiCategories KencoveApiCategory[]
 
   // The saleor categories this category is synced to
-  saleorApiCategories SaleorCategory[]
+  saleorCategories SaleorCategory[]
 
   @@unique([normalizedName, tenantId])
   @@index([tenantId])

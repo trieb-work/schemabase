@@ -750,7 +750,7 @@ Table Category {
   tenant Tenant [not null, note: 'The tenant this category belongs to']
   tenantId String [not null]
   kencoveApiCategories KencoveApiCategory [not null, note: 'The kencove categories this category is synced to']
-  saleorApiCategories SaleorCategory [not null]
+  saleorCategories SaleorCategory [not null]
 
   indexes {
     (normalizedName, tenantId) [unique]
