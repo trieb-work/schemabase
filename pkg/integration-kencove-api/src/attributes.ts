@@ -66,7 +66,7 @@ export class KencoveApiAppAttributeSyncService {
         return AttributeType.PLAIN_TEXT;
       case "color":
         return AttributeType.SWATCH;
-      case "BOOLEAN":
+      case "checkbox":
         return AttributeType.BOOLEAN;
       case "DATE":
         return AttributeType.DATE;
@@ -138,7 +138,7 @@ export class KencoveApiAppAttributeSyncService {
       const normalizedName = normalizeStrings.attributeNames(
         kenAttribute.attribute_name,
       );
-      await this.db.kencoveApiAttribute.upsert({
+      const attribute = await this.db.kencoveApiAttribute.upsert({
         where: {
           id_kencoveApiAppId: {
             id: kenAttribute.attribute_id,
@@ -187,6 +187,47 @@ export class KencoveApiAppAttributeSyncService {
             },
           },
         },
+      });
+
+      const values = kenAttribute?.values || [];
+      // sync attribute values. We don't have a separate kencoveApiAttributeValue table
+      // We just connect or create the attribute values directly on the attribute
+      for (const kenAttributeValue of values) {
+        const normalizedName = normalizeStrings.attributeNames(
+          kenAttributeValue.attribute_value,
+        );
+        /**
+         * TODO: When we have color attribute, we generate a hex code from
+         * the attribute value name. Like Chartreuse, Gray, Peach,..
+         */
+        // if (type === "SWATCH") {
+          
+
+        // }
+        await this.db.attributeValue.upsert({
+          where: {
+            normalizedName_attributeId_tenantId: {
+              normalizedName,
+              attributeId: attribute.id,
+              tenantId: this.kencoveApiApp.tenantId,
+            },
+          },
+          create: {
+            id: id.id("attributeValue"),
+            normalizedName,
+            tenant: {
+              connect: {
+                id: this.kencoveApiApp.tenantId,
+              },
+            },
+            attribute: {
+              connect: {
+                id: attribute.id,
+              },
+            },
+            value: kenAttributeValue.attribute_value,
+          },
+          update: {},
       });
 
       await this.cronState.set({
