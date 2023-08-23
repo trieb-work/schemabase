@@ -1483,13 +1483,24 @@ model AttributeValue {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  /// Represent value of the attribute value (e.g. color values for swatch attributes)
-  value     String?
+  /// Represent value of the attribute value, like text string. When hexColor is additionally used, you always need a string value as well 
+  value     String
+
+  /// color values for swatch attributes
+  hexColor  String?
+
+  /// We always set a normalized name for the attribute value. For example, if the value is the hex code for red, we set "red" as the normalized name
+  normalizedName String
 
   attribute Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
   attributeId String
 
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
   @@index([attributeId])
+  @@index([tenantId])
+  @@unique([normalizedName, attributeId, tenantId])
 
 }
 /// Product tags are used to group products together. 
@@ -2594,6 +2605,7 @@ model Tenant {
   datevApps                   DatevApp[]
   UPSTrackingApps             UPSTrackingApp[]
   attributes                  Attribute[]
+  attributeValues             AttributeValue[]
   rewiewsioApps               ReviewsioApp[]
   eci_User_Tenants            eci_User_Tenant[]
   kencoveApiApps              KencoveApiApp[]

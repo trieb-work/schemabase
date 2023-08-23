@@ -40,6 +40,7 @@ const prefixes = {
   billOfMaterial: "bom",
   datevContact: "datev_c",
   attribute: "attr",
+  attributeValue: "attr_v",
   category: "cat",
 };
 
