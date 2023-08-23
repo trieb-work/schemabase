@@ -227,16 +227,20 @@ export class KencoveApiAppOrderSyncService {
                     },
                   },
                   orderNumber: order.orderNumber,
-                  billingAddress: {
-                    connect: {
-                      id: billingAddressId,
-                    },
-                  },
-                  shippingAddress: {
-                    connect: {
-                      id: shippingAddressId,
-                    },
-                  },
+                  billingAddress: billingAddressId
+                    ? {
+                        connect: {
+                          id: billingAddressId,
+                        },
+                      }
+                    : undefined,
+                  shippingAddress: shippingAddressId
+                    ? {
+                        connect: {
+                          id: shippingAddressId,
+                        },
+                      }
+                    : undefined,
                   date: new Date(order.date_order),
                   totalPriceGross: order.amount_total,
                   mainContact: {
@@ -293,6 +297,12 @@ export class KencoveApiAppOrderSyncService {
     for (const order of toUpdate) {
       const updatedAt = new Date(order.updatedAt);
       const mainContactId = await this.syncMainContact(order);
+      const billingAddressId = await this.getAddress(
+        order.billingAddress.billingAddressId,
+      );
+      const shippingAddressId = await this.getAddress(
+        order.shippingAddress.shippingAddressId,
+      );
       const res = await this.db.kencoveApiOrder.update({
         where: {
           id_kencoveApiAppId: {
@@ -311,6 +321,20 @@ export class KencoveApiAppOrderSyncService {
               },
               orderStatus: this.matchOrderStatus(order.state),
               totalPriceGross: order.amount_total,
+              billingAddress: billingAddressId
+                ? {
+                    connect: {
+                      id: billingAddressId,
+                    },
+                  }
+                : undefined,
+              shippingAddress: shippingAddressId
+                ? {
+                    connect: {
+                      id: shippingAddressId,
+                    },
+                  }
+                : undefined,
             },
           },
         },
