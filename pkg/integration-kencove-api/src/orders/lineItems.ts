@@ -18,6 +18,12 @@ const apiLineItemsWithSchemabase = async (
   logger: ILogger,
 ) => {
   const orderLineItems = orderFromApi.orderLines;
+  if (!orderLineItems || orderLineItems.length === 0) {
+    logger.error(
+      `no orderline items found for order ${orderFromApi.orderNumber}`,
+    );
+    return;
+  }
   const orderLineItemsWithUniqueString = orderLineItems.map(
     (orderLineItem, index) => {
       return {
