@@ -97,9 +97,20 @@ export type KencoveApiProductVariant = {
   id: string;
   sku: string;
   weight: number;
-  attributeValues: {
+  /**
+   * The variant selection attribute values
+   */
+  selectorValues: {
     name: string;
+    /**
+     * Attribute value
+     */
     value: string;
+    /**
+     * the kencoveApiAttribute.id
+     */
+    attribute_id: number;
+    display_type: string;
   }[];
   name: string;
   createdAt: string;
