@@ -13282,6 +13282,58 @@ export type AppQuery = {
   } | null;
 };
 
+export type ValuesFragment = {
+  __typename?: "AttributeValue";
+  id: string;
+  inputType?: AttributeInputTypeEnum | null;
+  name?: string | null;
+  plainText?: string | null;
+  reference?: string | null;
+  richText?: any | null;
+  slug?: string | null;
+};
+
+export type AttributeSyncQueryVariables = Exact<{
+  first: Scalars["Int"];
+  after?: InputMaybe<Scalars["String"]>;
+}>;
+
+export type AttributeSyncQuery = {
+  __typename?: "Query";
+  attributes?: {
+    __typename?: "AttributeCountableConnection";
+    edges: Array<{
+      __typename?: "AttributeCountableEdge";
+      node: {
+        __typename?: "Attribute";
+        id: string;
+        name?: string | null;
+        type?: AttributeTypeEnum | null;
+        inputType?: AttributeInputTypeEnum | null;
+        unit?: MeasurementUnitsEnum | null;
+        valueRequired: boolean;
+        withChoices: boolean;
+        choices?: {
+          __typename?: "AttributeValueCountableConnection";
+          edges: Array<{
+            __typename?: "AttributeValueCountableEdge";
+            node: {
+              __typename?: "AttributeValue";
+              id: string;
+              inputType?: AttributeInputTypeEnum | null;
+              name?: string | null;
+              plainText?: string | null;
+              reference?: string | null;
+              richText?: any | null;
+              slug?: string | null;
+            };
+          }>;
+        } | null;
+      };
+    }>;
+  } | null;
+};
+
 export type CategoryValuesFragment = {
   __typename?: "Category";
   id: string;
@@ -13885,6 +13937,17 @@ export type WarehousesQuery = {
   } | null;
 };
 
+export const ValuesFragmentDoc = gql`
+  fragment Values on AttributeValue {
+    id
+    inputType
+    name
+    plainText
+    reference
+    richText
+    slug
+  }
+`;
 export const CategoryValuesFragmentDoc = gql`
   fragment categoryValues on Category {
     id
@@ -14209,6 +14272,31 @@ export const AppDocument = gql`
       }
     }
   }
+`;
+export const AttributeSyncDocument = gql`
+  query attributeSync($first: Int!, $after: String) {
+    attributes(first: $first, after: $after) {
+      edges {
+        node {
+          id
+          name
+          type
+          inputType
+          unit
+          valueRequired
+          withChoices
+          choices(first: 100) {
+            edges {
+              node {
+                ...Values
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  ${ValuesFragmentDoc}
 `;
 export const SaleorCronCategoriesDocument = gql`
   query saleorCronCategories($first: Int, $last: Int, $after: String) {
@@ -14872,6 +14960,16 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
         variables,
         options,
       ) as Promise<AppQuery>;
+    },
+    attributeSync(
+      variables: AttributeSyncQueryVariables,
+      options?: C,
+    ): Promise<AttributeSyncQuery> {
+      return requester<AttributeSyncQuery, AttributeSyncQueryVariables>(
+        AttributeSyncDocument,
+        variables,
+        options,
+      ) as Promise<AttributeSyncQuery>;
     },
     saleorCronCategories(
       variables?: SaleorCronCategoriesQueryVariables,

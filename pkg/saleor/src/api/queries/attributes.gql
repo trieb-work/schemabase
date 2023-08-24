@@ -1,0 +1,32 @@
+fragment Values on AttributeValue {
+  id
+  inputType
+  name
+  plainText
+  reference
+  richText
+  slug
+}
+
+query attributeSync($first: Int!, $after: String) {
+  attributes(first: $first, after: $after) {
+    edges {
+      node {
+        id
+        name
+        type
+        inputType
+        unit
+        valueRequired
+        withChoices
+        choices(first: 100) {
+          edges {
+            node {
+              ...Values
+            }
+          }
+        }
+      }
+    }
+  }
+}

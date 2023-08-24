@@ -48,6 +48,7 @@ export class SaleorCategorySyncWf implements Workflow {
       tenantId: installedSaleorApp.saleorApp.tenantId,
     });
     await saleorCategorySyncService.syncToEci();
+    await saleorCategorySyncService.syncFromEci();
     this.logger.info("Finished saleor category sync workflow run");
   }
 }

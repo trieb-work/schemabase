@@ -444,6 +444,10 @@ export class SaleorProductSyncService {
     }
 
     /**
+     * Get all products, that are not yet create in Saleor
+     */
+
+    /**
      * get all saleor productVariants where related stockEntries have been updated since last run or where related
      * productVariants have been updated since last run
      */
