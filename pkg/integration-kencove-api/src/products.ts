@@ -84,6 +84,13 @@ export class KencoveApiAppProductSyncService {
             in: productVariantIds,
           },
         },
+        include: {
+          productVariant: {
+            include: {
+              product: true,
+            },
+          },
+        },
       });
 
     /**
@@ -240,6 +247,31 @@ export class KencoveApiAppProductSyncService {
                 variantName: productVariant.name,
               },
             },
+          },
+        });
+      }
+    }
+
+    /**
+     * Update internal products, if values did change. As we can't rely on data coming from the
+     * API, we do more sanitisation and checks here.
+     */
+    for (const product of enhancedProductVariants) {
+      const existingProduct = existingProductVariants.find(
+        (p) => p.productVariant.sku === product.sku,
+      )?.productVariant.product;
+      if (!existingProduct) {
+        continue;
+      }
+      if (existingProduct.categoryId !== product.categoryId) {
+        await this.db.product.update({
+          where: {
+            id: existingProduct.id,
+          },
+          data: {
+            category: product.categoryId
+              ? { connect: { id: product.categoryId } }
+              : undefined,
           },
         });
       }
