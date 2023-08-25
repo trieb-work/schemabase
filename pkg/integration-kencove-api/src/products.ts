@@ -7,6 +7,7 @@ import { subHours, subYears } from "date-fns";
 import { KencoveApiClient } from "./client";
 import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
+import { countryCodeMatch } from "@eci/pkg/miscHelper/countryCodeMatch";
 
 interface KencoveApiAppProductSyncServiceConfig {
   logger: ILogger;
@@ -59,6 +60,17 @@ export class KencoveApiAppProductSyncService {
       await this.cronState.set({ lastRun: new Date() });
       return;
     }
+
+    const categoryIds = products.map((p) => p?.categoryId?.toString());
+    const existingCategories = await this.db.kencoveApiCategory.findMany({
+      where: {
+        kencoveApiAppId: this.kencoveApiApp.id,
+        id: {
+          in: categoryIds,
+        },
+      },
+    });
+
     /// all product variant ids in one variable using products as start point
     const productVariantIds = products
       .map((p) => p.variants.map((v) => v.id))
@@ -84,6 +96,7 @@ export class KencoveApiAppProductSyncService {
           productId: p.id,
           productName: p.name,
           countryOfOrigin: p.countryOfOrigin,
+          categoryId: p?.categoryId?.toString(),
         })),
       )
       .flat();
@@ -105,6 +118,14 @@ export class KencoveApiAppProductSyncService {
         this.logger.info(
           `Syncing product variant ${productVariant.id} of product ${productVariant.productName}`,
         );
+
+        const countryOfOrigin = countryCodeMatch(
+          productVariant.countryOfOrigin,
+        );
+
+        const category = existingCategories.find(
+          (c) => c.id === productVariant.categoryId,
+        )?.categoryId;
 
         await this.db.kencoveApiProductVariant.upsert({
           where: {
@@ -153,12 +174,15 @@ export class KencoveApiAppProductSyncService {
                         id: id.id("product"),
                         name: productVariant.productName,
                         normalizedName: normalizedProductName,
+                        category: category
+                          ? { connect: { id: category } }
+                          : undefined,
                         tenant: {
                           connect: {
                             id: this.kencoveApiApp.tenantId,
                           },
                         },
-                        // TODO: country of origin parsed / validated
+                        countryOfOrigin,
                       },
                     },
                   },
@@ -197,6 +221,10 @@ export class KencoveApiAppProductSyncService {
                         id: id.id("product"),
                         name: productVariant.productName,
                         normalizedName: normalizedProductName,
+                        countryOfOrigin,
+                        category: category
+                          ? { connect: { id: category } }
+                          : undefined,
                         tenant: {
                           connect: {
                             id: this.kencoveApiApp.tenantId,
