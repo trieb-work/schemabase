@@ -129,6 +129,11 @@ export type KencoveApiProduct = {
   countryOfOrigin: "CN" | "US";
   categoryId: number;
   variants: KencoveApiProductVariant[];
+  productType: {
+    id: string;
+    name: string;
+  };
+  website_description: string;
   createdAt: string;
   updatedAt: string;
 };

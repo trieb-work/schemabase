@@ -2,12 +2,18 @@
 // the Kencove API App to the ECI
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { ILogger } from "@eci/pkg/logger";
-import { KencoveApiApp, PrismaClient } from "@eci/pkg/prisma";
+import {
+  KencoveApiApp,
+  KencoveApiProductType,
+  PrismaClient,
+} from "@eci/pkg/prisma";
 import { subHours, subYears } from "date-fns";
 import { KencoveApiClient } from "./client";
 import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import { countryCodeMatch } from "@eci/pkg/miscHelper/countryCodeMatch";
+import { KencoveApiProduct } from "./types";
+import { htmlDecode } from "./helper";
 
 interface KencoveApiAppProductSyncServiceConfig {
   logger: ILogger;
@@ -34,6 +40,209 @@ export class KencoveApiAppProductSyncService {
       db: this.db,
       syncEntity: "items",
     });
+  }
+
+  /**
+   * Set the relation between product type and attribute
+   * in the ProductTypeAttribute table
+   * @param attribute
+   * @param kenProdTyp
+   * @param isForVariant - is this attribute for a variant or a product
+   * @param isVariantSelection - is this attribute a variant selection attribute
+   */
+  private async setProductTypeAttribute(
+    attribute: {
+      name: string;
+      value: string;
+      attribute_id: number;
+      display_type: string;
+    },
+    kenProdType: KencoveApiProductType,
+    isForVariant: boolean,
+    isVariantSelection: boolean,
+  ) {
+    const kenAttribute = await this.db.kencoveApiAttribute.findUnique({
+      where: {
+        id_kencoveApiAppId: {
+          id: attribute.attribute_id.toString(),
+          kencoveApiAppId: this.kencoveApiApp.id,
+        },
+      },
+    });
+    if (!kenAttribute) {
+      this.logger.warn(`Could not find attribute ${attribute.attribute_id}`);
+      return;
+    }
+    await this.db.productTypeAttribute.upsert({
+      where: {
+        productTypeId_attributeId: {
+          productTypeId: kenProdType.productTypeId,
+          attributeId: kenAttribute.attributeId,
+        },
+      },
+      create: {
+        id: id.id("productType"),
+        productType: {
+          connect: {
+            id: kenProdType.productTypeId,
+          },
+        },
+        isVariantSelection,
+        isForVariant,
+        attribute: {
+          connect: {
+            id: kenAttribute.attributeId,
+          },
+        },
+      },
+      update: {
+        isVariantSelection,
+        isForVariant,
+        attribute: {
+          connect: {
+            id: kenAttribute.attributeId,
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * We don't get clean data from the API, so we have to match
+   * variant attributes manually.
+   */
+  private async syncProductTypeAndAttributes(product: KencoveApiProduct) {
+    const normalizedName = normalizeStrings.productTypeNames(
+      product.productType.name,
+    );
+    const isVariant = product.variants.length > 0;
+    const existingProductType = await this.db.kencoveApiProductType.findUnique({
+      where: {
+        id_kencoveApiAppId: {
+          id: product.productType.id,
+          kencoveApiAppId: this.kencoveApiApp.id,
+        },
+      },
+      include: {
+        productType: true,
+      },
+    });
+    /**
+     * Regular attributes are on the variant level at attributeValues
+     * Variant selection attributes are on the variant level at selectorValues.
+     * All attributes should be already synced in the DB at the "attribute" and
+     * kencoveApiAttribute table, so we can connect them here.
+     */
+    const variantAttributes = product.variants
+      .map((v) => v.attributeValues)
+      .flat();
+
+    let variantSelectionAttributes = product.variants
+      .map((v) => v.selectorValues)
+      .flat();
+    if (
+      isVariant &&
+      variantSelectionAttributes.length === 1 &&
+      variantSelectionAttributes[0].name === "website_ref_desc"
+    ) {
+      this.logger.info(
+        `Product type ${product.productType.name} is a legacy product type. `,
+      );
+      const attributeValue = htmlDecode(variantSelectionAttributes[0].value);
+      variantSelectionAttributes = [
+        {
+          name: "Edition",
+          value: attributeValue,
+          display_type: "text",
+          attribute_id: variantSelectionAttributes[0].attribute_id,
+        },
+      ];
+      let kenProdType: KencoveApiProductType;
+      if (!existingProductType) {
+        this.logger.info(`Creating product type ${product.productType.name}.`);
+        kenProdType = await this.db.kencoveApiProductType.create({
+          data: {
+            id: product.productType.id,
+            kencoveApiApp: {
+              connect: {
+                id: this.kencoveApiApp.id,
+              },
+            },
+            productType: {
+              connectOrCreate: {
+                where: {
+                  normalizedName_tenantId: {
+                    normalizedName,
+                    tenantId: this.kencoveApiApp.tenantId,
+                  },
+                },
+                create: {
+                  id: id.id("productType"),
+                  name: product.productType.name,
+                  normalizedName,
+                  isVariant,
+                  tenant: {
+                    connect: {
+                      id: this.kencoveApiApp.tenantId,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        });
+      } else {
+        this.logger.info(`Updating product type ${product.productType.name}.`);
+        let changeVariant: boolean | undefined;
+        if (existingProductType.productType.isVariant === false && isVariant) {
+          this.logger.info(
+            `Product type ${product.productType.name} gets switched to a type with variants.`,
+          );
+          changeVariant = true;
+        }
+        kenProdType = await this.db.kencoveApiProductType.update({
+          where: {
+            id_kencoveApiAppId: {
+              id: product.productType.id,
+              kencoveApiAppId: this.kencoveApiApp.id,
+            },
+          },
+          data: {
+            productType: {
+              connectOrCreate: {
+                where: {
+                  normalizedName_tenantId: {
+                    normalizedName,
+                    tenantId: this.kencoveApiApp.tenantId,
+                  },
+                },
+                create: {
+                  id: id.id("productType"),
+                  name: product.productType.name,
+                  normalizedName,
+                  isVariant,
+                  tenant: {
+                    connect: {
+                      id: this.kencoveApiApp.tenantId,
+                    },
+                  },
+                },
+              },
+              update: {
+                isVariant: changeVariant,
+              },
+            },
+          },
+        });
+      }
+
+      for (const attribute of variantSelectionAttributes) {
+        await this.setProductTypeAttribute(attribute, kenProdType, true, true);
+      }
+      for (const attribute of variantAttributes) {
+        await this.setProductTypeAttribute(attribute, kenProdType, false, true);
+      }
+    }
   }
 
   public async syncToECI() {
@@ -92,6 +301,13 @@ export class KencoveApiAppProductSyncService {
           },
         },
       });
+
+    /**
+     * First sync the product types and attributes
+     */
+    for (const product of products) {
+      await this.syncProductTypeAndAttributes(product);
+    }
 
     /**
      * just kencove Api product variants enhanced with all data from their parent product

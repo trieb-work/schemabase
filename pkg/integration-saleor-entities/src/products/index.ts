@@ -1,6 +1,8 @@
 /* eslint-disable max-len */
 import { ILogger } from "@eci/pkg/logger";
 import {
+  ProductCreateMutation,
+  ProductTypeFragment,
   ProductVariantStockEntryUpdateMutation,
   queryWithPagination,
   SaleorEntitySyncProductsQuery,
@@ -39,6 +41,21 @@ interface SaleorProductSyncServiceConfig {
         __typename?: "MetadataItem" | undefined;
       }[];
     }) => Promise<SaleorUpdateMetadataMutation>;
+    productCreate: (variables: {
+      input: {
+        attributes: {
+          id: string;
+          values: string[];
+        }[];
+        category: string;
+        chargeTaxes: boolean;
+        collections: string[];
+        description: string;
+        name: string;
+        weight: number;
+        productType: string;
+      };
+    }) => Promise<ProductCreateMutation>;
   };
   channelSlug?: string;
   installedSaleorAppId: string;
@@ -70,6 +87,21 @@ export class SaleorProductSyncService {
         __typename?: "MetadataItem" | undefined;
       }[];
     }) => Promise<SaleorUpdateMetadataMutation>;
+    productCreate: (variables: {
+      input: {
+        attributes: {
+          id: string;
+          values: string[];
+        }[];
+        category: string;
+        chargeTaxes: boolean;
+        collections: string[];
+        description: string;
+        name: string;
+        weight: number;
+        productType: string;
+      };
+    }) => Promise<ProductCreateMutation>;
   };
 
   public readonly channelSlug?: string;
@@ -131,6 +163,64 @@ export class SaleorProductSyncService {
     }
   }
 
+  /**
+   * Take the information we get from saleor and synchronise our internal product type model
+   * accordingly
+   */
+  private async syncProductType(productType: ProductTypeFragment) {
+    const normalizedProductTypeName = normalizeStrings.productTypeNames(
+      productType.name,
+    );
+    await this.db.saleorProductType.upsert({
+      where: {
+        id_installedSaleorAppId: {
+          id: productType.id,
+          installedSaleorAppId: this.installedSaleorAppId,
+        },
+      },
+      create: {
+        id: productType.id,
+        installedSaleorApp: {
+          connect: {
+            id: this.installedSaleorAppId,
+          },
+        },
+        productType: {
+          connectOrCreate: {
+            where: {
+              normalizedName_tenantId: {
+                normalizedName: normalizedProductTypeName,
+                tenantId: this.tenantId,
+              },
+            },
+            create: {
+              id: id.id("productType"),
+              name: productType.name,
+              normalizedName: normalizedProductTypeName,
+              isVariant: productType.hasVariants,
+              tenant: {
+                connect: {
+                  id: this.tenantId,
+                },
+              },
+            },
+          },
+        },
+      },
+      update: {},
+    });
+  }
+
+  /**
+   * Create a product and variant in Saleor
+   * @param variantWithProduct
+   */
+  // private async createProductinSaleor(
+  //   variantWithProduct: ProductVariant & { product: Product },
+  // ) {
+
+  // }
+
   public async syncToECI(): Promise<void> {
     const cronState = await this.cronState.get();
     const now = new Date();
@@ -189,6 +279,11 @@ export class SaleorProductSyncService {
         : undefined;
 
       const normalizedProductName = normalizeStrings.productNames(product.name);
+
+      /**
+       * Sync the product type
+       */
+      await this.syncProductType(product.productType);
 
       for (const variant of product.variants) {
         const defaultLogFields = {
@@ -446,6 +541,23 @@ export class SaleorProductSyncService {
     /**
      * Get all products, that are not yet create in Saleor
      */
+    const productsToCreate = await this.db.productVariant.findMany({
+      where: {
+        saleorProductVariant: {
+          none: {
+            installedSaleorAppId: this.installedSaleorAppId,
+          },
+        },
+      },
+      include: {
+        product: true,
+      },
+    });
+    if (productsToCreate.length > 0) {
+      this.logger.info(
+        `Found ${productsToCreate.length} products to create in Saleor`,
+      );
+    }
 
     /**
      * get all saleor productVariants where related stockEntries have been updated since last run or where related
@@ -453,6 +565,7 @@ export class SaleorProductSyncService {
      */
     const saleorProductVariants = await this.db.saleorProductVariant.findMany({
       where: {
+        installedSaleorAppId: this.installedSaleorAppId,
         OR: [
           {
             updatedAt: {
