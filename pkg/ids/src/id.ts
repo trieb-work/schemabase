@@ -42,6 +42,7 @@ const prefixes = {
   attribute: "attr",
   attributeValue: "attr_v",
   category: "cat",
+  productType: "pt",
 };
 
 export const id = new IdGenerator({ crypto: nodeCrypto, prefixes });
