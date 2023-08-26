@@ -13842,6 +13842,23 @@ export type VariantFragment = {
   }>;
 };
 
+export type ProductTypeFragment = {
+  __typename?: "ProductType";
+  id: string;
+  name: string;
+  hasVariants: boolean;
+  productAttributes?: Array<{
+    __typename?: "Attribute";
+    id: string;
+    name?: string | null;
+  }> | null;
+  assignedVariantAttributes?: Array<{
+    __typename?: "AssignedVariantAttribute";
+    variantSelection: boolean;
+    attribute: { __typename?: "Attribute"; id: string; name?: string | null };
+  }> | null;
+};
+
 export type SaleorEntitySyncProductsQueryVariables = Exact<{
   first: Scalars["Int"];
   channel?: InputMaybe<Scalars["String"]>;
@@ -13867,6 +13884,26 @@ export type SaleorEntitySyncProductsQuery = {
         id: string;
         name: string;
         updatedAt: any;
+        productType: {
+          __typename?: "ProductType";
+          id: string;
+          name: string;
+          hasVariants: boolean;
+          productAttributes?: Array<{
+            __typename?: "Attribute";
+            id: string;
+            name?: string | null;
+          }> | null;
+          assignedVariantAttributes?: Array<{
+            __typename?: "AssignedVariantAttribute";
+            variantSelection: boolean;
+            attribute: {
+              __typename?: "Attribute";
+              id: string;
+              name?: string | null;
+            };
+          }> | null;
+        };
         category?: { __typename?: "Category"; id: string } | null;
         variants?: Array<{
           __typename?: "ProductVariant";
@@ -14023,6 +14060,24 @@ export const VariantFragmentDoc = gql`
         id
         name
       }
+    }
+  }
+`;
+export const ProductTypeFragmentDoc = gql`
+  fragment productType on ProductType {
+    id
+    name
+    hasVariants
+    productAttributes {
+      id
+      name
+    }
+    assignedVariantAttributes {
+      attribute {
+        id
+        name
+      }
+      variantSelection
     }
   }
 `;
@@ -14717,6 +14772,9 @@ export const SaleorEntitySyncProductsDocument = gql`
         node {
           id
           name
+          productType {
+            ...productType
+          }
           category {
             id
           }
@@ -14728,6 +14786,7 @@ export const SaleorEntitySyncProductsDocument = gql`
       }
     }
   }
+  ${ProductTypeFragmentDoc}
   ${VariantFragmentDoc}
 `;
 export const SaleorProductVariantBasicDataDocument = gql`

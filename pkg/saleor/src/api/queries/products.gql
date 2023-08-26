@@ -105,17 +105,29 @@ fragment variant on ProductVariant {
   }
 }
 
-query saleorEntitySyncProducts(
-  $first: Int!
-  $channel: String
-  $after: String
-  $updatedAtGte: DateTime
-) {
+fragment productType on ProductType {
+  id
+  name
+  hasVariants
+  productAttributes {
+    id
+    name
+  }
+  assignedVariantAttributes {
+    attribute {
+      id
+      name
+    }
+    variantSelection
+  }
+}
+
+query saleorEntitySyncProducts($first: Int!, $channel: String, $after: String, $updatedAtGte: DateTime) {
   products(
     first: $first
     after: $after
     channel: $channel
-    filter: { updatedAt: { gte: $updatedAtGte } }
+    filter: {updatedAt: {gte: $updatedAtGte}}
   ) {
     pageInfo {
       hasNextPage
@@ -127,6 +139,9 @@ query saleorEntitySyncProducts(
       node {
         id
         name
+        productType {
+          ...productType
+        }
         category {
           id
         }

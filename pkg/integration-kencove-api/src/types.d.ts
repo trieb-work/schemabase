@@ -112,6 +112,12 @@ export type KencoveApiProductVariant = {
     attribute_id: number;
     display_type: string;
   }[];
+  attributeValues: {
+    name: string;
+    value: string;
+    attribute_id: number;
+    display_type: string;
+  };
   name: string;
   createdAt: string;
   updatedAt: string;
