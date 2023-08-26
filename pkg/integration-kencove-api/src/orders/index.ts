@@ -81,11 +81,19 @@ export class KencoveApiAppOrderSyncService {
           },
         },
         kencoveApiContacts: {
-          create: {
-            id: billingAddress.customerCode,
-            kencoveApiApp: {
-              connect: {
-                id: this.kencoveApiApp.id,
+          connectOrCreate: {
+            where: {
+              id_kencoveApiAppId: {
+                id: billingAddress.customerCode,
+                kencoveApiAppId: this.kencoveApiApp.id,
+              },
+            },
+            create: {
+              id: billingAddress.customerCode,
+              kencoveApiApp: {
+                connect: {
+                  id: this.kencoveApiApp.id,
+                },
               },
             },
           },
