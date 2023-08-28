@@ -539,13 +539,45 @@ export class SaleorProductSyncService {
     }
 
     /**
-     * Get all products, that are not yet create in Saleor
+     * Get all product types, that are not yet created in Saleor
+     */
+    const productTypesToCreate = await this.db.productType.findMany({
+      where: {
+        saleorProductTypes: {
+          none: {
+            installedSaleorAppId: this.installedSaleorAppId,
+          },
+        },
+      },
+      include: {
+        attributes: true,
+      },
+    });
+    if (productTypesToCreate.length > 0) {
+      this.logger.info(
+        `Found ${productTypesToCreate.length} product types to create in Saleor`,
+        { productTypesToCreate: productTypesToCreate.map((x) => x.name) },
+      );
+    }
+
+    /**
+     * Get all products, that are not yet create in Saleor. Select only
+     * the ones, where we have a product type already in Saleor
      */
     const productsToCreate = await this.db.productVariant.findMany({
       where: {
         saleorProductVariant: {
           none: {
             installedSaleorAppId: this.installedSaleorAppId,
+          },
+        },
+        product: {
+          productType: {
+            saleorProductTypes: {
+              every: {
+                installedSaleorAppId: this.installedSaleorAppId,
+              },
+            },
           },
         },
       },
