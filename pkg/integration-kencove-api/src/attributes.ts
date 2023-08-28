@@ -97,7 +97,7 @@ export class KencoveApiAppAttributeSyncService {
       const normalizedName = normalizeStrings.attributeNames(
         kenAttribute.attribute_name,
       );
-      const attribute = await this.db.kencoveApiAttribute.upsert({
+      await this.db.kencoveApiAttribute.upsert({
         where: {
           id_kencoveApiAppId: {
             id: kenAttribute.attribute_id,
@@ -141,58 +141,17 @@ export class KencoveApiAppAttributeSyncService {
             update: {
               normalizedName,
               name: kenAttribute.attribute_name,
-              type: type,
+              type,
               slug: kenAttribute.slug,
             },
           },
         },
       });
 
-      const values = kenAttribute?.values || [];
-      // sync attribute values. We don't have a separate kencoveApiAttributeValue table
-      // We just connect or create the attribute values directly on the attribute
-      for (const kenAttributeValue of values) {
-        const normalizedName = normalizeStrings.attributeNames(
-          kenAttributeValue.attribute_value,
-        );
-        /**
-         * TODO: When we have color attribute, we generate a hex code from
-         * the attribute value name. Like Chartreuse, Gray, Peach,..
-         */
-        // if (type === "SWATCH") {
-
-        // }
-        await this.db.attributeValue.upsert({
-          where: {
-            normalizedName_attributeId_tenantId: {
-              normalizedName,
-              attributeId: attribute.id,
-              tenantId: this.kencoveApiApp.tenantId,
-            },
-          },
-          create: {
-            id: id.id("attributeValue"),
-            normalizedName,
-            tenant: {
-              connect: {
-                id: this.kencoveApiApp.tenantId,
-              },
-            },
-            attribute: {
-              connect: {
-                id: attribute.id,
-              },
-            },
-            value: kenAttributeValue.attribute_value,
-          },
-          update: {},
-        });
-
-        await this.cronState.set({
-          lastRun: new Date(),
-          lastRunStatus: "success",
-        });
-      }
+      await this.cronState.set({
+        lastRun: new Date(),
+        lastRunStatus: "success",
+      });
     }
   }
 }
