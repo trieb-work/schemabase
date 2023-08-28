@@ -728,12 +728,19 @@ Table AttributeValue {
   normalizedName String [not null, note: 'We always set a normalized name for the attribute value. For example, if the value is the hex code for red, we set "red" as the normalized name']
   attribute Attribute [not null]
   attributeId String [not null]
+  product Product [note: 'When attribute is a product, this relation is set']
+  productId String
+  productVariant ProductVariant [note: 'When attribute is a variant attribute, this relation is set']
+  productVariantId String
   tenant Tenant [not null]
   tenantId String [not null]
 
   indexes {
     (normalizedName, attributeId, tenantId) [unique]
   }
+
+  Note: 'attributes values for attributes. Attributes
+can be assigned to products and variants'
 }
 
 Table ProductTag {
@@ -783,6 +790,8 @@ and to create a product hierarchy. Categories can be nested'
 
 Table ProductType {
   id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
   name String [not null]
   normalizedName String [not null]
   isVariant Boolean [not null]
@@ -833,6 +842,7 @@ Table Product {
   categoryId String
   tenant Tenant [not null]
   tenantId String [not null]
+  attributes AttributeValue [not null]
 
   indexes {
     (name, tenantId) [unique]
@@ -866,6 +876,7 @@ Table ProductVariant {
   xentralArtikel XentralArtikel [not null]
   saleorProductVariant SaleorProductVariant [not null]
   kencoveApiProductVariant KencoveApiProductVariant [not null]
+  attributes AttributeValue [not null]
   stockOnHand Int
   isBundleProduct Boolean [not null, default: false]
   isProductBundle Boolean [not null, default: false, note: 'if this product is actually a "just-in-time" bundle, not a composite item.
@@ -2187,6 +2198,10 @@ Ref: Address.tenantId > Tenant.id [delete: Cascade]
 Ref: Attribute.tenantId > Tenant.id [delete: Cascade]
 
 Ref: AttributeValue.attributeId > Attribute.id [delete: Cascade]
+
+Ref: AttributeValue.productId > Product.id
+
+Ref: AttributeValue.productVariantId > ProductVariant.id
 
 Ref: AttributeValue.tenantId > Tenant.id [delete: Cascade]
 

@@ -1,7 +1,8 @@
-# Generic cXML integration. 
+# Generic cXML integration.
+
 This integration works with cXML data, which is an XML-based protocol that is used to transmit business documents between procurement applications, e-commerce hubs and suppliers.
-We transform the cXML to JSON and create orders, customers and addresses internally. 
-Example XML: 
+We transform the cXML to JSON and create orders, customers and addresses internally.
+Example XML:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE cXML SYSTEM "http://xml.cxml.org/schemas/cXML/1.2.054/cXML.dtd">
@@ -112,6 +113,7 @@ Example XML:
 ```
 
 Corresponding JSON:
+
 ```JSON
 {
   "@payloadID": "1692861887.197.707583.2347@eu-hub",

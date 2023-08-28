@@ -150,8 +150,8 @@ export class KencoveApiClient {
     result_count: number;
     next_page: string;
   }> {
-    const response = await this.axiosInstance.get(
-      `/ecom/product/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
+    const response = await axios.get(
+      `https://api-kencove.gc.staging-kencove.com/ecom/product/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${new Date().toISOString()}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -345,7 +345,7 @@ export class KencoveApiClient {
   }> {
     const response = await this.axiosInstance.get(
       // eslint-disable-next-line max-len
-      `/ecom/orders/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${new Date().toISOString()}`,
+      `/ecom/orders/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,

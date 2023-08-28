@@ -1,4 +1,4 @@
-/// test the helper function htmlDecode. Send a string with html encoded characters 
+/// test the helper function htmlDecode. Send a string with html encoded characters
 // and expect a string with decoded characters.
 // send a regular string, expect the same string back
 

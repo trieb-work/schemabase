@@ -1,12 +1,13 @@
 // the kencoveApiAppattributesync class that is used to sync attributes.
 // from kencove to our internal database. It works similar than the product sync
-import { AttributeType, KencoveApiApp, PrismaClient } from "@eci/pkg/prisma";
+import { KencoveApiApp, PrismaClient } from "@eci/pkg/prisma";
 import { ILogger } from "@eci/pkg/logger";
 import { KencoveApiClient } from "./client";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { isSameHour, subHours, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
+import { kenAttributeToEciAttribute } from "./helper";
 
 interface KencoveApiAppAttributeSyncServiceConfig {
   logger: ILogger;
@@ -33,48 +34,6 @@ export class KencoveApiAppAttributeSyncService {
       db: this.db,
       syncEntity: "attributes",
     });
-  }
-
-  // takes a string and tries to map it to our internal attribute type.
-  // Switch case that return all possible enums from
-  // DROPDOWN
-  // MULTISELECT
-  // FILE
-  // REFERENCE
-  // NUMERIC
-  // RICH_TEXT
-  // PLAIN_TEXT
-  // SWATCH
-  // BOOLEAN
-  // DATE
-  // DATE_TIME
-  private kenAttributeToEciAttribute(kenAttribute: string): AttributeType {
-    switch (kenAttribute) {
-      case "select":
-        return AttributeType.DROPDOWN;
-      case "radio":
-        return AttributeType.MULTISELECT;
-      case "FILE":
-        return AttributeType.FILE;
-      case "REFERENCE":
-        return AttributeType.REFERENCE;
-      case "NUMERIC":
-        return AttributeType.NUMERIC;
-      case "RICH_TEXT":
-        return AttributeType.RICH_TEXT;
-      case "text":
-        return AttributeType.PLAIN_TEXT;
-      case "color":
-        return AttributeType.SWATCH;
-      case "checkbox":
-        return AttributeType.BOOLEAN;
-      case "DATE":
-        return AttributeType.DATE;
-      case "DATE_TIME":
-        return AttributeType.DATE_TIME;
-      default:
-        throw new Error(`Unknown attribute type: ${kenAttribute}`);
-    }
   }
 
   public async syncToECI() {
@@ -134,7 +93,7 @@ export class KencoveApiAppAttributeSyncService {
       }
       const createdAt = new Date(kenAttribute.createdAt);
       const updatedAt = new Date(kenAttribute.updatedAt);
-      const type = this.kenAttributeToEciAttribute(kenAttribute.display_type);
+      const type = kenAttributeToEciAttribute(kenAttribute.display_type);
       const normalizedName = normalizeStrings.attributeNames(
         kenAttribute.attribute_name,
       );

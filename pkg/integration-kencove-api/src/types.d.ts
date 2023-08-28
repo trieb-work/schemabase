@@ -93,6 +93,19 @@ export type KencoveApiPackage = {
   updatedAt: string;
 };
 
+export type KencoveApiAttributeInProduct = {
+  name: string;
+  /**
+   * Attribute value
+   */
+  value: string;
+  /**
+   * the kencoveApiAttribute.id
+   */
+  attribute_id: number;
+  display_type: string;
+  attribute_model: string;
+};
 export type KencoveApiProductVariant = {
   id: string;
   sku: string;
@@ -100,24 +113,8 @@ export type KencoveApiProductVariant = {
   /**
    * The variant selection attribute values
    */
-  selectorValues: {
-    name: string;
-    /**
-     * Attribute value
-     */
-    value: string;
-    /**
-     * the kencoveApiAttribute.id
-     */
-    attribute_id: number;
-    display_type: string;
-  }[];
-  attributeValues: {
-    name: string;
-    value: string;
-    attribute_id: number;
-    display_type: string;
-  };
+  selectorValues: KencoveApiAttributeInProduct[];
+  attributeValues: KencoveApiAttributeInProduct[];
   name: string;
   createdAt: string;
   updatedAt: string;

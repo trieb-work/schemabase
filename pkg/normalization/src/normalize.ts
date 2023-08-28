@@ -66,6 +66,10 @@ class NormalizationUtility {
   public productTypeNames(input: string) {
     return this.standardNormalize(input);
   }
+
+  public attributeValueNames(input: string) {
+    return this.standardNormalize(input);
+  }
 }
 
 /**

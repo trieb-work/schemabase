@@ -1480,6 +1480,8 @@ model Attribute {
   @@index([normalizedName])
 }
 
+/// attributes values for attributes. Attributes
+/// can be assigned to products and variants
 model AttributeValue {
   // eci internal id
   id        String   @id
@@ -1498,12 +1500,22 @@ model AttributeValue {
   attribute   Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
   attributeId String
 
+  /// When attribute is a product, this relation is set
+  product   Product? @relation(fields: [productId], references: [id])
+  productId String?
+
+  /// When attribute is a variant attribute, this relation is set
+  productVariant   ProductVariant? @relation(fields: [productVariantId], references: [id])
+  productVariantId String?
+
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
   @@unique([normalizedName, attributeId, tenantId])
   @@index([attributeId])
   @@index([tenantId])
+  @@index([productId])
+  @@index([productVariantId])
 }
 
 /// Product tags are used to group products together. 
@@ -1590,17 +1602,20 @@ model Category {
 /// Product Types are like templates for products. They define which attributes a product has
 /// and if a product has variants
 model ProductType {
-  id                String                 @id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // e.g., "Shirt", "Energizer", etc.
-  name              String
-  normalizedName    String
-  isVariant         Boolean // Indicates if products of this type have variants
-  products          Product[]
-  attributes        ProductTypeAttribute[] // Links to the attributes that belong to this product type
-  saleorProductTypes SaleorProductType[]
+  name                   String
+  normalizedName         String
+  isVariant              Boolean // Indicates if products of this type have variants
+  products               Product[]
+  attributes             ProductTypeAttribute[] // Links to the attributes that belong to this product type
+  saleorProductTypes     SaleorProductType[]
   kencoveApiProductTypes KencoveApiProductType[]
-  tenant            Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId          String
+  tenant                 Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId               String
 
   @@unique([normalizedName, tenantId])
   @@index([tenantId])
@@ -1652,6 +1667,8 @@ model Product {
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
+
+  attributes AttributeValue[]
 
   @@unique([name, tenantId])
   @@unique([normalizedName, tenantId])
@@ -1712,6 +1729,8 @@ model ProductVariant {
   saleorProductVariant SaleorProductVariant[]
 
   kencoveApiProductVariant KencoveApiProductVariant[]
+
+  attributes AttributeValue[]
 
   // Available physical stock over all warehouses
   stockOnHand Int?
@@ -2274,7 +2293,6 @@ model KencoveApiProductType {
   @@unique([id, kencoveApiAppId])
   @@index([productTypeId])
   @@index([kencoveApiAppId])
-
 }
 
 model KencoveApiWarehouse {
