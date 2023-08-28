@@ -812,7 +812,7 @@ export class KencoveApiAppProductSyncService {
         });
 
         /**
-         * Set the variant selection attributes. We need to take into account, that we 
+         * Set the variant selection attributes. We need to take into account, that we
          * might have replaced the website_ref_desc attribute with a different attribute
          * We look that up in the kenVariantSelectionAttributeOverwrite map
          */
