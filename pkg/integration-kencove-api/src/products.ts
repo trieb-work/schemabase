@@ -790,6 +790,13 @@ export class KencoveApiAppProductSyncService {
               update: {
                 weight: productVariant.weight,
                 variantName: productVariant.name,
+                product: {
+                  update: {
+                    productType: productType
+                      ? { connect: productType }
+                      : undefined,
+                  },
+                },
               },
             },
           },
