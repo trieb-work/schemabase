@@ -615,7 +615,7 @@ export class KencoveApiAppProductSyncService {
     /**
      * First sync the product types and attributes
      */
-    async.eachLimit(products, 5, async (product) => {
+    await async.eachLimit(products, 5, async (product) => {
       this.logger.info(
         `Syncing product type "${product.productType.name}" of product "${product.name}"`,
       );
@@ -634,6 +634,7 @@ export class KencoveApiAppProductSyncService {
           countryOfOrigin: p.countryOfOrigin,
           categoryId: p?.categoryId?.toString(),
           productType: p.productType,
+          productDescription: p?.website_description,
         })),
       )
       .flat();
@@ -719,6 +720,7 @@ export class KencoveApiAppProductSyncService {
                         id: id.id("product"),
                         name: productVariant.productName,
                         normalizedName: normalizedProductName,
+                        descriptionHTML: productVariant.productDescription,
                         productType: productType?.productTypeId
                           ? {
                               connect: {
@@ -792,6 +794,7 @@ export class KencoveApiAppProductSyncService {
                 variantName: productVariant.name,
                 product: {
                   update: {
+                    descriptionHTML: productVariant.productDescription,
                     productType: productType
                       ? { connect: productType }
                       : undefined,

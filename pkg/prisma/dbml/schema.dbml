@@ -842,6 +842,7 @@ Table Product {
   categoryId String
   tenant Tenant [not null]
   tenantId String [not null]
+  descriptionHTML String
   attributes AttributeValue [not null]
 
   indexes {

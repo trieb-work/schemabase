@@ -1668,6 +1668,8 @@ model Product {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
+  descriptionHTML String? @db.Text
+
   attributes AttributeValue[]
 
   @@unique([name, tenantId])
