@@ -215,11 +215,125 @@ export class SaleorProductSyncService {
    * Create a product and variant in Saleor
    * @param variantWithProduct
    */
-  // private async createProductinSaleor(
-  //   variantWithProduct: ProductVariant & { product: Product },
-  // ) {
-
-  // }
+  private async createProductinSaleor() {
+    const productsToCreate = await this.db.productVariant.findMany({
+      where: {
+        saleorProductVariant: {
+          none: {
+            installedSaleorAppId: this.installedSaleorAppId,
+          },
+        },
+        product: {
+          productType: {
+            saleorProductTypes: {
+              every: {
+                installedSaleorAppId: this.installedSaleorAppId,
+              },
+            },
+          },
+        },
+      },
+      include: {
+        product: {
+          include: {
+            attributes: {
+              include: {
+                attribute: true,
+              },
+            },
+            productType: {
+              include: {
+                attributes: true,
+                saleorProductTypes: {
+                  where: {
+                    installedSaleorAppId: this.installedSaleorAppId,
+                  },
+                },
+              },
+            },
+            category: {
+              include: {
+                saleorCategories: {
+                  where: {
+                    installedSaleorAppId: this.installedSaleorAppId,
+                  },
+                },
+              },
+            },
+            variants: {
+              include: {
+                attributes: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    if (productsToCreate.length > 0) {
+      this.logger.info(
+        `Found ${
+          productsToCreate.length
+        } products to create in Saleor: ${productsToCreate.map((p) => p.sku)}`,
+      );
+      // for (const product of productsToCreate) {
+      //   const productType = product.product.productType;
+      //   if (!productType) {
+      //     this.logger.warn(
+      //       `Product ${product.sku} has no product type. Skipping`,
+      //     );
+      //     continue;
+      //   }
+      //   const attributes = productType.attributes.map((attribute) => ({
+      //     id: attribute.id,
+      //     values: attribute.values.map((value) => value.name),
+      //   }));
+      //   const saleorCategory = product.product.category?.saleorCategories[0].id;
+      //   if (!saleorCategory) {
+      //     this.logger.warn(`Product ${product.sku} has no category. Skipping`);
+      //     continue;
+      //   }
+      //   const productCreateResponse = await this.saleorClient.productCreate({
+      //     input: {
+      //       attributes,
+      //       category: product.product.category?.saleorCategories[0].id,
+      //       chargeTaxes: true,
+      //       collections: [],
+      //       description: product.product.description,
+      //       name: product.product.name,
+      //       weight: product.weight,
+      //       productType: productType.saleorProductTypes[0].id,
+      //     },
+      //   });
+      //   if (productCreateResponse.errors) {
+      //     this.logger.error(
+      //       `Error creating product ${product.sku} in Saleor: ${JSON.stringify(
+      //         productCreateResponse.errors,
+      //       )}`,
+      //     );
+      //     continue;
+      //   }
+      //   this.logger.info(
+      //     `Successfully created product ${product.sku} in Saleor`,
+      //   );
+      //   await this.db.saleorProductVariant.update({
+      //     where: {
+      //       id_installedSaleorAppId: {
+      //         id: product.id,
+      //         installedSaleorAppId: this.installedSaleorAppId,
+      //       },
+      //     },
+      //     data: {
+      //       installedSaleorApp: {
+      //         connect: {
+      //           id: this.installedSaleorAppId,
+      //         },
+      //       },
+      //       productId: productCreateResponse.data?.productCreate?.product?.id,
+      //     },
+      //   });
+      // }
+    }
+  }
 
   public async syncToECI(): Promise<void> {
     const cronState = await this.cronState.get();
@@ -564,34 +678,7 @@ export class SaleorProductSyncService {
      * Get all products, that are not yet create in Saleor. Select only
      * the ones, where we have a product type already in Saleor
      */
-    const productsToCreate = await this.db.productVariant.findMany({
-      where: {
-        saleorProductVariant: {
-          none: {
-            installedSaleorAppId: this.installedSaleorAppId,
-          },
-        },
-        product: {
-          productType: {
-            saleorProductTypes: {
-              every: {
-                installedSaleorAppId: this.installedSaleorAppId,
-              },
-            },
-          },
-        },
-      },
-      include: {
-        product: true,
-      },
-    });
-    if (productsToCreate.length > 0) {
-      this.logger.info(
-        `Found ${
-          productsToCreate.length
-        } products to create in Saleor: ${productsToCreate.map((p) => p.sku)}`,
-      );
-    }
+    await this.createProductinSaleor();
 
     /**
      * get all saleor productVariants where related stockEntries have been updated since last run or where related
