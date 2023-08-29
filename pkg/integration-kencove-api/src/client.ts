@@ -19,11 +19,16 @@ import {
   KencoveApiProductStock,
 } from "./types";
 import { addDays, isAfter } from "date-fns";
+import jwt from "jsonwebtoken";
 
 export class KencoveApiClient {
   private static instance: KencoveApiClient;
+
   private axiosInstance: AxiosInstance;
+
   private app: KencoveApiApp;
+
+  private jwt: string = "";
 
   constructor(app: KencoveApiApp) {
     this.app = app;
@@ -42,11 +47,31 @@ export class KencoveApiClient {
     return KencoveApiClient.instance;
   }
 
+  /**
+   * Returns a valid access token. If the current access token is expired,
+   * it will pull a new one from the api. If the current access token is still valid,
+   * it will return the current access token.
+   * @returns
+   */
   public async getAccessToken(): Promise<string> {
     // get the access token from the api using the client credentials flow.
     // Follow AWS Cognito OAuth2 documentation.
-    // Handle errors
-    // and return the access token.
+    // Handle errors and return the access token. Store the access token in the class
+    // so it can be used for subsequent requests. Always only pull a fresh access token
+    // if the current one is expired or does not exist.
+    if (this.jwt) {
+      const decoded = jwt.decode(this.jwt, { json: true });
+      if (
+        decoded &&
+        decoded.exp &&
+        /**
+         * is the first date after the second date?
+         */
+        isAfter(new Date(decoded.exp * 1000), new Date())
+      ) {
+        return this.jwt;
+      }
+    }
 
     try {
       const response = await axios.request({
@@ -64,7 +89,8 @@ export class KencoveApiClient {
           "Content-Type": "application/x-www-form-urlencoded",
         },
       });
-      return response.data.access_token;
+      this.jwt = response.data.access_token;
+      return this.jwt;
     } catch (error) {
       console.error(error);
       throw error;
@@ -79,10 +105,10 @@ export class KencoveApiClient {
   public async *getAddressesStream(
     fromDate: Date,
   ): AsyncIterableIterator<KencoveApiAddress[]> {
-    const accessToken = await this.getAccessToken();
     let nextPage: string | null = null;
     let offset: number = 0;
     do {
+      const accessToken = await this.getAccessToken();
       const response = await this.getAddressesPage(
         fromDate,
         offset,
@@ -350,11 +376,12 @@ export class KencoveApiClient {
   public async *getOrdersStream(
     fromDate: Date,
   ): AsyncIterableIterator<KencoveApiOrder[]> {
-    const accessToken = await this.getAccessToken();
     let nextPage: string | null = null;
     let offset: number = 0;
     let toDate = addDays(fromDate, 1);
     do {
+      const accessToken = await this.getAccessToken();
+
       const response = await this.getOrdersPage(
         fromDate,
         toDate,
