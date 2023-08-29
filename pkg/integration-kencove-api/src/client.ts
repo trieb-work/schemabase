@@ -379,7 +379,7 @@ export class KencoveApiClient {
         );
         nextPage = checkResponse.next_page;
       }
-      console.debug("request", response.result_count)
+      console.debug("request", response.result_count);
     } while (nextPage);
   }
 
