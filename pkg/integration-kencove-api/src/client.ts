@@ -71,6 +71,29 @@ export class KencoveApiClient {
   }
 
   /**
+   * Get addresses yield, that is returning data
+   * the continuasly, instead of returning all the data at once.
+   * Consume it with a for await loop.
+   */
+  public async *getAddressesStream(
+    fromDate: Date,
+  ): AsyncIterableIterator<KencoveApiAddress[]> {
+    const accessToken = await this.getAccessToken();
+    let nextPage: string | null = null;
+    let offset: number = 0;
+    do {
+      const response = await this.getAddressesPage(
+        fromDate,
+        offset,
+        accessToken,
+      );
+      yield response.data;
+      nextPage = response.next_page;
+      offset += 200;
+    } while (nextPage);
+  }
+
+  /**
    * pull the addresses - as we might have a lot here, we send
    * two api requests in parallel
    * @param fromDate
@@ -317,6 +340,24 @@ export class KencoveApiClient {
       },
     );
     return response.data;
+  }
+
+  /**
+   * Stream orders, 200 at a time. Use it with a for await loop.
+   * @param fromDate
+   */
+  public async *getOrdersStream(
+    fromDate: Date,
+  ): AsyncIterableIterator<KencoveApiOrder[]> {
+    const accessToken = await this.getAccessToken();
+    let nextPage: string | null = null;
+    let offset: number = 0;
+    do {
+      const response = await this.getOrdersPage(fromDate, offset, accessToken);
+      yield response.data;
+      nextPage = response.next_page;
+      offset += 200;
+    } while (nextPage);
   }
 
   public async getOrders(fromDate: Date): Promise<KencoveApiOrder[]> {
