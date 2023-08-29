@@ -65,7 +65,7 @@ export class KencoveApiAppAddressSyncService {
         },
       });
 
-      await async.eachLimit(addresses, 30, async (address) => {
+      await async.eachLimit(addresses, 10, async (address) => {
         if (!address.street || !address.city || !address.fullname) {
           this.logger.warn(
             `Address ${address.id} has no street/city/fullname.\

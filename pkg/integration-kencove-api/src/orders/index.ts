@@ -22,7 +22,7 @@ import { KencoveApiOrder } from "../types";
 import { apiLineItemsWithSchemabase } from "./lineItems";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import async from "async";
-// import { KencoveApiWarehouseSync } from "../warehouses";
+import { shippingMethodMatch } from "@eci/pkg/miscHelper/shippingMethodMatch";
 
 interface KencoveApiAppOrderSyncServiceConfig {
   logger: ILogger;
@@ -38,6 +38,11 @@ export class KencoveApiAppOrderSyncService {
   public readonly kencoveApiApp: KencoveApiApp;
 
   private readonly cronState: CronStateHandler;
+
+  /**
+   * Stores KencoveId as key and our internal addressId as value.
+   */
+  private addressCache: Map<string, string> = new Map();
 
   public constructor(config: KencoveApiAppOrderSyncServiceConfig) {
     this.logger = config.logger;
@@ -97,7 +102,10 @@ export class KencoveApiAppOrderSyncService {
     return existingContact.id;
   }
 
-  private async getAddress(kenAddressId: string) {
+  private async getAddress(kenAddressId: string): Promise<string | undefined> {
+    if (this.addressCache.has(kenAddressId)) {
+      return this.addressCache.get(kenAddressId);
+    }
     const existingAddress = await this.db.kencoveApiAddress.findUnique({
       where: {
         id_kencoveApiAppId: {
@@ -110,6 +118,7 @@ export class KencoveApiAppOrderSyncService {
       this.logger.warn(`Address ${kenAddressId} not found!`);
       return;
     }
+    this.addressCache.set(kenAddressId, existingAddress.addressId);
     return existingAddress.addressId;
   }
 
@@ -186,11 +195,7 @@ export class KencoveApiAppOrderSyncService {
         `Got ${toCreate.length} orders to create and ${toUpdate.length} orders to update`,
       );
 
-      /// TODO: We want to create ALL orders in our DB, to give customers
-      /// the ability to see their order history. We can push all orders to saleor
-      // as well using the BULK endpoint. There might be very old products, that we don't
-      // have in our db anymore. We need to handle this case.
-      async.eachLimit(toCreate, 10, async (order) => {
+      await async.eachLimit(toCreate, 10, async (order) => {
         const updatedAt = new Date(order.updatedAt);
         const createdAt = new Date(order.createdAt);
         if (!order.billingAddress?.email) {
@@ -217,6 +222,7 @@ export class KencoveApiAppOrderSyncService {
           );
         }
         if (!order.amount_total) return;
+        const carrier = shippingMethodMatch(order.carrier.delivery_type || "");
         try {
           await this.db.kencoveApiOrder.create({
             data: {
@@ -239,6 +245,7 @@ export class KencoveApiAppOrderSyncService {
                   create: {
                     id: id.id("order"),
                     orderStatus: this.matchOrderStatus(order.state),
+                    carrier,
                     tenant: {
                       connect: {
                         id: this.kencoveApiApp.tenantId,
@@ -261,6 +268,7 @@ export class KencoveApiAppOrderSyncService {
                       : undefined,
                     date: new Date(order.date_order),
                     totalPriceGross: order.amount_total,
+                    totalPriceNet: order.amount_untaxed,
                     mainContact: {
                       connect: {
                         id: mainContactId,
@@ -357,6 +365,7 @@ export class KencoveApiAppOrderSyncService {
       for (const order of toUpdate) {
         const updatedAt = new Date(order.updatedAt);
         const mainContactPromise = this.syncMainContact(order);
+        const carrier = shippingMethodMatch(order.carrier.delivery_type || "");
         const billingAddressPromise = this.getAddress(
           order.billingAddress.billingAddressId,
         );
@@ -386,6 +395,7 @@ export class KencoveApiAppOrderSyncService {
                   },
                 },
                 orderStatus: this.matchOrderStatus(order.state),
+                carrier,
                 totalPriceGross: order.amount_total,
                 billingAddress: billingAddressId
                   ? {
