@@ -796,7 +796,7 @@ export class KencoveApiAppProductSyncService {
                   update: {
                     descriptionHTML: productVariant.productDescription,
                     productType: productType
-                      ? { connect: productType }
+                      ? { connect: { id: productType.id } }
                       : undefined,
                   },
                 },
