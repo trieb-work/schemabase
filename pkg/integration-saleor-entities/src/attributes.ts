@@ -4,7 +4,6 @@
 // we use the attribute normalized name as the key to match the saleor attribute
 // with our internal one. it follows the same logic than the other entity syncs.
 
-import { CronStateHandler } from "@eci/pkg/cronstate";
 import { id } from "@eci/pkg/ids";
 import { ILogger } from "@eci/pkg/logger";
 import { normalizeStrings } from "@eci/pkg/normalization";
@@ -43,8 +42,6 @@ export class SaleorAttributeSyncService {
 
   private logger: SaleorAttributeSyncServiceConfig["logger"];
 
-  private cronState: CronStateHandler;
-
   constructor({
     saleorClient,
     installedSaleorApp,
@@ -57,12 +54,6 @@ export class SaleorAttributeSyncService {
     this.tenantId = tenantId;
     this.db = db;
     this.logger = logger;
-    this.cronState = new CronStateHandler({
-      tenantId: this.tenantId,
-      appId: this.installedSaleorApp.id,
-      db: this.db,
-      syncEntity: "categories",
-    });
   }
 
   private matchAttributeType(type: AttributeInputTypeEnum): AttributeType {
