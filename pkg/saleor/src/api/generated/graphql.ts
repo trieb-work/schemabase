@@ -13302,6 +13302,12 @@ export type AttributeSyncQuery = {
   __typename?: "Query";
   attributes?: {
     __typename?: "AttributeCountableConnection";
+    pageInfo: {
+      __typename?: "PageInfo";
+      hasNextPage: boolean;
+      startCursor?: string | null;
+      endCursor?: string | null;
+    };
     edges: Array<{
       __typename?: "AttributeCountableEdge";
       node: {
@@ -13310,25 +13316,8 @@ export type AttributeSyncQuery = {
         name?: string | null;
         type?: AttributeTypeEnum | null;
         inputType?: AttributeInputTypeEnum | null;
-        unit?: MeasurementUnitsEnum | null;
+        slug?: string | null;
         valueRequired: boolean;
-        withChoices: boolean;
-        choices?: {
-          __typename?: "AttributeValueCountableConnection";
-          edges: Array<{
-            __typename?: "AttributeValueCountableEdge";
-            node: {
-              __typename?: "AttributeValue";
-              id: string;
-              inputType?: AttributeInputTypeEnum | null;
-              name?: string | null;
-              plainText?: string | null;
-              reference?: string | null;
-              richText?: any | null;
-              slug?: string | null;
-            };
-          }>;
-        } | null;
       };
     }>;
   } | null;
@@ -14331,27 +14320,23 @@ export const AppDocument = gql`
 export const AttributeSyncDocument = gql`
   query attributeSync($first: Int!, $after: String) {
     attributes(first: $first, after: $after) {
+      pageInfo {
+        hasNextPage
+        startCursor
+        endCursor
+      }
       edges {
         node {
           id
           name
           type
           inputType
-          unit
+          slug
           valueRequired
-          withChoices
-          choices(first: 100) {
-            edges {
-              node {
-                ...Values
-              }
-            }
-          }
         }
       }
     }
   }
-  ${ValuesFragmentDoc}
 `;
 export const SaleorCronCategoriesDocument = gql`
   query saleorCronCategories($first: Int, $last: Int, $after: String) {

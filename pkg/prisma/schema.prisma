@@ -89,6 +89,21 @@ model SaleorProductType {
   @@index([installedSaleorAppId])
 }
 
+model SaleorAttribute {
+  /// Saleor Internal Id
+  id String
+
+  attribute   Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  attributeId String
+
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String
+
+  @@unique([id, installedSaleorAppId])
+  @@index([attributeId])
+  @@index([installedSaleorAppId])
+}
+
 // Saleor specific model for orders.
 model SaleorOrder {
   /// Saleor Internal Id
@@ -1475,6 +1490,7 @@ model Attribute {
   tenantId String
 
   kencoveApiAttributes KencoveApiAttribute[]
+  saleorAttributes     SaleorAttribute[]
 
   @@unique([normalizedName, tenantId])
   @@index([tenantId])
@@ -2622,6 +2638,7 @@ model InstalledSaleorApp {
   saleorCustomers            SaleorCustomer[]
   saleorCategory             SaleorCategory[]
   saleorProductType          SaleorProductType[]
+  saleorAttribute            SaleorAttribute[]
 
   @@unique([domain, channelSlug])
   @@index([saleorAppId, domain])

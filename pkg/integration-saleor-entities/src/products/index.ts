@@ -43,16 +43,18 @@ interface SaleorProductSyncServiceConfig {
     }) => Promise<SaleorUpdateMetadataMutation>;
     productCreate: (variables: {
       input: {
-        attributes: {
-          id: string;
-          values: string[];
-        }[];
+        attributes:
+          | {
+              id: string;
+              values: string[];
+            }[]
+          | undefined;
         category: string;
         chargeTaxes: boolean;
         collections: string[];
-        description: string;
+        description: string | undefined;
         name: string;
-        weight: number;
+        weight: number | undefined;
         productType: string;
       };
     }) => Promise<ProductCreateMutation>;
@@ -89,16 +91,18 @@ export class SaleorProductSyncService {
     }) => Promise<SaleorUpdateMetadataMutation>;
     productCreate: (variables: {
       input: {
-        attributes: {
-          id: string;
-          values: string[];
-        }[];
+        attributes:
+          | {
+              id: string;
+              values: string[];
+            }[]
+          | undefined;
         category: string;
         chargeTaxes: boolean;
         collections: string[];
-        description: string;
+        description: string | undefined;
         name: string;
-        weight: number;
+        weight: number | undefined;
         productType: string;
       };
     }) => Promise<ProductCreateMutation>;
@@ -275,63 +279,49 @@ export class SaleorProductSyncService {
           productsToCreate.length
         } products to create in Saleor: ${productsToCreate.map((p) => p.sku)}`,
       );
-      // for (const product of productsToCreate) {
-      //   const productType = product.product.productType;
-      //   if (!productType) {
-      //     this.logger.warn(
-      //       `Product ${product.sku} has no product type. Skipping`,
-      //     );
-      //     continue;
-      //   }
-      //   const attributes = productType.attributes.map((attribute) => ({
-      //     id: attribute.id,
-      //     values: attribute.values.map((value) => value.name),
-      //   }));
-      //   const saleorCategory = product.product.category?.saleorCategories[0].id;
-      //   if (!saleorCategory) {
-      //     this.logger.warn(`Product ${product.sku} has no category. Skipping`);
-      //     continue;
-      //   }
-      //   const productCreateResponse = await this.saleorClient.productCreate({
-      //     input: {
-      //       attributes,
-      //       category: product.product.category?.saleorCategories[0].id,
-      //       chargeTaxes: true,
-      //       collections: [],
-      //       description: product.product.description,
-      //       name: product.product.name,
-      //       weight: product.weight,
-      //       productType: productType.saleorProductTypes[0].id,
-      //     },
-      //   });
-      //   if (productCreateResponse.errors) {
-      //     this.logger.error(
-      //       `Error creating product ${product.sku} in Saleor: ${JSON.stringify(
-      //         productCreateResponse.errors,
-      //       )}`,
-      //     );
-      //     continue;
-      //   }
-      //   this.logger.info(
-      //     `Successfully created product ${product.sku} in Saleor`,
-      //   );
-      //   await this.db.saleorProductVariant.update({
-      //     where: {
-      //       id_installedSaleorAppId: {
-      //         id: product.id,
-      //         installedSaleorAppId: this.installedSaleorAppId,
-      //       },
-      //     },
-      //     data: {
-      //       installedSaleorApp: {
-      //         connect: {
-      //           id: this.installedSaleorAppId,
-      //         },
-      //       },
-      //       productId: productCreateResponse.data?.productCreate?.product?.id,
-      //     },
-      //   });
-      // }
+      for (const product of productsToCreate) {
+        const productType = product.product.productType;
+        if (!productType) {
+          this.logger.warn(
+            `Product ${product.sku} has no product type. Skipping`,
+          );
+          continue;
+        }
+        // const attributes = product.product.attributes.map((attribute) => ({
+        //   id: attribute.id,
+        //   values: attribute.values.map((value) => value.name),
+        // }));
+        const saleorCategoryId =
+          product.product.category?.saleorCategories[0].id;
+        if (!saleorCategoryId) {
+          this.logger.warn(`Product ${product.sku} has no category. Skipping`);
+          continue;
+        }
+        const productCreateResponse = await this.saleorClient.productCreate({
+          input: {
+            attributes: undefined,
+            category: saleorCategoryId,
+            chargeTaxes: true,
+            collections: [],
+            description: undefined,
+            name: product.product.name,
+            weight: product.weight ?? undefined,
+            productType: productType.saleorProductTypes[0].id,
+          },
+        });
+        if (productCreateResponse.productCreate?.errors) {
+          this.logger.error(
+            `Error creating product ${product.sku} in Saleor: ${JSON.stringify(
+              productCreateResponse.productCreate.errors,
+            )}`,
+          );
+          continue;
+        }
+        this.logger.info(
+          `Successfully created product ${product.sku} in Saleor`,
+        );
+        // Bulk create the product variants
+      }
     }
   }
 

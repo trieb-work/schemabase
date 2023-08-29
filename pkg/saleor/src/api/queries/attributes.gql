@@ -10,22 +10,19 @@ fragment Values on AttributeValue {
 
 query attributeSync($first: Int!, $after: String) {
   attributes(first: $first, after: $after) {
+    pageInfo {
+      hasNextPage
+      startCursor
+      endCursor
+    }
     edges {
       node {
         id
         name
         type
         inputType
-        unit
+        slug
         valueRequired
-        withChoices
-        choices(first: 100) {
-          edges {
-            node {
-              ...Values
-            }
-          }
-        }
       }
     }
   }

@@ -35,6 +35,7 @@ import { KencoveApiPackageSyncWf } from "./workflows/kencoveApiPackageSync";
 import { KencoveApiOrderSyncWf } from "./workflows/kencoveApiOrderSync";
 import { KencoveApiProductStockSyncWf } from "./workflows/kencoveApiProductStockSync";
 import { KencoveApiAddressSyncWf } from "./workflows/kencoveApiAddressSync";
+import { SaleorAttributeSyncWf } from "./workflows/saleorAttributeSync";
 
 interface CronClients {
   logger: ILogger;
@@ -484,6 +485,15 @@ export class CronTable {
       }
 
       if (enabledSaleorApp.syncProducts) {
+        this.scheduler.schedule(
+          createWorkflowFactory(
+            SaleorAttributeSyncWf,
+            this.clients,
+            commonWorkflowConfig,
+          ),
+          { ...commonCronConfig, offset: 3, cron: "0 */6 * * *" },
+          [tenantId.substring(0, 5), id.substring(0, 5)],
+        );
         this.scheduler.schedule(
           createWorkflowFactory(
             SaleorProductSyncWf,

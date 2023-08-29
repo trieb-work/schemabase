@@ -49,6 +49,18 @@ Table SaleorProductType {
   }
 }
 
+Table SaleorAttribute {
+  id String [not null, note: 'Saleor Internal Id']
+  attribute Attribute [not null]
+  attributeId String [not null]
+  installedSaleorApp InstalledSaleorApp [not null]
+  installedSaleorAppId String [not null]
+
+  indexes {
+    (id, installedSaleorAppId) [unique]
+  }
+}
+
 Table SaleorOrder {
   id String [not null, note: 'Saleor Internal Id']
   createdAt DateTime [not null]
@@ -713,6 +725,7 @@ Table Attribute {
   tenant Tenant [not null]
   tenantId String [not null]
   kencoveApiAttributes KencoveApiAttribute [not null]
+  saleorAttributes SaleorAttribute [not null]
 
   indexes {
     (normalizedName, tenantId) [unique]
@@ -1460,6 +1473,7 @@ Table InstalledSaleorApp {
   saleorCustomers SaleorCustomer [not null]
   saleorCategory SaleorCategory [not null]
   saleorProductType SaleorProductType [not null]
+  saleorAttribute SaleorAttribute [not null]
 
   indexes {
     (domain, channelSlug) [unique]
@@ -2035,6 +2049,10 @@ Ref: Cookies.installedSaleorAppId > InstalledSaleorApp.id
 Ref: SaleorProductType.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
 
 Ref: SaleorProductType.productTypeId > ProductType.id [delete: Cascade]
+
+Ref: SaleorAttribute.attributeId > Attribute.id [delete: Cascade]
+
+Ref: SaleorAttribute.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
 
 Ref: SaleorOrder.(orderId, orderNumber) > Order.(id, orderNumber) [delete: Cascade]
 
