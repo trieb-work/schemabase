@@ -587,7 +587,9 @@ export class SaleorProductSyncService {
     });
     if (productsToCreate.length > 0) {
       this.logger.info(
-        `Found ${productsToCreate.length} products to create in Saleor`,
+        `Found ${
+          productsToCreate.length
+        } products to create in Saleor: ${productsToCreate.map((p) => p.sku)}`,
       );
     }
 
