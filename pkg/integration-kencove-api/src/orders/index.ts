@@ -198,6 +198,10 @@ export class KencoveApiAppOrderSyncService {
       await async.eachLimit(toCreate, 10, async (order) => {
         const updatedAt = new Date(order.updatedAt);
         const createdAt = new Date(order.createdAt);
+        /**
+         * The actual date, when the order was placed
+         */
+        const date = new Date(order.date_order);
         if (!order.billingAddress?.email) {
           this.logger.warn(`No email found in order ${order.id}. Don't sync!`);
           return;
@@ -245,6 +249,7 @@ export class KencoveApiAppOrderSyncService {
                   create: {
                     id: id.id("order"),
                     orderStatus: this.matchOrderStatus(order.state),
+                    date,
                     carrier,
                     tenant: {
                       connect: {
