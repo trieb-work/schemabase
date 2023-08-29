@@ -20,6 +20,8 @@ import { id } from "@eci/pkg/ids";
 import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { KencoveApiOrder } from "../types";
 import { apiLineItemsWithSchemabase } from "./lineItems";
+import { normalizeStrings } from "@eci/pkg/normalization";
+import async from "async";
 // import { KencoveApiWarehouseSync } from "../warehouses";
 
 interface KencoveApiAppOrderSyncServiceConfig {
@@ -54,25 +56,16 @@ export class KencoveApiAppOrderSyncService {
    * internally if needed. Returns the internal contact Id
    */
   private async syncMainContact(order: KencoveApiOrder) {
-    if (!order.billingAddress?.email) {
-      this.logger.error(`No email found in order ${order.id}!`);
-      return;
-    }
     const email = order.billingAddress.email.toLowerCase();
-    const existingContact = await this.db.contact.findUnique({
+    const billingAddress = order.billingAddress;
+    const existingContact = await this.db.contact.upsert({
       where: {
         email_tenantId: {
           email,
           tenantId: this.kencoveApiApp.tenantId,
         },
       },
-    });
-    if (existingContact) {
-      return existingContact.id;
-    }
-    const billingAddress = order.billingAddress;
-    const newContact = await this.db.contact.create({
-      data: {
+      create: {
         id: id.id("contact"),
         email,
         tenant: {
@@ -99,8 +92,9 @@ export class KencoveApiAppOrderSyncService {
           },
         },
       },
+      update: {},
     });
-    return newContact.id;
+    return existingContact.id;
   }
 
   private async getAddress(kenAddressId: string) {
@@ -113,7 +107,7 @@ export class KencoveApiAppOrderSyncService {
       },
     });
     if (!existingAddress) {
-      this.logger.error(`Address ${kenAddressId} not found!`);
+      this.logger.warn(`Address ${kenAddressId} not found!`);
       return;
     }
     return existingAddress.addressId;
@@ -156,12 +150,7 @@ export class KencoveApiAppOrderSyncService {
     }
 
     const client = new KencoveApiClient(this.kencoveApiApp);
-    const apiOrders = await client.getOrders(createdGte);
-
-    this.logger.info(`Found ${apiOrders.length} orders to sync`);
-    if (apiOrders.length === 0) {
-      return;
-    }
+    const apiOrdersStream = client.getOrdersStream(createdGte);
 
     /**
      * Helper to match warehouse
@@ -172,189 +161,260 @@ export class KencoveApiAppOrderSyncService {
     //   logger: this.logger,
     // });
 
-    const existingKencoveApiOrders = await this.db.kencoveApiOrder.findMany({
-      where: {
-        id: {
-          in: apiOrders.map((o) => o.id),
+    for await (const apiOrders of apiOrdersStream) {
+      this.logger.info(`Found ${apiOrders.length} orders to sync`);
+      if (apiOrders.length === 0) {
+        return;
+      }
+
+      const existingKencoveApiOrders = await this.db.kencoveApiOrder.findMany({
+        where: {
+          id: {
+            in: apiOrders.map((o) => o.id),
+          },
+          kencoveApiAppId: this.kencoveApiApp.id,
         },
-        kencoveApiAppId: this.kencoveApiApp.id,
-      },
-    });
-    const toCreate = apiOrders.filter(
-      (o) => !existingKencoveApiOrders.find((eo) => eo.id === o.id),
-    );
-    const toUpdate = apiOrders.filter((o) =>
-      existingKencoveApiOrders.find((eo) => eo.id === o.id),
-    );
-
-    this.logger.info(
-      `Got ${toCreate.length} orders to create and ${toUpdate.length} orders to update`,
-    );
-
-    /// TODO: We want to create ALL orders in our DB, to give customers
-    /// the ability to see their order history. We can push all orders to saleor
-    // as well using the BULK endpoint. There might be very old products, that we don't have in our
-    // db anymore. We need to handle this case.
-    for (const order of toCreate) {
-      const updatedAt = new Date(order.updatedAt);
-      const createdAt = new Date(order.createdAt);
-      const mainContactId = await this.syncMainContact(order);
-      const billingAddressId = await this.getAddress(
-        order.billingAddress.billingAddressId,
+      });
+      const toCreate = apiOrders.filter(
+        (o) => !existingKencoveApiOrders.find((eo) => eo.id === o.id),
       );
-      const shippingAddressId = await this.getAddress(
-        order.shippingAddress.shippingAddressId,
+      const toUpdate = apiOrders.filter((o) =>
+        existingKencoveApiOrders.find((eo) => eo.id === o.id),
       );
-      if (!mainContactId) continue;
-      if (!order.amount_total) continue;
-      try {
-        await this.db.kencoveApiOrder.create({
-          data: {
-            id: order.id,
-            updatedAt,
-            createdAt,
-            kencoveApiApp: {
-              connect: {
-                id: this.kencoveApiApp.id,
-              },
-            },
-            order: {
-              connectOrCreate: {
-                where: {
-                  orderNumber_tenantId: {
-                    orderNumber: order.orderNumber,
-                    tenantId: this.kencoveApiApp.tenantId,
-                  },
+
+      this.logger.info(
+        `Got ${toCreate.length} orders to create and ${toUpdate.length} orders to update`,
+      );
+
+      /// TODO: We want to create ALL orders in our DB, to give customers
+      /// the ability to see their order history. We can push all orders to saleor
+      // as well using the BULK endpoint. There might be very old products, that we don't
+      // have in our db anymore. We need to handle this case.
+      async.eachLimit(toCreate, 10, async (order) => {
+        const updatedAt = new Date(order.updatedAt);
+        const createdAt = new Date(order.createdAt);
+        if (!order.billingAddress?.email) {
+          this.logger.warn(`No email found in order ${order.id}. Don't sync!`);
+          return;
+        }
+        const mainContactPromise = this.syncMainContact(order);
+        const billingAddressPromise = this.getAddress(
+          order.billingAddress.billingAddressId,
+        );
+        const shippingAddressPromise = this.getAddress(
+          order.shippingAddress.shippingAddressId,
+        );
+        const [billingAddressId, shippingAddressId, mainContactId] =
+          await Promise.all([
+            billingAddressPromise,
+            shippingAddressPromise,
+            mainContactPromise,
+          ]);
+        if (!mainContactId) {
+          throw new Error(
+            // eslint-disable-next-line max-len
+            `No main contact found for order ${order.id} - ${order.orderNumber}. This should not happen!`,
+          );
+        }
+        if (!order.amount_total) return;
+        try {
+          await this.db.kencoveApiOrder.create({
+            data: {
+              id: order.id,
+              updatedAt,
+              createdAt,
+              kencoveApiApp: {
+                connect: {
+                  id: this.kencoveApiApp.id,
                 },
-                create: {
-                  id: id.id("order"),
-                  orderStatus: this.matchOrderStatus(order.state),
-                  tenant: {
-                    connect: {
-                      id: this.kencoveApiApp.tenantId,
+              },
+              order: {
+                connectOrCreate: {
+                  where: {
+                    orderNumber_tenantId: {
+                      orderNumber: order.orderNumber,
+                      tenantId: this.kencoveApiApp.tenantId,
                     },
                   },
-                  orderNumber: order.orderNumber,
-                  billingAddress: billingAddressId
-                    ? {
-                        connect: {
-                          id: billingAddressId,
-                        },
-                      }
-                    : undefined,
-                  shippingAddress: shippingAddressId
-                    ? {
-                        connect: {
-                          id: shippingAddressId,
-                        },
-                      }
-                    : undefined,
-                  date: new Date(order.date_order),
-                  totalPriceGross: order.amount_total,
-                  mainContact: {
-                    connect: {
-                      id: mainContactId,
+                  create: {
+                    id: id.id("order"),
+                    orderStatus: this.matchOrderStatus(order.state),
+                    tenant: {
+                      connect: {
+                        id: this.kencoveApiApp.tenantId,
+                      },
                     },
-                  },
-                  orderLineItems: {
-                    create: order?.orderLines?.map((ol, index) => {
-                      return {
-                        id: id.id("lineItem"),
-                        uniqueString: uniqueStringOrderLine(
-                          order.orderNumber,
-                          ol.itemCode,
-                          ol.quantity,
-                          index,
-                        ),
-                        quantity: ol.quantity,
-                        productVariant: {
+                    orderNumber: order.orderNumber,
+                    billingAddress: billingAddressId
+                      ? {
                           connect: {
-                            sku_tenantId: {
-                              sku: ol.itemCode,
-                              tenantId: this.kencoveApiApp.tenantId,
+                            id: billingAddressId,
+                          },
+                        }
+                      : undefined,
+                    shippingAddress: shippingAddressId
+                      ? {
+                          connect: {
+                            id: shippingAddressId,
+                          },
+                        }
+                      : undefined,
+                    date: new Date(order.date_order),
+                    totalPriceGross: order.amount_total,
+                    mainContact: {
+                      connect: {
+                        id: mainContactId,
+                      },
+                    },
+                    orderLineItems: {
+                      create: order?.orderLines?.map((ol, index) => {
+                        /**
+                         * in the description, we have the product name like
+                         * "[MCCHD] Cut Out Switch -Heavy Duty"
+                         * productName is just the product name without the sku
+                         */
+                        const productName = ol.description.replace(
+                          /\[.*?\]\s/g,
+                          "",
+                        );
+                        const normalizedName =
+                          normalizeStrings.productNames(productName);
+                        return {
+                          id: id.id("lineItem"),
+                          uniqueString: uniqueStringOrderLine(
+                            order.orderNumber,
+                            ol.itemCode,
+                            ol.quantity,
+                            index,
+                          ),
+                          quantity: ol.quantity,
+                          productVariant: {
+                            connectOrCreate: {
+                              where: {
+                                sku_tenantId: {
+                                  sku: ol.itemCode,
+                                  tenantId: this.kencoveApiApp.tenantId,
+                                },
+                              },
+                              create: {
+                                id: id.id("variant"),
+                                sku: ol.itemCode,
+                                tenant: {
+                                  connect: {
+                                    id: this.kencoveApiApp.tenantId,
+                                  },
+                                },
+                                product: {
+                                  connectOrCreate: {
+                                    where: {
+                                      normalizedName_tenantId: {
+                                        normalizedName,
+                                        tenantId: this.kencoveApiApp.tenantId,
+                                      },
+                                    },
+                                    create: {
+                                      id: id.id("product"),
+                                      normalizedName,
+                                      name: productName,
+                                      tenant: {
+                                        connect: {
+                                          id: this.kencoveApiApp.tenantId,
+                                        },
+                                      },
+                                    },
+                                  },
+                                },
+                              },
                             },
                           },
-                        },
-                        tenant: {
-                          connect: {
-                            id: this.kencoveApiApp.tenantId,
+                          tenant: {
+                            connect: {
+                              id: this.kencoveApiApp.tenantId,
+                            },
                           },
-                        },
-                      };
-                    }),
+                        };
+                      }),
+                    },
                   },
                 },
+              },
+            },
+          });
+        } catch (error) {
+          if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            this.logger.error(
+              `Error while creating order ${order.id}: ${error.message}`,
+            );
+          } else {
+            this.logger.error(
+              `Error working on order: ${order.id} - ${order.orderNumber}`,
+            );
+            throw error;
+          }
+        }
+      });
+
+      for (const order of toUpdate) {
+        const updatedAt = new Date(order.updatedAt);
+        const mainContactPromise = this.syncMainContact(order);
+        const billingAddressPromise = this.getAddress(
+          order.billingAddress.billingAddressId,
+        );
+        const shippingAddressPromise = this.getAddress(
+          order.shippingAddress.shippingAddressId,
+        );
+        const [billingAddressId, shippingAddressId, mainContactId] =
+          await Promise.all([
+            billingAddressPromise,
+            shippingAddressPromise,
+            mainContactPromise,
+          ]);
+        const res = await this.db.kencoveApiOrder.update({
+          where: {
+            id_kencoveApiAppId: {
+              id: order.id,
+              kencoveApiAppId: this.kencoveApiApp.id,
+            },
+          },
+          data: {
+            updatedAt,
+            order: {
+              update: {
+                mainContact: {
+                  connect: {
+                    id: mainContactId,
+                  },
+                },
+                orderStatus: this.matchOrderStatus(order.state),
+                totalPriceGross: order.amount_total,
+                billingAddress: billingAddressId
+                  ? {
+                      connect: {
+                        id: billingAddressId,
+                      },
+                    }
+                  : undefined,
+                shippingAddress: shippingAddressId
+                  ? {
+                      connect: {
+                        id: shippingAddressId,
+                      },
+                    }
+                  : undefined,
               },
             },
           },
         });
-      } catch (error) {
-        if (error instanceof Prisma.PrismaClientKnownRequestError) {
-          this.logger.error(
-            `Error while creating order ${order.id}: ${error.message}`,
-          );
-        } else {
-          this.logger.error(
-            `Error working on order: ${order.id} - ${order.orderNumber}`,
-          );
-          throw error;
-        }
+        // We update the order line items in a separate process
+        await apiLineItemsWithSchemabase(
+          order,
+          res.orderId,
+          this.kencoveApiApp.tenantId,
+          this.db,
+          this.logger,
+        );
       }
     }
-
-    for (const order of toUpdate) {
-      const updatedAt = new Date(order.updatedAt);
-      const mainContactId = await this.syncMainContact(order);
-      const billingAddressId = await this.getAddress(
-        order.billingAddress.billingAddressId,
-      );
-      const shippingAddressId = await this.getAddress(
-        order.shippingAddress.shippingAddressId,
-      );
-      const res = await this.db.kencoveApiOrder.update({
-        where: {
-          id_kencoveApiAppId: {
-            id: order.id,
-            kencoveApiAppId: this.kencoveApiApp.id,
-          },
-        },
-        data: {
-          updatedAt,
-          order: {
-            update: {
-              mainContact: {
-                connect: {
-                  id: mainContactId,
-                },
-              },
-              orderStatus: this.matchOrderStatus(order.state),
-              totalPriceGross: order.amount_total,
-              billingAddress: billingAddressId
-                ? {
-                    connect: {
-                      id: billingAddressId,
-                    },
-                  }
-                : undefined,
-              shippingAddress: shippingAddressId
-                ? {
-                    connect: {
-                      id: shippingAddressId,
-                    },
-                  }
-                : undefined,
-            },
-          },
-        },
-      });
-      // We update the order line items in a separate process
-      await apiLineItemsWithSchemabase(
-        order,
-        res.orderId,
-        this.kencoveApiApp.tenantId,
-        this.db,
-        this.logger,
-      );
-    }
+    await this.cronState.set({ lastRun: now, lastRunStatus: "success" });
   }
 }

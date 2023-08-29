@@ -18,6 +18,7 @@ import {
   KencoveApiProduct,
   KencoveApiProductStock,
 } from "./types";
+import { addDays, isAfter } from "date-fns";
 
 export class KencoveApiClient {
   private static instance: KencoveApiClient;
@@ -352,31 +353,54 @@ export class KencoveApiClient {
     const accessToken = await this.getAccessToken();
     let nextPage: string | null = null;
     let offset: number = 0;
+    let toDate = addDays(fromDate, 1);
     do {
-      const response = await this.getOrdersPage(fromDate, offset, accessToken);
+      const response = await this.getOrdersPage(
+        fromDate,
+        toDate,
+        offset,
+        accessToken,
+      );
       yield response.data;
       nextPage = response.next_page;
       offset += 200;
+      if (!nextPage) {
+        fromDate = toDate;
+        toDate = addDays(toDate, 1);
+        offset = 0;
+        if (isAfter(fromDate, new Date())) {
+          break;
+        }
+        const checkResponse = await this.getOrdersPage(
+          fromDate,
+          toDate,
+          offset,
+          accessToken,
+        );
+        nextPage = checkResponse.next_page;
+      }
+      console.debug("request", response.result_count)
     } while (nextPage);
   }
 
-  public async getOrders(fromDate: Date): Promise<KencoveApiOrder[]> {
-    const accessToken = await this.getAccessToken();
-    const orders: KencoveApiOrder[] = [];
-    let nextPage: string | null = null;
-    let offset: number = 0;
-    do {
-      const response = await this.getOrdersPage(fromDate, offset, accessToken);
-      orders.push(...response.data);
-      nextPage = response.next_page;
-      offset += 200;
-      console.debug(`Found ${orders.length} orders / offset: ${offset}`);
-    } while (nextPage);
-    return orders;
-  }
+  // public async getOrders(fromDate: Date): Promise<KencoveApiOrder[]> {
+  //   const accessToken = await this.getAccessToken();
+  //   const orders: KencoveApiOrder[] = [];
+  //   let nextPage: string | null = null;
+  //   let offset: number = 0;
+  //   do {
+  //     const response = await this.getOrdersPage(fromDate, offset, accessToken);
+  //     orders.push(...response.data);
+  //     nextPage = response.next_page;
+  //     offset += 200;
+  //     console.debug(`Found ${orders.length} orders / offset: ${offset}`);
+  //   } while (nextPage);
+  //   return orders;
+  // }
 
   private async getOrdersPage(
     fromDate: Date,
+    toDate: Date,
     offset: number,
     accessToken: string,
   ): Promise<{
@@ -386,7 +410,7 @@ export class KencoveApiClient {
   }> {
     const response = await this.axiosInstance.get(
       // eslint-disable-next-line max-len
-      `/ecom/orders/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
+      `/ecom/orders/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${toDate.toISOString()}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,

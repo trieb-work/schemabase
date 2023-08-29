@@ -65,7 +65,7 @@ export class KencoveApiAppAddressSyncService {
         },
       });
 
-      async.eachLimit(addresses, 10, async (address) => {
+      await async.eachLimit(addresses, 20, async (address) => {
         if (!address.street || !address.city || !address.fullname) {
           this.logger.warn(
             `Address ${address.id} has no street/city/fullname.\
@@ -129,9 +129,13 @@ export class KencoveApiAppAddressSyncService {
               state: address.state,
               contact: internalContact
                 ? { connect: { id: internalContact.contactId } }
-                : {},
+                : undefined,
             },
-            update: {},
+            update: {
+              contact: internalContact
+                ? { connect: { id: internalContact.contactId } }
+                : undefined,
+            },
           });
 
           await this.db.kencoveApiAddress.upsert({
@@ -145,8 +149,16 @@ export class KencoveApiAppAddressSyncService {
               id: address.id,
               createdAt,
               updatedAt,
-              kencoveApiAppId: this.kencoveApiApp.id,
-              addressId: internalAddress.id,
+              kencoveApiApp: {
+                connect: {
+                  id: this.kencoveApiApp.id,
+                },
+              },
+              address: {
+                connect: {
+                  id: internalAddress.id,
+                },
+              },
             },
             update: {
               createdAt,

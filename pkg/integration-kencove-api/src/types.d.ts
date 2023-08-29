@@ -156,16 +156,29 @@ export type KencoveApiOrderLine = {
   /**
    * Item SKU
    */
-  itemCode: "MCCHD";
+  itemCode: string;
   weight: 0.5;
   quantity: 1.0;
   discount: 0.0;
   product_uom: "Units";
   price_unit: 7.25;
-  description: "[MCCHD] Cut Out Switch -Heavy Duty";
+  /**
+   * Text description like: "[MCCHD] Cut Out Switch -Heavy Duty"
+   */
+  description: string;
   price_subtotal: 7.25;
-  productId: 99;
-  warehouseCode: "PA";
+  /**
+   * The variant Id from Kencove
+   */
+  productId: number;
+  /**
+   * For example "PA"
+   */
+  warehouseCode: string;
+  /**
+   * e.g.: "6.25%"
+   */
+  orderLine_taxRate: string;
 };
 
 export type KencoveApiOrder = {
