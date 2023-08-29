@@ -933,6 +933,7 @@ model OrderLineItem {
   @@unique([uniqueString, tenantId])
   @@index([orderId])
   @@index([productVariantId])
+  @@index([warehouseId])
   @@index([uniqueString])
   @@index([tenantId])
   @@index([sku])
