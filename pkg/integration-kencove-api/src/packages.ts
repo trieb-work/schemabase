@@ -168,6 +168,14 @@ export class KencoveApiAppPackageSyncService {
                     },
                   },
                   carrier,
+                  order: {
+                    connect: {
+                      orderNumber_tenantId: {
+                        orderNumber: pkg.salesOrderNo,
+                        tenantId: this.kencoveApiApp.tenantId,
+                      },
+                    },
+                  },
                   packageLineItems: {
                     // when we miss certain SKUs in our DB, this is going to fail.
                     // we don't create the package in that case
@@ -211,6 +219,14 @@ export class KencoveApiAppPackageSyncService {
               update: {
                 trackingId,
                 carrierTrackingUrl: trackingId ? pkg.trackingUrl : undefined,
+                order: {
+                  connect: {
+                    orderNumber_tenantId: {
+                      orderNumber: pkg.salesOrderNo,
+                      tenantId: this.kencoveApiApp.tenantId,
+                    },
+                  },
+                },
               },
             },
           },
