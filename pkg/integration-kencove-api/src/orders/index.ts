@@ -271,7 +271,6 @@ export class KencoveApiAppOrderSyncService {
                           },
                         }
                       : undefined,
-                    date: new Date(order.date_order),
                     totalPriceGross: order.amount_total,
                     totalPriceNet: order.amount_untaxed,
                     mainContact: {
