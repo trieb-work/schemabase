@@ -7,6 +7,7 @@ const getPermissions = (): AppPermission[] => {
     "MANAGE_ORDERS",
     "MANAGE_CHANNELS",
     "MANAGE_PRODUCTS",
+    "MANAGE_PRODUCT_TYPES_AND_ATTRIBUTES",
     "MANAGE_DISCOUNTS",
     "MANAGE_GIFT_CARD",
     "MANAGE_SHIPPING",
