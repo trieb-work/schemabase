@@ -82,7 +82,6 @@ export class KencoveApiAppAddressSyncService {
         if (this.normalizedAddresses.has(normalizedName)) {
           internalAddressExisting = true;
         }
-        this.normalizedAddresses.add(normalizedName);
 
         const countryCode = address.countryCode
           ? countryCodeMatch(address.countryCode)
@@ -169,6 +168,8 @@ export class KencoveApiAppAddressSyncService {
             },
           },
         });
+
+        this.normalizedAddresses.add(normalizedName);
       });
     }
     await this.cronState.set({ lastRun: now, lastRunStatus: "success" });
