@@ -7,6 +7,7 @@
 // data is more up to date than the data coming from saleor, we can use the updatedAt
 // field from the Category table.
 
+import { CronStateHandler } from "@eci/pkg/cronstate";
 import { id } from "@eci/pkg/ids";
 import { ILogger } from "@eci/pkg/logger";
 import { normalizeStrings } from "@eci/pkg/normalization";
@@ -20,7 +21,9 @@ import {
   CategoryValuesFragment,
   SaleorCronCategoriesQuery,
   queryWithPagination,
+  CategoryCreateMutation,
 } from "@eci/pkg/saleor";
+import { subHours, subYears } from "date-fns";
 
 interface SaleorCategorySyncServiceConfig {
   saleorClient: {
@@ -28,6 +31,11 @@ interface SaleorCategorySyncServiceConfig {
       first: number;
       after: string;
     }) => Promise<SaleorCronCategoriesQuery>;
+    categoryCreate: (variables: {
+      input: {
+        name: string;
+      };
+    }) => Promise<CategoryCreateMutation>;
   };
   installedSaleorApp: InstalledSaleorApp;
   tenantId: string;
@@ -45,12 +53,18 @@ export class SaleorCategorySyncService {
       first: number;
       after: string;
     }) => Promise<SaleorCronCategoriesQuery>;
+    categoryCreate: (variables: {
+      input: {
+        name: string;
+      };
+    }) => Promise<CategoryCreateMutation>;
   };
 
   private installedSaleorApp: InstalledSaleorApp;
   private tenantId: string;
   private db: PrismaClient;
   private logger: ILogger;
+  private cronState: CronStateHandler;
 
   constructor(config: SaleorCategorySyncServiceConfig) {
     this.saleorClient = config.saleorClient;
@@ -58,6 +72,12 @@ export class SaleorCategorySyncService {
     this.tenantId = config.tenantId;
     this.db = config.db;
     this.logger = config.logger;
+    this.cronState = new CronStateHandler({
+      tenantId: this.tenantId,
+      appId: this.installedSaleorApp.id,
+      db: this.db,
+      syncEntity: "categories",
+    });
   }
 
   public async syncToEci() {
@@ -338,6 +358,103 @@ export class SaleorCategorySyncService {
   }
 
   /**
-   * sync from ECI: use our internal updatedAt
+   * Takes our internal category and creates a new category in Saleor
+   * @param category
    */
+  private async createCategoryInSaleor(category: Category) {
+    const response = await this.saleorClient.categoryCreate({
+      input: {
+        name: category.name,
+      },
+    });
+    if (!response?.categoryCreate?.category || response.categoryCreate.errors) {
+      this.logger.error(
+        `Could not create category in saleor: ${
+          category.name
+        }: ${JSON.stringify(response?.categoryCreate?.errors)}`,
+      );
+      return;
+    }
+    await this.db.saleorCategory.create({
+      data: {
+        id: response.categoryCreate.category.id,
+        installedSaleorApp: {
+          connect: {
+            id: this.installedSaleorApp.id,
+          },
+        },
+        category: {
+          connect: {
+            id: category.id,
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * sync from ECI: find all categories, that do not exist in Saleor, or
+   * that have recently been updated and create or update them in Saleor. For now, we just create
+   * categories or update category names, but we don't delete categories or set products.
+   * We can find categories, that do not exist in Saleor by looking at the "saleorCategories" table.
+   */
+  public async syncFromEci() {
+    const cronState = await this.cronState.get();
+
+    const now = new Date();
+    let createdGte: Date;
+    if (!cronState.lastRun) {
+      createdGte = subYears(now, 2);
+      this.logger.info(
+        // eslint-disable-next-line max-len
+        `This seems to be our first sync run. Syncing data from: ${createdGte}`,
+      );
+    } else {
+      createdGte = subHours(cronState.lastRun, 3);
+      this.logger.info(`Setting GTE date to ${createdGte}. `);
+    }
+
+    const categories = await this.db.category.findMany({
+      where: {
+        saleorCategories: {
+          none: {
+            installedSaleorAppId: this.installedSaleorApp.id,
+          },
+        },
+        active: true,
+      },
+    });
+
+    this.logger.info(
+      `Found ${categories.length} categories that do not exist in saleor`,
+    );
+
+    for (const category of categories) {
+      await this.createCategoryInSaleor(category);
+    }
+
+    const categoriesToUpdate = await this.db.category.findMany({
+      where: {
+        saleorCategories: {
+          some: {
+            installedSaleorAppId: this.installedSaleorApp.id,
+            category: {
+              updatedAt: {
+                gte: createdGte,
+              },
+            },
+          },
+        },
+        active: true,
+      },
+    });
+
+    this.logger.info(
+      `Found ${categoriesToUpdate.length} categories that need to be updated in saleor`,
+    );
+
+    // for (const category of categoriesToUpdate) {
+    //   await this.updateCategoryInSaleor(category);
+    // }
+  }
 }

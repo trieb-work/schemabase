@@ -18,11 +18,17 @@ import {
   KencoveApiProduct,
   KencoveApiProductStock,
 } from "./types";
+import { addDays, isAfter } from "date-fns";
+import jwt from "jsonwebtoken";
 
 export class KencoveApiClient {
   private static instance: KencoveApiClient;
+
   private axiosInstance: AxiosInstance;
+
   private app: KencoveApiApp;
+
+  private jwt: string = "";
 
   constructor(app: KencoveApiApp) {
     this.app = app;
@@ -41,11 +47,31 @@ export class KencoveApiClient {
     return KencoveApiClient.instance;
   }
 
+  /**
+   * Returns a valid access token. If the current access token is expired,
+   * it will pull a new one from the api. If the current access token is still valid,
+   * it will return the current access token.
+   * @returns
+   */
   public async getAccessToken(): Promise<string> {
     // get the access token from the api using the client credentials flow.
     // Follow AWS Cognito OAuth2 documentation.
-    // Handle errors
-    // and return the access token.
+    // Handle errors and return the access token. Store the access token in the class
+    // so it can be used for subsequent requests. Always only pull a fresh access token
+    // if the current one is expired or does not exist.
+    if (this.jwt) {
+      const decoded = jwt.decode(this.jwt, { json: true });
+      if (
+        decoded &&
+        decoded.exp &&
+        /**
+         * is the first date after the second date?
+         */
+        isAfter(new Date(decoded.exp * 1000), new Date())
+      ) {
+        return this.jwt;
+      }
+    }
 
     try {
       const response = await axios.request({
@@ -63,11 +89,35 @@ export class KencoveApiClient {
           "Content-Type": "application/x-www-form-urlencoded",
         },
       });
-      return response.data.access_token;
+      this.jwt = response.data.access_token;
+      return this.jwt;
     } catch (error) {
       console.error(error);
       throw error;
     }
+  }
+
+  /**
+   * Get addresses yield, that is returning data
+   * the continuasly, instead of returning all the data at once.
+   * Consume it with a for await loop.
+   */
+  public async *getAddressesStream(
+    fromDate: Date,
+  ): AsyncIterableIterator<KencoveApiAddress[]> {
+    let nextPage: string | null = null;
+    let offset: number = 0;
+    do {
+      const accessToken = await this.getAccessToken();
+      const response = await this.getAddressesPage(
+        fromDate,
+        offset,
+        accessToken,
+      );
+      yield response.data;
+      nextPage = response.next_page;
+      offset += 200;
+    } while (nextPage);
   }
 
   /**
@@ -150,8 +200,8 @@ export class KencoveApiClient {
     result_count: number;
     next_page: string;
   }> {
-    const response = await this.axiosInstance.get(
-      `/ecom/product/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
+    const response = await axios.get(
+      `https://api-kencove.gc.staging-kencove.com/ecom/product/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${new Date().toISOString()}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -319,23 +369,65 @@ export class KencoveApiClient {
     return response.data;
   }
 
-  public async getOrders(fromDate: Date): Promise<KencoveApiOrder[]> {
-    const accessToken = await this.getAccessToken();
-    const orders: KencoveApiOrder[] = [];
+  /**
+   * Stream orders, 200 at a time. Use it with a for await loop.
+   * @param fromDate
+   */
+  public async *getOrdersStream(
+    fromDate: Date,
+  ): AsyncIterableIterator<KencoveApiOrder[]> {
     let nextPage: string | null = null;
     let offset: number = 0;
+    let toDate = addDays(fromDate, 1);
     do {
-      const response = await this.getOrdersPage(fromDate, offset, accessToken);
-      orders.push(...response.data);
+      const accessToken = await this.getAccessToken();
+
+      const response = await this.getOrdersPage(
+        fromDate,
+        toDate,
+        offset,
+        accessToken,
+      );
+      yield response.data;
       nextPage = response.next_page;
       offset += 200;
-      console.debug(`Found ${orders.length} orders / offset: ${offset}`);
+      if (!nextPage) {
+        fromDate = toDate;
+        toDate = addDays(toDate, 1);
+        offset = 0;
+        if (isAfter(fromDate, new Date())) {
+          break;
+        }
+        const checkResponse = await this.getOrdersPage(
+          fromDate,
+          toDate,
+          offset,
+          accessToken,
+        );
+        nextPage = checkResponse.next_page;
+      }
+      console.debug("request", response.result_count);
     } while (nextPage);
-    return orders;
   }
+
+  // public async getOrders(fromDate: Date): Promise<KencoveApiOrder[]> {
+  //   const accessToken = await this.getAccessToken();
+  //   const orders: KencoveApiOrder[] = [];
+  //   let nextPage: string | null = null;
+  //   let offset: number = 0;
+  //   do {
+  //     const response = await this.getOrdersPage(fromDate, offset, accessToken);
+  //     orders.push(...response.data);
+  //     nextPage = response.next_page;
+  //     offset += 200;
+  //     console.debug(`Found ${orders.length} orders / offset: ${offset}`);
+  //   } while (nextPage);
+  //   return orders;
+  // }
 
   private async getOrdersPage(
     fromDate: Date,
+    toDate: Date,
     offset: number,
     accessToken: string,
   ): Promise<{
@@ -345,7 +437,7 @@ export class KencoveApiClient {
   }> {
     const response = await this.axiosInstance.get(
       // eslint-disable-next-line max-len
-      `/ecom/orders/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${new Date().toISOString()}`,
+      `/ecom/orders/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${toDate.toISOString()}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,

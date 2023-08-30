@@ -93,14 +93,28 @@ export type KencoveApiPackage = {
   updatedAt: string;
 };
 
+export type KencoveApiAttributeInProduct = {
+  name: string;
+  /**
+   * Attribute value
+   */
+  value: string;
+  /**
+   * the kencoveApiAttribute.id
+   */
+  attribute_id: number;
+  display_type: string;
+  attribute_model: string;
+};
 export type KencoveApiProductVariant = {
   id: string;
   sku: string;
   weight: number;
-  attributeValues: {
-    name: string;
-    value: string;
-  }[];
+  /**
+   * The variant selection attribute values
+   */
+  selectorValues: KencoveApiAttributeInProduct[];
+  attributeValues: KencoveApiAttributeInProduct[];
   name: string;
   createdAt: string;
   updatedAt: string;
@@ -112,6 +126,11 @@ export type KencoveApiProduct = {
   countryOfOrigin: "CN" | "US";
   categoryId: number;
   variants: KencoveApiProductVariant[];
+  productType: {
+    id: string;
+    name: string;
+  };
+  website_description: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -137,16 +156,29 @@ export type KencoveApiOrderLine = {
   /**
    * Item SKU
    */
-  itemCode: "MCCHD";
+  itemCode: string;
   weight: 0.5;
   quantity: 1.0;
   discount: 0.0;
   product_uom: "Units";
   price_unit: 7.25;
-  description: "[MCCHD] Cut Out Switch -Heavy Duty";
+  /**
+   * Text description like: "[MCCHD] Cut Out Switch -Heavy Duty"
+   */
+  description: string;
   price_subtotal: 7.25;
-  productId: 99;
-  warehouseCode: "PA";
+  /**
+   * The variant Id from Kencove
+   */
+  productId: number;
+  /**
+   * For example "PA"
+   */
+  warehouseCode: string;
+  /**
+   * e.g.: "6.25%"
+   */
+  orderLine_taxRate: string;
 };
 
 export type KencoveApiOrder = {

@@ -58,6 +58,18 @@ class NormalizationUtility {
   public categoryNames(input: string) {
     return this.standardNormalize(input);
   }
+
+  /**
+   * Normalize product type names
+   * @param input
+   */
+  public productTypeNames(input: string) {
+    return this.standardNormalize(input);
+  }
+
+  public attributeValueNames(input: string) {
+    return this.standardNormalize(input);
+  }
 }
 
 /**

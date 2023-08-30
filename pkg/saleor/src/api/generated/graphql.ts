@@ -13142,6 +13142,24 @@ export type ProductTypeCreateMutation = {
   } | null;
 };
 
+export type ProductAttributeVariantSelectionMutationVariables = Exact<{
+  productTypeId: Scalars["ID"];
+  attributeId: Scalars["ID"];
+}>;
+
+export type ProductAttributeVariantSelectionMutation = {
+  __typename?: "Mutation";
+  productAttributeAssignmentUpdate?: {
+    __typename?: "ProductAttributeAssignmentUpdate";
+    productType?: { __typename?: "ProductType"; id: string } | null;
+    errors: Array<{
+      __typename?: "ProductError";
+      field?: string | null;
+      message?: string | null;
+    }>;
+  } | null;
+};
+
 export type ProductVariantChannelListingUpdateMutationVariables = Exact<{
   id: Scalars["ID"];
   input:
@@ -13279,6 +13297,47 @@ export type AppQuery = {
       secretKey?: string | null;
       isActive: boolean;
     }> | null;
+  } | null;
+};
+
+export type ValuesFragment = {
+  __typename?: "AttributeValue";
+  id: string;
+  inputType?: AttributeInputTypeEnum | null;
+  name?: string | null;
+  plainText?: string | null;
+  reference?: string | null;
+  richText?: any | null;
+  slug?: string | null;
+};
+
+export type AttributeSyncQueryVariables = Exact<{
+  first: Scalars["Int"];
+  after?: InputMaybe<Scalars["String"]>;
+}>;
+
+export type AttributeSyncQuery = {
+  __typename?: "Query";
+  attributes?: {
+    __typename?: "AttributeCountableConnection";
+    pageInfo: {
+      __typename?: "PageInfo";
+      hasNextPage: boolean;
+      startCursor?: string | null;
+      endCursor?: string | null;
+    };
+    edges: Array<{
+      __typename?: "AttributeCountableEdge";
+      node: {
+        __typename?: "Attribute";
+        id: string;
+        name?: string | null;
+        type?: AttributeTypeEnum | null;
+        inputType?: AttributeInputTypeEnum | null;
+        slug?: string | null;
+        valueRequired: boolean;
+      };
+    }>;
   } | null;
 };
 
@@ -13790,6 +13849,23 @@ export type VariantFragment = {
   }>;
 };
 
+export type ProductTypeFragment = {
+  __typename?: "ProductType";
+  id: string;
+  name: string;
+  hasVariants: boolean;
+  productAttributes?: Array<{
+    __typename?: "Attribute";
+    id: string;
+    name?: string | null;
+  }> | null;
+  assignedVariantAttributes?: Array<{
+    __typename?: "AssignedVariantAttribute";
+    variantSelection: boolean;
+    attribute: { __typename?: "Attribute"; id: string; name?: string | null };
+  }> | null;
+};
+
 export type SaleorEntitySyncProductsQueryVariables = Exact<{
   first: Scalars["Int"];
   channel?: InputMaybe<Scalars["String"]>;
@@ -13815,6 +13891,26 @@ export type SaleorEntitySyncProductsQuery = {
         id: string;
         name: string;
         updatedAt: any;
+        productType: {
+          __typename?: "ProductType";
+          id: string;
+          name: string;
+          hasVariants: boolean;
+          productAttributes?: Array<{
+            __typename?: "Attribute";
+            id: string;
+            name?: string | null;
+          }> | null;
+          assignedVariantAttributes?: Array<{
+            __typename?: "AssignedVariantAttribute";
+            variantSelection: boolean;
+            attribute: {
+              __typename?: "Attribute";
+              id: string;
+              name?: string | null;
+            };
+          }> | null;
+        };
         category?: { __typename?: "Category"; id: string } | null;
         variants?: Array<{
           __typename?: "ProductVariant";
@@ -13885,6 +13981,17 @@ export type WarehousesQuery = {
   } | null;
 };
 
+export const ValuesFragmentDoc = gql`
+  fragment Values on AttributeValue {
+    id
+    inputType
+    name
+    plainText
+    reference
+    richText
+    slug
+  }
+`;
 export const CategoryValuesFragmentDoc = gql`
   fragment categoryValues on Category {
     id
@@ -13960,6 +14067,24 @@ export const VariantFragmentDoc = gql`
         id
         name
       }
+    }
+  }
+`;
+export const ProductTypeFragmentDoc = gql`
+  fragment productType on ProductType {
+    id
+    name
+    hasVariants
+    productAttributes {
+      id
+      name
+    }
+    assignedVariantAttributes {
+      attribute {
+        id
+        name
+      }
+      variantSelection
     }
   }
 `;
@@ -14103,6 +14228,25 @@ export const ProductTypeCreateDocument = gql`
     }
   }
 `;
+export const ProductAttributeVariantSelectionDocument = gql`
+  mutation productAttributeVariantSelection(
+    $productTypeId: ID!
+    $attributeId: ID!
+  ) {
+    productAttributeAssignmentUpdate(
+      productTypeId: $productTypeId
+      operations: { id: $attributeId, variantSelection: true }
+    ) {
+      productType {
+        id
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`;
 export const ProductVariantChannelListingUpdateDocument = gql`
   mutation productVariantChannelListingUpdate(
     $id: ID!
@@ -14206,6 +14350,27 @@ export const AppDocument = gql`
         targetUrl
         secretKey
         isActive
+      }
+    }
+  }
+`;
+export const AttributeSyncDocument = gql`
+  query attributeSync($first: Int!, $after: String) {
+    attributes(first: $first, after: $after) {
+      pageInfo {
+        hasNextPage
+        startCursor
+        endCursor
+      }
+      edges {
+        node {
+          id
+          name
+          type
+          inputType
+          slug
+          valueRequired
+        }
       }
     }
   }
@@ -14629,6 +14794,9 @@ export const SaleorEntitySyncProductsDocument = gql`
         node {
           id
           name
+          productType {
+            ...productType
+          }
           category {
             id
           }
@@ -14640,6 +14808,7 @@ export const SaleorEntitySyncProductsDocument = gql`
       }
     }
   }
+  ${ProductTypeFragmentDoc}
   ${VariantFragmentDoc}
 `;
 export const SaleorProductVariantBasicDataDocument = gql`
@@ -14794,6 +14963,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
         options,
       ) as Promise<ProductTypeCreateMutation>;
     },
+    productAttributeVariantSelection(
+      variables: ProductAttributeVariantSelectionMutationVariables,
+      options?: C,
+    ): Promise<ProductAttributeVariantSelectionMutation> {
+      return requester<
+        ProductAttributeVariantSelectionMutation,
+        ProductAttributeVariantSelectionMutationVariables
+      >(
+        ProductAttributeVariantSelectionDocument,
+        variables,
+        options,
+      ) as Promise<ProductAttributeVariantSelectionMutation>;
+    },
     productVariantChannelListingUpdate(
       variables: ProductVariantChannelListingUpdateMutationVariables,
       options?: C,
@@ -14872,6 +15054,16 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
         variables,
         options,
       ) as Promise<AppQuery>;
+    },
+    attributeSync(
+      variables: AttributeSyncQueryVariables,
+      options?: C,
+    ): Promise<AttributeSyncQuery> {
+      return requester<AttributeSyncQuery, AttributeSyncQueryVariables>(
+        AttributeSyncDocument,
+        variables,
+        options,
+      ) as Promise<AttributeSyncQuery>;
     },
     saleorCronCategories(
       variables?: SaleorCronCategoriesQueryVariables,

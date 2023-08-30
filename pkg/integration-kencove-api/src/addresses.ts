@@ -1,10 +1,12 @@
-import { CountryCode, KencoveApiApp, PrismaClient } from "@eci/pkg/prisma";
+import { KencoveApiApp, PrismaClient } from "@eci/pkg/prisma";
 import { ILogger } from "@eci/pkg/logger";
 import { KencoveApiClient } from "./client";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { isSameHour, subHours, subYears } from "date-fns";
+import { subHours, subYears } from "date-fns";
 import { uniqueStringAddress } from "@eci/pkg/miscHelper/uniqueStringAddress";
 import { id } from "@eci/pkg/ids";
+import async from "async";
+import { countryCodeMatch } from "@eci/pkg/miscHelper/countryCodeMatch";
 
 interface KencoveApiAppAddressSyncServiceConfig {
   logger: ILogger;
@@ -18,6 +20,13 @@ export class KencoveApiAppAddressSyncService {
   private readonly db: PrismaClient;
 
   public readonly kencoveApiApp: KencoveApiApp;
+
+  /**
+   * Store the normalized name of addresses we already worked on.
+   * When we have a match, we can immdediately connect this kencoveApiAddress
+   * to the existing address in our DB
+   */
+  private readonly normalizedAddresses: Set<string> = new Set();
 
   private readonly cronState: CronStateHandler;
 
@@ -50,46 +59,34 @@ export class KencoveApiAppAddressSyncService {
     }
 
     const client = new KencoveApiClient(this.kencoveApiApp);
-    const addresses = await client.getAddresses(createdGte);
-    this.logger.info(`Found ${addresses.length} addresses to sync`);
-    const existingAddresses = await this.db.kencoveApiAddress.findMany({
-      where: {
-        kencoveApiAppId: this.kencoveApiApp.id,
-        id: {
-          in: addresses.map((a) => a.id),
-        },
-      },
-    });
+    const addressesYield = client.getAddressesStream(createdGte);
 
-    for (const address of addresses) {
-      if (!address.street || !address.city || !address.fullname) {
-        this.logger.warn(
-          `Address ${address.id} has no street/city/fullname.\
+    for await (const addresses of addressesYield) {
+      this.logger.info(`Found ${addresses.length} addresses to sync`);
+
+      await async.eachLimit(addresses, 10, async (address) => {
+        if (!address.street || !address.city || !address.fullname) {
+          this.logger.warn(
+            `Address ${address.id} has no street/city/fullname.\
            Skipping: ${JSON.stringify(address)}`,
-        );
-        continue;
-      }
-      const existingAddress = existingAddresses.find(
-        (a) => a.id === address.id,
-      );
+          );
+          return;
+        }
 
-      const createdAt = new Date(address.createdAt);
-      const updatedAt = new Date(address.updatedAt);
+        const createdAt = new Date(address.createdAt);
+        const updatedAt = new Date(address.updatedAt);
 
-      const normalizedName = uniqueStringAddress(address);
+        const normalizedName = uniqueStringAddress(address);
 
-      const countryCodeValid = Object.values(CountryCode).includes(
-        address.countryCode as any,
-      );
+        let internalAddressExisting = false;
+        if (this.normalizedAddresses.has(normalizedName)) {
+          internalAddressExisting = true;
+        }
 
-      /**
-       * Only update or create if the address does not exist or if the address
-       * has been updated since the last sync
-       */
-      if (
-        !existingAddress ||
-        !isSameHour(existingAddress.updatedAt, createdAt)
-      ) {
+        const countryCode = address.countryCode
+          ? countryCodeMatch(address.countryCode)
+          : undefined;
+
         const internalContact = await this.db.kencoveApiContact.findUnique({
           where: {
             id_kencoveApiAppId: {
@@ -99,38 +96,45 @@ export class KencoveApiAppAddressSyncService {
           },
         });
 
-        const internalAddress = await this.db.address.upsert({
-          where: {
+        const addrConnectOrCreate = {
+          connectOrCreate: {
+            where: {
+              normalizedName_tenantId: {
+                normalizedName,
+                tenantId: this.kencoveApiApp.tenantId,
+              },
+            },
+            create: {
+              id: id.id("address"),
+              normalizedName,
+              tenant: {
+                connect: {
+                  id: this.kencoveApiApp.tenantId,
+                },
+              },
+              street: address.street,
+              additionalAddressLine: address.additionalAddressLine,
+              plz: address.zip,
+              city: address.city,
+              countryCode,
+              company: address.company,
+              phone: address.phone,
+              fullname: address.fullname,
+              state: address.state,
+              contact: internalContact
+                ? { connect: { id: internalContact.contactId } }
+                : undefined,
+            },
+          },
+        };
+        const addrConnect = {
+          connect: {
             normalizedName_tenantId: {
               normalizedName,
               tenantId: this.kencoveApiApp.tenantId,
             },
           },
-          create: {
-            id: id.id("address"),
-            normalizedName,
-            tenant: {
-              connect: {
-                id: this.kencoveApiApp.tenantId,
-              },
-            },
-            street: address.street,
-            additionalAddressLine: address.additionalAddressLine,
-            plz: address.zip,
-            city: address.city,
-            countryCode: countryCodeValid
-              ? (address.countryCode as CountryCode)
-              : undefined,
-            company: address.company,
-            phone: address.phone,
-            fullname: address.fullname,
-            state: address.state,
-            contact: internalContact
-              ? { connect: { id: internalContact.contactId } }
-              : {},
-          },
-          update: {},
-        });
+        };
 
         await this.db.kencoveApiAddress.upsert({
           where: {
@@ -143,18 +147,31 @@ export class KencoveApiAppAddressSyncService {
             id: address.id,
             createdAt,
             updatedAt,
-            kencoveApiAppId: this.kencoveApiApp.id,
-            addressId: internalAddress.id,
+            kencoveApiApp: {
+              connect: {
+                id: this.kencoveApiApp.id,
+              },
+            },
+            address: internalAddressExisting
+              ? addrConnect
+              : addrConnectOrCreate,
           },
           update: {
             createdAt,
             updatedAt,
-            addressId: internalAddress.id,
+            address: {
+              update: {
+                contact: internalContact
+                  ? { connect: { id: internalContact.contactId } }
+                  : undefined,
+              },
+            },
           },
         });
-      }
-    }
 
+        this.normalizedAddresses.add(normalizedName);
+      });
+    }
     await this.cronState.set({ lastRun: now, lastRunStatus: "success" });
   }
 }

@@ -1,0 +1,29 @@
+fragment Values on AttributeValue {
+  id
+  inputType
+  name
+  plainText
+  reference
+  richText
+  slug
+}
+
+query attributeSync($first: Int!, $after: String) {
+  attributes(first: $first, after: $after) {
+    pageInfo {
+      hasNextPage
+      startCursor
+      endCursor
+    }
+    edges {
+      node {
+        id
+        name
+        type
+        inputType
+        slug
+        valueRequired
+      }
+    }
+  }
+}

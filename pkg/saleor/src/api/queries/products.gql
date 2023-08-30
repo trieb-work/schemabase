@@ -105,6 +105,23 @@ fragment variant on ProductVariant {
   }
 }
 
+fragment productType on ProductType {
+  id
+  name
+  hasVariants
+  productAttributes {
+    id
+    name
+  }
+  assignedVariantAttributes {
+    attribute {
+      id
+      name
+    }
+    variantSelection
+  }
+}
+
 query saleorEntitySyncProducts(
   $first: Int!
   $channel: String
@@ -127,6 +144,9 @@ query saleorEntitySyncProducts(
       node {
         id
         name
+        productType {
+          ...productType
+        }
         category {
           id
         }

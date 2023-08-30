@@ -1,17 +1,18 @@
 import type { ILogger } from "@eci/pkg/logger";
 import type { PrismaClient } from "@eci/pkg/prisma";
 import type { RuntimeContext, Workflow } from "@eci/pkg/scheduler/workflow";
-import { SaleorCategorySyncService } from "@eci/pkg/integration-saleor-entities/src/categories";
+import { SaleorAttributeSyncService } from "@eci/pkg/integration-saleor-entities/src/attributes";
 import { getSaleorClientAndEntry } from "@eci/pkg/saleor";
 
-export type SaleorCategorySyncWorkflowClients = {
+export type SaleorAttributeSyncWorkflowClients = {
   prisma: PrismaClient;
 };
-export type SaleorCategorySyncWorkflowConfig = {
+export type SaleorAttributeSyncWorkflowConfig = {
   installedSaleorAppId: string;
+  orderPrefix: string;
 };
 
-export class SaleorCategorySyncWf implements Workflow {
+export class SaleorAttributeSyncWf implements Workflow {
   private logger: ILogger;
 
   private prisma: PrismaClient;
@@ -20,35 +21,31 @@ export class SaleorCategorySyncWf implements Workflow {
 
   public constructor(
     ctx: RuntimeContext,
-    clients: SaleorCategorySyncWorkflowClients,
-    config: SaleorCategorySyncWorkflowConfig,
+    clients: SaleorAttributeSyncWorkflowClients,
+    config: SaleorAttributeSyncWorkflowConfig,
   ) {
     this.installedSaleorAppId = config.installedSaleorAppId;
     this.logger = ctx.logger.with({
-      workflow: SaleorCategorySyncWf.name,
+      workflow: SaleorAttributeSyncWf.name,
       installedSaleorAppId: this.installedSaleorAppId,
     });
     this.prisma = clients.prisma;
-    this.installedSaleorAppId = config.installedSaleorAppId;
   }
 
-  /**
-   * Sync all saleor category
-   */
   public async run(): Promise<void> {
-    this.logger.info("Starting saleor category sync workflow run");
+    this.logger.info("Starting saleor Attribute sync workflow run");
     const { client: saleorClient, installedSaleorApp } =
       await getSaleorClientAndEntry(this.installedSaleorAppId, this.prisma);
 
-    const saleorCategorySyncService = new SaleorCategorySyncService({
+    const saleorAttributeSyncService = new SaleorAttributeSyncService({
       logger: this.logger,
       saleorClient,
       db: this.prisma,
       installedSaleorApp: installedSaleorApp,
       tenantId: installedSaleorApp.saleorApp.tenantId,
     });
-    await saleorCategorySyncService.syncToEci();
-    await saleorCategorySyncService.syncFromEci();
-    this.logger.info("Finished saleor category sync workflow run");
+    await saleorAttributeSyncService.syncToEci();
+
+    this.logger.info("Finished saleor Attribute sync workflow run");
   }
 }

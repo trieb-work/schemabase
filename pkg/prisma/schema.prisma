@@ -10,7 +10,7 @@ generator dbml {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
@@ -37,7 +37,7 @@ enum eci_User_Tenant_Role {
 
 /// Mapping of user to tenant and their related rights. User tenant membership
 model eci_User_Tenant {
-  id     String   @id @default(cuid())
+  id String @id @default(cuid())
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -73,6 +73,36 @@ model Cookies {
 //  SALEOR SPECIFIC MODELS
 //
 // ------------------------------------------------------------------------------------------------
+
+model SaleorProductType {
+  /// Saleor Internal Id
+  id String
+
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String
+
+  productType   ProductType @relation(fields: [productTypeId], references: [id], onDelete: Cascade)
+  productTypeId String
+
+  @@unique([id, installedSaleorAppId])
+  @@index([productTypeId])
+  @@index([installedSaleorAppId])
+}
+
+model SaleorAttribute {
+  /// Saleor Internal Id
+  id String
+
+  attribute   Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  attributeId String
+
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String
+
+  @@unique([id, installedSaleorAppId])
+  @@index([attributeId])
+  @@index([installedSaleorAppId])
+}
 
 // Saleor specific model for orders.
 model SaleorOrder {
@@ -129,10 +159,8 @@ model SaleorCustomer {
   createdAt DateTime
   updatedAt DateTime
 
-  customer  Contact @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customer   Contact @relation(fields: [customerId], references: [id], onDelete: Cascade)
   customerId String
-
-
 
   installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
   installedSaleorAppId String
@@ -616,31 +644,27 @@ enum DatevContactType {
   DEBITOR
   KREDITOR
 }
+
 // DATEV model for debitoren, kreditoren
 model DatevContact {
   // we set the internal database id in this case!
-  id    String @id
+  id String @id
 
-  
   /// The datev ID has to follow the DATEV rules: for SKR04 10000-69999 = debitoren, 
   /// 70000-99999 = Kreditoren
   datevNummer Int
 
   type DatevContactType
 
-  contact Contact @relation(references: [id], fields: [contactId], onDelete: Cascade)
-  contactId  String
+  contact   Contact @relation(references: [id], fields: [contactId], onDelete: Cascade)
+  contactId String
 
-  datevApp  DatevApp @relation(references: [id], fields: [datevAppId], onDelete: Cascade)
+  datevApp   DatevApp @relation(references: [id], fields: [datevAppId], onDelete: Cascade)
   datevAppId String
 
   @@index([contactId])
   @@index([datevAppId])
-  
-
 }
-
-
 
 /// ==================================================== ///////
 
@@ -718,7 +742,6 @@ model Payment {
   @@index([paymentMethodId])
   @@index([mainContactId])
   @@index([orderId, tenantId])
-
 }
 
 /// categorize payments by payment method type
@@ -800,10 +823,10 @@ model Contact {
   lastName  String?
 
   /// is this contact a customer / debitor? Can be customer and/or vendor
-  customer  Boolean @default(true)
+  customer Boolean @default(true)
 
   /// is this contact a vendor / kreditor? Can be customer and/or vendor
-  vendor    Boolean @default(false)
+  vendor Boolean @default(false)
 
   orders   Order[]
   invoices Invoice[]
@@ -820,7 +843,7 @@ model Contact {
   datevContacts      DatevContact[]
   addresses          Address[]
   saleorCustomers    SaleorCustomer[]
-  kencoveApiContacts    KencoveApiContact[]
+  kencoveApiContacts KencoveApiContact[]
 
   /// If we have the users permission to send tracking emails
   trackingEmailsConsent   Boolean @default(true)
@@ -844,12 +867,12 @@ model Warehouse {
   // Lowercase, trim, whitespace remove, special characters remove
   normalizedName String
 
-  tenant             Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId           String
-  zohoWarehouse      ZohoWarehouse[]
-  saleorWarehouse    SaleorWarehouse[]
-  xentralProxyApp    XentralProxyApp[]
-  installedSaleorApp InstalledSaleorApp[]
+  tenant              Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId            String
+  zohoWarehouse       ZohoWarehouse[]
+  saleorWarehouse     SaleorWarehouse[]
+  xentralProxyApp     XentralProxyApp[]
+  installedSaleorApp  InstalledSaleorApp[]
   kencoveApiWarehouse KencoveApiWarehouse[]
 
   packageLineItems     PackageLineItem[]
@@ -925,6 +948,7 @@ model OrderLineItem {
   @@unique([uniqueString, tenantId])
   @@index([orderId])
   @@index([productVariantId])
+  @@index([warehouseId])
   @@index([uniqueString])
   @@index([tenantId])
   @@index([sku])
@@ -1036,7 +1060,7 @@ model Order {
 
   /// An order token, that can be used to pull this order unauthenticated.
   /// can be manually set, but we also use a cuid by default
-  token     String?     @default(cuid())
+  token String? @default(cuid())
 
   /// Order-Numbers have to be unique per Tenant!
   /// We use them as unique identifier between systems
@@ -1426,10 +1450,7 @@ model Address {
   @@index([updatedAt])
 }
 
-
-
 enum AttributeType {
-
   DROPDOWN
   MULTISELECT
   FILE
@@ -1442,7 +1463,6 @@ enum AttributeType {
   BOOLEAN
   DATE
   DATE_TIME
-
 }
 
 model Attribute {
@@ -1454,8 +1474,8 @@ model Attribute {
   name String
 
   /// normalized attribute name for internal mapping
-  normalizedName  String
-  type AttributeType
+  normalizedName String
+  type           AttributeType
 
   /// Is the attribute mandatory to be set, or can it be left blank
   required Boolean? @default(false)
@@ -1463,35 +1483,58 @@ model Attribute {
   /// An understandable slug
   slug String?
 
-  values  AttributeValue[]
+  values                AttributeValue[]
+  productTypeAttributes ProductTypeAttribute[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
   kencoveApiAttributes KencoveApiAttribute[]
+  saleorAttributes     SaleorAttribute[]
 
-  @@index([tenantId])
   @@unique([normalizedName, tenantId])
+  @@index([tenantId])
   @@index([normalizedName])
-
-
 }
 
+/// attributes values for attributes. Attributes
+/// can be assigned to products and variants
 model AttributeValue {
   // eci internal id
   id        String   @id
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  /// Represent value of the attribute value (e.g. color values for swatch attributes)
-  value     String?
+  /// Represent value of the attribute value, like text string. When hexColor is additionally used, you always need a string value as well 
+  value String
 
-  attribute Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  /// color values for swatch attributes
+  hexColor String?
+
+  /// We always set a normalized name for the attribute value. For example, if the value is the hex code for red, we set "red" as the normalized name
+  normalizedName String
+
+  attribute   Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
   attributeId String
 
-  @@index([attributeId])
+  /// When attribute is a product, this relation is set
+  product   Product? @relation(fields: [productId], references: [id])
+  productId String?
 
+  /// When attribute is a variant attribute, this relation is set
+  productVariant   ProductVariant? @relation(fields: [productVariantId], references: [id])
+  productVariantId String?
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  @@unique([normalizedName, attributeId, tenantId])
+  @@index([attributeId])
+  @@index([tenantId])
+  @@index([productId])
+  @@index([productVariantId])
 }
+
 /// Product tags are used to group products together. 
 /// They are not hierarchical, but flat. You can use generic tags like "Sale" or "New" or "Bestseller"
 model ProductTag {
@@ -1552,7 +1595,7 @@ model Category {
   products Product[]
 
   /// Is this category active or not. Old categories can be disabled
-  active  Boolean @default(true)
+  active Boolean @default(true)
 
   /// The description text of the category as HTML
   descriptionHTML String? @db.Text
@@ -1561,17 +1604,59 @@ model Category {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-
   /// The kencove categories this category is synced to
   kencoveApiCategories KencoveApiCategory[]
 
   // The saleor categories this category is synced to
-  saleorApiCategories SaleorCategory[]
+  saleorCategories SaleorCategory[]
 
   @@unique([normalizedName, tenantId])
   @@index([tenantId])
   @@index([id])
   @@index([parentCategoryId])
+}
+
+/// Product Types are like templates for products. They define which attributes a product has
+/// and if a product has variants
+model ProductType {
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// e.g., "Shirt", "Energizer", etc.
+  name                   String
+  normalizedName         String
+  /// Indicates if products of this type have variants
+  isVariant              Boolean
+  products               Product[]
+  /// Links to the attributes that belong to this product type. This relational table defines also if attributes are variant selection attributes or not
+  attributes             ProductTypeAttribute[] 
+  saleorProductTypes     SaleorProductType[]
+  kencoveApiProductTypes KencoveApiProductType[]
+  tenant                 Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId               String
+
+  @@unique([normalizedName, tenantId])
+  @@index([tenantId])
+}
+
+/// matching table between product types and attributes
+model ProductTypeAttribute {
+  id            String @id
+  productTypeId String
+
+  /// Indicates if the attribute is for product or variant.
+  isForVariant Boolean
+
+  /// Indicates if it's a "variant selection" attribute for multi-variant products, for example size or color
+  isVariantSelection Boolean
+
+  productType ProductType @relation(fields: [productTypeId], references: [id])
+  attribute   Attribute   @relation(fields: [attributeId], references: [id])
+  attributeId String
+
+  @@unique([productTypeId, attributeId]) // Ensures an attribute can be linked only once per product type
+  @@index([attributeId])
 }
 
 // The ECI internal Product model
@@ -1590,21 +1675,27 @@ model Product {
   // Where the product was produced. Important only for customs/tariffs
   countryOfOrigin CountryCode?
 
-  variants ProductVariant[]
-  tags     ProductTag[]
+  variants      ProductVariant[]
+  tags          ProductTag[]
+  productType   ProductType?     @relation(fields: [productTypeId], references: [id])
+  productTypeId String?
 
   /// The category this product belongs to
-  category Category? @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   categoryId String?
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
+  descriptionHTML String? @db.Text
+
+  attributes AttributeValue[]
 
   @@unique([name, tenantId])
   @@unique([normalizedName, tenantId])
   @@index([tenantId])
   @@index([categoryId])
+  @@index([productTypeId])
 }
 
 // The ECI internal ProductVariant Model. One product can have one ore many Product Variants
@@ -1625,7 +1716,6 @@ model ProductVariant {
 
   /// The weight in KG for this product variant
   weight Float?
-
 
   /// Product rating based on customer reviews from services like reviews.io
   averageRating Float?
@@ -1660,6 +1750,8 @@ model ProductVariant {
   saleorProductVariant SaleorProductVariant[]
 
   kencoveApiProductVariant KencoveApiProductVariant[]
+
+  attributes AttributeValue[]
 
   // Available physical stock over all warehouses
   stockOnHand Int?
@@ -1953,7 +2045,7 @@ model Package {
   /// A link to the carriers tracking page
   carrierTrackingUrl String?
   /// The related order to this package
-  order              Order?          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order              Order?         @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId            String?
   events             PackageEvent[]
 
@@ -2096,13 +2188,13 @@ model UPSTrackingApp {
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String @unique
-  
+
   /// From the developer portal. Is the same for sandbox and prod. API keys are multi-tenant by default
   /// so we might use them for multiple customer. It is not clear, how much traffic we can produce with one key
   /// Access key only auth is no longer working - we need Oauth2 now
-  accessKey   String?
+  accessKey String?
 
-  clientId String
+  clientId     String
   clientSecret String
 
   trackingIntegration   TrackingIntegration? @relation(fields: [trackingIntegrationId], references: [id])
@@ -2139,7 +2231,6 @@ model DatevApp {
   cronSchedule String @default("0 0 * * *")
   // Time in seconds how long one workflow can run before a timeout occurs.
   cronTimeout  Int    @default(800)
-
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String @unique
@@ -2184,12 +2275,12 @@ model KencoveApiApp {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String @unique
 
-  clientId     String
-  clientSecret String
+  clientId      String
+  clientSecret  String
   /// Token endpoint for the OAuth flow
   tokenEndpoint String
   /// The actual api endpoint. Is different for sandbox and prod
-  apiEndpoint String
+  apiEndpoint   String
 
   /// The scopes we need to access the api. Just comma separated list
   scope String
@@ -2198,24 +2289,37 @@ model KencoveApiApp {
   /// This is a comma separated list of category ids
   skipCategories String?
 
-  kencoveApiContacts KencoveApiContact[]
-  kencoveApiAddresses KencoveApiAddress[]
+  kencoveApiContacts        KencoveApiContact[]
+  kencoveApiAddresses       KencoveApiAddress[]
   kencoveApiProductVariants KencoveApiProductVariant[]
-  kencoveApiAttributes KencoveApiAttribute[]
-  kencoveApiCategories KencoveApiCategory[]
-  kencoveApiPackages KencoveApiPackage[]
-  kencoveApiWarehouses KencoveApiWarehouse[]
-  kencoveApiOrders KencoveApiOrder[]
+  kencoveApiAttributes      KencoveApiAttribute[]
+  kencoveApiCategories      KencoveApiCategory[]
+  kencoveApiPackages        KencoveApiPackage[]
+  kencoveApiWarehouses      KencoveApiWarehouse[]
+  kencoveApiOrders          KencoveApiOrder[]
+  kencoveApiProductTypes    KencoveApiProductType[]
 
   @@index([tenantId])
+}
 
+model KencoveApiProductType {
+  id String
 
+  kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id], onDelete: Cascade)
+  kencoveApiAppId String
+
+  productType   ProductType @relation(fields: [productTypeId], references: [id], onDelete: Cascade)
+  productTypeId String
+
+  @@unique([id, kencoveApiAppId])
+  @@index([productTypeId])
+  @@index([kencoveApiAppId])
 }
 
 model KencoveApiWarehouse {
   id String
 
-  warehouse Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
   warehouseId String
 
   kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id], onDelete: Cascade)
@@ -2232,7 +2336,7 @@ model KencoveApiOrder {
   createdAt DateTime
   updatedAt DateTime
 
-  order   Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId String
 
   kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id], onDelete: Cascade)
@@ -2253,7 +2357,7 @@ model KencoveApiCategory {
   kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id], onDelete: Cascade)
   kencoveApiAppId String
 
-  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   categoryId String
 
   @@unique([id, kencoveApiAppId])
@@ -2266,9 +2370,9 @@ model KencoveApiAttribute {
   id String
 
   createdAt DateTime
-  updatedAt DateTime 
+  updatedAt DateTime
 
-  attribute Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  attribute   Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
   attributeId String
 
   kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id], onDelete: Cascade)
@@ -2277,7 +2381,6 @@ model KencoveApiAttribute {
   @@unique([id, kencoveApiAppId])
   @@index([attributeId])
   @@index([kencoveApiAppId])
-
 }
 
 model KencoveApiPackage {
@@ -2286,7 +2389,7 @@ model KencoveApiPackage {
   createdAt DateTime
   updatedAt DateTime
 
-  package Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
   packageId String
 
   kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id], onDelete: Cascade)
@@ -2296,7 +2399,6 @@ model KencoveApiPackage {
   @@index([packageId])
   @@index([kencoveApiAppId])
 }
-
 
 /// Kencove custom productVariant model
 model KencoveApiProductVariant {
@@ -2319,7 +2421,6 @@ model KencoveApiProductVariant {
   @@index([kencoveApiAppId])
   @@index([productId])
   @@index([productId, kencoveApiAppId])
-
 }
 
 /// Kencove custom address model. Relation between internal address
@@ -2336,7 +2437,6 @@ model KencoveApiAddress {
   kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id])
   kencoveApiAppId String
 
-
   @@unique([id, kencoveApiAppId])
   @@index([kencoveApiAppId])
   @@index([addressId])
@@ -2345,7 +2445,7 @@ model KencoveApiAddress {
 /// Kencove custom customer model. Relation between internal customer
 /// object and kencove customer object
 model KencoveApiContact {
-  id String
+  id        String
   contact   Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
   contactId String
 
@@ -2355,7 +2455,6 @@ model KencoveApiContact {
   @@unique([id, kencoveApiAppId])
   @@index([kencoveApiAppId])
   @@index([contactId])
-
 }
 
 model ReviewsioApp {
@@ -2374,7 +2473,6 @@ model ReviewsioApp {
   tenantId String
 
   @@index([tenantId])
-
 }
 
 model ZohoApp {
@@ -2403,7 +2501,7 @@ model ZohoApp {
   customFieldTrackingNotifications String?
 
   /// the cf_api name where we store the DATEV kreditor / debitor ID, if we have a running datev integration
-  customFieldDatevCustomerId      String?
+  customFieldDatevCustomerId String?
 
   cronSchedule String @default("*/30 * * * *")
   cronTimeout  Int    @default(800)
@@ -2419,23 +2517,23 @@ model ZohoApp {
   syncPackages      Boolean @default(false)
   syncTaxes         Boolean @default(false)
 
-  logisticsIntegrations    LogisticsIntegration[]
-  trackingIntegrations     TrackingIntegration[]
+  logisticsIntegrations LogisticsIntegration[]
+  trackingIntegrations  TrackingIntegration[]
 
-  webhooks              IncomingWebhook[]
-  zohoPayments          ZohoPayment[]
-  zohoItems             ZohoItem[]
-  zohoWarehouses        ZohoWarehouse[]
-  zohoContacts          ZohoContact[]
-  zohoInvoices          ZohoInvoice[]
-  zohoSalesOrder        ZohoSalesOrder[]
-  zohoPackageLineItems  ZohoPackageLineItem[]
-  zohoOrderLineItems    ZohoOrderLineItem[]
-  zohoTaxes             ZohoTax[]
-  zohoContactPersons    ZohoContactPerson[]
-  zohoAddresses         ZohoAddress[]
-  zohoPackages          ZohoPackage[]
-  zohoAccounts          ZohoBankAccount[]
+  webhooks             IncomingWebhook[]
+  zohoPayments         ZohoPayment[]
+  zohoItems            ZohoItem[]
+  zohoWarehouses       ZohoWarehouse[]
+  zohoContacts         ZohoContact[]
+  zohoInvoices         ZohoInvoice[]
+  zohoSalesOrder       ZohoSalesOrder[]
+  zohoPackageLineItems ZohoPackageLineItem[]
+  zohoOrderLineItems   ZohoOrderLineItem[]
+  zohoTaxes            ZohoTax[]
+  zohoContactPersons   ZohoContactPerson[]
+  zohoAddresses        ZohoAddress[]
+  zohoPackages         ZohoPackage[]
+  zohoAccounts         ZohoBankAccount[]
 
   @@index([tenantId])
   @@index([enabled])
@@ -2530,7 +2628,6 @@ model InstalledSaleorApp {
   syncTaxes         Boolean @default(false)
   syncCategories    Boolean @default(false)
 
-
   productDataFeedIntegration ProductDataFeedIntegration[]
   saleorPayment              SaleorPayment[]
   saleorPaymentGateway       SaleorPaymentGateway[]
@@ -2542,6 +2639,8 @@ model InstalledSaleorApp {
   saleorPackage              SaleorPackage[]
   saleorCustomers            SaleorCustomer[]
   saleorCategory             SaleorCategory[]
+  saleorProductType          SaleorProductType[]
+  saleorAttribute            SaleorAttribute[]
 
   @@unique([domain, channelSlug])
   @@index([saleorAppId, domain])
@@ -2594,11 +2693,13 @@ model Tenant {
   datevApps                   DatevApp[]
   UPSTrackingApps             UPSTrackingApp[]
   attributes                  Attribute[]
+  attributeValues             AttributeValue[]
   rewiewsioApps               ReviewsioApp[]
   eci_User_Tenants            eci_User_Tenant[]
   kencoveApiApps              KencoveApiApp[]
   productTags                 ProductTag[]
   categories                  Category[]
+  productTypes                ProductType[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
@@ -2759,7 +2860,6 @@ model LogisticsIntegration {
   @@index([tenantId])
   @@index([zohoAppId])
 }
-
 
 // Every tenant can have multiple strapi instances
 model StrapiApp {
