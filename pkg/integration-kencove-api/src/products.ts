@@ -648,7 +648,7 @@ export class KencoveApiAppProductSyncService {
       const normalizedProductName = normalizeStrings.productNames(
         productVariant.productName,
       );
-      const productType = await this.db.kencoveApiProductType.findUnique({
+      const kenProductType = await this.db.kencoveApiProductType.findUnique({
         where: {
           id_kencoveApiAppId: {
             id: productVariant.productType.id,
@@ -656,6 +656,13 @@ export class KencoveApiAppProductSyncService {
           },
         },
       });
+      if (!kenProductType) {
+        this.logger.error(
+          `Could not find product type ${productVariant.productType.name}. ` +
+            "This should not happen, as we created the product type in the previous step.",
+        );
+        continue;
+      }
 
       if (
         !existingProductVariant ||
@@ -721,13 +728,11 @@ export class KencoveApiAppProductSyncService {
                         name: productVariant.productName,
                         normalizedName: normalizedProductName,
                         descriptionHTML: productVariant.productDescription,
-                        productType: productType?.productTypeId
-                          ? {
-                              connect: {
-                                id: productType?.productTypeId,
-                              },
-                            }
-                          : undefined,
+                        productType: {
+                          connect: {
+                            id: kenProductType.productTypeId,
+                          },
+                        },
                         category: category
                           ? { connect: { id: category } }
                           : undefined,
@@ -795,9 +800,11 @@ export class KencoveApiAppProductSyncService {
                 product: {
                   update: {
                     descriptionHTML: productVariant.productDescription,
-                    productType: productType
-                      ? { connect: { id: productType.id } }
-                      : undefined,
+                    productType: {
+                      connect: {
+                        id: kenProductType.productTypeId,
+                      },
+                    },
                   },
                 },
               },
