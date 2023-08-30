@@ -13142,6 +13142,24 @@ export type ProductTypeCreateMutation = {
   } | null;
 };
 
+export type ProductAttributeVariantSelectionMutationVariables = Exact<{
+  productTypeId: Scalars["ID"];
+  attributeId: Scalars["ID"];
+}>;
+
+export type ProductAttributeVariantSelectionMutation = {
+  __typename?: "Mutation";
+  productAttributeAssignmentUpdate?: {
+    __typename?: "ProductAttributeAssignmentUpdate";
+    productType?: { __typename?: "ProductType"; id: string } | null;
+    errors: Array<{
+      __typename?: "ProductError";
+      field?: string | null;
+      message?: string | null;
+    }>;
+  } | null;
+};
+
 export type ProductVariantChannelListingUpdateMutationVariables = Exact<{
   id: Scalars["ID"];
   input:
@@ -14210,6 +14228,25 @@ export const ProductTypeCreateDocument = gql`
     }
   }
 `;
+export const ProductAttributeVariantSelectionDocument = gql`
+  mutation productAttributeVariantSelection(
+    $productTypeId: ID!
+    $attributeId: ID!
+  ) {
+    productAttributeAssignmentUpdate(
+      productTypeId: $productTypeId
+      operations: { id: $attributeId, variantSelection: true }
+    ) {
+      productType {
+        id
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`;
 export const ProductVariantChannelListingUpdateDocument = gql`
   mutation productVariantChannelListingUpdate(
     $id: ID!
@@ -14925,6 +14962,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
         variables,
         options,
       ) as Promise<ProductTypeCreateMutation>;
+    },
+    productAttributeVariantSelection(
+      variables: ProductAttributeVariantSelectionMutationVariables,
+      options?: C,
+    ): Promise<ProductAttributeVariantSelectionMutation> {
+      return requester<
+        ProductAttributeVariantSelectionMutation,
+        ProductAttributeVariantSelectionMutationVariables
+      >(
+        ProductAttributeVariantSelectionDocument,
+        variables,
+        options,
+      ) as Promise<ProductAttributeVariantSelectionMutation>;
     },
     productVariantChannelListingUpdate(
       variables: ProductVariantChannelListingUpdateMutationVariables,

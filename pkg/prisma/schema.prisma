@@ -1623,12 +1623,14 @@ model ProductType {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // e.g., "Shirt", "Energizer", etc.
+  /// e.g., "Shirt", "Energizer", etc.
   name                   String
   normalizedName         String
-  isVariant              Boolean // Indicates if products of this type have variants
+  /// Indicates if products of this type have variants
+  isVariant              Boolean
   products               Product[]
-  attributes             ProductTypeAttribute[] // Links to the attributes that belong to this product type
+  /// Links to the attributes that belong to this product type. This relational table defines also if attributes are variant selection attributes or not
+  attributes             ProductTypeAttribute[] 
   saleorProductTypes     SaleorProductType[]
   kencoveApiProductTypes KencoveApiProductType[]
   tenant                 Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)

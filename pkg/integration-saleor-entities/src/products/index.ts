@@ -1,7 +1,11 @@
 /* eslint-disable max-len */
 import { ILogger } from "@eci/pkg/logger";
 import {
+  ProductAttributeVariantSelectionMutation,
+  ProductAttributeVariantSelectionMutationVariables,
   ProductCreateMutation,
+  ProductTypeCreateMutation,
+  ProductTypeCreateMutationVariables,
   ProductTypeFragment,
   ProductVariantStockEntryUpdateMutation,
   queryWithPagination,
@@ -58,6 +62,12 @@ interface SaleorProductSyncServiceConfig {
         productType: string;
       };
     }) => Promise<ProductCreateMutation>;
+    productTypeCreate: (
+      variables: ProductTypeCreateMutationVariables,
+    ) => Promise<ProductTypeCreateMutation>;
+    productAttributeVariantSelection: (
+      variables: ProductAttributeVariantSelectionMutationVariables,
+    ) => Promise<ProductAttributeVariantSelectionMutation>;
   };
   channelSlug?: string;
   installedSaleorAppId: string;
@@ -106,6 +116,12 @@ export class SaleorProductSyncService {
         productType: string;
       };
     }) => Promise<ProductCreateMutation>;
+    productTypeCreate: (
+      variables: ProductTypeCreateMutationVariables,
+    ) => Promise<ProductTypeCreateMutation>;
+    productAttributeVariantSelection: (
+      variables: ProductAttributeVariantSelectionMutationVariables,
+    ) => Promise<ProductAttributeVariantSelectionMutation>;
   };
 
   public readonly channelSlug?: string;
@@ -213,6 +229,108 @@ export class SaleorProductSyncService {
       },
       update: {},
     });
+  }
+
+  private async createProductTypeinSaleor() {
+    const productTypesToCreate = await this.db.productType.findMany({
+      where: {
+        saleorProductTypes: {
+          none: {
+            installedSaleorAppId: this.installedSaleorAppId,
+          },
+        },
+      },
+      include: {
+        attributes: {
+          include: {
+            attribute: {
+              include: {
+                saleorAttributes: {
+                  where: {
+                    installedSaleorAppId: this.installedSaleorAppId,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+    if (productTypesToCreate.length > 0) {
+      this.logger.info(
+        `Found ${productTypesToCreate.length} product types to create in Saleor`,
+        { productTypesToCreate: productTypesToCreate.map((x) => x.name) },
+      );
+      for (const prodType of productTypesToCreate) {
+        const productAttributes = prodType.attributes
+          .filter((a) => !a.isForVariant)
+          .filter((a) => a.attribute.saleorAttributes.length > 0)
+          .map((a) => a.attribute.saleorAttributes[0].id);
+        const variantAttributes = prodType.attributes
+          .filter((a) => a.isForVariant)
+          .filter((a) => a.attribute.saleorAttributes.length > 0)
+          .map((a) => a.attribute.saleorAttributes[0].id);
+        const variantSelectionAttributes = prodType.attributes
+          .filter((a) => a.isVariantSelection)
+          .filter((a) => a.attribute.saleorAttributes.length > 0)
+          .map((a) => a.attribute.saleorAttributes[0].id);
+
+        const productTypeCreateResponse =
+          await this.saleorClient.productTypeCreate({
+            input: {
+              name: prodType.name,
+              hasVariants: prodType.isVariant,
+              productAttributes,
+              variantAttributes,
+            },
+          });
+        if (productTypeCreateResponse.productTypeCreate?.errors) {
+          this.logger.error(
+            `Error creating product type ${
+              prodType.name
+            } in Saleor: ${JSON.stringify(
+              productTypeCreateResponse.productTypeCreate.errors,
+            )}`,
+          );
+          return;
+        }
+        if (!productTypeCreateResponse?.productTypeCreate?.productType?.id) {
+          this.logger.error(
+            `Error creating product type ${prodType.name} in Saleor: No product type id returned`,
+          );
+          return;
+        }
+        const saleorProdTypeId =
+          productTypeCreateResponse.productTypeCreate.productType.id;
+        /**
+         * Manually set variant attributes as variant selection attributes
+         */
+        for (const selectionAttribute of variantSelectionAttributes) {
+          await this.saleorClient.productAttributeVariantSelection({
+            attributeId: selectionAttribute,
+            productTypeId: saleorProdTypeId,
+          });
+        }
+        this.logger.info(
+          `Successfully created product type ${prodType.name} in Saleor`,
+        );
+        await this.db.saleorProductType.create({
+          data: {
+            id: productTypeCreateResponse.productTypeCreate.productType.id,
+            installedSaleorApp: {
+              connect: {
+                id: this.installedSaleorAppId,
+              },
+            },
+            productType: {
+              connect: {
+                id: prodType.id,
+              },
+            },
+          },
+        });
+      }
+    }
   }
 
   /**
@@ -645,24 +763,7 @@ export class SaleorProductSyncService {
     /**
      * Get all product types, that are not yet created in Saleor
      */
-    const productTypesToCreate = await this.db.productType.findMany({
-      where: {
-        saleorProductTypes: {
-          none: {
-            installedSaleorAppId: this.installedSaleorAppId,
-          },
-        },
-      },
-      include: {
-        attributes: true,
-      },
-    });
-    if (productTypesToCreate.length > 0) {
-      this.logger.info(
-        `Found ${productTypesToCreate.length} product types to create in Saleor`,
-        { productTypesToCreate: productTypesToCreate.map((x) => x.name) },
-      );
-    }
+    await this.createProductTypeinSaleor();
 
     /**
      * Get all products, that are not yet create in Saleor. Select only
