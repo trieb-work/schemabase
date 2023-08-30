@@ -360,7 +360,15 @@ export class SaleorProductSyncService {
           include: {
             attributes: {
               include: {
-                attribute: true,
+                attribute: {
+                  include: {
+                    saleorAttributes: {
+                      where: {
+                        installedSaleorAppId: this.installedSaleorAppId,
+                      },
+                    },
+                  },
+                },
               },
             },
             productType: {
@@ -398,6 +406,8 @@ export class SaleorProductSyncService {
         } products to create in Saleor: ${productsToCreate.map((p) => p.sku)}`,
       );
       for (const product of productsToCreate) {
+        this.logger.info(`Creating product ${product.sku} in Saleor`);
+
         const productType = product.product.productType;
         if (!productType) {
           this.logger.warn(
@@ -405,19 +415,22 @@ export class SaleorProductSyncService {
           );
           continue;
         }
-        // const attributes = product.product.attributes.map((attribute) => ({
-        //   id: attribute.id,
-        //   values: attribute.values.map((value) => value.name),
-        // }));
+
         const saleorCategoryId =
-          product.product.category?.saleorCategories[0].id;
+          product.product.category?.saleorCategories[0]?.id;
         if (!saleorCategoryId) {
           this.logger.warn(`Product ${product.sku} has no category. Skipping`);
           continue;
         }
+        const attributes = product.product.attributes
+          .filter((a) => a.attribute.saleorAttributes.length > 0)
+          .map((a) => ({
+            id: a.attribute.saleorAttributes[0].id,
+            values: [a.value],
+          }));
         const productCreateResponse = await this.saleorClient.productCreate({
           input: {
-            attributes: undefined,
+            attributes,
             category: saleorCategoryId,
             chargeTaxes: true,
             collections: [],
