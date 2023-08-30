@@ -44,6 +44,8 @@ export class KencoveApiAppOrderSyncService {
    */
   private addressCache: Map<string, string> = new Map();
 
+  private mainContactCache: Map<string, string> = new Map();
+
   public constructor(config: KencoveApiAppOrderSyncServiceConfig) {
     this.logger = config.logger;
     this.db = config.db;
@@ -60,8 +62,15 @@ export class KencoveApiAppOrderSyncService {
    * Takes the order and creates the contact
    * internally if needed. Returns the internal contact Id
    */
-  private async syncMainContact(order: KencoveApiOrder) {
+  private async syncMainContact(order: KencoveApiOrder): Promise<string> {
     const email = order.billingAddress.email.toLowerCase();
+    if (this.mainContactCache.has(email)) {
+      const contactId = this.mainContactCache.get(email);
+      if (!contactId) {
+        throw new Error("Doing this just for typescript");
+      }
+      return contactId;
+    }
     const billingAddress = order.billingAddress;
     const existingContact = await this.db.contact.upsert({
       where: {
@@ -99,6 +108,7 @@ export class KencoveApiAppOrderSyncService {
       },
       update: {},
     });
+    this.mainContactCache.set(email, existingContact.id);
     return existingContact.id;
   }
 
