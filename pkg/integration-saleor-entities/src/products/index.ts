@@ -4,6 +4,7 @@ import {
   ProductAttributeVariantSelectionMutation,
   ProductAttributeVariantSelectionMutationVariables,
   ProductCreateMutation,
+  ProductCreateMutationVariables,
   ProductTypeCreateMutation,
   ProductTypeCreateMutationVariables,
   ProductTypeFragment,
@@ -21,6 +22,7 @@ import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils";
 import { subHours, subYears } from "date-fns";
+import { editorJsHelper } from "../editorjs";
 
 interface SaleorProductSyncServiceConfig {
   saleorClient: {
@@ -45,23 +47,9 @@ interface SaleorProductSyncServiceConfig {
         __typename?: "MetadataItem" | undefined;
       }[];
     }) => Promise<SaleorUpdateMetadataMutation>;
-    productCreate: (variables: {
-      input: {
-        attributes:
-          | {
-              id: string;
-              values: string[];
-            }[]
-          | undefined;
-        category: string;
-        chargeTaxes: boolean;
-        collections: string[];
-        description: string | undefined;
-        name: string;
-        weight: number | undefined;
-        productType: string;
-      };
-    }) => Promise<ProductCreateMutation>;
+    productCreate: (
+      variables: ProductCreateMutationVariables,
+    ) => Promise<ProductCreateMutation>;
     productTypeCreate: (
       variables: ProductTypeCreateMutationVariables,
     ) => Promise<ProductTypeCreateMutation>;
@@ -99,23 +87,9 @@ export class SaleorProductSyncService {
         __typename?: "MetadataItem" | undefined;
       }[];
     }) => Promise<SaleorUpdateMetadataMutation>;
-    productCreate: (variables: {
-      input: {
-        attributes:
-          | {
-              id: string;
-              values: string[];
-            }[]
-          | undefined;
-        category: string;
-        chargeTaxes: boolean;
-        collections: string[];
-        description: string | undefined;
-        name: string;
-        weight: number | undefined;
-        productType: string;
-      };
-    }) => Promise<ProductCreateMutation>;
+    productCreate: (
+      variables: ProductCreateMutationVariables,
+    ) => Promise<ProductCreateMutation>;
     productTypeCreate: (
       variables: ProductTypeCreateMutationVariables,
     ) => Promise<ProductTypeCreateMutation>;
@@ -415,6 +389,12 @@ export class SaleorProductSyncService {
           );
           continue;
         }
+        /**
+         * The description as editorjs json
+         */
+        const description = product.product.descriptionHTML
+          ? await editorJsHelper.HTMLToEditorJS(product.product.descriptionHTML)
+          : undefined;
 
         const saleorCategoryId =
           product.product.category?.saleorCategories[0]?.id;
@@ -434,7 +414,7 @@ export class SaleorProductSyncService {
             category: saleorCategoryId,
             chargeTaxes: true,
             collections: [],
-            description: undefined,
+            description,
             name: product.product.name,
             weight: product.weight ?? undefined,
             productType: productType.saleorProductTypes[0].id,

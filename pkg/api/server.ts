@@ -1,24 +1,17 @@
 import { ILogger } from "@eci/pkg/logger";
-import { ApolloServer } from "apollo-server-micro";
+import { ApolloServer } from "@apollo/server";
+import { startServerAndCreateNextHandler } from "@as-integrations/next";
 
 import { application } from "./application";
-import { context } from "./context";
-import { DB } from "./datasources";
-import { ApolloServerPluginLandingPageLocalDefault } from "apollo-server-core";
+import { Context, context } from "./context";
 export interface ServerConfig {
   logger?: ILogger;
 }
 
-export const server = (config?: ServerConfig): ApolloServer => {
-  return new ApolloServer({
-    schema: application.schema,
-    executor: application.createApolloExecutor(),
-    context,
-    dataSources: () => ({
-      db: new DB(),
-    }),
-    logger: config?.logger,
-    introspection: true,
-    plugins: [ApolloServerPluginLandingPageLocalDefault()],
-  });
-};
+const server = new ApolloServer<Context>({
+  schema: application.schema,
+  introspection: true,
+  plugins: [],
+});
+
+export default startServerAndCreateNextHandler(server, { context });

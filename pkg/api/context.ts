@@ -1,10 +1,10 @@
 import { Claims, JWT } from "@eci/pkg/auth";
 import { ILogger, Logger } from "@eci/pkg/logger";
 import { AuthenticationError, AuthorizationError } from "@eci/pkg/errors";
-import { IncomingMessage } from "http";
 import { z } from "zod";
 import { Permission, permissionsValidation, RBAC } from "../auth";
-import { DataSources } from "./datasources";
+import { DB, DataSources } from "./datasources";
+import { NextApiRequest } from "next";
 
 export interface Context {
   dataSources: DataSources;
@@ -17,10 +17,10 @@ export interface Context {
   currentUserId: string | null;
 }
 
-export const context = (ctx: { req: IncomingMessage }) => {
+export const context = async (ctx: NextApiRequest) => {
   const logger = new Logger();
   const authenticateUser = async (): Promise<Claims> => {
-    const token = ctx.req.headers?.authorization;
+    const token = ctx.headers?.authorization;
     if (!token) {
       throw new AuthenticationError("missing authorization header");
     }
@@ -37,7 +37,7 @@ export const context = (ctx: { req: IncomingMessage }) => {
 
   const authorizeUser = async (
     requiredPermissions: Permission[],
-    authorize?: (claims: Claims) => Promise<void>,
+    authorize?: (claims: Claims) => void | Promise<void>,
   ): Promise<Claims> => {
     const claims = await authenticateUser();
 
@@ -69,5 +69,7 @@ export const context = (ctx: { req: IncomingMessage }) => {
     authenticateUser,
     authorizeUser,
     logger,
+    dataSources: { db: new DB() },
+    currentUserId: null,
   };
 };
