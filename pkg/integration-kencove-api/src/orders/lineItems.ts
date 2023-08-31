@@ -3,6 +3,7 @@ import { KencoveApiOrder } from "../types";
 import { ILogger } from "@eci/pkg/logger";
 import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { id } from "@eci/pkg/ids";
+import { normalizeStrings } from "@eci/pkg/normalization";
 
 /**
  * takes the order and makes sure, that orderline items
@@ -62,8 +63,50 @@ const apiLineItemsWithSchemabase = async (
     `Working on lineItems: (create: ${lineItemsToCreate.length}` +
       `/ delete: ${lineItemsToDelete.length})`,
   );
+
   await Promise.all(
-    lineItemsToCreate.map(async (lineItemToCreate) => {
+    lineItemsToCreate.map(async (ol) => {
+      const productName = ol.description.replace(/\[.*?\]\s/g, "");
+      const normalizedName = normalizeStrings.productNames(productName);
+      const productVariant = {
+        connectOrCreate: {
+          where: {
+            sku_tenantId: {
+              sku: ol.itemCode,
+              tenantId: tenantId,
+            },
+          },
+          create: {
+            id: id.id("variant"),
+            sku: ol.itemCode,
+            tenant: {
+              connect: {
+                id: tenantId,
+              },
+            },
+            product: {
+              connectOrCreate: {
+                where: {
+                  normalizedName_tenantId: {
+                    normalizedName,
+                    tenantId: tenantId,
+                  },
+                },
+                create: {
+                  id: id.id("product"),
+                  normalizedName,
+                  name: productName,
+                  tenant: {
+                    connect: {
+                      id: tenantId,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
       await db.orderLineItem.create({
         data: {
           id: id.id("lineItem"),
@@ -72,21 +115,14 @@ const apiLineItemsWithSchemabase = async (
               id: existingOrderId,
             },
           },
-          productVariant: {
-            connect: {
-              sku_tenantId: {
-                sku: lineItemToCreate.itemCode,
-                tenantId: tenantId,
-              },
-            },
-          },
-          quantity: lineItemToCreate.quantity,
+          productVariant,
+          quantity: ol.quantity,
           tenant: {
             connect: {
               id: tenantId,
             },
           },
-          uniqueString: lineItemToCreate.uniqueString,
+          uniqueString: ol.uniqueString,
         },
       });
     }),
