@@ -22,6 +22,7 @@ import {
   SaleorCronCategoriesQuery,
   queryWithPagination,
   CategoryCreateMutation,
+  CategoryCreateMutationVariables,
 } from "@eci/pkg/saleor";
 import { subHours, subYears } from "date-fns";
 
@@ -31,11 +32,9 @@ interface SaleorCategorySyncServiceConfig {
       first: number;
       after: string;
     }) => Promise<SaleorCronCategoriesQuery>;
-    categoryCreate: (variables: {
-      input: {
-        name: string;
-      };
-    }) => Promise<CategoryCreateMutation>;
+    categoryCreate: (
+      variables: CategoryCreateMutationVariables,
+    ) => Promise<CategoryCreateMutation>;
   };
   installedSaleorApp: InstalledSaleorApp;
   tenantId: string;
@@ -53,11 +52,9 @@ export class SaleorCategorySyncService {
       first: number;
       after: string;
     }) => Promise<SaleorCronCategoriesQuery>;
-    categoryCreate: (variables: {
-      input: {
-        name: string;
-      };
-    }) => Promise<CategoryCreateMutation>;
+    categoryCreate: (
+      variables: CategoryCreateMutationVariables,
+    ) => Promise<CategoryCreateMutation>;
   };
 
   private installedSaleorApp: InstalledSaleorApp;
@@ -361,11 +358,15 @@ export class SaleorCategorySyncService {
    * Takes our internal category and creates a new category in Saleor
    * @param category
    */
-  private async createCategoryInSaleor(category: Category) {
+  private async createCategoryInSaleor(
+    category: Category,
+    saleorParentCategoryId: string | null,
+  ) {
     const response = await this.saleorClient.categoryCreate({
       input: {
         name: category.name,
       },
+      parent: saleorParentCategoryId,
     });
     if (!response?.categoryCreate?.category || response.categoryCreate.errors) {
       this.logger.error(
@@ -390,6 +391,7 @@ export class SaleorCategorySyncService {
         },
       },
     });
+    this.logger.info(`Created category in saleor: ${category.name}`);
   }
 
   /**
@@ -423,6 +425,29 @@ export class SaleorCategorySyncService {
         },
         active: true,
       },
+      include: {
+        parentCategory: {
+          include: {
+            saleorCategories: {
+              where: {
+                installedSaleorAppId: this.installedSaleorApp.id,
+              },
+            },
+          },
+        },
+        childrenCategories: {
+          orderBy: {
+            childrenCategories: {
+              _count: "asc",
+            },
+          },
+        },
+        saleorCategories: {
+          where: {
+            installedSaleorAppId: this.installedSaleorApp.id,
+          },
+        },
+      },
     });
 
     this.logger.info(
@@ -430,7 +455,19 @@ export class SaleorCategorySyncService {
     );
 
     for (const category of categories) {
-      await this.createCategoryInSaleor(category);
+      if (
+        category.parentCategoryId &&
+        !category.parentCategory?.saleorCategories?.[0]?.id
+      ) {
+        this.logger.info(
+          `Parent category of ${category.name} does not exist in saleor. Skipping`,
+        );
+        continue;
+      }
+      await this.createCategoryInSaleor(
+        category,
+        category.parentCategory?.saleorCategories?.[0]?.id,
+      );
     }
 
     const categoriesToUpdate = await this.db.category.findMany({

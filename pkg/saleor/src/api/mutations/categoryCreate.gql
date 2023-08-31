@@ -1,5 +1,5 @@
-mutation categoryCreate($input: CategoryInput!) {
-  categoryCreate(input: $input) {
+mutation categoryCreate($input: CategoryInput!, $parent: ID) {
+  categoryCreate(input: $input, parent: $parent) {
     category {
       id
     }
