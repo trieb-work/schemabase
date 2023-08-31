@@ -8,6 +8,8 @@ import {
   ProductTypeCreateMutation,
   ProductTypeCreateMutationVariables,
   ProductTypeFragment,
+  ProductVariantBulkCreateMutation,
+  ProductVariantBulkCreateMutationVariables,
   ProductVariantStockEntryUpdateMutation,
   queryWithPagination,
   SaleorEntitySyncProductsQuery,
@@ -56,6 +58,9 @@ interface SaleorProductSyncServiceConfig {
     productAttributeVariantSelection: (
       variables: ProductAttributeVariantSelectionMutationVariables,
     ) => Promise<ProductAttributeVariantSelectionMutation>;
+    productVariantBulkCreate: (
+      variables: ProductVariantBulkCreateMutationVariables,
+    ) => Promise<ProductVariantBulkCreateMutation>;
   };
   channelSlug?: string;
   installedSaleorAppId: string;
@@ -96,6 +101,9 @@ export class SaleorProductSyncService {
     productAttributeVariantSelection: (
       variables: ProductAttributeVariantSelectionMutationVariables,
     ) => Promise<ProductAttributeVariantSelectionMutation>;
+    productVariantBulkCreate: (
+      variables: ProductVariantBulkCreateMutationVariables,
+    ) => Promise<ProductVariantBulkCreateMutation>;
   };
 
   public readonly channelSlug?: string;
@@ -366,7 +374,24 @@ export class SaleorProductSyncService {
             },
             variants: {
               include: {
-                attributes: true,
+                attributes: {
+                  include: {
+                    attribute: {
+                      include: {
+                        saleorAttributes: {
+                          where: {
+                            installedSaleorAppId: this.installedSaleorAppId,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+                saleorProductVariant: {
+                  where: {
+                    installedSaleorAppId: this.installedSaleorAppId,
+                  },
+                },
               },
             },
           },
@@ -420,18 +445,93 @@ export class SaleorProductSyncService {
             productType: productType.saleorProductTypes[0].id,
           },
         });
-        if (productCreateResponse.productCreate?.errors) {
+        if (
+          productCreateResponse.productCreate?.errors ||
+          !productCreateResponse.productCreate?.product?.id
+        ) {
           this.logger.error(
             `Error creating product ${product.sku} in Saleor: ${JSON.stringify(
-              productCreateResponse.productCreate.errors,
+              productCreateResponse?.productCreate?.errors,
             )}`,
           );
           continue;
         }
+        const createdProduct = productCreateResponse.productCreate.product;
         this.logger.info(
           `Successfully created product ${product.sku} in Saleor`,
         );
         // Bulk create the product variants
+        const variantsToCreate = product.product.variants.filter(
+          (v) => v.saleorProductVariant.length === 0,
+        );
+        if (variantsToCreate.length > 0) {
+          this.logger.info(
+            `Found ${variantsToCreate.length} variants to create for product ${product.sku} in Saleor`,
+          );
+          const variantsToCreateInput = variantsToCreate.map((v) => ({
+            attributes: v.attributes
+              .filter((a) => a.attribute.saleorAttributes.length > 0)
+              .map((a) => ({
+                id: a.attribute.saleorAttributes[0].id,
+                values: [a.value],
+              })),
+            sku: v.sku,
+            trackInventory: true,
+          }));
+          const productVariantBulkCreateResponse =
+            await this.saleorClient.productVariantBulkCreate({
+              variants: variantsToCreateInput,
+              productId: createdProduct.id,
+            });
+          if (
+            productVariantBulkCreateResponse.productVariantBulkCreate?.errors
+          ) {
+            this.logger.error(
+              `Error creating variants for product ${
+                product.sku
+              } in Saleor: ${JSON.stringify(
+                productVariantBulkCreateResponse.productVariantBulkCreate
+                  .errors,
+              )}`,
+            );
+          }
+          this.logger.info(
+            `Successfully created ${variantsToCreate.length} variants for product ${product.sku} in Saleor`,
+          );
+          // Store the created variants in our DB
+          for (const variant of variantsToCreate) {
+            const createdVariant =
+              productVariantBulkCreateResponse.productVariantBulkCreate?.productVariants?.find(
+                (v) => v.sku === variant.sku,
+              )?.id;
+            if (!createdVariant) {
+              this.logger.error(
+                `Error creating variant ${variant.sku} for product ${product.sku} in Saleor: No variant id returned`,
+              );
+              continue;
+            }
+            await this.db.saleorProductVariant.create({
+              data: {
+                id: createdVariant,
+                installedSaleorApp: {
+                  connect: {
+                    id: this.installedSaleorAppId,
+                  },
+                },
+                productId: createdProduct.id,
+                updatedAt: new Date(),
+                productVariant: {
+                  connect: {
+                    sku_tenantId: {
+                      sku: variant.sku,
+                      tenantId: this.tenantId,
+                    },
+                  },
+                },
+              },
+            });
+          }
+        }
       }
     }
   }
