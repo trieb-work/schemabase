@@ -414,6 +414,12 @@ export class SaleorProductSyncService {
           );
           continue;
         }
+        if (!productType.saleorProductTypes?.[0]?.id) {
+          this.logger.warn(
+            `Product ${product.sku} has no product type in Saleor. Skipping`,
+          );
+          continue;
+        }
         /**
          * The description as editorjs json
          */
@@ -422,7 +428,7 @@ export class SaleorProductSyncService {
           : undefined;
 
         const saleorCategoryId =
-          product.product.category?.saleorCategories[0]?.id;
+          product.product.category?.saleorCategories?.[0]?.id;
         if (!saleorCategoryId) {
           this.logger.warn(`Product ${product.sku} has no category. Skipping`);
           continue;
