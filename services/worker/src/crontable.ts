@@ -468,7 +468,7 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 0 },
-          [tenantId.substring(0, 5), id.substring(0, 5)],
+          [tenantId.substring(0, 5), id.substring(0, 7)],
         );
       }
 
@@ -480,7 +480,7 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 0 },
-          [tenantId.substring(0, 5), id.substring(0, 5)],
+          [tenantId.substring(0, 5), id.substring(0, 7)],
         );
       }
 
@@ -492,7 +492,7 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 3, cron: "0 */6 * * *" },
-          [tenantId.substring(0, 5), id.substring(0, 5)],
+          [tenantId.substring(0, 5), id.substring(0, 7)],
         );
         this.scheduler.schedule(
           createWorkflowFactory(
@@ -501,7 +501,7 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 3 },
-          [tenantId.substring(0, 5), id.substring(0, 5)],
+          [tenantId.substring(0, 5), id.substring(0, 7)],
         );
       }
       if (enabledSaleorApp.syncOrders) {
@@ -512,7 +512,7 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 4 },
-          [tenantId.substring(0, 5), id.substring(0, 5)],
+          [tenantId.substring(0, 5), id.substring(0, 7)],
         );
       }
 
@@ -524,7 +524,7 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 10 },
-          [tenantId.substring(0, 5), id.substring(0, 5)],
+          [tenantId.substring(0, 5), id.substring(0, 7)],
         );
       }
       if (enabledSaleorApp.syncPackages) {
@@ -535,7 +535,7 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 9 },
-          [tenantId.substring(0, 5), id.substring(0, 5)],
+          [tenantId.substring(0, 5), id.substring(0, 7)],
         );
       }
       if (enabledSaleorApp.syncCustomers) {
@@ -546,7 +546,7 @@ export class CronTable {
             commonWorkflowConfig,
           ),
           { ...commonCronConfig, offset: 9 },
-          [tenantId.substring(0, 5), id.substring(0, 5)],
+          [tenantId.substring(0, 5), id.substring(0, 7)],
         );
       }
     }
