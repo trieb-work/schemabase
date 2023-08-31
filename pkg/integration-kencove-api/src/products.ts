@@ -288,41 +288,56 @@ export class KencoveApiAppProductSyncService {
           );
           if (correspondingAttributeValue) {
             this.logger.debug(
-              // eslint-disable-next-line max-len
               `Found a matching attribute. Replacing website_ref_desc with ${JSON.stringify(
                 correspondingAttributeValue,
               )}`,
             );
-            variantSelectionAttributes.push(correspondingAttributeValue);
-            this.kenVariantSelectionAttributeOverwrite.set(
-              variant.id,
-              correspondingAttributeValue.attribute_id,
-            );
+            if (
+              !variantSelectionAttributes.some(
+                (vsa) =>
+                  vsa.attribute_id === correspondingAttributeValue.attribute_id,
+              )
+            ) {
+              variantSelectionAttributes.push(correspondingAttributeValue);
+              this.kenVariantSelectionAttributeOverwrite.set(
+                variant.id,
+                correspondingAttributeValue.attribute_id,
+              );
+            }
           } else {
-            variantSelectionAttributes.push(selectorValue);
+            if (
+              /**
+               * make sure, that we don't push variant selection attributes also as attributes
+               */
+              !variantSelectionAttributes.some(
+                (vsa) => vsa.attribute_id === selectorValue.attribute_id,
+              )
+            ) {
+              variantSelectionAttributes.push(selectorValue);
+            }
           }
         }
       });
     });
 
+    const variantAttributes = this.cleanAttributes(
+      allVariants.flatMap((variant) =>
+        variant.attributeValues.filter(
+          (av) =>
+            !productAttributes.some((pa) => pa.name === av.name) &&
+            !variantSelectionAttributes.some(
+              (vsa) => vsa.attribute_id === av.attribute_id,
+            ),
+        ),
+      ),
+    );
+
     return {
       productAttributesUnique: this.uniqueAttributes(productAttributes),
       productAttributes,
-      variantAttributes: this.cleanAttributes(
-        allVariants.flatMap((variant) =>
-          variant.attributeValues.filter(
-            (av) => !productAttributes.some((pa) => pa.name === av.name),
-          ),
-        ),
-      ),
+      variantAttributes,
       variantAttributesUnique: this.cleanAttributes(
-        this.uniqueAttributes(
-          allVariants.flatMap((variant) =>
-            variant.attributeValues.filter(
-              (av) => !productAttributes.some((pa) => pa.name === av.name),
-            ),
-          ),
-        ),
+        this.uniqueAttributes(variantAttributes),
       ),
       variantSelectionAttributesUnique: this.cleanAttributes(
         this.uniqueAttributes(variantSelectionAttributes),
@@ -430,17 +445,28 @@ export class KencoveApiAppProductSyncService {
     productAttributesUnique.push({
       name: "Accessory Items",
       value: "",
-      attribute_id: 0,
+      attribute_id: 333331,
       display_type: "multiselect",
       attribute_model: "custom",
     });
     productAttributesUnique.push({
       name: "Alternative Items",
       value: "",
-      attribute_id: 0,
+      attribute_id: 333330,
       display_type: "multiselect",
       attribute_model: "custom",
     });
+
+    this.logger.debug(
+      "Product Attributes: " + JSON.stringify(productAttributesUnique, null, 2),
+    );
+    this.logger.debug(
+      "Variant Attributes: " + JSON.stringify(variantAttributesUnique, null, 2),
+    );
+    this.logger.debug(
+      "Variant Selection Attributes: " +
+        JSON.stringify(variantSelectionAttributesUnique, null, 2),
+    );
 
     this.logger.debug(
       // eslint-disable-next-line max-len
@@ -536,42 +562,26 @@ export class KencoveApiAppProductSyncService {
       });
     }
 
-    const promises = [];
-
     /**
      * Setting the variant Selection attributes for the product type
      */
     for (const attribute of variantSelectionAttributesUnique) {
-      promises.push(
-        this.setProductTypeAttribute(attribute, kenProdType, true, true),
-      );
+      await this.setProductTypeAttribute(attribute, kenProdType, true, true);
     }
 
     /**
      * Setting the product attributes for the product type
      */
     for (const attribute of productAttributesUnique) {
-      this.logger.info(
-        `Setting attribute ${attribute.name} as product attribute.`,
-      );
-      promises.push(
-        this.setProductTypeAttribute(attribute, kenProdType, false, false),
-      );
+      await this.setProductTypeAttribute(attribute, kenProdType, false, false);
     }
 
     /**
      * Setting the variant attributes for the product type
      */
     for (const attribute of variantAttributesUnique) {
-      this.logger.info(
-        `Setting attribute ${attribute.name} as variant attribute.`,
-      );
-      promises.push(
-        this.setProductTypeAttribute(attribute, kenProdType, true, false),
-      );
+      await this.setProductTypeAttribute(attribute, kenProdType, true, false);
     }
-
-    await Promise.all(promises);
   }
 
   public async syncToECI() {
@@ -841,6 +851,9 @@ export class KencoveApiAppProductSyncService {
         const promise = this.cleanAttributes(
           productVariant.attributeValues,
         ).forEach(async (attributeValues) => {
+          this.logger.debug(
+            `Setting attribute ${attributeValues.name}: value ${attributeValues.value}`,
+          );
           this.setAttributeValue(
             attributeValues,
             upsertedVariant.productVariant.productId,
