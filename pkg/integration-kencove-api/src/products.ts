@@ -422,6 +422,26 @@ export class KencoveApiAppProductSyncService {
       productAttributesUnique,
     } = this.attributeMatch(product);
 
+    /**
+     * Manually adding two product attributes: Accessory Items and Alternative Items.
+     * They get values from the API in a different way, so we have to add them manually, so
+     * move them to Saleor in a standard manner
+     */
+    productAttributesUnique.push({
+      name: "Accessory Items",
+      value: "",
+      attribute_id: 0,
+      display_type: "multiselect",
+      attribute_model: "custom",
+    });
+    productAttributesUnique.push({
+      name: "Alternative Items",
+      value: "",
+      attribute_id: 0,
+      display_type: "multiselect",
+      attribute_model: "custom",
+    });
+
     this.logger.debug(
       // eslint-disable-next-line max-len
       `Got ${variantAttributesUnique.length} variant attributes, ${variantSelectionAttributesUnique.length} ` +

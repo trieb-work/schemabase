@@ -27091,6 +27091,7 @@ export type SaleorEntitySyncProductsQuery = {
         id: string;
         name: string;
         updatedAt: any;
+        created: any;
         productType: {
           __typename?: "ProductType";
           id: string;
@@ -28017,6 +28018,8 @@ export const SaleorEntitySyncProductsDocument = gql`
         node {
           id
           name
+          updatedAt
+          created
           productType {
             ...productType
           }

@@ -144,6 +144,8 @@ query saleorEntitySyncProducts(
       node {
         id
         name
+        updatedAt
+        created
         productType {
           ...productType
         }

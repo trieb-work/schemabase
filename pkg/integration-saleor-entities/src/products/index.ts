@@ -291,7 +291,10 @@ export class SaleorProductSyncService {
               variantAttributes,
             },
           });
-        if (productTypeCreateResponse.productTypeCreate?.errors) {
+        if (
+          productTypeCreateResponse?.productTypeCreate?.errors &&
+          productTypeCreateResponse?.productTypeCreate?.errors?.length > 0
+        ) {
           this.logger.error(
             `Error creating product type ${
               prodType.name
@@ -319,7 +322,10 @@ export class SaleorProductSyncService {
               productTypeId: saleorProdTypeId,
             },
           );
-          if (resp.productAttributeAssignmentUpdate?.errors) {
+          if (
+            resp.productAttributeAssignmentUpdate?.errors &&
+            resp?.productAttributeAssignmentUpdate?.errors?.length > 0
+          ) {
             this.logger.error(
               `Error setting variant selection attribute ${selectionAttribute} for product type ${
                 prodType.name
