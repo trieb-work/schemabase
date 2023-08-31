@@ -64,7 +64,11 @@ export class KencoveApiAppAddressSyncService {
     for await (const addresses of addressesYield) {
       this.logger.info(`Found ${addresses.length} addresses to sync`);
 
-      await async.eachLimit(addresses, 10, async (address) => {
+      /**
+       * We can't work in parallel, as get always unique constraint
+       * issues..
+       */
+      await async.eachLimit(addresses, 1, async (address) => {
         if (!address.street || !address.city || !address.fullname) {
           this.logger.warn(
             `Address ${address.id} has no street/city/fullname.\
