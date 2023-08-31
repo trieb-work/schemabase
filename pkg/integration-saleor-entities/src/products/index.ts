@@ -209,7 +209,29 @@ export class SaleorProductSyncService {
           },
         },
       },
-      update: {},
+      update: {
+        productType: {
+          connectOrCreate: {
+            where: {
+              normalizedName_tenantId: {
+                normalizedName: normalizedProductTypeName,
+                tenantId: this.tenantId,
+              },
+            },
+            create: {
+              id: id.id("productType"),
+              name: productType.name,
+              normalizedName: normalizedProductTypeName,
+              isVariant: productType.hasVariants,
+              tenant: {
+                connect: {
+                  id: this.tenantId,
+                },
+              },
+            },
+          },
+        },
+      },
     });
   }
 
@@ -257,6 +279,9 @@ export class SaleorProductSyncService {
           .filter((a) => a.attribute.saleorAttributes.length > 0)
           .map((a) => a.attribute.saleorAttributes[0].id);
 
+        this.logger.info(
+          `Creating product type ${prodType.name} in Saleor now.`,
+        );
         const productTypeCreateResponse =
           await this.saleorClient.productTypeCreate({
             input: {
@@ -288,10 +313,21 @@ export class SaleorProductSyncService {
          * Manually set variant attributes as variant selection attributes
          */
         for (const selectionAttribute of variantSelectionAttributes) {
-          await this.saleorClient.productAttributeVariantSelection({
-            attributeId: selectionAttribute,
-            productTypeId: saleorProdTypeId,
-          });
+          const resp = await this.saleorClient.productAttributeVariantSelection(
+            {
+              attributeId: selectionAttribute,
+              productTypeId: saleorProdTypeId,
+            },
+          );
+          if (resp.productAttributeAssignmentUpdate?.errors) {
+            this.logger.error(
+              `Error setting variant selection attribute ${selectionAttribute} for product type ${
+                prodType.name
+              } in Saleor: ${JSON.stringify(
+                resp.productAttributeAssignmentUpdate.errors,
+              )}`,
+            );
+          }
         }
         this.logger.info(
           `Successfully created product type ${prodType.name} in Saleor`,
