@@ -1,11 +1,12 @@
-mutation productVariantCreate($input: ProductVariantCreateInput!) {
-  productVariantCreate(input: $input) {
+mutation productVariantBulkCreate($variants: [ProductVariantBulkCreateInput!]!, $productId: ID!) {
+  productVariantBulkCreate(product: $productId, variants: $variants) {
+    productVariants {
+      id
+      sku
+    }
     errors {
       field
-      message
-    }
-    productVariant {
-      id
+      values
     }
   }
 }
