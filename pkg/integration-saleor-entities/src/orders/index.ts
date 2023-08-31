@@ -243,6 +243,7 @@ export class SaleorOrderSyncService {
           [OrderStatus.Returned]: "confirmed",
           [OrderStatus.Unconfirmed]: "unconfirmed",
           [OrderStatus.PartiallyReturned]: "confirmed",
+          [OrderStatus.Expired]: "canceled",
         };
         const orderStatus = orderStatusMapping[order.status];
 
