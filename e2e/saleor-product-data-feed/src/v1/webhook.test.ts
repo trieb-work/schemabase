@@ -97,48 +97,33 @@ beforeAll(async () => {
   if (product == null) {
     throw new Error("no product " + JSON.stringify(productResponse, null, 2));
   }
-  const productVariantResponse = await saleorClient.productVariantCreate({
-    input: {
-      attributes: [],
-      product: product.id,
-      sku: "juicy-juicy-sku",
-      trackInventory: true,
-    },
-  });
-  const productVariant =
-    productVariantResponse?.productVariantCreate?.productVariant;
-  if (productVariant == null) {
-    throw new Error(
-      "no productVariant " + JSON.stringify(productVariantResponse, null, 2),
-    );
-  }
 
-  await saleorClient.productChannelListingUpdate({
-    id: product.id,
-    input: {
-      updateChannels: [
-        {
-          channelId: channel.id,
-          availableForPurchaseDate: null,
-          isPublished: true,
-          visibleInListings: true,
-          isAvailableForPurchase: true,
-          addVariants: [productVariant.id],
-        },
-      ],
-    },
-  });
+  // await saleorClient.productChannelListingUpdate({
+  //   id: product.id,
+  //   input: {
+  //     updateChannels: [
+  //       {
+  //         channelId: channel.id,
+  //         availableForPurchaseDate: null,
+  //         isPublished: true,
+  //         visibleInListings: true,
+  //         isAvailableForPurchase: true,
+  //         addVariants: [productVariant.id],
+  //       },
+  //     ],
+  //   },
+  // });
 
-  await saleorClient.productVariantChannelListingUpdate({
-    id: productVariant.id,
-    input: [
-      {
-        channelId: channel.id,
-        price: "1",
-        costPrice: "2",
-      },
-    ],
-  });
+  // await saleorClient.productVariantChannelListingUpdate({
+  //   id: productVariant.id,
+  //   input: [
+  //     {
+  //       channelId: channel.id,
+  //       price: "1",
+  //       costPrice: "2",
+  //     },
+  //   ],
+  // });
 
   const tenant = await prisma.tenant.create({
     data: {
