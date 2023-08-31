@@ -27,7 +27,7 @@ describe("Zoho Entity Sync Orders Test", () => {
 
     const { client: saleorClient, installedSaleorApp } =
       // await getSaleorClientAndEntry("QXBwOjE2", prismaClient);
-      await getSaleorClientAndEntry("QXBwOjk=", prismaClient);
+      await getSaleorClientAndEntry("QXBwOjE=", prismaClient);
 
     const service = new SaleorProductSyncService({
       saleorClient,

@@ -228,6 +228,7 @@ export class KencoveApiAppCategorySyncService {
               update: {
                 name: category.categoryName,
                 slug: category.categorySlug,
+                active: true,
                 parentCategory: parentCategoryId
                   ? {
                       connect: {
@@ -272,6 +273,7 @@ export class KencoveApiAppCategorySyncService {
                   id: id.id("category"),
                   name: category.categoryName,
                   slug: category.categorySlug,
+                  active: true,
                   parentCategory: parentCategoryId
                     ? {
                         connect: {

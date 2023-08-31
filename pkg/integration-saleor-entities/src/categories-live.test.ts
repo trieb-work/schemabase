@@ -25,7 +25,7 @@ describe("Saleor Categories Test", () => {
       throw new Error("Testing Tenant or zoho app/integration not found in DB");
 
     const { client: saleorClient, installedSaleorApp } =
-      await getSaleorClientAndEntry("QXBwOjk=", prismaClient);
+      await getSaleorClientAndEntry("QXBwOjE=", prismaClient);
 
     const service = new SaleorCategorySyncService({
       saleorClient,
@@ -35,5 +35,6 @@ describe("Saleor Categories Test", () => {
       tenantId: tenant.id,
     });
     await service.syncToEci();
+    await service.syncFromEci();
   }, 1000000);
 });

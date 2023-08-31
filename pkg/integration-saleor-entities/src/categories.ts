@@ -23,8 +23,11 @@ import {
   queryWithPagination,
   CategoryCreateMutation,
   CategoryCreateMutationVariables,
+  CategoryUpdateMutationVariables,
+  CategoryUpdateMutation,
 } from "@eci/pkg/saleor";
 import { subHours, subYears } from "date-fns";
+import { editorJsHelper } from "./editorjs";
 
 interface SaleorCategorySyncServiceConfig {
   saleorClient: {
@@ -35,6 +38,9 @@ interface SaleorCategorySyncServiceConfig {
     categoryCreate: (
       variables: CategoryCreateMutationVariables,
     ) => Promise<CategoryCreateMutation>;
+    categoryUpdate: (
+      variables: CategoryUpdateMutationVariables,
+    ) => Promise<CategoryUpdateMutation>;
   };
   installedSaleorApp: InstalledSaleorApp;
   tenantId: string;
@@ -55,6 +61,9 @@ export class SaleorCategorySyncService {
     categoryCreate: (
       variables: CategoryCreateMutationVariables,
     ) => Promise<CategoryCreateMutation>;
+    categoryUpdate: (
+      variables: CategoryUpdateMutationVariables,
+    ) => Promise<CategoryUpdateMutation>;
   };
 
   private installedSaleorApp: InstalledSaleorApp;
@@ -126,6 +135,7 @@ export class SaleorCategorySyncService {
     const categoriesIds = categories.map((category) => category.id);
     /**
      * Categories that are in the SaleorCategory table but not in the API response.
+     * They got deleted most likely
      */
     const categoriesToDelete = categories.filter(
       (c) => !saleorCategoriesIds.includes(c.id),
@@ -326,7 +336,7 @@ export class SaleorCategorySyncService {
   }
 
   /**
-   * Delete the saleor category and mark our internal category as inactive
+   * Delete the saleor category
    * @param categoriesToDelete
    * @returns
    */
@@ -342,16 +352,45 @@ export class SaleorCategorySyncService {
         },
       },
     });
-    await this.db.category.updateMany({
-      where: {
-        id: {
-          in: categoriesToDelete.map((c) => c.categoryId),
-        },
-      },
-      data: {
-        active: false,
+  }
+
+  /**
+   * Update slug, nanme, description and image of a category in Saleor
+   * @param category
+   */
+  private async updateCategoryInSaleor(
+    category: {
+      saleorCategories: {
+        id: string;
+        categoryId: string;
+        installedSaleorAppId: string;
+      }[];
+    } & Category,
+  ) {
+    const response = await this.saleorClient.categoryUpdate({
+      id: category.saleorCategories?.[0].id,
+      input: {
+        name: category.name,
+        slug: category.slug,
+        description: category.descriptionHTML
+          ? JSON.stringify(
+              await editorJsHelper.HTMLToEditorJS(category.descriptionHTML),
+            )
+          : undefined,
       },
     });
+    if (
+      !response?.categoryUpdate?.category ||
+      response.categoryUpdate?.errors.length > 0
+    ) {
+      this.logger.error(
+        `Could not update category in saleor: ${
+          category.name
+        }: ${JSON.stringify(response?.categoryUpdate?.errors)}`,
+      );
+      return;
+    }
+    this.logger.info(`Updated category in saleor: ${category.name}`);
   }
 
   /**
@@ -360,15 +399,30 @@ export class SaleorCategorySyncService {
    */
   private async createCategoryInSaleor(
     category: Category,
-    saleorParentCategoryId: string | null,
+    saleorParentCategoryId: string | undefined,
   ) {
+    const description = category.descriptionHTML
+      ? JSON.stringify(
+          await editorJsHelper.HTMLToEditorJS(category.descriptionHTML),
+        )
+      : undefined;
+    this.logger.debug(`Creating category in saleor: ${category.name}`, {
+      description,
+      slug: category.slug,
+      name: category.name,
+    });
     const response = await this.saleorClient.categoryCreate({
       input: {
         name: category.name,
+        slug: category.slug,
+        description,
       },
       parent: saleorParentCategoryId,
     });
-    if (!response?.categoryCreate?.category || response.categoryCreate.errors) {
+    if (
+      !response?.categoryCreate?.category ||
+      response.categoryCreate?.errors.length > 0
+    ) {
       this.logger.error(
         `Could not create category in saleor: ${
           category.name
@@ -416,7 +470,7 @@ export class SaleorCategorySyncService {
       this.logger.info(`Setting GTE date to ${createdGte}. `);
     }
 
-    const categories = await this.db.category.findMany({
+    const categoriesToCreate = await this.db.category.findMany({
       where: {
         saleorCategories: {
           none: {
@@ -438,7 +492,7 @@ export class SaleorCategorySyncService {
         childrenCategories: {
           orderBy: {
             childrenCategories: {
-              _count: "asc",
+              _count: "desc",
             },
           },
         },
@@ -451,10 +505,11 @@ export class SaleorCategorySyncService {
     });
 
     this.logger.info(
-      `Found ${categories.length} categories that do not exist in saleor`,
+      `Found ${categoriesToCreate.length} categories that do not exist in saleor`,
     );
 
-    for (const category of categories) {
+    const created: string[] = [];
+    for (const category of categoriesToCreate) {
       if (
         category.parentCategoryId &&
         !category.parentCategory?.saleorCategories?.[0]?.id
@@ -468,10 +523,14 @@ export class SaleorCategorySyncService {
         category,
         category.parentCategory?.saleorCategories?.[0]?.id,
       );
+      created.push(category.id);
     }
 
     const categoriesToUpdate = await this.db.category.findMany({
       where: {
+        id: {
+          notIn: created,
+        },
         saleorCategories: {
           some: {
             installedSaleorAppId: this.installedSaleorApp.id,
@@ -484,14 +543,21 @@ export class SaleorCategorySyncService {
         },
         active: true,
       },
+      include: {
+        saleorCategories: {
+          where: {
+            installedSaleorAppId: this.installedSaleorApp.id,
+          },
+        },
+      },
     });
 
     this.logger.info(
       `Found ${categoriesToUpdate.length} categories that need to be updated in saleor`,
     );
 
-    // for (const category of categoriesToUpdate) {
-    //   await this.updateCategoryInSaleor(category);
-    // }
+    for (const category of categoriesToUpdate) {
+      await this.updateCategoryInSaleor(category);
+    }
   }
 }

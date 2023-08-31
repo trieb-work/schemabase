@@ -26153,12 +26153,31 @@ export type AppTokenVerifyMutation = {
 
 export type CategoryCreateMutationVariables = Exact<{
   input: CategoryInput;
+  parent?: InputMaybe<Scalars["ID"]>;
 }>;
 
 export type CategoryCreateMutation = {
   __typename?: "Mutation";
   categoryCreate?: {
     __typename?: "CategoryCreate";
+    category?: { __typename?: "Category"; id: string } | null;
+    errors: Array<{
+      __typename?: "ProductError";
+      field?: string | null;
+      message?: string | null;
+    }>;
+  } | null;
+};
+
+export type CategoryUpdateMutationVariables = Exact<{
+  input: CategoryInput;
+  id: Scalars["ID"];
+}>;
+
+export type CategoryUpdateMutation = {
+  __typename?: "Mutation";
+  categoryUpdate?: {
+    __typename?: "CategoryUpdate";
     category?: { __typename?: "Category"; id: string } | null;
     errors: Array<{
       __typename?: "ProductError";
@@ -27311,8 +27330,21 @@ export const AppTokenVerifyDocument = gql`
   }
 `;
 export const CategoryCreateDocument = gql`
-  mutation categoryCreate($input: CategoryInput!) {
-    categoryCreate(input: $input) {
+  mutation categoryCreate($input: CategoryInput!, $parent: ID) {
+    categoryCreate(input: $input, parent: $parent) {
+      category {
+        id
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`;
+export const CategoryUpdateDocument = gql`
+  mutation categoryUpdate($input: CategoryInput!, $id: ID!) {
+    categoryUpdate(input: $input, id: $id) {
       category {
         id
       }
@@ -28109,6 +28141,16 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
         variables,
         options,
       ) as Promise<CategoryCreateMutation>;
+    },
+    categoryUpdate(
+      variables: CategoryUpdateMutationVariables,
+      options?: C,
+    ): Promise<CategoryUpdateMutation> {
+      return requester<CategoryUpdateMutation, CategoryUpdateMutationVariables>(
+        CategoryUpdateDocument,
+        variables,
+        options,
+      ) as Promise<CategoryUpdateMutation>;
     },
     channelCreate(
       variables: ChannelCreateMutationVariables,

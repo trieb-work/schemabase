@@ -1,0 +1,11 @@
+mutation categoryUpdate($input: CategoryInput!, $id: ID!) {
+  categoryUpdate(input: $input, id: $id) {
+    category {
+      id
+    }
+    errors {
+      field
+      message
+    }
+  }
+}
