@@ -72,6 +72,7 @@ export class KencoveApiAppOrderSyncService {
       return contactId;
     }
     const billingAddress = order.billingAddress;
+    const kenContactId = billingAddress.customerCode;
     const existingContact = await this.db.contact.upsert({
       where: {
         email_tenantId: {
@@ -91,12 +92,12 @@ export class KencoveApiAppOrderSyncService {
           connectOrCreate: {
             where: {
               id_kencoveApiAppId: {
-                id: billingAddress.customerCode,
+                id: kenContactId,
                 kencoveApiAppId: this.kencoveApiApp.id,
               },
             },
             create: {
-              id: billingAddress.customerCode,
+              id: kenContactId,
               kencoveApiApp: {
                 connect: {
                   id: this.kencoveApiApp.id,
@@ -112,6 +113,11 @@ export class KencoveApiAppOrderSyncService {
     return existingContact.id;
   }
 
+  /**
+   * Try to find the address by the KencoveId. If not found, return undefined
+   * @param kenAddressId
+   * @returns
+   */
   private async getAddress(kenAddressId: string): Promise<string | undefined> {
     if (this.addressCache.has(kenAddressId)) {
       return this.addressCache.get(kenAddressId);
@@ -205,7 +211,10 @@ export class KencoveApiAppOrderSyncService {
         `Got ${toCreate.length} orders to create and ${toUpdate.length} orders to update`,
       );
 
-      await async.eachLimit(toCreate, 10, async (order) => {
+      /**
+       * Parallel processing did always produce issues, so we do it one by one
+       */
+      await async.eachLimit(toCreate, 1, async (order) => {
         const updatedAt = new Date(order.updatedAt);
         const createdAt = new Date(order.createdAt);
         /**
@@ -216,6 +225,7 @@ export class KencoveApiAppOrderSyncService {
           this.logger.warn(`No email found in order ${order.id}. Don't sync!`);
           return;
         }
+
         const mainContactPromise = this.syncMainContact(order);
         const billingAddressPromise = this.getAddress(
           order.billingAddress.billingAddressId,
