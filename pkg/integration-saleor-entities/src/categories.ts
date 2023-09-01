@@ -173,17 +173,26 @@ export class SaleorCategorySyncService {
    * @param saleorCategories 
    */
   private async updateCategories(
+    /**
+     * All categories from the SaleorCategory table, from our internal DB
+     */
     categoriesToUpdate: SaleorCategoryWithCategory[],
+    /**
+     * All categories from the Saleor API
+     */
     saleorCategories: CategoryValuesFragment[],
   ) {
     if (categoriesToUpdate.length === 0) {
       return;
     }
-    this.logger.info(
+    this.logger.debug(
       `Updating categories: ${categoriesToUpdate.map((c) => c.id)}`,
     );
 
     for (const category of categoriesToUpdate) {
+      /**
+       * The cateogry from the Saleor API
+       */
       const saleorCategory = saleorCategories.find((c) => c.id === category.id);
       if (!saleorCategory) {
         continue;
@@ -195,7 +204,8 @@ export class SaleorCategorySyncService {
 
       /**
        * if we have a parent category, we try to find it in the database
-       * in the SaleorCategory table.
+       * in the SaleorCategory table. We take the Saleor ID from the API
+       * and search for it in our internal DB
        */
       const parentCategory = saleorCategory.parent
         ? await this.db.saleorCategory.findUnique({
@@ -218,6 +228,13 @@ export class SaleorCategorySyncService {
         this.logger.info(
           // eslint-disable-next-line max-len
           `Internal fiels differ with the saleor category: ${category.category.name}. Update the category`,
+          {
+            parentCategory: parentCategory?.categoryId,
+            normalizedNameInternal: category.category.normalizedName,
+            normalizedNameSaleor: normalizedName,
+            slugInternal: category.category.slug,
+            slugSaleor: saleorCategory.slug,
+          },
         );
         await this.db.saleorCategory.update({
           where: {
@@ -559,5 +576,10 @@ export class SaleorCategorySyncService {
     for (const category of categoriesToUpdate) {
       await this.updateCategoryInSaleor(category);
     }
+
+    await this.cronState.set({
+      lastRun: now,
+      lastRunStatus: "success",
+    });
   }
 }
