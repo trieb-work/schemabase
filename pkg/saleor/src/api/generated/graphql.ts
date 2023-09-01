@@ -26151,6 +26151,23 @@ export type AppTokenVerifyMutation = {
   appTokenVerify?: { __typename?: "AppTokenVerify"; valid: boolean } | null;
 };
 
+export type AttributeCreateMutationVariables = Exact<{
+  input: AttributeCreateInput;
+}>;
+
+export type AttributeCreateMutation = {
+  __typename?: "Mutation";
+  attributeCreate?: {
+    __typename?: "AttributeCreate";
+    attribute?: { __typename?: "Attribute"; id: string } | null;
+    errors: Array<{
+      __typename?: "AttributeError";
+      field?: string | null;
+      message?: string | null;
+    }>;
+  } | null;
+};
+
 export type CategoryCreateMutationVariables = Exact<{
   input: CategoryInput;
   parent?: InputMaybe<Scalars["ID"]>;
@@ -26336,6 +26353,24 @@ export type ProductAttributeVariantSelectionMutation = {
   __typename?: "Mutation";
   productAttributeAssignmentUpdate?: {
     __typename?: "ProductAttributeAssignmentUpdate";
+    productType?: { __typename?: "ProductType"; id: string } | null;
+    errors: Array<{
+      __typename?: "ProductError";
+      field?: string | null;
+      message?: string | null;
+    }>;
+  } | null;
+};
+
+export type ProductTypeUpdateMutationVariables = Exact<{
+  input: ProductTypeInput;
+  id: Scalars["ID"];
+}>;
+
+export type ProductTypeUpdateMutation = {
+  __typename?: "Mutation";
+  productTypeUpdate?: {
+    __typename?: "ProductTypeUpdate";
     productType?: { __typename?: "ProductType"; id: string } | null;
     errors: Array<{
       __typename?: "ProductError";
@@ -27329,6 +27364,19 @@ export const AppTokenVerifyDocument = gql`
     }
   }
 `;
+export const AttributeCreateDocument = gql`
+  mutation attributeCreate($input: AttributeCreateInput!) {
+    attributeCreate(input: $input) {
+      attribute {
+        id
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`;
 export const CategoryCreateDocument = gql`
   mutation categoryCreate($input: CategoryInput!, $parent: ID) {
     categoryCreate(input: $input, parent: $parent) {
@@ -27470,6 +27518,19 @@ export const ProductAttributeVariantSelectionDocument = gql`
       productTypeId: $productTypeId
       operations: { id: $attributeId, variantSelection: true }
     ) {
+      productType {
+        id
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`;
+export const ProductTypeUpdateDocument = gql`
+  mutation productTypeUpdate($input: ProductTypeInput!, $id: ID!) {
+    productTypeUpdate(input: $input, id: $id) {
       productType {
         id
       }
@@ -28132,6 +28193,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
         options,
       ) as Promise<AppTokenVerifyMutation>;
     },
+    attributeCreate(
+      variables: AttributeCreateMutationVariables,
+      options?: C,
+    ): Promise<AttributeCreateMutation> {
+      return requester<
+        AttributeCreateMutation,
+        AttributeCreateMutationVariables
+      >(
+        AttributeCreateDocument,
+        variables,
+        options,
+      ) as Promise<AttributeCreateMutation>;
+    },
     categoryCreate(
       variables: CategoryCreateMutationVariables,
       options?: C,
@@ -28243,6 +28317,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
         variables,
         options,
       ) as Promise<ProductAttributeVariantSelectionMutation>;
+    },
+    productTypeUpdate(
+      variables: ProductTypeUpdateMutationVariables,
+      options?: C,
+    ): Promise<ProductTypeUpdateMutation> {
+      return requester<
+        ProductTypeUpdateMutation,
+        ProductTypeUpdateMutationVariables
+      >(
+        ProductTypeUpdateDocument,
+        variables,
+        options,
+      ) as Promise<ProductTypeUpdateMutation>;
     },
     productVariantChannelListingUpdate(
       variables: ProductVariantChannelListingUpdateMutationVariables,

@@ -45,6 +45,7 @@ export class SaleorAttributeSyncWf implements Workflow {
       tenantId: installedSaleorApp.saleorApp.tenantId,
     });
     await saleorAttributeSyncService.syncToEci();
+    await saleorAttributeSyncService.syncFromEci();
 
     this.logger.info("Finished saleor Attribute sync workflow run");
   }

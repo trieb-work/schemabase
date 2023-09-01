@@ -8,6 +8,8 @@ import {
   ProductTypeCreateMutation,
   ProductTypeCreateMutationVariables,
   ProductTypeFragment,
+  ProductTypeUpdateMutation,
+  ProductTypeUpdateMutationVariables,
   ProductVariantBulkCreateMutation,
   ProductVariantBulkCreateMutationVariables,
   ProductVariantStockEntryUpdateMutation,
@@ -61,6 +63,9 @@ interface SaleorProductSyncServiceConfig {
     productVariantBulkCreate: (
       variables: ProductVariantBulkCreateMutationVariables,
     ) => Promise<ProductVariantBulkCreateMutation>;
+    productTypeUpdate: (
+      variables: ProductTypeUpdateMutationVariables,
+    ) => Promise<ProductTypeUpdateMutation>;
   };
   channelSlug?: string;
   installedSaleorAppId: string;
@@ -104,6 +109,9 @@ export class SaleorProductSyncService {
     productVariantBulkCreate: (
       variables: ProductVariantBulkCreateMutationVariables,
     ) => Promise<ProductVariantBulkCreateMutation>;
+    productTypeUpdate: (
+      variables: ProductTypeUpdateMutationVariables,
+    ) => Promise<ProductTypeUpdateMutation>;
   };
 
   public readonly channelSlug?: string;
@@ -235,14 +243,55 @@ export class SaleorProductSyncService {
     });
   }
 
-  private async createProductTypeinSaleor() {
-    const productTypesToCreate = await this.db.productType.findMany({
+  /**
+   * Manually set variant attributes as variant selection attributes
+   */
+  private async setProductTypeVariantSelectionAttributes(
+    variantSelectionAttributes: string[],
+    saleorProdTypeId: string,
+  ) {
+    for (const selectionAttribute of variantSelectionAttributes) {
+      const resp = await this.saleorClient.productAttributeVariantSelection({
+        attributeId: selectionAttribute,
+        productTypeId: saleorProdTypeId,
+      });
+      if (
+        resp.productAttributeAssignmentUpdate?.errors &&
+        resp?.productAttributeAssignmentUpdate?.errors?.length > 0
+      ) {
+        this.logger.error(
+          `Error setting variant selection attribute ${selectionAttribute} for saleor product type ${saleorProdTypeId}: ${JSON.stringify(
+            resp.productAttributeAssignmentUpdate.errors,
+          )}`,
+        );
+      }
+    }
+  }
+
+  /**
+   * Fetches all product types, without saleor ID set, that we create now
+   * and all product types, that changed since the last run and update these
+   * in Saleor
+   * @param gteDate 
+   * @returns 
+   */
+  private async createOrUpdateProductTypeinSaleor(gteDate: Date) {
+    const productTypesToCreateOrUpdate = await this.db.productType.findMany({
       where: {
-        saleorProductTypes: {
-          none: {
-            installedSaleorAppId: this.installedSaleorAppId,
+        OR: [
+          {
+            saleorProductTypes: {
+              none: {
+                installedSaleorAppId: this.installedSaleorAppId,
+              },
+            },
           },
-        },
+          {
+            updatedAt: {
+              gte: gteDate,
+            },
+          },
+        ],
       },
       include: {
         attributes: {
@@ -258,14 +307,26 @@ export class SaleorProductSyncService {
             },
           },
         },
+        saleorProductTypes: {
+          where: {
+            installedSaleorAppId: this.installedSaleorAppId,
+          },
+        },
       },
     });
-    if (productTypesToCreate.length > 0) {
+    if (productTypesToCreateOrUpdate.length > 0) {
       this.logger.info(
-        `Found ${productTypesToCreate.length} product types to create in Saleor`,
-        { productTypesToCreate: productTypesToCreate.map((x) => x.name) },
+        `Found ${productTypesToCreateOrUpdate.length} product types to create or update in Saleor`,
+        {
+          productTypesToCreate: productTypesToCreateOrUpdate.map((x) => x.name),
+        },
       );
-      for (const prodType of productTypesToCreate) {
+      for (const prodType of productTypesToCreateOrUpdate) {
+        /**
+         * When this prod type does already exist in saleor, we have
+         * this saleor id set
+         */
+        const existingProdTypeId = prodType.saleorProductTypes?.[0]?.id;
         const productAttributes = prodType.attributes
           .filter((a) => !a.isForVariant)
           .filter((a) => a.attribute.saleorAttributes.length > 0)
@@ -282,78 +343,94 @@ export class SaleorProductSyncService {
         this.logger.info(
           `Creating product type ${prodType.name} in Saleor now.`,
         );
-        const productTypeCreateResponse =
-          await this.saleorClient.productTypeCreate({
-            input: {
-              name: prodType.name,
-              hasVariants: prodType.isVariant,
-              productAttributes,
-              variantAttributes,
-            },
-          });
-        if (
-          productTypeCreateResponse?.productTypeCreate?.errors &&
-          productTypeCreateResponse?.productTypeCreate?.errors?.length > 0
-        ) {
-          this.logger.error(
-            `Error creating product type ${
-              prodType.name
-            } in Saleor: ${JSON.stringify(
-              productTypeCreateResponse.productTypeCreate.errors,
-            )}`,
-          );
-          return;
-        }
-        if (!productTypeCreateResponse?.productTypeCreate?.productType?.id) {
-          this.logger.error(
-            `Error creating product type ${prodType.name} in Saleor: No product type id returned`,
-          );
-          return;
-        }
-        const saleorProdTypeId =
-          productTypeCreateResponse.productTypeCreate.productType.id;
-        /**
-         * Manually set variant attributes as variant selection attributes
-         */
-        for (const selectionAttribute of variantSelectionAttributes) {
-          const resp = await this.saleorClient.productAttributeVariantSelection(
-            {
-              attributeId: selectionAttribute,
-              productTypeId: saleorProdTypeId,
-            },
-          );
+        if (!existingProdTypeId) {
+          const productTypeCreateResponse =
+            await this.saleorClient.productTypeCreate({
+              input: {
+                name: prodType.name,
+                hasVariants: prodType.isVariant,
+                productAttributes,
+                variantAttributes,
+              },
+            });
           if (
-            resp.productAttributeAssignmentUpdate?.errors &&
-            resp?.productAttributeAssignmentUpdate?.errors?.length > 0
+            productTypeCreateResponse?.productTypeCreate?.errors &&
+            productTypeCreateResponse?.productTypeCreate?.errors?.length > 0
           ) {
             this.logger.error(
-              `Error setting variant selection attribute ${selectionAttribute} for product type ${
+              `Error creating product type ${
                 prodType.name
               } in Saleor: ${JSON.stringify(
-                resp.productAttributeAssignmentUpdate.errors,
+                productTypeCreateResponse.productTypeCreate.errors,
               )}`,
             );
+            return;
           }
+          if (!productTypeCreateResponse?.productTypeCreate?.productType?.id) {
+            this.logger.error(
+              `Error creating product type ${prodType.name} in Saleor: No product type id returned`,
+            );
+            return;
+          }
+          const saleorProdTypeId =
+            productTypeCreateResponse.productTypeCreate.productType.id;
+          await this.db.saleorProductType.create({
+            data: {
+              id: saleorProdTypeId,
+              installedSaleorApp: {
+                connect: {
+                  id: this.installedSaleorAppId,
+                },
+              },
+              productType: {
+                connect: {
+                  id: prodType.id,
+                },
+              },
+            },
+          });
+          await this.setProductTypeVariantSelectionAttributes(
+            variantSelectionAttributes,
+            saleorProdTypeId,
+          );
+          this.logger.info(
+            `Successfully created product type ${prodType.name} in Saleor`,
+          );
+        } else {
+          const productTypeUpdateResponse =
+            await this.saleorClient.productTypeUpdate({
+              id: existingProdTypeId,
+              input: {
+                name: prodType.name,
+                hasVariants: prodType.isVariant,
+                productAttributes,
+                variantAttributes,
+              },
+            });
+          if (
+            productTypeUpdateResponse?.productTypeUpdate?.errors &&
+            productTypeUpdateResponse?.productTypeUpdate?.errors?.length > 0
+          ) {
+            this.logger.error(
+              `Error updating product type ${
+                prodType.name
+              } in Saleor: ${JSON.stringify(
+                productTypeUpdateResponse.productTypeUpdate.errors,
+              )}`,
+            );
+            return;
+          }
+          await this.setProductTypeVariantSelectionAttributes(
+            variantSelectionAttributes,
+            existingProdTypeId,
+          );
+          this.logger.info(
+            `Successfully updated product type ${prodType.name} in Saleor`,
+          );
         }
-        this.logger.info(
-          `Successfully created product type ${prodType.name} in Saleor`,
-        );
-        await this.db.saleorProductType.create({
-          data: {
-            id: productTypeCreateResponse.productTypeCreate.productType.id,
-            installedSaleorApp: {
-              connect: {
-                id: this.installedSaleorAppId,
-              },
-            },
-            productType: {
-              connect: {
-                id: prodType.id,
-              },
-            },
-          },
-        });
       }
+    } else {
+      this.logger.info(`No product types to create or update in Saleor`);
     }
   }
 
@@ -904,7 +981,7 @@ export class SaleorProductSyncService {
     /**
      * Get all product types, that are not yet created in Saleor
      */
-    await this.createProductTypeinSaleor();
+    await this.createOrUpdateProductTypeinSaleor(createdGte);
 
     /**
      * Get all products, that are not yet create in Saleor. Select only

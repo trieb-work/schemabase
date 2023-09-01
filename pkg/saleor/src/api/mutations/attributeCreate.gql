@@ -1,0 +1,11 @@
+mutation attributeCreate($input: AttributeCreateInput!) {
+  attributeCreate(input: $input) {
+    attribute {
+      id
+    }
+    errors {
+      field
+      message
+    }
+  }
+}

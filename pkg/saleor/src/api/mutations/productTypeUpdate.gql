@@ -1,0 +1,11 @@
+mutation productTypeUpdate($input: ProductTypeInput!, $id: ID!) {
+  productTypeUpdate(input: $input, id: $id) {
+    productType {
+      id
+    }
+    errors {
+      field
+      message
+    }
+  }
+}
