@@ -26,6 +26,11 @@ export class Logger implements ILogger {
     };
     this.logger = winston.createLogger({
       transports: [new winston.transports.Console()],
+      /**
+       * In production, we don't want to log debug messages.
+       * In development, we want to log debug messages.
+       */
+      level: env.get("NODE_ENV") === "production" ? "info" : "debug",
       format:
         /**
          * If the environment variable "VERCEL" is 1, we do no longer pretty-print
@@ -53,14 +58,6 @@ export class Logger implements ILogger {
    * Existing metadata is carried over unless overwritten
    */
   public with(additionalMeta: Fields): ILogger {
-    // TODO: fix this, copy from ANWR --> evtl. move it to a triebwork package
-    // const copy = Object.assign(
-    //   Object.create(Object.getPrototypeOf(this)),
-    //   this,
-    // ) as Logger;
-
-    // copy.meta = { ...this.meta, ...additionalMeta };
-    // return copy;
     return new Logger({
       meta: { ...this.meta, ...additionalMeta },
       enableElasticLogDrain: typeof this.elasticSearchTransport !== "undefined",
