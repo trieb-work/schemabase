@@ -272,8 +272,8 @@ export class SaleorProductSyncService {
    * Fetches all product types, without saleor ID set, that we create now
    * and all product types, that changed since the last run and update these
    * in Saleor
-   * @param gteDate 
-   * @returns 
+   * @param gteDate
+   * @returns
    */
   private async createOrUpdateProductTypeinSaleor(gteDate: Date) {
     const productTypesToCreateOrUpdate = await this.db.productType.findMany({
