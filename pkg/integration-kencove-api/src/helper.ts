@@ -29,7 +29,7 @@ const kenAttributeToEciAttribute = (kenAttribute: string): AttributeType => {
     case "select":
       return AttributeType.DROPDOWN;
     case "radio":
-      return AttributeType.MULTISELECT;
+      return AttributeType.DROPDOWN;
     case "multiselect":
       return AttributeType.MULTISELECT;
     case "FILE":
