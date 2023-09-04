@@ -181,6 +181,29 @@ export type KencoveApiOrderLine = {
   orderLine_taxRate: string;
 };
 
+export type KencoApiPricelistItem = {
+  /**
+   * for example KEN-R or KEN-D
+   */
+  pricelist_name: string;
+  min_quantity: number;
+  freeship_qualified: boolean;
+  price: number;
+  createdAt: string;
+  updatedAt: string;
+  date_start: string;
+  date_end: string | null;
+  product_id: null;
+  variantItemCode: null;
+};
+export type KencoveApiPricelist = {
+  product_template_id: number;
+  itemCode: string;
+  priceListItems: KencoApiPricelistItem[];
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type KencoveApiOrder = {
   id: string;
   orderNumber: string;
