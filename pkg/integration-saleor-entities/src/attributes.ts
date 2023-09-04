@@ -15,6 +15,7 @@ import {
 import {
   AttributeCreateMutation,
   AttributeCreateMutationVariables,
+  AttributeEntityTypeEnum,
   AttributeInputTypeEnum,
   AttributeSyncQuery,
   AttributeSyncQueryVariables,
@@ -200,16 +201,64 @@ export class SaleorAttributeSyncService {
 
       const type = this.matchInternalTypeWithSaleorAttributeType(attr.type);
 
+      let values = attr.values.map((v) => ({
+        value: v.value,
+        normalizedName: v.normalizedName,
+      }));
+
+      // We store multi select values as a array string in the
+      // database like this: "[value1, value2]"
+      // We have to send them as a array of objects to saleor. We need to find all unique values
+      // out of the array of strings.
+      if (attr.type === AttributeType.MULTISELECT) {
+        const uniqueValues = new Set<string>();
+        try {
+          for (const value of attr.values) {
+            const parsedValue = JSON.parse(value.value);
+            if (Array.isArray(parsedValue)) {
+              for (const v of parsedValue) {
+                uniqueValues.add(v);
+              }
+            }
+          }
+          values = Array.from(uniqueValues).map((value) => ({
+            value,
+            normalizedName: normalizeStrings.attributeNames(value),
+          }));
+        } catch (error) {
+          this.logger.error(
+            `Could not parse attribute values for attribute ${attr.name}: ${error}`,
+          );
+          continue;
+        }
+      }
+
+      /**
+       * Don't try to send any values for these attribute types, as they don't
+       * support values.
+       */
+      const attributeTypesWithoutValues = ["BOOLEAN", "REFERENCE", "PLAIN_TEXT"];
+      const shouldSendValues = !attributeTypesWithoutValues.includes(type);
+
       const result = await this.saleorClient.attributeCreate({
         input: {
           name: attr.name,
           slug: normalizedName,
           inputType: type,
+          /**
+           * Right now, we just support the entity type product, but could
+           * also be variant.
+           */
+          entityType:
+            attr.type === AttributeType.REFERENCE
+              ? AttributeEntityTypeEnum.Product
+              : undefined,
           type: AttributeTypeEnum.ProductType,
-          values: attr.values.map((value) => ({
-            name: value.value,
-            slug: value.normalizedName,
-          })),
+          values: shouldSendValues
+            ? values.map((v) => ({
+                name: v.value,
+              }))
+            : undefined,
         },
       });
       if (
