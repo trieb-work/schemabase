@@ -244,7 +244,9 @@ export class SaleorProductSyncService {
   }
 
   /**
-   * Manually set variant attributes as variant selection attributes
+   * Manually set variant attributes as variant selection attributes.
+   * Saleor supports ['dropdown', 'boolean', 'swatch', 'numeric'] for
+   * that only.
    */
   private async setProductTypeVariantSelectionAttributes(
     variantSelectionAttributes: string[],
@@ -338,6 +340,12 @@ export class SaleorProductSyncService {
         const variantSelectionAttributes = prodType.attributes
           .filter((a) => a.isVariantSelection)
           .filter((a) => a.attribute.saleorAttributes.length > 0)
+          // Saleor only supports certain attribute types for variant selection.
+          .filter((a) =>
+            ["dropdown", "boolean", "swatch", "numeric"].includes(
+              a.attribute.type.toString().toLowerCase(),
+            ),
+          )
           .map((a) => a.attribute.saleorAttributes[0].id);
 
         this.logger.info(
