@@ -633,7 +633,9 @@ export class SaleorProductSyncService {
               productId: createdProduct.id,
             });
           if (
+            productVariantBulkCreateResponse.productVariantBulkCreate?.errors &&
             productVariantBulkCreateResponse.productVariantBulkCreate?.errors
+              .length > 0
           ) {
             this.logger.error(
               `Error creating variants for product ${
