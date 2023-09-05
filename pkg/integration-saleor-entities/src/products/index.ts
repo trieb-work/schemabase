@@ -443,8 +443,7 @@ export class SaleorProductSyncService {
   }
 
   /**
-   * Create a product and variant in Saleor
-   * @param variantWithProduct
+   * Find and create all products, that are not yet created in Saleor
    */
   private async createProductinSaleor() {
     const productsToCreate = await this.db.productVariant.findMany({
@@ -457,7 +456,7 @@ export class SaleorProductSyncService {
         product: {
           productType: {
             saleorProductTypes: {
-              every: {
+              some: {
                 installedSaleorAppId: this.installedSaleorAppId,
               },
             },
@@ -551,7 +550,11 @@ export class SaleorProductSyncService {
          * The description as editorjs json
          */
         const description = product.product.descriptionHTML
-          ? await editorJsHelper.HTMLToEditorJS(product.product.descriptionHTML)
+          ? JSON.stringify(
+              await editorJsHelper.HTMLToEditorJS(
+                product.product.descriptionHTML,
+              ),
+            )
           : undefined;
 
         const saleorCategoryId =
@@ -562,10 +565,22 @@ export class SaleorProductSyncService {
         }
         const attributes = product.product.attributes
           .filter((a) => a.attribute.saleorAttributes.length > 0)
-          .map((a) => ({
-            id: a.attribute.saleorAttributes[0].id,
-            values: [a.value],
-          }));
+          .map((a) => {
+            /**
+             * Multiselect attributes are stored as array in our DB
+             */
+            if (a.attribute.type === "MULTISELECT") {
+              this.logger.debug(a.value);
+              return {
+                id: a.attribute.saleorAttributes[0].id,
+                values: a.value as unknown as string[],
+              };
+            }
+            return {
+              id: a.attribute.saleorAttributes[0].id,
+              values: [a.value],
+            };
+          });
         const productCreateResponse = await this.saleorClient.productCreate({
           input: {
             attributes,
@@ -579,7 +594,8 @@ export class SaleorProductSyncService {
           },
         });
         if (
-          productCreateResponse.productCreate?.errors ||
+          (productCreateResponse.productCreate?.errors &&
+            productCreateResponse.productCreate?.errors.length > 0) ||
           !productCreateResponse.productCreate?.product?.id
         ) {
           this.logger.error(
