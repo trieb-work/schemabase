@@ -244,6 +244,24 @@ model SaleorPayment {
   @@index([saleorOrderId, installedSaleorAppId])
 }
 
+
+model SaleorProduct {
+  /// Saleor internal product id
+  id String
+
+  updatedAt DateTime
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String
+
+  @@unique([id, installedSaleorAppId])
+  @@index([productId])
+  @@index([installedSaleorAppId])
+}
+
 // Saleor specific model for product variant.
 model SaleorProductVariant {
   /// Saleor internal product variant id
@@ -1687,6 +1705,8 @@ model Product {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
+  saleorProducts SaleorProduct[]
+
   descriptionHTML String? @db.Text
 
   attributes AttributeValue[]
@@ -2641,6 +2661,7 @@ model InstalledSaleorApp {
   saleorCategory             SaleorCategory[]
   saleorProductType          SaleorProductType[]
   saleorAttribute            SaleorAttribute[]
+  saleorProduct              SaleorProduct[]
 
   @@unique([domain, channelSlug])
   @@index([saleorAppId, domain])

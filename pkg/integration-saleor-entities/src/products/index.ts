@@ -448,24 +448,35 @@ export class SaleorProductSyncService {
   private async createProductinSaleor() {
     const productsToCreate = await this.db.productVariant.findMany({
       where: {
-        saleorProductVariant: {
-          none: {
-            installedSaleorAppId: this.installedSaleorAppId,
-          },
-        },
-        product: {
-          productType: {
-            saleorProductTypes: {
-              some: {
+        AND: [
+          {
+            saleorProductVariant: {
+              none: {
                 installedSaleorAppId: this.installedSaleorAppId,
               },
             },
           },
-        },
+          {
+            product: {
+              productType: {
+                saleorProductTypes: {
+                  some: {
+                    installedSaleorAppId: this.installedSaleorAppId,
+                  },
+                },
+              },
+            },
+          },
+        ],
       },
       include: {
         product: {
           include: {
+            saleorProducts: {
+              where: {
+                installedSaleorAppId: this.installedSaleorAppId,
+              },
+            },
             attributes: {
               include: {
                 attribute: {
@@ -581,34 +592,56 @@ export class SaleorProductSyncService {
               values: [a.value],
             };
           });
-        const productCreateResponse = await this.saleorClient.productCreate({
-          input: {
-            attributes,
-            category: saleorCategoryId,
-            chargeTaxes: true,
-            collections: [],
-            description,
-            name: product.product.name,
-            weight: product.weight ?? undefined,
-            productType: productType.saleorProductTypes[0].id,
-          },
-        });
-        if (
-          (productCreateResponse.productCreate?.errors &&
-            productCreateResponse.productCreate?.errors.length > 0) ||
-          !productCreateResponse.productCreate?.product?.id
-        ) {
-          this.logger.error(
-            `Error creating product ${product.sku} in Saleor: ${JSON.stringify(
-              productCreateResponse?.productCreate?.errors,
-            )}`,
+        let saleorProductId = product.product.saleorProducts?.[0]?.id;
+        if (!saleorProductId) {
+          const productCreateResponse = await this.saleorClient.productCreate({
+            input: {
+              attributes,
+              category: saleorCategoryId,
+              chargeTaxes: true,
+              collections: [],
+              description,
+              name: product.product.name,
+              weight: product.weight ?? undefined,
+              productType: productType.saleorProductTypes[0].id,
+            },
+          });
+          if (
+            (productCreateResponse.productCreate?.errors &&
+              productCreateResponse.productCreate?.errors.length > 0) ||
+            !productCreateResponse.productCreate?.product?.id
+          ) {
+            this.logger.error(
+              `Error creating product ${
+                product.sku
+              } in Saleor: ${JSON.stringify(
+                productCreateResponse?.productCreate?.errors,
+              )}`,
+            );
+            continue;
+          }
+          const createdProduct = productCreateResponse.productCreate.product;
+          saleorProductId = createdProduct.id;
+          this.logger.info(
+            `Successfully created product ${product.sku} in Saleor`,
           );
-          continue;
+          await this.db.saleorProduct.create({
+            data: {
+              id: createdProduct.id,
+              installedSaleorApp: {
+                connect: {
+                  id: this.installedSaleorAppId,
+                },
+              },
+              product: {
+                connect: {
+                  id: product.product.id,
+                },
+              },
+              updatedAt: product.updatedAt,
+            },
+          });
         }
-        const createdProduct = productCreateResponse.productCreate.product;
-        this.logger.info(
-          `Successfully created product ${product.sku} in Saleor`,
-        );
         // Bulk create the product variants
         const variantsToCreate = product.product.variants.filter(
           (v) => v.saleorProductVariant.length === 0,
@@ -630,7 +663,7 @@ export class SaleorProductSyncService {
           const productVariantBulkCreateResponse =
             await this.saleorClient.productVariantBulkCreate({
               variants: variantsToCreateInput,
-              productId: createdProduct.id,
+              productId: saleorProductId,
             });
           if (
             productVariantBulkCreateResponse.productVariantBulkCreate?.errors &&
@@ -645,6 +678,7 @@ export class SaleorProductSyncService {
                   .errors,
               )}`,
             );
+            continue;
           }
           this.logger.info(
             `Successfully created ${variantsToCreate.length} variants for product ${product.sku} in Saleor`,
@@ -669,7 +703,7 @@ export class SaleorProductSyncService {
                     id: this.installedSaleorAppId,
                   },
                 },
-                productId: createdProduct.id,
+                productId: saleorProductId,
                 updatedAt: new Date(),
                 productVariant: {
                   connect: {
@@ -684,6 +718,8 @@ export class SaleorProductSyncService {
           }
         }
       }
+    } else {
+      this.logger.info(`No products to create in Saleor`);
     }
   }
 
@@ -782,7 +818,7 @@ export class SaleorProductSyncService {
             (meta) => meta?.key === "EAN",
           )?.value;
 
-          await this.db.saleorProductVariant.upsert({
+          const resp = await this.db.saleorProductVariant.upsert({
             where: {
               id_installedSaleorAppId: {
                 id: variant.id,
@@ -946,6 +982,38 @@ export class SaleorProductSyncService {
                   ean,
                 },
               },
+            },
+            include: {
+              productVariant: {
+                include: {
+                  product: true,
+                },
+              },
+            },
+          });
+          await this.db.saleorProduct.upsert({
+            where: {
+              id_installedSaleorAppId: {
+                id: product.id,
+                installedSaleorAppId: this.installedSaleorAppId,
+              },
+            },
+            create: {
+              id: product.id,
+              updatedAt: product.updatedAt,
+              installedSaleorApp: {
+                connect: {
+                  id: this.installedSaleorAppId,
+                },
+              },
+              product: {
+                connect: {
+                  id: resp.productVariant.product.id,
+                },
+              },
+            },
+            update: {
+              updatedAt: product.updatedAt,
             },
           });
           this.logger.debug("Successfully synced", defaultLogFields);

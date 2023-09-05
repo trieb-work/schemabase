@@ -156,6 +156,19 @@ Table SaleorPayment {
   }
 }
 
+Table SaleorProduct {
+  id String [not null, note: 'Saleor internal product id']
+  updatedAt DateTime [not null]
+  product Product [not null]
+  productId String [not null]
+  installedSaleorApp InstalledSaleorApp [not null]
+  installedSaleorAppId String [not null]
+
+  indexes {
+    (id, installedSaleorAppId) [unique]
+  }
+}
+
 Table SaleorProductVariant {
   id String [not null, note: 'Saleor internal product variant id']
   productId String [not null, note: 'Saleor internal product Id']
@@ -855,6 +868,7 @@ Table Product {
   categoryId String
   tenant Tenant [not null]
   tenantId String [not null]
+  saleorProducts SaleorProduct [not null]
   descriptionHTML String
   attributes AttributeValue [not null]
 
@@ -1474,6 +1488,7 @@ Table InstalledSaleorApp {
   saleorCategory SaleorCategory [not null]
   saleorProductType SaleorProductType [not null]
   saleorAttribute SaleorAttribute [not null]
+  saleorProduct SaleorProduct [not null]
 
   indexes {
     (domain, channelSlug) [unique]
@@ -2083,6 +2098,10 @@ Ref: SaleorPayment.(saleorOrderId, installedSaleorAppId) > SaleorOrder.(id, inst
 Ref: SaleorPayment.paymentId > Payment.id [delete: Cascade]
 
 Ref: SaleorPayment.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
+
+Ref: SaleorProduct.productId > Product.id [delete: Cascade]
+
+Ref: SaleorProduct.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
 
 Ref: SaleorProductVariant.productVariantId > ProductVariant.id [delete: Cascade]
 

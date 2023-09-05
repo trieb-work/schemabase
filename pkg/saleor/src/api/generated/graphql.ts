@@ -26420,6 +26420,7 @@ export type ProductVariantBulkCreateMutation = {
       __typename?: "BulkProductError";
       field?: string | null;
       values?: Array<string> | null;
+      message?: string | null;
     }>;
   } | null;
 };
@@ -27570,6 +27571,7 @@ export const ProductVariantBulkCreateDocument = gql`
       errors {
         field
         values
+        message
       }
     }
   }
