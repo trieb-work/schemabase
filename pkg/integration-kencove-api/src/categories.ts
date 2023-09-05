@@ -171,6 +171,9 @@ export class KencoveApiAppCategorySyncService {
       const filteredLookupKencoveIds = lookupKencoveIds.filter(
         (c) => !categoriesToSkip.includes(c),
       );
+      /**
+       * All Kencove Api categories that we need to connect to this category.
+       */
       const categoriesToConnect = await this.db.kencoveApiCategory.findMany({
         where: {
           kencoveApiAppId: this.kencoveApiApp.id,
@@ -200,10 +203,19 @@ export class KencoveApiAppCategorySyncService {
 
       /**
        * The parent category of the current category with our internal Id.
+       * So when this category has a parent, that we already synced, this Id
+       * is set here
        */
-      const parentCategoryId = categoriesToConnect.find(
+      let parentCategoryId = categoriesToConnect.find(
         (c) => c.id === category.parentCategoryId.toString(),
       )?.categoryId;
+
+      if (parentCategoryId && parentCategoryId === existingCategory?.id) {
+        this.logger.debug(
+          `Category ${category.categoryName} is its own parent. Skipping.`,
+        );
+        parentCategoryId = undefined;
+      }
 
       const relatedProducts = await this.getProductIds(
         category.productIds || [],
