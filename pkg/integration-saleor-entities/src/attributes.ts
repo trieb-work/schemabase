@@ -116,6 +116,33 @@ export class SaleorAttributeSyncService {
       `Syncing ${attributesFromSaleor.length} attributes from Saleor`,
     );
 
+    const attributesFromDb = await this.db.saleorAttribute.findMany({
+      where: {
+        installedSaleorAppId: this.installedSaleorApp.id,
+      },
+    });
+
+    /**
+     * We delete these attributes from the SaleorAttributes table
+     */
+    const attributesToDelete = attributesFromDb.filter(
+      (attr) => !attributesFromSaleor.find((a) => a.id === attr.id),
+    );
+
+    if (attributesToDelete.length > 0) {
+      this.logger.info(
+        `Deleting ${attributesToDelete.length} attributes from internal database`,
+      );
+
+      await this.db.saleorAttribute.deleteMany({
+        where: {
+          id: {
+            in: attributesToDelete.map((attr) => attr.id),
+          },
+        },
+      });
+    }
+
     for (const attr of attributesFromSaleor) {
       this.logger.info(`Syncing attribute ${attr.name}`);
       if (!attr.name) continue;
@@ -237,7 +264,11 @@ export class SaleorAttributeSyncService {
        * Don't try to send any values for these attribute types, as they don't
        * support values.
        */
-      const attributeTypesWithoutValues = ["BOOLEAN", "REFERENCE", "PLAIN_TEXT"];
+      const attributeTypesWithoutValues = [
+        "BOOLEAN",
+        "REFERENCE",
+        "PLAIN_TEXT",
+      ];
       const shouldSendValues = !attributeTypesWithoutValues.includes(type);
 
       const result = await this.saleorClient.attributeCreate({

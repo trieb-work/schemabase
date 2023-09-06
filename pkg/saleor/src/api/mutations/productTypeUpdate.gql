@@ -6,6 +6,7 @@ mutation productTypeUpdate($input: ProductTypeInput!, $id: ID!) {
     errors {
       field
       message
+      code
     }
   }
 }

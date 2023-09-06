@@ -3,6 +3,7 @@ mutation productCreate($input: ProductCreateInput!) {
     errors {
       field
       message
+      code
     }
     product {
       id

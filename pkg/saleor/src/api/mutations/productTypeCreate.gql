@@ -6,6 +6,7 @@ mutation productTypeCreate($input: ProductTypeInput!) {
     errors {
       field
       message
+      code
     }
   }
 }
@@ -22,6 +23,7 @@ mutation productAttributeVariantSelection($productTypeId: ID!, $attributeId: ID!
     errors {
       field
       message
+      code
     }
   }
 }

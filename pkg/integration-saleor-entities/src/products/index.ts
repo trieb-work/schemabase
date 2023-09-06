@@ -10,6 +10,7 @@ import {
   ProductTypeFragment,
   ProductTypeUpdateMutation,
   ProductTypeUpdateMutationVariables,
+  ProductVariantBulkCreateInput,
   ProductVariantBulkCreateMutation,
   ProductVariantBulkCreateMutationVariables,
   ProductVariantStockEntryUpdateMutation,
@@ -542,8 +543,6 @@ export class SaleorProductSyncService {
         } products to create in Saleor: ${productsToCreate.map((p) => p.sku)}`,
       );
       for (const product of productsToCreate) {
-        this.logger.info(`Creating product ${product.sku} in Saleor`);
-
         const productType = product.product.productType;
         if (!productType) {
           this.logger.warn(
@@ -594,6 +593,10 @@ export class SaleorProductSyncService {
           });
         let saleorProductId = product.product.saleorProducts?.[0]?.id;
         if (!saleorProductId) {
+          this.logger.info(`Creating product ${product.sku} in Saleor`, {
+            attributes,
+          });
+
           const productCreateResponse = await this.saleorClient.productCreate({
             input: {
               attributes,
@@ -650,7 +653,9 @@ export class SaleorProductSyncService {
           this.logger.info(
             `Found ${variantsToCreate.length} variants to create for product ${product.sku} in Saleor`,
           );
-          const variantsToCreateInput = variantsToCreate.map((v) => ({
+          const variantsToCreateInput:
+            | ProductVariantBulkCreateInput
+            | ProductVariantBulkCreateInput[] = variantsToCreate.map((v) => ({
             attributes: v.attributes
               .filter((a) => a.attribute.saleorAttributes.length > 0)
               .map((a) => ({
@@ -658,6 +663,7 @@ export class SaleorProductSyncService {
                 values: [a.value],
               })),
             sku: v.sku,
+            name: v.variantName,
             trackInventory: true,
           }));
           const productVariantBulkCreateResponse =
