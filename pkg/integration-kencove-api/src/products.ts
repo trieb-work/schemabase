@@ -389,7 +389,7 @@ export class KencoveApiAppProductSyncService {
     const attributeValueDecoded = htmlDecode(attributeValue);
     const normalizedName = normalizeStrings.attributeValueNames(attributeValue);
     this.logger.debug(
-      `Setting attribute ${attribute.name}, value ${attributeValue}`,
+      `Setting attribute ${attribute.name}, value ${attributeValueDecoded}`,
     );
 
     if (isForVariant) {
@@ -823,7 +823,7 @@ export class KencoveApiAppProductSyncService {
      * and not product by product. We have for example 1000 products
      * but just 25 product types
      */
-    await this.syncProductTypeAndAttributes(products);
+    // await this.syncProductTypeAndAttributes(products);
 
     /**
      * just kencove Api product variants enhanced with all data from their parent product
@@ -899,109 +899,156 @@ export class KencoveApiAppProductSyncService {
         (c) => c.id === product.categoryId,
       )?.categoryId;
 
+      /**
+       * The internal product id of the product.
+       * As we are upserting variants, we can set
+       * this first after the variant sync
+       */
+      let internalProductId: string = "";
       for (const variant of product.variants) {
         const updatedAt = new Date(variant.updatedAt);
         const createdAt = new Date(variant.createdAt);
-        const existingProductVariant = existingProductVariants.find(
-          (p) => p.id === variant.id,
+        // const existingProductVariant = existingProductVariants.find(
+        //   (p) => p.id === variant.id,
+        // );
+
+        this.logger.info(
+          `Syncing product variant ${variant.id} of product ${product.productName}`,
         );
+
+        /**
+         * The product variant name. This value is often not clean coming from the API, so we
+         * set the value from the API just as fallback. When we have website_ref_desc attribute
+         * and we did not replace it with a different attribute, we use the value of the
+         * attribute as variant name
+         */
+        let variantName = variant.name;
         if (
-          !existingProductVariant ||
-          existingProductVariant.updatedAt < updatedAt
+          !this.kenVariantSelectionAttributeOverwrite.get(variant.id) &&
+          variant.selectorValues?.[0]?.name === "website_ref_desc"
         ) {
-          this.logger.info(
-            `Syncing product variant ${variant.id} of product ${product.productName}`,
-          );
+          const variantSelectionAttribute = this.cleanAttributes(
+            variant.selectorValues,
+          )[0];
 
-          /**
-           * The product variant name. This value is often not clean coming from the API, so we
-           * set the value from the API just as fallback. When we have website_ref_desc attribute
-           * and we did not replace it with a different attribute, we use the value of the
-           * attribute as variant name
-           */
-          let variantName = variant.name;
-          if (
-            !this.kenVariantSelectionAttributeOverwrite.get(variant.id) &&
-            variant.selectorValues?.[0]?.name === "website_ref_desc"
-          ) {
-            const variantSelectionAttribute = this.cleanAttributes(
-              variant.selectorValues,
-            )[0];
-
-            if (variantSelectionAttribute) {
-              this.logger.debug(
-                `Using attribute ${variantSelectionAttribute.name} as variant name`,
-              );
-              variantName = variantSelectionAttribute.value;
-            }
+          if (variantSelectionAttribute) {
+            this.logger.debug(
+              `Using attribute ${variantSelectionAttribute.value} as variant name`,
+            );
+            variantName = variantSelectionAttribute.value;
           }
+        }
 
-          /**
-           * Upsert the product variant. Return the upserted variant from our DB
-           */
-          const upsertedVariant = await this.db.kencoveApiProductVariant.upsert(
-            {
-              where: {
-                id_kencoveApiAppId: {
-                  id: variant.id,
-                  kencoveApiAppId: this.kencoveApiApp.id,
-                },
+        /**
+         * Upsert the product variant. Return the upserted variant from our DB
+         */
+        const upsertedVariant = await this.db.kencoveApiProductVariant.upsert({
+          where: {
+            id_kencoveApiAppId: {
+              id: variant.id,
+              kencoveApiAppId: this.kencoveApiApp.id,
+            },
+          },
+          create: {
+            id: variant.id,
+            kencoveApiApp: {
+              connect: {
+                id: this.kencoveApiApp.id,
               },
-              create: {
-                id: variant.id,
-                kencoveApiApp: {
-                  connect: {
-                    id: this.kencoveApiApp.id,
+            },
+            createdAt,
+            updatedAt,
+            productId: product.productId,
+            productVariant: {
+              connectOrCreate: {
+                where: {
+                  sku_tenantId: {
+                    sku: variant.sku,
+                    tenantId: this.kencoveApiApp.tenantId,
                   },
                 },
-                createdAt,
-                updatedAt,
-                productId: product.productId,
-                productVariant: {
-                  connectOrCreate: {
-                    where: {
-                      sku_tenantId: {
-                        sku: variant.sku,
-                        tenantId: this.kencoveApiApp.tenantId,
-                      },
+                create: {
+                  id: id.id("variant"),
+                  sku: variant.sku,
+                  weight: variant.weight,
+                  variantName,
+                  tenant: {
+                    connect: {
+                      id: this.kencoveApiApp.tenantId,
                     },
-                    create: {
-                      id: id.id("variant"),
-                      sku: variant.sku,
-                      weight: variant.weight,
-                      variantName,
-                      tenant: {
-                        connect: {
-                          id: this.kencoveApiApp.tenantId,
+                  },
+                  product: {
+                    connectOrCreate: {
+                      where: {
+                        normalizedName_tenantId: {
+                          normalizedName: normalizedProductName,
+                          tenantId: this.kencoveApiApp.tenantId,
                         },
                       },
-                      product: {
-                        connectOrCreate: {
-                          where: {
-                            normalizedName_tenantId: {
-                              normalizedName: normalizedProductName,
-                              tenantId: this.kencoveApiApp.tenantId,
-                            },
+                      create: {
+                        id: id.id("product"),
+                        name: product.productName,
+                        normalizedName: normalizedProductName,
+                        descriptionHTML: product.description,
+                        productType: {
+                          connect: {
+                            id: kenProdTypeWithProductType.productTypeId,
                           },
-                          create: {
-                            id: id.id("product"),
-                            name: product.productName,
-                            normalizedName: normalizedProductName,
-                            descriptionHTML: product.description,
-                            productType: {
-                              connect: {
-                                id: kenProdTypeWithProductType.productTypeId,
-                              },
-                            },
-                            category: category
-                              ? { connect: { id: category } }
-                              : undefined,
-                            tenant: {
-                              connect: {
-                                id: this.kencoveApiApp.tenantId,
-                              },
-                            },
-                            countryOfOrigin,
+                        },
+                        category: category
+                          ? { connect: { id: category } }
+                          : undefined,
+                        tenant: {
+                          connect: {
+                            id: this.kencoveApiApp.tenantId,
+                          },
+                        },
+                        countryOfOrigin,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          update: {
+            updatedAt,
+            productId: product.productId,
+            productVariant: {
+              connectOrCreate: {
+                where: {
+                  sku_tenantId: {
+                    sku: variant.sku,
+                    tenantId: this.kencoveApiApp.tenantId,
+                  },
+                },
+                create: {
+                  id: id.id("variant"),
+                  sku: variant.sku,
+                  tenant: {
+                    connect: {
+                      id: this.kencoveApiApp.tenantId,
+                    },
+                  },
+                  product: {
+                    connectOrCreate: {
+                      where: {
+                        normalizedName_tenantId: {
+                          normalizedName: normalizedProductName,
+                          tenantId: this.kencoveApiApp.tenantId,
+                        },
+                      },
+                      create: {
+                        id: id.id("product"),
+                        name: variant.productName,
+                        normalizedName: normalizedProductName,
+                        countryOfOrigin,
+                        category: category
+                          ? { connect: { id: category } }
+                          : undefined,
+                        tenant: {
+                          connect: {
+                            id: this.kencoveApiApp.tenantId,
                           },
                         },
                       },
@@ -1010,131 +1057,88 @@ export class KencoveApiAppProductSyncService {
                 },
               },
               update: {
-                updatedAt,
-                productId: product.productId,
-                productVariant: {
-                  connectOrCreate: {
-                    where: {
-                      sku_tenantId: {
-                        sku: variant.sku,
-                        tenantId: this.kencoveApiApp.tenantId,
-                      },
-                    },
-                    create: {
-                      id: id.id("variant"),
-                      sku: variant.sku,
-                      tenant: {
-                        connect: {
-                          id: this.kencoveApiApp.tenantId,
-                        },
-                      },
-                      product: {
-                        connectOrCreate: {
-                          where: {
-                            normalizedName_tenantId: {
-                              normalizedName: normalizedProductName,
-                              tenantId: this.kencoveApiApp.tenantId,
-                            },
-                          },
-                          create: {
-                            id: id.id("product"),
-                            name: variant.productName,
-                            normalizedName: normalizedProductName,
-                            countryOfOrigin,
-                            category: category
-                              ? { connect: { id: category } }
-                              : undefined,
-                            tenant: {
-                              connect: {
-                                id: this.kencoveApiApp.tenantId,
-                              },
-                            },
-                          },
-                        },
-                      },
-                    },
-                  },
+                weight: variant.weight,
+                variantName,
+                product: {
                   update: {
-                    weight: variant.weight,
-                    variantName,
-                    product: {
-                      update: {
-                        descriptionHTML: product.description,
-                        productType: {
-                          connect: {
-                            id: kenProdTypeWithProductType.productTypeId,
-                          },
-                        },
+                    descriptionHTML: product.description,
+                    productType: {
+                      connect: {
+                        id: kenProdTypeWithProductType.productTypeId,
                       },
                     },
                   },
                 },
               },
-              include: {
-                productVariant: true,
-              },
             },
-          );
+          },
+          include: {
+            productVariant: true,
+          },
+        });
+        internalProductId = upsertedVariant.productVariant.productId;
 
-          /// set the attribute values. We need to check the product type
-          /// to see, if an attribute is used as product, or variant
-          /// attribute create a value entry accordingly.
-          const allAttributes = [
-            ...variant.attributeValues,
-            ...variant.selectorValues,
-          ];
-          for (const attribute of this.cleanAttributes(allAttributes)) {
-            if (attribute.name === "website_ref_desc") {
-              continue;
-            }
-            const matchedAttr =
-              kenProdTypeWithProductType.productType.attributes.find((a) => {
-                if (a.attribute.kencoveApiAttributes.length === 0) {
-                  return false;
-                }
-                const kenAttribute = a.attribute.kencoveApiAttributes[0];
-                if (kenAttribute.id === attribute.attribute_id.toString()) {
-                  this.logger.debug(
-                    `Found attribute ${attribute.name} in product ` +
-                      `type ${kenProdTypeWithProductType.productType.name}`,
-                  );
-                  return true;
-                }
+        /// set the attribute values. We need to check the product type
+        /// to see, if an attribute is used as product, or variant
+        /// attribute create a value entry accordingly.
+        const allAttributes = [
+          ...variant.attributeValues,
+          ...variant.selectorValues,
+        ];
+        for (const attribute of this.cleanAttributes(allAttributes)) {
+          if (attribute.name === "website_ref_desc") {
+            continue;
+          }
+          const matchedAttr =
+            kenProdTypeWithProductType.productType.attributes.find((a) => {
+              if (a.attribute.kencoveApiAttributes.length === 0) {
                 return false;
-              });
-            if (!matchedAttr) {
-              this.logger.debug(
-                `Could not find attribute ${attribute.name} in product ` +
-                  `type ${kenProdTypeWithProductType.productType.name}`,
-              );
-              continue;
-            }
-            /**
-             * We get values for dropdown / multiselect attributes from the API
-             * as array of string in the values "["value1", "value2"]". We need to
-             * create independent attribute values for each value and call "setAttributeValue"
-             * for each of them. We test, if we have an array.
-             */
-            if (attribute.value.match(/^"\[.*\]"$/)) {
-              const values = JSON.parse(attribute.value);
-              for (const value of values) {
-                await this.setAttributeValue({
-                  productId: upsertedVariant.productVariant.productId,
-                  variantId: upsertedVariant.productVariantId,
-                  attribute: matchedAttr.attribute,
-                  attributeValue: value,
-                  isForVariant: matchedAttr?.isForVariant ?? false,
-                });
               }
-            } else {
+              const kenAttribute = a.attribute.kencoveApiAttributes[0];
+              if (kenAttribute.id === attribute.attribute_id.toString()) {
+                this.logger.debug(
+                  `Found attribute ${attribute.name} in product ` +
+                    `type ${kenProdTypeWithProductType.productType.name}`,
+                );
+                return true;
+              }
+              return false;
+            });
+          if (!matchedAttr) {
+            this.logger.debug(
+              `Could not find attribute ${attribute.name} in product ` +
+                `type ${kenProdTypeWithProductType.productType.name}`,
+            );
+            continue;
+          }
+          /**
+           * We get values for dropdown / multiselect attributes from the API
+           * as array of string in the values "["value1", "value2"]". We need to
+           * create independent attribute values for each value and call "setAttributeValue"
+           * for each of them. We test, if we have an array.
+           */
+          if (attribute.value.match(/^\[.*\]$/)) {
+            this.logger.debug(
+              `Found array of values for attribute ${attribute.name}`,
+            );
+            const values = JSON.parse(attribute.value);
+            for (const value of values) {
               await this.setAttributeValue({
                 productId: upsertedVariant.productVariant.productId,
                 variantId: upsertedVariant.productVariantId,
                 attribute: matchedAttr.attribute,
-                attributeValue: attribute.value,
+                attributeValue: value,
                 isForVariant: matchedAttr?.isForVariant ?? false,
               });
             }
+          } else {
+            await this.setAttributeValue({
+              productId: upsertedVariant.productVariant.productId,
+              variantId: upsertedVariant.productVariantId,
+              attribute: matchedAttr.attribute,
+              attributeValue: attribute.value,
+              isForVariant: matchedAttr?.isForVariant ?? false,
+            });
           }
         }
       }
@@ -1144,7 +1148,7 @@ export class KencoveApiAppProductSyncService {
        * as product attributes
        */
       await this.setAccessoryAndAlternativeItems(
-        product.productId,
+        internalProductId,
         product.accessories?.map((a) => a.itemCode),
         product.alternatives?.map((a) => a.itemCode),
       );
