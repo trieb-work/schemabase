@@ -823,7 +823,7 @@ export class KencoveApiAppProductSyncService {
      * and not product by product. We have for example 1000 products
      * but just 25 product types
      */
-    // await this.syncProductTypeAndAttributes(products);
+    await this.syncProductTypeAndAttributes(products);
 
     /**
      * just kencove Api product variants enhanced with all data from their parent product
