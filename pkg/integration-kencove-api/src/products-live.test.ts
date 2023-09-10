@@ -36,5 +36,5 @@ describe("Kencove product Test", () => {
       db: prismaClient,
     });
     await service.syncToECI();
-  }, 1000000);
+  }, 10000000);
 });
