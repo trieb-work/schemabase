@@ -26318,6 +26318,7 @@ export type ProductCreateMutation = {
       __typename?: "ProductError";
       field?: string | null;
       message?: string | null;
+      code: ProductErrorCode;
     }>;
     product?: {
       __typename?: "Product";
@@ -26340,24 +26341,7 @@ export type ProductTypeCreateMutation = {
       __typename?: "ProductError";
       field?: string | null;
       message?: string | null;
-    }>;
-  } | null;
-};
-
-export type ProductAttributeVariantSelectionMutationVariables = Exact<{
-  productTypeId: Scalars["ID"];
-  attributeId: Scalars["ID"];
-}>;
-
-export type ProductAttributeVariantSelectionMutation = {
-  __typename?: "Mutation";
-  productAttributeAssignmentUpdate?: {
-    __typename?: "ProductAttributeAssignmentUpdate";
-    productType?: { __typename?: "ProductType"; id: string } | null;
-    errors: Array<{
-      __typename?: "ProductError";
-      field?: string | null;
-      message?: string | null;
+      code: ProductErrorCode;
     }>;
   } | null;
 };
@@ -26371,6 +26355,25 @@ export type ProductTypeUpdateMutation = {
   __typename?: "Mutation";
   productTypeUpdate?: {
     __typename?: "ProductTypeUpdate";
+    productType?: { __typename?: "ProductType"; id: string } | null;
+    errors: Array<{
+      __typename?: "ProductError";
+      field?: string | null;
+      message?: string | null;
+      code: ProductErrorCode;
+    }>;
+  } | null;
+};
+
+export type ProductAttributeVariantSelectionMutationVariables = Exact<{
+  productTypeId: Scalars["ID"];
+  attributeId: Scalars["ID"];
+}>;
+
+export type ProductAttributeVariantSelectionMutation = {
+  __typename?: "Mutation";
+  productAttributeAssignmentUpdate?: {
+    __typename?: "ProductAttributeAssignmentUpdate";
     productType?: { __typename?: "ProductType"; id: string } | null;
     errors: Array<{
       __typename?: "ProductError";
@@ -27487,6 +27490,7 @@ export const ProductCreateDocument = gql`
       errors {
         field
         message
+        code
       }
       product {
         id
@@ -27506,6 +27510,21 @@ export const ProductTypeCreateDocument = gql`
       errors {
         field
         message
+        code
+      }
+    }
+  }
+`;
+export const ProductTypeUpdateDocument = gql`
+  mutation productTypeUpdate($input: ProductTypeInput!, $id: ID!) {
+    productTypeUpdate(input: $input, id: $id) {
+      productType {
+        id
+      }
+      errors {
+        field
+        message
+        code
       }
     }
   }
@@ -27519,19 +27538,6 @@ export const ProductAttributeVariantSelectionDocument = gql`
       productTypeId: $productTypeId
       operations: { id: $attributeId, variantSelection: true }
     ) {
-      productType {
-        id
-      }
-      errors {
-        field
-        message
-      }
-    }
-  }
-`;
-export const ProductTypeUpdateDocument = gql`
-  mutation productTypeUpdate($input: ProductTypeInput!, $id: ID!) {
-    productTypeUpdate(input: $input, id: $id) {
       productType {
         id
       }
@@ -28307,19 +28313,6 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
         options,
       ) as Promise<ProductTypeCreateMutation>;
     },
-    productAttributeVariantSelection(
-      variables: ProductAttributeVariantSelectionMutationVariables,
-      options?: C,
-    ): Promise<ProductAttributeVariantSelectionMutation> {
-      return requester<
-        ProductAttributeVariantSelectionMutation,
-        ProductAttributeVariantSelectionMutationVariables
-      >(
-        ProductAttributeVariantSelectionDocument,
-        variables,
-        options,
-      ) as Promise<ProductAttributeVariantSelectionMutation>;
-    },
     productTypeUpdate(
       variables: ProductTypeUpdateMutationVariables,
       options?: C,
@@ -28332,6 +28325,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
         variables,
         options,
       ) as Promise<ProductTypeUpdateMutation>;
+    },
+    productAttributeVariantSelection(
+      variables: ProductAttributeVariantSelectionMutationVariables,
+      options?: C,
+    ): Promise<ProductAttributeVariantSelectionMutation> {
+      return requester<
+        ProductAttributeVariantSelectionMutation,
+        ProductAttributeVariantSelectionMutationVariables
+      >(
+        ProductAttributeVariantSelectionDocument,
+        variables,
+        options,
+      ) as Promise<ProductAttributeVariantSelectionMutation>;
     },
     productVariantChannelListingUpdate(
       variables: ProductVariantChannelListingUpdateMutationVariables,

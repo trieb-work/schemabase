@@ -733,7 +733,8 @@ Table Attribute {
   type AttributeType [not null]
   required Boolean [default: false, note: 'Is the attribute mandatory to be set, or can it be left blank']
   slug String [note: 'An understandable slug']
-  values AttributeValue [not null]
+  productValues AttributeValueProduct [not null, note: 'Values for product attributes']
+  productVariantValues AttributeValueVariant [not null, note: 'Values for variant attributes']
   productTypeAttributes ProductTypeAttribute [not null]
   tenant Tenant [not null]
   tenantId String [not null]
@@ -745,28 +746,51 @@ Table Attribute {
   }
 }
 
-Table AttributeValue {
+Table AttributeValueProduct {
   id String [pk]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-  value String [not null, note: 'Represent value of the attribute value, like text string. When hexColor is additionally used, you always need a string value as well ']
+  value String [not null, note: 'Represent value of the attribute value, like text string. When hexColor is additionally used, you always need a string value as well
+When attribute is multiselect/dropdown, we have one entry per value ']
   hexColor String [note: 'color values for swatch attributes']
   normalizedName String [not null, note: 'We always set a normalized name for the attribute value. For example, if the value is the hex code for red, we set "red" as the normalized name']
   attribute Attribute [not null]
   attributeId String [not null]
-  product Product [note: 'When attribute is a product, this relation is set']
-  productId String
-  productVariant ProductVariant [note: 'When attribute is a variant attribute, this relation is set']
-  productVariantId String
+  product Product [not null, note: 'When attribute is a product attribute, this relation is set']
+  productId String [not null]
   tenant Tenant [not null]
   tenantId String [not null]
 
   indexes {
-    (normalizedName, attributeId, tenantId) [unique]
+    (productId, attributeId, normalizedName, tenantId) [unique]
   }
 
-  Note: 'attributes values for attributes. Attributes
-can be assigned to products and variants'
+  Note: 'attributes values for attributes. We have to separate models for product and variant attributes,
+This model is used to store values for product attributes'
+}
+
+Table AttributeValueVariant {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  value String [not null, note: 'Represent value of the attribute value, like text string. 
+When hexColor is additionally used, you always need a string value as well
+When the attribute type is "reference", we use the id of the referenced product or variant ']
+  hexColor String [note: 'color values for swatch attributes']
+  normalizedName String [not null, note: 'We always set a normalized name for the attribute value. For example, if the value is the hex code for red, we set "red" as the normalized name']
+  attribute Attribute [not null]
+  attributeId String [not null]
+  productVariant ProductVariant [not null, note: 'When attribute is a variant attribute, this relation is set']
+  productVariantId String [not null]
+  tenant Tenant [not null]
+  tenantId String [not null]
+
+  indexes {
+    (productVariantId, attributeId, normalizedName, tenantId) [unique]
+  }
+
+  Note: 'attributes values for attributes. We have to separate models for product and variant attributes,
+This model is used to store values for variant attributes'
 }
 
 Table ProductTag {
@@ -870,7 +894,7 @@ Table Product {
   tenantId String [not null]
   saleorProducts SaleorProduct [not null]
   descriptionHTML String
-  attributes AttributeValue [not null]
+  attributes AttributeValueProduct [not null]
 
   indexes {
     (name, tenantId) [unique]
@@ -904,7 +928,7 @@ Table ProductVariant {
   xentralArtikel XentralArtikel [not null]
   saleorProductVariant SaleorProductVariant [not null]
   kencoveApiProductVariant KencoveApiProductVariant [not null]
-  attributes AttributeValue [not null]
+  attributes AttributeValueVariant [not null]
   stockOnHand Int
   isBundleProduct Boolean [not null, default: false]
   isProductBundle Boolean [not null, default: false, note: 'if this product is actually a "just-in-time" bundle, not a composite item.
@@ -1533,7 +1557,8 @@ Table Tenant {
   datevApps DatevApp [not null]
   UPSTrackingApps UPSTrackingApp [not null]
   attributes Attribute [not null]
-  attributeValues AttributeValue [not null]
+  attributeProductValues AttributeValueProduct [not null]
+  attributeVariantValues AttributeValueVariant [not null]
   rewiewsioApps ReviewsioApp [not null]
   eci_User_Tenants eci_User_Tenant [not null]
   kencoveApiApps KencoveApiApp [not null]
@@ -2004,7 +2029,8 @@ Enum AttributeType {
   DROPDOWN
   MULTISELECT
   FILE
-  REFERENCE
+  PRODUCT_REFERENCE
+  VARIANT_REFERENCE
   NUMERIC
   RICH_TEXT
   PLAIN_TEXT
@@ -2235,13 +2261,17 @@ Ref: Address.tenantId > Tenant.id [delete: Cascade]
 
 Ref: Attribute.tenantId > Tenant.id [delete: Cascade]
 
-Ref: AttributeValue.attributeId > Attribute.id [delete: Cascade]
+Ref: AttributeValueProduct.attributeId > Attribute.id [delete: Cascade]
 
-Ref: AttributeValue.productId > Product.id
+Ref: AttributeValueProduct.productId > Product.id
 
-Ref: AttributeValue.productVariantId > ProductVariant.id
+Ref: AttributeValueProduct.tenantId > Tenant.id [delete: Cascade]
 
-Ref: AttributeValue.tenantId > Tenant.id [delete: Cascade]
+Ref: AttributeValueVariant.attributeId > Attribute.id [delete: Cascade]
+
+Ref: AttributeValueVariant.productVariantId > ProductVariant.id
+
+Ref: AttributeValueVariant.tenantId > Tenant.id [delete: Cascade]
 
 Ref: ProductTag.tenantId > Tenant.id [delete: Cascade]
 

@@ -89,7 +89,7 @@ model SaleorProductType {
   @@index([installedSaleorAppId])
 }
 
-model SaleorAttribute {
+model SaleorAttribute {
   /// Saleor Internal Id
   id String
 
@@ -243,7 +243,6 @@ model SaleorPayment {
   @@index([saleorOrderId])
   @@index([saleorOrderId, installedSaleorAppId])
 }
-
 
 model SaleorProduct {
   /// Saleor internal product id
@@ -1472,7 +1471,8 @@ enum AttributeType {
   DROPDOWN
   MULTISELECT
   FILE
-  REFERENCE
+  PRODUCT_REFERENCE
+  VARIANT_REFERENCE
   NUMERIC
   RICH_TEXT
   PLAIN_TEXT
@@ -1501,7 +1501,11 @@ model Attribute {
   /// An understandable slug
   slug String?
 
-  values                AttributeValue[]
+  /// Values for product attributes
+  productValues        AttributeValueProduct[]
+  /// Values for variant attributes
+  productVariantValues AttributeValueVariant[]
+
   productTypeAttributes ProductTypeAttribute[]
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -1515,15 +1519,16 @@ model Attribute {
   @@index([normalizedName])
 }
 
-/// attributes values for attributes. Attributes
-/// can be assigned to products and variants
-model AttributeValue {
+/// attributes values for attributes. We have to separate models for product and variant attributes,
+/// This model is used to store values for product attributes
+model AttributeValueProduct {
   // eci internal id
   id        String   @id
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  /// Represent value of the attribute value, like text string. When hexColor is additionally used, you always need a string value as well 
+  /// Represent value of the attribute value, like text string. When hexColor is additionally used, you always need a string value as well
+  /// When attribute is multiselect/dropdown, we have one entry per value 
   value String
 
   /// color values for swatch attributes
@@ -1535,21 +1540,51 @@ model AttributeValue {
   attribute   Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
   attributeId String
 
-  /// When attribute is a product, this relation is set
-  product   Product? @relation(fields: [productId], references: [id])
-  productId String?
-
-  /// When attribute is a variant attribute, this relation is set
-  productVariant   ProductVariant? @relation(fields: [productVariantId], references: [id])
-  productVariantId String?
+  /// When attribute is a product attribute, this relation is set
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  @@unique([normalizedName, attributeId, tenantId])
+  @@unique([productId, attributeId, normalizedName, tenantId])
   @@index([attributeId])
   @@index([tenantId])
   @@index([productId])
+}
+
+/// attributes values for attributes. We have to separate models for product and variant attributes,
+/// This model is used to store values for variant attributes
+model AttributeValueVariant {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// Represent value of the attribute value, like text string. 
+  /// When hexColor is additionally used, you always need a string value as well
+  /// When the attribute type is "reference", we use the id of the referenced product or variant 
+  value String
+
+  /// color values for swatch attributes
+  hexColor String?
+
+  /// We always set a normalized name for the attribute value. For example, if the value is the hex code for red, we set "red" as the normalized name
+  normalizedName String
+
+  attribute   Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  attributeId String
+
+  /// When attribute is a variant attribute, this relation is set
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
+  productVariantId String
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  @@unique([productVariantId, attributeId, normalizedName, tenantId])
+  @@index([attributeId])
+  @@index([tenantId])
   @@index([productVariantId])
 }
 
@@ -1648,7 +1683,7 @@ model ProductType {
   isVariant              Boolean
   products               Product[]
   /// Links to the attributes that belong to this product type. This relational table defines also if attributes are variant selection attributes or not
-  attributes             ProductTypeAttribute[] 
+  attributes             ProductTypeAttribute[]
   saleorProductTypes     SaleorProductType[]
   kencoveApiProductTypes KencoveApiProductType[]
   tenant                 Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -1709,7 +1744,7 @@ model Product {
 
   descriptionHTML String? @db.Text
 
-  attributes AttributeValue[]
+  attributes AttributeValueProduct[]
 
   @@unique([name, tenantId])
   @@unique([normalizedName, tenantId])
@@ -1771,7 +1806,7 @@ model ProductVariant {
 
   kencoveApiProductVariant KencoveApiProductVariant[]
 
-  attributes AttributeValue[]
+  attributes AttributeValueVariant[]
 
   // Available physical stock over all warehouses
   stockOnHand Int?
@@ -2714,7 +2749,8 @@ model Tenant {
   datevApps                   DatevApp[]
   UPSTrackingApps             UPSTrackingApp[]
   attributes                  Attribute[]
-  attributeValues             AttributeValue[]
+  attributeProductValues      AttributeValueProduct[]
+  attributeVariantValues      AttributeValueVariant[]
   rewiewsioApps               ReviewsioApp[]
   eci_User_Tenants            eci_User_Tenant[]
   kencoveApiApps              KencoveApiApp[]

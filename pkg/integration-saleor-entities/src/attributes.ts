@@ -47,7 +47,7 @@ const attributeTypeMappingSaleorSchemabase = {
   [AttributeInputTypeEnum.Dropdown]: AttributeType.DROPDOWN,
   [AttributeInputTypeEnum.Multiselect]: AttributeType.MULTISELECT,
   [AttributeInputTypeEnum.File]: AttributeType.FILE,
-  [AttributeInputTypeEnum.Reference]: AttributeType.REFERENCE,
+  [AttributeInputTypeEnum.Reference]: AttributeType.PRODUCT_REFERENCE,
   [AttributeInputTypeEnum.Boolean]: AttributeType.BOOLEAN,
   [AttributeInputTypeEnum.Date]: AttributeType.DATE,
   [AttributeInputTypeEnum.DateTime]: AttributeType.DATE,
@@ -209,7 +209,10 @@ export class SaleorAttributeSyncService {
         },
       },
       include: {
-        values: {
+        productValues: {
+          distinct: ["normalizedName"],
+        },
+        productVariantValues: {
           distinct: ["normalizedName"],
         },
       },
@@ -228,37 +231,22 @@ export class SaleorAttributeSyncService {
 
       const type = this.matchInternalTypeWithSaleorAttributeType(attr.type);
 
-      let values = attr.values.map((v) => ({
+      /**
+       * Pulling all distinct values from product and variant
+       * attribute values
+       */
+      const values = attr.productValues.map((v) => ({
         value: v.value,
         normalizedName: v.normalizedName,
       }));
-
-      // We store multi select values as a array string in the
-      // database like this: "[value1, value2]"
-      // We have to send them as a array of objects to saleor. We need to find all unique values
-      // out of the array of strings.
-      if (attr.type === AttributeType.MULTISELECT) {
-        const uniqueValues = new Set<string>();
-        try {
-          for (const value of attr.values) {
-            const parsedValue = JSON.parse(value.value);
-            if (Array.isArray(parsedValue)) {
-              for (const v of parsedValue) {
-                uniqueValues.add(v);
-              }
-            }
-          }
-          values = Array.from(uniqueValues).map((value) => ({
-            value,
-            normalizedName: normalizeStrings.attributeNames(value),
-          }));
-        } catch (error) {
-          this.logger.error(
-            `Could not parse attribute values for attribute ${attr.name}: ${error}`,
-          );
-          continue;
+      attr.productVariantValues.forEach((v) => {
+        if (!values.find((value) => value.value === v.value)) {
+          values.push({
+            value: v.value,
+            normalizedName: v.normalizedName,
+          });
         }
-      }
+      });
 
       /**
        * Don't try to send any values for these attribute types, as they don't
@@ -277,13 +265,12 @@ export class SaleorAttributeSyncService {
           slug: normalizedName,
           inputType: type,
           /**
-           * Right now, we just support the entity type product, but could
-           * also be variant.
+           * We support product and product variant references
            */
           entityType:
-            attr.type === AttributeType.REFERENCE
+            attr.type === AttributeType.PRODUCT_REFERENCE
               ? AttributeEntityTypeEnum.Product
-              : undefined,
+              : AttributeEntityTypeEnum.ProductVariant,
           type: AttributeTypeEnum.ProductType,
           values: shouldSendValues
             ? values.map((v) => ({
