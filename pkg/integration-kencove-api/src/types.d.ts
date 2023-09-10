@@ -96,7 +96,9 @@ export type KencoveApiPackage = {
 export type KencoveApiAttributeInProduct = {
   name: string;
   /**
-   * Attribute value
+   * Attribute value. Can be for example:
+   * "[\"13 Gauge\", \"10 Gauge\", \"11 Gauge\", \"12½ Gauge\", \"14 Gauge\"]"
+   * or just a string: "Pack 20". We have to clean this up.
    */
   value: string;
   /**
@@ -133,6 +135,21 @@ export type KencoveApiProduct = {
   website_description: string;
   createdAt: string;
   updatedAt: string;
+  /**
+   * Alternative products. These are actually variants
+   */
+  alternatives: KencoveApiAAItem[] | null;
+  /**
+   * Alternative products. These are actually variants
+   */
+  accessories: KencoveApiAAItem[] | null;
+};
+type KencoveApiAAItem = {
+  /**
+   * Variant Id
+   */
+  product_template_id: number;
+  itemCode: string;
 };
 
 export type KencoveApiCategory = {

@@ -1,0 +1,10 @@
+mutation deleteProducts($ids: [ID!]!) {
+  productBulkDelete(ids: $ids) {
+    count
+    errors {
+      field
+      message
+      code
+    }
+  }
+}

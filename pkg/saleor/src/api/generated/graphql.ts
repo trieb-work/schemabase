@@ -26328,6 +26328,24 @@ export type ProductCreateMutation = {
   } | null;
 };
 
+export type DeleteProductsMutationVariables = Exact<{
+  ids: Array<Scalars["ID"]> | Scalars["ID"];
+}>;
+
+export type DeleteProductsMutation = {
+  __typename?: "Mutation";
+  productBulkDelete?: {
+    __typename?: "ProductBulkDelete";
+    count: number;
+    errors: Array<{
+      __typename?: "ProductError";
+      field?: string | null;
+      message?: string | null;
+      code: ProductErrorCode;
+    }>;
+  } | null;
+};
+
 export type ProductTypeCreateMutationVariables = Exact<{
   input: ProductTypeInput;
 }>;
@@ -27501,6 +27519,18 @@ export const ProductCreateDocument = gql`
     }
   }
 `;
+export const DeleteProductsDocument = gql`
+  mutation deleteProducts($ids: [ID!]!) {
+    productBulkDelete(ids: $ids) {
+      count
+      errors {
+        field
+        message
+        code
+      }
+    }
+  }
+`;
 export const ProductTypeCreateDocument = gql`
   mutation productTypeCreate($input: ProductTypeInput!) {
     productTypeCreate(input: $input) {
@@ -28299,6 +28329,16 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
         variables,
         options,
       ) as Promise<ProductCreateMutation>;
+    },
+    deleteProducts(
+      variables: DeleteProductsMutationVariables,
+      options?: C,
+    ): Promise<DeleteProductsMutation> {
+      return requester<DeleteProductsMutation, DeleteProductsMutationVariables>(
+        DeleteProductsDocument,
+        variables,
+        options,
+      ) as Promise<DeleteProductsMutation>;
     },
     productTypeCreate(
       variables: ProductTypeCreateMutationVariables,
