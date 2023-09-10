@@ -447,23 +447,21 @@ export class SaleorProductSyncService {
    * Find and create all products, that are not yet created in Saleor
    */
   private async createProductinSaleor() {
-    const productsToCreate = await this.db.productVariant.findMany({
+    const productsToCreate = await this.db.product.findMany({
       where: {
         AND: [
           {
-            saleorProductVariant: {
+            saleorProducts: {
               none: {
                 installedSaleorAppId: this.installedSaleorAppId,
               },
             },
           },
           {
-            product: {
-              productType: {
-                saleorProductTypes: {
-                  some: {
-                    installedSaleorAppId: this.installedSaleorAppId,
-                  },
+            productType: {
+              saleorProductTypes: {
+                some: {
+                  installedSaleorAppId: this.installedSaleorAppId,
                 },
               },
             },
@@ -471,13 +469,45 @@ export class SaleorProductSyncService {
         ],
       },
       include: {
-        product: {
+        saleorProducts: {
+          where: {
+            installedSaleorAppId: this.installedSaleorAppId,
+          },
+        },
+        attributes: {
           include: {
-            saleorProducts: {
+            attribute: {
+              include: {
+                saleorAttributes: {
+                  where: {
+                    installedSaleorAppId: this.installedSaleorAppId,
+                  },
+                },
+              },
+            },
+          },
+        },
+        productType: {
+          include: {
+            attributes: true,
+            saleorProductTypes: {
               where: {
                 installedSaleorAppId: this.installedSaleorAppId,
               },
             },
+          },
+        },
+        category: {
+          include: {
+            saleorCategories: {
+              where: {
+                installedSaleorAppId: this.installedSaleorAppId,
+              },
+            },
+          },
+        },
+        variants: {
+          include: {
             attributes: {
               include: {
                 attribute: {
@@ -491,45 +521,9 @@ export class SaleorProductSyncService {
                 },
               },
             },
-            productType: {
-              include: {
-                attributes: true,
-                saleorProductTypes: {
-                  where: {
-                    installedSaleorAppId: this.installedSaleorAppId,
-                  },
-                },
-              },
-            },
-            category: {
-              include: {
-                saleorCategories: {
-                  where: {
-                    installedSaleorAppId: this.installedSaleorAppId,
-                  },
-                },
-              },
-            },
-            variants: {
-              include: {
-                attributes: {
-                  include: {
-                    attribute: {
-                      include: {
-                        saleorAttributes: {
-                          where: {
-                            installedSaleorAppId: this.installedSaleorAppId,
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-                saleorProductVariant: {
-                  where: {
-                    installedSaleorAppId: this.installedSaleorAppId,
-                  },
-                },
+            saleorProductVariant: {
+              where: {
+                installedSaleorAppId: this.installedSaleorAppId,
               },
             },
           },
@@ -540,40 +534,37 @@ export class SaleorProductSyncService {
       this.logger.info(
         `Found ${
           productsToCreate.length
-        } products to create in Saleor: ${productsToCreate.map((p) => p.sku)}`,
+        } products to create in Saleor: ${productsToCreate.map((p) => p.name)}`,
       );
       for (const product of productsToCreate) {
-        const productType = product.product.productType;
+        const productType = product.productType;
         if (!productType) {
           this.logger.warn(
-            `Product ${product.sku} has no product type. Skipping`,
+            `Product ${product.name} has no product type. Skipping`,
           );
           continue;
         }
         if (!productType.saleorProductTypes?.[0]?.id) {
           this.logger.warn(
-            `Product ${product.sku} has no product type in Saleor. Skipping`,
+            `Product ${product.name} has no product type in Saleor. Skipping`,
           );
           continue;
         }
         /**
          * The description as editorjs json
          */
-        const description = product.product.descriptionHTML
+        const description = product.descriptionHTML
           ? JSON.stringify(
-              await editorJsHelper.HTMLToEditorJS(
-                product.product.descriptionHTML,
-              ),
+              await editorJsHelper.HTMLToEditorJS(product.descriptionHTML),
             )
           : undefined;
 
-        const saleorCategoryId =
-          product.product.category?.saleorCategories?.[0]?.id;
+        const saleorCategoryId = product.category?.saleorCategories?.[0]?.id;
         if (!saleorCategoryId) {
-          this.logger.warn(`Product ${product.sku} has no category. Skipping`);
+          this.logger.warn(`Product ${product.name} has no category. Skipping`);
           continue;
         }
-        const attributes = product.product.attributes
+        const attributes = product.attributes
           .filter((a) => a.attribute.saleorAttributes.length > 0)
           .map((a) => {
             /**
@@ -591,9 +582,9 @@ export class SaleorProductSyncService {
               values: [a.value],
             };
           });
-        let saleorProductId = product.product.saleorProducts?.[0]?.id;
+        let saleorProductId = product.saleorProducts?.[0]?.id;
         if (!saleorProductId) {
-          this.logger.info(`Creating product ${product.sku} in Saleor`, {
+          this.logger.info(`Creating product ${product.name} in Saleor`, {
             attributes,
           });
 
@@ -604,8 +595,7 @@ export class SaleorProductSyncService {
               chargeTaxes: true,
               collections: [],
               description,
-              name: product.product.name,
-              weight: product.weight ?? undefined,
+              name: product.name,
               productType: productType.saleorProductTypes[0].id,
             },
           });
@@ -616,7 +606,7 @@ export class SaleorProductSyncService {
           ) {
             this.logger.error(
               `Error creating product ${
-                product.sku
+                product.name
               } in Saleor: ${JSON.stringify(
                 productCreateResponse?.productCreate?.errors,
               )}`,
@@ -626,7 +616,7 @@ export class SaleorProductSyncService {
           const createdProduct = productCreateResponse.productCreate.product;
           saleorProductId = createdProduct.id;
           this.logger.info(
-            `Successfully created product ${product.sku} in Saleor`,
+            `Successfully created product ${product.name} in Saleor`,
           );
           await this.db.saleorProduct.create({
             data: {
@@ -638,7 +628,7 @@ export class SaleorProductSyncService {
               },
               product: {
                 connect: {
-                  id: product.product.id,
+                  id: product.id,
                 },
               },
               updatedAt: product.updatedAt,
@@ -646,12 +636,12 @@ export class SaleorProductSyncService {
           });
         }
         // Bulk create the product variants
-        const variantsToCreate = product.product.variants.filter(
+        const variantsToCreate = product.variants.filter(
           (v) => v.saleorProductVariant.length === 0,
         );
         if (variantsToCreate.length > 0) {
           this.logger.info(
-            `Found ${variantsToCreate.length} variants to create for product ${product.sku} in Saleor`,
+            `Found ${variantsToCreate.length} variants to create for product ${product.name} in Saleor`,
           );
           const variantsToCreateInput:
             | ProductVariantBulkCreateInput
@@ -678,7 +668,7 @@ export class SaleorProductSyncService {
           ) {
             this.logger.error(
               `Error creating variants for product ${
-                product.sku
+                product.name
               } in Saleor: ${JSON.stringify(
                 productVariantBulkCreateResponse.productVariantBulkCreate
                   .errors,
@@ -687,7 +677,7 @@ export class SaleorProductSyncService {
             continue;
           }
           this.logger.info(
-            `Successfully created ${variantsToCreate.length} variants for product ${product.sku} in Saleor`,
+            `Successfully created ${variantsToCreate.length} variants for product ${product.name} in Saleor`,
           );
           // Store the created variants in our DB
           for (const variant of variantsToCreate) {
@@ -697,7 +687,7 @@ export class SaleorProductSyncService {
               )?.id;
             if (!createdVariant) {
               this.logger.error(
-                `Error creating variant ${variant.sku} for product ${product.sku} in Saleor: No variant id returned`,
+                `Error creating variant ${variant.sku} for product ${product.name} in Saleor: No variant id returned`,
               );
               continue;
             }
