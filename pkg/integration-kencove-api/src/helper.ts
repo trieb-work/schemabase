@@ -34,8 +34,6 @@ const kenAttributeToEciAttribute = (kenAttribute: string): AttributeType => {
       return AttributeType.MULTISELECT;
     case "FILE":
       return AttributeType.FILE;
-    case "REFERENCE":
-      return AttributeType.REFERENCE;
     case "NUMERIC":
       return AttributeType.NUMERIC;
     case "RICH_TEXT":
