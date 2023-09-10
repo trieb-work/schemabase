@@ -1,7 +1,10 @@
-mutation productVariantBulkUpdate($variants: [ProductVariantBulkUpdateInput!]!, $productId: ID!) {
+mutation productVariantBulkUpdate(
+  $variants: [ProductVariantBulkUpdateInput!]!
+  $productId: ID!
+) {
   productVariantBulkUpdate(product: $productId, variants: $variants) {
-    results{
-      productVariant{
+    results {
+      productVariant {
         id
         sku
       }
