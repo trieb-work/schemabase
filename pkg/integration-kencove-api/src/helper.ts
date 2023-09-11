@@ -44,6 +44,8 @@ const kenAttributeToEciAttribute = (kenAttribute: string): AttributeType => {
       return AttributeType.SWATCH;
     case "checkbox":
       return AttributeType.BOOLEAN;
+    case "reference":
+      return AttributeType.PRODUCT_REFERENCE;
     case "DATE":
       return AttributeType.DATE;
     case "DATE_TIME":

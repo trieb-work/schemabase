@@ -254,6 +254,9 @@ export class SaleorProductSyncService {
     saleorProdTypeId: string,
   ) {
     for (const selectionAttribute of variantSelectionAttributes) {
+      this.logger.info(
+        `Setting variant selection attribute ${selectionAttribute} for saleor product type ${saleorProdTypeId}`,
+      );
       const resp = await this.saleorClient.productAttributeVariantSelection({
         attributeId: selectionAttribute,
         productTypeId: saleorProdTypeId,

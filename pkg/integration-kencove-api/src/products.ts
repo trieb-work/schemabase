@@ -618,14 +618,14 @@ export class KencoveApiAppProductSyncService {
         name: "Accessory Items",
         value: "",
         attribute_id: 333331,
-        display_type: "multiselect",
+        display_type: "reference",
         attribute_model: "custom",
       });
       productAttributesUnique.push({
         name: "Alternative Items",
         value: "",
         attribute_id: 333330,
-        display_type: "multiselect",
+        display_type: "reference",
         attribute_model: "custom",
       });
 
