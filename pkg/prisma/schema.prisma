@@ -1519,6 +1519,30 @@ model Attribute {
   @@index([normalizedName])
 }
 
+/// model to store image and other media urls for products, variants, categories etc.
+/// the URL is the unique identifier for the media
+model Media {
+  // eci internal id
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// The url of the media
+  url String
+
+  /// The tenant this media belongs to
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  products Product[]
+  productVariants ProductVariant[]
+
+  @@index([tenantId])
+  @@unique([url, tenantId])
+
+
+}
+
 /// attributes values for attributes. We have to separate models for product and variant attributes,
 /// This model is used to store values for product attributes
 model AttributeValueProduct {
@@ -1746,6 +1770,8 @@ model Product {
 
   attributes AttributeValueProduct[]
 
+  media Media[]
+
   @@unique([name, tenantId])
   @@unique([normalizedName, tenantId])
   @@index([tenantId])
@@ -1822,6 +1848,8 @@ model ProductVariant {
   billOfMaterial       BillOfMaterial[]
   /// deprecated
   billOfMaterialChilds BillOfMaterial[] @relation("childProduct")
+
+  media Media[]
 
   @@unique([sku, tenantId])
   // Just for relational purposes
@@ -2757,6 +2785,7 @@ model Tenant {
   productTags                 ProductTag[]
   categories                  Category[]
   productTypes                ProductType[]
+  media                       Media[]
 }
 
 // A subscription indicates a tenant has payed for one integration.

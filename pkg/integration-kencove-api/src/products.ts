@@ -830,6 +830,7 @@ export class KencoveApiAppProductSyncService {
      */
     const enhancedProducts = products.map((p) => {
       return {
+        images: p.images,
         productType: p.productType,
         accessories: p.accessories,
         alternatives: p.alternatives,
@@ -990,6 +991,25 @@ export class KencoveApiAppProductSyncService {
                         name: product.productName,
                         normalizedName: normalizedProductName,
                         descriptionHTML: product.description,
+                        media: {
+                          connectOrCreate: product.images.map((image) => ({
+                            where: {
+                              url_tenantId: {
+                                url: image.url,
+                                tenantId: this.kencoveApiApp.tenantId,
+                              },
+                            },
+                            create: {
+                              id: id.id("media"),
+                              url: image.url,
+                              tenant: {
+                                connect: {
+                                  id: this.kencoveApiApp.tenantId,
+                                },
+                              },
+                            },
+                          })),
+                        },
                         productType: {
                           connect: {
                             id: kenProdTypeWithProductType.productTypeId,
@@ -1043,6 +1063,25 @@ export class KencoveApiAppProductSyncService {
                         name: variant.productName,
                         normalizedName: normalizedProductName,
                         countryOfOrigin,
+                        media: {
+                          connectOrCreate: product.images.map((image) => ({
+                            where: {
+                              url_tenantId: {
+                                url: image.url,
+                                tenantId: this.kencoveApiApp.tenantId,
+                              },
+                            },
+                            create: {
+                              id: id.id("media"),
+                              url: image.url,
+                              tenant: {
+                                connect: {
+                                  id: this.kencoveApiApp.tenantId,
+                                },
+                              },
+                            },
+                          })),
+                        },
                         category: category
                           ? { connect: { id: category } }
                           : undefined,
@@ -1062,6 +1101,25 @@ export class KencoveApiAppProductSyncService {
                 product: {
                   update: {
                     descriptionHTML: product.description,
+                    media: {
+                      connectOrCreate: product.images.map((image) => ({
+                        where: {
+                          url_tenantId: {
+                            url: image.url,
+                            tenantId: this.kencoveApiApp.tenantId,
+                          },
+                        },
+                        create: {
+                          id: id.id("media"),
+                          url: image.url,
+                          tenant: {
+                            connect: {
+                              id: this.kencoveApiApp.tenantId,
+                            },
+                          },
+                        },
+                      })),
+                    },
                     productType: {
                       connect: {
                         id: kenProdTypeWithProductType.productTypeId,

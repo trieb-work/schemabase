@@ -746,6 +746,24 @@ Table Attribute {
   }
 }
 
+Table Media {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  url String [not null, note: 'The url of the media']
+  tenant Tenant [not null, note: 'The tenant this media belongs to']
+  tenantId String [not null]
+  products Product [not null]
+  productVariants ProductVariant [not null]
+
+  indexes {
+    (url, tenantId) [unique]
+  }
+
+  Note: 'model to store image and other media urls for products, variants, categories etc.
+the URL is the unique identifier for the media'
+}
+
 Table AttributeValueProduct {
   id String [pk]
   createdAt DateTime [default: `now()`, not null]
@@ -895,6 +913,7 @@ Table Product {
   saleorProducts SaleorProduct [not null]
   descriptionHTML String
   attributes AttributeValueProduct [not null]
+  media Media [not null]
 
   indexes {
     (name, tenantId) [unique]
@@ -935,6 +954,7 @@ Table ProductVariant {
 normally, product bundles don\'t allocate stock on the individual products']
   billOfMaterial BillOfMaterial [not null]
   billOfMaterialChilds BillOfMaterial [not null, note: 'deprecated']
+  media Media [not null]
 
   indexes {
     (sku, tenantId) [unique]
@@ -1565,6 +1585,7 @@ Table Tenant {
   productTags ProductTag [not null]
   categories Category [not null]
   productTypes ProductType [not null]
+  media Media [not null]
 }
 
 Table Subscription {
@@ -2260,6 +2281,8 @@ Ref: Order.tenantId > Tenant.id [delete: Cascade]
 Ref: Address.tenantId > Tenant.id [delete: Cascade]
 
 Ref: Attribute.tenantId > Tenant.id [delete: Cascade]
+
+Ref: Media.tenantId > Tenant.id [delete: Cascade]
 
 Ref: AttributeValueProduct.attributeId > Attribute.id [delete: Cascade]
 
