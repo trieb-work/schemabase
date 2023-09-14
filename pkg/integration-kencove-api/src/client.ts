@@ -15,6 +15,7 @@ import {
   KencoveApiCategory,
   KencoveApiOrder,
   KencoveApiPackage,
+  KencoveApiPricelist,
   KencoveApiProduct,
   KencoveApiProductStock,
 } from "./types";
@@ -410,21 +411,6 @@ export class KencoveApiClient {
     } while (nextPage);
   }
 
-  // public async getOrders(fromDate: Date): Promise<KencoveApiOrder[]> {
-  //   const accessToken = await this.getAccessToken();
-  //   const orders: KencoveApiOrder[] = [];
-  //   let nextPage: string | null = null;
-  //   let offset: number = 0;
-  //   do {
-  //     const response = await this.getOrdersPage(fromDate, offset, accessToken);
-  //     orders.push(...response.data);
-  //     nextPage = response.next_page;
-  //     offset += 200;
-  //     console.debug(`Found ${orders.length} orders / offset: ${offset}`);
-  //   } while (nextPage);
-  //   return orders;
-  // }
-
   private async getOrdersPage(
     fromDate: Date,
     toDate: Date,
@@ -438,6 +424,45 @@ export class KencoveApiClient {
     const response = await this.axiosInstance.get(
       // eslint-disable-next-line max-len
       `/ecom/orders/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${toDate.toISOString()}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+    return response.data;
+  }
+
+  public async *getPricelistStream(
+    fromDate: Date,
+  ): AsyncIterableIterator<KencoveApiPricelist[]> {
+    let nextPage: string | null = null;
+    let offset: number = 0;
+    do {
+      const accessToken = await this.getAccessToken();
+
+      const response = await this.getPricelistPage(
+        fromDate,
+        offset,
+        accessToken,
+      );
+      yield response.data;
+      nextPage = response.next_page;
+      offset += 200;
+    } while (nextPage);
+  }
+
+  private async getPricelistPage(
+    fromDate: Date,
+    offset: number,
+    accessToken: string,
+  ): Promise<{
+    data: KencoveApiPricelist[];
+    result_count: number;
+    next_page: string;
+  }> {
+    const response = await this.axiosInstance.get(
+      `/ecom/pricelist/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
