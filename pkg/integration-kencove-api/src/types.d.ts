@@ -121,11 +121,15 @@ export type KencoveApiProductVariant = {
   createdAt: string;
   updatedAt: string;
 };
-
+export type KencoveApiImage = {
+  url: string;
+  slug: string;
+  alt_name: string;
+};
 export type KencoveApiProduct = {
   id: string;
   name: string;
-  countryOfOrigin: "CN" | "US";
+  countryOfOrigin: "CN" | "US" | "PT" | "NZ" | "AU" | "CA" | "GB" | "IE";
   categoryId: number;
   variants: KencoveApiProductVariant[];
   productType: {
@@ -143,6 +147,7 @@ export type KencoveApiProduct = {
    * Alternative products. These are actually variants
    */
   accessories: KencoveApiAAItem[] | null;
+  images: KencoveApiImage[];
 };
 type KencoveApiAAItem = {
   /**

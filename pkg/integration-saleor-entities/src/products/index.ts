@@ -21,7 +21,13 @@ import {
   StockInput,
   VariantFragment,
 } from "@eci/pkg/saleor";
-import { PrismaClient, Prisma } from "@eci/pkg/prisma";
+import {
+  PrismaClient,
+  Prisma,
+  Media,
+  InstalledSaleorApp,
+  SaleorApp,
+} from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
@@ -69,7 +75,9 @@ interface SaleorProductSyncServiceConfig {
     ) => Promise<ProductTypeUpdateMutation>;
   };
   channelSlug?: string;
-  installedSaleorAppId: string;
+  installedSaleorApp: InstalledSaleorApp & {
+    saleorApp: SaleorApp;
+  };
   tenantId: string;
   db: PrismaClient;
   logger: ILogger;
@@ -119,7 +127,11 @@ export class SaleorProductSyncService {
 
   private readonly logger: ILogger;
 
-  public readonly installedSaleorAppId: string;
+  public readonly installedSaleorApp: InstalledSaleorApp & {
+    saleorApp: SaleorApp;
+  };
+
+  private readonly installedSaleorAppId: string;
 
   public readonly tenantId: string;
 
@@ -131,12 +143,13 @@ export class SaleorProductSyncService {
     this.saleorClient = config.saleorClient;
     this.channelSlug = config.channelSlug;
     this.logger = config.logger;
-    this.installedSaleorAppId = config.installedSaleorAppId;
+    this.installedSaleorApp = config.installedSaleorApp;
+    this.installedSaleorAppId = config.installedSaleorApp.id;
     this.tenantId = config.tenantId;
     this.db = config.db;
     this.cronState = new CronStateHandler({
       tenantId: this.tenantId,
-      appId: this.installedSaleorAppId,
+      appId: this.installedSaleorApp.id,
       db: this.db,
       syncEntity: "items",
     });
@@ -447,9 +460,156 @@ export class SaleorProductSyncService {
   }
 
   /**
-   * Find and create all products, that are not yet created in Saleor
+   * Try to extract the file extension from the URL.
+   * @param url
+   * @returns
    */
-  private async createProductinSaleor() {
+  private getFileExtension(url: string): string {
+    const extension = url.slice(((url.lastIndexOf(".") - 1) >>> 0) + 2);
+
+    // Check if the derived extension is valid (e.g., 'jpg', 'png').
+    // This is a rudimentary check and can be expanded based on your needs.
+    const validExtensions = [
+      "jpg",
+      "jpeg",
+      "png",
+      "gif",
+      "webp",
+      "bmp",
+      "tiff",
+    ];
+    if (!validExtensions.includes(extension.toLowerCase())) {
+      return ".jpg"; // fallback to .jpg if the extracted extension isn't recognized
+    }
+
+    return `.${extension}`;
+  }
+
+  private async fetchImageBlob(url: string): Promise<Blob> {
+    const imgResp = await fetch(url);
+    if (!imgResp.ok) {
+      throw new Error("Error downloading image");
+    }
+    const imageBlob = await imgResp.blob();
+    if (!imageBlob) {
+      throw new Error("Failed to convert response to blob");
+    }
+    return imageBlob;
+  }
+
+  /**
+   * Upload the image to saleor using the GraphQL multipart request specification.
+   * Returns the image id of the uploaded image.
+   * @param saleorProductId
+   * @param imageBlob
+   * @param fileExtension
+   * @returns
+   */
+  private async uploadImageToSaleor(
+    saleorProductId: string,
+    imageBlob: Blob,
+    fileExtension: string,
+  ): Promise<string> {
+    const form = new FormData();
+    form.append(
+      "operations",
+      JSON.stringify({
+        query: `
+            mutation productMediaCreate($productId: ID!, $alt: String, $image: Upload) {
+                productMediaCreate(input: {product: $productId, alt: $alt, image: $image}) {
+                    errors {
+                        field
+                        code
+                        message
+                    }
+                    media {
+                        id
+                    }
+                }
+            }
+        `,
+        variables: {
+          productId: saleorProductId,
+          alt: "",
+          image: null,
+        },
+      }),
+    );
+
+    form.append("map", JSON.stringify({ image: ["variables.image"] }));
+
+    // Use the file extension when appending the image to the form
+    form.append("image", imageBlob, `image${fileExtension}`);
+
+    const response = await fetch(this.installedSaleorApp.saleorApp.apiUrl, {
+      method: "POST",
+      body: form,
+      headers: {
+        Authorization: `Bearer ${this.installedSaleorApp.token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to upload image to Saleor");
+    }
+    const res = await response.json();
+
+    if (res.data.productMediaCreate.errors.length > 0) {
+      throw new Error(
+        `Failed to upload image to Saleor: ${JSON.stringify(
+          res.data.productMediaCreate.errors,
+        )}`,
+      );
+    }
+    return res.data.productMediaCreate.media.id;
+  }
+
+  /**
+   * takes Media entries from our DB and a saleor productId. Uploads that media using mutation ProductMediaCreate.
+   * Adds a metadata to the media to identify it as a media from our app. Does not check, if that media does already exist.
+   * This has to be done before calling this function. We download the media from the url and upload it via
+   * GraphQL multipart request specification
+   */
+  public async uploadMedia(saleorProductId: string, media: Media[]) {
+    for (const element of media) {
+      this.logger.info(
+        `Uploading media ${element.id}: ${element.url} to saleor`,
+      );
+      try {
+        const imageBlob = await this.fetchImageBlob(element.url);
+        const fileExtension = this.getFileExtension(element.url);
+        const imageId = await this.uploadImageToSaleor(
+          saleorProductId,
+          imageBlob,
+          fileExtension,
+        );
+        await this.saleorClient.saleorUpdateMetadata({
+          id: imageId,
+          input: [
+            {
+              key: "schemabase-media-id",
+              value: element.id,
+            },
+          ],
+        });
+        this.logger.info(
+          `Successfully uploaded media ${element.id}: ${element.url} to saleor with id ${imageId}`,
+        );
+      } catch (error) {
+        this.logger.error(
+          `Error handling media ${element.id}: ${
+            element.url
+          } - ${JSON.stringify(error)}`,
+        );
+      }
+    }
+  }
+
+  /**
+   * Find and create all products, that are not yet created in Saleor.
+   * Update products, that got changed since the last run
+   */
+  private async createOrUpdateProductinSaleor(gteDate: Date) {
     const productsToCreate = await this.db.product.findMany({
       where: {
         AND: [
@@ -470,6 +630,9 @@ export class SaleorProductSyncService {
             },
           },
         ],
+        updatedAt: {
+          gte: gteDate,
+        },
       },
       include: {
         saleorProducts: {
@@ -531,6 +694,7 @@ export class SaleorProductSyncService {
             },
           },
         },
+        media: true,
       },
     });
     if (productsToCreate.length > 0) {
@@ -567,24 +731,74 @@ export class SaleorProductSyncService {
           this.logger.warn(`Product ${product.name} has no category. Skipping`);
           continue;
         }
-        const attributes = product.attributes
-          .filter((a) => a.attribute.saleorAttributes.length > 0)
-          .map((a) => {
-            /**
-             * Multiselect attributes are stored as array in our DB
-             */
-            if (a.attribute.type === "MULTISELECT") {
-              this.logger.debug(a.value);
-              return {
-                id: a.attribute.saleorAttributes[0].id,
-                values: a.value as unknown as string[],
-              };
+        const attributesWithSaleorAttributes = product.attributes.filter(
+          (a) => a.attribute.saleorAttributes.length > 0,
+        );
+
+        const attributes: ProductCreateMutationVariables["input"]["attributes"] =
+          [];
+        /**
+         * Prepare the attributes to fit the saleor schema
+         */
+        for (const attr of attributesWithSaleorAttributes) {
+          if (attr.attribute.type === "PRODUCT_REFERENCE") {
+            /// We store our internal product Id in value of product reference attributes.
+            /// We need to aks our DB for the saleor product id
+            const saleorProductId = await this.db.product.findUnique({
+              where: {
+                id: attr.value,
+              },
+              select: {
+                saleorProducts: {
+                  where: {
+                    installedSaleorAppId: this.installedSaleorAppId,
+                  },
+                },
+              },
+            });
+            if (!saleorProductId?.saleorProducts?.[0]?.id) {
+              this.logger.warn(
+                `Product ${product.name} has no saleor product id. Skipping`,
+              );
+              continue;
             }
-            return {
-              id: a.attribute.saleorAttributes[0].id,
-              values: [a.value],
-            };
+            attributes.push({
+              id: attr.attribute.saleorAttributes[0].id,
+              values: [saleorProductId.saleorProducts[0].id],
+            });
+          }
+          if (attr.attribute.type === "VARIANT_REFERENCE") {
+            /// We store our internal variant Id in value of variant reference attributes.
+            /// We need to aks our DB for the saleor variant id
+            const saleorVariantId = await this.db.productVariant.findUnique({
+              where: {
+                id: attr.value,
+              },
+              select: {
+                saleorProductVariant: {
+                  where: {
+                    installedSaleorAppId: this.installedSaleorAppId,
+                  },
+                },
+              },
+            });
+            if (!saleorVariantId?.saleorProductVariant?.[0]?.id) {
+              this.logger.warn(
+                `Product ${product.name} has no saleor variant id. Skipping`,
+              );
+              continue;
+            }
+            attributes.push({
+              id: attr.attribute.saleorAttributes[0].id,
+              values: [saleorVariantId.saleorProductVariant[0].id],
+            });
+          }
+          attributes.push({
+            id: attr.attribute.saleorAttributes[0].id,
+            values: [attr.value],
           });
+        }
+
         let saleorProductId = product.saleorProducts?.[0]?.id;
         if (!saleorProductId) {
           this.logger.info(`Creating product ${product.name} in Saleor`, {
@@ -637,6 +851,10 @@ export class SaleorProductSyncService {
               updatedAt: product.updatedAt,
             },
           });
+          const mediaToUpload = product.media;
+          if (mediaToUpload.length > 0) {
+            await this.uploadMedia(saleorProductId, mediaToUpload);
+          }
         }
         // Bulk create the product variants
         const variantsToCreate = product.variants.filter(
@@ -1073,6 +1291,7 @@ export class SaleorProductSyncService {
 
     /**
      * Get all product types, that are not yet created in Saleor
+     * or updated since last run
      */
     await this.createOrUpdateProductTypeinSaleor(createdGte);
 
@@ -1080,7 +1299,7 @@ export class SaleorProductSyncService {
      * Get all products, that are not yet create in Saleor. Select only
      * the ones, where we have a product type already in Saleor
      */
-    await this.createProductinSaleor();
+    await this.createOrUpdateProductinSaleor(createdGte);
 
     /**
      * get all saleor productVariants where related stockEntries have been updated since last run or where related

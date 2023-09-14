@@ -31,12 +31,19 @@ describe("Zoho Entity Sync Orders Test", () => {
 
     const service = new SaleorProductSyncService({
       saleorClient,
-      installedSaleorAppId: installedSaleorApp.id,
+      installedSaleorApp: installedSaleorApp,
       logger: new AssertionLogger(),
       db: prismaClient,
       tenantId: tenant.id,
     });
-    await service.syncToECI();
-    await service.syncFromECI();
+    await service.uploadMedia("UHJvZHVjdDoxODAyMQ==", [
+      {
+        id: "efgefgh",
+        url: "https://img.kencove.us/products/pgd1032h_tpost2_450_450-87902.jpg",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        tenantId: "test",
+      },
+    ]);
   }, 1000000);
 });

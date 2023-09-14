@@ -1723,6 +1723,9 @@ describe("Saleor Entity Sync Products Test", () => {
         where: {
           id: "test",
         },
+        include: {
+          saleorApp: true,
+        },
       },
     );
     const tenant = await prismaClient.tenant.findUnique({
@@ -1737,7 +1740,7 @@ describe("Saleor Entity Sync Products Test", () => {
       channelSlug: "storefront",
       logger: new AssertionLogger(),
       db: prismaClient,
-      installedSaleorAppId: installedSaleorApp.id,
+      installedSaleorApp: installedSaleorApp,
       tenantId: tenant.id,
     });
     await xx.syncToECI();
