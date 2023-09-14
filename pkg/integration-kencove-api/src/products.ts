@@ -782,6 +782,9 @@ export class KencoveApiAppProductSyncService {
       return;
     }
 
+    /**
+     * Kencove API category ids
+     */
     const categoryIds = products.map((p) => p?.categoryId?.toString());
     const existingCategories = await this.db.kencoveApiCategory.findMany({
       where: {
@@ -792,36 +795,32 @@ export class KencoveApiAppProductSyncService {
       },
     });
 
-    /// all product variant ids in one variable using products as start point
-    const productVariantIds = products
-      .map((p) => p.variants.map((v) => v.id))
-      .flat();
+    // /// all product variant ids in one variable using products as start point
+    // const productVariantIds = products
+    //   .map((p) => p.variants.map((v) => v.id))
+    //   .flat();
 
-    const existingProductVariants =
-      await this.db.kencoveApiProductVariant.findMany({
-        where: {
-          kencoveApiAppId: this.kencoveApiApp.id,
-          id: {
-            in: productVariantIds,
-          },
-        },
-        include: {
-          productVariant: {
-            include: {
-              kencoveApiProductVariant: true,
-              product: true,
-            },
-          },
-        },
-      });
+    // const existingProductVariants =
+    //   await this.db.kencoveApiProductVariant.findMany({
+    //     where: {
+    //       kencoveApiAppId: this.kencoveApiApp.id,
+    //       id: {
+    //         in: productVariantIds,
+    //       },
+    //     },
+    //     include: {
+    //       productVariant: {
+    //         include: {
+    //           kencoveApiProductVariant: true,
+    //           product: true,
+    //         },
+    //       },
+    //     },
+    //   });
 
     /**
      * First sync the product types and related attributes.
      * Not the attribute values.
-     * TODO: refactor, so that we first "build" all product
-     * types and their related attributes and then sync alltogether
-     * and not product by product. We have for example 1000 products
-     * but just 25 product types
      */
     await this.syncProductTypeAndAttributes(products);
 
@@ -896,6 +895,10 @@ export class KencoveApiAppProductSyncService {
         ? countryCodeMatch(product.countryOfOrigin)
         : undefined;
 
+      /**
+       * schemabase internal category id if
+       * already synchronised
+       */
       const category = existingCategories.find(
         (c) => c.id === product.categoryId,
       )?.categoryId;
@@ -1120,6 +1123,9 @@ export class KencoveApiAppProductSyncService {
                         },
                       })),
                     },
+                    category: category
+                      ? { connect: { id: category } }
+                      : undefined,
                     productType: {
                       connect: {
                         id: kenProdTypeWithProductType.productTypeId,
@@ -1210,38 +1216,6 @@ export class KencoveApiAppProductSyncService {
         product.accessories?.map((a) => a.itemCode),
         product.alternatives?.map((a) => a.itemCode),
       );
-    }
-
-    /**
-     * Update internal products, if values did change. As we can't rely on data coming from the
-     * API, we do more sanitisation and checks here.
-     */
-    for (const product of enhancedProducts) {
-      const existingProduct = existingProductVariants.find(
-        (p) => p.productVariant.sku === product.variants[0].sku,
-      )?.productVariant.product;
-      if (!existingProduct) {
-        continue;
-      }
-      const apiProductCategory = existingCategories.find(
-        (c) => c.id === product.categoryId,
-      )?.categoryId;
-      if (existingProduct.categoryId !== apiProductCategory) {
-        this.logger.info(
-          `Updating category for product ${product.productName} ` +
-            `from ${existingProduct.categoryId} to ${apiProductCategory}`,
-        );
-        await this.db.product.update({
-          where: {
-            id: existingProduct.id,
-          },
-          data: {
-            category: apiProductCategory
-              ? { connect: { id: apiProductCategory } }
-              : undefined,
-          },
-        });
-      }
     }
   }
 }

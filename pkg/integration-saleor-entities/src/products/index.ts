@@ -10,6 +10,8 @@ import {
   ProductTypeFragment,
   ProductTypeUpdateMutation,
   ProductTypeUpdateMutationVariables,
+  ProductUpdateMutation,
+  ProductUpdateMutationVariables,
   ProductVariantBulkCreateInput,
   ProductVariantBulkCreateMutation,
   ProductVariantBulkCreateMutationVariables,
@@ -34,6 +36,7 @@ import { normalizeStrings } from "@eci/pkg/normalization";
 import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils";
 import { subHours, subYears } from "date-fns";
 import { editorJsHelper } from "../editorjs";
+import { MediaUpload } from "../mediaUpload";
 
 interface SaleorProductSyncServiceConfig {
   saleorClient: {
@@ -61,6 +64,9 @@ interface SaleorProductSyncServiceConfig {
     productCreate: (
       variables: ProductCreateMutationVariables,
     ) => Promise<ProductCreateMutation>;
+    productUpdate: (
+      variables: ProductUpdateMutationVariables,
+    ) => Promise<ProductUpdateMutation>;
     productTypeCreate: (
       variables: ProductTypeCreateMutationVariables,
     ) => Promise<ProductTypeCreateMutation>;
@@ -109,6 +115,9 @@ export class SaleorProductSyncService {
     productCreate: (
       variables: ProductCreateMutationVariables,
     ) => Promise<ProductCreateMutation>;
+    productUpdate: (
+      variables: ProductUpdateMutationVariables,
+    ) => Promise<ProductUpdateMutation>;
     productTypeCreate: (
       variables: ProductTypeCreateMutationVariables,
     ) => Promise<ProductTypeCreateMutation>;
@@ -460,125 +469,21 @@ export class SaleorProductSyncService {
   }
 
   /**
-   * Try to extract the file extension from the URL.
-   * @param url
-   * @returns
-   */
-  private getFileExtension(url: string): string {
-    const extension = url.slice(((url.lastIndexOf(".") - 1) >>> 0) + 2);
-
-    // Check if the derived extension is valid (e.g., 'jpg', 'png').
-    // This is a rudimentary check and can be expanded based on your needs.
-    const validExtensions = [
-      "jpg",
-      "jpeg",
-      "png",
-      "gif",
-      "webp",
-      "bmp",
-      "tiff",
-    ];
-    if (!validExtensions.includes(extension.toLowerCase())) {
-      return ".jpg"; // fallback to .jpg if the extracted extension isn't recognized
-    }
-
-    return `.${extension}`;
-  }
-
-  private async fetchImageBlob(url: string): Promise<Blob> {
-    const imgResp = await fetch(url);
-    if (!imgResp.ok) {
-      throw new Error("Error downloading image");
-    }
-    const imageBlob = await imgResp.blob();
-    if (!imageBlob) {
-      throw new Error("Failed to convert response to blob");
-    }
-    return imageBlob;
-  }
-
-  /**
-   * Upload the image to saleor using the GraphQL multipart request specification.
-   * Returns the image id of the uploaded image.
-   * @param saleorProductId
-   * @param imageBlob
-   * @param fileExtension
-   * @returns
-   */
-  private async uploadImageToSaleor(
-    saleorProductId: string,
-    imageBlob: Blob,
-    fileExtension: string,
-  ): Promise<string> {
-    const form = new FormData();
-    form.append(
-      "operations",
-      JSON.stringify({
-        query: `
-            mutation productMediaCreate($productId: ID!, $alt: String, $image: Upload) {
-                productMediaCreate(input: {product: $productId, alt: $alt, image: $image}) {
-                    errors {
-                        field
-                        code
-                        message
-                    }
-                    media {
-                        id
-                    }
-                }
-            }
-        `,
-        variables: {
-          productId: saleorProductId,
-          alt: "",
-          image: null,
-        },
-      }),
-    );
-
-    form.append("map", JSON.stringify({ image: ["variables.image"] }));
-
-    // Use the file extension when appending the image to the form
-    form.append("image", imageBlob, `image${fileExtension}`);
-
-    const response = await fetch(this.installedSaleorApp.saleorApp.apiUrl, {
-      method: "POST",
-      body: form,
-      headers: {
-        Authorization: `Bearer ${this.installedSaleorApp.token}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to upload image to Saleor");
-    }
-    const res = await response.json();
-
-    if (res.data.productMediaCreate.errors.length > 0) {
-      throw new Error(
-        `Failed to upload image to Saleor: ${JSON.stringify(
-          res.data.productMediaCreate.errors,
-        )}`,
-      );
-    }
-    return res.data.productMediaCreate.media.id;
-  }
-
-  /**
    * takes Media entries from our DB and a saleor productId. Uploads that media using mutation ProductMediaCreate.
    * Adds a metadata to the media to identify it as a media from our app. Does not check, if that media does already exist.
    * This has to be done before calling this function. We download the media from the url and upload it via
    * GraphQL multipart request specification
    */
   public async uploadMedia(saleorProductId: string, media: Media[]) {
+    const mediaUpload = new MediaUpload(this.installedSaleorApp);
     for (const element of media) {
       this.logger.info(
         `Uploading media ${element.id}: ${element.url} to saleor`,
       );
       try {
-        const imageBlob = await this.fetchImageBlob(element.url);
-        const fileExtension = this.getFileExtension(element.url);
-        const imageId = await this.uploadImageToSaleor(
+        const imageBlob = await mediaUpload.fetchImageBlob(element.url);
+        const fileExtension = mediaUpload.getFileExtension(element.url);
+        const imageId = await mediaUpload.uploadImageToSaleor(
           saleorProductId,
           imageBlob,
           fileExtension,
@@ -851,6 +756,42 @@ export class SaleorProductSyncService {
               updatedAt: product.updatedAt,
             },
           });
+          const mediaToUpload = product.media;
+          if (mediaToUpload.length > 0) {
+            await this.uploadMedia(saleorProductId, mediaToUpload);
+          }
+        } else {
+          this.logger.info(`Updating product ${product.name} in Saleor`, {
+            attributes,
+          });
+          const productUpdateResponse = await this.saleorClient.productUpdate({
+            id: saleorProductId,
+            input: {
+              attributes,
+              category: saleorCategoryId,
+              chargeTaxes: true,
+              collections: [],
+              description,
+              name: product.name,
+            },
+          });
+          if (
+            (productUpdateResponse.productUpdate?.errors &&
+              productUpdateResponse.productUpdate?.errors.length > 0) ||
+            !productUpdateResponse.productUpdate?.product?.id
+          ) {
+            this.logger.error(
+              `Error updating product ${
+                product.name
+              } in Saleor: ${JSON.stringify(
+                productUpdateResponse?.productUpdate?.errors,
+              )}`,
+            );
+            continue;
+          }
+          this.logger.info(
+            `Successfully updated product ${product.name} in Saleor`,
+          );
           const mediaToUpload = product.media;
           if (mediaToUpload.length > 0) {
             await this.uploadMedia(saleorProductId, mediaToUpload);

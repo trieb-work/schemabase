@@ -26421,6 +26421,29 @@ export type ProductAttributeVariantSelectionMutation = {
   } | null;
 };
 
+export type ProductUpdateMutationVariables = Exact<{
+  input: ProductInput;
+  id: Scalars["ID"];
+}>;
+
+export type ProductUpdateMutation = {
+  __typename?: "Mutation";
+  productUpdate?: {
+    __typename?: "ProductUpdate";
+    errors: Array<{
+      __typename?: "ProductError";
+      field?: string | null;
+      message?: string | null;
+      code: ProductErrorCode;
+    }>;
+    product?: {
+      __typename?: "Product";
+      id: string;
+      defaultVariant?: { __typename?: "ProductVariant"; id: string } | null;
+    } | null;
+  } | null;
+};
+
 export type ProductVariantChannelListingUpdateMutationVariables = Exact<{
   id: Scalars["ID"];
   input:
@@ -27614,6 +27637,23 @@ export const ProductAttributeVariantSelectionDocument = gql`
     }
   }
 `;
+export const ProductUpdateDocument = gql`
+  mutation productUpdate($input: ProductInput!, $id: ID!) {
+    productUpdate(input: $input, id: $id) {
+      errors {
+        field
+        message
+        code
+      }
+      product {
+        id
+        defaultVariant {
+          id
+        }
+      }
+    }
+  }
+`;
 export const ProductVariantChannelListingUpdateDocument = gql`
   mutation productVariantChannelListingUpdate(
     $id: ID!
@@ -28427,6 +28467,16 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
         variables,
         options,
       ) as Promise<ProductAttributeVariantSelectionMutation>;
+    },
+    productUpdate(
+      variables: ProductUpdateMutationVariables,
+      options?: C,
+    ): Promise<ProductUpdateMutation> {
+      return requester<ProductUpdateMutation, ProductUpdateMutationVariables>(
+        ProductUpdateDocument,
+        variables,
+        options,
+      ) as Promise<ProductUpdateMutation>;
     },
     productVariantChannelListingUpdate(
       variables: ProductVariantChannelListingUpdateMutationVariables,
