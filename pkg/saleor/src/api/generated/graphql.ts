@@ -26346,6 +26346,26 @@ export type DeleteProductsMutation = {
   } | null;
 };
 
+export type ProductMediaCreateMutationVariables = Exact<{
+  productId: Scalars["ID"];
+  alt?: InputMaybe<Scalars["String"]>;
+  image?: InputMaybe<Scalars["Upload"]>;
+}>;
+
+export type ProductMediaCreateMutation = {
+  __typename?: "Mutation";
+  productMediaCreate?: {
+    __typename?: "ProductMediaCreate";
+    errors: Array<{
+      __typename?: "ProductError";
+      field?: string | null;
+      code: ProductErrorCode;
+      message?: string | null;
+    }>;
+    media?: { __typename?: "ProductMedia"; id: string } | null;
+  } | null;
+};
+
 export type ProductTypeCreateMutationVariables = Exact<{
   input: ProductTypeInput;
 }>;
@@ -27531,6 +27551,22 @@ export const DeleteProductsDocument = gql`
     }
   }
 `;
+export const ProductMediaCreateDocument = gql`
+  mutation productMediaCreate($productId: ID!, $alt: String, $image: Upload) {
+    productMediaCreate(
+      input: { product: $productId, alt: $alt, image: $image }
+    ) {
+      errors {
+        field
+        code
+        message
+      }
+      media {
+        id
+      }
+    }
+  }
+`;
 export const ProductTypeCreateDocument = gql`
   mutation productTypeCreate($input: ProductTypeInput!) {
     productTypeCreate(input: $input) {
@@ -28339,6 +28375,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
         variables,
         options,
       ) as Promise<DeleteProductsMutation>;
+    },
+    productMediaCreate(
+      variables: ProductMediaCreateMutationVariables,
+      options?: C,
+    ): Promise<ProductMediaCreateMutation> {
+      return requester<
+        ProductMediaCreateMutation,
+        ProductMediaCreateMutationVariables
+      >(
+        ProductMediaCreateDocument,
+        variables,
+        options,
+      ) as Promise<ProductMediaCreateMutation>;
     },
     productTypeCreate(
       variables: ProductTypeCreateMutationVariables,

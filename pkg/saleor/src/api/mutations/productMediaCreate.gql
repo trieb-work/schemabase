@@ -1,0 +1,12 @@
+mutation productMediaCreate($productId: ID!, $alt: String, $image: Upload) {
+  productMediaCreate(input: {product: $productId, alt: $alt, image: $image}) {
+    errors {
+      field
+      code
+      message
+    }
+    media {
+      id
+    }
+  }
+}
