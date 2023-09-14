@@ -495,7 +495,7 @@ export class ZohoPaymentSyncService {
           amount: payment.amount,
           account_id: zba.id,
           date: payment.createdAt.toISOString().substring(0, 10),
-          payment_mode: payment.paymentMethod.gatewayType,
+          payment_mode: payment.paymentMethod.gatewayType as any,
           bank_charges: payment.transactionFee,
           reference_number: payment.referenceNumber,
           customer_id: orderToMainContactPerson(payment.order).zohoContactId,
