@@ -943,6 +943,8 @@ export class KencoveApiAppProductSyncService {
           }
         }
 
+        const productImages = product.images || [];
+
         /**
          * Upsert the product variant. Return the upserted variant from our DB
          */
@@ -995,7 +997,7 @@ export class KencoveApiAppProductSyncService {
                         normalizedName: normalizedProductName,
                         descriptionHTML: product.description,
                         media: {
-                          connectOrCreate: product.images.map((image) => ({
+                          connectOrCreate: productImages.map((image) => ({
                             where: {
                               url_tenantId: {
                                 url: image.url,
@@ -1067,7 +1069,7 @@ export class KencoveApiAppProductSyncService {
                         normalizedName: normalizedProductName,
                         countryOfOrigin,
                         media: {
-                          connectOrCreate: product.images.map((image) => ({
+                          connectOrCreate: productImages.map((image) => ({
                             where: {
                               url_tenantId: {
                                 url: image.url,
@@ -1105,7 +1107,7 @@ export class KencoveApiAppProductSyncService {
                   update: {
                     descriptionHTML: product.description,
                     media: {
-                      connectOrCreate: product.images.map((image) => ({
+                      connectOrCreate: productImages.map((image) => ({
                         where: {
                           url_tenantId: {
                             url: image.url,

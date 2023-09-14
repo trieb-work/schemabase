@@ -147,7 +147,7 @@ export type KencoveApiProduct = {
    * Alternative products. These are actually variants
    */
   accessories: KencoveApiAAItem[] | null;
-  images: KencoveApiImage[];
+  images: KencoveApiImage[] | null;
 };
 type KencoveApiAAItem = {
   /**
