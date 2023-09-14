@@ -82,4 +82,27 @@ describe("editorJsHelper", () => {
     const parsedEditorJs = await editorJsHelper.HTMLToEditorJS(html);
     expect(parsedEditorJs).toEqual(editorJs);
   });
+
+  it("should convert HTML to editorJS. It should work also when HTML is just a regular text", async () => {
+    const text =
+      'Universal ground rod clamp. Fits ¼" - 1¼" ground rods. <br>To use with ½" or smaller rods, simply reverse the face plate.';
+    const parsedEditorJs = await editorJsHelper.HTMLToEditorJS(text);
+    const expectedEditorJs = {
+      blocks: [
+        {
+          type: "paragraph",
+          data: {
+            text: 'Universal ground rod clamp. Fits ¼" - 1¼" ground rods.',
+          },
+        },
+        {
+          type: "paragraph",
+          data: {
+            text: 'To use with ½" or smaller rods, simply reverse the face plate.',
+          },
+        },
+      ],
+    };
+    expect(parsedEditorJs).toEqual(expectedEditorJs);
+  });
 });

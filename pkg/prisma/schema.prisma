@@ -171,6 +171,21 @@ model SaleorCustomer {
   @@index([id])
 }
 
+model SaleorChannel {
+  id String
+
+  /// related, internal sales channel. We map this channel manually in most cases, so this field is optional
+  salesChannel  SalesChannel? @relation(fields: [salesChannelId], references: [id], onDelete: Cascade)
+  salesChannelId String?
+
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String
+
+  @@unique([id, installedSaleorAppId])
+  @@index([salesChannelId])
+  @@index([installedSaleorAppId])
+}
+
 model SaleorPackage {
   /// Saleor Internal Id
   id String
@@ -776,6 +791,7 @@ enum GatewayType {
   stripe
   /// banktransfer = Vorkasse
   banktransfer
+  authorizeNet
 }
 
 /// Internal representation of payment methods. We try to normalize different payment types to more generic ones.
@@ -1157,6 +1173,46 @@ model Order {
   @@index([tenantId])
   @@index([mainContactId])
   @@index([token])
+}
+
+/// The schemabase internal sales channel model.
+/// We use channels to offer different availabilities and prices for different products
+/// you can map for example saleor sales channels to this model and pricelists from different
+/// ERP systems
+model SalesChannel {
+  id       String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name String
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  saleorChannels SaleorChannel[]
+  priceEntries   SalesChannelPriceEntry[]
+
+  @@index([tenantId])
+}
+
+model SalesChannelPriceEntry {
+  id        String   @id
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  salesChannel SalesChannel @relation(fields: [salesChannelId], references: [id], onDelete: Cascade)
+  salesChannelId String
+  productVariant ProductVariant @relation(fields: [productVariantId], references: [id])
+  productVariantId String
+
+  price Float
+
+  startDate DateTime
+  endDate   DateTime?
+
+  /// This price is valid starting with this quantity
+  minQuantity Float @default(0)
 }
 
 enum CountryCode {
@@ -1833,6 +1889,10 @@ model ProductVariant {
   kencoveApiProductVariant KencoveApiProductVariant[]
 
   attributes AttributeValueVariant[]
+
+  /// the price entries of this variant. Can have different prices
+  /// for different sales channels, quantities and dates
+  salesChannelPriceEntries SalesChannelPriceEntry[]
 
   // Available physical stock over all warehouses
   stockOnHand Int?
@@ -2725,6 +2785,7 @@ model InstalledSaleorApp {
   saleorProductType          SaleorProductType[]
   saleorAttribute            SaleorAttribute[]
   saleorProduct              SaleorProduct[]
+  saleorChannel              SaleorChannel[]
 
   @@unique([domain, channelSlug])
   @@index([saleorAppId, domain])
@@ -2786,6 +2847,7 @@ model Tenant {
   categories                  Category[]
   productTypes                ProductType[]
   media                       Media[]
+  salesChannels               SalesChannel[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
@@ -2877,52 +2939,6 @@ model CronJobState {
   @@index([id])
 }
 
-// The saleor zoho integration consists of several, individual sync jobs
-// The code is located in the "integration-entity-sync-saleor" and "integration-entity-sync-zoho"
-// - from both sides to the internal ECI database and from the ECI database to the other system
-// a customer can make settings here.
-// model SaleorZohoIntegration {
-//   id String @id
-
-//   // Allow the user to manually enabled or disable the integration
-//   // Regardless of current subscription state.
-//   enabled Boolean @default(true)
-
-//   subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
-//   subscriptionId String?       @unique
-
-//   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-//   tenantId String
-
-//   zohoApp   ZohoApp @relation(fields: [zohoAppId], references: [id])
-//   zohoAppId String
-
-//   installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
-//   installedSaleorAppId String
-
-//   // The order prefix we use in Zoho to identify orders coming from Saleor
-//   orderPrefix String @default("STORE")
-
-//   // We can create the needed bull jobs for every sync entity, that is enabled
-//   syncContacts      Boolean @default(false)
-//   syncWarehouses    Boolean @default(false)
-//   syncOrders        Boolean @default(false)
-//   syncInvoices      Boolean @default(false)
-//   syncPayments      Boolean @default(false)
-//   syncProductStocks Boolean @default(false)
-//   syncProducts      Boolean @default(false)
-//   syncPackages      Boolean @default(false)
-//   syncTaxes         Boolean @default(false)
-
-//   // How frequent the synchronisation should run. Default once per hour.
-//   cronScheduleZoho   String @default("*/30 * * * *")
-//   cronScheduleSaleor String @default("*/30 * * * *")
-//   // Time in seconds how long one workflow can run before a timeout occurs.
-//   cronTimeoutZoho    Int    @default(800)
-//   cronTimeoutSaleor  Int    @default(600)
-
-//   @@index([enabled])
-// }
 
 model LogisticsIntegration {
   id String @id

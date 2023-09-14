@@ -27,68 +27,90 @@ class EditorJSHelper {
     const document = dom.window.document;
     const body = document.body;
 
-    Array.from(body.children).forEach((element) => {
-      switch (element.tagName) {
-        case "P":
-          const innerHTML = element.innerHTML.replace(/<br>/g, "\n");
-          blocks.push({
-            type: "paragraph",
-            data: {
-              text: innerHTML,
-            },
-          });
-          break;
-        case "UL":
-          const items = Array.from(element.children).map((li) =>
-            li.innerHTML.replace(/<br>/g, "\n"),
-          );
-          blocks.push({
-            type: "list",
-            data: {
-              style: "unordered",
-              items,
-            },
-          });
-          break;
-        case "OL":
-          const orderedItems = Array.from(element.children).map((li) =>
-            li.innerHTML.replace(/<br>/g, "\n"),
-          );
-          blocks.push({
-            type: "list",
-            data: {
-              style: "ordered",
-              items: orderedItems,
-            },
-          });
-          break;
-        case "H1":
-        case "H2":
-        case "H3":
-        case "H4":
-        case "H5":
-        case "H6":
-          blocks.push({
-            type: "header",
-            data: {
-              text: element.innerHTML.replace(/<br>/g, "\n"),
-              level: parseInt(element.tagName.substring(1)),
-            },
-          });
-          break;
-        case "A":
-          blocks.push({
-            type: "paragraph",
-            data: {
-              text: `<a href="${(element as any).href}">${
-                (element as any).textContent
-              }</a>`,
-            },
-          });
-          break;
-        default:
-          // handle other tags or ignore
-          break;
+    Array.from(body.childNodes).forEach((node) => {
+      if (
+        node.nodeType === dom.window.Node.TEXT_NODE &&
+        node.textContent?.trim()
+      ) {
+        // Handle regular text
+        blocks.push({
+          type: "paragraph",
+          data: {
+            text: node.textContent.trim(),
+          },
+        });
+      } else if (node.nodeType === dom.window.Node.ELEMENT_NODE) {
+        const element = node as HTMLElement;
+        switch (element.tagName) {
+          case "P":
+            let innerText = "";
+            Array.from(element.childNodes).forEach((child) => {
+              if (
+                child.nodeType === dom.window.Node.TEXT_NODE &&
+                child.textContent
+              ) {
+                innerText += child.textContent;
+              } else if (child.nodeType === dom.window.Node.ELEMENT_NODE) {
+                const el = child as HTMLElement;
+                switch (el.tagName) {
+                  case "A":
+                    innerText += `<a href="${el.getAttribute("href")}">${
+                      el.textContent
+                    }</a>`;
+                    break;
+                  default:
+                    innerText += el.outerHTML;
+                }
+              }
+            });
+            blocks.push({
+              type: "paragraph",
+              data: {
+                text: innerText.replace(/<br>/g, "\n"),
+              },
+            });
+            break;
+          case "UL":
+          case "OL":
+            const items = Array.from(element.children).map((li) =>
+              li.innerHTML.replace(/<br>/g, "\n"),
+            );
+            blocks.push({
+              type: "list",
+              data: {
+                style: element.tagName === "UL" ? "unordered" : "ordered",
+                items,
+              },
+            });
+            break;
+          case "H1":
+          case "H2":
+          case "H3":
+          case "H4":
+          case "H5":
+          case "H6":
+            blocks.push({
+              type: "header",
+              data: {
+                text: element.innerHTML.replace(/<br>/g, "\n"),
+                level: parseInt(element.tagName.substring(1)),
+              },
+            });
+            break;
+          case "A":
+            blocks.push({
+              type: "paragraph",
+              data: {
+                text: `<a href="${element.getAttribute("href")}">${
+                  element.textContent
+                }</a>`,
+              },
+            });
+            break;
+          default:
+            // handle other tags or ignore
+            break;
+        }
       }
     });
 
