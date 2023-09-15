@@ -1420,8 +1420,7 @@ export class SaleorProductSyncService {
                 // Check, if we have a saleor warehouse for this stock entry.
                 // If not continue.
                 const saleorWarehouse = warehouses.find(
-                    (saleorWarehouse) =>
-                        saleorWarehouse.warehouseId === stockEntry.warehouseId,
+                    (sw) => sw.warehouseId === stockEntry.warehouseId,
                 );
                 const saleorWarehouseId = saleorWarehouse?.id;
                 /**
