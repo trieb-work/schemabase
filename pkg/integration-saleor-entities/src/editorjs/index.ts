@@ -1,5 +1,5 @@
 /* eslint-disable no-case-declarations */
-import { OutputBlockData, OutputData } from "@editorjs/editorjs";
+import type { OutputBlockData, OutputData } from "@editorjs/editorjs";
 import edjsHTML from "editorjs-html";
 import { JSDOM } from "jsdom";
 
