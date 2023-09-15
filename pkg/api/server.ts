@@ -5,13 +5,13 @@ import { startServerAndCreateNextHandler } from "@as-integrations/next";
 import { application } from "./application";
 import { Context, context } from "./context";
 export interface ServerConfig {
-  logger?: ILogger;
+    logger?: ILogger;
 }
 
 const server = new ApolloServer<Context>({
-  schema: application.schema,
-  introspection: true,
-  plugins: [],
+    schema: application.schema,
+    introspection: true,
+    plugins: [],
 });
 
 export default startServerAndCreateNextHandler(server, { context });

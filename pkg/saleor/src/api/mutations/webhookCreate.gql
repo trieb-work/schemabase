@@ -1,12 +1,12 @@
 mutation webhookCreate($input: WebhookCreateInput!) {
-  webhookCreate(input: $input) {
-    errors {
-      field
-      message
-      code
+    webhookCreate(input: $input) {
+        errors {
+            field
+            message
+            code
+        }
+        webhook {
+            id
+        }
     }
-    webhook {
-      id
-    }
-  }
 }

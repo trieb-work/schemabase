@@ -4,5 +4,5 @@
 # $ export SALEOR_VERSION="XXX" docker-compose -f docker-compose.ci.yaml up
 
 services:
-  saleor_api:
-    image: ${SALEOR_IMAGE}
+    saleor_api:
+        image: ${SALEOR_IMAGE}

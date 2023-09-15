@@ -5,51 +5,51 @@ import { ZohoWarehouseSyncService } from "@eci/pkg/integration-zoho-entities/src
 import { getZohoClientAndEntry } from "@eci/pkg/zoho/src/zoho";
 
 export type ZohoWarehouseSyncWorkflowClients = {
-  prisma: PrismaClient;
+    prisma: PrismaClient;
 };
 export type ZohoWarehouseSyncWorkflowConfig = {
-  zohoAppId: string;
+    zohoAppId: string;
 };
 
 /**
  * Workflow to sync needed "surrounding" entities from Zoho like Warehouses, Taxes, etc.
  */
 export class ZohoWarehouseSyncWf implements Workflow {
-  private logger: ILogger;
+    private logger: ILogger;
 
-  private prisma: PrismaClient;
+    private prisma: PrismaClient;
 
-  private zohoAppId: string;
+    private zohoAppId: string;
 
-  public constructor(
-    ctx: RuntimeContext,
-    clients: ZohoWarehouseSyncWorkflowClients,
-    config: ZohoWarehouseSyncWorkflowConfig,
-  ) {
-    this.zohoAppId = config.zohoAppId;
-    this.logger = ctx.logger.with({
-      workflow: ZohoWarehouseSyncWf.name,
-      zohoAppId: this.zohoAppId,
-    });
-    this.prisma = clients.prisma;
-  }
+    public constructor(
+        ctx: RuntimeContext,
+        clients: ZohoWarehouseSyncWorkflowClients,
+        config: ZohoWarehouseSyncWorkflowConfig,
+    ) {
+        this.zohoAppId = config.zohoAppId;
+        this.logger = ctx.logger.with({
+            workflow: ZohoWarehouseSyncWf.name,
+            zohoAppId: this.zohoAppId,
+        });
+        this.prisma = clients.prisma;
+    }
 
-  public async run(): Promise<void> {
-    this.logger.info("Starting Zoho Warehouse sync workflow run");
+    public async run(): Promise<void> {
+        this.logger.info("Starting Zoho Warehouse sync workflow run");
 
-    const { client: zoho, zohoApp } = await getZohoClientAndEntry(
-      this.zohoAppId,
-      this.prisma,
-      undefined,
-    );
-    const zohoWarehouseSyncService = new ZohoWarehouseSyncService({
-      logger: this.logger,
-      zoho,
-      db: this.prisma,
-      zohoApp,
-    });
-    await zohoWarehouseSyncService.syncToECI();
+        const { client: zoho, zohoApp } = await getZohoClientAndEntry(
+            this.zohoAppId,
+            this.prisma,
+            undefined,
+        );
+        const zohoWarehouseSyncService = new ZohoWarehouseSyncService({
+            logger: this.logger,
+            zoho,
+            db: this.prisma,
+            zohoApp,
+        });
+        await zohoWarehouseSyncService.syncToECI();
 
-    this.logger.info("Finished Zoho Warehouse sync workflow run");
-  }
+        this.logger.info("Finished Zoho Warehouse sync workflow run");
+    }
 }

@@ -1,185 +1,185 @@
 query products($first: Int!, $channel: String) {
-  products(first: $first, channel: $channel) {
-    edges {
-      node {
-        seoDescription
-        name
-        seoTitle
-        isAvailableForPurchase
-        description
-        slug
-        weight {
-          unit
-          value
-        }
-        images {
-          id
-          url
-        }
-        metadata {
-          key
-          value
-        }
-        attributes {
-          attribute {
-            id
-            name
-          }
-          values {
-            id
-            name
-          }
-        }
-        productType {
-          name
-          id
-          hasVariants
-        }
-        variants {
-          id
-          name
-          sku
-          quantityAvailable
-          weight {
-            unit
-            value
-          }
-          metadata {
-            key
-            value
-          }
-          pricing {
-            priceUndiscounted {
-              gross {
-                amount
-                currency
-              }
+    products(first: $first, channel: $channel) {
+        edges {
+            node {
+                seoDescription
+                name
+                seoTitle
+                isAvailableForPurchase
+                description
+                slug
+                weight {
+                    unit
+                    value
+                }
+                images {
+                    id
+                    url
+                }
+                metadata {
+                    key
+                    value
+                }
+                attributes {
+                    attribute {
+                        id
+                        name
+                    }
+                    values {
+                        id
+                        name
+                    }
+                }
+                productType {
+                    name
+                    id
+                    hasVariants
+                }
+                variants {
+                    id
+                    name
+                    sku
+                    quantityAvailable
+                    weight {
+                        unit
+                        value
+                    }
+                    metadata {
+                        key
+                        value
+                    }
+                    pricing {
+                        priceUndiscounted {
+                            gross {
+                                amount
+                                currency
+                            }
+                        }
+                        price {
+                            gross {
+                                amount
+                                currency
+                            }
+                            net {
+                                amount
+                            }
+                        }
+                        onSale
+                        discount {
+                            gross {
+                                amount
+                            }
+                        }
+                    }
+                    images {
+                        url
+                    }
+                }
             }
-            price {
-              gross {
-                amount
-                currency
-              }
-              net {
-                amount
-              }
-            }
-            onSale
-            discount {
-              gross {
-                amount
-              }
-            }
-          }
-          images {
-            url
-          }
         }
-      }
     }
-  }
 }
 
 fragment variant on ProductVariant {
-  id
-  name
-  sku
-  metadata {
-    key
-    value
-  }
-  stocks {
-    warehouse {
-      name
-      id
+    id
+    name
+    sku
+    metadata {
+        key
+        value
     }
-  }
-  variantAttributes: attributes(variantSelection: VARIANT_SELECTION) {
-    attribute {
-      name
+    stocks {
+        warehouse {
+            name
+            id
+        }
     }
-    values {
-      id
-      name
+    variantAttributes: attributes(variantSelection: VARIANT_SELECTION) {
+        attribute {
+            name
+        }
+        values {
+            id
+            name
+        }
     }
-  }
 }
 
 fragment productType on ProductType {
-  id
-  name
-  hasVariants
-  productAttributes {
     id
     name
-  }
-  assignedVariantAttributes {
-    attribute {
-      id
-      name
+    hasVariants
+    productAttributes {
+        id
+        name
     }
-    variantSelection
-  }
+    assignedVariantAttributes {
+        attribute {
+            id
+            name
+        }
+        variantSelection
+    }
 }
 
 query saleorEntitySyncProducts(
-  $first: Int!
-  $channel: String
-  $after: String
-  $updatedAtGte: DateTime
+    $first: Int!
+    $channel: String
+    $after: String
+    $updatedAtGte: DateTime
 ) {
-  products(
-    first: $first
-    after: $after
-    channel: $channel
-    filter: { updatedAt: { gte: $updatedAtGte } }
-  ) {
-    pageInfo {
-      hasNextPage
-      hasPreviousPage
-      startCursor
-      endCursor
+    products(
+        first: $first
+        after: $after
+        channel: $channel
+        filter: { updatedAt: { gte: $updatedAtGte } }
+    ) {
+        pageInfo {
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+        }
+        edges {
+            node {
+                id
+                name
+                updatedAt
+                created
+                productType {
+                    ...productType
+                }
+                category {
+                    id
+                }
+                updatedAt
+                variants {
+                    ...variant
+                }
+            }
+        }
     }
-    edges {
-      node {
-        id
-        name
-        updatedAt
-        created
-        productType {
-          ...productType
-        }
-        category {
-          id
-        }
-        updatedAt
-        variants {
-          ...variant
-        }
-      }
-    }
-  }
 }
 
 query saleorProductVariantBasicData($id: ID!) {
-  productVariant(id: $id) {
-    id
-    name
-    product {
-      id
-      name
-    }
-    metadata {
-      key
-      value
-    }
-    stocks {
-      warehouse {
+    productVariant(id: $id) {
         id
         name
-      }
-      quantity
-      quantityAllocated
+        product {
+            id
+            name
+        }
+        metadata {
+            key
+            value
+        }
+        stocks {
+            warehouse {
+                id
+                name
+            }
+            quantity
+            quantityAllocated
+        }
     }
-  }
 }

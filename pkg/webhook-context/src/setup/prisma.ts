@@ -8,7 +8,7 @@ let prismaGlobal: PrismaClient;
  * Try to re-use an existing client instance, when the Lambda gets re-used.
  */
 export const setupPrisma = (): ExtendContextFn<"prisma"> => async (ctx) => {
-  const prisma = prismaGlobal || new PrismaClient();
-  prismaGlobal = prisma;
-  return Object.assign(ctx, { prisma });
+    const prisma = prismaGlobal || new PrismaClient();
+    prismaGlobal = prisma;
+    return Object.assign(ctx, { prisma });
 };

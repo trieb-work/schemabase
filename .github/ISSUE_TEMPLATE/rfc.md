@@ -3,14 +3,14 @@
 
 **Table of Contents** _generated with [DocToc](https://github.com/thlorenz/doctoc)_
 
-- [Audience](#audience)
-- [Summary](#summary)
-- [Basic example](#basic-example)
-- [Motivation](#motivation)
-- [Detailed design](#detailed-design)
-- [Drawbacks](#drawbacks)
-- [Alternatives](#alternatives)
-- [Unresolved questions](#unresolved-questions)
+-   [Audience](#audience)
+-   [Summary](#summary)
+-   [Basic example](#basic-example)
+-   [Motivation](#motivation)
+-   [Detailed design](#detailed-design)
+-   [Drawbacks](#drawbacks)
+-   [Alternatives](#alternatives)
+-   [Unresolved questions](#unresolved-questions)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -59,11 +59,11 @@ defined here.
 
 Why should we _not_ do this? Please consider:
 
-- implementation cost, both in term of code size and complexity
-- whether the proposed feature can be implemented in user space
-- the impact on teaching people React
-- integration of this feature with other existing and planned features
-- cost of migrating existing React applications (is it a breaking change?)
+-   implementation cost, both in term of code size and complexity
+-   whether the proposed feature can be implemented in user space
+-   the impact on teaching people React
+-   integration of this feature with other existing and planned features
+-   cost of migrating existing React applications (is it a breaking change?)
 
 There are tradeoffs to choosing any path. Attempt to identify them here.
 

@@ -1,12 +1,12 @@
 mutation appInstall($input: AppInstallInput!) {
-  appInstall(input: $input) {
-    errors {
-      field
-      message
+    appInstall(input: $input) {
+        errors {
+            field
+            message
+        }
+        appInstallation {
+            id
+            status
+        }
     }
-    appInstallation {
-      id
-      status
-    }
-  }
 }

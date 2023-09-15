@@ -3,22 +3,22 @@ import { useTheme } from "@saleor/macaw-ui/next";
 import { useEffect } from "react";
 
 export function ThemeSynchronizer() {
-  const { appBridgeState } = useAppBridge();
-  const { setTheme } = useTheme();
+    const { appBridgeState } = useAppBridge();
+    const { setTheme } = useTheme();
 
-  useEffect(() => {
-    if (!setTheme || !appBridgeState?.theme) {
-      return;
-    }
+    useEffect(() => {
+        if (!setTheme || !appBridgeState?.theme) {
+            return;
+        }
 
-    if (appBridgeState.theme === "light") {
-      setTheme("defaultLight");
-    }
+        if (appBridgeState.theme === "light") {
+            setTheme("defaultLight");
+        }
 
-    if (appBridgeState.theme === "dark") {
-      setTheme("defaultDark");
-    }
-  }, [appBridgeState?.theme, setTheme]);
+        if (appBridgeState.theme === "dark") {
+            setTheme("defaultDark");
+        }
+    }, [appBridgeState?.theme, setTheme]);
 
-  return null;
+    return null;
 }

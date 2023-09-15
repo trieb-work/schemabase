@@ -3,11 +3,11 @@ overwrite: true
 schema: "https://ken-dev-test.saleor.cloud/graphql/"
 documents: "./pkg/saleor/src/api/{mutations,queries}/**/*.gql"
 generates:
-  ./pkg/saleor/src/api/generated/graphql.ts:
-    plugins:
-      - typescript
-      - typescript-operations
-      - typescript-generic-sdk
+    ./pkg/saleor/src/api/generated/graphql.ts:
+        plugins:
+            - typescript
+            - typescript-operations
+            - typescript-generic-sdk
 hooks:
-  afterOneFileWrite:
-    - prettier  --write
+    afterOneFileWrite:
+        - prettier  --write

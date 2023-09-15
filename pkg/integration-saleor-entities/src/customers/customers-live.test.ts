@@ -8,33 +8,33 @@ import { SaleorCustomerSyncService } from "./";
 /// Use this file to locally run this service
 
 beforeEach(() => {
-  jest.clearAllMocks();
+    jest.clearAllMocks();
 });
 
 describe("Saleor Sync Customer Test", () => {
-  const prismaClient = new PrismaClient();
+    const prismaClient = new PrismaClient();
 
-  test("It should work to sync customer", async () => {
-    const tenant = await prismaClient.tenant.findUnique({
-      where: {
-        id: "pk_7f165pf-prod",
-        // id: "test",
-      },
-    });
-    if (!tenant) throw new Error("Testing Tenant not found in DB");
+    test("It should work to sync customer", async () => {
+        const tenant = await prismaClient.tenant.findUnique({
+            where: {
+                id: "pk_7f165pf-prod",
+                // id: "test",
+            },
+        });
+        if (!tenant) throw new Error("Testing Tenant not found in DB");
 
-    const { client: saleorClient, installedSaleorApp } =
-      await getSaleorClientAndEntry("QXBwOjMy", prismaClient);
+        const { client: saleorClient, installedSaleorApp } =
+            await getSaleorClientAndEntry("QXBwOjMy", prismaClient);
 
-    const service = new SaleorCustomerSyncService({
-      saleorClient,
-      installedSaleorAppId: installedSaleorApp.id,
-      logger: new AssertionLogger(),
-      db: prismaClient,
-      tenantId: tenant.id,
-      channelSlug: "storefront",
-    });
-    await service.syncToECI();
-    // await service.syncFromECI();
-  }, 1000000);
+        const service = new SaleorCustomerSyncService({
+            saleorClient,
+            installedSaleorAppId: installedSaleorApp.id,
+            logger: new AssertionLogger(),
+            db: prismaClient,
+            tenantId: tenant.id,
+            channelSlug: "storefront",
+        });
+        await service.syncToECI();
+        // await service.syncFromECI();
+    }, 1000000);
 });

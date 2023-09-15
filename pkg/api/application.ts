@@ -5,10 +5,10 @@ import { userLoginRegisterModule } from "./modules/userloginregister";
 import { dataEntitiesModule } from "./modules/dataentities";
 
 export const application = createApplication({
-  modules: [
-    baseModule,
-    userLoginRegisterModule,
-    dataEntitiesModule,
-    trackingModule,
-  ],
+    modules: [
+        baseModule,
+        userLoginRegisterModule,
+        dataEntitiesModule,
+        trackingModule,
+    ],
 });

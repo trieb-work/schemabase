@@ -4,42 +4,42 @@ import type { UPSTrackingApp, PrismaClient } from "@eci/pkg/prisma";
 import type { RuntimeContext, Workflow } from "@eci/pkg/scheduler/workflow";
 
 export type UPSTrackingSyncWorkflowClients = {
-  prisma: PrismaClient;
+    prisma: PrismaClient;
 };
 export type UPSTrackingSyncWorkflowConfig = {
-  upsTrackingApp: UPSTrackingApp;
+    upsTrackingApp: UPSTrackingApp;
 };
 
 export class UPSTrackingSyncWf implements Workflow {
-  private logger: ILogger;
+    private logger: ILogger;
 
-  private prisma: PrismaClient;
+    private prisma: PrismaClient;
 
-  private upsTrackingApp: UPSTrackingApp;
+    private upsTrackingApp: UPSTrackingApp;
 
-  public constructor(
-    ctx: RuntimeContext,
-    clients: UPSTrackingSyncWorkflowClients,
-    config: UPSTrackingSyncWorkflowConfig,
-  ) {
-    this.upsTrackingApp = config.upsTrackingApp;
-    this.logger = ctx.logger.with({
-      workflow: UPSTrackingSyncWf.name,
-      upsTrackingApp: this.upsTrackingApp.id,
-    });
-    this.prisma = clients.prisma;
-  }
+    public constructor(
+        ctx: RuntimeContext,
+        clients: UPSTrackingSyncWorkflowClients,
+        config: UPSTrackingSyncWorkflowConfig,
+    ) {
+        this.upsTrackingApp = config.upsTrackingApp;
+        this.logger = ctx.logger.with({
+            workflow: UPSTrackingSyncWf.name,
+            upsTrackingApp: this.upsTrackingApp.id,
+        });
+        this.prisma = clients.prisma;
+    }
 
-  public async run(): Promise<void> {
-    this.logger.info("Starting UPS Tracking sync workflow run");
+    public async run(): Promise<void> {
+        this.logger.info("Starting UPS Tracking sync workflow run");
 
-    const zohoTaxSyncService = new UPSTrackingSyncService({
-      logger: this.logger,
-      db: this.prisma,
-      upsTrackingApp: this.upsTrackingApp,
-    });
-    await zohoTaxSyncService.syncToECI();
+        const zohoTaxSyncService = new UPSTrackingSyncService({
+            logger: this.logger,
+            db: this.prisma,
+            upsTrackingApp: this.upsTrackingApp,
+        });
+        await zohoTaxSyncService.syncToECI();
 
-    this.logger.info("Finished UPS Tracking sync workflow run");
-  }
+        this.logger.info("Finished UPS Tracking sync workflow run");
+    }
 }

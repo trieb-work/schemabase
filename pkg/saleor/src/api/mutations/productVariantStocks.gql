@@ -1,23 +1,23 @@
 mutation productVariantStockEntryUpdate(
-  $variantId: ID!
-  $stocks: [StockInput!]!
+    $variantId: ID!
+    $stocks: [StockInput!]!
 ) {
-  productVariantStocksUpdate(variantId: $variantId, stocks: $stocks) {
-    productVariant {
-      stocks {
-        warehouse {
-          id
-          name
+    productVariantStocksUpdate(variantId: $variantId, stocks: $stocks) {
+        productVariant {
+            stocks {
+                warehouse {
+                    id
+                    name
+                }
+                id
+                quantity
+                quantityAllocated
+            }
         }
-        id
-        quantity
-        quantityAllocated
-      }
+        errors {
+            field
+            message
+            code
+        }
     }
-    errors {
-      field
-      message
-      code
-    }
-  }
 }

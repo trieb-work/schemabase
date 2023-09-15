@@ -3,69 +3,69 @@
 
 **Table of Contents**
 
-- [Requirements](#requirements)
-- [Components overview](#components-overview)
-- [Setup](#setup)
-  - [Develop a single service (Example api)](#develop-a-single-service-example-api)
-- [How do I get the zoho cookies?](#how-do-i-get-the-zoho-cookies)
-- [Glossary](#glossary)
-  - [Event](#event)
-  - [Topic](#topic)
-  - [Producer](#producer)
-  - [Consumer / Subscriber](#consumer--subscriber)
-  - [Integration / EventHandler](#integration--eventhandler)
-- [Webhooks](#webhooks)
-  - [Synchronous api](#synchronous-api)
-  - [Async webhooks.](#async-webhooks)
-- [Graphql API](#graphql-api)
-- [Typical Flow of an event triggered by an incoming webhook](#typical-flow-of-an-event-triggered-by-an-incoming-webhook)
-- [Howto: Adding a new integration](#howto-adding-a-new-integration)
-  - [Adding a new integration:](#adding-a-new-integration)
-    - [1. Create a mapping for topic and message type](#1-create-a-mapping-for-topic-and-message-type)
-    - [2. Create the handler/integration](#2-create-the-handlerintegration)
-    - [3. Create a susbscriber and subscribe the handler.](#3-create-a-susbscriber-and-subscribe-the-handler)
-    - [4. Create webhook and producer in the api](#4-create-webhook-and-producer-in-the-api)
-- [Database](#database)
-  - [Tenants, Integrations, Apps](#tenants-integrations-apps)
-  - [Other tables](#other-tables)
-    - [Tracking](#tracking)
-- [Debugging Kafka](#debugging-kafka)
-- [Integration tests](#integration-tests)
+-   [Requirements](#requirements)
+-   [Components overview](#components-overview)
+-   [Setup](#setup)
+    -   [Develop a single service (Example api)](#develop-a-single-service-example-api)
+-   [How do I get the zoho cookies?](#how-do-i-get-the-zoho-cookies)
+-   [Glossary](#glossary)
+    -   [Event](#event)
+    -   [Topic](#topic)
+    -   [Producer](#producer)
+    -   [Consumer / Subscriber](#consumer--subscriber)
+    -   [Integration / EventHandler](#integration--eventhandler)
+-   [Webhooks](#webhooks)
+    -   [Synchronous api](#synchronous-api)
+    -   [Async webhooks.](#async-webhooks)
+-   [Graphql API](#graphql-api)
+-   [Typical Flow of an event triggered by an incoming webhook](#typical-flow-of-an-event-triggered-by-an-incoming-webhook)
+-   [Howto: Adding a new integration](#howto-adding-a-new-integration)
+    -   [Adding a new integration:](#adding-a-new-integration)
+        -   [1. Create a mapping for topic and message type](#1-create-a-mapping-for-topic-and-message-type)
+        -   [2. Create the handler/integration](#2-create-the-handlerintegration)
+        -   [3. Create a susbscriber and subscribe the handler.](#3-create-a-susbscriber-and-subscribe-the-handler)
+        -   [4. Create webhook and producer in the api](#4-create-webhook-and-producer-in-the-api)
+-   [Database](#database)
+    -   [Tenants, Integrations, Apps](#tenants-integrations-apps)
+    -   [Other tables](#other-tables)
+        -   [Tracking](#tracking)
+-   [Debugging Kafka](#debugging-kafka)
+-   [Integration tests](#integration-tests)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # Requirements
 
-- [pnpm](https://pnpm.io/) `npm i -g pnpm`
-- docker
-- docker-compose
-- better internet :'(
+-   [pnpm](https://pnpm.io/) `npm i -g pnpm`
+-   docker
+-   docker-compose
+-   better internet :'(
 
 # Components overview
 
 [![](https://mermaid.ink/img/pako:eNp9kctqwzAQRX9FzDr2B3hRKLFX7SIkLd1oM1hjR0QPM5KgJeTfK1sxbdq0WkgX3TMv5gy9VwQNjIzTUby00ol8yv04aVFVYrt_bfNbiZ0PcWQKN-6OvUo9ZfkgnnA4YXHfPJ-I7wLX7EVXtdh6F5IlUWeghP1M8UcHz35UjNrNyJ5Q_YvUs15qdAZD1P23Kb68lb_t4E5sAbr3SOzQLE2iMcuQOeWvAVZvDSgAbMASW9Qqb-A8_0mIR7IkoclS0YDJRAnSXTKaJoWROqWjZ2gGNIE2gCn6w4froYmcaIVajXmh9kpdPgGEYZNz)](https://mermaid-js.github.io/mermaid-live-editor/edit#pako:eNp9kctqwzAQRX9FzDr2B3hRKLFX7SIkLd1oM1hjR0QPM5KgJeTfK1sxbdq0WkgX3TMv5gy9VwQNjIzTUby00ol8yv04aVFVYrt_bfNbiZ0PcWQKN-6OvUo9ZfkgnnA4YXHfPJ-I7wLX7EVXtdh6F5IlUWeghP1M8UcHz35UjNrNyJ5Q_YvUs15qdAZD1P23Kb68lb_t4E5sAbr3SOzQLE2iMcuQOeWvAVZvDSgAbMASW9Qqb-A8_0mIR7IkoclS0YDJRAnSXTKaJoWROqWjZ2gGNIE2gCn6w4froYmcaIVajXmh9kpdPgGEYZNz)
 
-- **Api**: Nextjs hosted on vercel to receive webhooks and run graphql server
-- **Logdrain**: Nextjs hosted on k8s to forward logs to elasticsearch
-- **Kafka**: Hosted on Upstash
-- **Worker**: Nodejs container hosted on k8s, listens to events from kafka and executes integrations.
-- **External**: Zoho, Strapi, Saleor etc, we receive webhooks and make http calls to them.
-- **Postgres**: Our internal db in k8s
+-   **Api**: Nextjs hosted on vercel to receive webhooks and run graphql server
+-   **Logdrain**: Nextjs hosted on k8s to forward logs to elasticsearch
+-   **Kafka**: Hosted on Upstash
+-   **Worker**: Nodejs container hosted on k8s, listens to events from kafka and executes integrations.
+-   **External**: Zoho, Strapi, Saleor etc, we receive webhooks and make http calls to them.
+-   **Postgres**: Our internal db in k8s
 
 # Current integrations
 
 schemabase has the following integrations already in place:
 
-- Xentral
-- Zoho Books
-- Zoho Inventory
-- Saleor
-- reviews.io
-- DHL
-- UPS
-- DPD
-- Track&Trace (custom Track&Trace solution supporting multilanguage notification emails on every package tracking update from the supported carriers)
-- Braintree (pulling transaction costs)
+-   Xentral
+-   Zoho Books
+-   Zoho Inventory
+-   Saleor
+-   reviews.io
+-   DHL
+-   UPS
+-   DPD
+-   Track&Trace (custom Track&Trace solution supporting multilanguage notification emails on every package tracking update from the supported carriers)
+-   Braintree (pulling transaction costs)
 -
 
 # Setup
@@ -133,9 +133,9 @@ Most endpoinst are only meant to receive an event from a 3rd party, validate the
 
 If all goes well, the api handler simply produces an event to a specific topic and returns `200 OK` to the caller. At this point we have the event in our system and we can retry as many times as we need.
 
-- **Cylinder** shaped elements are Kafka topics / bull queues.
-- **Rounded** are api routes inside nextjs.
-- **Rectangular** are EventHandlers running on the worker
+-   **Cylinder** shaped elements are Kafka topics / bull queues.
+-   **Rounded** are api routes inside nextjs.
+-   **Rectangular** are EventHandlers running on the worker
 
 [![](https://mermaid.ink/img/pako:eNqVVU1vozAQ_SsWJyI1RXvNYSUWvLuoKUFADl0SIYKdBCWxkTGt2qr_fW0MCV9t0hwiMzN-8948bN61lCKszbQdS_I9mPsrAsRP_dueDaZT8II3e0oPYvkTJHlmoBzpkSFXebLDRbV6_mFwlqSHjOxkfj1RCHW5RMkZRWWKK5Qw9kzrwfwD46VnmyFUxYFAyLOxjkWVGTRVYaOuNlKGE44FlaZ7a--QQRD6pufE0A39p9jy4ZnG7bva5P_RPe1RlzhvIjzgLYMGZQizIecmP2y98G3o1z0jvf00Wau9o6IifSQ4WU_vQUpJUZ4wuBfwavaQcPZqVZTalrTCklbwSlKwKY-HSgLgFNSEvwfTVfdrOX9QmoIn14J2pPcjjcpG61fzAD15C8l0mSPRmqn97UgjilGSveEC8D0GBL-Asz60qVheR_ncsdhaPHpzKF-XUbMaHSPBoZzWPFXzwZhV-Ha3rsJ87VbXme7hjvTu81COJy4OcTjgMyb8b0LQsRnvSEJyqd-hXGUBlmmQkcam78KN30xBKF0TbriBEzoL9-LbZxV9WVZZcHrCzKU822YNiX608ggTBEo1a3xKsqO0Ka0LK163Y3XVuIvQ-e1YpuQXw0fTmceBeLci_ZOEPGTXdF4M7WcuF9Etl9Xo8egWn8OTtXanCaViOEh8rd4lxkoTB_WEV9pMLBHeJuWRr7QV-RClapgQZZwybbZNjgW-05KSU3kctBlnJW6K7CwRH79TXfXxH-tDQdc)](https://mermaid-js.github.io/mermaid-live-editor/edit#pako:eNqVVU1vozAQ_SsWJyI1RXvNYSUWvLuoKUFADl0SIYKdBCWxkTGt2qr_fW0MCV9t0hwiMzN-8948bN61lCKszbQdS_I9mPsrAsRP_dueDaZT8II3e0oPYvkTJHlmoBzpkSFXebLDRbV6_mFwlqSHjOxkfj1RCHW5RMkZRWWKK5Qw9kzrwfwD46VnmyFUxYFAyLOxjkWVGTRVYaOuNlKGE44FlaZ7a--QQRD6pufE0A39p9jy4ZnG7bva5P_RPe1RlzhvIjzgLYMGZQizIecmP2y98G3o1z0jvf00Wau9o6IifSQ4WU_vQUpJUZ4wuBfwavaQcPZqVZTalrTCklbwSlKwKY-HSgLgFNSEvwfTVfdrOX9QmoIn14J2pPcjjcpG61fzAD15C8l0mSPRmqn97UgjilGSveEC8D0GBL-Asz60qVheR_ncsdhaPHpzKF-XUbMaHSPBoZzWPFXzwZhV-Ha3rsJ87VbXme7hjvTu81COJy4OcTjgMyb8b0LQsRnvSEJyqd-hXGUBlmmQkcam78KN30xBKF0TbriBEzoL9-LbZxV9WVZZcHrCzKU822YNiX608ggTBEo1a3xKsqO0Ka0LK163Y3XVuIvQ-e1YpuQXw0fTmceBeLci_ZOEPGTXdF4M7WcuF9Etl9Xo8egWn8OTtXanCaViOEh8rd4lxkoTB_WEV9pMLBHeJuWRr7QV-RClapgQZZwybbZNjgW-05KSU3kctBlnJW6K7CwRH79TXfXxH-tDQdc)
 
@@ -151,8 +151,8 @@ The graphql api is hosted on the api service under `/api/graphql`. The actual im
 
 There are currently two ways integrations are built.
 
-- (Old) separate event handler and integration
-- (New) combined
+-   (Old) separate event handler and integration
+-   (New) combined
 
 An example of a new integration can be found in `pkg/integration-tracking/src/notifications.ts`
 Here the integration implements the `EventHandler` interface and can be plugged directly into a `KafkaConsumer` in the worker.
@@ -177,8 +177,8 @@ By providing an `onSuccess` function to the constructor we can remove the routin
 // service/worker/src/main.ts
 
 new tracking.CustomerNotifier({
-  onSuccess: publishSuccess(producer, Topic.NOTIFICATION_EMAIL_SENT),
-  // remaining config
+    onSuccess: publishSuccess(producer, Topic.NOTIFICATION_EMAIL_SENT),
+    // remaining config
 });
 ```
 
@@ -196,12 +196,12 @@ Use any unique value as `groupId` and simply ignore it. it's not needed once you
 
 ```ts
 const customerNotifierSubscriber = await KafkaSubscriber.new<
-  EventSchemaRegistry.PackageStateTransition["message"]
+    EventSchemaRegistry.PackageStateTransition["message"]
 >({
-  topic: Topic.PACKAGE_STATE_TRANSITION,
-  signer,
-  logger,
-  groupId: "customerNotifierSubscriber",
+    topic: Topic.PACKAGE_STATE_TRANSITION,
+    signer,
+    logger,
+    groupId: "customerNotifierSubscriber",
 });
 ```
 
@@ -209,14 +209,14 @@ After creating the subscriber, you can add the eventHandler like this:
 
 ```ts
 customerNotifierSubscriber.subscribe(
-  new tracking.CustomerNotifier({
-    db: prisma,
-    onSuccess: publishSuccess(producer, Topic.NOTIFICATION_EMAIL_SENT),
-    logger,
-    emailTemplateSender: new Sendgrid(env.require("SENDGRID_API_KEY"), {
-      logger,
+    new tracking.CustomerNotifier({
+        db: prisma,
+        onSuccess: publishSuccess(producer, Topic.NOTIFICATION_EMAIL_SENT),
+        logger,
+        emailTemplateSender: new Sendgrid(env.require("SENDGRID_API_KEY"), {
+            logger,
+        }),
     }),
-  }),
 );
 ```
 
@@ -231,118 +231,118 @@ Next up is producing the events from a webhook.
 
 ```ts [services/api/v1/my/path/[webhookId]/index.ts]
 import {
-  authorizeIntegration,
-  extendContext,
-  setupPrisma,
+    authorizeIntegration,
+    extendContext,
+    setupPrisma,
 } from "@eci/pkg/webhook-context";
 import { z } from "zod";
 import { HttpError } from "@eci/pkg/errors";
 import { handleWebhook, Webhook } from "@eci/pkg/http";
 import { env } from "@eci/pkg/env";
 import {
-  EventSchemaRegistry,
-  KafkaProducer,
-  Message,
-  Signer,
-  Topic,
+    EventSchemaRegistry,
+    KafkaProducer,
+    Message,
+    Signer,
+    Topic,
 } from "@eci/pkg/events";
 
 const requestValidation = z.object({
-  query: z.object({
-    webhookId: z.string(),
-  }),
-  body: z.object({
-    someField: z.string(),
-  }),
+    query: z.object({
+        webhookId: z.string(),
+    }),
+    body: z.object({
+        someField: z.string(),
+    }),
 });
 
 const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
-  backgroundContext,
-  req,
-  res,
+    backgroundContext,
+    req,
+    res,
 }): Promise<void> => {
-  /**
-   *  If this function gets executed the request has already been validated by zod.
-   * So you are safe to destructure the `req` object without validating
-   */
-  const {
-    query: { webhookId },
-    body: { someField },
-  } = req;
+    /**
+     *  If this function gets executed the request has already been validated by zod.
+     * So you are safe to destructure the `req` object without validating
+     */
+    const {
+        query: { webhookId },
+        body: { someField },
+    } = req;
 
-  const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
+    const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
-  /**
-   * load the necessary data from the database by joining tables, starting at the webhook.
-   */
-  const webhook = await ctx.prisma.incomingWebhook.findUnique({
-    where: { id: webhookId },
-    include: {
-      dpdApp: {
+    /**
+     * load the necessary data from the database by joining tables, starting at the webhook.
+     */
+    const webhook = await ctx.prisma.incomingWebhook.findUnique({
+        where: { id: webhookId },
         include: {
-          integration: {
-            include: {
-              trackingEmailApp: true,
-              subscription: true,
+            dpdApp: {
+                include: {
+                    integration: {
+                        include: {
+                            trackingEmailApp: true,
+                            subscription: true,
+                        },
+                    },
+                },
             },
-          },
         },
-      },
-    },
-  });
-  /**
-   * Verify we have all required data
-   */
-  if (webhook == null) {
-    throw new HttpError(404, `Webhook not found: ${webhookId}`);
-  }
+    });
+    /**
+     * Verify we have all required data
+     */
+    if (webhook == null) {
+        throw new HttpError(404, `Webhook not found: ${webhookId}`);
+    }
 
-  const { dpdApp } = webhook;
-  if (dpdApp == null) {
-    throw new HttpError(400, "dpd app is not configured");
-  }
-  const { integration } = dpdApp;
-  if (integration == null) {
-    throw new HttpError(400, "Integration is not configured");
-  }
-  /**
-   * Ensure the integration is enabled and payed for
-   */
-  authorizeIntegration(integration);
+    const { dpdApp } = webhook;
+    if (dpdApp == null) {
+        throw new HttpError(400, "dpd app is not configured");
+    }
+    const { integration } = dpdApp;
+    if (integration == null) {
+        throw new HttpError(400, "Integration is not configured");
+    }
+    /**
+     * Ensure the integration is enabled and payed for
+     */
+    authorizeIntegration(integration);
 
-  ctx.logger.info("The user has something to say", {
-    someField,
-  });
+    ctx.logger.info("The user has something to say", {
+        someField,
+    });
 
-  const event: EventSchemaRegistry.MadeUpname["message"] = {
-    someField,
-    dpdAppId: dpdApp.id,
-  };
+    const event: EventSchemaRegistry.MadeUpname["message"] = {
+        someField,
+        dpdAppId: dpdApp.id,
+    };
 
-  const kafka = await KafkaProducer.new<
-    EventSchemaRegistry.MadeUpName["message"]
-  >({
-    signer: new Signer({ signingKey: env.require("SIGNING_KEY") }),
-  });
+    const kafka = await KafkaProducer.new<
+        EventSchemaRegistry.MadeUpName["message"]
+    >({
+        signer: new Signer({ signingKey: env.require("SIGNING_KEY") }),
+    });
 
-  const message = new Message({
-    header: {
-      traceId: ctx.trace.id,
-    },
-    content: event,
-  });
+    const message = new Message({
+        header: {
+            traceId: ctx.trace.id,
+        },
+        content: event,
+    });
 
-  const { messageId } = await kafka.produce(Topic.MADE_UP_NAME, message);
+    const { messageId } = await kafka.produce(Topic.MADE_UP_NAME, message);
 
-  ctx.logger.info("Queued new event", { messageId });
+    ctx.logger.info("Queued new event", { messageId });
 };
 
 export default handleWebhook({
-  webhook,
-  validation: {
-    http: { allowedMethods: ["POST"] },
-    request: requestValidation,
-  },
+    webhook,
+    validation: {
+        http: { allowedMethods: ["POST"] },
+        request: requestValidation,
+    },
 });
 ```
 
@@ -370,13 +370,13 @@ If we could do inheritance this would be what I would build:
 
 [![](https://mermaid.ink/img/pako:eNqVVMFuwyAM_RXEcWqj9YqqSpu2Q8_ZNGniQoPboCYQEUda1fXfR0OSQksrLSfz_OxnHoQjLYwEymhRibZ9U2JnRc0118R9PUY-QAuNHvExI0qeOT3mSS9N4xnLpdi0aEWBq9UFdQHxVZcV9r3WAcap5pTM5y5YuGAUDofJXetGTX2npav67fUYgR_XWbbXBN-zb_7kgi_YlMbsr1mMZFkWS36b0kyCw-Ke3Jh-JDZyElJrjeAOAJXRCTdvsgEQuBujscthzo_20O3XrtobK8HeSKcy3pQAuDInWTO4cDfP6XOWLcJBgyP9T9l0NPF96jZtYVVz2VmInF3VSBpxAPmpUVVJyrSBCL9jb4I3jTmMHJkdDhtdo2FBxp_xhpZDYQEjsocYcVdK6R0pRVsm8gnzJmWu6YzWYGuhpHs1judyTrGEGjhlLpSwFV2FnHJ9ctSukQLhXSo0lrKtqFqYUdGhyQ-6oAxtByNpeHwG1ukPGN15-Q)](https://mermaid-js.github.io/mermaid-live-editor/edit#pako:eNqVVMFuwyAM_RXEcWqj9YqqSpu2Q8_ZNGniQoPboCYQEUda1fXfR0OSQksrLSfz_OxnHoQjLYwEymhRibZ9U2JnRc0118R9PUY-QAuNHvExI0qeOT3mSS9N4xnLpdi0aEWBq9UFdQHxVZcV9r3WAcap5pTM5y5YuGAUDofJXetGTX2npav67fUYgR_XWbbXBN-zb_7kgi_YlMbsr1mMZFkWS36b0kyCw-Ke3Jh-JDZyElJrjeAOAJXRCTdvsgEQuBujscthzo_20O3XrtobK8HeSKcy3pQAuDInWTO4cDfP6XOWLcJBgyP9T9l0NPF96jZtYVVz2VmInF3VSBpxAPmpUVVJyrSBCL9jb4I3jTmMHJkdDhtdo2FBxp_xhpZDYQEjsocYcVdK6R0pRVsm8gnzJmWu6YzWYGuhpHs1judyTrGEGjhlLpSwFV2FnHJ9ctSukQLhXSo0lrKtqFqYUdGhyQ-6oAxtByNpeHwG1ukPGN15-Q)
 
-- **Tenant** A single customer of ours (Pfeffer und Frost)
-- **App** A single application configuration. Here we store connection details and other config for a 3rd party system. The idea is that a customer can add these App configs using our UI (at some point) or add them automatically via one-click installations. Afterwards they can connect these apps via `integrations`
-- **Integration** The connection of 1..n applications and a tenant. (The bulkorder integration connects a strapi app with a zoho app)
-- **Subscription** Every integration can have a subscription attached, that can hold information such billing periods and usage tracking for usage based pricing.
-- **Webhook** Every app can have 0..n webhooks attached. This gives us a unique identifier for incoming webhooks and allows us to load the attached `app`, its `integration` and other connected `apps` as well as `subscription` state. Allowing multiple webhooks per app also makes it possible for customers to replace webhooks (and their secret) without downtime.
-- **WebhookSecret** We require an authorization header to be present with every incoming request and match its hash against a hash stored in the db.
-  This is a separate table because in the past we had separate webhooks tables for each app. Right now there's nothing stopping us from adding a `secret` column to the `webhooks` table and remove the `webhooksSecret` table.
+-   **Tenant** A single customer of ours (Pfeffer und Frost)
+-   **App** A single application configuration. Here we store connection details and other config for a 3rd party system. The idea is that a customer can add these App configs using our UI (at some point) or add them automatically via one-click installations. Afterwards they can connect these apps via `integrations`
+-   **Integration** The connection of 1..n applications and a tenant. (The bulkorder integration connects a strapi app with a zoho app)
+-   **Subscription** Every integration can have a subscription attached, that can hold information such billing periods and usage tracking for usage based pricing.
+-   **Webhook** Every app can have 0..n webhooks attached. This gives us a unique identifier for incoming webhooks and allows us to load the attached `app`, its `integration` and other connected `apps` as well as `subscription` state. Allowing multiple webhooks per app also makes it possible for customers to replace webhooks (and their secret) without downtime.
+-   **WebhookSecret** We require an authorization header to be present with every incoming request and match its hash against a hash stored in the db.
+    This is a separate table because in the past we had separate webhooks tables for each app. Right now there's nothing stopping us from adding a `secret` column to the `webhooks` table and remove the `webhooksSecret` table.
 
 As mentioned above, inheritance is not possible in prisma, so we have to manually duplicate columns in different `XXXApp` and `XXXIntegration` tables, but the mental model should be, that all integrations behave similar and have relations to a tenant, a subscription and one or more apps. In practice this results in a few optional relations here and there that prisma requires and actually creates on its own using `prisma format`
 

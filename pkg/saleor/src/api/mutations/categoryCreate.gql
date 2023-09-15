@@ -1,11 +1,11 @@
 mutation categoryCreate($input: CategoryInput!, $parent: ID) {
-  categoryCreate(input: $input, parent: $parent) {
-    category {
-      id
+    categoryCreate(input: $input, parent: $parent) {
+        category {
+            id
+        }
+        errors {
+            field
+            message
+        }
     }
-    errors {
-      field
-      message
-    }
-  }
 }

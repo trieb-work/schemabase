@@ -1,12 +1,12 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: eci-trwrk-wildcard
+    name: eci-trwrk-wildcard
 spec:
-  secretName: eci-trwrk-wildcard
-  issuerRef:
-    kind: ClusterIssuer
-    name: letsencrypt-prod-dns
-  commonName: "*.eci-prod.eu.fsn1.trwrk.xyz"
-  dnsNames:
-    - "*.eci-prod.eu.fsn1.trwrk.xyz"
+    secretName: eci-trwrk-wildcard
+    issuerRef:
+        kind: ClusterIssuer
+        name: letsencrypt-prod-dns
+    commonName: "*.eci-prod.eu.fsn1.trwrk.xyz"
+    dnsNames:
+        - "*.eci-prod.eu.fsn1.trwrk.xyz"

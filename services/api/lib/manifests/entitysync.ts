@@ -3,21 +3,21 @@ import { AppPermission, WebhookManifest } from "@saleor/app-sdk/types";
 const getName = () => "schemabase datahub";
 
 const getPermissions = (): AppPermission[] => {
-  return [
-    "MANAGE_ORDERS",
-    "MANAGE_CHANNELS",
-    "MANAGE_PRODUCTS",
-    "MANAGE_PRODUCT_TYPES_AND_ATTRIBUTES",
-    "MANAGE_DISCOUNTS",
-    "MANAGE_GIFT_CARD",
-    "MANAGE_SHIPPING",
-    "MANAGE_USERS",
-  ];
+    return [
+        "MANAGE_ORDERS",
+        "MANAGE_CHANNELS",
+        "MANAGE_PRODUCTS",
+        "MANAGE_PRODUCT_TYPES_AND_ATTRIBUTES",
+        "MANAGE_DISCOUNTS",
+        "MANAGE_GIFT_CARD",
+        "MANAGE_SHIPPING",
+        "MANAGE_USERS",
+    ];
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getWebhookManifest = (_baseUrl: string): WebhookManifest[] => {
-  return [];
+    return [];
 };
 
 export const entitysync = { getPermissions, getWebhookManifest, getName };

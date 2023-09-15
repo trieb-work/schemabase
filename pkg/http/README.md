@@ -4,10 +4,10 @@ The boilerplate code used in every nextjs api route.
 
 The wrapper does:
 
-- request validation -> makes it typesafe to work
-- manages traceId
-- sets up the backgroundContext
-- Handles errors by converting to proper http status codes
+-   request validation -> makes it typesafe to work
+-   manages traceId
+-   sets up the backgroundContext
+-   Handles errors by converting to proper http status codes
 
 # http.ts
 

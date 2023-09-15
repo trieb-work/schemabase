@@ -9,22 +9,22 @@ import { describe, beforeAll, it } from "@jest/globals";
 const prisma = new PrismaClient();
 
 describe("KencoveApiClient", () => {
-  let app: KencoveApiApp;
+    let app: KencoveApiApp;
 
-  beforeAll(async () => {
-    app = await prisma.kencoveApiApp.findUniqueOrThrow({
-      where: {
-        id: "kencove_prod",
-      },
+    beforeAll(async () => {
+        app = await prisma.kencoveApiApp.findUniqueOrThrow({
+            where: {
+                id: "kencove_prod",
+            },
+        });
     });
-  });
 
-  it("should be able to run the categories sync", async () => {
-    const service = new KencoveApiAppOrderSyncService({
-      db: prisma,
-      kencoveApiApp: app,
-      logger: new AssertionLogger(),
-    });
-    await service.syncToECI();
-  }, 2000000);
+    it("should be able to run the categories sync", async () => {
+        const service = new KencoveApiAppOrderSyncService({
+            db: prisma,
+            kencoveApiApp: app,
+            logger: new AssertionLogger(),
+        });
+        await service.syncToECI();
+    }, 2000000);
 });

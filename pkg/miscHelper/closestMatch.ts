@@ -6,15 +6,16 @@
  * @returns
  */
 const closestsMatch = <T extends { [key: string]: any }>(
-  array: T[],
-  goal: number,
-  itterator: string,
+    array: T[],
+    goal: number,
+    itterator: string,
 ): T => {
-  return array.reduce(function (prev, curr) {
-    return Math.abs(curr[itterator] - goal) < Math.abs(prev[itterator] - goal)
-      ? curr
-      : prev;
-  });
+    return array.reduce(function (prev, curr) {
+        return Math.abs(curr[itterator] - goal) <
+            Math.abs(prev[itterator] - goal)
+            ? curr
+            : prev;
+    });
 };
 
 export { closestsMatch };

@@ -11,14 +11,14 @@ import { normalizeStrings } from "../normalization";
  * @returns
  */
 const uniqueStringOrderLine = (
-  orderNumber: string,
-  sku: string,
-  quantity: number,
-  order: number,
+    orderNumber: string,
+    sku: string,
+    quantity: number,
+    order: number,
 ) => {
-  return normalizeStrings.lineItemStrings(
-    `${orderNumber}${sku}${quantity}${order}`,
-  );
+    return normalizeStrings.lineItemStrings(
+        `${orderNumber}${sku}${quantity}${order}`,
+    );
 };
 
 /**
@@ -31,13 +31,13 @@ const uniqueStringOrderLine = (
  * @returns
  */
 const uniqueStringPackageLineItem = (
-  packageNumber: string,
-  sku: string,
-  quantity: number,
-  order: number,
+    packageNumber: string,
+    sku: string,
+    quantity: number,
+    order: number,
 ) => {
-  return normalizeStrings.lineItemStrings(
-    `${packageNumber}${sku}${quantity}${order}`,
-  );
+    return normalizeStrings.lineItemStrings(
+        `${packageNumber}${sku}${quantity}${order}`,
+    );
 };
 export { uniqueStringOrderLine, uniqueStringPackageLineItem };

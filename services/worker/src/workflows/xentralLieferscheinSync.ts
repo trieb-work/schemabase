@@ -6,51 +6,53 @@ import { XentralXmlClient } from "@eci/pkg/xentral";
 import { XentralRestClient } from "@eci/pkg/xentral/src/rest";
 
 export type XentralLieferscheinSyncWorkflowClients = {
-  prisma: PrismaClient;
+    prisma: PrismaClient;
 };
 export type XentralLieferscheinSyncWorkflowConfig = {
-  xentralProxyApp: XentralProxyApp;
+    xentralProxyApp: XentralProxyApp;
 };
 
 export class XentralLieferscheinSyncWf implements Workflow {
-  private logger: ILogger;
+    private logger: ILogger;
 
-  private prisma: PrismaClient;
+    private prisma: PrismaClient;
 
-  private xentralProxyApp: XentralProxyApp;
+    private xentralProxyApp: XentralProxyApp;
 
-  public constructor(
-    ctx: RuntimeContext,
-    clients: XentralLieferscheinSyncWorkflowClients,
-    config: XentralLieferscheinSyncWorkflowConfig,
-  ) {
-    this.xentralProxyApp = config.xentralProxyApp;
-    this.logger = ctx.logger.with({
-      workflow: XentralLieferscheinSyncWf.name,
-      xentralProxyApp: this.xentralProxyApp,
-    });
-    this.prisma = clients.prisma;
-    this.xentralProxyApp = config.xentralProxyApp;
-  }
+    public constructor(
+        ctx: RuntimeContext,
+        clients: XentralLieferscheinSyncWorkflowClients,
+        config: XentralLieferscheinSyncWorkflowConfig,
+    ) {
+        this.xentralProxyApp = config.xentralProxyApp;
+        this.logger = ctx.logger.with({
+            workflow: XentralLieferscheinSyncWf.name,
+            xentralProxyApp: this.xentralProxyApp,
+        });
+        this.prisma = clients.prisma;
+        this.xentralProxyApp = config.xentralProxyApp;
+    }
 
-  /**
-   * Sync all xentral lieferscheine into ECI-DB
-   */
-  public async run(): Promise<void> {
-    this.logger.info(
-      `Starting xentral Lieferschein sync workflow run for xentral URL ${this.xentralProxyApp.url}`,
-    );
+    /**
+     * Sync all xentral lieferscheine into ECI-DB
+     */
+    public async run(): Promise<void> {
+        this.logger.info(
+            `Starting xentral Lieferschein sync workflow run for xentral URL ${this.xentralProxyApp.url}`,
+        );
 
-    const xentralXmlClient = new XentralXmlClient(this.xentralProxyApp);
-    const xentralRestClient = new XentralRestClient(this.xentralProxyApp);
-    const xentralLieferscheinSync = new XentralProxyLieferscheinSyncService({
-      xentralXmlClient,
-      xentralRestClient,
-      logger: this.logger,
-      db: this.prisma,
-      xentralProxyApp: this.xentralProxyApp,
-    });
-    await xentralLieferscheinSync.syncToECI();
-    this.logger.info("Finished xentral Lieferschein sync workflow run");
-  }
+        const xentralXmlClient = new XentralXmlClient(this.xentralProxyApp);
+        const xentralRestClient = new XentralRestClient(this.xentralProxyApp);
+        const xentralLieferscheinSync = new XentralProxyLieferscheinSyncService(
+            {
+                xentralXmlClient,
+                xentralRestClient,
+                logger: this.logger,
+                db: this.prisma,
+                xentralProxyApp: this.xentralProxyApp,
+            },
+        );
+        await xentralLieferscheinSync.syncToECI();
+        this.logger.info("Finished xentral Lieferschein sync workflow run");
+    }
 }

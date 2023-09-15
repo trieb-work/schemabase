@@ -1,14 +1,14 @@
 import { GenericError } from "./base";
 
 export class ContextMissingFieldError extends GenericError {
-  /**
-   * @param missingField - The name field that was not set up properly before.
-   */
-  constructor(missingField: string) {
-    super(
-      "ContextMissingFieldError",
-      // eslint-disable-next-line max-len
-      `The context is missing a required field: ${missingField}. Is the context set up in the correct order?`,
-    );
-  }
+    /**
+     * @param missingField - The name field that was not set up properly before.
+     */
+    constructor(missingField: string) {
+        super(
+            "ContextMissingFieldError",
+            // eslint-disable-next-line max-len
+            `The context is missing a required field: ${missingField}. Is the context set up in the correct order?`,
+        );
+    }
 }

@@ -8,44 +8,44 @@ import { SaleorProductSyncService } from "./products";
 /// Use this file to locally run this service
 
 beforeEach(() => {
-  jest.clearAllMocks();
+    jest.clearAllMocks();
 });
 
 describe("Zoho Entity Sync Orders Test", () => {
-  const prismaClient = new PrismaClient();
+    const prismaClient = new PrismaClient();
 
-  test("It should work to sync products", async () => {
-    const tenant = await prismaClient.tenant.findUnique({
-      where: {
-        // id: "pk_7f165pf-prod",
-        id: "tn_kencove235",
-        // id: "test",
-      },
-    });
-    if (!tenant)
-      throw new Error("Testing Tenant or saleor app not found in DB");
+    test("It should work to sync products", async () => {
+        const tenant = await prismaClient.tenant.findUnique({
+            where: {
+                // id: "pk_7f165pf-prod",
+                id: "tn_kencove235",
+                // id: "test",
+            },
+        });
+        if (!tenant)
+            throw new Error("Testing Tenant or saleor app not found in DB");
 
-    const { client: saleorClient, installedSaleorApp } =
-      // await getSaleorClientAndEntry("QXBwOjE2", prismaClient);
-      await getSaleorClientAndEntry("QXBwOjE=", prismaClient);
+        const { client: saleorClient, installedSaleorApp } =
+            // await getSaleorClientAndEntry("QXBwOjE2", prismaClient);
+            await getSaleorClientAndEntry("QXBwOjE=", prismaClient);
 
-    const service = new SaleorProductSyncService({
-      saleorClient,
-      installedSaleorApp: installedSaleorApp,
-      logger: new AssertionLogger(),
-      db: prismaClient,
-      tenantId: tenant.id,
-    });
-    // await service.uploadMedia("UHJvZHVjdDoxODAyMQ==", [
-    //   {
-    //     id: "efgefgh",
-    //     url: "https://img.kencove.us/products/pgd1032h_tpost2_450_450-87902.jpg",
-    //     createdAt: new Date(),
-    //     updatedAt: new Date(),
-    //     tenantId: "test",
-    //   },
-    // ]);
-    await service.syncToECI();
-    await service.syncFromECI();
-  }, 1000000);
+        const service = new SaleorProductSyncService({
+            saleorClient,
+            installedSaleorApp: installedSaleorApp,
+            logger: new AssertionLogger(),
+            db: prismaClient,
+            tenantId: tenant.id,
+        });
+        // await service.uploadMedia("UHJvZHVjdDoxODAyMQ==", [
+        //   {
+        //     id: "efgefgh",
+        //     url: "https://img.kencove.us/products/pgd1032h_tpost2_450_450-87902.jpg",
+        //     createdAt: new Date(),
+        //     updatedAt: new Date(),
+        //     tenantId: "test",
+        //   },
+        // ]);
+        await service.syncToECI();
+        await service.syncFromECI();
+    }, 1000000);
 });

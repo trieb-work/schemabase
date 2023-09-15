@@ -1,12 +1,12 @@
 mutation productTypeUpdate($input: ProductTypeInput!, $id: ID!) {
-  productTypeUpdate(input: $input, id: $id) {
-    productType {
-      id
+    productTypeUpdate(input: $input, id: $id) {
+        productType {
+            id
+        }
+        errors {
+            field
+            message
+            code
+        }
     }
-    errors {
-      field
-      message
-      code
-    }
-  }
 }

@@ -2,7 +2,7 @@ import React, { PropsWithChildren } from "react";
 import dynamic from "next/dynamic";
 
 const Wrapper = (props: PropsWithChildren<{}>) => (
-  <React.Fragment>{props.children}</React.Fragment>
+    <React.Fragment>{props.children}</React.Fragment>
 );
 
 /**
@@ -17,5 +17,5 @@ const Wrapper = (props: PropsWithChildren<{}>) => (
  * It doesn't affect Saleor communication, but may cause problems with some client-only code.
  */
 export const NoSSRWrapper = dynamic(() => Promise.resolve(Wrapper), {
-  ssr: false,
+    ssr: false,
 });

@@ -1,15 +1,15 @@
-mutation productUpdate($input: ProductInput!, $id:ID!) {
-  productUpdate(input: $input, id: $id) {
-    errors {
-      field
-      message
-      code
+mutation productUpdate($input: ProductInput!, $id: ID!) {
+    productUpdate(input: $input, id: $id) {
+        errors {
+            field
+            message
+            code
+        }
+        product {
+            id
+            defaultVariant {
+                id
+            }
+        }
     }
-    product {
-      id
-      defaultVariant {
-        id
-      }
-    }
-  }
 }

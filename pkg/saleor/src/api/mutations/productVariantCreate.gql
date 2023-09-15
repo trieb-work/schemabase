@@ -1,16 +1,16 @@
 mutation productVariantBulkCreate(
-  $variants: [ProductVariantBulkCreateInput!]!
-  $productId: ID!
+    $variants: [ProductVariantBulkCreateInput!]!
+    $productId: ID!
 ) {
-  productVariantBulkCreate(product: $productId, variants: $variants) {
-    productVariants {
-      id
-      sku
+    productVariantBulkCreate(product: $productId, variants: $variants) {
+        productVariants {
+            id
+            sku
+        }
+        errors {
+            field
+            values
+            message
+        }
     }
-    errors {
-      field
-      values
-      message
-    }
-  }
 }

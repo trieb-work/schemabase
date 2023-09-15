@@ -1,4 +1,4 @@
 {
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "prisma.fileWatcher": true
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "prisma.fileWatcher": true
 }

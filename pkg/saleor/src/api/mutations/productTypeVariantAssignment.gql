@@ -1,18 +1,18 @@
 # Product types can have variant selection attributes. We need to manually set these, as we can't do this when creating the product type.
 mutation productAttributeVariantSelection(
-  $productTypeId: ID!
-  $attributeId: ID!
+    $productTypeId: ID!
+    $attributeId: ID!
 ) {
-  productAttributeAssignmentUpdate(
-    productTypeId: $productTypeId
-    operations: { id: $attributeId, variantSelection: true }
-  ) {
-    productType {
-      id
+    productAttributeAssignmentUpdate(
+        productTypeId: $productTypeId
+        operations: { id: $attributeId, variantSelection: true }
+    ) {
+        productType {
+            id
+        }
+        errors {
+            field
+            message
+        }
     }
-    errors {
-      field
-      message
-    }
-  }
 }

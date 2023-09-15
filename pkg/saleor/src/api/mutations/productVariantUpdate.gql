@@ -1,17 +1,17 @@
 mutation productVariantBulkUpdate(
-  $variants: [ProductVariantBulkUpdateInput!]!
-  $productId: ID!
+    $variants: [ProductVariantBulkUpdateInput!]!
+    $productId: ID!
 ) {
-  productVariantBulkUpdate(product: $productId, variants: $variants) {
-    results {
-      productVariant {
-        id
-        sku
-      }
+    productVariantBulkUpdate(product: $productId, variants: $variants) {
+        results {
+            productVariant {
+                id
+                sku
+            }
+        }
+        errors {
+            field
+            values
+        }
     }
-    errors {
-      field
-      values
-    }
-  }
 }

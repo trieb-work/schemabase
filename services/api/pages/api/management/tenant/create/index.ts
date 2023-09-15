@@ -4,9 +4,9 @@ import { id } from "@eci/pkg/ids";
 import { handleWebhook, Webhook } from "@eci/pkg/http";
 
 const requestValidation = z.object({
-  query: z.object({
-    name: z.string(),
-  }),
+    query: z.object({
+        name: z.string(),
+    }),
 });
 
 /**
@@ -14,35 +14,35 @@ const requestValidation = z.object({
  * their attributes in your shop.#
  */
 const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
-  backgroundContext,
-  req,
-  res,
+    backgroundContext,
+    req,
+    res,
 }): Promise<void> => {
-  const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
+    const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
-  const {
-    query: { name },
-  } = requestValidation.parse(req);
+    const {
+        query: { name },
+    } = requestValidation.parse(req);
 
-  const tenant = await ctx.prisma.tenant.create({
-    data: {
-      id: id.id("publicKey"),
-      name,
-    },
-  });
+    const tenant = await ctx.prisma.tenant.create({
+        data: {
+            id: id.id("publicKey"),
+            name,
+        },
+    });
 
-  ctx.logger.info("New tenant created", { name });
-  res.json({
-    status: "created",
-    traceId: ctx.trace.id,
-    tenant: tenant.id,
-  });
+    ctx.logger.info("New tenant created", { name });
+    res.json({
+        status: "created",
+        traceId: ctx.trace.id,
+        tenant: tenant.id,
+    });
 };
 
 export default handleWebhook({
-  webhook,
-  validation: {
-    http: { allowedMethods: ["POST"] },
-    request: requestValidation,
-  },
+    webhook,
+    validation: {
+        http: { allowedMethods: ["POST"] },
+        request: requestValidation,
+    },
 });

@@ -1,9 +1,9 @@
 query paymentGateways {
-  shop {
-    availablePaymentGateways {
-      id
-      name
-      currencies
+    shop {
+        availablePaymentGateways {
+            id
+            name
+            currencies
+        }
     }
-  }
 }

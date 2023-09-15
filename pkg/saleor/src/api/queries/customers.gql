@@ -1,46 +1,46 @@
 query saleorCronCustomers(
-  $updatedAtGte: DateTime
-  $first: Int
-  $after: String
+    $updatedAtGte: DateTime
+    $first: Int
+    $after: String
 ) {
-  customers(
-    first: $first
-    after: $after
-    filter: { updatedAt: { gte: $updatedAtGte } }
-  ) {
-    pageInfo {
-      hasNextPage
-      startCursor
-      endCursor
-    }
-    edges {
-      node {
-        id
-        isActive
-        firstName
-        lastName
-        email
-        languageCode
-        isActive
-        dateJoined
-        updatedAt
-        addresses {
-          id
-          firstName
-          lastName
-          streetAddress1
-          streetAddress2
-          postalCode
-          city
-          country {
-            code
-          }
-          companyName
-          phone
-          isDefaultBillingAddress
-          isDefaultShippingAddress
+    customers(
+        first: $first
+        after: $after
+        filter: { updatedAt: { gte: $updatedAtGte } }
+    ) {
+        pageInfo {
+            hasNextPage
+            startCursor
+            endCursor
         }
-      }
+        edges {
+            node {
+                id
+                isActive
+                firstName
+                lastName
+                email
+                languageCode
+                isActive
+                dateJoined
+                updatedAt
+                addresses {
+                    id
+                    firstName
+                    lastName
+                    streetAddress1
+                    streetAddress2
+                    postalCode
+                    city
+                    country {
+                        code
+                    }
+                    companyName
+                    phone
+                    isDefaultBillingAddress
+                    isDefaultShippingAddress
+                }
+            }
+        }
     }
-  }
 }

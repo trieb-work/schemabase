@@ -1,73 +1,73 @@
 version: "3.9"
 
 services:
-  # Our own database where we store tenants and config
-  eci_db:
-    container_name: eci.mysql.db
-    image: mysql:8
-    command: --default-authentication-plugin=mysql_native_password
-    ports:
-      - 3306:3306
-    environment:
-      - MYSQL_ROOT_PASSWORD=eci
-      - MYSQL_USER=eci
-      - MYSQL_PASSWORD=eci
-      - MYSQL_DATABASE=eci
+    # Our own database where we store tenants and config
+    eci_db:
+        container_name: eci.mysql.db
+        image: mysql:8
+        command: --default-authentication-plugin=mysql_native_password
+        ports:
+            - 3306:3306
+        environment:
+            - MYSQL_ROOT_PASSWORD=eci
+            - MYSQL_USER=eci
+            - MYSQL_PASSWORD=eci
+            - MYSQL_DATABASE=eci
 
-  # Nextjs Serverless application to receive api from various services
-  eci_api:
-    build:
-      context: .
-      dockerfile: ./services/api/Dockerfile
-      args:
-        - DATABASE_URL="${DATABASE_URL}"
-    container_name: api.eci
-    ports:
-      - 3000:3000
-    environment:
-      - DATABASE_URL="${DATABASE_URL}"
-      - SHADOW_DATABASE_URL="${SHADOW_DATABASE_URL}"
-      - KAFKA_BROKER_URL=kafka:9092
-      - SIGNING_KEY=anything
-      - NODE_ENV=production
-      - ECI_BASE_URL=http://api.eci:3000
-      - ECI_ENV=development
-      - JWT_SIGNING_KEY=${JWT_SIGNING_KEY}
+    # Nextjs Serverless application to receive api from various services
+    eci_api:
+        build:
+            context: .
+            dockerfile: ./services/api/Dockerfile
+            args:
+                - DATABASE_URL="${DATABASE_URL}"
+        container_name: api.eci
+        ports:
+            - 3000:3000
+        environment:
+            - DATABASE_URL="${DATABASE_URL}"
+            - SHADOW_DATABASE_URL="${SHADOW_DATABASE_URL}"
+            - KAFKA_BROKER_URL=kafka:9092
+            - SIGNING_KEY=anything
+            - NODE_ENV=production
+            - ECI_BASE_URL=http://api.eci:3000
+            - ECI_ENV=development
+            - JWT_SIGNING_KEY=${JWT_SIGNING_KEY}
 
-  logdrain:
-    build:
-      context: .
-      dockerfile: ./services/logdrain/Dockerfile
+    logdrain:
+        build:
+            context: .
+            dockerfile: ./services/logdrain/Dockerfile
 
-    container_name: logdrain.eci
-    ports:
-      - 4000:3000
-    environment:
-      - DATABASE_URL="${DATABASE_URL}"
-      - NODE_ENV=production
-      - ECI_ENV=dev
-  eci_worker:
-    container_name: worker.eci
-    build:
-      context: .
-      dockerfile: ./services/worker/Dockerfile
-      args:
-        - commit_sha=development
-    environment:
-      - DATABASE_URL="${DATABASE_URL}"
-      - SHADOW_DATABASE_URL="${SHADOW_DATABASE_URL}"
-      - NODE_ENV=production
-      - ECI_ENV=development
-      - ZOHO_ZCSRF_TOKEN=${ZOHO_ZCSRF_TOKEN}
-      - ZOHO_COOKIES=${ZOHO_COOKIES}
-      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
-      - REDIS_HOST=${REDIS_HOST}
-      - REDIS_PORT=${REDIS_PORT}
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
+        container_name: logdrain.eci
+        ports:
+            - 4000:3000
+        environment:
+            - DATABASE_URL="${DATABASE_URL}"
+            - NODE_ENV=production
+            - ECI_ENV=dev
+    eci_worker:
+        container_name: worker.eci
+        build:
+            context: .
+            dockerfile: ./services/worker/Dockerfile
+            args:
+                - commit_sha=development
+        environment:
+            - DATABASE_URL="${DATABASE_URL}"
+            - SHADOW_DATABASE_URL="${SHADOW_DATABASE_URL}"
+            - NODE_ENV=production
+            - ECI_ENV=development
+            - ZOHO_ZCSRF_TOKEN=${ZOHO_ZCSRF_TOKEN}
+            - ZOHO_COOKIES=${ZOHO_COOKIES}
+            - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+            - REDIS_HOST=${REDIS_HOST}
+            - REDIS_PORT=${REDIS_PORT}
+            - REDIS_PASSWORD=${REDIS_PASSWORD}
 
-  redis:
-    container_name: redis.eci
-    image: redis:7
-    command: redis-server --requirepass hi
-    ports:
-      - 6379:6379
+    redis:
+        container_name: redis.eci
+        image: redis:7
+        command: redis-server --requirepass hi
+        ports:
+            - 6379:6379

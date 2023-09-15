@@ -1,136 +1,139 @@
 fragment standardAddressValues on Address {
-  firstName
-  lastName
-  phone
-  postalCode
-  streetAddress1
-  streetAddress2
-  city
-  companyName
-  country {
-    code
-  }
+    firstName
+    lastName
+    phone
+    postalCode
+    streetAddress1
+    streetAddress2
+    city
+    companyName
+    country {
+        code
+    }
 }
 
 query saleorCronOrdersOverview(
-  $createdGte: Date
-  $after: String
-  $first: Int
-  $updatedAtGte: DateTime
+    $createdGte: Date
+    $after: String
+    $first: Int
+    $updatedAtGte: DateTime
 ) {
-  orders(
-    first: $first
-    after: $after
-    filter: { created: { gte: $createdGte }, updatedAt: { gte: $updatedAtGte } }
-  ) {
-    pageInfo {
-      hasNextPage
-      startCursor
-      endCursor
+    orders(
+        first: $first
+        after: $after
+        filter: {
+            created: { gte: $createdGte }
+            updatedAt: { gte: $updatedAtGte }
+        }
+    ) {
+        pageInfo {
+            hasNextPage
+            startCursor
+            endCursor
+        }
+        edges {
+            node {
+                id
+                created
+                status
+                userEmail
+                billingAddress {
+                    ...standardAddressValues
+                }
+                shippingAddress {
+                    ...standardAddressValues
+                }
+                shippingPrice {
+                    gross {
+                        amount
+                    }
+                }
+                voucher {
+                    id
+                    code
+                    type
+                }
+                languageCodeEnum
+                shippingMethodName
+                paymentStatus
+                isPaid
+                number
+                total {
+                    currency
+                    gross {
+                        amount
+                    }
+                }
+            }
+        }
     }
-    edges {
-      node {
-        id
-        created
-        status
-        userEmail
-        billingAddress {
-          ...standardAddressValues
-        }
-        shippingAddress {
-          ...standardAddressValues
-        }
-        shippingPrice {
-          gross {
-            amount
-          }
-        }
-        voucher {
-          id
-          code
-          type
-        }
-        languageCodeEnum
-        shippingMethodName
-        paymentStatus
-        isPaid
-        number
-        total {
-          currency
-          gross {
-            amount
-          }
-        }
-      }
-    }
-  }
 }
 
 query saleorCronOrderDetails($id: ID!) {
-  order(id: $id) {
-    id
-    created
-    number
-    shippingPrice {
-      currency
-      tax {
-        amount
-      }
-      net {
-        amount
-      }
-      gross {
-        amount
-      }
-    }
-    lines {
-      id
-      productSku
-      variant {
-        sku
-      }
-      quantity
-      unitDiscountType
-      unitDiscount {
-        amount
-      }
-      undiscountedUnitPrice {
-        currency
-        gross {
-          amount
+    order(id: $id) {
+        id
+        created
+        number
+        shippingPrice {
+            currency
+            tax {
+                amount
+            }
+            net {
+                amount
+            }
+            gross {
+                amount
+            }
         }
-        net {
-          amount
+        lines {
+            id
+            productSku
+            variant {
+                sku
+            }
+            quantity
+            unitDiscountType
+            unitDiscount {
+                amount
+            }
+            undiscountedUnitPrice {
+                currency
+                gross {
+                    amount
+                }
+                net {
+                    amount
+                }
+            }
+            taxRate
+            totalPrice {
+                gross {
+                    amount
+                }
+                net {
+                    amount
+                }
+                currency
+            }
         }
-      }
-      taxRate
-      totalPrice {
-        gross {
-          amount
+        undiscountedTotal {
+            net {
+                amount
+            }
+            gross {
+                amount
+            }
         }
-        net {
-          amount
+        total {
+            currency
+            gross {
+                amount
+            }
+            net {
+                amount
+            }
         }
-        currency
-      }
+        paymentStatus
     }
-    undiscountedTotal {
-      net {
-        amount
-      }
-      gross {
-        amount
-      }
-    }
-    total {
-      currency
-      gross {
-        amount
-      }
-      net {
-        amount
-      }
-    }
-    paymentStatus
-  }
 }

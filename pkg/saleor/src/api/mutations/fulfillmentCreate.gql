@@ -1,14 +1,14 @@
 mutation saleorCreatePackage($order: ID, $input: OrderFulfillInput!) {
-  orderFulfill(order: $order, input: $input) {
-    fulfillments {
-      id
-      created
+    orderFulfill(order: $order, input: $input) {
+        fulfillments {
+            id
+            created
+        }
+        errors {
+            field
+            message
+            code
+            orderLines
+        }
     }
-    errors {
-      field
-      message
-      code
-      orderLines
-    }
-  }
 }

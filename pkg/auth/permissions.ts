@@ -1,24 +1,24 @@
 import { z } from "zod";
 const permissions = [
-  "create:order",
-  "read:order",
-  "update:order",
-  "delete:order",
+    "create:order",
+    "read:order",
+    "update:order",
+    "delete:order",
 
-  "create:package",
-  "read:package",
-  "update:package",
-  "delete:package",
+    "create:package",
+    "read:package",
+    "update:package",
+    "delete:package",
 
-  "create:packageEvent",
-  "read:packageEvent",
-  "update:packageEvent",
-  "delete:packageEvent",
+    "create:packageEvent",
+    "read:packageEvent",
+    "update:packageEvent",
+    "delete:packageEvent",
 
-  "create:transactionalEmail",
-  "read:transactionalEmail",
-  "update:transactionalEmail",
-  "delete:transactionalEmail",
+    "create:transactionalEmail",
+    "read:transactionalEmail",
+    "update:transactionalEmail",
+    "delete:transactionalEmail",
 ] as const;
 
 const permissionValidation = z.enum(permissions);

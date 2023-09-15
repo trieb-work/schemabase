@@ -1,58 +1,61 @@
 query saleorCronPayments(
-  $createdGte: Date
-  $after: String
-  $updatedAtGte: DateTime
+    $createdGte: Date
+    $after: String
+    $updatedAtGte: DateTime
 ) {
-  orders(
-    first: 100
-    after: $after
-    filter: { created: { gte: $createdGte }, updatedAt: { gte: $updatedAtGte } }
-  ) {
-    totalCount
-    pageInfo {
-      hasNextPage
-      endCursor
-      startCursor
-    }
-    edges {
-      node {
-        id
-        channel {
-          id
-          name
+    orders(
+        first: 100
+        after: $after
+        filter: {
+            created: { gte: $createdGte }
+            updatedAt: { gte: $updatedAtGte }
         }
-        payments {
-          id
-          gateway
-          created
-          modified
-          isActive
-          chargeStatus
-          creditCard {
-            brand
-            lastDigits
-          }
-          order {
-            id
-            created
-            number
-            userEmail
-          }
-          paymentMethodType
-          transactions {
-            id
-            isSuccess
-            # token is the Braintree Transaction ID
-            token
-            # only with kind, we can filter out "AUTH" transactions for pre-payments
-            kind
-          }
-          total {
-            currency
-            amount
-          }
+    ) {
+        totalCount
+        pageInfo {
+            hasNextPage
+            endCursor
+            startCursor
         }
-      }
+        edges {
+            node {
+                id
+                channel {
+                    id
+                    name
+                }
+                payments {
+                    id
+                    gateway
+                    created
+                    modified
+                    isActive
+                    chargeStatus
+                    creditCard {
+                        brand
+                        lastDigits
+                    }
+                    order {
+                        id
+                        created
+                        number
+                        userEmail
+                    }
+                    paymentMethodType
+                    transactions {
+                        id
+                        isSuccess
+                        # token is the Braintree Transaction ID
+                        token
+                        # only with kind, we can filter out "AUTH" transactions for pre-payments
+                        kind
+                    }
+                    total {
+                        currency
+                        amount
+                    }
+                }
+            }
+        }
     }
-  }
 }

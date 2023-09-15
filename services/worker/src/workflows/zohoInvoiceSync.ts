@@ -5,56 +5,56 @@ import { ZohoInvoiceSyncService } from "@eci/pkg/integration-zoho-entities/src/i
 import { getZohoClientAndEntry } from "@eci/pkg/zoho/src/zoho";
 
 export type ZohoInvoiceSyncWorkflowClients = {
-  prisma: PrismaClient;
+    prisma: PrismaClient;
 };
 export type ZohoInvoiceSyncWorkflowConfig = {
-  zohoAppId: string;
+    zohoAppId: string;
 };
 
 export class ZohoInvoiceSyncWf implements Workflow {
-  private logger: ILogger;
+    private logger: ILogger;
 
-  private prisma: PrismaClient;
+    private prisma: PrismaClient;
 
-  private zohoAppId: string;
+    private zohoAppId: string;
 
-  public constructor(
-    ctx: RuntimeContext,
-    clients: ZohoInvoiceSyncWorkflowClients,
-    config: ZohoInvoiceSyncWorkflowConfig,
-  ) {
-    this.zohoAppId = config.zohoAppId;
-    this.logger = ctx.logger.with({
-      workflow: ZohoInvoiceSyncWf.name,
-      zohoAppId: this.zohoAppId,
-    });
-    this.logger = ctx.logger;
-    this.prisma = clients.prisma;
-  }
+    public constructor(
+        ctx: RuntimeContext,
+        clients: ZohoInvoiceSyncWorkflowClients,
+        config: ZohoInvoiceSyncWorkflowConfig,
+    ) {
+        this.zohoAppId = config.zohoAppId;
+        this.logger = ctx.logger.with({
+            workflow: ZohoInvoiceSyncWf.name,
+            zohoAppId: this.zohoAppId,
+        });
+        this.logger = ctx.logger;
+        this.prisma = clients.prisma;
+    }
 
-  /**
-   * Sync all zoho invoices into ECI-DB
-   */
-  public async run(): Promise<void> {
-    this.logger.info("Starting zoho invoice sync workflow run");
-    const { client: zoho, zohoApp } = await getZohoClientAndEntry(
-      this.zohoAppId,
-      this.prisma,
-      undefined,
-    );
-    const zohoInvoiceSyncService = new ZohoInvoiceSyncService({
-      logger: this.logger,
-      zoho,
-      db: this.prisma,
-      zohoApp: zohoApp,
-      createdTimeOffset: 20,
-    });
-    await zohoInvoiceSyncService.syncToECI();
     /**
-     * auto-create invoices from SalesOrders
+     * Sync all zoho invoices into ECI-DB
      */
-    await zohoInvoiceSyncService.syncFromECI_autocreateInvoiceFromSalesorder();
+    public async run(): Promise<void> {
+        this.logger.info("Starting zoho invoice sync workflow run");
+        const { client: zoho, zohoApp } = await getZohoClientAndEntry(
+            this.zohoAppId,
+            this.prisma,
+            undefined,
+        );
+        const zohoInvoiceSyncService = new ZohoInvoiceSyncService({
+            logger: this.logger,
+            zoho,
+            db: this.prisma,
+            zohoApp: zohoApp,
+            createdTimeOffset: 20,
+        });
+        await zohoInvoiceSyncService.syncToECI();
+        /**
+         * auto-create invoices from SalesOrders
+         */
+        await zohoInvoiceSyncService.syncFromECI_autocreateInvoiceFromSalesorder();
 
-    this.logger.info("Finished zoho invoice sync workflow run");
-  }
+        this.logger.info("Finished zoho invoice sync workflow run");
+    }
 }

@@ -1,43 +1,43 @@
 fragment categoryValues on Category {
-  id
-  name
-  slug
-  description
-  seoTitle
-  seoDescription
-  backgroundImage {
-    url
-  }
-  children(first: 100) {
-    edges {
-      node {
-        id
-      }
-    }
-  }
-  parent {
     id
-  }
-  products(first: 100) {
-    edges {
-      node {
-        id
-      }
+    name
+    slug
+    description
+    seoTitle
+    seoDescription
+    backgroundImage {
+        url
     }
-  }
+    children(first: 100) {
+        edges {
+            node {
+                id
+            }
+        }
+    }
+    parent {
+        id
+    }
+    products(first: 100) {
+        edges {
+            node {
+                id
+            }
+        }
+    }
 }
 
 query saleorCronCategories($first: Int, $last: Int, $after: String) {
-  categories(first: $first, last: $last, after: $after) {
-    pageInfo {
-      hasNextPage
-      startCursor
-      endCursor
+    categories(first: $first, last: $last, after: $after) {
+        pageInfo {
+            hasNextPage
+            startCursor
+            endCursor
+        }
+        edges {
+            node {
+                ...categoryValues
+            }
+        }
     }
-    edges {
-      node {
-        ...categoryValues
-      }
-    }
-  }
 }

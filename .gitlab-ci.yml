@@ -2,188 +2,188 @@
 ## We try to auto-deploy all new version tags to staging and promote them manually to production
 
 variables:
-  # Enabled:
-  STAGING_ENABLED: 1
-  CI_KUBERNETES_ACTIVE: 1
+    # Enabled:
+    STAGING_ENABLED: 1
+    CI_KUBERNETES_ACTIVE: 1
 
 stages:
-  - review
-  - staging
-  - production
-  - cleanup
+    - review
+    - staging
+    - production
+    - cleanup
 
 .auto-deploy:
-  before_script:
-    - set +e && chmod 600 $CI_PROJECT_DIR.tmp/KUBECONFIG && set -e
-    - if [ -n "$KUBE_CONTEXT" ]; then kubectl config use-context "$KUBE_CONTEXT"; fi
-    - chmod 400 $KUBECONFIG
-  image: "registry.gitlab.com/gitlab-org/cluster-integration/auto-deploy-image:v2.48.0"
-  dependencies: []
+    before_script:
+        - set +e && chmod 600 $CI_PROJECT_DIR.tmp/KUBECONFIG && set -e
+        - if [ -n "$KUBE_CONTEXT" ]; then kubectl config use-context "$KUBE_CONTEXT"; fi
+        - chmod 400 $KUBECONFIG
+    image: "registry.gitlab.com/gitlab-org/cluster-integration/auto-deploy-image:v2.48.0"
+    dependencies: []
 
 ## Review job is deploying automatically on every new release tag and deploys automatically to the
 ## staging environment and can be promoted to production with one click
 review:
-  extends: .auto-deploy
-  stage: review
-  variables:
-    AUTO_DEVOPS_COMMON_NAME: $CI_PROJECT_ID-staging.gc.review-kencove.com
-    KUBE_NAMESPACE: schemabase-staging
-  environment:
-    name: staging
-    # Bullboard URL
-    url: https://$AUTO_DEVOPS_COMMON_NAME
-    on_stop: stop_review
-  artifacts:
-    paths:
-      - variables.env
-    expire_in: 1 week
-  script:
-    - helm repo add azure-marketplace https://marketplace.azurecr.io/helm/v1/repo
-    # Add a redis deployment with nodeport service, limit CPU and memory, set a password, set standard persistent storage 3 GB. Name: redis-schemabase-staging
-    - helm upgrade --install --create-namespace -n $KUBE_NAMESPACE redis-schemabase-staging azure-marketplace/redis --set architecture="standalone" --set auth.password="$REDIS_PASSWORD" --set resources.requests.cpu=100m --set resources.requests.memory=250Mi --set resources.limits.cpu=200m --set resources.limits.memory=256Mi --set persistence.size=3Gi --set service.type=NodePort
+    extends: .auto-deploy
+    stage: review
+    variables:
+        AUTO_DEVOPS_COMMON_NAME: $CI_PROJECT_ID-staging.gc.review-kencove.com
+        KUBE_NAMESPACE: schemabase-staging
+    environment:
+        name: staging
+        # Bullboard URL
+        url: https://$AUTO_DEVOPS_COMMON_NAME
+        on_stop: stop_review
+    artifacts:
+        paths:
+            - variables.env
+        expire_in: 1 week
+    script:
+        - helm repo add azure-marketplace https://marketplace.azurecr.io/helm/v1/repo
+        # Add a redis deployment with nodeport service, limit CPU and memory, set a password, set standard persistent storage 3 GB. Name: redis-schemabase-staging
+        - helm upgrade --install --create-namespace -n $KUBE_NAMESPACE redis-schemabase-staging azure-marketplace/redis --set architecture="standalone" --set auth.password="$REDIS_PASSWORD" --set resources.requests.cpu=100m --set resources.requests.memory=250Mi --set resources.limits.cpu=200m --set resources.limits.memory=256Mi --set persistence.size=3Gi --set service.type=NodePort
 
-    # Get the current version from package.json to use it as docker version tag later. We don't have node available
-    # in the image, so we use jq to parse the json file.
-    - export SCHEMA_VERSION=$(jq -r '.version' package.json)
-    - >
-      helm upgrade worker-schemabase-staging ./services/worker/helm-chart
-      --install
-      --namespace=$KUBE_NAMESPACE
-      --set=image.imageName="ghcr.io/trieb-work/schemabase/worker:$SCHEMA_VERSION"
-      --set=eciEnv="staging"
-      --set=databaseUrl="$DATABASE_URL"
-      --set=signingKey="$SECRET_KEY_WORKER"
-      --set=redis.host="redis-schemabase-staging-master"
-      --set=redis.password="$REDIS_PASSWORD"
-      --set=elasticsearch.host=""
-      --set=elasticsearch.username=""
-      --set=elasticsearch.password=""
-      --set=kafka.brokerUrl="$KAFKA_URL"
-      --set=kafka.saslMechanism="scram-sha-256"
-      --set=kafka.username="$KAFKA_USERNAME"
-      --set=kafka.password="$KAFKA_PASSWORD"
-      --set=sendgridApiKey="TO_BE_ADDED"
-      --set=secretKey="$SECRET_KEY_WORKER"
-    - >
-      helm upgrade queue-dashboard-schemabase ./services/bullboard/helm-chart
-      --install
-      --namespace=$KUBE_NAMESPACE
-      --set=image.imageName="ghcr.io/trieb-work/schemabase/bullboard:$SCHEMA_VERSION"
-      --set=redis.host="redis-schemabase-staging-master"
-      --set=redis.password="$REDIS_PASSWORD"
-      --set=ingress.host=$AUTO_DEVOPS_COMMON_NAME
-      --set=google.clientId="$GC_CLIENT_ID"
-      --set=allowedLoginDomains="kencove.com"
-      --set=google.clientSecret="$GC_CLIENT_SECRET"
-      --set-string=ingress.annotations."kubernetes\.io/tls-acme"=true
-      --set=ingress.annotations."cert-manager\.io/cluster-issuer"=null
+        # Get the current version from package.json to use it as docker version tag later. We don't have node available
+        # in the image, so we use jq to parse the json file.
+        - export SCHEMA_VERSION=$(jq -r '.version' package.json)
+        - >
+            helm upgrade worker-schemabase-staging ./services/worker/helm-chart
+            --install
+            --namespace=$KUBE_NAMESPACE
+            --set=image.imageName="ghcr.io/trieb-work/schemabase/worker:$SCHEMA_VERSION"
+            --set=eciEnv="staging"
+            --set=databaseUrl="$DATABASE_URL"
+            --set=signingKey="$SECRET_KEY_WORKER"
+            --set=redis.host="redis-schemabase-staging-master"
+            --set=redis.password="$REDIS_PASSWORD"
+            --set=elasticsearch.host=""
+            --set=elasticsearch.username=""
+            --set=elasticsearch.password=""
+            --set=kafka.brokerUrl="$KAFKA_URL"
+            --set=kafka.saslMechanism="scram-sha-256"
+            --set=kafka.username="$KAFKA_USERNAME"
+            --set=kafka.password="$KAFKA_PASSWORD"
+            --set=sendgridApiKey="TO_BE_ADDED"
+            --set=secretKey="$SECRET_KEY_WORKER"
+        - >
+            helm upgrade queue-dashboard-schemabase ./services/bullboard/helm-chart
+            --install
+            --namespace=$KUBE_NAMESPACE
+            --set=image.imageName="ghcr.io/trieb-work/schemabase/bullboard:$SCHEMA_VERSION"
+            --set=redis.host="redis-schemabase-staging-master"
+            --set=redis.password="$REDIS_PASSWORD"
+            --set=ingress.host=$AUTO_DEVOPS_COMMON_NAME
+            --set=google.clientId="$GC_CLIENT_ID"
+            --set=allowedLoginDomains="kencove.com"
+            --set=google.clientSecret="$GC_CLIENT_SECRET"
+            --set-string=ingress.annotations."kubernetes\.io/tls-acme"=true
+            --set=ingress.annotations."cert-manager\.io/cluster-issuer"=null
 
-    - auto-deploy persist_environment_url
-    - echo "Queue dashboard deployed to https://$AUTO_DEVOPS_COMMON_NAME"
+        - auto-deploy persist_environment_url
+        - echo "Queue dashboard deployed to https://$AUTO_DEVOPS_COMMON_NAME"
 
-  rules:
-    - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
-      when: never
-    - if: "$REVIEW_DISABLED"
-      when: never
-    - if: "($CI_COMMIT_REF_PROTECTED == 'true')"
-      when: never
-    # run on every new release tag
-    - if: "$CI_COMMIT_TAG =~ /^v[0-9].*/"
+    rules:
+        - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
+          when: never
+        - if: "$REVIEW_DISABLED"
+          when: never
+        - if: "($CI_COMMIT_REF_PROTECTED == 'true')"
+          when: never
+        # run on every new release tag
+        - if: "$CI_COMMIT_TAG =~ /^v[0-9].*/"
 
 review-vercel:
-  image: node:18
-  stage: review
-  needs: ["review"]
-  environment:
-    name: staging
-  before_script:
-    - corepack enable
-    - corepack prepare pnpm@latest-8 --activate
-    - pnpm config set store-dir .pnpm-store
-  cache:
-    key:
-      files:
-        - pnpm-lock.yaml
-    paths:
-      - .pnpm-store
-  script:
-    # Export the DATABASE_URL variable from the review job
-    - export $(grep -v '^#' $CI_PROJECT_DIR/variables.env | xargs)
-    - pnpm install
+    image: node:18
+    stage: review
+    needs: ["review"]
+    environment:
+        name: staging
+    before_script:
+        - corepack enable
+        - corepack prepare pnpm@latest-8 --activate
+        - pnpm config set store-dir .pnpm-store
+    cache:
+        key:
+            files:
+                - pnpm-lock.yaml
+        paths:
+            - .pnpm-store
+    script:
+        # Export the DATABASE_URL variable from the review job
+        - export $(grep -v '^#' $CI_PROJECT_DIR/variables.env | xargs)
+        - pnpm install
 
-    # Run the prisma db push using the DATABASE_URL_EXTERNAL
-    - DATABASE_URL=$DATABASE_URL_EXTERNAL pnpm prisma db push
+        # Run the prisma db push using the DATABASE_URL_EXTERNAL
+        - DATABASE_URL=$DATABASE_URL_EXTERNAL pnpm prisma db push
 
-    # Setting the DATABASE_URL to the prisma connection string for vercel
-    - export DATABASE_URL=$PRISMA_CONNECTION_STRING
-    # Deploy the API service to vercel
-    - npm install --global vercel
-    - vercel --scope kencove pull --yes --environment=preview --token=$VERCEL_TOKEN
-    - vercel build --token=$VERCEL_TOKEN
-    - export URL="$(vercel deploy --prebuilt --token=$VERCEL_TOKEN --meta gitlabCommitRef=$CI_COMMIT_REF_SLUG --meta gitlabCommitSha=$CI_COMMIT_SHA --meta gitlabDeployment=1 --meta gitlabCommitAuthorName="$GITLAB_USER_NAME" --meta gitlabProjectPath=$CI_PROJECT_PATH)"
-    - vercel alias --token=$VERCEL_TOKEN set "$URL" $CI_PROJECT_ID-staging.vc.review-kencove.com --scope kencove
-  rules:
-    - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
-      when: never
-    - if: "$REVIEW_DISABLED"
-      when: never
-    - if: "($CI_COMMIT_REF_PROTECTED == 'true')"
-      when: never
-    # run on every new release tag
-    - if: "$CI_COMMIT_TAG =~ /^v[0-9].*/"
+        # Setting the DATABASE_URL to the prisma connection string for vercel
+        - export DATABASE_URL=$PRISMA_CONNECTION_STRING
+        # Deploy the API service to vercel
+        - npm install --global vercel
+        - vercel --scope kencove pull --yes --environment=preview --token=$VERCEL_TOKEN
+        - vercel build --token=$VERCEL_TOKEN
+        - export URL="$(vercel deploy --prebuilt --token=$VERCEL_TOKEN --meta gitlabCommitRef=$CI_COMMIT_REF_SLUG --meta gitlabCommitSha=$CI_COMMIT_SHA --meta gitlabDeployment=1 --meta gitlabCommitAuthorName="$GITLAB_USER_NAME" --meta gitlabProjectPath=$CI_PROJECT_PATH)"
+        - vercel alias --token=$VERCEL_TOKEN set "$URL" $CI_PROJECT_ID-staging.vc.review-kencove.com --scope kencove
+    rules:
+        - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
+          when: never
+        - if: "$REVIEW_DISABLED"
+          when: never
+        - if: "($CI_COMMIT_REF_PROTECTED == 'true')"
+          when: never
+        # run on every new release tag
+        - if: "$CI_COMMIT_TAG =~ /^v[0-9].*/"
 
 ## Review job is deploying automatically on every push to "prod" branch
 production:
-  extends: .auto-deploy
-  stage: production
-  before_script:
-    - corepack enable
-    - corepack prepare pnpm@latest-8 --activate
-    - pnpm config set store-dir .pnpm-store
-  cache:
-    key:
-      files:
-        - pnpm-lock.yaml
-    paths:
-      - .pnpm-store
-  script:
-    - helm repo add azure-marketplace https://marketplace.azurecr.io/helm/v1/repo
-    # Add a redis deployment with nodeport service, limit CPU and memory, set a password, set standard persistent storage 3 GB. Name: redis-schemabase-production
-    # Add a mysql deployment with nodeport service, limit CPU and memory, set a password, set standard persistent storage 30 GB. Name: mysql-schemabase-production
+    extends: .auto-deploy
+    stage: production
+    before_script:
+        - corepack enable
+        - corepack prepare pnpm@latest-8 --activate
+        - pnpm config set store-dir .pnpm-store
+    cache:
+        key:
+            files:
+                - pnpm-lock.yaml
+        paths:
+            - .pnpm-store
+    script:
+        - helm repo add azure-marketplace https://marketplace.azurecr.io/helm/v1/repo
+        # Add a redis deployment with nodeport service, limit CPU and memory, set a password, set standard persistent storage 3 GB. Name: redis-schemabase-production
+        # Add a mysql deployment with nodeport service, limit CPU and memory, set a password, set standard persistent storage 30 GB. Name: mysql-schemabase-production
 
-    # Deploy the API service to vercel
-    - npm install --global vercel
-    - vercel pull --yes --environment=production --token=$VERCEL_TOKEN
-    - vercel build --token=$VERCEL_TOKEN services/api
-    - export URL="$(vercel deploy --prebuilt --prod  --token=$VERCEL_TOKEN --meta gitlabCommitRef=$CI_COMMIT_REF_SLUG --meta gitlabCommitSha=$CI_COMMIT_SHA --meta gitlabDeployment=1 --meta gitlabCommitAuthorName="$GITLAB_USER_NAME" --meta gitlabProjectPath=$CI_PROJECT_PATH)"
-    - vercel alias --token=$VERCEL_TOKEN set "$URL" $CI_PROJECT_ID-$CI_COMMIT_REF_SLUG.vc.review-kencove.com --scope $VERCEL_ORG_ID
-  environment:
-    name: production
-    # Bullboard URL
-    url: https://$AUTO_DEVOPS_COMMON_NAME
-  rules:
-    - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
-      when: never
-    - if: '$CI_COMMIT_REF_NAME == "prod"'
+        # Deploy the API service to vercel
+        - npm install --global vercel
+        - vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+        - vercel build --token=$VERCEL_TOKEN services/api
+        - export URL="$(vercel deploy --prebuilt --prod  --token=$VERCEL_TOKEN --meta gitlabCommitRef=$CI_COMMIT_REF_SLUG --meta gitlabCommitSha=$CI_COMMIT_SHA --meta gitlabDeployment=1 --meta gitlabCommitAuthorName="$GITLAB_USER_NAME" --meta gitlabProjectPath=$CI_PROJECT_PATH)"
+        - vercel alias --token=$VERCEL_TOKEN set "$URL" $CI_PROJECT_ID-$CI_COMMIT_REF_SLUG.vc.review-kencove.com --scope $VERCEL_ORG_ID
+    environment:
+        name: production
+        # Bullboard URL
+        url: https://$AUTO_DEVOPS_COMMON_NAME
+    rules:
+        - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
+          when: never
+        - if: '$CI_COMMIT_REF_NAME == "prod"'
 
 stop_review:
-  extends: .auto-deploy
-  stage: cleanup
-  variables:
-    GIT_STRATEGY: none
-  script:
-    - auto-deploy delete
-  environment:
-    name: staging
-    action: stop
-  allow_failure: true
-  rules:
-    - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
-      when: never
-    - if: '$CI_COMMIT_BRANCH == "v1"'
-      when: never
-    - if: "$REVIEW_DISABLED"
-      when: never
-    - if: "$CI_COMMIT_TAG || $CI_COMMIT_BRANCH"
-      when: manual
+    extends: .auto-deploy
+    stage: cleanup
+    variables:
+        GIT_STRATEGY: none
+    script:
+        - auto-deploy delete
+    environment:
+        name: staging
+        action: stop
+    allow_failure: true
+    rules:
+        - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
+          when: never
+        - if: '$CI_COMMIT_BRANCH == "v1"'
+          when: never
+        - if: "$REVIEW_DISABLED"
+          when: never
+        - if: "$CI_COMMIT_TAG || $CI_COMMIT_BRANCH"
+          when: manual

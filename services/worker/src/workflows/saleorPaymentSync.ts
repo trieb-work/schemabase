@@ -5,54 +5,57 @@ import { SaleorPaymentSyncService } from "@eci/pkg/integration-saleor-entities/s
 import { getSaleorClientAndEntry } from "@eci/pkg/saleor";
 
 export type SaleorPaymentSyncWorkflowClients = {
-  prisma: PrismaClient;
+    prisma: PrismaClient;
 };
 export type SaleorPaymentSyncWorkflowConfig = {
-  installedSaleorAppId: string;
-  orderPrefix: string;
+    installedSaleorAppId: string;
+    orderPrefix: string;
 };
 
 export class SaleorPaymentSyncWf implements Workflow {
-  private logger: ILogger;
+    private logger: ILogger;
 
-  private prisma: PrismaClient;
+    private prisma: PrismaClient;
 
-  private installedSaleorAppId: string;
+    private installedSaleorAppId: string;
 
-  private orderPrefix: string;
+    private orderPrefix: string;
 
-  public constructor(
-    ctx: RuntimeContext,
-    clients: SaleorPaymentSyncWorkflowClients,
-    config: SaleorPaymentSyncWorkflowConfig,
-  ) {
-    this.installedSaleorAppId = config.installedSaleorAppId;
-    this.logger = ctx.logger.with({
-      workflow: SaleorPaymentSyncWf.name,
-      installedSaleorAppId: this.installedSaleorAppId,
-    });
-    this.orderPrefix = config.orderPrefix;
-    this.prisma = clients.prisma;
-    this.installedSaleorAppId = config.installedSaleorAppId;
-  }
+    public constructor(
+        ctx: RuntimeContext,
+        clients: SaleorPaymentSyncWorkflowClients,
+        config: SaleorPaymentSyncWorkflowConfig,
+    ) {
+        this.installedSaleorAppId = config.installedSaleorAppId;
+        this.logger = ctx.logger.with({
+            workflow: SaleorPaymentSyncWf.name,
+            installedSaleorAppId: this.installedSaleorAppId,
+        });
+        this.orderPrefix = config.orderPrefix;
+        this.prisma = clients.prisma;
+        this.installedSaleorAppId = config.installedSaleorAppId;
+    }
 
-  public async run(): Promise<void> {
-    this.logger.info("Starting saleor payment sync workflow run");
-    const { client: saleorClient, installedSaleorApp } =
-      await getSaleorClientAndEntry(this.installedSaleorAppId, this.prisma);
+    public async run(): Promise<void> {
+        this.logger.info("Starting saleor payment sync workflow run");
+        const { client: saleorClient, installedSaleorApp } =
+            await getSaleorClientAndEntry(
+                this.installedSaleorAppId,
+                this.prisma,
+            );
 
-    const saleorPaymentSyncService = new SaleorPaymentSyncService({
-      logger: this.logger,
-      saleorClient,
-      db: this.prisma,
-      installedSaleorAppId: this.installedSaleorAppId,
-      tenantId: installedSaleorApp.saleorApp.tenantId,
-      orderPrefix: this.orderPrefix,
-    });
-    await saleorPaymentSyncService.syncToECI();
+        const saleorPaymentSyncService = new SaleorPaymentSyncService({
+            logger: this.logger,
+            saleorClient,
+            db: this.prisma,
+            installedSaleorAppId: this.installedSaleorAppId,
+            tenantId: installedSaleorApp.saleorApp.tenantId,
+            orderPrefix: this.orderPrefix,
+        });
+        await saleorPaymentSyncService.syncToECI();
 
-    await saleorPaymentSyncService.syncFromECI();
+        await saleorPaymentSyncService.syncFromECI();
 
-    this.logger.info("Finished saleor payment sync workflow run");
-  }
+        this.logger.info("Finished saleor payment sync workflow run");
+    }
 }

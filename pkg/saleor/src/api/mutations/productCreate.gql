@@ -1,15 +1,15 @@
 mutation productCreate($input: ProductCreateInput!) {
-  productCreate(input: $input) {
-    errors {
-      field
-      message
-      code
+    productCreate(input: $input) {
+        errors {
+            field
+            message
+            code
+        }
+        product {
+            id
+            defaultVariant {
+                id
+            }
+        }
     }
-    product {
-      id
-      defaultVariant {
-        id
-      }
-    }
-  }
 }

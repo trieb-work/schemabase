@@ -5,53 +5,53 @@ import { ZohoSalesOrdersSyncService } from "@eci/pkg/integration-zoho-entities/s
 import { getZohoClientAndEntry } from "@eci/pkg/zoho/src/zoho";
 
 export type ZohoSalesOrderSyncWorkflowClients = {
-  prisma: PrismaClient;
+    prisma: PrismaClient;
 };
 export type ZohoSalesOrderSyncWorkflowConfig = {
-  zohoAppId: string;
+    zohoAppId: string;
 };
 
 export class ZohoSalesOrderSyncWf implements Workflow {
-  private logger: ILogger;
+    private logger: ILogger;
 
-  private prisma: PrismaClient;
+    private prisma: PrismaClient;
 
-  private zohoAppId: string;
+    private zohoAppId: string;
 
-  public constructor(
-    ctx: RuntimeContext,
-    clients: ZohoSalesOrderSyncWorkflowClients,
-    config: ZohoSalesOrderSyncWorkflowConfig,
-  ) {
-    this.zohoAppId = config.zohoAppId;
-    this.logger = ctx.logger.with({
-      workflow: ZohoSalesOrderSyncWf.name,
-      zohoAppId: this.zohoAppId,
-    });
-    this.prisma = clients.prisma;
-  }
+    public constructor(
+        ctx: RuntimeContext,
+        clients: ZohoSalesOrderSyncWorkflowClients,
+        config: ZohoSalesOrderSyncWorkflowConfig,
+    ) {
+        this.zohoAppId = config.zohoAppId;
+        this.logger = ctx.logger.with({
+            workflow: ZohoSalesOrderSyncWf.name,
+            zohoAppId: this.zohoAppId,
+        });
+        this.prisma = clients.prisma;
+    }
 
-  /**
-   * Sync all zoho invoices into ECI-DB
-   */
-  public async run(): Promise<void> {
-    this.logger.info("Starting zoho salesorder sync workflow run");
-    const { client: zoho, zohoApp } = await getZohoClientAndEntry(
-      this.zohoAppId,
-      this.prisma,
-      undefined,
-    );
-    const zohoSalesOrdersSyncService = new ZohoSalesOrdersSyncService({
-      logger: this.logger,
-      zoho,
-      db: this.prisma,
-      zohoApp,
-      createdTimeOffset: 10,
-    });
-    await zohoSalesOrdersSyncService.syncToECI();
+    /**
+     * Sync all zoho invoices into ECI-DB
+     */
+    public async run(): Promise<void> {
+        this.logger.info("Starting zoho salesorder sync workflow run");
+        const { client: zoho, zohoApp } = await getZohoClientAndEntry(
+            this.zohoAppId,
+            this.prisma,
+            undefined,
+        );
+        const zohoSalesOrdersSyncService = new ZohoSalesOrdersSyncService({
+            logger: this.logger,
+            zoho,
+            db: this.prisma,
+            zohoApp,
+            createdTimeOffset: 10,
+        });
+        await zohoSalesOrdersSyncService.syncToECI();
 
-    await zohoSalesOrdersSyncService.syncFromECI();
+        await zohoSalesOrdersSyncService.syncFromECI();
 
-    this.logger.info("Finished zoho salesorder sync workflow run");
-  }
+        this.logger.info("Finished zoho salesorder sync workflow run");
+    }
 }

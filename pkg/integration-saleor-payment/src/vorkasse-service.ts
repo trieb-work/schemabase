@@ -1,108 +1,108 @@
 /* eslint-disable camelcase */
 
 interface PaymentListGatewaysResponse {
-  id: string;
-  name: string;
-  currencies: string[];
-  config:
-    | {
-        field: string;
-        value: string;
-      }[]
-    | [];
+    id: string;
+    name: string;
+    currencies: string[];
+    config:
+        | {
+              field: string;
+              value: string;
+          }[]
+        | [];
 }
 
 interface PaymentProcess {
-  action_required: boolean;
-  kind:
-    | "action_to_confirm"
-    | "auth"
-    | "cancel"
-    | "capture"
-    | "capture_failed"
-    | "confirm"
-    | "external"
-    | "pending"
-    | "refund"
-    | "refund_failed"
-    | "refund_ongoing"
-    | "refund_reversed"
-    | "void";
-  transaction_id?: string;
+    action_required: boolean;
+    kind:
+        | "action_to_confirm"
+        | "auth"
+        | "cancel"
+        | "capture"
+        | "capture_failed"
+        | "confirm"
+        | "external"
+        | "pending"
+        | "refund"
+        | "refund_failed"
+        | "refund_ongoing"
+        | "refund_reversed"
+        | "void";
+    transaction_id?: string;
 }
 
 export interface VorkasseService {
-  paymentListGateways: (
-    currency: "USD" | "EUR",
-  ) => Promise<PaymentListGatewaysResponse[]>;
+    paymentListGateways: (
+        currency: "USD" | "EUR",
+    ) => Promise<PaymentListGatewaysResponse[]>;
 }
 
 export class VorkassePaymentService implements VorkasseService {
-  public async paymentListGateways(
-    currency: "USD" | "EUR",
-  ): Promise<PaymentListGatewaysResponse[]> {
-    if (currency !== "EUR") {
-      console.error("We can only handle payments in EUR");
-      throw new Error("We can only handle payments in EUR");
+    public async paymentListGateways(
+        currency: "USD" | "EUR",
+    ): Promise<PaymentListGatewaysResponse[]> {
+        if (currency !== "EUR") {
+            console.error("We can only handle payments in EUR");
+            throw new Error("We can only handle payments in EUR");
+        }
+
+        const vorkasseReturnObject = [
+            {
+                id: "triebwork.payments.rechnung",
+                name: "Vorkasse",
+                currencies: ["EUR"],
+                config: [
+                    {
+                        field: "transaction_id",
+                        value: (Math.random() + 1).toString(36).substring(2),
+                    },
+                ],
+            },
+        ];
+
+        return vorkasseReturnObject;
     }
 
-    const vorkasseReturnObject = [
-      {
-        id: "triebwork.payments.rechnung",
-        name: "Vorkasse",
-        currencies: ["EUR"],
-        config: [
-          {
-            field: "transaction_id",
-            value: (Math.random() + 1).toString(36).substring(2),
-          },
-        ],
-      },
-    ];
+    public async paymentProcess(): Promise<PaymentProcess> {
+        const returnObject: PaymentProcess = {
+            action_required: false,
+            kind: "auth",
+            // action_required_data: {
+            // confirmation_url: "https://www.example.com/3ds-confirmation/",
+            // },
+            // customer_id: "customer-1234",
+            // payment_method: {
+            //   brand: "Visa",
+            //   exp_month: "01",
+            //   exp_year: "2025",
+            //   last_4: "4242",
+            //   name: "John Doe",
+            //   type: "Credit card",
+            // },
 
-    return vorkasseReturnObject;
-  }
+            transaction_id: (Math.random() + 1).toString(36).substring(2),
+        };
+        return returnObject;
+    }
 
-  public async paymentProcess(): Promise<PaymentProcess> {
-    const returnObject: PaymentProcess = {
-      action_required: false,
-      kind: "auth",
-      // action_required_data: {
-      // confirmation_url: "https://www.example.com/3ds-confirmation/",
-      // },
-      // customer_id: "customer-1234",
-      // payment_method: {
-      //   brand: "Visa",
-      //   exp_month: "01",
-      //   exp_year: "2025",
-      //   last_4: "4242",
-      //   name: "John Doe",
-      //   type: "Credit card",
-      // },
+    public async paymentConfirm(): Promise<PaymentProcess> {
+        return {
+            action_required: false,
+            kind: "capture",
+        };
+    }
 
-      transaction_id: (Math.random() + 1).toString(36).substring(2),
-    };
-    return returnObject;
-  }
+    public async paymentVoid(): Promise<PaymentProcess> {
+        return {
+            action_required: false,
+            kind: "void",
+        };
+    }
 
-  public async paymentConfirm(): Promise<PaymentProcess> {
-    return {
-      action_required: false,
-      kind: "capture",
-    };
-  }
-
-  public async paymentVoid(): Promise<PaymentProcess> {
-    return {
-      action_required: false,
-      kind: "void",
-    };
-  }
-
-  public async paymentCapture(): Promise<PaymentProcess> {
-    return {
-      action_required: false,
-      kind: "capture",
-    };
-  }
+    public async paymentCapture(): Promise<PaymentProcess> {
+        return {
+            action_required: false,
+            kind: "capture",
+        };
+    }
 }

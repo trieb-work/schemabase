@@ -5,48 +5,48 @@ import type { RuntimeContext, Workflow } from "@eci/pkg/scheduler/workflow";
 import { getZohoClientAndEntry } from "@eci/pkg/zoho/src/zoho";
 
 export type ZohoTaxSyncWorkflowClients = {
-  prisma: PrismaClient;
+    prisma: PrismaClient;
 };
 export type ZohoTaxSyncWorkflowConfig = {
-  zohoAppId: string;
+    zohoAppId: string;
 };
 
 export class ZohoTaxSyncWf implements Workflow {
-  private logger: ILogger;
+    private logger: ILogger;
 
-  private prisma: PrismaClient;
+    private prisma: PrismaClient;
 
-  private zohoAppId: string;
+    private zohoAppId: string;
 
-  public constructor(
-    ctx: RuntimeContext,
-    clients: ZohoTaxSyncWorkflowClients,
-    config: ZohoTaxSyncWorkflowConfig,
-  ) {
-    this.zohoAppId = config.zohoAppId;
-    this.logger = ctx.logger.with({
-      workflow: ZohoTaxSyncWf.name,
-      zohoAppId: this.zohoAppId,
-    });
-    this.prisma = clients.prisma;
-  }
+    public constructor(
+        ctx: RuntimeContext,
+        clients: ZohoTaxSyncWorkflowClients,
+        config: ZohoTaxSyncWorkflowConfig,
+    ) {
+        this.zohoAppId = config.zohoAppId;
+        this.logger = ctx.logger.with({
+            workflow: ZohoTaxSyncWf.name,
+            zohoAppId: this.zohoAppId,
+        });
+        this.prisma = clients.prisma;
+    }
 
-  public async run(): Promise<void> {
-    this.logger.info("Starting Zoho Tax sync workflow run");
+    public async run(): Promise<void> {
+        this.logger.info("Starting Zoho Tax sync workflow run");
 
-    const { client: zoho, zohoApp } = await getZohoClientAndEntry(
-      this.zohoAppId,
-      this.prisma,
-      undefined,
-    );
-    const zohoTaxSyncService = new ZohoTaxSyncService({
-      logger: this.logger,
-      zoho,
-      db: this.prisma,
-      zohoApp,
-    });
-    await zohoTaxSyncService.syncToECI();
+        const { client: zoho, zohoApp } = await getZohoClientAndEntry(
+            this.zohoAppId,
+            this.prisma,
+            undefined,
+        );
+        const zohoTaxSyncService = new ZohoTaxSyncService({
+            logger: this.logger,
+            zoho,
+            db: this.prisma,
+            zohoApp,
+        });
+        await zohoTaxSyncService.syncToECI();
 
-    this.logger.info("Finished Zoho Tax sync workflow run");
-  }
+        this.logger.info("Finished Zoho Tax sync workflow run");
+    }
 }

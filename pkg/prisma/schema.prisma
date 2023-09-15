@@ -1186,13 +1186,18 @@ model SalesChannel {
 
   name String
 
+  normalizedName String
+
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
   saleorChannels SaleorChannel[]
   priceEntries   SalesChannelPriceEntry[]
 
+
+  @@unique([normalizedName, tenantId])
   @@index([tenantId])
+
 }
 
 model SalesChannelPriceEntry {
@@ -1206,13 +1211,21 @@ model SalesChannelPriceEntry {
   productVariant ProductVariant @relation(fields: [productVariantId], references: [id])
   productVariantId String
 
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
   price Float
 
-  startDate DateTime
+  startDate DateTime @default(now())
   endDate   DateTime?
 
   /// This price is valid starting with this quantity
   minQuantity Float @default(0)
+
+  @@unique([salesChannelId, productVariantId, tenantId, minQuantity, startDate])
+  @@index([salesChannelId])
+  @@index([productVariantId])
+  @@index([tenantId])
 }
 
 enum CountryCode {
@@ -2848,6 +2861,7 @@ model Tenant {
   productTypes                ProductType[]
   media                       Media[]
   salesChannels               SalesChannel[]
+  salesChannelPriceEntry      SalesChannelPriceEntry[]
 }
 
 // A subscription indicates a tenant has payed for one integration.

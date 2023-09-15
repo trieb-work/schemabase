@@ -8,33 +8,35 @@ import { SaleorAttributeSyncService } from "./attributes";
 /// Use this file to locally run this service
 
 beforeEach(() => {
-  jest.clearAllMocks();
+    jest.clearAllMocks();
 });
 
 describe("Saleor attributes Test", () => {
-  const prismaClient = new PrismaClient();
+    const prismaClient = new PrismaClient();
 
-  test("It should work to sync categoreis", async () => {
-    const tenant = await prismaClient.tenant.findUnique({
-      where: {
-        id: "tn_kencove235",
-        // id: "test",
-      },
-    });
-    if (!tenant)
-      throw new Error("Testing Tenant or zoho app/integration not found in DB");
+    test("It should work to sync categoreis", async () => {
+        const tenant = await prismaClient.tenant.findUnique({
+            where: {
+                id: "tn_kencove235",
+                // id: "test",
+            },
+        });
+        if (!tenant)
+            throw new Error(
+                "Testing Tenant or zoho app/integration not found in DB",
+            );
 
-    const { client: saleorClient, installedSaleorApp } =
-      await getSaleorClientAndEntry("QXBwOjE=", prismaClient);
+        const { client: saleorClient, installedSaleorApp } =
+            await getSaleorClientAndEntry("QXBwOjE=", prismaClient);
 
-    const service = new SaleorAttributeSyncService({
-      saleorClient,
-      installedSaleorApp: installedSaleorApp,
-      logger: new AssertionLogger(),
-      db: prismaClient,
-      tenantId: tenant.id,
-    });
-    await service.syncToEci();
-    await service.syncFromEci();
-  }, 1000000);
+        const service = new SaleorAttributeSyncService({
+            saleorClient,
+            installedSaleorApp: installedSaleorApp,
+            logger: new AssertionLogger(),
+            db: prismaClient,
+            tenantId: tenant.id,
+        });
+        await service.syncToEci();
+        await service.syncFromEci();
+    }, 1000000);
 });

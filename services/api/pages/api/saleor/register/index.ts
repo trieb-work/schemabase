@@ -13,36 +13,40 @@ import { SaleorAppType } from "@eci/pkg/prisma";
  * @param context
  */
 const additionalSchemabaseHandler = async (
-  request: any,
-  context: {
-    authData?: AuthData;
-    respondWithError: any;
-  },
+    request: any,
+    context: {
+        authData?: AuthData;
+        respondWithError: any;
+    },
 ) => {
-  if (context?.authData?.appId && request?.params?.saleorAppType) {
-    let saleorAppType: SaleorAppType | undefined;
-    const tenantId = request?.params?.tenantId ?? undefined;
-    switch (request?.params?.saleorAppType) {
-      case "entitysync":
-        saleorAppType = SaleorAppType.entitysync;
+    if (context?.authData?.appId && request?.params?.saleorAppType) {
+        let saleorAppType: SaleorAppType | undefined;
+        const tenantId = request?.params?.tenantId ?? undefined;
+        switch (request?.params?.saleorAppType) {
+            case "entitysync":
+                saleorAppType = SaleorAppType.entitysync;
 
-        break;
+                break;
 
-      case "prepayment":
-        saleorAppType = SaleorAppType.prepayment;
-        break;
-      default:
-        break;
+            case "prepayment":
+                saleorAppType = SaleorAppType.prepayment;
+                break;
+            default:
+                break;
+        }
+        const authDataExtended = {
+            ...context.authData,
+            tenantId,
+            saleorAppType,
+        };
+
+        await saleorApp.apl.set(authDataExtended);
     }
-    const authDataExtended = { ...context.authData, tenantId, saleorAppType };
-
-    await saleorApp.apl.set(authDataExtended);
-  }
 };
 
 const handler = createAppRegisterHandler({
-  apl: saleorApp.apl,
-  onAuthAplSaved: additionalSchemabaseHandler,
+    apl: saleorApp.apl,
+    onAuthAplSaved: additionalSchemabaseHandler,
 });
 
 export default handler;

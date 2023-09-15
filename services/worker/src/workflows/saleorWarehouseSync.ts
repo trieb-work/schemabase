@@ -5,46 +5,49 @@ import { SaleorWarehouseSyncService } from "@eci/pkg/integration-saleor-entities
 import { getSaleorClientAndEntry } from "@eci/pkg/saleor";
 
 export type SaleorWarehouseSyncWorkflowClients = {
-  prisma: PrismaClient;
+    prisma: PrismaClient;
 };
 export type SaleorWarehouseSyncWorkflowConfig = {
-  installedSaleorAppId: string;
+    installedSaleorAppId: string;
 };
 
 export class SaleorWarehouseSyncWf implements Workflow {
-  private logger: ILogger;
+    private logger: ILogger;
 
-  private prisma: PrismaClient;
+    private prisma: PrismaClient;
 
-  private installedSaleorAppId: string;
+    private installedSaleorAppId: string;
 
-  public constructor(
-    ctx: RuntimeContext,
-    clients: SaleorWarehouseSyncWorkflowClients,
-    config: SaleorWarehouseSyncWorkflowConfig,
-  ) {
-    this.installedSaleorAppId = config.installedSaleorAppId;
-    this.logger = ctx.logger.with({
-      workflow: SaleorWarehouseSyncWf.name,
-      installedSaleorAppId: this.installedSaleorAppId,
-    });
-    this.logger = ctx.logger;
-    this.prisma = clients.prisma;
-  }
+    public constructor(
+        ctx: RuntimeContext,
+        clients: SaleorWarehouseSyncWorkflowClients,
+        config: SaleorWarehouseSyncWorkflowConfig,
+    ) {
+        this.installedSaleorAppId = config.installedSaleorAppId;
+        this.logger = ctx.logger.with({
+            workflow: SaleorWarehouseSyncWf.name,
+            installedSaleorAppId: this.installedSaleorAppId,
+        });
+        this.logger = ctx.logger;
+        this.prisma = clients.prisma;
+    }
 
-  public async run(): Promise<void> {
-    this.logger.info("Starting saleor warehouse sync workflow run");
-    const { client: saleorClient, installedSaleorApp } =
-      await getSaleorClientAndEntry(this.installedSaleorAppId, this.prisma);
+    public async run(): Promise<void> {
+        this.logger.info("Starting saleor warehouse sync workflow run");
+        const { client: saleorClient, installedSaleorApp } =
+            await getSaleorClientAndEntry(
+                this.installedSaleorAppId,
+                this.prisma,
+            );
 
-    const saleorWarehouseSyncService = new SaleorWarehouseSyncService({
-      logger: this.logger,
-      saleorClient,
-      db: this.prisma,
-      installedSaleorAppId: this.installedSaleorAppId,
-      tenantId: installedSaleorApp.saleorApp.tenantId,
-    });
-    await saleorWarehouseSyncService.syncToECI();
-    this.logger.info("Finished saleor warehouse sync workflow run");
-  }
+        const saleorWarehouseSyncService = new SaleorWarehouseSyncService({
+            logger: this.logger,
+            saleorClient,
+            db: this.prisma,
+            installedSaleorAppId: this.installedSaleorAppId,
+            tenantId: installedSaleorApp.saleorApp.tenantId,
+        });
+        await saleorWarehouseSyncService.syncToECI();
+        this.logger.info("Finished saleor warehouse sync workflow run");
+    }
 }

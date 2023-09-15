@@ -1,12 +1,12 @@
 mutation productTypeCreate($input: ProductTypeInput!) {
-  productTypeCreate(input: $input) {
-    productType {
-      id
+    productTypeCreate(input: $input) {
+        productType {
+            id
+        }
+        errors {
+            field
+            message
+            code
+        }
     }
-    errors {
-      field
-      message
-      code
-    }
-  }
 }

@@ -1,18 +1,17 @@
-/// Kencove Api Package sync workflow
-import { KencoveApiAppPackageSyncService } from "@eci/pkg/integration-kencove-api/src/packages";
+import { KencoveApiAppPricelistSyncService } from "@eci/pkg/integration-kencove-api";
 import { ILogger } from "@eci/pkg/logger";
 import { KencoveApiApp, PrismaClient } from "@eci/pkg/prisma";
 import { RuntimeContext, Workflow } from "@eci/pkg/scheduler/workflow";
 
-export type KencoveApiPackageSyncWorkflowClients = {
+export type KencoveApiPricelistSyncWorkflowClients = {
     prisma: PrismaClient;
 };
 
-export type KencoveApiPackageSyncWorkflowConfig = {
+export type KencoveApiPricelistSyncWorkflowConfig = {
     kencoveApiApp: KencoveApiApp;
 };
 
-export class KencoveApiPackageSyncWf implements Workflow {
+export class KencoveApiPricelistSyncWf implements Workflow {
     private prisma: PrismaClient;
 
     private logger: ILogger;
@@ -21,27 +20,27 @@ export class KencoveApiPackageSyncWf implements Workflow {
 
     public constructor(
         ctx: RuntimeContext,
-        clients: KencoveApiPackageSyncWorkflowClients,
-        config: KencoveApiPackageSyncWorkflowConfig,
+        clients: KencoveApiPricelistSyncWorkflowClients,
+        config: KencoveApiPricelistSyncWorkflowConfig,
     ) {
         this.prisma = clients.prisma;
         this.kencoveApiApp = config.kencoveApiApp;
         this.logger = ctx.logger.with({
-            workflow: KencoveApiPackageSyncWf.name,
+            workflow: KencoveApiPricelistSyncWf.name,
             kencoveApiAppId: config.kencoveApiApp.id,
         });
     }
 
     public async run(): Promise<void> {
-        this.logger.info("Starting kencove api package sync workflow run");
+        this.logger.info("Starting kencove api pricelist sync workflow run");
 
-        const kencoveApiPackageSyncService =
-            new KencoveApiAppPackageSyncService({
+        const kencoveApiPricelistSyncService =
+            new KencoveApiAppPricelistSyncService({
                 logger: this.logger,
                 db: this.prisma,
                 kencoveApiApp: this.kencoveApiApp,
             });
-        await kencoveApiPackageSyncService.syncToEci();
-        this.logger.info("Finished kencove api package sync workflow run");
+        await kencoveApiPricelistSyncService.syncToEci();
+        this.logger.info("Finished kencove api pricelist sync workflow run");
     }
 }

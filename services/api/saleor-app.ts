@@ -12,5 +12,5 @@ import prismaAPL from "./lib/prisma-apl";
 const apl = prismaAPL;
 
 export const saleorApp = new SaleorApp({
-  apl,
+    apl,
 });

@@ -10,14 +10,14 @@
  * @returns
  */
 export const getProductAndVariantName = (
-  fullname: string,
+    fullname: string,
 ): {
-  itemName: string;
-  variantName: string | undefined;
+    itemName: string;
+    variantName: string | undefined;
 } => {
-  const matched = fullname.match(/^(.*)\s-\s(.*)/);
+    const matched = fullname.match(/^(.*)\s-\s(.*)/);
 
-  if (!matched) return { itemName: fullname, variantName: undefined };
+    if (!matched) return { itemName: fullname, variantName: undefined };
 
-  return { itemName: matched[1], variantName: matched[2] };
+    return { itemName: matched[1], variantName: matched[2] };
 };

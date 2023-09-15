@@ -6,50 +6,48 @@ import { BraintreeTransactionSyncService } from "@eci/pkg/integration-braintree-
 import { getBraintreeClientAndEntry } from "@eci/pkg/braintree/src/getClientAndEntry";
 
 export type BraintreeTransactionSyncWorkflowClients = {
-  prisma: PrismaClient;
+    prisma: PrismaClient;
 };
 export type BraintreeTransactionSyncWorkflowConfig = {
-  braintreeAppId: string;
+    braintreeAppId: string;
 };
 
 export class BraintreeTransactionSyncWf implements Workflow {
-  private logger: ILogger;
+    private logger: ILogger;
 
-  private prisma: PrismaClient;
+    private prisma: PrismaClient;
 
-  private braintreeAppId: string;
+    private braintreeAppId: string;
 
-  public constructor(
-    ctx: RuntimeContext,
-    clients: BraintreeTransactionSyncWorkflowClients,
-    config: BraintreeTransactionSyncWorkflowConfig,
-  ) {
-    this.logger = ctx.logger.with({
-      workflow: BraintreeTransactionSyncWf.name,
-    });
-    this.logger = ctx.logger;
-    this.prisma = clients.prisma;
-    this.braintreeAppId = config.braintreeAppId;
-  }
+    public constructor(
+        ctx: RuntimeContext,
+        clients: BraintreeTransactionSyncWorkflowClients,
+        config: BraintreeTransactionSyncWorkflowConfig,
+    ) {
+        this.logger = ctx.logger.with({
+            workflow: BraintreeTransactionSyncWf.name,
+        });
+        this.logger = ctx.logger;
+        this.prisma = clients.prisma;
+        this.braintreeAppId = config.braintreeAppId;
+    }
 
-  /**
-   * Start the sync of braintree transactions into the ECI db
-   */
-  public async run(): Promise<void> {
-    this.logger.info("Starting braintree transaction sync workflow run");
-    const { braintreeClient, braintreeApp } = await getBraintreeClientAndEntry(
-      this.braintreeAppId,
-      this.prisma,
-    );
+    /**
+     * Start the sync of braintree transactions into the ECI db
+     */
+    public async run(): Promise<void> {
+        this.logger.info("Starting braintree transaction sync workflow run");
+        const { braintreeClient, braintreeApp } =
+            await getBraintreeClientAndEntry(this.braintreeAppId, this.prisma);
 
-    const braintreeTransactionSync = new BraintreeTransactionSyncService({
-      logger: this.logger,
-      braintreeClient,
-      db: this.prisma,
-      tenantId: braintreeApp.tenantId,
-      braintreeAppId: this.braintreeAppId,
-    });
-    await braintreeTransactionSync.syncToECI();
-    this.logger.info("Finished braintree transaction sync workflow run");
-  }
+        const braintreeTransactionSync = new BraintreeTransactionSyncService({
+            logger: this.logger,
+            braintreeClient,
+            db: this.prisma,
+            tenantId: braintreeApp.tenantId,
+            braintreeAppId: this.braintreeAppId,
+        });
+        await braintreeTransactionSync.syncToECI();
+        this.logger.info("Finished braintree transaction sync workflow run");
+    }
 }

@@ -3,7 +3,7 @@ import { Address, ZohoAddress } from "@prisma/client";
 import { Warning } from "../utils";
 
 type AddressWithZohoAddress = Address & {
-  zohoAddress: ZohoAddress[];
+    zohoAddress: ZohoAddress[];
 };
 
 /**
@@ -16,34 +16,34 @@ type AddressWithZohoAddress = Address & {
  * @returns
  */
 export function addressToZohoAddressId(
-  address: AddressWithZohoAddress,
-  zohoContactId: string,
-  logger: ILogger,
+    address: AddressWithZohoAddress,
+    zohoContactId: string,
+    logger: ILogger,
 ): string {
-  if (!address?.zohoAddress) {
-    throw new Warning(
-      // eslint-disable-next-line max-len
-      "No zohoAddress set for the address (shipping or billing) of this order. Aborting sync of this order. Try again after zoho address sync.",
+    if (!address?.zohoAddress) {
+        throw new Warning(
+            // eslint-disable-next-line max-len
+            "No zohoAddress set for the address (shipping or billing) of this order. Aborting sync of this order. Try again after zoho address sync.",
+        );
+    }
+    const filteredForContact = address.zohoAddress?.find(
+        (a) => a.zohoContactId === zohoContactId,
     );
-  }
-  const filteredForContact = address.zohoAddress?.find(
-    (a) => a.zohoContactId === zohoContactId,
-  );
 
-  if (!filteredForContact?.id) {
-    /**
-     * Create the address for this customer now ?
-     */
-    throw new Warning(
-      // eslint-disable-next-line max-len
-      `We filtered Zoho addresses for Zoho Contact ${zohoContactId} - no suitable address left. This need most likely manually intervention`,
-    );
-  }
+    if (!filteredForContact?.id) {
+        /**
+         * Create the address for this customer now ?
+         */
+        throw new Warning(
+            // eslint-disable-next-line max-len
+            `We filtered Zoho addresses for Zoho Contact ${zohoContactId} - no suitable address left. This need most likely manually intervention`,
+        );
+    }
 
-  if (address.zohoAddress.length > 1) {
-    logger.warn(
-      "Multiple zohoAddresses set for the address of this order. Selecting one!",
-    );
-  }
-  return filteredForContact.id;
+    if (address.zohoAddress.length > 1) {
+        logger.warn(
+            "Multiple zohoAddresses set for the address of this order. Selecting one!",
+        );
+    }
+    return filteredForContact.id;
 }

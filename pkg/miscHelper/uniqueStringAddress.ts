@@ -7,33 +7,35 @@ import { normalizeStrings } from "../normalization";
  * @returns
  */
 const uniqueStringAddress = ({
-  street,
-  additionalAddressLine,
-  plz,
-  zip,
-  city,
-  countryCode,
-  company,
-  phone,
-  fullname,
-  state,
+    street,
+    additionalAddressLine,
+    plz,
+    zip,
+    city,
+    countryCode,
+    company,
+    phone,
+    fullname,
+    state,
 }: {
-  street: string;
-  additionalAddressLine?: string | null;
-  plz?: string | null;
-  zip?: string | null;
-  city: string;
-  countryCode?: string | null;
-  company?: string | null;
-  phone?: string | null;
-  fullname: string;
-  state?: string | null;
+    street: string;
+    additionalAddressLine?: string | null;
+    plz?: string | null;
+    zip?: string | null;
+    city: string;
+    countryCode?: string | null;
+    company?: string | null;
+    phone?: string | null;
+    fullname: string;
+    state?: string | null;
 }) => {
-  return normalizeStrings.standardNormalize(
-    `${fullname}${street}${additionalAddressLine ?? ""}${plz ?? zip}${city}${
-      countryCode ?? ""
-    }${company ?? ""}${phone ?? ""}${state ?? ""}`,
-  );
+    return normalizeStrings.standardNormalize(
+        `${fullname}${street}${additionalAddressLine ?? ""}${
+            plz ?? zip
+        }${city}${countryCode ?? ""}${company ?? ""}${phone ?? ""}${
+            state ?? ""
+        }`,
+    );
 };
 
 export { uniqueStringAddress };

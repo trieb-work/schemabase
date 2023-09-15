@@ -1,45 +1,45 @@
 query saleorCronPackagesOverview(
-  $createdGte: Date
-  $after: String
-  $first: Int
-  $orderStatusFilter: [OrderStatusFilter!]
-  $orderSortField: OrderSortField!
-  $orderDirection: OrderDirection!
-  $updatedAtGte: DateTime
+    $createdGte: Date
+    $after: String
+    $first: Int
+    $orderStatusFilter: [OrderStatusFilter!]
+    $orderSortField: OrderSortField!
+    $orderDirection: OrderDirection!
+    $updatedAtGte: DateTime
 ) {
-  orders(
-    first: $first
-    after: $after
-    sortBy: { field: $orderSortField, direction: $orderDirection }
-    filter: {
-      created: { gte: $createdGte }
-      status: $orderStatusFilter
-      updatedAt: { gte: $updatedAtGte }
-    }
-  ) {
-    pageInfo {
-      hasNextPage
-      startCursor
-      endCursor
-    }
-    edges {
-      node {
-        id
-        number
-        fulfillments {
-          id
-          created
-          fulfillmentOrder
-          lines {
-            quantity
-            orderLine {
-              productSku
-            }
-          }
-          trackingNumber
-          status
+    orders(
+        first: $first
+        after: $after
+        sortBy: { field: $orderSortField, direction: $orderDirection }
+        filter: {
+            created: { gte: $createdGte }
+            status: $orderStatusFilter
+            updatedAt: { gte: $updatedAtGte }
         }
-      }
+    ) {
+        pageInfo {
+            hasNextPage
+            startCursor
+            endCursor
+        }
+        edges {
+            node {
+                id
+                number
+                fulfillments {
+                    id
+                    created
+                    fulfillmentOrder
+                    lines {
+                        quantity
+                        orderLine {
+                            productSku
+                        }
+                    }
+                    trackingNumber
+                    status
+                }
+            }
+        }
     }
-  }
 }

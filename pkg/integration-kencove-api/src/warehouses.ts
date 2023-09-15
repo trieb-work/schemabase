@@ -10,75 +10,75 @@ import { normalizeStrings } from "@eci/pkg/normalization";
 import { KencoveApiApp, PrismaClient } from "@eci/pkg/prisma";
 
 interface KencoveApiWarehouseSyncConfig {
-  logger: ILogger;
-  db: PrismaClient;
-  kencoveApiApp: KencoveApiApp;
+    logger: ILogger;
+    db: PrismaClient;
+    kencoveApiApp: KencoveApiApp;
 }
 
 export class KencoveApiWarehouseSync {
-  private readonly logger: ILogger;
+    private readonly logger: ILogger;
 
-  private readonly db: PrismaClient;
+    private readonly db: PrismaClient;
 
-  public readonly kencoveApiApp: KencoveApiApp;
+    public readonly kencoveApiApp: KencoveApiApp;
 
-  private readonly warehouses: Set<{
-    normalizedName: string;
-    warehouseId: string;
-  }>;
+    private readonly warehouses: Set<{
+        normalizedName: string;
+        warehouseId: string;
+    }>;
 
-  public constructor(config: KencoveApiWarehouseSyncConfig) {
-    this.logger = config.logger;
-    this.db = config.db;
-    this.kencoveApiApp = config.kencoveApiApp;
-    this.warehouses = new Set();
-  }
-
-  /**
-   * get the schemabase warehouse Id for a warehouse name. This function
-   * caches results internally - call as often as needed
-   * @param name
-   * @returns
-   */
-  public async getWareHouseId(name: string) {
-    const normalizedName = normalizeStrings.warehouseNames(name);
-    for (const warehouse of this.warehouses) {
-      if (warehouse.normalizedName === normalizedName) {
-        return warehouse.warehouseId;
-      }
+    public constructor(config: KencoveApiWarehouseSyncConfig) {
+        this.logger = config.logger;
+        this.db = config.db;
+        this.kencoveApiApp = config.kencoveApiApp;
+        this.warehouses = new Set();
     }
-    const existingWarehouse = await this.db.warehouse.findUnique({
-      where: {
-        normalizedName_tenantId: {
-          normalizedName: normalizedName,
-          tenantId: this.kencoveApiApp.tenantId,
-        },
-      },
-    });
-    if (existingWarehouse) {
-      this.warehouses.add({
-        normalizedName,
-        warehouseId: existingWarehouse.id,
-      });
-      return existingWarehouse.id;
+
+    /**
+     * get the schemabase warehouse Id for a warehouse name. This function
+     * caches results internally - call as often as needed
+     * @param name
+     * @returns
+     */
+    public async getWareHouseId(name: string) {
+        const normalizedName = normalizeStrings.warehouseNames(name);
+        for (const warehouse of this.warehouses) {
+            if (warehouse.normalizedName === normalizedName) {
+                return warehouse.warehouseId;
+            }
+        }
+        const existingWarehouse = await this.db.warehouse.findUnique({
+            where: {
+                normalizedName_tenantId: {
+                    normalizedName: normalizedName,
+                    tenantId: this.kencoveApiApp.tenantId,
+                },
+            },
+        });
+        if (existingWarehouse) {
+            this.warehouses.add({
+                normalizedName,
+                warehouseId: existingWarehouse.id,
+            });
+            return existingWarehouse.id;
+        }
+        this.logger.info(`Creating new warehouse internally for name: ${name}`);
+        const newWarehouse = await this.db.warehouse.create({
+            data: {
+                id: id.id("warehouse"),
+                name: name,
+                normalizedName,
+                tenant: {
+                    connect: {
+                        id: this.kencoveApiApp.tenantId,
+                    },
+                },
+            },
+        });
+        this.warehouses.add({
+            normalizedName,
+            warehouseId: newWarehouse.id,
+        });
+        return newWarehouse.id;
     }
-    this.logger.info(`Creating new warehouse internally for name: ${name}`);
-    const newWarehouse = await this.db.warehouse.create({
-      data: {
-        id: id.id("warehouse"),
-        name: name,
-        normalizedName,
-        tenant: {
-          connect: {
-            id: this.kencoveApiApp.tenantId,
-          },
-        },
-      },
-    });
-    this.warehouses.add({
-      normalizedName,
-      warehouseId: newWarehouse.id,
-    });
-    return newWarehouse.id;
-  }
 }
