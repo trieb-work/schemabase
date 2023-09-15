@@ -479,10 +479,9 @@ export class KencoveApiAppProductSyncService {
     }
 
     /**
-     * We don't get clean data from the API, so we have to match
-     * variant attributes manually. We sync the product type and which
-     * attributes can be set for that product type, and afterwards we sync the
-     * values for the attributes for each variant.
+     * takes all the products and extracts the unique product types we have. Then
+     * creates or updates the product types in the DB and adds the related attributes
+     * @param products
      */
     private async syncProductTypeAndAttributes(products: KencoveApiProduct[]) {
         const uniqueProductTypes = products
