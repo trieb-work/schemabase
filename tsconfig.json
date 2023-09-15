@@ -1,4 +1,5 @@
 {
+    "extends": "@trieb.work/tsconfig-base",
     "compilerOptions": {
         /* Visit https://aka.ms/tsconfig.json to read more about this file */
         /* Projects */
@@ -98,6 +99,6 @@
         "isolatedModules": true,
         "jsx": "preserve"
     },
-    "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+    "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.js"],
     "exclude": ["node_modules"]
 }
