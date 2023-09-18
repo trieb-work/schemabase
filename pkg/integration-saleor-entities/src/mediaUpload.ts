@@ -106,7 +106,7 @@ export class MediaUpload {
         }
         const res = await response.json();
 
-        if (res.data.productMediaCreate.errors.length > 0) {
+        if (res.data.productMediaCreate?.errors?.length > 0) {
             throw new Error(
                 `Failed to upload image to Saleor: ${JSON.stringify(
                     res.data.productMediaCreate.errors,
