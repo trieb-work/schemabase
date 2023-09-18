@@ -2,7 +2,8 @@ import * as Types from "../../../generated/schema-types";
 import * as gm from "graphql-modules";
 export namespace DataentitiesModule {
     interface DefinedFields {
-        Query: "orders" | "order";
+        Query: "orders" | "order" | "products";
+        ProductsResponse: "edges" | "pageInfo";
         OrdersResponse: "edges" | "pageInfo";
         PageInfo: "endCursor" | "hasNextPage";
         Address:
@@ -111,10 +112,18 @@ export namespace DataentitiesModule {
             | "sentEmailId"
             | "packageEvent"
             | "packageEventId";
+        Product:
+            | "id"
+            | "createdAt"
+            | "updatedAt"
+            | "name"
+            | "hsCode"
+            | "countryOfOrigin"
+            | "descriptionHTML";
     }
 
     interface DefinedEnumValues {
-        OrderDirection: "asc" | "desc";
+        SortDirection: "asc" | "desc";
         Language: "DE" | "EN";
         PackageState:
             | "INIT"
@@ -392,9 +401,10 @@ export namespace DataentitiesModule {
         OrdersOrderBy: "date" | "updatedAt";
         PackageEventsOrderBy: "time";
         OrdersInput: "first" | "cursor" | "orderBy";
+        ProductsInput: "first" | "cursor";
     }
 
-    export type OrderDirection = DefinedEnumValues["OrderDirection"];
+    export type SortDirection = DefinedEnumValues["SortDirection"];
     export type OrdersOrderBy = Pick<
         Types.OrdersOrderBy,
         DefinedInputFields["OrdersOrderBy"]
@@ -407,12 +417,21 @@ export namespace DataentitiesModule {
         Types.OrdersInput,
         DefinedInputFields["OrdersInput"]
     >;
+    export type ProductsInput = Pick<
+        Types.ProductsInput,
+        DefinedInputFields["ProductsInput"]
+    >;
     export type Query = Pick<Types.Query, DefinedFields["Query"]>;
     export type OrdersResponse = Pick<
         Types.OrdersResponse,
         DefinedFields["OrdersResponse"]
     >;
     export type Order = Pick<Types.Order, DefinedFields["Order"]>;
+    export type ProductsResponse = Pick<
+        Types.ProductsResponse,
+        DefinedFields["ProductsResponse"]
+    >;
+    export type Product = Pick<Types.Product, DefinedFields["Product"]>;
     export type PageInfo = Pick<Types.PageInfo, DefinedFields["PageInfo"]>;
     export type Language = DefinedEnumValues["Language"];
     export type Address = Pick<Types.Address, DefinedFields["Address"]>;
@@ -451,6 +470,10 @@ export namespace DataentitiesModule {
     export type QueryResolvers = Pick<
         Types.QueryResolvers,
         DefinedFields["Query"]
+    >;
+    export type ProductsResponseResolvers = Pick<
+        Types.ProductsResponseResolvers,
+        DefinedFields["ProductsResponse"] | "__isTypeOf"
     >;
     export type OrdersResponseResolvers = Pick<
         Types.OrdersResponseResolvers,
@@ -504,9 +527,14 @@ export namespace DataentitiesModule {
         Types.TransactionalEmailResolvers,
         DefinedFields["TransactionalEmail"] | "__isTypeOf"
     >;
+    export type ProductResolvers = Pick<
+        Types.ProductResolvers,
+        DefinedFields["Product"] | "__isTypeOf"
+    >;
 
     export interface Resolvers {
         Query?: QueryResolvers;
+        ProductsResponse?: ProductsResponseResolvers;
         OrdersResponse?: OrdersResponseResolvers;
         PageInfo?: PageInfoResolvers;
         Address?: AddressResolvers;
@@ -520,6 +548,7 @@ export namespace DataentitiesModule {
         Package?: PackageResolvers;
         PackageEvent?: PackageEventResolvers;
         TransactionalEmail?: TransactionalEmailResolvers;
+        Product?: ProductResolvers;
     }
 
     export interface MiddlewareMap {
@@ -530,6 +559,12 @@ export namespace DataentitiesModule {
             "*"?: gm.Middleware[];
             orders?: gm.Middleware[];
             order?: gm.Middleware[];
+            products?: gm.Middleware[];
+        };
+        ProductsResponse?: {
+            "*"?: gm.Middleware[];
+            edges?: gm.Middleware[];
+            pageInfo?: gm.Middleware[];
         };
         OrdersResponse?: {
             "*"?: gm.Middleware[];
@@ -677,6 +712,16 @@ export namespace DataentitiesModule {
             sentEmailId?: gm.Middleware[];
             packageEvent?: gm.Middleware[];
             packageEventId?: gm.Middleware[];
+        };
+        Product?: {
+            "*"?: gm.Middleware[];
+            id?: gm.Middleware[];
+            createdAt?: gm.Middleware[];
+            updatedAt?: gm.Middleware[];
+            name?: gm.Middleware[];
+            hsCode?: gm.Middleware[];
+            countryOfOrigin?: gm.Middleware[];
+            descriptionHTML?: gm.Middleware[];
         };
     }
 }

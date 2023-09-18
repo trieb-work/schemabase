@@ -390,8 +390,6 @@ export type Order = {
     zohoSalesOrders?: Maybe<Array<Maybe<ZohoSalesOrder>>>;
 };
 
-export type OrderDirection = "asc" | "desc";
-
 export type OrderLineItem = {
     __typename?: "OrderLineItem";
     createdAt: Scalars["DateTime"];
@@ -417,8 +415,8 @@ export type OrdersInput = {
 };
 
 export type OrdersOrderBy = {
-    date?: InputMaybe<OrderDirection>;
-    updatedAt?: InputMaybe<OrderDirection>;
+    date?: InputMaybe<SortDirection>;
+    updatedAt?: InputMaybe<SortDirection>;
 };
 
 export type OrdersResponse = {
@@ -455,7 +453,7 @@ export type PackageEvent = {
 };
 
 export type PackageEventsOrderBy = {
-    time?: InputMaybe<OrderDirection>;
+    time?: InputMaybe<SortDirection>;
 };
 
 export type PackageState =
@@ -490,12 +488,35 @@ export type Payment = {
     updatedAt?: Maybe<Scalars["DateTime"]>;
 };
 
+export type Product = {
+    __typename?: "Product";
+    countryOfOrigin?: Maybe<CountryCode>;
+    createdAt?: Maybe<Scalars["DateTime"]>;
+    descriptionHTML?: Maybe<Scalars["String"]>;
+    hsCode?: Maybe<Scalars["String"]>;
+    id?: Maybe<Scalars["String"]>;
+    name?: Maybe<Scalars["String"]>;
+    updatedAt?: Maybe<Scalars["DateTime"]>;
+};
+
+export type ProductsInput = {
+    cursor?: InputMaybe<Scalars["ID"]>;
+    first: Scalars["Int"];
+};
+
+export type ProductsResponse = {
+    __typename?: "ProductsResponse";
+    edges: Array<Product>;
+    pageInfo: PageInfo;
+};
+
 export type Query = {
     __typename?: "Query";
     healthCheck: Scalars["Boolean"];
     order?: Maybe<Order>;
     orders?: Maybe<OrdersResponse>;
     packageByTrackingId?: Maybe<Package>;
+    products?: Maybe<ProductsResponse>;
 };
 
 export type QueryOrderArgs = {
@@ -511,6 +532,10 @@ export type QueryPackageByTrackingIdArgs = {
     trackingId: Scalars["ID"];
 };
 
+export type QueryProductsArgs = {
+    input: ProductsInput;
+};
+
 export type SaleorOrder = {
     __typename?: "SaleorOrder";
     createdAt?: Maybe<Scalars["DateTime"]>;
@@ -518,6 +543,8 @@ export type SaleorOrder = {
     order: Order;
     orderId?: Maybe<Scalars["String"]>;
 };
+
+export type SortDirection = "asc" | "desc";
 
 export type Tenant = {
     __typename?: "Tenant";
@@ -692,7 +719,6 @@ export type ResolversTypes = ResolversObject<{
     Membership: ResolverTypeWrapper<Membership>;
     Mutation: ResolverTypeWrapper<{}>;
     Order: ResolverTypeWrapper<OrderModel>;
-    OrderDirection: OrderDirection;
     OrderLineItem: ResolverTypeWrapper<
         Omit<OrderLineItem, "order"> & { order: ResolversTypes["Order"] }
     >;
@@ -714,10 +740,14 @@ export type ResolversTypes = ResolversObject<{
             order?: Maybe<ResolversTypes["Order"]>;
         }
     >;
+    Product: ResolverTypeWrapper<Product>;
+    ProductsInput: ProductsInput;
+    ProductsResponse: ResolverTypeWrapper<ProductsResponse>;
     Query: ResolverTypeWrapper<{}>;
     SaleorOrder: ResolverTypeWrapper<
         Omit<SaleorOrder, "order"> & { order: ResolversTypes["Order"] }
     >;
+    SortDirection: SortDirection;
     String: ResolverTypeWrapper<Scalars["String"]>;
     Tenant: ResolverTypeWrapper<Tenant>;
     TransactionalEmail: ResolverTypeWrapper<TransactionalEmailModel>;
@@ -763,6 +793,9 @@ export type ResolversParentTypes = ResolversObject<{
         mainContact?: Maybe<ResolversParentTypes["Contact"]>;
         order?: Maybe<ResolversParentTypes["Order"]>;
     };
+    Product: Product;
+    ProductsInput: ProductsInput;
+    ProductsResponse: ProductsResponse;
     Query: {};
     SaleorOrder: Omit<SaleorOrder, "order"> & {
         order: ResolversParentTypes["Order"];
@@ -1218,6 +1251,47 @@ export type PaymentResolvers<
     __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type ProductResolvers<
+    ContextType = GraphQLModules.Context,
+    ParentType extends
+        ResolversParentTypes["Product"] = ResolversParentTypes["Product"],
+> = ResolversObject<{
+    countryOfOrigin?: Resolver<
+        Maybe<ResolversTypes["CountryCode"]>,
+        ParentType,
+        ContextType
+    >;
+    createdAt?: Resolver<
+        Maybe<ResolversTypes["DateTime"]>,
+        ParentType,
+        ContextType
+    >;
+    descriptionHTML?: Resolver<
+        Maybe<ResolversTypes["String"]>,
+        ParentType,
+        ContextType
+    >;
+    hsCode?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>;
+    id?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>;
+    name?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>;
+    updatedAt?: Resolver<
+        Maybe<ResolversTypes["DateTime"]>,
+        ParentType,
+        ContextType
+    >;
+    __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ProductsResponseResolvers<
+    ContextType = GraphQLModules.Context,
+    ParentType extends
+        ResolversParentTypes["ProductsResponse"] = ResolversParentTypes["ProductsResponse"],
+> = ResolversObject<{
+    edges?: Resolver<Array<ResolversTypes["Product"]>, ParentType, ContextType>;
+    pageInfo?: Resolver<ResolversTypes["PageInfo"], ParentType, ContextType>;
+    __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type QueryResolvers<
     ContextType = GraphQLModules.Context,
     ParentType extends
@@ -1241,6 +1315,12 @@ export type QueryResolvers<
         ParentType,
         ContextType,
         RequireFields<QueryPackageByTrackingIdArgs, "trackingId">
+    >;
+    products?: Resolver<
+        Maybe<ResolversTypes["ProductsResponse"]>,
+        ParentType,
+        ContextType,
+        RequireFields<QueryProductsArgs, "input">
     >;
 }>;
 
@@ -1380,6 +1460,8 @@ export type Resolvers<ContextType = GraphQLModules.Context> = ResolversObject<{
     PackageEvent?: PackageEventResolvers<ContextType>;
     PageInfo?: PageInfoResolvers<ContextType>;
     Payment?: PaymentResolvers<ContextType>;
+    Product?: ProductResolvers<ContextType>;
+    ProductsResponse?: ProductsResponseResolvers<ContextType>;
     Query?: QueryResolvers<ContextType>;
     SaleorOrder?: SaleorOrderResolvers<ContextType>;
     Tenant?: TenantResolvers<ContextType>;

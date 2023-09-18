@@ -2,25 +2,35 @@
 import { gql } from "graphql-modules";
 
 export default gql`
-    enum OrderDirection {
+    enum SortDirection {
         asc
         desc
     }
     input OrdersOrderBy {
-        date: OrderDirection
-        updatedAt: OrderDirection
+        date: SortDirection
+        updatedAt: SortDirection
     }
     input PackageEventsOrderBy {
-        time: OrderDirection
+        time: SortDirection
     }
     input OrdersInput {
         first: Int!
         cursor: ID
         orderBy: OrdersOrderBy
     }
+    input ProductsInput {
+        first: Int!
+        cursor: ID
+    }
     extend type Query {
         orders(input: OrdersInput!): OrdersResponse
         order(id: ID, orderNumber: String): Order
+        products(input: ProductsInput!): ProductsResponse
+    }
+
+    type ProductsResponse {
+        edges: [Product!]!
+        pageInfo: PageInfo!
     }
 
     type OrdersResponse {
@@ -268,6 +278,32 @@ export default gql`
         packageEvent: PackageEvent
         packageEventId: String
     }
+
+    type Product {
+        # eci internal id
+        id: String
+        createdAt: DateTime
+        updatedAt: DateTime
+
+        name: String
+        hsCode: String
+        countryOfOrigin: CountryCode
+
+        #variants      ProductVariant[]
+        #tags          ProductTag[]
+        #productType   ProductType?     @relation(fields: [productTypeId], references: [id])
+
+        # The category this product belongs to
+        #category   Category? @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+        #categoryId String?
+
+        descriptionHTML: String
+
+        #attributes: AttributeValueProduct[]
+
+        #media: Media[]
+    }
+
     enum Carrier {
         DPD
         DHL
