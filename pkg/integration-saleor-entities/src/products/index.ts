@@ -609,8 +609,7 @@ export class SaleorProductSyncService {
                             id: attr.attribute.saleorAttributes[0].id,
                             references: [saleorProductId.saleorProducts[0].id],
                         });
-                    }
-                    if (attr.attribute.type === "VARIANT_REFERENCE") {
+                    } else if (attr.attribute.type === "VARIANT_REFERENCE") {
                         /// We store our internal variant Id in value of variant reference attributes.
                         /// We need to aks our DB for the saleor variant id
                         const saleorVariantId =
@@ -639,11 +638,12 @@ export class SaleorProductSyncService {
                                 saleorVariantId.saleorProductVariant[0].id,
                             ],
                         });
+                    } else {
+                        attributes.push({
+                            id: attr.attribute.saleorAttributes[0].id,
+                            values: [attr.value],
+                        });
                     }
-                    attributes.push({
-                        id: attr.attribute.saleorAttributes[0].id,
-                        values: [attr.value],
-                    });
                 }
 
                 let saleorProductId = product.saleorProducts?.[0]?.id;
@@ -836,7 +836,7 @@ export class SaleorProductSyncService {
                 }
             }
         } else {
-            this.logger.info(`No products to create in Saleor`);
+            this.logger.info(`No products to create or update in Saleor`);
         }
     }
 
