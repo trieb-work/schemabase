@@ -3,15 +3,31 @@ import { ApolloServer } from "@apollo/server";
 import { startServerAndCreateNextHandler } from "@as-integrations/next";
 
 import { application } from "./application";
-import { Context, context } from "./context";
+import { context } from "./context";
 export interface ServerConfig {
     logger?: ILogger;
 }
 
-const server = new ApolloServer<Context>({
-    schema: application.schema,
+const server = new ApolloServer({
     introspection: true,
     plugins: [],
+    /**
+     * this is the recommended way to use graphql-modules with apollo
+     */
+    gateway: {
+        async load() {
+            return { executor: application.createApolloExecutor() };
+        },
+        onSchemaLoadOrUpdate(callback) {
+            callback({ apiSchema: application.schema } as any);
+            return () => {};
+        },
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        async stop() {},
+    },
 });
 
-export default startServerAndCreateNextHandler(server, { context });
+const handler = startServerAndCreateNextHandler(server, {
+    context,
+});
+export { handler };
