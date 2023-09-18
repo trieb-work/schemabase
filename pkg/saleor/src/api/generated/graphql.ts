@@ -26752,6 +26752,17 @@ export type SaleorCronCategoriesQuery = {
     } | null;
 };
 
+export type GetChannelsQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GetChannelsQuery = {
+    __typename?: "Query";
+    channels?: Array<{
+        __typename?: "Channel";
+        name: string;
+        id: string;
+    }> | null;
+};
+
 export type SaleorCronCustomersQueryVariables = Exact<{
     updatedAtGte?: InputMaybe<Scalars["DateTime"]>;
     first?: InputMaybe<Scalars["Int"]>;
@@ -27873,6 +27884,14 @@ export const SaleorCronCategoriesDocument = gql`
     }
     ${CategoryValuesFragmentDoc}
 `;
+export const GetChannelsDocument = gql`
+    query getChannels {
+        channels {
+            name
+            id
+        }
+    }
+`;
 export const SaleorCronCustomersDocument = gql`
     query saleorCronCustomers(
         $updatedAtGte: DateTime
@@ -28669,6 +28688,16 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<SaleorCronCategoriesQuery>;
+        },
+        getChannels(
+            variables?: GetChannelsQueryVariables,
+            options?: C,
+        ): Promise<GetChannelsQuery> {
+            return requester<GetChannelsQuery, GetChannelsQueryVariables>(
+                GetChannelsDocument,
+                variables,
+                options,
+            ) as Promise<GetChannelsQuery>;
         },
         saleorCronCustomers(
             variables?: SaleorCronCustomersQueryVariables,

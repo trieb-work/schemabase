@@ -105,6 +105,7 @@ Table SaleorCustomer {
 
 Table SaleorChannel {
   id String [not null]
+  name String [not null]
   salesChannel SalesChannel [note: 'related, internal sales channel. We map this channel manually in most cases, so this field is optional']
   salesChannelId String
   installedSaleorApp InstalledSaleorApp [not null]

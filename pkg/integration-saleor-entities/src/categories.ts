@@ -67,9 +67,13 @@ export class SaleorCategorySyncService {
     };
 
     private installedSaleorApp: InstalledSaleorApp;
+
     private tenantId: string;
+
     private db: PrismaClient;
+
     private logger: ILogger;
+
     private cronState: CronStateHandler;
 
     constructor(config: SaleorCategorySyncServiceConfig) {
