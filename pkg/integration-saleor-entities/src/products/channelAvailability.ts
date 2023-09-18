@@ -48,6 +48,12 @@ export class ChannelAvailability {
                         },
                     },
                 },
+                /**
+                 * We sync just the base-price for now, no volume discount prices
+                 */
+                minQuantity: {
+                    lte: 1,
+                },
             },
             include: {
                 salesChannel: {
