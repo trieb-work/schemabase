@@ -1,26 +1,11 @@
 /* eslint-disable max-len */
 import { ILogger } from "@eci/pkg/logger";
 import {
-    ProductAttributeVariantSelectionMutation,
-    ProductAttributeVariantSelectionMutationVariables,
-    ProductCreateMutation,
     ProductCreateMutationVariables,
-    ProductTypeCreateMutation,
-    ProductTypeCreateMutationVariables,
     ProductTypeFragment,
-    ProductTypeUpdateMutation,
-    ProductTypeUpdateMutationVariables,
-    ProductUpdateMutation,
-    ProductUpdateMutationVariables,
     ProductVariantBulkCreateInput,
-    ProductVariantBulkCreateMutation,
-    ProductVariantBulkCreateMutationVariables,
-    ProductVariantStockEntryUpdateMutation,
     queryWithPagination,
-    SaleorEntitySyncProductsQuery,
-    SaleorProductVariantBasicDataQuery,
-    SaleorUpdateMetadataMutation,
-    StockInput,
+    SaleorClient,
     VariantFragment,
 } from "@eci/pkg/saleor";
 import {
@@ -37,49 +22,10 @@ import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils";
 import { subHours, subYears } from "date-fns";
 import { editorJsHelper } from "../editorjs";
 import { MediaUpload } from "../mediaUpload";
+import { ChannelAvailability } from "./channelAvailability";
 
-interface SaleorProductSyncServiceConfig {
-    saleorClient: {
-        saleorEntitySyncProducts: (variables: {
-            first: number;
-            channel?: string;
-            after: string;
-            updatedAtGte?: string;
-        }) => Promise<SaleorEntitySyncProductsQuery>;
-        saleorProductVariantBasicData: (variables: {
-            id: string;
-        }) => Promise<SaleorProductVariantBasicDataQuery>;
-        productVariantStockEntryUpdate: (variables: {
-            variantId: string;
-            stocks: StockInput[];
-        }) => Promise<ProductVariantStockEntryUpdateMutation>;
-        saleorUpdateMetadata: (variables: {
-            id: string;
-            input: {
-                key: string;
-                value: string;
-                __typename?: "MetadataItem" | undefined;
-            }[];
-        }) => Promise<SaleorUpdateMetadataMutation>;
-        productCreate: (
-            variables: ProductCreateMutationVariables,
-        ) => Promise<ProductCreateMutation>;
-        productUpdate: (
-            variables: ProductUpdateMutationVariables,
-        ) => Promise<ProductUpdateMutation>;
-        productTypeCreate: (
-            variables: ProductTypeCreateMutationVariables,
-        ) => Promise<ProductTypeCreateMutation>;
-        productAttributeVariantSelection: (
-            variables: ProductAttributeVariantSelectionMutationVariables,
-        ) => Promise<ProductAttributeVariantSelectionMutation>;
-        productVariantBulkCreate: (
-            variables: ProductVariantBulkCreateMutationVariables,
-        ) => Promise<ProductVariantBulkCreateMutation>;
-        productTypeUpdate: (
-            variables: ProductTypeUpdateMutationVariables,
-        ) => Promise<ProductTypeUpdateMutation>;
-    };
+export interface SaleorProductSyncServiceConfig {
+    saleorClient: SaleorClient;
     channelSlug?: string;
     installedSaleorApp: InstalledSaleorApp & {
         saleorApp: SaleorApp;
@@ -90,65 +36,28 @@ interface SaleorProductSyncServiceConfig {
 }
 
 export class SaleorProductSyncService {
-    public readonly saleorClient: {
-        saleorEntitySyncProducts: (variables: {
-            first: number;
-            channel?: string;
-            after: string;
-            updatedAtGte?: string;
-        }) => Promise<SaleorEntitySyncProductsQuery>;
-        saleorProductVariantBasicData: (variables: {
-            id: string;
-        }) => Promise<SaleorProductVariantBasicDataQuery>;
-        productVariantStockEntryUpdate: (variables: {
-            variantId: string;
-            stocks: StockInput[];
-        }) => Promise<ProductVariantStockEntryUpdateMutation>;
-        saleorUpdateMetadata: (variables: {
-            id: string;
-            input: {
-                key: string;
-                value: string;
-                __typename?: "MetadataItem" | undefined;
-            }[];
-        }) => Promise<SaleorUpdateMetadataMutation>;
-        productCreate: (
-            variables: ProductCreateMutationVariables,
-        ) => Promise<ProductCreateMutation>;
-        productUpdate: (
-            variables: ProductUpdateMutationVariables,
-        ) => Promise<ProductUpdateMutation>;
-        productTypeCreate: (
-            variables: ProductTypeCreateMutationVariables,
-        ) => Promise<ProductTypeCreateMutation>;
-        productAttributeVariantSelection: (
-            variables: ProductAttributeVariantSelectionMutationVariables,
-        ) => Promise<ProductAttributeVariantSelectionMutation>;
-        productVariantBulkCreate: (
-            variables: ProductVariantBulkCreateMutationVariables,
-        ) => Promise<ProductVariantBulkCreateMutation>;
-        productTypeUpdate: (
-            variables: ProductTypeUpdateMutationVariables,
-        ) => Promise<ProductTypeUpdateMutation>;
-    };
+    public readonly saleorClient: SaleorClient;
 
-    public readonly channelSlug?: string;
+    protected readonly config: SaleorProductSyncServiceConfig;
 
-    private readonly logger: ILogger;
+    private readonly channelSlug?: string;
+
+    protected readonly logger: ILogger;
 
     public readonly installedSaleorApp: InstalledSaleorApp & {
         saleorApp: SaleorApp;
     };
 
-    private readonly installedSaleorAppId: string;
+    protected readonly installedSaleorAppId: string;
 
     public readonly tenantId: string;
 
     private readonly cronState: CronStateHandler;
 
-    private readonly db: PrismaClient;
+    protected readonly db: PrismaClient;
 
     public constructor(config: SaleorProductSyncServiceConfig) {
+        this.config = config;
         this.saleorClient = config.saleorClient;
         this.channelSlug = config.channelSlug;
         this.logger = config.logger;
@@ -171,12 +80,12 @@ export class SaleorProductSyncService {
         try {
             if (!variant?.stocks || variant.stocks.length === 0) {
                 throw new Error(
-                    `Product Variant has no stocks (warehouses) assigned, therefore we can not determine the default warehouse. Aborting sync.`,
+                    `Product Variant has no stocks (warehouses) assigned, therefore we can not determine the default warehouse.`,
                 );
             }
             if (variant?.stocks?.length > 1) {
                 throw new Error(
-                    `Product Variant has multiple stocks (warehouses) assigned, therefore we can not determine the default warehouse. Aborting sync.`,
+                    `Product Variant has multiple stocks (warehouses) assigned, therefore we can not determine the default warehouse.`,
                 );
             }
             if (!variant.stocks?.[0]?.warehouse?.name) {
@@ -698,7 +607,7 @@ export class SaleorProductSyncService {
                         }
                         attributes.push({
                             id: attr.attribute.saleorAttributes[0].id,
-                            values: [saleorProductId.saleorProducts[0].id],
+                            references: [saleorProductId.saleorProducts[0].id],
                         });
                     }
                     if (attr.attribute.type === "VARIANT_REFERENCE") {
@@ -726,7 +635,7 @@ export class SaleorProductSyncService {
                         }
                         attributes.push({
                             id: attr.attribute.saleorAttributes[0].id,
-                            values: [
+                            references: [
                                 saleorVariantId.saleorProductVariant[0].id,
                             ],
                         });
@@ -742,7 +651,7 @@ export class SaleorProductSyncService {
                     this.logger.info(
                         `Creating product ${product.name} in Saleor`,
                         {
-                            attributes,
+                            attributes: JSON.stringify(attributes, null, 2),
                         },
                     );
 
@@ -1546,6 +1455,14 @@ export class SaleorProductSyncService {
         for (const productSet of productsWithReviewsChanged) {
             await this.setAggregatedProductRating(productSet);
         }
+
+        const channelAvailability = new ChannelAvailability(
+            this.db,
+            this.installedSaleorAppId,
+            this.logger,
+            this.saleorClient,
+        );
+        await channelAvailability.syncChannelAvailability(createdGte);
 
         await this.cronState.set({
             lastRun: new Date(),
