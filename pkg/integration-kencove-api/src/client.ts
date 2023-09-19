@@ -372,6 +372,8 @@ export class KencoveApiClient {
 
     /**
      * Stream orders, 200 at a time. Use it with a for await loop.
+     * We have to combine from and to to create an efficient sliding window
+     * to efficiently pull orders from the api.
      * @param fromDate
      */
     public async *getOrdersStream(
@@ -379,7 +381,10 @@ export class KencoveApiClient {
     ): AsyncIterableIterator<KencoveApiOrder[]> {
         let nextPage: string | null = null;
         let offset: number = 0;
-        let toDate = addDays(fromDate, 1);
+        /**
+         * We start with a first window of 3 days
+         */
+        let toDate = addDays(fromDate, 3);
         do {
             const accessToken = await this.getAccessToken();
 
@@ -394,7 +399,7 @@ export class KencoveApiClient {
             offset += 200;
             if (!nextPage) {
                 fromDate = toDate;
-                toDate = addDays(toDate, 1);
+                toDate = addDays(toDate, 3);
                 offset = 0;
                 if (isAfter(fromDate, new Date())) {
                     break;
@@ -407,7 +412,6 @@ export class KencoveApiClient {
                 );
                 nextPage = checkResponse.next_page;
             }
-            console.debug("request", response.result_count);
         } while (nextPage);
     }
 
@@ -421,6 +425,7 @@ export class KencoveApiClient {
         result_count: number;
         next_page: string;
     }> {
+        console.debug(`requesting orders from ${fromDate} to ${toDate}`);
         const response = await this.axiosInstance.get(
             // eslint-disable-next-line max-len
             `/ecom/orders/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${toDate.toISOString()}`,

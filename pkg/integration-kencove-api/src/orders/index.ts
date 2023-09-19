@@ -155,6 +155,8 @@ export class KencoveApiAppOrderSyncService {
                 return OrderStatus.draft;
             case "cancel":
                 return OrderStatus.canceled;
+            case "done":
+                return OrderStatus.confirmed;
             default:
                 throw new Error(`Unknown order status ${status}`);
         }
