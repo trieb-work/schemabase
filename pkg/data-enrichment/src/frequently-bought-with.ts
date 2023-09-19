@@ -2,6 +2,7 @@
 // all historic orders of a tenant. Returns the top 10 products bought together
 // with the requested product. Using our prisma client. Orders are in the "orders" table.
 // related orderlineitems are in the related "orderLineItem" table. Return the whole product
+// make sure to only return products, that appear at a minimum of 10 times.
 
 import { ILogger } from "@eci/pkg/logger";
 import type { PrismaClient } from "@eci/pkg/prisma";
@@ -28,38 +29,42 @@ export class FBT {
     }
 
     public async getProductsBoughtTogether(productId: string) {
-        // Find orders that have the given product
-        const ordersWithProduct = await this.db.orderLineItem.findMany({
-            where: {
-                productVariant: {
-                    productId: productId,
-                },
-                tenantId: {
-                    in: this.tenantId,
-                },
-                order: {
-                    tenantId: {
-                        in: this.tenantId,
-                    },
-                },
-            },
-            select: {
-                order: true,
-            },
-        });
+        const orderIds = await this.getOrdersWithProduct(productId);
 
-        const orderIds = ordersWithProduct.map((order) => order.order.id);
-
-        this.logger.debug(
-            `Found ${orderIds.length} orders with product ${productId}`,
+        const allProductsInOrders = await this.getAllProductsInOrders(
+            orderIds,
+            productId,
         );
 
-        // Fetch all products in those orders
-        const allProductsInOrders = await this.db.orderLineItem.findMany({
+        const productCounts = this.countProductOccurrences(allProductsInOrders);
+
+        const topProductIds = this.getTopProductIds(productCounts);
+
+        const topProductDetails =
+            await this.getTopProductDetails(topProductIds);
+
+        return topProductDetails;
+    }
+
+    private async getOrdersWithProduct(productId: string): Promise<string[]> {
+        const orders = await this.db.orderLineItem.findMany({
             where: {
-                orderId: {
-                    in: orderIds,
-                },
+                productVariant: { productId },
+                tenantId: { in: this.tenantId },
+            },
+            select: { orderId: true },
+            orderBy: { order: { createdAt: "desc" } },
+        });
+        return orders.map((order) => order.orderId);
+    }
+
+    private async getAllProductsInOrders(
+        orderIds: string[],
+        productId: string,
+    ) {
+        return this.db.orderLineItem.findMany({
+            where: {
+                orderId: { in: orderIds },
                 productVariant: {
                     productId: {
                         not: productId,
@@ -68,41 +73,37 @@ export class FBT {
             },
             include: {
                 productVariant: {
-                    include: {
-                        product: true,
-                    },
+                    include: { product: true },
                 },
             },
         });
+    }
 
-        // Count product occurrences
+    private countProductOccurrences(
+        allProductsInOrders: any[],
+    ): Record<string, number> {
         const productCounts: Record<string, number> = {};
         for (let product of allProductsInOrders) {
             const currentProductId = product.productVariant.productId;
-            if (!productCounts[currentProductId]) {
-                productCounts[currentProductId] = 1;
-            } else {
-                productCounts[currentProductId]++;
-            }
+            productCounts[currentProductId] =
+                (productCounts[currentProductId] || 0) + 1;
         }
+        return productCounts;
+    }
 
-        // Sort products by their occurrence count and get top 10 product IDs
-        const topProductIds = Object.keys(productCounts)
+    private getTopProductIds(productCounts: Record<string, number>): string[] {
+        return Object.keys(productCounts)
+            .filter((productId) => productCounts[productId] >= 10)
             .sort((a, b) => productCounts[b] - productCounts[a])
             .slice(0, 10);
+    }
 
-        // Fetch the details of the top 10 products
-        const topProductDetails = await this.db.product.findMany({
+    private async getTopProductDetails(topProductIds: string[]) {
+        return this.db.product.findMany({
             where: {
-                id: {
-                    in: topProductIds,
-                },
-                tenantId: {
-                    in: this.tenantId,
-                },
+                id: { in: topProductIds },
+                tenantId: { in: this.tenantId },
             },
         });
-
-        return topProductDetails;
     }
 }
