@@ -2,7 +2,7 @@ import * as Types from "../../../generated/schema-types";
 import * as gm from "graphql-modules";
 export namespace DataentitiesModule {
     interface DefinedFields {
-        Query: "orders" | "order" | "products";
+        Query: "orders" | "order" | "products" | "product";
         ProductsResponse: "edges" | "pageInfo";
         OrdersResponse: "edges" | "pageInfo";
         PageInfo: "endCursor" | "hasNextPage";
@@ -119,7 +119,8 @@ export namespace DataentitiesModule {
             | "name"
             | "hsCode"
             | "countryOfOrigin"
-            | "descriptionHTML";
+            | "descriptionHTML"
+            | "frequentlyBoughtTogether";
     }
 
     interface DefinedEnumValues {
@@ -560,6 +561,7 @@ export namespace DataentitiesModule {
             orders?: gm.Middleware[];
             order?: gm.Middleware[];
             products?: gm.Middleware[];
+            product?: gm.Middleware[];
         };
         ProductsResponse?: {
             "*"?: gm.Middleware[];
@@ -722,6 +724,7 @@ export namespace DataentitiesModule {
             hsCode?: gm.Middleware[];
             countryOfOrigin?: gm.Middleware[];
             descriptionHTML?: gm.Middleware[];
+            frequentlyBoughtTogether?: gm.Middleware[];
         };
     }
 }

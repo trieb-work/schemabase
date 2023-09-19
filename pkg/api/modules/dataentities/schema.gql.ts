@@ -26,6 +26,7 @@ export default gql`
         orders(input: OrdersInput!): OrdersResponse
         order(id: ID, orderNumber: String): Order
         products(input: ProductsInput!): ProductsResponse
+        product(id: ID!): Product
     }
 
     type ProductsResponse {
@@ -147,7 +148,7 @@ export default gql`
     }
     type Contact {
         # eci internal id
-        id: String
+        id: String!
         createdAt: DateTime
         updatedAt: DateTime
 
@@ -281,7 +282,7 @@ export default gql`
 
     type Product {
         # eci internal id
-        id: String
+        id: String!
         createdAt: DateTime
         updatedAt: DateTime
 
@@ -302,6 +303,9 @@ export default gql`
         #attributes: AttributeValueProduct[]
 
         #media: Media[]
+
+        # frequentlyBoughtTogether: Key product id, value quantity
+        frequentlyBoughtTogether: [Product!]
     }
 
     enum Carrier {

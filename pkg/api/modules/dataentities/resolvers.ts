@@ -1,3 +1,4 @@
+import { FBT } from "@eci/pkg/data-enrichment/src/frequently-bought-with";
 import { Context } from "../../context";
 import { Resolvers } from "../../generated/schema-types";
 import { PrismaSelect } from "@paljs/plugins";
@@ -13,6 +14,7 @@ const defaultFields: {
      * @returns
      */
     Contact: () => ({ id: true }),
+    Product: () => ({ id: true }),
 };
 
 export const resolvers: Resolvers<Context> = {
@@ -146,6 +148,29 @@ export const resolvers: Resolvers<Context> = {
                 },
             };
         },
+        product: async (_parent, args, ctx, info) => {
+            /**
+             * The select statement for Prisma and the "Product" model. We filter for
+             * Product only, as we have also some custom resolvers that can't be created
+             * in just one select statement
+             **/
+            const select = new PrismaSelect(info, {
+                defaultFields,
+            }).valueWithFilter("Product");
+            const claims = await ctx.authorizeUser([]);
+
+            if (!claims.tenants || claims.tenants.length <= 0)
+                throw new Error(`You don't have access to any tenants`);
+            return ctx.dataSources.db.client.product.findUnique({
+                where: {
+                    tenantId: {
+                        in: claims.tenants.map((t) => t.id),
+                    },
+                    id: args.id,
+                },
+                ...select,
+            });
+        },
     },
     Contact: {
         totalOrders: async (parent, _args, ctx) => {
@@ -159,6 +184,18 @@ export const resolvers: Resolvers<Context> = {
                 },
             });
             return orderCount._count._all;
+        },
+    },
+    Product: {
+        frequentlyBoughtTogether: async (parent, _args, ctx) => {
+            if (!parent.id) return null;
+            const claims = await ctx.authorizeUser([]);
+            const fbt = new FBT({
+                db: ctx.dataSources.db.client,
+                tenantId: claims.tenants?.map((t) => t.id) || [],
+                logger: ctx.logger,
+            });
+            return fbt.getProductsBoughtTogether(parent.id);
         },
     },
 };

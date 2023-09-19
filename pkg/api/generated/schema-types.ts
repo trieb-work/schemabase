@@ -76,7 +76,7 @@ export type Contact = {
     createdAt?: Maybe<Scalars["DateTime"]>;
     email: Scalars["String"];
     firstName?: Maybe<Scalars["String"]>;
-    id?: Maybe<Scalars["String"]>;
+    id: Scalars["String"];
     lastName?: Maybe<Scalars["String"]>;
     marketingEmailsConstent?: Maybe<Scalars["Boolean"]>;
     orders?: Maybe<Array<Maybe<Order>>>;
@@ -493,8 +493,9 @@ export type Product = {
     countryOfOrigin?: Maybe<CountryCode>;
     createdAt?: Maybe<Scalars["DateTime"]>;
     descriptionHTML?: Maybe<Scalars["String"]>;
+    frequentlyBoughtTogether?: Maybe<Array<Product>>;
     hsCode?: Maybe<Scalars["String"]>;
-    id?: Maybe<Scalars["String"]>;
+    id: Scalars["String"];
     name?: Maybe<Scalars["String"]>;
     updatedAt?: Maybe<Scalars["DateTime"]>;
 };
@@ -516,6 +517,7 @@ export type Query = {
     order?: Maybe<Order>;
     orders?: Maybe<OrdersResponse>;
     packageByTrackingId?: Maybe<Package>;
+    product?: Maybe<Product>;
     products?: Maybe<ProductsResponse>;
 };
 
@@ -530,6 +532,10 @@ export type QueryOrdersArgs = {
 
 export type QueryPackageByTrackingIdArgs = {
     trackingId: Scalars["ID"];
+};
+
+export type QueryProductArgs = {
+    id: Scalars["ID"];
 };
 
 export type QueryProductsArgs = {
@@ -901,7 +907,7 @@ export type ContactResolvers<
         ParentType,
         ContextType
     >;
-    id?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>;
+    id?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
     lastName?: Resolver<
         Maybe<ResolversTypes["String"]>,
         ParentType,
@@ -1271,8 +1277,13 @@ export type ProductResolvers<
         ParentType,
         ContextType
     >;
+    frequentlyBoughtTogether?: Resolver<
+        Maybe<Array<ResolversTypes["Product"]>>,
+        ParentType,
+        ContextType
+    >;
     hsCode?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>;
-    id?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>;
+    id?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
     name?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>;
     updatedAt?: Resolver<
         Maybe<ResolversTypes["DateTime"]>,
@@ -1315,6 +1326,12 @@ export type QueryResolvers<
         ParentType,
         ContextType,
         RequireFields<QueryPackageByTrackingIdArgs, "trackingId">
+    >;
+    product?: Resolver<
+        Maybe<ResolversTypes["Product"]>,
+        ParentType,
+        ContextType,
+        RequireFields<QueryProductArgs, "id">
     >;
     products?: Resolver<
         Maybe<ResolversTypes["ProductsResponse"]>,
