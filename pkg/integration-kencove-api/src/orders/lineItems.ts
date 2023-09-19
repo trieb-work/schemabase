@@ -41,6 +41,7 @@ const apiLineItemsWithSchemabase = async (
     const existingOrderLineItems = await db.orderLineItem.findMany({
         where: {
             orderId: existingOrderId,
+            tenantId: tenantId,
         },
     });
     const lineItemsToCreate = orderLineItemsWithUniqueString.filter(
