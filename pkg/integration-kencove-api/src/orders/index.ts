@@ -238,6 +238,7 @@ export class KencoveApiAppOrderSyncService {
                 const shippingAddressPromise = this.getAddress(
                     order.shippingAddress.shippingAddressId,
                 );
+
                 const [billingAddressId, shippingAddressId, mainContactId] =
                     await Promise.all([
                         billingAddressPromise,
@@ -250,6 +251,14 @@ export class KencoveApiAppOrderSyncService {
                         `No main contact found for order ${order.id} - ${order.orderNumber}. This should not happen!`,
                     );
                 }
+                this.logger.debug(
+                    `Working on order ${order.id} - ${order.orderNumber}`,
+                    {
+                        mainContactId,
+                        billingAddressId,
+                        shippingAddressId,
+                    },
+                );
                 if (!order.amount_total) return;
                 const carrier = shippingMethodMatch(
                     order.carrier.delivery_type || "",
@@ -441,6 +450,14 @@ export class KencoveApiAppOrderSyncService {
                         shippingAddressPromise,
                         mainContactPromise,
                     ]);
+                this.logger.debug(
+                    `Working on order ${order.id} - ${order.orderNumber}`,
+                    {
+                        mainContactId,
+                        billingAddressId,
+                        shippingAddressId,
+                    },
+                );
                 const res = await this.db.kencoveApiOrder.update({
                     where: {
                         id_kencoveApiAppId: {
