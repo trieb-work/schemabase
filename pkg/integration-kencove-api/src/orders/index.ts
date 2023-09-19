@@ -259,6 +259,7 @@ export class KencoveApiAppOrderSyncService {
                         mainContactId,
                         billingAddressId,
                         shippingAddressId,
+                        date,
                     },
                 );
                 if (!order.amount_total) return;
@@ -458,6 +459,7 @@ export class KencoveApiAppOrderSyncService {
                         mainContactId,
                         billingAddressId,
                         shippingAddressId,
+                        date: order.date_order,
                     },
                 );
                 const res = await this.db.kencoveApiOrder.update({
