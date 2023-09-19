@@ -122,7 +122,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
         return;
     }
 
-    const webhook = await ctx.prisma.incomingWebhook.findUnique({
+    const wh = await ctx.prisma.incomingWebhook.findUnique({
         where: { id: webhookId },
         include: {
             dpdApp: {
@@ -137,11 +137,11 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
             },
         },
     });
-    if (webhook == null) {
+    if (wh == null) {
         throw new HttpError(404, `Webhook not found: ${webhookId}`);
     }
 
-    const { dpdApp } = webhook;
+    const { dpdApp } = wh;
     if (dpdApp == null) {
         throw new HttpError(400, "dpd app is not configured");
     }

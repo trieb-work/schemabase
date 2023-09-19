@@ -62,7 +62,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
             `Saleor Domain: ${saleorDomain}`,
     );
 
-    const webhook =
+    const wh =
         webhookCache?.[webhookId] ||
         (await ctx.prisma.incomingWebhook.findUnique({
             where: {
@@ -80,14 +80,14 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
             },
         }));
 
-    if (webhook == null) {
+    if (wh == null) {
         ctx.logger.error(`Webhook not found: ${webhookId}`);
         throw new HttpError(404, `Webhook not found: ${webhookId}`);
     }
 
-    webhookCache[webhookId] = webhook;
+    webhookCache[webhookId] = wh;
 
-    const { installedSaleorApp } = webhook;
+    const { installedSaleorApp } = wh;
 
     if (installedSaleorApp == null) {
         ctx.logger.error("Saleor App is not configured");

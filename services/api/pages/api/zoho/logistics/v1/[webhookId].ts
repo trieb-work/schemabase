@@ -36,7 +36,7 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
     }
     const ctx = await extendContext<"prisma">(backgroundContext, setupPrisma());
 
-    const webhook = await ctx.prisma.incomingWebhook.findUnique({
+    const wh = await ctx.prisma.incomingWebhook.findUnique({
         where: {
             id: webhookId,
         },
@@ -54,11 +54,11 @@ const webhook: Webhook<z.infer<typeof requestValidation>> = async ({
         },
     });
 
-    if (webhook == null) {
+    if (wh == null) {
         throw new HttpError(404, `Webhook not found: ${webhookId}`);
     }
 
-    const { logisticsApp } = webhook;
+    const { logisticsApp } = wh;
     if (logisticsApp == null) {
         throw new HttpError(400, "Logistics app is not configured");
     }
