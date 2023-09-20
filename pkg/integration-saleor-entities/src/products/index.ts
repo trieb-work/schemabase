@@ -23,6 +23,7 @@ import { subHours, subYears } from "date-fns";
 import { editorJsHelper } from "../editorjs";
 import { MediaUpload } from "../mediaUpload";
 import { ChannelAvailability } from "./channelAvailability";
+import { parseBoolean } from "@eci/pkg/miscHelper/parseBoolean";
 
 export interface SaleorProductSyncServiceConfig {
     saleorClient: SaleorClient;
@@ -582,6 +583,20 @@ export class SaleorProductSyncService {
                  * Prepare the attributes to fit the saleor schema
                  */
                 for (const attr of attributesWithSaleorAttributes) {
+                    if (attr.attribute.type === "BOOLEAN") {
+                        const value = parseBoolean(attr.value);
+                        if (value === undefined) {
+                            this.logger.warn(
+                                `Product ${product.name} has no valid boolean value for attribute ${attr.attribute.name}. Skipping`,
+                            );
+                            continue;
+                        } else {
+                            attributes.push({
+                                id: attr.attribute.saleorAttributes[0].id,
+                                boolean: value,
+                            });
+                        }
+                    }
                     if (attr.attribute.type === "PRODUCT_REFERENCE") {
                         /// We store our internal product Id in value of product reference attributes.
                         /// We need to aks our DB for the saleor product id
@@ -647,18 +662,34 @@ export class SaleorProductSyncService {
                 }
 
                 let saleorProductId = product.saleorProducts?.[0]?.id;
+                /**
+                 * We store every attribute value as a single entry, also multi-select and
+                 * multi-references. We need to merge them intro one entry, with and array of all values.
+                 * const attributes looks like this:
+                 * [
+                 *  {
+                 *     id: "QXR0cmlidXRlOjE=",
+                 *    values: ["red", "blue"],
+                 *    references: ["UHJvZHVjdFZhcmlhbnQ6Mg=="]
+                 * }]
+                 * we use the id as unique key to merge the values and references. Id is always set
+                 */
+                const uniqueAttributes: ProductCreateMutationVariables["input"]["attributes"] =
+                    [];
+
                 if (!saleorProductId) {
                     this.logger.info(
                         `Creating product ${product.name} in Saleor`,
                         {
                             attributes: JSON.stringify(attributes, null, 2),
+                            productType: productType.name,
                         },
                     );
 
                     const productCreateResponse =
                         await this.saleorClient.productCreate({
                             input: {
-                                attributes,
+                                attributes: uniqueAttributes,
                                 category: saleorCategoryId,
                                 chargeTaxes: true,
                                 collections: [],
@@ -776,6 +807,13 @@ export class SaleorProductSyncService {
                             name: v.variantName,
                             trackInventory: true,
                         }));
+                    this.logger.debug(`Creating variants`, {
+                        attributes: JSON.stringify(
+                            variantsToCreateInput.map((x) => x.attributes),
+                            null,
+                            2,
+                        ),
+                    });
                     const productVariantBulkCreateResponse =
                         await this.saleorClient.productVariantBulkCreate({
                             variants: variantsToCreateInput,
@@ -903,6 +941,8 @@ export class SaleorProductSyncService {
 
             /**
              * Sync the product type
+             * TODO: always pull all product types, as there are not that many.
+             * Not just pull them via the product sync
              */
             await this.syncProductType(product.productType);
 
