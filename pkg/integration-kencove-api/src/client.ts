@@ -19,8 +19,9 @@ import {
     KencoveApiProduct,
     KencoveApiProductStock,
 } from "./types";
-import { addDays, isAfter } from "date-fns";
+import { addDays, isAfter, isBefore } from "date-fns";
 import jwt from "jsonwebtoken";
+import { ILogger } from "@eci/pkg/logger";
 
 export class KencoveApiClient {
     private static instance: KencoveApiClient;
@@ -29,10 +30,13 @@ export class KencoveApiClient {
 
     private app: KencoveApiApp;
 
+    private readonly logger: ILogger;
+
     private jwt: string = "";
 
-    constructor(app: KencoveApiApp) {
+    constructor(app: KencoveApiApp, logger: ILogger) {
         this.app = app;
+        this.logger = logger;
         this.axiosInstance = axios.create({
             baseURL: app.apiEndpoint,
             headers: {
@@ -41,9 +45,12 @@ export class KencoveApiClient {
         });
     }
 
-    public static getInstance(app: KencoveApiApp): KencoveApiClient {
+    public static getInstance(
+        app: KencoveApiApp,
+        logger: ILogger,
+    ): KencoveApiClient {
         if (!KencoveApiClient.instance) {
-            KencoveApiClient.instance = new KencoveApiClient(app);
+            KencoveApiClient.instance = new KencoveApiClient(app, logger);
         }
         return KencoveApiClient.instance;
     }
@@ -379,40 +386,33 @@ export class KencoveApiClient {
     public async *getOrdersStream(
         fromDate: Date,
     ): AsyncIterableIterator<KencoveApiOrder[]> {
-        let nextPage: string | null = null;
-        let offset: number = 0;
-        /**
-         * We start with a first window of 3 days
-         */
-        let toDate = addDays(fromDate, 3);
-        do {
+        const WINDOW_SIZE = 3;
+        const LIMIT = 200;
+
+        while (isBefore(fromDate, new Date())) {
+            let toDate = addDays(fromDate, WINDOW_SIZE);
+            let offset = 0;
+            let nextPage: string | null = null;
+
             const accessToken = await this.getAccessToken();
 
-            const response = await this.getOrdersPage(
-                fromDate,
-                toDate,
-                offset,
-                accessToken,
-            );
-            yield response.data;
-            nextPage = response.next_page;
-            offset += 200;
-            if (!nextPage) {
-                fromDate = toDate;
-                toDate = addDays(toDate, 3);
-                offset = 0;
-                if (isAfter(fromDate, new Date())) {
-                    break;
-                }
-                const checkResponse = await this.getOrdersPage(
+            do {
+                const response = await this.getOrdersPage(
                     fromDate,
                     toDate,
                     offset,
                     accessToken,
                 );
-                nextPage = checkResponse.next_page;
-            }
-        } while (nextPage);
+
+                if (response.data.length === 0) break; // If no data, move to the next window
+
+                yield response.data;
+                nextPage = response.next_page;
+                offset += LIMIT;
+            } while (nextPage);
+
+            fromDate = toDate;
+        }
     }
 
     private async getOrdersPage(
@@ -425,17 +425,26 @@ export class KencoveApiClient {
         result_count: number;
         next_page: string;
     }> {
-        console.debug(`requesting orders from ${fromDate} to ${toDate}`);
-        const response = await this.axiosInstance.get(
-            // eslint-disable-next-line max-len
-            `/ecom/orders/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${toDate.toISOString()}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
+        try {
+            this.logger.debug(
+                `requesting orders from ${fromDate} to ${toDate}`,
+            );
+            const response = await this.axiosInstance.get(
+                `/ecom/orders/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${toDate.toISOString()}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    },
                 },
-            },
-        );
-        return response.data;
+            );
+            return response.data;
+        } catch (error) {
+            console.error(
+                `Error fetching orders from ${fromDate} to ${toDate}:`,
+                error,
+            );
+            throw error; // Re-throw the error if you want the caller to handle it.
+        }
     }
 
     public async *getPricelistStream(
