@@ -55,6 +55,9 @@ export class FBT {
             select: { orderId: true },
             orderBy: { order: { createdAt: "desc" } },
         });
+        this.logger.debug(
+            `Found ${orders.length} orders with product ${productId}`,
+        );
         return orders.map((order) => order.orderId);
     }
 
@@ -65,6 +68,7 @@ export class FBT {
         return this.db.orderLineItem.findMany({
             where: {
                 orderId: { in: orderIds },
+                tenantId: { in: this.tenantId },
                 productVariant: {
                     productId: {
                         not: productId,
