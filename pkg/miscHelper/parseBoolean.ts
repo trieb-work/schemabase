@@ -5,9 +5,9 @@
  */
 const parseBoolean = (input: string | boolean | unknown) => {
     switch (input) {
-        case "true" || true:
+        case "true" || true || "True" || "TRUE":
             return true;
-        case "false" || false:
+        case "false" || false || "False" || "FALSE":
             return false;
         default:
             return undefined;
