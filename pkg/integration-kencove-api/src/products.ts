@@ -807,7 +807,7 @@ export class KencoveApiAppProductSyncService {
             this.logger.info(`Setting GTE date to ${createdGte}.`);
         }
 
-        const client = new KencoveApiClient(this.kencoveApiApp);
+        const client = new KencoveApiClient(this.kencoveApiApp, this.logger);
         const products = await client.getProducts(createdGte);
         this.logger.info(`Found ${products.length} products to sync`);
         if (products.length === 0) {

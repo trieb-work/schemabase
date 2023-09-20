@@ -58,7 +58,7 @@ export class KencoveApiAppProductStockSyncService {
             this.logger.info(`Setting GTE date to ${createdGte}.`);
         }
 
-        const client = new KencoveApiClient(this.kencoveApiApp);
+        const client = new KencoveApiClient(this.kencoveApiApp, this.logger);
         const stocks = await client.getProductStocks(createdGte);
         if (stocks.length === 0) {
             this.logger.info("No product stocks to sync. Exiting.");

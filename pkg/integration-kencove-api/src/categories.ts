@@ -94,7 +94,7 @@ export class KencoveApiAppCategorySyncService {
             this.logger.info(`Setting GTE date to ${createdGte}.`);
         }
 
-        const client = new KencoveApiClient(this.kencoveApiApp);
+        const client = new KencoveApiClient(this.kencoveApiApp, this.logger);
 
         const kenApiCategories = await client.getCategories(createdGte);
 

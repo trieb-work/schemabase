@@ -52,7 +52,7 @@ export class KencoveApiAppAttributeSyncService {
             this.logger.info(`Setting GTE date to ${createdGte}.`);
         }
 
-        const client = new KencoveApiClient(this.kencoveApiApp);
+        const client = new KencoveApiClient(this.kencoveApiApp, this.logger);
         const kencoveApiAppattributes = await client.getAttributes(createdGte);
         this.logger.info(
             `Found ${kencoveApiAppattributes.length} kencoveApiAppattributes to sync`,

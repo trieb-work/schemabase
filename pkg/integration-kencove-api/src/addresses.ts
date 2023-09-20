@@ -58,7 +58,7 @@ export class KencoveApiAppAddressSyncService {
             this.logger.info(`Setting GTE date to ${createdGte}.`);
         }
 
-        const client = new KencoveApiClient(this.kencoveApiApp);
+        const client = new KencoveApiClient(this.kencoveApiApp, this.logger);
         const addressesYield = client.getAddressesStream(createdGte);
 
         for await (const addresses of addressesYield) {

@@ -78,7 +78,7 @@ export class KencoveApiAppPackageSyncService {
             this.logger.info(`Setting GTE date to ${createdGte}.`);
         }
 
-        const client = new KencoveApiClient(this.kencoveApiApp);
+        const client = new KencoveApiClient(this.kencoveApiApp, this.logger);
         const packages = await client.getPackages(createdGte);
         this.logger.info(`Found ${packages.length} packages to sync.`);
 

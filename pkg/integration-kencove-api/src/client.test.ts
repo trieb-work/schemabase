@@ -6,7 +6,7 @@ import { KencoveApiApp, PrismaClient } from "@eci/pkg/prisma";
 import { KencoveApiClient } from "./client";
 import { beforeAll, describe, expect, it } from "@jest/globals";
 import { subDays, subYears } from "date-fns";
-import { NoopLogger } from "@eci/pkg/logger";
+import { AssertionLogger, NoopLogger } from "@eci/pkg/logger";
 import { KencoveApiAppAddressSyncService } from "./addresses";
 import { KencoveApiAppProductSyncService } from "./products";
 import { KencoveApiAppAttributeSyncService } from "./attributes";
@@ -64,13 +64,13 @@ describe("KencoveApiClient", () => {
     });
 
     it("should be able to get an access token", async () => {
-        const client = new KencoveApiClient(app);
+        const client = new KencoveApiClient(app, new AssertionLogger());
         const token = await client.getAccessToken();
         expect(token).toBeTruthy();
     });
 
     it("should be able to get a list of addresses", async () => {
-        const client = new KencoveApiClient(app);
+        const client = new KencoveApiClient(app, new AssertionLogger());
         // test the getAddresses method with a date from two days in the past
         const addresses = await client.getAddresses(subDays(new Date(), 2));
         console.debug(addresses.length);
@@ -78,7 +78,7 @@ describe("KencoveApiClient", () => {
     });
 
     it("should be able to get a list of products", async () => {
-        const client = new KencoveApiClient(app);
+        const client = new KencoveApiClient(app, new AssertionLogger());
         // test the getProducts method with a date from two days in the past
         const products = await client.getProducts(subDays(new Date(), 2));
         console.debug(products.length);
@@ -86,7 +86,7 @@ describe("KencoveApiClient", () => {
     });
 
     it("should be able to get a list of attributes", async () => {
-        const client = new KencoveApiClient(app);
+        const client = new KencoveApiClient(app, new AssertionLogger());
         // test the getAttributes method with a date from two days in the past
         const attributes = await client.getAttributes(subDays(new Date(), 100));
         console.debug(attributes.length);
@@ -94,7 +94,7 @@ describe("KencoveApiClient", () => {
     });
 
     it("should be able to get a list of categories", async () => {
-        const client = new KencoveApiClient(app);
+        const client = new KencoveApiClient(app, new AssertionLogger());
         const categories = await client.getCategories(subYears(new Date(), 2));
         console.debug(categories.length);
         expect(categories.length).toBeGreaterThan(0);
