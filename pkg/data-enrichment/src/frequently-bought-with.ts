@@ -61,6 +61,13 @@ export class FBT {
         return orders.map((order) => order.orderId);
     }
 
+    /**
+     * Get all bought together products for a given product
+     * in a given set of orders
+     * @param orderIds
+     * @param productId
+     * @returns
+     */
     private async getAllProductsInOrders(
         orderIds: string[],
         productId: string,

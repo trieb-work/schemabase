@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 // the categories function - same as addresses or products, but for categories
 //
 
