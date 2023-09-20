@@ -24,7 +24,9 @@ export class WorkflowScheduler {
     public readonly scheduledWorkflows: string[] = [];
 
     public readonly queues: Queue[] = [];
+
     public readonly jobs: Job[] = [];
+
     public readonly workers: Worker[] = [];
     // public readonly queueSchedulers: QueueScheduler[] = [];
 
