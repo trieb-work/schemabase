@@ -138,6 +138,8 @@ export class KencoveApiAppCategorySyncService {
                 category.categoryName,
             );
 
+            const media = category.images || [];
+
             const existingCategory = existingCategories.find(
                 (c) => c.id === category.cateorgyId.toString(),
             );
@@ -263,6 +265,31 @@ export class KencoveApiAppCategorySyncService {
                                     })),
                                 },
                                 descriptionHTML: category.websiteDescription,
+                                media: {
+                                    connectOrCreate: media?.map((m) => ({
+                                        where: {
+                                            url_tenantId: {
+                                                url: m.url,
+                                                tenantId:
+                                                    this.kencoveApiApp.tenantId,
+                                            },
+                                        },
+                                        create: {
+                                            id: id.id("media"),
+                                            url: m.url,
+                                            type:
+                                                m.tag === "banner"
+                                                    ? "BANNER"
+                                                    : undefined,
+                                            tenant: {
+                                                connect: {
+                                                    id: this.kencoveApiApp
+                                                        .tenantId,
+                                                },
+                                            },
+                                        },
+                                    })),
+                                },
                             },
                         },
                     },
@@ -317,6 +344,32 @@ export class KencoveApiAppCategorySyncService {
                                     },
                                     descriptionHTML:
                                         category.websiteDescription,
+                                    media: {
+                                        connectOrCreate: media?.map((m) => ({
+                                            where: {
+                                                url_tenantId: {
+                                                    url: m.url,
+                                                    tenantId:
+                                                        this.kencoveApiApp
+                                                            .tenantId,
+                                                },
+                                            },
+                                            create: {
+                                                id: id.id("media"),
+                                                url: m.url,
+                                                type:
+                                                    m.tag === "banner"
+                                                        ? "BANNER"
+                                                        : undefined,
+                                                tenant: {
+                                                    connect: {
+                                                        id: this.kencoveApiApp
+                                                            .tenantId,
+                                                    },
+                                                },
+                                            },
+                                        })),
+                                    },
                                 },
                             },
                         },
