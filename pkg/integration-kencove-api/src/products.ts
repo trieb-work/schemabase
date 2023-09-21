@@ -184,21 +184,43 @@ export class KencoveApiAppProductSyncService {
     }
 
     /**
-     * Clean the attributes, remove empty null or undefined values. HTML decode the attribute value
+     * Clean the attributes, remove empty null or undefined values. HTML decode the attribute value.
+     * Replace certain attribute names with our own names. For example "uom" get "Unit of Measure"
      * @param attributes
      * @returns
      */
     private cleanAttributes(
         attributes: KencoveApiAttributeInProduct[],
     ): KencoveApiAttributeInProduct[] {
+        const attributeNamesToReplace = [
+            {
+                name: "uom",
+                replaceWith: "Unit of Measure",
+            },
+            {
+                name: "dim",
+                replaceWith: "Dimensions",
+            },
+        ];
+
         return attributes
             .filter(
                 (attribute) =>
                     attribute.value !== undefined &&
                     attribute.value !== null &&
                     attribute.value !== "" &&
-                    attribute.value !== " ",
+                    attribute.value !== " " &&
+                    attribute.value !== "0x0x0",
             )
+            .map((attribute) => {
+                const attributeNameToReplace = attributeNamesToReplace.find(
+                    (atr) => atr.name === attribute.name,
+                );
+                if (attributeNameToReplace) {
+                    attribute.name = attributeNameToReplace.replaceWith;
+                }
+                return attribute;
+            })
             .map((attribute) => ({
                 ...attribute,
                 value: htmlDecode(attribute.value),
@@ -634,7 +656,7 @@ export class KencoveApiAppProductSyncService {
                     `Product type ${product.productType.name} not found in DB`,
                 );
             /**
-             * Manually adding two product attributes: Accessory Items and Alternative Items.
+             * Manually adding three product attributes: Accessory Items, Alternative Items and Frequently Bought Together
              * They get values from the API in a different way, so we have to add them manually, so
              * move them to Saleor in a standard manner
              */
@@ -649,6 +671,13 @@ export class KencoveApiAppProductSyncService {
                 name: "Alternative Items",
                 value: "",
                 attribute_id: 333330,
+                display_type: "reference",
+                attribute_model: "custom",
+            });
+            productAttributesUnique.push({
+                name: "Frequently Bought Together",
+                value: "",
+                attribute_id: 333331,
                 display_type: "reference",
                 attribute_model: "custom",
             });
