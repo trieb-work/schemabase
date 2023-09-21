@@ -1277,10 +1277,16 @@ export class KencoveApiAppProductSyncService {
                     ...variant.attributeValues,
                     ...variant.selectorValues,
                 ];
-                for (const attribute of this.cleanAttributes(allAttributes)) {
-                    if (attribute.name === "website_ref_desc") {
-                        continue;
-                    }
+                const cleanedAttributes = this.cleanAttributes(
+                    allAttributes,
+                ).filter((a) => a.name !== "website_ref_desc");
+                this.logger.debug(
+                    `Will now set attribute values ${cleanedAttributes.length} attributes`,
+                    {
+                        attributes: cleanedAttributes,
+                    },
+                );
+                for (const attribute of cleanedAttributes) {
                     const matchedAttr =
                         kenProdTypeWithProductType.productType.attributes.find(
                             (a) => {
@@ -1298,7 +1304,7 @@ export class KencoveApiAppProductSyncService {
                                 ) {
                                     this.logger.debug(
                                         `Found attribute ${attribute.name} in product ` +
-                                            `type ${kenProdTypeWithProductType.productType.name}`,
+                                            `type ${kenProdTypeWithProductType.productType.name}. Is Variant: ${a.isForVariant}`,
                                     );
                                     return true;
                                 }

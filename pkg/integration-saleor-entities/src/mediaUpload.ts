@@ -1,3 +1,4 @@
+import { ILogger } from "@eci/pkg/logger";
 import { InstalledSaleorApp, SaleorApp } from "@eci/pkg/prisma";
 
 export class MediaUpload {
@@ -61,6 +62,7 @@ export class MediaUpload {
         saleorProductId: string,
         imageBlob: Blob,
         fileExtension: string,
+        logger: ILogger,
     ): Promise<string> {
         const form = new FormData();
         form.append(
@@ -92,6 +94,10 @@ export class MediaUpload {
 
         // Use the file extension when appending the image to the form
         form.append("image", imageBlob, `image${fileExtension}`);
+
+        logger.debug(
+            `Uploading image to Saleor with name: image${fileExtension}`,
+        );
 
         const response = await fetch(this.installedSaleorApp.saleorApp.apiUrl, {
             method: "POST",

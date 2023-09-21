@@ -413,6 +413,7 @@ export class SaleorProductSyncService {
                     saleorProductId,
                     imageBlob,
                     fileExtension,
+                    this.logger,
                 );
                 await this.saleorClient.saleorUpdateMetadata({
                     id: imageId,
@@ -426,11 +427,11 @@ export class SaleorProductSyncService {
                 this.logger.info(
                     `Successfully uploaded media ${element.id}: ${element.url} to saleor with id ${imageId}`,
                 );
-            } catch (error) {
+            } catch (error: any) {
                 this.logger.error(
-                    `Error handling media ${element.id}: ${
-                        element.url
-                    } - ${JSON.stringify(error)}`,
+                    `Error handling media ${element.id}: ${element.url} - ${
+                        error?.message ?? error
+                    }`,
                 );
             }
         }
@@ -443,28 +444,45 @@ export class SaleorProductSyncService {
     private async createOrUpdateProductinSaleor(gteDate: Date) {
         const productsToCreate = await this.db.product.findMany({
             where: {
-                AND: [
+                OR: [
                     {
-                        saleorProducts: {
-                            none: {
-                                installedSaleorAppId: this.installedSaleorAppId,
-                            },
-                        },
-                    },
-                    {
-                        productType: {
-                            saleorProductTypes: {
-                                some: {
-                                    installedSaleorAppId:
-                                        this.installedSaleorAppId,
+                        AND: [
+                            {
+                                saleorProducts: {
+                                    none: {
+                                        installedSaleorAppId:
+                                            this.installedSaleorAppId,
+                                    },
                                 },
                             },
+                            {
+                                productType: {
+                                    saleorProductTypes: {
+                                        some: {
+                                            installedSaleorAppId:
+                                                this.installedSaleorAppId,
+                                        },
+                                    },
+                                },
+                            },
+                            {
+                                category: {
+                                    saleorCategories: {
+                                        some: {
+                                            installedSaleorAppId:
+                                                this.installedSaleorAppId,
+                                        },
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        updatedAt: {
+                            gte: gteDate,
                         },
                     },
                 ],
-                updatedAt: {
-                    gte: gteDate,
-                },
             },
             include: {
                 saleorProducts: {
@@ -662,20 +680,6 @@ export class SaleorProductSyncService {
                 }
 
                 let saleorProductId = product.saleorProducts?.[0]?.id;
-                /**
-                 * We store every attribute value as a single entry, also multi-select and
-                 * multi-references. We need to merge them intro one entry, with and array of all values.
-                 * const attributes looks like this:
-                 * [
-                 *  {
-                 *     id: "QXR0cmlidXRlOjE=",
-                 *    values: ["red", "blue"],
-                 *    references: ["UHJvZHVjdFZhcmlhbnQ6Mg=="]
-                 * }]
-                 * we use the id as unique key to merge the values and references. Id is always set
-                 */
-                const uniqueAttributes: ProductCreateMutationVariables["input"]["attributes"] =
-                    [];
 
                 if (!saleorProductId) {
                     this.logger.info(
@@ -689,7 +693,7 @@ export class SaleorProductSyncService {
                     const productCreateResponse =
                         await this.saleorClient.productCreate({
                             input: {
-                                attributes: uniqueAttributes,
+                                attributes,
                                 category: saleorCategoryId,
                                 chargeTaxes: true,
                                 collections: [],
