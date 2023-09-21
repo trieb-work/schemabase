@@ -1590,6 +1590,11 @@ model Attribute {
   @@index([normalizedName])
 }
 
+enum MediaPlacementType {
+  BANNER
+  THUMBNAIL
+}
+
 /// model to store image and other media urls for products, variants, categories etc.
 /// the URL is the unique identifier for the media
 model Media {
@@ -1601,12 +1606,15 @@ model Media {
   /// The url of the media
   url String
 
+  type MediaPlacementType?
+
   /// The tenant this media belongs to
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
   products Product[]
   productVariants ProductVariant[]
+  categories Category[]
 
   @@index([tenantId])
   @@unique([url, tenantId])
@@ -1757,6 +1765,8 @@ model Category {
 
   // The saleor categories this category is synced to
   saleorCategories SaleorCategory[]
+
+  media Media[]
 
   @@unique([normalizedName, tenantId])
   @@index([tenantId])
