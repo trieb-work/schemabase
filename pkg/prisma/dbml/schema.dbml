@@ -1509,6 +1509,15 @@ Table ReviewsioApp {
   tenantId String [not null]
 }
 
+Table InternalDataApp {
+  id String [pk]
+  enabled Boolean [not null, default: false]
+  cronSchedule String [not null, default: '0 1 * * *', note: 'The internal data enrichment / cleaning workflows run normally once per day']
+  cronTimeout Int [not null, default: 800]
+  tenant Tenant [not null]
+  tenantId String [not null]
+}
+
 Table ZohoApp {
   id String [pk]
   enabled Boolean [not null, default: true]
@@ -1664,6 +1673,7 @@ Table Tenant {
   media Media [not null]
   salesChannels SalesChannel [not null]
   salesChannelPriceEntry SalesChannelPriceEntry [not null]
+  internalDataApps InternalDataApp [not null]
 }
 
 Table Subscription {
@@ -2531,6 +2541,8 @@ Ref: KencoveApiContact.contactId > Contact.id [delete: Cascade]
 Ref: KencoveApiContact.kencoveApiAppId > KencoveApiApp.id [delete: Cascade]
 
 Ref: ReviewsioApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: InternalDataApp.tenantId > Tenant.id [delete: Cascade]
 
 Ref: ZohoApp.tenantId > Tenant.id [delete: Cascade]
 

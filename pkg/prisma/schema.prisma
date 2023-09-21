@@ -2668,6 +2668,24 @@ model ReviewsioApp {
   @@index([tenantId])
 }
 
+model InternalDataApp {
+
+  id String @id
+
+  enabled Boolean @default(false)
+
+  /// The internal data enrichment / cleaning workflows run normally once per day
+  cronSchedule String @default("0 1 * * *")
+  // Time in seconds how long one workflow can run before a timeout occurs.
+  cronTimeout  Int    @default(800)
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+
+  @@index([tenantId])
+
+}
+
 model ZohoApp {
   id String @id
 
@@ -2899,6 +2917,7 @@ model Tenant {
   media                       Media[]
   salesChannels               SalesChannel[]
   salesChannelPriceEntry      SalesChannelPriceEntry[]
+  internalDataApps            InternalDataApp[]
 }
 
 // A subscription indicates a tenant has payed for one integration.

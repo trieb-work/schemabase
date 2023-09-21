@@ -38,6 +38,7 @@ import { KencoveApiAddressSyncWf } from "./workflows/kencoveApiAddressSync";
 import { SaleorAttributeSyncWf } from "./workflows/saleorAttributeSync";
 import { KencoveApiPricelistSyncWf } from "./workflows/kencoveApiPricelistSync";
 import { SaleorChannelSyncWf } from "./workflows/saleorChannelSync";
+import { DataEnrichmentFBTSyncWf } from "./workflows/dataEnrichmentFBT";
 
 interface CronClients {
     logger: ILogger;
@@ -63,6 +64,13 @@ export class CronTable {
                 enabled: true,
             },
         });
+
+        const enabledInternalDataApps =
+            await this.clients.prisma.internalDataApp.findMany({
+                where: {
+                    enabled: true,
+                },
+            });
 
         const enabledSaleorApps =
             await this.clients.prisma.installedSaleorApp.findMany({
@@ -198,6 +206,30 @@ export class CronTable {
                     commonWorkflowConfig,
                 ),
                 { ...commonCronConfig, offset: 10 },
+                [tenantId.substring(0, 5), id.substring(0, 5)],
+            );
+        }
+
+        /**
+         * Internal data App Workflows
+         */
+        for (const enabledInternalDataApp of enabledInternalDataApps) {
+            const { id, cronTimeout, cronSchedule, tenantId } =
+                enabledInternalDataApp;
+            const commonCronConfig = {
+                cron: cronSchedule,
+                timeout: cronTimeout,
+            };
+            const commonWorkflowConfig = {
+                tenantId,
+            };
+            new WorkflowScheduler(this.clients).schedule(
+                createWorkflowFactory(
+                    DataEnrichmentFBTSyncWf,
+                    this.clients,
+                    commonWorkflowConfig,
+                ),
+                { ...commonCronConfig, offset: 0 },
                 [tenantId.substring(0, 5), id.substring(0, 5)],
             );
         }
