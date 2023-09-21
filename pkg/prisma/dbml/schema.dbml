@@ -951,6 +951,20 @@ Table ProductTypeAttribute {
   Note: 'matching table between product types and attributes'
 }
 
+Table ProductToFrequentlyBoughtWith {
+  productId String [not null]
+  relatedProductId String [not null]
+  product Product [not null]
+  relatedProduct Product [not null]
+
+  indexes {
+    (productId, relatedProductId) [pk]
+  }
+
+  Note: 'This model defines the relation between a product and a related product,
+frequently bought together.'
+}
+
 Table Product {
   id String [pk]
   createdAt DateTime [default: `now()`, not null]
@@ -971,6 +985,8 @@ Table Product {
   descriptionHTML String
   attributes AttributeValueProduct [not null]
   media Media [not null]
+  frequentlyBoughtWith ProductToFrequentlyBoughtWith [not null, note: 'All frequently bought together products as relation']
+  boughtTogetherWith ProductToFrequentlyBoughtWith [not null, note: 'Just the relation back. Not used in the code']
 
   indexes {
     (name, tenantId) [unique]
@@ -2387,6 +2403,10 @@ Ref: ProductType.tenantId > Tenant.id [delete: Cascade]
 Ref: ProductTypeAttribute.productTypeId > ProductType.id
 
 Ref: ProductTypeAttribute.attributeId > Attribute.id
+
+Ref: ProductToFrequentlyBoughtWith.productId > Product.id
+
+Ref: ProductToFrequentlyBoughtWith.relatedProductId > Product.id
 
 Ref: Product.productTypeId > ProductType.id
 

@@ -1817,6 +1817,25 @@ model ProductTypeAttribute {
   @@index([attributeId])
 }
 
+/// This model defines the relation between a product and a related product,
+/// frequently bought together.
+model ProductToFrequentlyBoughtWith {
+
+  productId      String
+  relatedProductId String
+
+  
+  product        Product @relation("ProductToRelated", fields: [productId], references: [id])
+  relatedProduct Product @relation("RelatedToProduct", fields: [relatedProductId], references: [id])
+
+  @@id([productId, relatedProductId])
+
+  @@index([relatedProductId])
+  @@index([productId])
+
+
+}
+
 // The ECI internal Product model
 // We use the ProductVariant more, as only variants have unique identifier like the SKU. Products can be matched only via the product name
 model Product {
@@ -1852,6 +1871,12 @@ model Product {
   attributes AttributeValueProduct[]
 
   media Media[]
+
+  /// All frequently bought together products as relation
+  frequentlyBoughtWith ProductToFrequentlyBoughtWith[] @relation("ProductToRelated")
+  /// Just the relation back. Not used in the code
+  boughtTogetherWith ProductToFrequentlyBoughtWith[] @relation("RelatedToProduct")
+
 
   @@unique([name, tenantId])
   @@unique([normalizedName, tenantId])

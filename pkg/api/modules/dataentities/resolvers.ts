@@ -1,4 +1,4 @@
-import { FBT } from "@eci/pkg/data-enrichment/src/frequently-bought-with";
+import { FBT } from "@eci/pkg/data-enrichtment/src/frequently-bought-together/src/frequently-bought-with";
 import { Context } from "../../context";
 import { Resolvers } from "../../generated/schema-types";
 import { PrismaSelect } from "@paljs/plugins";
