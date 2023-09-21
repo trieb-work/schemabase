@@ -157,6 +157,13 @@ type KencoveApiAAItem = {
     itemCode: string;
 };
 
+export type KencoveApiCategoryImage = {
+    url: string;
+    slug: string;
+    alt_name: string;
+    sequence: number;
+    tag: "icon" | "banner";
+};
 export type KencoveApiCategory = {
     cateorgyId: number;
     categorySlug: string;
@@ -172,6 +179,7 @@ export type KencoveApiCategory = {
     websiteDescription: string | null;
     createdAt: string;
     updatedAt: string;
+    images: KencoveApiCategoryImage[] | null;
 };
 
 export type KencoveApiOrderLine = {
