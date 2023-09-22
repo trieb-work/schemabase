@@ -536,12 +536,19 @@ export class SaleorCategorySyncService {
                         installedSaleorAppId: this.installedSaleorApp.id,
                     },
                 },
+                media: {
+                    where: {
+                        type: "BANNER",
+                    },
+                },
             },
         });
 
         this.logger.info(
             `Found ${categoriesToCreate.length} categories that do not exist in saleor`,
         );
+
+        // TODO: upload media if needed (banner image)
 
         const created: string[] = [];
         for (const category of categoriesToCreate) {

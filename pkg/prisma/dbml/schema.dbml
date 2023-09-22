@@ -929,6 +929,7 @@ Table ProductType {
 
   indexes {
     (normalizedName, tenantId) [unique]
+    (id, tenantId) [unique]
   }
 
   Note: 'Product Types are like templates for products. They define which attributes a product has

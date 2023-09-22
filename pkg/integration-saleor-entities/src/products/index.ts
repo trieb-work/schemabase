@@ -394,6 +394,22 @@ export class SaleorProductSyncService {
         }
     }
 
+    public async deleteMedia(saleorMediaId: string) {
+        const mediaDeleteResponse = await this.saleorClient.productMediaDelete({
+            id: saleorMediaId,
+        });
+        if (
+            mediaDeleteResponse.productMediaDelete?.errors &&
+            mediaDeleteResponse.productMediaDelete?.errors.length > 0
+        ) {
+            this.logger.error(
+                `Error deleting media ${saleorMediaId} in Saleor: ${JSON.stringify(
+                    mediaDeleteResponse.productMediaDelete.errors,
+                )}`,
+            );
+        }
+    }
+
     /**
      * takes Media entries from our DB and a saleor productId. Uploads that media using mutation ProductMediaCreate.
      * Adds a metadata to the media to identify it as a media from our app. Does not check, if that media does already exist.
@@ -615,6 +631,7 @@ export class SaleorProductSyncService {
                             });
                         }
                     }
+                    // TODO: handle the case when we have a hexcode value
                     if (attr.attribute.type === "PRODUCT_REFERENCE") {
                         /// We store our internal product Id in value of product reference attributes.
                         /// We need to aks our DB for the saleor product id
@@ -781,9 +798,38 @@ export class SaleorProductSyncService {
                     this.logger.info(
                         `Successfully updated product ${product.name} in Saleor`,
                     );
-                    const mediaToUpload = product.media;
+                    // compare the media we have in our DB with the media currently in saleor.
+                    // upload media, that doesn't exist in saleor yet, delete, media that does no longer exist.
+                    // only take media, with the metadata "schemabase-media-id" set, as these are the media we uploaded.
+                    // delete also media that does exist multiple times in saleor (upload by bugs in schemabase)
+                    // We don't want to delete media, that was uploaded manually in saleor. The field "metafield" is either
+                    // our internal media id or null
+                    const saleorMedia =
+                        productUpdateResponse.productUpdate.product.media || [];
+                    const schemabaseMedia = product.media;
+
+                    const filteredMedia = saleorMedia?.filter(
+                        (m) => m.metafield !== null || undefined,
+                    );
+                    const mediaToDelete = filteredMedia.filter(
+                        (m) =>
+                            !schemabaseMedia.find((sm) => sm.id === m.metafield)
+                                ?.id,
+                    );
+                    const mediaToUpload = schemabaseMedia.filter(
+                        (m) =>
+                            !filteredMedia.find((sm) => sm.metafield === m.id)
+                                ?.id,
+                    );
+
                     if (mediaToUpload.length > 0) {
                         await this.uploadMedia(saleorProductId, mediaToUpload);
+                    }
+
+                    if (mediaToDelete.length > 0) {
+                        for (const element of mediaToDelete) {
+                            await this.deleteMedia(element.id);
+                        }
                     }
                 }
                 // Bulk create the product variants

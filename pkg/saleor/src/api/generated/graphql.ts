@@ -26378,6 +26378,23 @@ export type ProductMediaCreateMutation = {
     } | null;
 };
 
+export type ProductMediaDeleteMutationVariables = Exact<{
+    id: Scalars["ID"];
+}>;
+
+export type ProductMediaDeleteMutation = {
+    __typename?: "Mutation";
+    productMediaDelete?: {
+        __typename?: "ProductMediaDelete";
+        errors: Array<{
+            __typename?: "ProductError";
+            field?: string | null;
+            code: ProductErrorCode;
+            message?: string | null;
+        }>;
+    } | null;
+};
+
 export type ProductTypeCreateMutationVariables = Exact<{
     input: ProductTypeInput;
 }>;
@@ -26455,6 +26472,11 @@ export type ProductUpdateMutation = {
                 __typename?: "ProductVariant";
                 id: string;
             } | null;
+            media?: Array<{
+                __typename?: "ProductMedia";
+                id: string;
+                metafield?: string | null;
+            }> | null;
         } | null;
     } | null;
 };
@@ -27651,6 +27673,17 @@ export const ProductMediaCreateDocument = gql`
         }
     }
 `;
+export const ProductMediaDeleteDocument = gql`
+    mutation productMediaDelete($id: ID!) {
+        productMediaDelete(id: $id) {
+            errors {
+                field
+                code
+                message
+            }
+        }
+    }
+`;
 export const ProductTypeCreateDocument = gql`
     mutation productTypeCreate($input: ProductTypeInput!) {
         productTypeCreate(input: $input) {
@@ -27710,6 +27743,10 @@ export const ProductUpdateDocument = gql`
                 id
                 defaultVariant {
                     id
+                }
+                media {
+                    id
+                    metafield(key: "schemabase-media-id")
                 }
             }
         }
@@ -28518,6 +28555,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<ProductMediaCreateMutation>;
+        },
+        productMediaDelete(
+            variables: ProductMediaDeleteMutationVariables,
+            options?: C,
+        ): Promise<ProductMediaDeleteMutation> {
+            return requester<
+                ProductMediaDeleteMutation,
+                ProductMediaDeleteMutationVariables
+            >(
+                ProductMediaDeleteDocument,
+                variables,
+                options,
+            ) as Promise<ProductMediaDeleteMutation>;
         },
         productTypeCreate(
             variables: ProductTypeCreateMutationVariables,

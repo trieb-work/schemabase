@@ -149,38 +149,39 @@ export class KencoveApiAppProductSyncService {
             isForVariant,
         });
 
-        await this.db.productTypeAttribute.upsert({
-            where: {
-                productTypeId_attributeId: {
-                    productTypeId: kenProdType.productTypeId,
-                    attributeId: kenAttribute.attributeId,
-                },
-            },
-            create: {
-                id: id.id("productType"),
-                productType: {
-                    connect: {
-                        id: kenProdType.productTypeId,
+        const existingProductTypeAttribute =
+            await this.db.productTypeAttribute.findUnique({
+                where: {
+                    productTypeId_attributeId: {
+                        productTypeId: kenProdType.productTypeId,
+                        attributeId: kenAttribute.attributeId,
                     },
                 },
-                isVariantSelection,
-                isForVariant,
-                attribute: {
-                    connect: {
-                        id: kenAttribute.attributeId,
+            });
+
+        if (!existingProductTypeAttribute) {
+            // we are creating the productTypeAttribute relation via the productType table
+            // so that the updateAt field gets updated correctly
+            await this.db.productType.update({
+                where: {
+                    id: kenProdType.productTypeId,
+                },
+                data: {
+                    attributes: {
+                        create: {
+                            id: id.id("productType"),
+                            isVariantSelection,
+                            isForVariant,
+                            attribute: {
+                                connect: {
+                                    id: kenAttribute.attributeId,
+                                },
+                            },
+                        },
                     },
                 },
-            },
-            update: {
-                isVariantSelection,
-                isForVariant,
-                attribute: {
-                    connect: {
-                        id: kenAttribute.attributeId,
-                    },
-                },
-            },
-        });
+            });
+        }
     }
 
     /**
@@ -431,6 +432,16 @@ export class KencoveApiAppProductSyncService {
             `Setting attribute ${attribute.name}, value ${attributeValueDecoded}`,
         );
 
+        let hexCode: string | undefined = undefined;
+        // we set an attribute hex value to the hex value field, when type is "swatch"
+        // and value starts with "#"
+        if (
+            attribute.type === "SWATCH" &&
+            attributeValueDecoded.startsWith("#")
+        ) {
+            hexCode = attributeValueDecoded;
+        }
+
         if (isForVariant) {
             if (!variantId) throw new Error("VariantId is undefined");
             await this.db.attributeValueVariant.upsert({
@@ -456,6 +467,7 @@ export class KencoveApiAppProductSyncService {
                         },
                     },
                     value: attributeValueDecoded,
+                    hexColor: hexCode,
                     productVariant: {
                         connect: {
                             id: variantId,
@@ -489,6 +501,7 @@ export class KencoveApiAppProductSyncService {
                         },
                     },
                     value: attributeValueDecoded,
+                    hexColor: hexCode,
                     product: {
                         connect: {
                             id: productId,

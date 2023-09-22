@@ -1795,6 +1795,7 @@ model ProductType {
   tenantId               String
 
   @@unique([normalizedName, tenantId])
+  @@unique([id, tenantId])
   @@index([tenantId])
 }
 
