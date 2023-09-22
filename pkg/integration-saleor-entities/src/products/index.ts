@@ -634,7 +634,7 @@ export class SaleorProductSyncService {
                             });
                         if (!saleorProductId?.saleorProducts?.[0]?.id) {
                             this.logger.warn(
-                                `Product ${product.name} has no saleor product id. Skipping`,
+                                `Product ${product.name} has a reference to a product, that has no saleor product id. Skipping`,
                             );
                             continue;
                         }
