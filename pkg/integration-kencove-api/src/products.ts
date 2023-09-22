@@ -1281,7 +1281,7 @@ export class KencoveApiAppProductSyncService {
                     allAttributes,
                 ).filter((a) => a.name !== "website_ref_desc");
                 this.logger.debug(
-                    `Will now set attribute values ${cleanedAttributes.length} attributes`,
+                    `Will now set attribute values of ${cleanedAttributes.length} attributes`,
                     {
                         attributes: cleanedAttributes,
                     },
@@ -1318,6 +1318,7 @@ export class KencoveApiAppProductSyncService {
                         );
                         continue;
                     }
+
                     /**
                      * We get values for dropdown / multiselect attributes from the API
                      * as array of string in the values "["value1", "value2"]". We need to
@@ -1325,10 +1326,14 @@ export class KencoveApiAppProductSyncService {
                      * for each of them. We test, if we have an array.
                      */
                     if (attribute.value.match(/^\[.*\]$/)) {
+                        const values = JSON.parse(attribute.value);
                         this.logger.debug(
                             `Found array of values for attribute ${attribute.name}`,
+                            {
+                                values,
+                            },
                         );
-                        const values = JSON.parse(attribute.value);
+
                         for (const value of values) {
                             await this.setAttributeValue({
                                 productId:
