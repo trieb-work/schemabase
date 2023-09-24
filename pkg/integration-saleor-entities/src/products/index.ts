@@ -7,6 +7,7 @@ import {
     ProductVariantBulkUpdateInput,
     queryWithPagination,
     SaleorClient,
+    SaleorProductVariantBasicDataQuery,
     VariantFragment,
 } from "@eci/pkg/saleor";
 import {
@@ -517,6 +518,49 @@ export class SaleorProductSyncService {
                 },
             });
         }
+    }
+
+    /**
+     * Gets saleor product variant with their stock and
+     * metadata. Deletes a product variant in our db, if it does not exist in saleor
+     * any more
+     */
+    private async getSaleorProductVariant(variantId: string) {
+        //    // Get the current commited stock and the metadata of this product variant from saleor.
+        //     // We need fresh data here, as the commited stock can change all the time.
+        const saleorProductVariant =
+            await this.saleorClient.saleorProductVariantBasicData({
+                id: variantId,
+            });
+        if (!saleorProductVariant || !saleorProductVariant.productVariant?.id) {
+            this.logger.warn(
+                `No product variant returned from saleor for id ${variantId}! Cant update stocks.\
+          Deleting variant in internal DB`,
+            );
+            if (variantId)
+                await this.db.saleorProductVariant.delete({
+                    where: {
+                        id_installedSaleorAppId: {
+                            id: variantId,
+                            installedSaleorAppId: this.installedSaleorAppId,
+                        },
+                    },
+                });
+            return null;
+        }
+        type ReturnType = SaleorProductVariantBasicDataQuery & {
+            productVariant: NonNullable<
+                SaleorProductVariantBasicDataQuery["productVariant"] & {
+                    stocks: NonNullable<
+                        NonNullable<
+                            SaleorProductVariantBasicDataQuery["productVariant"]
+                        >["stocks"]
+                    >;
+                }
+            >;
+        };
+
+        return saleorProductVariant as ReturnType;
     }
 
     /**
@@ -1480,30 +1524,11 @@ export class SaleorProductSyncService {
         }>();
 
         for (const variant of saleorProductVariants) {
-            // Get the current commited stock and the metadata of this product variant from saleor.
-            // We need fresh data here, as the commited stock can change all the time.
-            const saleorProductVariant =
-                await this.saleorClient.saleorProductVariantBasicData({
-                    id: variant.id,
-                });
-            if (
-                !saleorProductVariant ||
-                !saleorProductVariant.productVariant?.id ||
-                !saleorProductVariant.productVariant.stocks
-            ) {
-                this.logger.warn(
-                    `No product variant returned from saleor for id ${variant.id}! Cant update stocks.\
-          Deleting variant in internal DB`,
-                );
-                if (variant.id)
-                    await this.db.saleorProductVariant.delete({
-                        where: {
-                            id_installedSaleorAppId: {
-                                id: variant.id,
-                                installedSaleorAppId: this.installedSaleorAppId,
-                            },
-                        },
-                    });
+            const saleorProductVariant = await this.getSaleorProductVariant(
+                variant.id,
+            );
+
+            if (!saleorProductVariant) {
                 continue;
             }
 
