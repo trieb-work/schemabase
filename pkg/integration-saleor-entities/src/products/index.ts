@@ -4,6 +4,7 @@ import {
     ProductCreateMutationVariables,
     ProductTypeFragment,
     ProductVariantBulkCreateInput,
+    ProductVariantBulkUpdateInput,
     queryWithPagination,
     SaleorClient,
     VariantFragment,
@@ -14,6 +15,12 @@ import {
     Media,
     InstalledSaleorApp,
     SaleorApp,
+    ProductVariant,
+    AttributeValueVariant,
+    Product,
+    SaleorAttribute,
+    SaleorProductVariant,
+    Attribute as SchemaBaseAttribute,
 } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { id } from "@eci/pkg/ids";
@@ -411,6 +418,108 @@ export class SaleorProductSyncService {
     }
 
     /**
+     * Takes our internal data schema and creates the corresponding
+     * product variants with attributes in Saleors. Stores the Saleor Variant Ids
+     * back in our DB.
+     * @param variantsToCreate
+     * @param product
+     * @param saleorProductId
+     * @returns
+     */
+    private async createProductVariantsInSaleor(
+        variantsToCreate: (ProductVariant & {
+            attributes: (AttributeValueVariant & {
+                attribute: SchemaBaseAttribute & {
+                    saleorAttributes: SaleorAttribute[];
+                };
+            })[];
+        } & {
+            saleorProductVariant: SaleorProductVariant[];
+        })[],
+        product: Product,
+        saleorProductId: string,
+    ) {
+        this.logger.info(
+            `Found ${variantsToCreate.length} variants to create for product ${product.name} in Saleor`,
+        );
+        const variantsToCreateInput: ProductVariantBulkCreateInput[] =
+            variantsToCreate.map((v) => ({
+                attributes: v.attributes
+                    .filter((a) => a.attribute.saleorAttributes.length > 0)
+                    .map((a) => ({
+                        id: a.attribute.saleorAttributes[0].id,
+                        values: [a.value],
+                    })),
+                sku: v.sku,
+                name: v.variantName,
+                trackInventory: true,
+            }));
+        this.logger.debug(`Creating variants`, {
+            attributes: JSON.stringify(
+                variantsToCreateInput.map((x) => x.attributes),
+                null,
+                2,
+            ),
+        });
+        const productVariantBulkCreateResponse =
+            await this.saleorClient.productVariantBulkCreate({
+                variants: variantsToCreateInput,
+                productId: saleorProductId,
+            });
+        if (
+            productVariantBulkCreateResponse.productVariantBulkCreate?.errors &&
+            productVariantBulkCreateResponse.productVariantBulkCreate?.errors
+                .length > 0
+        ) {
+            this.logger.error(
+                `Error creating variants for product ${
+                    product.name
+                } in Saleor: ${JSON.stringify(
+                    productVariantBulkCreateResponse.productVariantBulkCreate
+                        .errors,
+                )}`,
+            );
+            return;
+        }
+        this.logger.info(
+            `Successfully created ${variantsToCreate.length} variants for product ${product.name} in Saleor`,
+        );
+        // Store the created variants in our DB
+        for (const variant of variantsToCreate) {
+            const createdVariant =
+                productVariantBulkCreateResponse.productVariantBulkCreate?.productVariants?.find(
+                    (v) => v.sku === variant.sku,
+                )?.id;
+            if (!createdVariant) {
+                this.logger.error(
+                    `Error creating variant ${variant.sku} for product ${product.name} in Saleor: No variant id returned`,
+                );
+                continue;
+            }
+            await this.db.saleorProductVariant.create({
+                data: {
+                    id: createdVariant,
+                    installedSaleorApp: {
+                        connect: {
+                            id: this.installedSaleorAppId,
+                        },
+                    },
+                    productId: saleorProductId,
+                    updatedAt: new Date(),
+                    productVariant: {
+                        connect: {
+                            sku_tenantId: {
+                                sku: variant.sku,
+                                tenantId: this.tenantId,
+                            },
+                        },
+                    },
+                },
+            });
+        }
+    }
+
+    /**
      * takes Media entries from our DB and a saleor productId. Uploads that media using mutation ProductMediaCreate.
      * Adds a metadata to the media to identify it as a media from our app. Does not check, if that media does already exist.
      * This has to be done before calling this function. We download the media from the url and upload it via
@@ -458,7 +567,7 @@ export class SaleorProductSyncService {
      * Update products, that got changed since the last run
      */
     private async createOrUpdateProductinSaleor(gteDate: Date) {
-        const productsToCreate = await this.db.product.findMany({
+        const productsToCreateOrUpdate = await this.db.product.findMany({
             where: {
                 OR: [
                     {
@@ -565,15 +674,15 @@ export class SaleorProductSyncService {
                 media: true,
             },
         });
-        if (productsToCreate.length > 0) {
+        if (productsToCreateOrUpdate.length > 0) {
             this.logger.info(
                 `Found ${
-                    productsToCreate.length
-                } products to create in Saleor: ${productsToCreate.map(
+                    productsToCreateOrUpdate.length
+                } products to create in Saleor: ${productsToCreateOrUpdate.map(
                     (p) => p.name,
                 )}`,
             );
-            for (const product of productsToCreate) {
+            for (const product of productsToCreateOrUpdate) {
                 const productType = product.productType;
                 if (!productType) {
                     this.logger.warn(
@@ -832,18 +941,34 @@ export class SaleorProductSyncService {
                         }
                     }
                 }
-                // Bulk create the product variants
+                /**
+                 * Variants for this product that we need to create
+                 */
                 const variantsToCreate = product.variants.filter(
                     (v) => v.saleorProductVariant.length === 0,
                 );
+                /**
+                 * Variants of the current product, that we need to update
+                 */
+                const variantsToUpdate = product.variants.filter(
+                    (v) => v.saleorProductVariant.length > 0,
+                );
                 if (variantsToCreate.length > 0) {
-                    this.logger.info(
-                        `Found ${variantsToCreate.length} variants to create for product ${product.name} in Saleor`,
+                    await this.createProductVariantsInSaleor(
+                        variantsToCreate,
+                        product,
+                        saleorProductId,
                     );
-                    const variantsToCreateInput:
-                        | ProductVariantBulkCreateInput
-                        | ProductVariantBulkCreateInput[] =
-                        variantsToCreate.map((v) => ({
+                }
+                if (variantsToUpdate.length > 0) {
+                    this.logger.info(
+                        `Found ${variantsToUpdate.length} variants to update for product ${product.name} in Saleor`,
+                    );
+
+                    const variantsToUpdateInput:
+                        | ProductVariantBulkUpdateInput
+                        | ProductVariantBulkUpdateInput[] =
+                        variantsToUpdate.map((v) => ({
                             attributes: v.attributes
                                 .filter(
                                     (a) =>
@@ -856,71 +981,39 @@ export class SaleorProductSyncService {
                             sku: v.sku,
                             name: v.variantName,
                             trackInventory: true,
+                            id: v.saleorProductVariant[0].id,
                         }));
-                    this.logger.debug(`Creating variants`, {
+                    this.logger.debug(`Updating variants`, {
                         attributes: JSON.stringify(
-                            variantsToCreateInput.map((x) => x.attributes),
+                            variantsToUpdateInput.map((x) => x.attributes),
                             null,
                             2,
                         ),
                     });
-                    const productVariantBulkCreateResponse =
-                        await this.saleorClient.productVariantBulkCreate({
-                            variants: variantsToCreateInput,
+                    const productVariantBulkUpdateResponse =
+                        await this.saleorClient.productVariantBulkUpdate({
+                            variants: variantsToUpdateInput,
                             productId: saleorProductId,
                         });
                     if (
-                        productVariantBulkCreateResponse
-                            .productVariantBulkCreate?.errors &&
-                        productVariantBulkCreateResponse
-                            .productVariantBulkCreate?.errors.length > 0
+                        productVariantBulkUpdateResponse
+                            .productVariantBulkUpdate?.errors &&
+                        productVariantBulkUpdateResponse
+                            .productVariantBulkUpdate?.errors.length > 0
                     ) {
                         this.logger.error(
                             `Error creating variants for product ${
                                 product.name
                             } in Saleor: ${JSON.stringify(
-                                productVariantBulkCreateResponse
-                                    .productVariantBulkCreate.errors,
+                                productVariantBulkUpdateResponse
+                                    .productVariantBulkUpdate.errors,
                             )}`,
                         );
                         continue;
                     }
                     this.logger.info(
-                        `Successfully created ${variantsToCreate.length} variants for product ${product.name} in Saleor`,
+                        `Successfully updated ${variantsToCreate.length} variants for product ${product.name} in Saleor`,
                     );
-                    // Store the created variants in our DB
-                    for (const variant of variantsToCreate) {
-                        const createdVariant =
-                            productVariantBulkCreateResponse.productVariantBulkCreate?.productVariants?.find(
-                                (v) => v.sku === variant.sku,
-                            )?.id;
-                        if (!createdVariant) {
-                            this.logger.error(
-                                `Error creating variant ${variant.sku} for product ${product.name} in Saleor: No variant id returned`,
-                            );
-                            continue;
-                        }
-                        await this.db.saleorProductVariant.create({
-                            data: {
-                                id: createdVariant,
-                                installedSaleorApp: {
-                                    connect: {
-                                        id: this.installedSaleorAppId,
-                                    },
-                                },
-                                productId: saleorProductId,
-                                updatedAt: new Date(),
-                                productVariant: {
-                                    connect: {
-                                        sku_tenantId: {
-                                            sku: variant.sku,
-                                            tenantId: this.tenantId,
-                                        },
-                                    },
-                                },
-                            },
-                        });
-                    }
                 }
             }
         } else {
@@ -1426,6 +1519,9 @@ export class SaleorProductSyncService {
                  * Just update the stock for warehouses, that we have configured in Saleor
                  */
                 if (!saleorWarehouseId) {
+                    this.logger.warn(
+                        `No saleor warehouse found for warehouse ${stockEntry.warehouseId}. Skipping`,
+                    );
                     continue;
                 }
                 /**
@@ -1551,6 +1647,7 @@ export class SaleorProductSyncService {
             this.installedSaleorAppId,
             this.logger,
             this.saleorClient,
+            this.tenantId,
         );
         await channelAvailability.syncChannelAvailability(createdGte);
 
