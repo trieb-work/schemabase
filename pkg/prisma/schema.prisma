@@ -1802,6 +1802,9 @@ model ProductType {
 /// matching table between product types and attributes
 model ProductTypeAttribute {
   id            String @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
   productTypeId String
 
   /// Indicates if the attribute is for product or variant.
@@ -1821,6 +1824,9 @@ model ProductTypeAttribute {
 /// This model defines the relation between a product and a related product,
 /// frequently bought together.
 model ProductToFrequentlyBoughtWith {
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   productId      String
   relatedProductId String
