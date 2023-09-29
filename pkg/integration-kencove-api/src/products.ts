@@ -694,6 +694,13 @@ export class KencoveApiAppProductSyncService {
                 display_type: "reference",
                 attribute_model: "custom",
             });
+            productAttributesUnique.push({
+                name: "Shipping Status",
+                value: "",
+                attribute_id: 333332,
+                display_type: "multiselect",
+                attribute_model: "custom",
+            });
 
             this.logger.debug(
                 "Product Attributes: " +
