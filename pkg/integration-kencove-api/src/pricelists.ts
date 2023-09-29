@@ -259,5 +259,7 @@ export class KencoveApiAppPricelistSyncService {
                 }
             }
         }
+
+        await this.cronState.set({ lastRun: now, lastRunStatus: "success" });
     }
 }
