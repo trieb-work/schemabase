@@ -938,6 +938,8 @@ and if a product has variants'
 
 Table ProductTypeAttribute {
   id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
   productTypeId String [not null]
   isForVariant Boolean [not null, note: 'Indicates if the attribute is for product or variant.']
   isVariantSelection Boolean [not null, note: 'Indicates if it\'s a "variant selection" attribute for multi-variant products, for example size or color']
@@ -953,6 +955,8 @@ Table ProductTypeAttribute {
 }
 
 Table ProductToFrequentlyBoughtWith {
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
   productId String [not null]
   relatedProductId String [not null]
   product Product [not null]
