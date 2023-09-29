@@ -3,12 +3,13 @@
 // models SalesChannel and SalesChannelPriceEntry
 
 import { ILogger } from "@eci/pkg/logger";
-import { KencoveApiApp, PrismaClient } from "@eci/pkg/prisma";
+import { Attribute, KencoveApiApp, PrismaClient } from "@eci/pkg/prisma";
 import { KencoveApiClient } from "./client";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { subHours, subYears } from "date-fns";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import { id } from "@eci/pkg/ids";
+import { KencoveApiPricelistItem } from "./types";
 
 interface KencoveApiAppPricelistSyncServiceConfig {
     logger: ILogger;
@@ -25,6 +26,8 @@ export class KencoveApiAppPricelistSyncService {
 
     private readonly cronState: CronStateHandler;
 
+    private shippingStatusAttribute: Attribute | undefined = undefined;
+
     constructor(config: KencoveApiAppPricelistSyncServiceConfig) {
         this.logger = config.logger;
         this.db = config.db;
@@ -35,6 +38,105 @@ export class KencoveApiAppPricelistSyncService {
             db: this.db,
             syncEntity: "pricelist",
         });
+    }
+
+    /**
+     * The kencove API get us shipping metainformation like "free shipping qualified" as pricelist entry.
+     * We model that as actual product attribute
+     * @param priceListItem
+     */
+    private async setShippingAttributes(
+        priceListItem: KencoveApiPricelistItem,
+        productId: string,
+    ) {
+        const shippingAttribute =
+            this.shippingStatusAttribute ||
+            (await this.db.attribute.upsert({
+                where: {
+                    normalizedName_tenantId: {
+                        normalizedName: "shippingstatus",
+                        tenantId: this.kencoveApiApp.tenantId,
+                    },
+                },
+                create: {
+                    id: id.id("attribute"),
+                    tenant: {
+                        connect: {
+                            id: this.kencoveApiApp.tenantId,
+                        },
+                    },
+                    name: "Shipping Status",
+                    normalizedName: "shippingstatus",
+                    type: "MULTISELECT",
+                },
+                update: {},
+            }));
+        if (!this.shippingStatusAttribute) {
+            this.shippingStatusAttribute = shippingAttribute;
+        }
+        /**
+         * Is there already an entry for attribute Shipping Status and the current product, we are working on
+         */
+        const attrValue = await this.db.attributeValueProduct.findUnique({
+            where: {
+                productId_attributeId_normalizedName_tenantId: {
+                    productId,
+                    attributeId: shippingAttribute.id,
+                    normalizedName: "shippingstatus",
+                    tenantId: this.kencoveApiApp.tenantId,
+                },
+            },
+        });
+        if (!attrValue) {
+            await this.db.attributeValueProduct.create({
+                data: {
+                    id: id.id("attributeValue"),
+                    tenant: {
+                        connect: {
+                            id: this.kencoveApiApp.tenantId,
+                        },
+                    },
+                    attribute: {
+                        connect: {
+                            id: shippingAttribute.id,
+                        },
+                    },
+                    product: {
+                        connect: {
+                            id: productId,
+                        },
+                    },
+                    normalizedName: "shippingstatus",
+                    value: priceListItem.freeship_qualified
+                        ? "FREE Shipping"
+                        : "Shipping Fees Apply",
+                },
+            });
+        } else {
+            // only update the entry, if it has changed
+            if (
+                attrValue.value !==
+                (priceListItem.freeship_qualified
+                    ? "FREE Shipping"
+                    : "Shipping Fees Apply")
+            ) {
+                await this.db.attributeValueProduct.update({
+                    where: {
+                        productId_attributeId_normalizedName_tenantId: {
+                            productId,
+                            attributeId: shippingAttribute.id,
+                            normalizedName: "shippingstatus",
+                            tenantId: this.kencoveApiApp.tenantId,
+                        },
+                    },
+                    data: {
+                        value: priceListItem.freeship_qualified
+                            ? "FREE Shipping"
+                            : "Shipping Fees Apply",
+                    },
+                });
+            }
+        }
     }
 
     public async syncToEci(): Promise<void> {
@@ -107,6 +209,13 @@ export class KencoveApiAppPricelistSyncService {
                     const endDate = pricelistEntry.date_end
                         ? new Date(pricelistEntry.date_end)
                         : null;
+
+                    if (pricelistEntry.min_quantity === 0) {
+                        await this.setShippingAttributes(
+                            pricelistEntry,
+                            productVariant.productId,
+                        );
+                    }
 
                     const existingPriceEntry =
                         await this.db.salesChannelPriceEntry.findFirst({
