@@ -208,8 +208,8 @@ export class KencoveApiClient {
         result_count: number;
         next_page: string;
     }> {
-        const response = await axios.get(
-            `https://api-kencove.gc.staging-kencove.com/ecom/product/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${new Date().toISOString()}`,
+        const response = await this.axiosInstance.get(
+            `/ecom/product/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${new Date().toISOString()}`,
             {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
