@@ -108,6 +108,26 @@ export type KencoveApiAttributeInProduct = {
     display_type: string;
     attribute_model: string;
 };
+
+export type KencoveApiContact = {
+    id: string;
+    firstname: string;
+    lastname: string;
+    companyname: string | null;
+    customer_code: string;
+    email: string;
+    phone: string;
+    phone_extension: string | null;
+    mobile: string | null;
+    type: string;
+    pricelist: {
+        id: string;
+        name: string;
+    };
+    createdat: string;
+    updatedat: string;
+};
+
 export type KencoveApiProductVariant = {
     id: string;
     sku: string;
@@ -211,7 +231,7 @@ export type KencoveApiOrderLine = {
     orderLine_taxRate: string;
 };
 
-export type KencoApiPricelistItem = {
+export type KencoveApiPricelistItem = {
     /**
      * for example KEN-R or KEN-D
      */
