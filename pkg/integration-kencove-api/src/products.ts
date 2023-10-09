@@ -97,6 +97,9 @@ export class KencoveApiAppProductSyncService {
         isForVariant: boolean,
         isVariantSelection: boolean,
     ) {
+        /**
+         * First make sure, that the attribute itself does already exist in the DB
+         */
         const kenAttribute = await this.db.kencoveApiAttribute.upsert({
             where: {
                 id_kencoveApiAppId: {
@@ -181,6 +184,27 @@ export class KencoveApiAppProductSyncService {
                     },
                 },
             });
+        } else {
+            /**
+             * A product type attribute can be switched from product attribute to variant attribute, but not back.
+             */
+            if (!existingProductTypeAttribute.isForVariant && isForVariant) {
+                this.logger.info(
+                    // eslint-disable-next-line max-len
+                    `Product type attribute ${attribute.name} isForVariant changed from ${existingProductTypeAttribute.isForVariant} to ${isForVariant}.`,
+                );
+                await this.db.productTypeAttribute.update({
+                    where: {
+                        productTypeId_attributeId: {
+                            productTypeId: kenProdType.productTypeId,
+                            attributeId: kenAttribute.attributeId,
+                        },
+                    },
+                    data: {
+                        isForVariant,
+                    },
+                });
+            }
         }
     }
 
