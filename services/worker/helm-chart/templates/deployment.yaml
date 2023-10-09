@@ -33,4 +33,4 @@ spec:
               cpu: 350m
               memory: 280Mi
             limits:
-              memory: 600Mi
+              memory: "{{ .Values.resources.limits.memory }}"

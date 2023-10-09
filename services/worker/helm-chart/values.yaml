@@ -28,5 +28,12 @@ kafka:
   password: kafka
 
 sendgridApiKey: abc
+resources:
+  limits:
+
+    memory: 600Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
 
 secretKey:
