@@ -32,6 +32,7 @@ import { editorJsHelper } from "../editorjs";
 import { MediaUpload } from "../mediaUpload";
 import { ChannelAvailability } from "./channelAvailability";
 import { parseBoolean } from "@eci/pkg/miscHelper/parseBoolean";
+import { FrequentlyBoughtTogether } from "./frequentlyBoughtTogether";
 
 export interface SaleorProductSyncServiceConfig {
     saleorClient: SaleorClient;
@@ -1675,6 +1676,15 @@ export class SaleorProductSyncService {
             this.tenantId,
         );
         await channelAvailability.syncChannelAvailability(createdGte);
+
+        const frequentlyboughttogether = new FrequentlyBoughtTogether({
+            db: this.db,
+            logger: this.logger,
+            saleorClient: this.saleorClient,
+            tenantId: this.tenantId,
+            installedSaleorAppId: this.installedSaleorAppId,
+        });
+        await frequentlyboughttogether.sync(createdGte);
 
         await this.cronState.set({
             lastRun: new Date(),

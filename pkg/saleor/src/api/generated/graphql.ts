@@ -27369,6 +27369,30 @@ export type SaleorProductVariantBasicDataQuery = {
     } | null;
 };
 
+export type ProductWithAttributesQueryVariables = Exact<{
+    id: Scalars["ID"];
+}>;
+
+export type ProductWithAttributesQuery = {
+    __typename?: "Query";
+    product?: {
+        __typename?: "Product";
+        attributes: Array<{
+            __typename?: "SelectedAttribute";
+            attribute: {
+                __typename?: "Attribute";
+                id: string;
+                name?: string | null;
+            };
+            values: Array<{
+                __typename?: "AttributeValue";
+                name?: string | null;
+                id: string;
+            }>;
+        }>;
+    } | null;
+};
+
 export type WarehousesQueryVariables = Exact<{
     first?: InputMaybe<Scalars["Int"]>;
 }>;
@@ -28374,6 +28398,22 @@ export const SaleorProductVariantBasicDataDocument = gql`
         }
     }
 `;
+export const ProductWithAttributesDocument = gql`
+    query productWithAttributes($id: ID!) {
+        product(id: $id) {
+            attributes {
+                attribute {
+                    id
+                    name
+                }
+                values {
+                    name
+                    id
+                }
+            }
+        }
+    }
+`;
 export const WarehousesDocument = gql`
     query warehouses($first: Int) {
         warehouses(first: $first) {
@@ -28862,6 +28902,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<SaleorProductVariantBasicDataQuery>;
+        },
+        productWithAttributes(
+            variables: ProductWithAttributesQueryVariables,
+            options?: C,
+        ): Promise<ProductWithAttributesQuery> {
+            return requester<
+                ProductWithAttributesQuery,
+                ProductWithAttributesQueryVariables
+            >(
+                ProductWithAttributesDocument,
+                variables,
+                options,
+            ) as Promise<ProductWithAttributesQuery>;
         },
         warehouses(
             variables?: WarehousesQueryVariables,

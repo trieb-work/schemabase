@@ -183,3 +183,18 @@ query saleorProductVariantBasicData($id: ID!) {
         }
     }
 }
+
+query productWithAttributes($id: ID!) {
+  product(id: $id) {
+    attributes {
+      attribute {
+        id
+        name
+      }
+      values {
+        name
+        id
+      }
+    }
+  }
+}
