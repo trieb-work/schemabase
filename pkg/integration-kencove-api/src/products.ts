@@ -674,13 +674,6 @@ export class KencoveApiAppProductSyncService {
              * move them to Saleor in a standard manner
              */
             productAttributesUnique.push({
-                name: "Accessory Items",
-                value: "",
-                attribute_id: 333331,
-                display_type: "reference",
-                attribute_model: "custom",
-            });
-            productAttributesUnique.push({
                 name: "Alternative Items",
                 value: "",
                 attribute_id: 333330,
@@ -688,7 +681,7 @@ export class KencoveApiAppProductSyncService {
                 attribute_model: "custom",
             });
             productAttributesUnique.push({
-                name: "Frequently Bought Together",
+                name: "Accessory Items",
                 value: "",
                 attribute_id: 333331,
                 display_type: "reference",
@@ -699,6 +692,13 @@ export class KencoveApiAppProductSyncService {
                 value: "",
                 attribute_id: 333332,
                 display_type: "multiselect",
+                attribute_model: "custom",
+            });
+            productAttributesUnique.push({
+                name: "Frequently Bought Together",
+                value: "",
+                attribute_id: 333333,
+                display_type: "reference",
                 attribute_model: "custom",
             });
 
