@@ -32,7 +32,7 @@ export class MediaUpload {
             "tiff",
         ];
         if (!validExtensions.includes(extension.toLowerCase())) {
-            return ".jpg"; // fallback to .jpg if the extracted extension isn't recognized
+            return ".png"; // fallback to .png if the extracted extension isn't recognized
         }
 
         return `.${extension}`;
