@@ -302,7 +302,7 @@ export class SaleorProductSyncService {
                     .map((a) => a.attribute.saleorAttributes[0].id);
 
                 this.logger.info(
-                    `Creating product type ${prodType.name} in Saleor now.`,
+                    `Creating / updating product type ${prodType.name} in Saleor now.`,
                 );
                 if (!existingProdTypeId) {
                     const productTypeCreateResponse =
