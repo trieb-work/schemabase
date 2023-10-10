@@ -11,17 +11,24 @@
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { ILogger } from "@eci/pkg/logger";
 import {
+    $Enums,
     Attribute,
     KencoveApiApp,
     KencoveApiProductType,
     PrismaClient,
+    Product,
 } from "@eci/pkg/prisma";
 import { subHours, subYears } from "date-fns";
 import { KencoveApiClient } from "./client";
 import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import { countryCodeMatch } from "@eci/pkg/miscHelper/countryCodeMatch";
-import { KencoveApiAttributeInProduct, KencoveApiProduct } from "./types";
+import {
+    KencoveApiAAItem,
+    KencoveApiAttributeInProduct,
+    KencoveApiImage,
+    KencoveApiProduct,
+} from "./types";
 import { htmlDecode, kenAttributeToEciAttribute } from "./helper";
 
 interface KencoveApiAppProductSyncServiceConfig {
@@ -38,6 +45,17 @@ interface SeparatedAttributes {
     variantSelectionAttributes: KencoveApiAttributeInProduct[];
     variantSelectionAttributesUnique: KencoveApiAttributeInProduct[];
 }
+
+type EnhancedProduct = {
+    productId: string;
+    productName: string;
+    description: string;
+    images: KencoveApiImage[] | null;
+    accessories: KencoveApiAAItem[] | null;
+    alternatives: KencoveApiAAItem[] | null;
+    countryOfOrigin: string | null;
+    categoryId: string | undefined;
+};
 
 export class KencoveApiAppProductSyncService {
     private readonly logger: ILogger;
@@ -864,6 +882,128 @@ export class KencoveApiAppProductSyncService {
         }
     }
 
+    /**
+     * Creates a product in our DB
+     */
+    private async createProductSchemabase(
+        product: EnhancedProduct,
+        normalizedProductName: string,
+        countryOfOrigin: $Enums.CountryCode | null,
+        productTypeId: string,
+        category: string | undefined,
+    ): Promise<Product> {
+        const productImages = product.images || [];
+
+        return this.db.product.create({
+            data: {
+                id: id.id("product"),
+                name: product.productName,
+                normalizedName: normalizedProductName,
+                descriptionHTML: product.description,
+                media: {
+                    connectOrCreate: productImages.map((image) => ({
+                        where: {
+                            url_tenantId: {
+                                url: image.url,
+                                tenantId: this.kencoveApiApp.tenantId,
+                            },
+                        },
+                        create: {
+                            id: id.id("media"),
+                            url: image.url,
+                            tenant: {
+                                connect: {
+                                    id: this.kencoveApiApp.tenantId,
+                                },
+                            },
+                        },
+                    })),
+                },
+                productType: {
+                    connect: {
+                        id: productTypeId,
+                    },
+                },
+                category: category
+                    ? {
+                          connect: {
+                              id: category,
+                          },
+                      }
+                    : undefined,
+                tenant: {
+                    connect: {
+                        id: this.kencoveApiApp.tenantId,
+                    },
+                },
+                countryOfOrigin,
+            },
+        });
+    }
+
+    /**
+     * Updates a product variant in our DB
+     */
+    private async updateProductSchemabase(
+        product: EnhancedProduct,
+        normalizedProductName: string,
+        countryOfOrigin: $Enums.CountryCode | null,
+        productTypeId: string,
+        category: string | undefined,
+    ): Promise<Product> {
+        const productImages = product.images || [];
+
+        return this.db.product.update({
+            where: {
+                normalizedName_tenantId: {
+                    normalizedName: normalizedProductName,
+                    tenantId: this.kencoveApiApp.tenantId,
+                },
+            },
+            data: {
+                name: product.productName,
+                descriptionHTML: product.description,
+                media: {
+                    connectOrCreate: productImages.map((image) => ({
+                        where: {
+                            url_tenantId: {
+                                url: image.url,
+                                tenantId: this.kencoveApiApp.tenantId,
+                            },
+                        },
+                        create: {
+                            id: id.id("media"),
+                            url: image.url,
+                            tenant: {
+                                connect: {
+                                    id: this.kencoveApiApp.tenantId,
+                                },
+                            },
+                        },
+                    })),
+                },
+                productType: {
+                    connect: {
+                        id: productTypeId,
+                    },
+                },
+                category: category
+                    ? {
+                          connect: {
+                              id: category,
+                          },
+                      }
+                    : undefined,
+                tenant: {
+                    connect: {
+                        id: this.kencoveApiApp.tenantId,
+                    },
+                },
+                countryOfOrigin,
+            },
+        });
+    }
+
     public async syncToECI() {
         const cronState = await this.cronState.get();
         const now = new Date();
@@ -901,29 +1041,6 @@ export class KencoveApiAppProductSyncService {
                 },
             },
         });
-
-        // /// all product variant ids in one variable using products as start point
-        // const productVariantIds = products
-        //   .map((p) => p.variants.map((v) => v.id))
-        //   .flat();
-
-        // const existingProductVariants =
-        //   await this.db.kencoveApiProductVariant.findMany({
-        //     where: {
-        //       kencoveApiAppId: this.kencoveApiApp.id,
-        //       id: {
-        //         in: productVariantIds,
-        //       },
-        //     },
-        //     include: {
-        //       productVariant: {
-        //         include: {
-        //           kencoveApiProductVariant: true,
-        //           product: true,
-        //         },
-        //       },
-        //     },
-        //   });
 
         /**
          * First sync the product types and related attributes.
@@ -1002,7 +1119,7 @@ export class KencoveApiAppProductSyncService {
 
             const countryOfOrigin = product.countryOfOrigin
                 ? countryCodeMatch(product.countryOfOrigin)
-                : undefined;
+                : null;
 
             /**
              * schemabase internal category id if
@@ -1013,6 +1130,72 @@ export class KencoveApiAppProductSyncService {
             )?.categoryId;
 
             /**
+             * The existing product from our DB. When product does not exist, we create it.
+             * When product is internally different from the product from the API, we update it.
+             */
+            let existingProduct = await this.db.product.findUnique({
+                where: {
+                    normalizedName_tenantId: {
+                        normalizedName: normalizedProductName,
+                        tenantId: this.kencoveApiApp.tenantId,
+                    },
+                },
+            });
+
+            if (!existingProduct) {
+                this.logger.info(
+                    `Creating product ${product.productName} with KencoveId ${product.productId}`,
+                );
+                existingProduct = await this.createProductSchemabase(
+                    product,
+                    normalizedProductName,
+                    countryOfOrigin,
+                    kenProdTypeWithProductType.productTypeId,
+                    category,
+                );
+            } else {
+                /**
+                 * Compare the existing product with the product from the API and only update, if something has changed
+                 */
+                if (
+                    existingProduct.normalizedName !== normalizedProductName ||
+                    existingProduct.descriptionHTML !== product.description ||
+                    existingProduct.productTypeId !==
+                        kenProdTypeWithProductType.productTypeId ||
+                    existingProduct.countryOfOrigin !== countryOfOrigin ||
+                    existingProduct.categoryId !== category
+                ) {
+                    this.logger.info(
+                        `Updating product ${product.productName} with KencoveId ${product.productId}, as something has changed.`,
+                    );
+                    this.logger.debug("", {
+                        normalizedProductName,
+                        description: product.description,
+                        productTypeId: kenProdTypeWithProductType.productTypeId,
+                        countryOfOrigin,
+                        category,
+                        existingNormalizedName: existingProduct.normalizedName,
+                        existingDescription: existingProduct.descriptionHTML,
+                        existingProductTypeId: existingProduct.productTypeId,
+                        existingCountryOfOrigin:
+                            existingProduct.countryOfOrigin,
+                        existingCategoryId: existingProduct.categoryId,
+                    });
+                    existingProduct = await this.updateProductSchemabase(
+                        product,
+                        normalizedProductName,
+                        countryOfOrigin,
+                        kenProdTypeWithProductType.productTypeId,
+                        category,
+                    );
+                } else {
+                    this.logger.info(
+                        `Product ${product.productName} with KencoveId ${product.productId} has not changed. Not updating our DB.`,
+                    );
+                }
+            }
+
+            /**
              * The internal product id of the product.
              * As we are upserting variants, we can set
              * this first after the variant sync
@@ -1021,9 +1204,6 @@ export class KencoveApiAppProductSyncService {
             for (const variant of product.variants) {
                 const updatedAt = new Date(variant.updatedAt);
                 const createdAt = new Date(variant.createdAt);
-                // const existingProductVariant = existingProductVariants.find(
-                //   (p) => p.id === variant.id,
-                // );
 
                 this.logger.info(
                     `Syncing product variant ${variant.id} of product ${product.productName}`,
@@ -1053,8 +1233,6 @@ export class KencoveApiAppProductSyncService {
                         variantName = variantSelectionAttribute.value;
                     }
                 }
-
-                const productImages = product.images || [];
 
                 /**
                  * Upsert the product variant. Return the upserted variant from our DB
@@ -1097,75 +1275,8 @@ export class KencoveApiAppProductSyncService {
                                             },
                                         },
                                         product: {
-                                            connectOrCreate: {
-                                                where: {
-                                                    normalizedName_tenantId: {
-                                                        normalizedName:
-                                                            normalizedProductName,
-                                                        tenantId:
-                                                            this.kencoveApiApp
-                                                                .tenantId,
-                                                    },
-                                                },
-                                                create: {
-                                                    id: id.id("product"),
-                                                    name: product.productName,
-                                                    normalizedName:
-                                                        normalizedProductName,
-                                                    descriptionHTML:
-                                                        product.description,
-                                                    media: {
-                                                        connectOrCreate:
-                                                            productImages.map(
-                                                                (image) => ({
-                                                                    where: {
-                                                                        url_tenantId:
-                                                                            {
-                                                                                url: image.url,
-                                                                                tenantId:
-                                                                                    this
-                                                                                        .kencoveApiApp
-                                                                                        .tenantId,
-                                                                            },
-                                                                    },
-                                                                    create: {
-                                                                        id: id.id(
-                                                                            "media",
-                                                                        ),
-                                                                        url: image.url,
-                                                                        tenant: {
-                                                                            connect:
-                                                                                {
-                                                                                    id: this
-                                                                                        .kencoveApiApp
-                                                                                        .tenantId,
-                                                                                },
-                                                                        },
-                                                                    },
-                                                                }),
-                                                            ),
-                                                    },
-                                                    productType: {
-                                                        connect: {
-                                                            id: kenProdTypeWithProductType.productTypeId,
-                                                        },
-                                                    },
-                                                    category: category
-                                                        ? {
-                                                              connect: {
-                                                                  id: category,
-                                                              },
-                                                          }
-                                                        : undefined,
-                                                    tenant: {
-                                                        connect: {
-                                                            id: this
-                                                                .kencoveApiApp
-                                                                .tenantId,
-                                                        },
-                                                    },
-                                                    countryOfOrigin,
-                                                },
+                                            connect: {
+                                                id: existingProduct.id,
                                             },
                                         },
                                     },
@@ -1193,68 +1304,8 @@ export class KencoveApiAppProductSyncService {
                                             },
                                         },
                                         product: {
-                                            connectOrCreate: {
-                                                where: {
-                                                    normalizedName_tenantId: {
-                                                        normalizedName:
-                                                            normalizedProductName,
-                                                        tenantId:
-                                                            this.kencoveApiApp
-                                                                .tenantId,
-                                                    },
-                                                },
-                                                create: {
-                                                    id: id.id("product"),
-                                                    name: variant.productName,
-                                                    normalizedName:
-                                                        normalizedProductName,
-                                                    countryOfOrigin,
-                                                    media: {
-                                                        connectOrCreate:
-                                                            productImages.map(
-                                                                (image) => ({
-                                                                    where: {
-                                                                        url_tenantId:
-                                                                            {
-                                                                                url: image.url,
-                                                                                tenantId:
-                                                                                    this
-                                                                                        .kencoveApiApp
-                                                                                        .tenantId,
-                                                                            },
-                                                                    },
-                                                                    create: {
-                                                                        id: id.id(
-                                                                            "media",
-                                                                        ),
-                                                                        url: image.url,
-                                                                        tenant: {
-                                                                            connect:
-                                                                                {
-                                                                                    id: this
-                                                                                        .kencoveApiApp
-                                                                                        .tenantId,
-                                                                                },
-                                                                        },
-                                                                    },
-                                                                }),
-                                                            ),
-                                                    },
-                                                    category: category
-                                                        ? {
-                                                              connect: {
-                                                                  id: category,
-                                                              },
-                                                          }
-                                                        : undefined,
-                                                    tenant: {
-                                                        connect: {
-                                                            id: this
-                                                                .kencoveApiApp
-                                                                .tenantId,
-                                                        },
-                                                    },
-                                                },
+                                            connect: {
+                                                id: existingProduct.id,
                                             },
                                         },
                                     },
@@ -1263,46 +1314,8 @@ export class KencoveApiAppProductSyncService {
                                     weight: variant.weight,
                                     variantName,
                                     product: {
-                                        update: {
-                                            descriptionHTML:
-                                                product.description,
-                                            media: {
-                                                connectOrCreate:
-                                                    productImages.map(
-                                                        (image) => ({
-                                                            where: {
-                                                                url_tenantId: {
-                                                                    url: image.url,
-                                                                    tenantId:
-                                                                        this
-                                                                            .kencoveApiApp
-                                                                            .tenantId,
-                                                                },
-                                                            },
-                                                            create: {
-                                                                id: id.id(
-                                                                    "media",
-                                                                ),
-                                                                url: image.url,
-                                                                tenant: {
-                                                                    connect: {
-                                                                        id: this
-                                                                            .kencoveApiApp
-                                                                            .tenantId,
-                                                                    },
-                                                                },
-                                                            },
-                                                        }),
-                                                    ),
-                                            },
-                                            category: category
-                                                ? { connect: { id: category } }
-                                                : undefined,
-                                            productType: {
-                                                connect: {
-                                                    id: kenProdTypeWithProductType.productTypeId,
-                                                },
-                                            },
+                                        connect: {
+                                            id: existingProduct.id,
                                         },
                                     },
                                 },
