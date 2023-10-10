@@ -32,6 +32,7 @@ export class ChannelAvailability {
     }
 
     public async syncChannelAvailability(gteDate: Date) {
+        this.logger.debug(`Looking for channel updates since ${gteDate}`);
         const channelPricings = await this.db.salesChannelPriceEntry.findMany({
             where: {
                 tenantId: this.tenantId,
