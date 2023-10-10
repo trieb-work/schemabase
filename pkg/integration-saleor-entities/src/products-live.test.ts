@@ -36,16 +36,8 @@ describe("Zoho Entity Sync Orders Test", () => {
             db: prismaClient,
             tenantId: tenant.id,
         });
-        // await service.uploadMedia("UHJvZHVjdDoxODAyMQ==", [
-        //   {
-        //     id: "efgefgh",
-        //     url: "https://img.kencove.us/products/pgd1032h_tpost2_450_450-87902.jpg",
-        //     createdAt: new Date(),
-        //     updatedAt: new Date(),
-        //     tenantId: "test",
-        //   },
-        // ]);
-        // await service.syncToECI();
+
+        await service.syncToECI();
         await service.syncFromECI();
     }, 1000000);
 });

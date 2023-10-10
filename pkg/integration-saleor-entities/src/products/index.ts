@@ -917,7 +917,7 @@ export class SaleorProductSyncService {
                     }
                 } else {
                     this.logger.info(
-                        `Updating product ${product.name} in Saleor`,
+                        `Updating product ${product.name} - ${product.id} in Saleor`,
                         {
                             attributes,
                         },
