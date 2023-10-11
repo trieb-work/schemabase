@@ -92,22 +92,28 @@ review:
         # run on every new release tag
         - if: "$CI_COMMIT_TAG =~ /^v[0-9].*/"
 
+.vercel_template: &vercel_template
+  image: node:18
+  before_script:
+    - corepack enable
+    - corepack prepare pnpm@latest-8 --activate
+    - pnpm config set store-dir .pnpm-store
+    # Using the vercel cli for all build and deploy commands. This needs the environmen variables VERCEL_PROJECT_ID and VERCEL_ORG_ID being set in the gitlab project settings.
+    - npm install --global vercel
+  cache:
+    key:
+      files:
+        - pnpm-lock.yaml
+    paths:
+      - .pnpm-store    
+
+
 review-vercel:
-    image: node:18
+    <<: *vercel_template
     stage: review
     needs: ["review"]
     environment:
         name: staging
-    before_script:
-        - corepack enable
-        - corepack prepare pnpm@latest-8 --activate
-        - pnpm config set store-dir .pnpm-store
-    cache:
-        key:
-            files:
-                - pnpm-lock.yaml
-        paths:
-            - .pnpm-store
     script:
         # Export the DATABASE_URL variable from the review job
         - export $(grep -v '^#' $CI_PROJECT_DIR/variables.env | xargs)
@@ -118,8 +124,6 @@ review-vercel:
 
         # Setting the DATABASE_URL to the prisma connection string for vercel
         - export DATABASE_URL=$PRISMA_CONNECTION_STRING
-        # Deploy the API service to vercel
-        - npm install --global vercel
         - vercel --scope kencove pull --yes --environment=preview --token=$VERCEL_TOKEN
         - vercel build --token=$VERCEL_TOKEN
         - export URL="$(vercel deploy --prebuilt --token=$VERCEL_TOKEN --meta gitlabCommitRef=$CI_COMMIT_REF_SLUG --meta gitlabCommitSha=$CI_COMMIT_SHA --meta gitlabDeployment=1 --meta gitlabCommitAuthorName="$GITLAB_USER_NAME" --meta gitlabProjectPath=$CI_PROJECT_PATH)"
@@ -134,7 +138,38 @@ review-vercel:
         # run on every new release tag
         - if: "$CI_COMMIT_TAG =~ /^v[0-9].*/"
 
-## Review job is deploying automatically on every push to "prod" branch
+production-vercel:
+    <<: *vercel_template
+    stage: production
+    needs: ["production"]
+    environment:
+        name: production
+    script:
+        # Export the DATABASE_URL variable from the review job
+        - export $(grep -v '^#' $CI_PROJECT_DIR/variables.env | xargs)
+        - pnpm install
+
+        # Run the prisma db push using the DATABASE_URL_EXTERNAL
+        - DATABASE_URL=$DATABASE_URL_EXTERNAL pnpm prisma db push
+
+        # Setting the DATABASE_URL to the prisma connection string for vercel
+        - export DATABASE_URL=$PRISMA_CONNECTION_STRING
+        - vercel --scope kencove pull --yes --environment=production --token=$VERCEL_TOKEN
+        - vercel build --token=$VERCEL_TOKEN
+        - export URL="$(vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN --meta gitlabCommitRef=$CI_COMMIT_REF_SLUG --meta gitlabCommitSha=$CI_COMMIT_SHA --meta gitlabDeployment=1 --meta gitlabCommitAuthorName="$GITLAB_USER_NAME" --meta gitlabProjectPath=$CI_PROJECT_PATH)"
+        - vercel alias --token=$VERCEL_TOKEN set "$URL" schemabase-vc.kencove.com --scope kencove
+    rules:
+        - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
+          when: never
+        - if: "$REVIEW_DISABLED"
+          when: never
+        - if: "($CI_COMMIT_REF_PROTECTED == 'true')"
+          when: never
+        - if: "$CI_COMMIT_TAG"
+          when: always
+
+
+## Review job is deploying manually on tag
 production:
     extends: .auto-deploy
     stage: production
@@ -166,7 +201,8 @@ production:
     rules:
         - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
           when: never
-        - if: '$CI_COMMIT_REF_NAME == "prod"'
+        - if: "$CI_COMMIT_TAG"
+          when: manual
 
 stop_review:
     extends: .auto-deploy
