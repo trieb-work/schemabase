@@ -612,122 +612,136 @@ export class SaleorProductSyncService {
      * Update products, that got changed since the last run
      */
     private async createOrUpdateProductinSaleor(gteDate: Date) {
-        const productsToCreateOrUpdate = await this.db.product.findMany({
-            where: {
-                OR: [
-                    {
-                        AND: [
-                            {
-                                saleorProducts: {
-                                    none: {
-                                        installedSaleorAppId:
-                                            this.installedSaleorAppId,
-                                    },
-                                },
-                            },
-                            {
-                                productType: {
-                                    saleorProductTypes: {
-                                        some: {
+        const unsortedProductsToCreateOrUpdate = await this.db.product.findMany(
+            {
+                where: {
+                    OR: [
+                        {
+                            AND: [
+                                {
+                                    saleorProducts: {
+                                        none: {
                                             installedSaleorAppId:
                                                 this.installedSaleorAppId,
                                         },
                                     },
                                 },
-                            },
-                            {
-                                category: {
-                                    saleorCategories: {
-                                        some: {
-                                            installedSaleorAppId:
-                                                this.installedSaleorAppId,
-                                        },
-                                    },
-                                },
-                            },
-                        ],
-                    },
-                    {
-                        updatedAt: {
-                            gte: gteDate,
-                        },
-                    },
-                ],
-            },
-            include: {
-                saleorProducts: {
-                    where: {
-                        installedSaleorAppId: this.installedSaleorAppId,
-                    },
-                },
-                attributes: {
-                    include: {
-                        attribute: {
-                            include: {
-                                saleorAttributes: {
-                                    where: {
-                                        installedSaleorAppId:
-                                            this.installedSaleorAppId,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-                productType: {
-                    include: {
-                        attributes: true,
-                        saleorProductTypes: {
-                            where: {
-                                installedSaleorAppId: this.installedSaleorAppId,
-                            },
-                        },
-                    },
-                },
-                category: {
-                    include: {
-                        saleorCategories: {
-                            where: {
-                                installedSaleorAppId: this.installedSaleorAppId,
-                            },
-                        },
-                    },
-                },
-                variants: {
-                    include: {
-                        attributes: {
-                            include: {
-                                attribute: {
-                                    include: {
-                                        saleorAttributes: {
-                                            where: {
+                                {
+                                    productType: {
+                                        saleorProductTypes: {
+                                            some: {
                                                 installedSaleorAppId:
                                                     this.installedSaleorAppId,
                                             },
                                         },
                                     },
                                 },
+                                {
+                                    category: {
+                                        saleorCategories: {
+                                            some: {
+                                                installedSaleorAppId:
+                                                    this.installedSaleorAppId,
+                                            },
+                                        },
+                                    },
+                                },
+                            ],
+                        },
+                        {
+                            updatedAt: {
+                                gte: gteDate,
                             },
                         },
-                        saleorProductVariant: {
-                            where: {
-                                installedSaleorAppId: this.installedSaleorAppId,
+                    ],
+                },
+                include: {
+                    saleorProducts: {
+                        where: {
+                            installedSaleorAppId: this.installedSaleorAppId,
+                        },
+                    },
+                    attributes: {
+                        include: {
+                            attribute: {
+                                include: {
+                                    saleorAttributes: {
+                                        where: {
+                                            installedSaleorAppId:
+                                                this.installedSaleorAppId,
+                                        },
+                                    },
+                                },
                             },
                         },
                     },
+                    productType: {
+                        include: {
+                            attributes: true,
+                            saleorProductTypes: {
+                                where: {
+                                    installedSaleorAppId:
+                                        this.installedSaleorAppId,
+                                },
+                            },
+                        },
+                    },
+                    category: {
+                        include: {
+                            saleorCategories: {
+                                where: {
+                                    installedSaleorAppId:
+                                        this.installedSaleorAppId,
+                                },
+                            },
+                        },
+                    },
+                    variants: {
+                        include: {
+                            attributes: {
+                                include: {
+                                    attribute: {
+                                        include: {
+                                            saleorAttributes: {
+                                                where: {
+                                                    installedSaleorAppId:
+                                                        this
+                                                            .installedSaleorAppId,
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                            saleorProductVariant: {
+                                where: {
+                                    installedSaleorAppId:
+                                        this.installedSaleorAppId,
+                                },
+                            },
+                        },
+                    },
+                    media: true,
                 },
-                media: true,
             },
-        });
-        if (productsToCreateOrUpdate.length > 0) {
+        );
+
+        const productsToCreate = unsortedProductsToCreateOrUpdate.filter(
+            (product) => !product.saleorProducts?.[0]?.id,
+        );
+        const productsToUpdate = unsortedProductsToCreateOrUpdate.filter(
+            (product) => product.saleorProducts?.[0]?.id,
+        );
+
+        const sortedProducts = [...productsToCreate, ...productsToUpdate];
+
+        if (sortedProducts.length > 0) {
             this.logger.info(
-                `Found ${
-                    productsToCreateOrUpdate.length
-                } products to create in Saleor: ${productsToCreateOrUpdate.map(
-                    (p) => p.name,
-                )}`,
+                `Found ${productsToCreate.length} products to create, ${
+                    productsToUpdate.length
+                }  to update in Saleor: ${sortedProducts.map((p) => p.name)}`,
             );
-            for (const product of productsToCreateOrUpdate) {
+            for (const product of sortedProducts) {
                 const productType = product.productType;
                 if (!productType) {
                     this.logger.warn(
@@ -757,6 +771,9 @@ export class SaleorProductSyncService {
                 if (!saleorCategoryId) {
                     this.logger.warn(
                         `Product ${product.name} has no category. Skipping`,
+                        {
+                            category: product.category,
+                        },
                     );
                     continue;
                 }
@@ -1452,6 +1469,15 @@ export class SaleorProductSyncService {
          */
         await this.createOrUpdateProductinSaleor(createdGte);
 
+        const frequentlyboughttogether = new FrequentlyBoughtTogether({
+            db: this.db,
+            logger: this.logger,
+            saleorClient: this.saleorClient,
+            tenantId: this.tenantId,
+            installedSaleorAppId: this.installedSaleorAppId,
+        });
+        await frequentlyboughttogether.sync(createdGte);
+
         /**
          * get all saleor productVariants where related stockEntries have been updated since last run or where related
          * productVariants have been updated since last run
@@ -1565,6 +1591,14 @@ export class SaleorProductSyncService {
                  */
                 const totalQuantity =
                     stockEntry.actualAvailableForSaleStock + currentlyAllocated;
+
+                // only update the stock entry in saleor, if the stock has changed
+                if (saleorStockEntry?.quantity === totalQuantity) {
+                    this.logger.debug(
+                        `Stock for ${variant.productVariant.sku} - id ${variant.id} has not changed. Skipping`,
+                    );
+                    continue;
+                }
                 await this.saleorClient.productVariantStockEntryUpdate({
                     variantId: variant.id,
                     stocks: [
@@ -1676,15 +1710,6 @@ export class SaleorProductSyncService {
             this.tenantId,
         );
         await channelAvailability.syncChannelAvailability(createdGte);
-
-        const frequentlyboughttogether = new FrequentlyBoughtTogether({
-            db: this.db,
-            logger: this.logger,
-            saleorClient: this.saleorClient,
-            tenantId: this.tenantId,
-            installedSaleorAppId: this.installedSaleorAppId,
-        });
-        await frequentlyboughttogether.sync(createdGte);
 
         await this.cronState.set({
             lastRun: new Date(),

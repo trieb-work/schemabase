@@ -127,18 +127,21 @@ export class FrequentlyBoughtTogether {
                 continue;
             }
 
+            const frequentlyBoughtTogetherArray = pd.frequentlyBoughtWith;
+
             /**
              * Array of just the saleor ids of all frequentlyBoughtWith products
              */
-            const referingProducts = pd.frequentlyBoughtWith
+            const referingProducts = frequentlyBoughtTogetherArray
                 .map((fbt) => {
-                    const saleorProductInner = fbt.product.saleorProducts.find(
-                        (sp) =>
-                            sp.installedSaleorAppId ===
-                            this.installedSaleorAppId,
-                    );
+                    const saleorProductInner =
+                        fbt.relatedProduct.saleorProducts.find(
+                            (sp) =>
+                                sp.installedSaleorAppId ===
+                                this.installedSaleorAppId,
+                        );
                     if (!saleorProductInner) {
-                        this.logger.error(
+                        this.logger.warn(
                             `Product ${pd.id} has no saleor product with installedSaleorAppId ${this.installedSaleorAppId}`,
                         );
                         return;
@@ -147,6 +150,12 @@ export class FrequentlyBoughtTogether {
                 })
                 .filter((id): id is string => id !== undefined) as string[];
 
+            this.logger.info(
+                `Updating FBT for product ${pd.id} with saleor id ${saleorProduct.id} with ${referingProducts.length} products`,
+                {
+                    referingProducts,
+                },
+            );
             await this.saleorClient.productUpdate({
                 id: saleorProduct.id,
                 input: {
