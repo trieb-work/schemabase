@@ -27344,6 +27344,50 @@ export type SaleorEntitySyncProductsQuery = {
     } | null;
 };
 
+export type SaleorProductVariantsBasicDataQueryVariables = Exact<{
+    ids: Array<Scalars["ID"]> | Scalars["ID"];
+    first?: InputMaybe<Scalars["Int"]>;
+    after?: InputMaybe<Scalars["String"]>;
+}>;
+
+export type SaleorProductVariantsBasicDataQuery = {
+    __typename?: "Query";
+    productVariants?: {
+        __typename?: "ProductVariantCountableConnection";
+        pageInfo: {
+            __typename?: "PageInfo";
+            hasNextPage: boolean;
+            hasPreviousPage: boolean;
+            startCursor?: string | null;
+            endCursor?: string | null;
+        };
+        edges: Array<{
+            __typename?: "ProductVariantCountableEdge";
+            node: {
+                __typename?: "ProductVariant";
+                id: string;
+                name: string;
+                product: { __typename?: "Product"; id: string; name: string };
+                metadata: Array<{
+                    __typename?: "MetadataItem";
+                    key: string;
+                    value: string;
+                }>;
+                stocks?: Array<{
+                    __typename?: "Stock";
+                    quantity: number;
+                    quantityAllocated: number;
+                    warehouse: {
+                        __typename?: "Warehouse";
+                        id: string;
+                        name: string;
+                    };
+                }> | null;
+            };
+        }>;
+    } | null;
+};
+
 export type SaleorProductVariantBasicDataQueryVariables = Exact<{
     id: Scalars["ID"];
 }>;
@@ -28374,6 +28418,44 @@ export const SaleorEntitySyncProductsDocument = gql`
     ${ProductTypeFragmentDoc}
     ${VariantFragmentDoc}
 `;
+export const SaleorProductVariantsBasicDataDocument = gql`
+    query saleorProductVariantsBasicData(
+        $ids: [ID!]!
+        $first: Int
+        $after: String
+    ) {
+        productVariants(ids: $ids, first: $first, after: $after) {
+            pageInfo {
+                hasNextPage
+                hasPreviousPage
+                startCursor
+                endCursor
+            }
+            edges {
+                node {
+                    id
+                    name
+                    product {
+                        id
+                        name
+                    }
+                    metadata {
+                        key
+                        value
+                    }
+                    stocks {
+                        warehouse {
+                            id
+                            name
+                        }
+                        quantity
+                        quantityAllocated
+                    }
+                }
+            }
+        }
+    }
+`;
 export const SaleorProductVariantBasicDataDocument = gql`
     query saleorProductVariantBasicData($id: ID!) {
         productVariant(id: $id) {
@@ -28889,6 +28971,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<SaleorEntitySyncProductsQuery>;
+        },
+        saleorProductVariantsBasicData(
+            variables: SaleorProductVariantsBasicDataQueryVariables,
+            options?: C,
+        ): Promise<SaleorProductVariantsBasicDataQuery> {
+            return requester<
+                SaleorProductVariantsBasicDataQuery,
+                SaleorProductVariantsBasicDataQueryVariables
+            >(
+                SaleorProductVariantsBasicDataDocument,
+                variables,
+                options,
+            ) as Promise<SaleorProductVariantsBasicDataQuery>;
         },
         saleorProductVariantBasicData(
             variables: SaleorProductVariantBasicDataQueryVariables,

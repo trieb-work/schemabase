@@ -7,7 +7,6 @@ import {
     ProductVariantBulkUpdateInput,
     queryWithPagination,
     SaleorClient,
-    SaleorProductVariantBasicDataQuery,
     VariantFragment,
 } from "@eci/pkg/saleor";
 import {
@@ -526,42 +525,64 @@ export class SaleorProductSyncService {
      * metadata. Deletes a product variant in our db, if it does not exist in saleor
      * any more
      */
-    private async getSaleorProductVariant(variantId: string) {
-        //    // Get the current commited stock and the metadata of this product variant from saleor.
+    private async getSaleorProductVariants(variantIds: string[]) {
+        // Get the current commited stock and the metadata of this product variant from saleor.
         //     // We need fresh data here, as the commited stock can change all the time.
-        const saleorProductVariant =
-            await this.saleorClient.saleorProductVariantBasicData({
-                id: variantId,
-            });
-        if (!saleorProductVariant || !saleorProductVariant.productVariant?.id) {
+        const response = await queryWithPagination(({ first, after }) =>
+            this.saleorClient.saleorProductVariantsBasicData({
+                first,
+                after,
+                ids: variantIds,
+            }),
+        );
+        const variants = response.productVariants;
+        if (!variants) {
             this.logger.warn(
-                `No product variant returned from saleor for id ${variantId}! Cant update stocks.\
-          Deleting variant in internal DB`,
+                `No product variants returned from saleor for ids ${variantIds}! Cant update stocks.\
+          Deleting variants in internal DB`,
             );
-            if (variantId)
-                await this.db.saleorProductVariant.delete({
+            if (variantIds.length > 0)
+                await this.db.saleorProductVariant.deleteMany({
                     where: {
-                        id_installedSaleorAppId: {
-                            id: variantId,
-                            installedSaleorAppId: this.installedSaleorAppId,
+                        id: {
+                            in: variantIds,
                         },
+                        installedSaleorAppId: this.installedSaleorAppId,
                     },
                 });
             return null;
         }
-        type ReturnType = SaleorProductVariantBasicDataQuery & {
-            productVariant: NonNullable<
-                SaleorProductVariantBasicDataQuery["productVariant"] & {
-                    stocks: NonNullable<
-                        NonNullable<
-                            SaleorProductVariantBasicDataQuery["productVariant"]
-                        >["stocks"]
-                    >;
-                }
-            >;
-        };
+        /**
+         * check for the IDs of the variants, that we have in our DB, but not in saleor and delete them in our DB
+         */
+        const variantIdsInSaleor = variants.edges.map((v) => v.node.id);
+        const variantIdsToDelete = variantIds.filter(
+            (v) => !variantIdsInSaleor.includes(v),
+        );
+        if (variantIdsToDelete.length > 0) {
+            this.logger.info(
+                `Deleting ${variantIdsToDelete.length} variants in internal DB, that do not exist in saleor any more`,
+            );
+            await this.db.saleorProductVariant.deleteMany({
+                where: {
+                    id: {
+                        in: variantIdsToDelete,
+                    },
+                    installedSaleorAppId: this.installedSaleorAppId,
+                },
+            });
+        }
 
-        return saleorProductVariant as ReturnType;
+        /**
+         * Rewriting the resulting data, returning edges.map((e) => node)
+         * and making in every node the stock non nullable in the retruning type
+         */
+        const variantsWithStock = variants.edges.map((e) => ({
+            ...e.node,
+            stocks: e.node.stocks ?? [],
+        }));
+
+        return variantsWithStock;
     }
 
     /**
@@ -1550,9 +1571,13 @@ export class SaleorProductSyncService {
             saleorProductId: string;
         }>();
 
+        const saleorProductVariantsFromSaleor =
+            (await this.getSaleorProductVariants(
+                saleorProductVariants.map((x) => x.id),
+            )) || [];
         for (const variant of saleorProductVariants) {
-            const saleorProductVariant = await this.getSaleorProductVariant(
-                variant.id,
+            const saleorProductVariant = saleorProductVariantsFromSaleor.find(
+                (x) => x.id === variant.id,
             );
 
             if (!saleorProductVariant) {
@@ -1579,10 +1604,9 @@ export class SaleorProductSyncService {
                 /**
                  * The stock information of the current product variant in the current warehouse
                  */
-                const saleorStockEntry =
-                    saleorProductVariant.productVariant.stocks.find(
-                        (x) => x?.warehouse.id === saleorWarehouseId,
-                    );
+                const saleorStockEntry = saleorProductVariant.stocks.find(
+                    (x) => x?.warehouse.id === saleorWarehouseId,
+                );
                 const currentlyAllocated =
                     saleorStockEntry?.quantityAllocated || 0;
 
@@ -1623,25 +1647,17 @@ export class SaleorProductSyncService {
                 ratingCount: 0,
             };
 
-            const averageRating =
-                saleorProductVariant.productVariant.metadata.find(
-                    (x) => x.key === "customerRatings_averageRating",
-                )?.value;
+            const averageRating = saleorProductVariant.metadata.find(
+                (x) => x.key === "customerRatings_averageRating",
+            )?.value;
             productRatingFromSaleor.averageRating = parseFloat(
                 averageRating || "0",
             );
 
-            const ratingCount =
-                saleorProductVariant.productVariant.metadata.find(
-                    (x) => x.key === "customerRatings_ratingCount",
-                )?.value;
+            const ratingCount = saleorProductVariant.metadata.find(
+                (x) => x.key === "customerRatings_ratingCount",
+            )?.value;
             productRatingFromSaleor.ratingCount = parseInt(ratingCount || "0");
-
-            this.logger.debug(
-                `Parsed product rating: ${JSON.stringify(
-                    productRatingFromSaleor,
-                )} for ${variant.productVariant.sku}`,
-            );
 
             if (
                 productRatingFromSaleor?.averageRating !==
@@ -1690,7 +1706,7 @@ export class SaleorProductSyncService {
                     },
                 ];
                 await this.saleorClient.saleorUpdateMetadata({
-                    id: saleorProductVariant.productVariant.id,
+                    id: saleorProductVariant.id,
                     input: metadataNew,
                 });
             }
