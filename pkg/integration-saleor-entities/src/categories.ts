@@ -14,7 +14,9 @@ import { normalizeStrings } from "@eci/pkg/normalization";
 import {
     Category,
     InstalledSaleorApp,
+    Media,
     PrismaClient,
+    SaleorApp,
     SaleorCategory,
 } from "@eci/pkg/prisma";
 import {
@@ -28,6 +30,7 @@ import {
 } from "@eci/pkg/saleor";
 import { subHours, subYears } from "date-fns";
 import { editorJsHelper } from "./editorjs";
+import { MediaUpload } from "./mediaUpload";
 
 interface SaleorCategorySyncServiceConfig {
     saleorClient: {
@@ -42,14 +45,18 @@ interface SaleorCategorySyncServiceConfig {
             variables: CategoryUpdateMutationVariables,
         ) => Promise<CategoryUpdateMutation>;
     };
-    installedSaleorApp: InstalledSaleorApp;
+    installedSaleorApp: InstalledSaleorApp & {
+        saleorApp: SaleorApp;
+    };
     tenantId: string;
     db: PrismaClient;
     logger: ILogger;
 }
 
 interface SaleorCategoryWithCategory extends SaleorCategory {
-    category: Category;
+    category: Category & {
+        media: Media[];
+    };
 }
 
 export class SaleorCategorySyncService {
@@ -66,7 +73,9 @@ export class SaleorCategorySyncService {
         ) => Promise<CategoryUpdateMutation>;
     };
 
-    private installedSaleorApp: InstalledSaleorApp;
+    private installedSaleorApp: InstalledSaleorApp & {
+        saleorApp: SaleorApp;
+    };
 
     private tenantId: string;
 
@@ -88,6 +97,22 @@ export class SaleorCategorySyncService {
             db: this.db,
             syncEntity: "categories",
         });
+    }
+
+    private async uploadCategoryBackgroundImage(
+        url: string,
+        saleorCategoryId: string,
+    ) {
+        const mediaUpload = new MediaUpload(this.installedSaleorApp);
+
+        const imageBlob = await mediaUpload.fetchImageBlob(url);
+        const fileExtension = mediaUpload.getFileExtension(url);
+        await mediaUpload.uploadCategoryImageToSaleor(
+            saleorCategoryId,
+            imageBlob,
+            fileExtension,
+            this.logger,
+        );
     }
 
     public async syncToEci() {
@@ -123,7 +148,15 @@ export class SaleorCategorySyncService {
                 installedSaleorAppId: this.installedSaleorApp.id,
             },
             include: {
-                category: true,
+                category: {
+                    include: {
+                        media: {
+                            where: {
+                                type: "BANNER",
+                            },
+                        },
+                    },
+                },
             },
         });
 
@@ -224,6 +257,22 @@ export class SaleorCategorySyncService {
                       },
                   })
                 : undefined;
+
+            /**
+             * Upload category banner image when missing in Saleor
+             */
+            if (
+                category.category.media?.[0]?.url &&
+                !saleorCategory.backgroundImage?.url
+            ) {
+                this.logger.debug(
+                    `Found banner image for category: ${category.category.name}`,
+                );
+                await this.uploadCategoryBackgroundImage(
+                    category.category.media[0].url,
+                    saleorCategory.id,
+                );
+            }
 
             // compare all fields with each other and update only if something has changed
             if (
@@ -480,6 +529,30 @@ export class SaleorCategorySyncService {
             },
         });
         this.logger.info(`Created category in saleor: ${category.name}`);
+
+        /**
+         * Check, if we have a banner image for the category and upload it to saleor
+         */
+        const relatedMedia = await this.db.media.findFirst({
+            where: {
+                categories: {
+                    some: {
+                        id: category.id,
+                    },
+                },
+                tenantId: this.tenantId,
+                type: "BANNER",
+            },
+        });
+        if (relatedMedia) {
+            this.logger.debug(
+                `Found banner image for category: ${category.name}`,
+            );
+            await this.uploadCategoryBackgroundImage(
+                relatedMedia.url,
+                response.categoryCreate.category.id,
+            );
+        }
     }
 
     /**

@@ -121,4 +121,79 @@ export class MediaUpload {
         }
         return res.data.productMediaCreate.media.id;
     }
+
+    /**
+     * We upload the backgroundImage for a category to saleor in a different way, than product images.
+     * We use the generic "categoryUpdate". Furthermore, we can't set metadata on that image. So we
+     * can't set any information on the category image.
+     */
+    public async uploadCategoryImageToSaleor(
+        saleorCategoryId: string,
+        imageBlob: Blob,
+        fileExtension: string,
+        logger: ILogger,
+    ): Promise<string> {
+        const form = new FormData();
+        form.append(
+            "operations",
+            JSON.stringify({
+                query: `
+            mutation categoryUpdate($id: ID!, $backgroundImage: Upload, $alt: String) {
+                categoryUpdate(id: $id, input: {backgroundImage: $backgroundImage, backgroundImageAlt: $alt}) {
+                    errors {
+                        field
+                        code
+                        message
+                    }
+                    category {
+                        id
+                    }
+                }
+            }
+        `,
+                variables: {
+                    id: saleorCategoryId,
+                    backgroundImage: null,
+                },
+            }),
+        );
+
+        form.append(
+            "map",
+            JSON.stringify({ backgroundImage: ["variables.backgroundImage"] }),
+        );
+
+        // Use the file extension when appending the image to the form
+        form.append(
+            "backgroundImage",
+            imageBlob,
+            `backgroundImage${fileExtension}`,
+        );
+
+        logger.debug(
+            `Uploading image to Saleor with name: backgroundImage${fileExtension}`,
+        );
+
+        const response = await fetch(this.installedSaleorApp.saleorApp.apiUrl, {
+            method: "POST",
+            body: form,
+            headers: {
+                Authorization: `Bearer ${this.installedSaleorApp.token}`,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to upload image to Saleor");
+        }
+        const res = await response.json();
+
+        if (res.data.categoryUpdate?.errors?.length > 0) {
+            throw new Error(
+                `Failed to upload image to Saleor: ${JSON.stringify(
+                    res.data.categoryUpdate.errors,
+                )}`,
+            );
+        }
+        return res.data.categoryUpdate.category.id;
+    }
 }
