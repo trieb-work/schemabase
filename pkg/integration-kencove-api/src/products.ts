@@ -16,7 +16,6 @@ import {
     KencoveApiApp,
     KencoveApiProductType,
     PrismaClient,
-    Product,
 } from "@eci/pkg/prisma";
 import { subHours, subYears } from "date-fns";
 import { KencoveApiClient } from "./client";
@@ -891,7 +890,7 @@ export class KencoveApiAppProductSyncService {
         countryOfOrigin: $Enums.CountryCode | null,
         productTypeId: string,
         category: string | undefined,
-    ): Promise<Product> {
+    ) {
         const productImages = product.images || [];
 
         return this.db.product.create({
@@ -938,11 +937,14 @@ export class KencoveApiAppProductSyncService {
                 },
                 countryOfOrigin,
             },
+            include: {
+                variants: true,
+            },
         });
     }
 
     /**
-     * Updates a product variant in our DB
+     * Updates a product variant in our DB. Returns the product + related variants
      */
     private async updateProductSchemabase(
         product: EnhancedProduct,
@@ -950,7 +952,7 @@ export class KencoveApiAppProductSyncService {
         countryOfOrigin: $Enums.CountryCode | null,
         productTypeId: string,
         category: string | undefined,
-    ): Promise<Product> {
+    ) {
         const productImages = product.images || [];
 
         return this.db.product.update({
@@ -1001,6 +1003,9 @@ export class KencoveApiAppProductSyncService {
                 },
                 countryOfOrigin,
             },
+            include: {
+                variants: true,
+            },
         });
     }
 
@@ -1046,7 +1051,7 @@ export class KencoveApiAppProductSyncService {
          * First sync the product types and related attributes.
          * Not the attribute values.
          */
-        await this.syncProductTypeAndAttributes(products);
+        // await this.syncProductTypeAndAttributes(products);
 
         /**
          * just kencove Api product variants enhanced with all data from their parent product
@@ -1140,6 +1145,9 @@ export class KencoveApiAppProductSyncService {
                         tenantId: this.kencoveApiApp.tenantId,
                     },
                 },
+                include: {
+                    variants: true,
+                },
             });
 
             if (!existingProduct) {
@@ -1196,17 +1204,20 @@ export class KencoveApiAppProductSyncService {
             }
 
             /**
-             * The internal product id of the product.
-             * As we are upserting variants, we can set
-             * this first after the variant sync
+             * This is more a protection for Typescript - this case should never happen
              */
-            let internalProductId: string = "";
+            if (!existingProduct) {
+                throw new Error(
+                    `Product ${product.productName} with KencoveId ${product.productId} not found in DB.`,
+                );
+            }
+
             for (const variant of product.variants) {
                 const updatedAt = new Date(variant.updatedAt);
                 const createdAt = new Date(variant.createdAt);
 
                 this.logger.info(
-                    `Syncing product variant ${variant.id} of product ${product.productName}`,
+                    `Syncing product variant ${variant.sku} of product ${product.productName}`,
                 );
 
                 /**
@@ -1234,98 +1245,116 @@ export class KencoveApiAppProductSyncService {
                     }
                 }
 
+                const sku = variant.sku;
+
                 /**
-                 * Upsert the product variant. Return the upserted variant from our DB
+                 * The existing variant from our DB. When variant does not exist, we create it.
                  */
-                const upsertedVariant =
-                    await this.db.kencoveApiProductVariant.upsert({
-                        where: {
-                            id_kencoveApiAppId: {
-                                id: variant.id,
-                                kencoveApiAppId: this.kencoveApiApp.id,
-                            },
-                        },
-                        create: {
-                            id: variant.id,
-                            kencoveApiApp: {
+                let existingVariant = existingProduct.variants.find(
+                    (v) => v.sku === sku,
+                );
+
+                /**
+                 * We compare the weight, variant name, related productId and only
+                 * update when something has been changed. We create the variant if
+                 * it does not exist.
+                 */
+                if (!existingVariant) {
+                    this.logger.info(
+                        `Creating variant ${variant.id} of product ${product.productName}`,
+                    );
+                    existingVariant = await this.db.productVariant.create({
+                        data: {
+                            id: id.id("variant"),
+                            sku,
+                            weight: variant.weight,
+                            variantName,
+                            tenant: {
                                 connect: {
-                                    id: this.kencoveApiApp.id,
+                                    id: this.kencoveApiApp.tenantId,
                                 },
                             },
-                            createdAt,
-                            updatedAt,
-                            productId: product.productId,
-                            productVariant: {
+                            product: {
+                                connect: {
+                                    id: existingProduct.id,
+                                },
+                            },
+                            kencoveApiProductVariant: {
                                 connectOrCreate: {
                                     where: {
-                                        sku_tenantId: {
-                                            sku: variant.sku,
-                                            tenantId:
-                                                this.kencoveApiApp.tenantId,
+                                        id_kencoveApiAppId: {
+                                            id: variant.id,
+                                            kencoveApiAppId:
+                                                this.kencoveApiApp.id,
                                         },
                                     },
                                     create: {
-                                        id: id.id("variant"),
-                                        sku: variant.sku,
-                                        weight: variant.weight,
-                                        variantName,
-                                        tenant: {
+                                        id: variant.id,
+                                        kencoveApiApp: {
                                             connect: {
-                                                id: this.kencoveApiApp.tenantId,
+                                                id: this.kencoveApiApp.id,
                                             },
                                         },
-                                        product: {
-                                            connect: {
-                                                id: existingProduct.id,
-                                            },
-                                        },
+                                        createdAt,
+                                        updatedAt,
+                                        productId: product.productId,
                                     },
                                 },
                             },
-                        },
-                        update: {
-                            updatedAt,
-                            productId: product.productId,
-                            productVariant: {
-                                connectOrCreate: {
-                                    where: {
-                                        sku_tenantId: {
-                                            sku: variant.sku,
-                                            tenantId:
-                                                this.kencoveApiApp.tenantId,
-                                        },
-                                    },
-                                    create: {
-                                        id: id.id("variant"),
-                                        sku: variant.sku,
-                                        tenant: {
-                                            connect: {
-                                                id: this.kencoveApiApp.tenantId,
-                                            },
-                                        },
-                                        product: {
-                                            connect: {
-                                                id: existingProduct.id,
-                                            },
-                                        },
-                                    },
-                                },
-                                update: {
-                                    weight: variant.weight,
-                                    variantName,
-                                    product: {
-                                        connect: {
-                                            id: existingProduct.id,
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                        include: {
-                            productVariant: true,
                         },
                     });
-                internalProductId = upsertedVariant.productVariant.productId;
+                } else if (
+                    /**
+                     * Variant exists. We update it, when something has changed.
+                     */
+                    existingVariant.weight !== variant.weight ||
+                    existingVariant.variantName !== variantName ||
+                    existingVariant.productId !== existingProduct.id
+                ) {
+                    this.logger.info(
+                        `Updating variant ${variant.id} of product ${product.productName}`,
+                    );
+                    await this.db.productVariant.update({
+                        where: {
+                            id: existingVariant.id,
+                        },
+                        data: {
+                            weight: variant.weight,
+                            variantName,
+                            product: {
+                                connect: {
+                                    id: existingProduct.id,
+                                },
+                            },
+                            kencoveApiProductVariant: {
+                                connectOrCreate: {
+                                    where: {
+                                        id_kencoveApiAppId: {
+                                            id: variant.id,
+                                            kencoveApiAppId:
+                                                this.kencoveApiApp.id,
+                                        },
+                                    },
+                                    create: {
+                                        id: variant.id,
+                                        kencoveApiApp: {
+                                            connect: {
+                                                id: this.kencoveApiApp.id,
+                                            },
+                                        },
+                                        createdAt,
+                                        updatedAt,
+                                        productId: product.productId,
+                                    },
+                                },
+                            },
+                        },
+                    });
+                } else {
+                    this.logger.info(
+                        `Variant ${variant.id} of product ${product.productName} has not changed. Not updating our DB.`,
+                    );
+                }
 
                 /// set the attribute values. We need to check the product type
                 /// to see, if an attribute is used as product, or variant
@@ -1393,9 +1422,8 @@ export class KencoveApiAppProductSyncService {
 
                         for (const value of values) {
                             await this.setAttributeValue({
-                                productId:
-                                    upsertedVariant.productVariant.productId,
-                                variantId: upsertedVariant.productVariantId,
+                                productId: existingProduct.id,
+                                variantId: existingVariant.id,
                                 attribute: matchedAttr.attribute,
                                 attributeValue: value,
                                 isForVariant:
@@ -1404,8 +1432,8 @@ export class KencoveApiAppProductSyncService {
                         }
                     } else {
                         await this.setAttributeValue({
-                            productId: upsertedVariant.productVariant.productId,
-                            variantId: upsertedVariant.productVariantId,
+                            productId: existingProduct.id,
+                            variantId: existingVariant.id,
                             attribute: matchedAttr.attribute,
                             attributeValue: attribute.value,
                             isForVariant: matchedAttr?.isForVariant ?? false,
@@ -1419,7 +1447,7 @@ export class KencoveApiAppProductSyncService {
              * as product attributes
              */
             await this.setAccessoryAndAlternativeItems(
-                internalProductId,
+                existingProduct.id,
                 product.accessories?.map((a) => a.itemCode),
                 product.alternatives?.map((a) => a.itemCode),
             );
