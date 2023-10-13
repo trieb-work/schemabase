@@ -15,6 +15,7 @@ import {
     Attribute,
     KencoveApiApp,
     KencoveApiProductType,
+    MediaPlacementType,
     PrismaClient,
 } from "@eci/pkg/prisma";
 import { subHours, subYears } from "date-fns";
@@ -26,7 +27,9 @@ import {
     KencoveApiAAItem,
     KencoveApiAttributeInProduct,
     KencoveApiImage,
+    KencoveApiOtherMedia,
     KencoveApiProduct,
+    KencoveApiVideo,
 } from "./types";
 import { htmlDecode, kenAttributeToEciAttribute } from "./helper";
 
@@ -50,6 +53,8 @@ type EnhancedProduct = {
     productName: string;
     description: string;
     images: KencoveApiImage[] | null;
+    videos: KencoveApiVideo[] | null;
+    otherMedia: KencoveApiOtherMedia[] | null;
     accessories: KencoveApiAAItem[] | null;
     alternatives: KencoveApiAAItem[] | null;
     countryOfOrigin: string | null;
@@ -742,6 +747,13 @@ export class KencoveApiAppProductSyncService {
                 display_type: "reference",
                 attribute_model: "custom",
             });
+            productAttributesUnique.push({
+                name: "Product Manual",
+                value: "",
+                attribute_id: 333334,
+                display_type: "file",
+                attribute_model: "custom",
+            });
 
             this.logger.debug(
                 "Product Attributes: " +
@@ -882,6 +894,63 @@ export class KencoveApiAppProductSyncService {
     }
 
     /**
+     * Helper function that transforms the Kencove images, videos and other media
+     * to our internal media format to directy connectOrCreate them in the DB
+     * @param product
+     */
+    private getTotalMediaFromProduct(product: EnhancedProduct): {
+        id: string;
+        url: string;
+        type: MediaPlacementType;
+        tenant: {
+            connect: {
+                id: string;
+            };
+        };
+    }[] {
+        /**
+         * We have product images and videos. The videos get the type
+         * "PRODUCTVIDEO" when we create them in the DB. For otherMedia we
+         * just take media with type "Manual" and create them in the DB with type "MANUAL"
+         */
+        const productImages = product.images || [];
+        const productVideos = product.videos || [];
+        const productOtherMedia = product.otherMedia || [];
+        return [
+            ...productImages.map((image) => ({
+                id: id.id("media"),
+                url: image.url,
+                type: MediaPlacementType.PRODUCTIMAGE,
+                tenant: {
+                    connect: {
+                        id: this.kencoveApiApp.tenantId,
+                    },
+                },
+            })),
+            ...productVideos.map((video) => ({
+                id: id.id("media"),
+                url: video.url,
+                type: MediaPlacementType.PRODUCTVIDEO,
+                tenant: {
+                    connect: {
+                        id: this.kencoveApiApp.tenantId,
+                    },
+                },
+            })),
+            ...productOtherMedia.map((media) => ({
+                id: id.id("media"),
+                url: media.url,
+                type: MediaPlacementType.MANUAL,
+                tenant: {
+                    connect: {
+                        id: this.kencoveApiApp.tenantId,
+                    },
+                },
+            })),
+        ];
+    }
+
+    /**
      * Creates a product in our DB
      */
     private async createProductSchemabase(
@@ -891,8 +960,7 @@ export class KencoveApiAppProductSyncService {
         productTypeId: string,
         category: string | undefined,
     ) {
-        const productImages = product.images || [];
-
+        const totalMedia = this.getTotalMediaFromProduct(product);
         return this.db.product.create({
             data: {
                 id: id.id("product"),
@@ -900,22 +968,14 @@ export class KencoveApiAppProductSyncService {
                 normalizedName: normalizedProductName,
                 descriptionHTML: product.description,
                 media: {
-                    connectOrCreate: productImages.map((image) => ({
+                    connectOrCreate: totalMedia.map((media) => ({
                         where: {
                             url_tenantId: {
-                                url: image.url,
+                                url: media.url,
                                 tenantId: this.kencoveApiApp.tenantId,
                             },
                         },
-                        create: {
-                            id: id.id("media"),
-                            url: image.url,
-                            tenant: {
-                                connect: {
-                                    id: this.kencoveApiApp.tenantId,
-                                },
-                            },
-                        },
+                        create: media,
                     })),
                 },
                 productType: {
@@ -939,6 +999,7 @@ export class KencoveApiAppProductSyncService {
             },
             include: {
                 variants: true,
+                media: true,
             },
         });
     }
@@ -953,7 +1014,7 @@ export class KencoveApiAppProductSyncService {
         productTypeId: string,
         category: string | undefined,
     ) {
-        const productImages = product.images || [];
+        const totalMedia = this.getTotalMediaFromProduct(product);
 
         return this.db.product.update({
             where: {
@@ -966,16 +1027,17 @@ export class KencoveApiAppProductSyncService {
                 name: product.productName,
                 descriptionHTML: product.description,
                 media: {
-                    connectOrCreate: productImages.map((image) => ({
+                    connectOrCreate: totalMedia.map((media) => ({
                         where: {
                             url_tenantId: {
-                                url: image.url,
+                                url: media.url,
                                 tenantId: this.kencoveApiApp.tenantId,
                             },
                         },
                         create: {
                             id: id.id("media"),
-                            url: image.url,
+                            url: media.url,
+                            type: media.type,
                             tenant: {
                                 connect: {
                                     id: this.kencoveApiApp.tenantId,
@@ -1005,6 +1067,7 @@ export class KencoveApiAppProductSyncService {
             },
             include: {
                 variants: true,
+                media: true,
             },
         });
     }
@@ -1059,6 +1122,8 @@ export class KencoveApiAppProductSyncService {
         const enhancedProducts = products.map((p) => {
             return {
                 images: p.images,
+                videos: p.videos,
+                otherMedia: p.other_media,
                 productType: p.productType,
                 accessories: p.accessories,
                 alternatives: p.alternatives,
@@ -1147,6 +1212,7 @@ export class KencoveApiAppProductSyncService {
                 },
                 include: {
                     variants: true,
+                    media: true,
                 },
             });
 
@@ -1171,7 +1237,12 @@ export class KencoveApiAppProductSyncService {
                     existingProduct.productTypeId !==
                         kenProdTypeWithProductType.productTypeId ||
                     existingProduct.countryOfOrigin !== countryOfOrigin ||
-                    existingProduct.categoryId !== category
+                    existingProduct.categoryId !== category ||
+                    /**
+                     * Compare the media arrays with each other. For simplicity, we just compare the length
+                     */
+                    existingProduct.media.length !==
+                        this.getTotalMediaFromProduct(product).length
                 ) {
                     this.logger.info(
                         `Updating product ${product.productName} with KencoveId ${product.productId}, as something has changed.`,
@@ -1182,12 +1253,15 @@ export class KencoveApiAppProductSyncService {
                         productTypeId: kenProdTypeWithProductType.productTypeId,
                         countryOfOrigin,
                         category,
+                        mediaLength:
+                            this.getTotalMediaFromProduct(product).length,
                         existingNormalizedName: existingProduct.normalizedName,
                         existingDescription: existingProduct.descriptionHTML,
                         existingProductTypeId: existingProduct.productTypeId,
                         existingCountryOfOrigin:
                             existingProduct.countryOfOrigin,
                         existingCategoryId: existingProduct.categoryId,
+                        existingMediaLength: existingProduct.media.length,
                     });
                     existingProduct = await this.updateProductSchemabase(
                         product,

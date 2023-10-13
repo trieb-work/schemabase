@@ -146,6 +146,17 @@ export type KencoveApiImage = {
     slug: string;
     alt_name: string;
 };
+export type KencoveApiVideo = {
+    name: string;
+    slug: string;
+    video_thumbnail: string;
+    url: string;
+};
+export type KencoveApiOtherMedia = {
+    name: string;
+    type: string;
+    url: string;
+};
 export type KencoveApiProduct = {
     id: string;
     name: string;
@@ -168,6 +179,8 @@ export type KencoveApiProduct = {
      */
     accessories: KencoveApiAAItem[] | null;
     images: KencoveApiImage[] | null;
+    videos: KencoveApiVideo[] | null;
+    other_media: KencoveApiOtherMedia[] | null;
 };
 type KencoveApiAAItem = {
     /**
