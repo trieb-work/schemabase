@@ -196,4 +196,65 @@ export class MediaUpload {
         }
         return res.data.categoryUpdate.category.id;
     }
+
+    /**
+     * The generic file upload function - can be used for example to upload files
+     * and reference these files later in an file attribute. Uses the FileUpload mutation.
+     * Returns just the URL of the uploaded file
+     */
+    public async uploadFileToSaleor(
+        fileBlob: Blob,
+        fileExtension: string,
+        logger: ILogger,
+    ): Promise<string> {
+        const form = new FormData();
+        form.append(
+            "operations",
+            JSON.stringify({
+                query: `
+            mutation fileUpload($file: Upload!) {
+                fileUpload(file: $file) {
+                    uploadedFile {
+                        id
+                    }
+                }
+            }
+        `,
+                variables: {
+                    file: null,
+                },
+            }),
+        );
+
+        form.append("map", JSON.stringify({ file: ["variables.file"] }));
+
+        // Use the file extension when appending the image to the form
+        form.append("file", fileBlob, `file${fileExtension}`);
+
+        logger.debug(
+            `Uploading file to Saleor with name: file${fileExtension}`,
+        );
+
+        const response = await fetch(this.installedSaleorApp.saleorApp.apiUrl, {
+            method: "POST",
+            body: form,
+            headers: {
+                Authorization: `Bearer ${this.installedSaleorApp.token}`,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to upload file to Saleor");
+        }
+        const res = await response.json();
+
+        if (res.data.fileUpload?.errors?.length > 0) {
+            throw new Error(
+                `Failed to upload file to Saleor: ${JSON.stringify(
+                    res.data.fileUpload.errors,
+                )}`,
+            );
+        }
+        return res.data.fileUpload.uploadedFile.url;
+    }
 }
