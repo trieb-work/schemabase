@@ -60,6 +60,9 @@ class EditorJSHelper {
                                             "href",
                                         )}">${el.textContent}</a>`;
                                         break;
+                                    case "STRONG":
+                                        innerText += `<strong>${el.textContent}</strong>`;
+                                        break;
                                     default:
                                         innerText += el.outerHTML;
                                 }

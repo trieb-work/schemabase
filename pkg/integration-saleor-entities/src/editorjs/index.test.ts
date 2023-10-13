@@ -18,7 +18,8 @@ describe("editorJsHelper", () => {
     </ul>
     <h3>What does it mean «block-styled editor»</h3>
     <p>Workspace in classic editors is made of a single contenteditable element, used to create different HTML markups. Editor.js <mark class="cdx-marker">workspace consists of separate Blocks: paragraphs, headings, images, lists, quotes, etc</mark>. Each of them is an independent contenteditable element (or more complex structure) provided by Plugin and united by Editor's Core.</p>
-    <p>There are dozens of <a href="">ready-to-use Blocks</a> and the <a href="https://editorjs.io/creating-a-block-tool">simple API</a> for creation any Block you need. For example, you can implement Blocks for Tweets, Instagram posts, surveys and polls, CTA-buttons and even games.</p>`;
+    <p>There are dozens of <a href="">ready-to-use Blocks</a> and the <a href="https://editorjs.io/creating-a-block-tool">simple API</a> for creation any Block you need. For example, you can implement Blocks for Tweets, Instagram posts, surveys and polls, CTA-buttons and even games.</p>
+    <p>This is a <strong>strong</strong> tag.</p>`;
 
     /**
      * The editorJS json we are using for testing
@@ -73,6 +74,12 @@ describe("editorJsHelper", () => {
                 type: "paragraph",
                 data: {
                     text: 'There are dozens of <a href="">ready-to-use Blocks</a> and the <a href="https://editorjs.io/creating-a-block-tool">simple API</a> for creation any Block you need. For example, you can implement Blocks for Tweets, Instagram posts, surveys and polls, CTA-buttons and even games.',
+                },
+            },
+            {
+                type: "paragraph",
+                data: {
+                    text: "This is a <strong>strong</strong> tag.",
                 },
             },
         ],
