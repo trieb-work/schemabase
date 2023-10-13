@@ -805,7 +805,7 @@ Table Media {
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   url String [not null, note: 'The url of the media']
-  type MediaPlacementType
+  type MediaPlacementType [default: 'PRODUCTIMAGE']
   tenant Tenant [not null, note: 'The tenant this media belongs to']
   tenantId String [not null]
   products Product [not null]
@@ -2158,6 +2158,9 @@ Enum AttributeType {
 Enum MediaPlacementType {
   BANNER
   THUMBNAIL
+  MANUAL
+  PRODUCTVIDEO
+  PRODUCTIMAGE
 }
 
 Enum PackageState {

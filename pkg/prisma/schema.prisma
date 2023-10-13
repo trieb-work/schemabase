@@ -1591,8 +1591,13 @@ model Attribute {
 }
 
 enum MediaPlacementType {
+  /// for example a category banner
   BANNER
   THUMBNAIL
+  /// A product manual for example
+  MANUAL
+  PRODUCTVIDEO
+  PRODUCTIMAGE
 }
 
 /// model to store image and other media urls for products, variants, categories etc.
@@ -1606,7 +1611,7 @@ model Media {
   /// The url of the media
   url String
 
-  type MediaPlacementType?
+  type MediaPlacementType? @default(PRODUCTIMAGE)
 
   /// The tenant this media belongs to
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
