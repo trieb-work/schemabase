@@ -857,6 +857,8 @@ model Contact {
   firstName String?
   lastName  String?
 
+  phone String?
+
   /// is this contact a customer / debitor? Can be customer and/or vendor
   customer Boolean @default(true)
 
@@ -879,6 +881,10 @@ model Contact {
   addresses          Address[]
   saleorCustomers    SaleorCustomer[]
   kencoveApiContacts KencoveApiContact[]
+
+  /// Customers can be related to one or multiple sales channels.
+  /// Depending on the setup, this means, that customers are allowed to use specific pricelists
+  channels          SalesChannel[]
 
   /// If we have the users permission to send tracking emails
   trackingEmailsConsent   Boolean @default(true)
@@ -1193,6 +1199,7 @@ model SalesChannel {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
+  contacts       Contact[]
   saleorChannels SaleorChannel[]
   priceEntries   SalesChannelPriceEntry[]
 
@@ -2850,6 +2857,8 @@ model InstalledSaleorApp {
   syncPackages      Boolean @default(false)
   syncTaxes         Boolean @default(false)
   syncCategories    Boolean @default(false)
+  /// If this is true, we will create orders in Saleor, that we received from 3rd party systems. Needs min. Saleor 3.17. Will only sync orders, where we have customers in Saleor already
+  createHistoricOrdes Boolean @default(false)
 
   productDataFeedIntegration ProductDataFeedIntegration[]
   saleorPayment              SaleorPayment[]

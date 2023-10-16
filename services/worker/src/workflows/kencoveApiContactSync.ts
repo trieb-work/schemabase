@@ -1,17 +1,17 @@
-import { KencoveApiAppAttributeSyncService } from "@eci/pkg/integration-kencove-api/src/attributes";
+import { KencoveApiAppContactSyncService } from "@eci/pkg/integration-kencove-api/src/contacts";
 import { ILogger } from "@eci/pkg/logger";
 import { KencoveApiApp, PrismaClient } from "@eci/pkg/prisma";
 import { RuntimeContext, Workflow } from "@eci/pkg/scheduler/workflow";
 
-export type KencoveApiAttributeSyncWorkflowClients = {
+export type KencoveApiContactSyncWorkflowClients = {
     prisma: PrismaClient;
 };
 
-export type KencoveApiAttributeSyncWorkflowConfig = {
+export type KencoveApiContactSyncWorkflowConfig = {
     kencoveApiApp: KencoveApiApp;
 };
 
-export class KencoveApiAttributeSyncWf implements Workflow {
+export class KencoveApiContactSyncWf implements Workflow {
     private prisma: PrismaClient;
 
     private logger: ILogger;
@@ -20,27 +20,27 @@ export class KencoveApiAttributeSyncWf implements Workflow {
 
     public constructor(
         ctx: RuntimeContext,
-        clients: KencoveApiAttributeSyncWorkflowClients,
-        config: KencoveApiAttributeSyncWorkflowConfig,
+        clients: KencoveApiContactSyncWorkflowClients,
+        config: KencoveApiContactSyncWorkflowConfig,
     ) {
         this.prisma = clients.prisma;
         this.kencoveApiApp = config.kencoveApiApp;
         this.logger = ctx.logger.with({
-            workflow: KencoveApiAttributeSyncWf.name,
+            workflow: KencoveApiContactSyncWf.name,
             kencoveApiAppId: config.kencoveApiApp.id,
         });
     }
 
     public async run(): Promise<void> {
-        this.logger.info("Starting kencove api attribute sync workflow run");
+        this.logger.info("Starting kencove api contact sync workflow run");
 
-        const kencoveApiAttributeSyncService =
-            new KencoveApiAppAttributeSyncService({
+        const kencoveApiContactSyncService =
+            new KencoveApiAppContactSyncService({
                 logger: this.logger,
                 db: this.prisma,
                 kencoveApiApp: this.kencoveApiApp,
             });
-        await kencoveApiAttributeSyncService.syncToECI();
-        this.logger.info("Finished kencove api product sync workflow run");
+        await kencoveApiContactSyncService.syncToECI();
+        this.logger.info("Finished kencove api contact sync workflow run");
     }
 }

@@ -13,6 +13,7 @@ import {
     KencoveApiAddress,
     KencoveApiAttribute,
     KencoveApiCategory,
+    KencoveApiContact,
     KencoveApiOrder,
     KencoveApiPackage,
     KencoveApiPricelist,
@@ -368,6 +369,44 @@ export class KencoveApiClient {
     }> {
         const response = await this.axiosInstance.get(
             `/ecom/stock/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            },
+        );
+        return response.data;
+    }
+
+    public async *getContactsStream(
+        fromDate: Date,
+    ): AsyncIterableIterator<KencoveApiContact[]> {
+        let nextPage: string | null = null;
+        let offset: number = 0;
+        do {
+            const accessToken = await this.getAccessToken();
+            const response = await this.getContactsPage(
+                fromDate,
+                offset,
+                accessToken,
+            );
+            yield response.data;
+            nextPage = response.next_page;
+            offset += 200;
+        } while (nextPage);
+    }
+
+    private async getContactsPage(
+        fromDate: Date,
+        offset: number,
+        accessToken: string,
+    ): Promise<{
+        data: KencoveApiContact[];
+        result_count: number;
+        next_page: string;
+    }> {
+        const response = await this.axiosInstance.get(
+            `/ecom/contact/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
             {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,

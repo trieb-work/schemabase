@@ -542,6 +542,7 @@ Table Contact {
   email String [not null]
   firstName String
   lastName String
+  phone String
   customer Boolean [not null, default: true, note: 'is this contact a customer / debitor? Can be customer and/or vendor']
   vendor Boolean [not null, default: false, note: 'is this contact a vendor / kreditor? Can be customer and/or vendor']
   orders Order [not null]
@@ -556,6 +557,8 @@ Table Contact {
   addresses Address [not null]
   saleorCustomers SaleorCustomer [not null]
   kencoveApiContacts KencoveApiContact [not null]
+  channels SalesChannel [not null, note: 'Customers can be related to one or multiple sales channels.
+Depending on the setup, this means, that customers are allowed to use specific pricelists']
   trackingEmailsConsent Boolean [not null, default: true, note: 'If we have the users permission to send tracking emails']
   marketingEmailsConstent Boolean [not null, default: false, note: 'If we have the users consent to send marketing emails']
 
@@ -712,6 +715,7 @@ Table SalesChannel {
   normalizedName String [not null]
   tenant Tenant [not null]
   tenantId String [not null]
+  contacts Contact [not null]
   saleorChannels SaleorChannel [not null]
   priceEntries SalesChannelPriceEntry [not null]
 
@@ -1608,6 +1612,7 @@ Table InstalledSaleorApp {
   syncPackages Boolean [not null, default: false]
   syncTaxes Boolean [not null, default: false]
   syncCategories Boolean [not null, default: false]
+  createHistoricOrdes Boolean [not null, default: false, note: 'If this is true, we will create orders in Saleor, that we received from 3rd party systems. Needs min. Saleor 3.17. Will only sync orders, where we have customers in Saleor already']
   productDataFeedIntegration ProductDataFeedIntegration [not null]
   saleorPayment SaleorPayment [not null]
   saleorPaymentGateway SaleorPaymentGateway [not null]
