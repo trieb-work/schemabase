@@ -91,12 +91,12 @@ export class KencoveApiAppContactSyncService {
                 await this.db.kencoveApiContact.upsert({
                     where: {
                         id_kencoveApiAppId: {
-                            id: contact.id,
+                            id: contact.id.toString(),
                             kencoveApiAppId: this.kencoveApiApp.id,
                         },
                     },
                     create: {
-                        id: contact.id,
+                        id: contact.id.toString(),
                         kencoveApiApp: {
                             connect: {
                                 id: this.kencoveApiApp.id,

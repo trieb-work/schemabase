@@ -110,7 +110,7 @@ export type KencoveApiAttributeInProduct = {
 };
 
 export type KencoveApiContact = {
-    id: string;
+    id: number;
     firstname: string;
     lastname: string;
     companyname: string | null;
