@@ -100,6 +100,7 @@
         "@47ng/cloak": "^1.1.0",
         "@apollo/server": "^4.9.2",
         "@as-integrations/next": "^2.0.2",
+        "@aws-sdk/client-cognito-identity-provider": "^3.429.0",
         "@bull-board/api": "5.5.1",
         "@bull-board/express": "5.5.1",
         "@bull-board/ui": "5.5.1",

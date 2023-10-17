@@ -881,6 +881,7 @@ model Contact {
   addresses          Address[]
   saleorCustomers    SaleorCustomer[]
   kencoveApiContacts KencoveApiContact[]
+  awsCognitoUsers    AWSCognitoUser[]
 
   /// Customers can be related to one or multiple sales channels.
   /// Depending on the setup, this means, that customers are allowed to use specific pricelists
@@ -2210,6 +2211,8 @@ model VercelLogDrainApp {
   webhooks IncomingWebhook[]
 
   elasticLogDrainIntegrations ElasticLogDrainIntegration[]
+
+  @@index([id])
 }
 
 model ElasticLogDrainIntegration {
@@ -2227,6 +2230,9 @@ model ElasticLogDrainIntegration {
   elasticClusterId String            @unique
 
   @@index([tenantId])
+  @@index([logDrainAppId])
+  @@index([elasticClusterId])
+  @@index([subscriptionId])
 }
 
 // The ECI Internal Package model
@@ -2705,6 +2711,28 @@ model InternalDataApp {
 
 }
 
+/// The admin app for AWS cognito. Using the IAM credentials to authenticate. We store credentials per user pool
+model AWSCognitoApp {
+    id String @id
+
+    enabled Boolean @default(true)
+
+    accessKeyId    String
+    secretAccessKey String
+
+    userPoolId String
+
+    region String
+
+    tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+    tenantId String
+
+    users   AWSCognitoUser[]
+
+    @@index([tenantId])
+
+}
+
 model ZohoApp {
   id String @id
 
@@ -2939,6 +2967,7 @@ model Tenant {
   salesChannels               SalesChannel[]
   salesChannelPriceEntry      SalesChannelPriceEntry[]
   internalDataApps            InternalDataApp[]
+  awsCognitoApps              AWSCognitoApp[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
@@ -3122,6 +3151,21 @@ model XentralProxyAuftrag {
   @@unique([xentralBelegNr, xentralProxyAppId])
   @@index([orderId])
   @@index([xentralProxyAppId])
+}
+
+model AWSCognitoUser {
+  /// The cognito "username"
+  id String
+
+  contact   Contact @relation(fields: [contactId], references: [id])
+  contactId String
+
+  awsCognitoApp   AWSCognitoApp @relation(fields: [awsCognitoAppId], references: [id])
+  awsCognitoAppId String
+
+  @@index([awsCognitoAppId])
+  @@unique([id, awsCognitoAppId])
+  @@index([contactId])
 }
 
 // ----------------------------------------------------------------------------
