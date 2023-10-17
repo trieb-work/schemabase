@@ -172,16 +172,9 @@ production-vercel:
 production:
     extends: .auto-deploy
     stage: production
-    before_script:
-        - corepack enable
-        - corepack prepare pnpm@latest-8 --activate
-        - pnpm config set store-dir .pnpm-store
-    cache:
-        key:
-            files:
-                - pnpm-lock.yaml
-        paths:
-            - .pnpm-store
+    variables:
+        AUTO_DEVOPS_COMMON_NAME: queue-manager.kencove.com
+        KUBE_NAMESPACE: schemabase-production
     script:
         - helm repo add azure-marketplace https://marketplace.azurecr.io/helm/v1/repo
         # Add a redis deployment with nodeport service, limit CPU and memory, set a password, set standard persistent storage 3 GB. Name: redis-schemabase-production
