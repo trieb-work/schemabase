@@ -75,6 +75,11 @@ export class KencoveApiAppContactSyncService {
                 }
                 const email = contact.email.toLowerCase();
 
+                const companyName = contact.companyname;
+                const companyNameNormalized = normalizeStrings.companyNames(
+                    companyName || "",
+                );
+
                 /**
                  * Contacts have corresponding sales channels.
                  * We use the normalized name to find the corresponding
@@ -116,6 +121,34 @@ export class KencoveApiAppContactSyncService {
                                     firstName: contact.firstname,
                                     lastName: contact.lastname,
                                     phone: contact.phone,
+                                    company: companyName
+                                        ? {
+                                              connectOrCreate: {
+                                                  where: {
+                                                      normalizedName_tenantId: {
+                                                          normalizedName:
+                                                              companyNameNormalized,
+                                                          tenantId:
+                                                              this.kencoveApiApp
+                                                                  .tenantId,
+                                                      },
+                                                  },
+                                                  create: {
+                                                      id: id.id("company"),
+                                                      name: companyName,
+                                                      normalizedName:
+                                                          companyNameNormalized,
+                                                      tenant: {
+                                                          connect: {
+                                                              id: this
+                                                                  .kencoveApiApp
+                                                                  .tenantId,
+                                                          },
+                                                      },
+                                                  },
+                                              },
+                                          }
+                                        : undefined,
                                     tenant: {
                                         connect: {
                                             id: this.kencoveApiApp.tenantId,
@@ -138,6 +171,33 @@ export class KencoveApiAppContactSyncService {
                                 firstName: contact.firstname,
                                 lastName: contact.lastname,
                                 phone: contact.phone,
+                                company: companyName
+                                    ? {
+                                          connectOrCreate: {
+                                              where: {
+                                                  normalizedName_tenantId: {
+                                                      normalizedName:
+                                                          companyNameNormalized,
+                                                      tenantId:
+                                                          this.kencoveApiApp
+                                                              .tenantId,
+                                                  },
+                                              },
+                                              create: {
+                                                  id: id.id("company"),
+                                                  name: companyName,
+                                                  normalizedName:
+                                                      companyNameNormalized,
+                                                  tenant: {
+                                                      connect: {
+                                                          id: this.kencoveApiApp
+                                                              .tenantId,
+                                                      },
+                                                  },
+                                              },
+                                          },
+                                      }
+                                    : undefined,
                                 channels: salesChannel
                                     ? {
                                           connect: {
