@@ -1,23 +1,18 @@
 import {
     CognitoIdentityProviderClient,
     ListUsersCommand,
-    AdminGetUserCommand,
-    AdminUpdateUserAttributesCommand
+    AdminUpdateUserAttributesCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
-import {
-    beforeEach,
-    describe,
-    jest,
-    test,
-    beforeAll,
-    it,
-    expect,
-} from "@jest/globals";
+import { describe, it, expect } from "@jest/globals";
 
 const region = "us-east-1";
 const userPoolId = "us-east-1_zpSqjJW1v";
-const accessKeyId = "AKIA3N5X2FDCWXGWA64U";
-const secretAccessKey = "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";
+const accessKeyId = process.env.AWS_IAM_ACCESS_KEY_ID;
+const secretAccessKey = process.env.AWS_IAM_SECRET_ACCESS_KEY;
+
+if (!accessKeyId || !secretAccessKey) {
+    throw new Error("AWS IAM credentials are not set");
+}
 
 describe("CognitoUserSyncService", () => {
     it("should be able to get a list of users", async () => {
@@ -46,6 +41,8 @@ describe("CognitoUserSyncService", () => {
             ],
         });
         const response = await client.send(updateUserCommand);
+        const response2 = await client.send(getListOfUsersCommand);
         expect(response).toBeDefined();
+        expect(response2).toBeDefined();
     });
 });
