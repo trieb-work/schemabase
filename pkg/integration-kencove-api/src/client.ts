@@ -405,7 +405,9 @@ export class KencoveApiClient {
         result_count: number;
         next_page: string;
     }> {
-        this.logger.debug(`requesting contacts from ${fromDate}`);
+        this.logger.debug(
+            `requesting contacts from ${fromDate}, offset ${offset}`,
+        );
         const response = await this.axiosInstance.get(
             `/ecom/contact/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
             {
