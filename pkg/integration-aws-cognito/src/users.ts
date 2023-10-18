@@ -6,6 +6,7 @@ import {
     CognitoIdentityProvider,
     ListUsersCommand,
     ListUsersCommandOutput,
+    AdminCreateUserCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { subHours, subYears } from "date-fns";
@@ -66,6 +67,18 @@ export class CognitoUserSyncService {
             UserAttributes: attributes,
         });
         await this.cognitoClient.send(updateUserCommand);
+    }
+
+    private async createUserInCognito(
+        email: string,
+        attributes: { Name: string; Value: string }[],
+    ): Promise<void> {
+        const createUserCommand = new AdminCreateUserCommand({
+            UserPoolId: this.AWSCognitoApp.userPoolId,
+            Username: email,
+            UserAttributes: attributes,
+        });
+        await this.cognitoClient.send(createUserCommand);
     }
 
     /**
@@ -135,7 +148,20 @@ export class CognitoUserSyncService {
         for (const contact of contacts) {
             const cognitoUser = await this.getCognitoUserByEmail(contact.email);
             if (cognitoUser === undefined) {
+                const channelName = contact.channels?.[0]?.name;
+                if (channelName === undefined) {
+                    this.logger.warn(
+                        `Contact ${contact.email} has no related sales channel`,
+                    );
+                    continue;
+                }
                 this.logger.info(`Creating user ${contact.email} in Cognito`);
+                await this.createUserInCognito(contact.email, [
+                    {
+                        Name: "custom:channel",
+                        Value: channelName,
+                    },
+                ]);
             } else {
                 this.logger.info(`Updating user ${contact.email} in Cognito`);
                 for (const u of cognitoUser) {
