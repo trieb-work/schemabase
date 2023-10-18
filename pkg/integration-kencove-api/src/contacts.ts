@@ -75,6 +75,14 @@ export class KencoveApiAppContactSyncService {
                 }
                 const email = contact.email.toLowerCase();
 
+                // simple check if email is actually a valid email address, using regex
+                if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+                    this.logger.warn(
+                        `Skipping contact with invalid email address: ${email}`,
+                    );
+                    continue;
+                }
+
                 const companyName = contact.companyname;
                 const companyNameNormalized = normalizeStrings.companyNames(
                     companyName || "",
