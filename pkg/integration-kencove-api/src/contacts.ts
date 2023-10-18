@@ -73,7 +73,10 @@ export class KencoveApiAppContactSyncService {
                 if (!contact.email) {
                     continue;
                 }
-                const email = contact.email.toLowerCase();
+                /**
+                 * Lowercase email address, removing whitespace before and after, trimming
+                 */
+                const email = contact.email.toLowerCase().trim();
 
                 // simple check if email is actually a valid email address, using regex
                 if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
