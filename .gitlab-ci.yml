@@ -176,16 +176,50 @@ production:
         AUTO_DEVOPS_COMMON_NAME: queue-manager.kencove.com
         KUBE_NAMESPACE: schemabase-production
     script:
+
         - helm repo add azure-marketplace https://marketplace.azurecr.io/helm/v1/repo
         # Add a redis deployment with nodeport service, limit CPU and memory, set a password, set standard persistent storage 3 GB. Name: redis-schemabase-production
-        # Add a mysql deployment with nodeport service, limit CPU and memory, set a password, set standard persistent storage 30 GB. Name: mysql-schemabase-production
+        - helm upgrade --install --create-namespace -n $KUBE_NAMESPACE redis-schemabase-production azure-marketplace/redis --set architecture="standalone" --set auth.password="$REDIS_PASSWORD" --set resources.requests.cpu=100m --set resources.requests.memory=350Mi --set resources.limits.cpu=200m --set resources.limits.memory=256Mi --set persistence.size=3Gi --set service.type=NodePort
 
-        # Deploy the API service to vercel
-        - npm install --global vercel
-        - vercel pull --yes --environment=production --token=$VERCEL_TOKEN
-        - vercel build --token=$VERCEL_TOKEN services/api
-        - export URL="$(vercel deploy --prebuilt --prod  --token=$VERCEL_TOKEN --meta gitlabCommitRef=$CI_COMMIT_REF_SLUG --meta gitlabCommitSha=$CI_COMMIT_SHA --meta gitlabDeployment=1 --meta gitlabCommitAuthorName="$GITLAB_USER_NAME" --meta gitlabProjectPath=$CI_PROJECT_PATH)"
-        - vercel alias --token=$VERCEL_TOKEN set "$URL" $CI_PROJECT_ID-$CI_COMMIT_REF_SLUG.vc.review-kencove.com --scope $VERCEL_ORG_ID
+        # Get the current version from package.json to use it as docker version tag later. We don't have node available
+        # in the image, so we use jq to parse the json file.
+        - export SCHEMA_VERSION=$(jq -r '.version' package.json)
+        - >
+            helm upgrade worker-schemabase-production ./services/worker/helm-chart
+            --install
+            --namespace=$KUBE_NAMESPACE
+            --set=image.imageName="ghcr.io/trieb-work/schemabase/worker:$SCHEMA_VERSION"
+            --set=eciEnv="production"
+            --set=databaseUrl="$DATABASE_URL"
+            --set=signingKey="$SECRET_KEY_WORKER"
+            --set=redis.host="redis-schemabase-production-master"
+            --set=redis.password="$REDIS_PASSWORD"
+            --set=elasticsearch.host=""
+            --set=elasticsearch.username=""
+            --set=elasticsearch.password=""
+            --set=kafka.brokerUrl="$KAFKA_URL"
+            --set=kafka.saslMechanism="scram-sha-256"
+            --set=kafka.username="$KAFKA_USERNAME"
+            --set=kafka.password="$KAFKA_PASSWORD"
+            --set=sendgridApiKey="TO_BE_ADDED"
+            --set=secretKey="$SECRET_KEY_WORKER"
+            --set=resources.limits.memory="1000Mi"
+        - >
+            helm upgrade queue-dashboard-schemabase ./services/bullboard/helm-chart
+            --install
+            --namespace=$KUBE_NAMESPACE
+            --set=image.imageName="ghcr.io/trieb-work/schemabase/bullboard:$SCHEMA_VERSION"
+            --set=redis.host="redis-schemabase-production-master"
+            --set=redis.password="$REDIS_PASSWORD"
+            --set=ingress.host=$AUTO_DEVOPS_COMMON_NAME
+            --set=google.clientId="$GC_CLIENT_ID"
+            --set=allowedLoginDomains="kencove.com"
+            --set=google.clientSecret="$GC_CLIENT_SECRET"
+            --set-string=ingress.annotations."kubernetes\.io/tls-acme"=true
+            --set=ingress.annotations."cert-manager\.io/cluster-issuer"=null
+
+        - auto-deploy persist_environment_url
+        - echo "Queue dashboard deployed to https://$AUTO_DEVOPS_COMMON_NAME"
     environment:
         name: production
         # Bullboard URL
