@@ -15,14 +15,14 @@ dependencies:
     specifier: ^2.0.2
     version: 2.0.2(@apollo/server@4.9.2)(next@13.4.19)
   '@bull-board/api':
-    specifier: 5.5.1
-    version: 5.5.1(@bull-board/ui@5.5.1)
+    specifier: 5.9.1
+    version: 5.9.1(@bull-board/ui@5.9.1)
   '@bull-board/express':
-    specifier: 5.5.1
-    version: 5.5.1
+    specifier: 5.9.1
+    version: 5.9.1
   '@bull-board/ui':
-    specifier: 5.5.1
-    version: 5.5.1
+    specifier: 5.9.1
+    version: 5.9.1
   '@chronark/prefixed-id':
     specifier: ^0.4.1
     version: 0.4.1
@@ -1313,30 +1313,30 @@ packages:
     resolution: {integrity: sha512-UIrJB+AfKU0CCfbMoWrsGpd2D/hBpY/SGgFI6WRHPOwhaZ3g9rz1weiJ6eb6L9KgVyunT7s2tckcPkbHw+NzeA==}
     dev: false
 
-  /@bull-board/api@5.5.1(@bull-board/ui@5.5.1):
-    resolution: {integrity: sha512-JRCiXpDspazAQH+4W8SPMWTzLD5xk/DOPU6XRaA+woOvTgX/LLs7vtQ0ZevC/o3Xogbvz7xR+/pNetHHk2nAEQ==}
+  /@bull-board/api@5.9.1(@bull-board/ui@5.9.1):
+    resolution: {integrity: sha512-xZzPYNw9Dp46It4vvZv3tmFScmUu/UT/jWQxYK9cvbkJRXh15rsZrbbR+/phUqou0NxRQGiHoFSZ1y5D107dIA==}
     peerDependencies:
-      '@bull-board/ui': 5.5.1
+      '@bull-board/ui': 5.9.1
     dependencies:
-      '@bull-board/ui': 5.5.1
+      '@bull-board/ui': 5.9.1
       redis-info: 3.1.0
     dev: false
 
-  /@bull-board/express@5.5.1:
-    resolution: {integrity: sha512-/Po9WiU1JmHdHr5syi5hI+3+XRblzod8l09+YX706N7FNw1/y7A2SBUtq2Q809JOees9sddo9EHHgA9B05cnEw==}
+  /@bull-board/express@5.9.1:
+    resolution: {integrity: sha512-LxBmstUY0dzjgxeDlgMhZiaD3EDKk4SG/PG3Mx6nsgYu205Brp0a54QKxJ61W1SeTYBsAJxGIg8PxYBkQa75+w==}
     dependencies:
-      '@bull-board/api': 5.5.1(@bull-board/ui@5.5.1)
-      '@bull-board/ui': 5.5.1
+      '@bull-board/api': 5.9.1(@bull-board/ui@5.9.1)
+      '@bull-board/ui': 5.9.1
       ejs: 3.1.7
       express: 4.17.3
     transitivePeerDependencies:
       - supports-color
     dev: false
 
-  /@bull-board/ui@5.5.1:
-    resolution: {integrity: sha512-/BtSXndO0F3cbM9gLrrclRsrQAfubeuWl/7dYtmwC+mDdF10F35yIvSw1z4fy3HzOFHW/A07lhPYt1flDRNVIg==}
+  /@bull-board/ui@5.9.1:
+    resolution: {integrity: sha512-lL93KVRTpLSl73KUFBw7sXOcCrqddGBbpiMKWEbViXxObIq68yFuhRrcfR7JeTSocLF5GsnqSVdSiNCZHmdNpw==}
     dependencies:
-      '@bull-board/api': 5.5.1(@bull-board/ui@5.5.1)
+      '@bull-board/api': 5.9.1(@bull-board/ui@5.9.1)
     dev: false
 
   /@changesets/apply-release-plan@6.1.3:
