@@ -155,7 +155,7 @@ production-vercel:
         # Setting the DATABASE_URL to the prisma connection string for vercel
         - export DATABASE_URL=$PRISMA_CONNECTION_STRING
         - vercel --scope kencove pull --yes --environment=production --token=$VERCEL_TOKEN
-        - vercel build --token=$VERCEL_TOKEN
+        - vercel build --prod --token=$VERCEL_TOKEN
         - export URL="$(vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN --meta gitlabCommitRef=$CI_COMMIT_REF_SLUG --meta gitlabCommitSha=$CI_COMMIT_SHA --meta gitlabDeployment=1 --meta gitlabCommitAuthorName="$GITLAB_USER_NAME" --meta gitlabProjectPath=$CI_PROJECT_PATH)"
         - vercel alias --token=$VERCEL_TOKEN set "$URL" schemabase-vc.kencove.com --scope kencove
     rules:
