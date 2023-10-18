@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import { ILogger } from "@eci/pkg/logger";
 import { AWSCognitoApp, PrismaClient } from "@eci/pkg/prisma";
 import {
