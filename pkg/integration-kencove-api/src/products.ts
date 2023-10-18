@@ -192,6 +192,7 @@ export class KencoveApiAppProductSyncService {
                     id: kenProdType.productTypeId,
                 },
                 data: {
+                    updatedAt: new Date(),
                     attributes: {
                         create: {
                             id: id.id("productType"),
