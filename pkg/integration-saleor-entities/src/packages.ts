@@ -2,35 +2,20 @@
 import { ILogger } from "@eci/pkg/logger";
 import {
     queryWithPagination,
-    SaleorCronPackagesOverviewQuery,
-    SaleorCreatePackageMutation,
-    OrderFulfillInput,
     OrderFulfillLineInput,
     OrderStatusFilter,
     OrderSortField,
     OrderDirection,
+    SaleorClient,
+    MetadataInput,
 } from "@eci/pkg/saleor";
-import { InstalledSaleorApp, PrismaClient } from "@eci/pkg/prisma";
+import { InstalledSaleorApp, Package, PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { subHours, subMonths, subYears } from "date-fns";
 import { closestsMatch } from "@eci/pkg/miscHelper/closestMatch";
 
 interface SaleorPackageSyncServiceConfig {
-    saleorClient: {
-        saleorCronPackagesOverview: (variables: {
-            first: number;
-            after: string;
-            createdGte?: string;
-            orderStatusFilter: OrderStatusFilter[];
-            orderSortField: OrderSortField;
-            orderDirection: OrderDirection;
-            updatedAtGte: Date;
-        }) => Promise<SaleorCronPackagesOverviewQuery>;
-        saleorCreatePackage: (variables: {
-            order: string;
-            input: OrderFulfillInput;
-        }) => Promise<SaleorCreatePackageMutation>;
-    };
+    saleorClient: SaleorClient;
     installedSaleorApp: InstalledSaleorApp;
     tenantId: string;
     db: PrismaClient;
@@ -39,21 +24,7 @@ interface SaleorPackageSyncServiceConfig {
 }
 
 export class SaleorPackageSyncService {
-    public readonly saleorClient: {
-        saleorCronPackagesOverview: (variables: {
-            first: number;
-            after: string;
-            createdGte?: string;
-            orderStatusFilter: OrderStatusFilter[];
-            orderSortField: OrderSortField;
-            orderDirection: OrderDirection;
-            updatedAtGte: Date;
-        }) => Promise<SaleorCronPackagesOverviewQuery>;
-        saleorCreatePackage: (variables: {
-            order: string;
-            input: OrderFulfillInput;
-        }) => Promise<SaleorCreatePackageMutation>;
-    };
+    public readonly saleorClient: SaleorClient;
 
     private readonly logger: ILogger;
 
@@ -85,6 +56,12 @@ export class SaleorPackageSyncService {
         });
     }
 
+    /**
+     * Store the saleor fulfillment Ids in our DB (upsert saleor package)
+     * @param saleorPackageId
+     * @param internalPackageId
+     * @param createdAt
+     */
     private async upsertSaleorPackage(
         saleorPackageId: string,
         internalPackageId: string,
@@ -245,6 +222,34 @@ export class SaleorPackageSyncService {
         await this.cronState.set({
             lastRun: new Date(),
             lastRunStatus: "success",
+        });
+    }
+
+    /**
+     * Take a saleor fulfillment id and update the metadata of the fulfillment
+     * with current status information from the package entity from our DB
+     * E.g. carrierTrackingUrl and status (delivered, in transit, etc.)
+     * @param saleorFulfillmentId
+     * @param parcel
+     */
+    public async updateFulfillmentMetadata(
+        saleorFulfillmentId: string,
+        parcel: Package,
+    ): Promise<void> {
+        const metadata: MetadataInput[] = [
+            {
+                key: "status",
+                value: parcel.state,
+            },
+        ];
+        if (parcel.carrierTrackingUrl)
+            metadata.push({
+                key: "carrierTrackingUrl",
+                value: parcel.carrierTrackingUrl,
+            });
+        await this.saleorClient.saleorUpdateMetadata({
+            id: saleorFulfillmentId,
+            input: metadata,
         });
     }
 
@@ -481,10 +486,12 @@ export class SaleorPackageSyncService {
                 `Saleor line items for saleor order ${saleorOrder.id}:` +
                     JSON.stringify(saleorLines),
             );
+            const trackingNumber = parcel.trackingId;
             const response = await this.saleorClient.saleorCreatePackage({
                 order: saleorOrder.id,
                 input: {
                     lines: saleorLines,
+                    trackingNumber,
                 },
             });
 
@@ -512,7 +519,11 @@ export class SaleorPackageSyncService {
                     return true;
                 });
             } else {
-                for (const fulfillment of response.orderFulfill?.fulfillments) {
+                /**
+                 * one package = one fullfillment in Saleor, so we should actually never have more than one
+                 * fulfillment in the response..
+                 */
+                for (const fulfillment of response.orderFulfill.fulfillments) {
                     if (!fulfillment?.id)
                         throw new Error(
                             `Fulfillment id missing for ${saleorOrder.id}`,
@@ -522,8 +533,22 @@ export class SaleorPackageSyncService {
                         parcel.id,
                         fulfillment?.created,
                     );
+                    /**
+                     * Update the carrierTrackingUrl and other package related information
+                     * in saleor
+                     */
+                    await this.updateFulfillmentMetadata(
+                        fulfillment.id,
+                        parcel,
+                    );
                 }
             }
+
+            /**
+             * Find packages that received updates since the last run
+             * (updates in the package) and update the metadata of the fulfillment
+             * in saleor
+             */
         }
     }
 }
