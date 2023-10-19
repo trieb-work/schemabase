@@ -86,6 +86,20 @@ export class KencoveApiAppContactSyncService {
                     continue;
                 }
 
+                /**
+                 * Skip contact sync if first or lastname are longer than 150 characters
+                 * (we assume, that this is a mistake in the data)
+                 */
+                if (
+                    contact.firstname.length > 150 ||
+                    contact.lastname.length > 150
+                ) {
+                    this.logger.warn(
+                        `Skipping contact with invalid first or lastname: ${contact.firstname} ${contact.lastname}`,
+                    );
+                    continue;
+                }
+
                 const companyName = contact.companyname;
                 const companyNameNormalized = normalizeStrings.companyNames(
                     companyName || "",
