@@ -91,8 +91,8 @@ export class KencoveApiAppContactSyncService {
                  * (we assume, that this is a mistake in the data)
                  */
                 if (
-                    contact.firstname.length > 150 ||
-                    contact.lastname.length > 150
+                    (contact.firstname && contact?.firstname?.length > 150) ||
+                    (contact.lastname && contact?.lastname?.length > 150)
                 ) {
                     this.logger.warn(
                         `Skipping contact with invalid first or lastname: ${contact.firstname} ${contact.lastname}`,

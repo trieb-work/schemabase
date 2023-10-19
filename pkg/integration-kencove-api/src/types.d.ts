@@ -111,12 +111,12 @@ export type KencoveApiAttributeInProduct = {
 
 export type KencoveApiContact = {
     id: number;
-    firstname: string;
-    lastname: string;
+    firstname: string | null;
+    lastname: string | null;
     companyname: string | null;
     customer_code: string;
-    email: string;
-    phone: string;
+    email: string | null;
+    phone: string | null;
     phone_extension: string | null;
     mobile: string | null;
     type: string;
