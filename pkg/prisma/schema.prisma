@@ -852,7 +852,8 @@ model Contact {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  email String
+  /// Email is our unique identifier. Emails have to be valid and can be very long, so we use a Text field here
+  email String @db.Text
 
   firstName String?
   lastName  String?
