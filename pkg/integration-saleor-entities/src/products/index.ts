@@ -1455,11 +1455,6 @@ export class SaleorProductSyncService {
                 }
             }
         }
-
-        await this.cronState.set({
-            lastRun: new Date(),
-            lastRunStatus: "success",
-        });
     }
 
     public async syncFromECI(): Promise<void> {
