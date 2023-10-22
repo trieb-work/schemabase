@@ -12,7 +12,7 @@ mutation productUpdate($input: ProductInput!, $id: ID!) {
             }
             media {
                 id
-                metafield(key:"schemabase-media-id")
+                metafield(key: "schemabase-media-id")
             }
         }
     }

@@ -1,9 +1,9 @@
 mutation productMediaDelete($id: ID!) {
-  productMediaDelete(id: $id) {
-    errors {
-      field
-      code
-      message
+    productMediaDelete(id: $id) {
+        errors {
+            field
+            code
+            message
+        }
     }
-  }
 }

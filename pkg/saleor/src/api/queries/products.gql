@@ -161,37 +161,41 @@ query saleorEntitySyncProducts(
     }
 }
 
-query saleorProductVariantsBasicData($ids: [ID!]!, $first: Int, $after: String) {
-  productVariants(ids: $ids, first: $first, after: $after) {
-    pageInfo {
-      hasNextPage
-      hasPreviousPage
-      startCursor
-      endCursor
+query saleorProductVariantsBasicData(
+    $ids: [ID!]!
+    $first: Int
+    $after: String
+) {
+    productVariants(ids: $ids, first: $first, after: $after) {
+        pageInfo {
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+        }
+        edges {
+            node {
+                id
+                name
+                product {
+                    id
+                    name
+                }
+                metadata {
+                    key
+                    value
+                }
+                stocks {
+                    warehouse {
+                        id
+                        name
+                    }
+                    quantity
+                    quantityAllocated
+                }
+            }
+        }
     }
-    edges {
-      node {
-        id
-        name
-        product {
-          id
-          name
-        }
-        metadata {
-          key
-          value
-        }
-        stocks {
-          warehouse {
-            id
-            name
-          }
-          quantity
-          quantityAllocated
-        }
-      }
-    }
-  }
 }
 
 query saleorProductVariantBasicData($id: ID!) {
@@ -218,16 +222,16 @@ query saleorProductVariantBasicData($id: ID!) {
 }
 
 query productWithAttributes($id: ID!) {
-  product(id: $id) {
-    attributes {
-      attribute {
-        id
-        name
-      }
-      values {
-        name
-        id
-      }
+    product(id: $id) {
+        attributes {
+            attribute {
+                id
+                name
+            }
+            values {
+                name
+                id
+            }
+        }
     }
-  }
 }

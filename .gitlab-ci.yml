@@ -93,20 +93,19 @@ review:
         - if: "$CI_COMMIT_TAG =~ /^v[0-9].*/"
 
 .vercel_template: &vercel_template
-  image: node:18
-  before_script:
-    - corepack enable
-    - corepack prepare pnpm@latest-8 --activate
-    - pnpm config set store-dir .pnpm-store
-    # Using the vercel cli for all build and deploy commands. This needs the environmen variables VERCEL_PROJECT_ID and VERCEL_ORG_ID being set in the gitlab project settings.
-    - npm install --global vercel
-  cache:
-    key:
-      files:
-        - pnpm-lock.yaml
-    paths:
-      - .pnpm-store    
-
+    image: node:18
+    before_script:
+        - corepack enable
+        - corepack prepare pnpm@latest-8 --activate
+        - pnpm config set store-dir .pnpm-store
+        # Using the vercel cli for all build and deploy commands. This needs the environmen variables VERCEL_PROJECT_ID and VERCEL_ORG_ID being set in the gitlab project settings.
+        - npm install --global vercel
+    cache:
+        key:
+            files:
+                - pnpm-lock.yaml
+        paths:
+            - .pnpm-store
 
 review-vercel:
     <<: *vercel_template
@@ -167,7 +166,6 @@ production-vercel:
           when: never
         - if: "$CI_COMMIT_TAG"
 
-
 ## Review job is deploying manually on tag
 production:
     extends: .auto-deploy
@@ -176,7 +174,6 @@ production:
         AUTO_DEVOPS_COMMON_NAME: queue-manager.kencove.com
         KUBE_NAMESPACE: schemabase-production
     script:
-
         - helm repo add azure-marketplace https://marketplace.azurecr.io/helm/v1/repo
         # Add a redis deployment with nodeport service, limit CPU and memory, set a password, set standard persistent storage 3 GB. Name: redis-schemabase-production
         - helm upgrade --install --create-namespace -n $KUBE_NAMESPACE redis-schemabase-production azure-marketplace/redis --set architecture="standalone" --set auth.password="$REDIS_PASSWORD" --set resources.requests.cpu=100m --set resources.requests.memory=350Mi --set resources.limits.cpu=200m --set resources.limits.memory=256Mi --set persistence.size=3Gi --set service.type=NodePort
