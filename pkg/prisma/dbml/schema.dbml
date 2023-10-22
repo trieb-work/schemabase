@@ -573,6 +573,7 @@ Table Contact {
   addresses Address [not null]
   saleorCustomers SaleorCustomer [not null]
   kencoveApiContacts KencoveApiContact [not null]
+  awsCognitoUsers AWSCognitoUser [not null]
   channels SalesChannel [not null, note: 'Customers can be related to one or multiple sales channels.
 Depending on the setup, this means, that customers are allowed to use specific pricelists']
   trackingEmailsConsent Boolean [not null, default: true, note: 'If we have the users permission to send tracking emails']
@@ -1544,6 +1545,20 @@ Table InternalDataApp {
   tenantId String [not null]
 }
 
+Table AWSCognitoApp {
+  id String [pk]
+  enabled Boolean [not null, default: true]
+  accessKeyId String [not null]
+  secretAccessKey String [not null]
+  userPoolId String [not null]
+  region String [not null]
+  tenant Tenant [not null]
+  tenantId String [not null]
+  users AWSCognitoUser [not null]
+
+  Note: 'The admin app for AWS cognito. Using the IAM credentials to authenticate. We store credentials per user pool'
+}
+
 Table ZohoApp {
   id String [pk]
   enabled Boolean [not null, default: true]
@@ -1702,6 +1717,7 @@ Table Tenant {
   salesChannels SalesChannel [not null]
   salesChannelPriceEntry SalesChannelPriceEntry [not null]
   internalDataApps InternalDataApp [not null]
+  awsCognitoApps AWSCognitoApp [not null]
 }
 
 Table Subscription {
@@ -1810,6 +1826,18 @@ Table XentralProxyAuftrag {
   indexes {
     (id, xentralProxyAppId) [unique]
     (xentralBelegNr, xentralProxyAppId) [unique]
+  }
+}
+
+Table AWSCognitoUser {
+  id String [not null, note: 'The cognito "username"']
+  contact Contact [not null]
+  contactId String [not null]
+  awsCognitoApp AWSCognitoApp [not null]
+  awsCognitoAppId String [not null]
+
+  indexes {
+    (id, awsCognitoAppId) [unique]
   }
 }
 
@@ -2579,6 +2607,8 @@ Ref: ReviewsioApp.tenantId > Tenant.id [delete: Cascade]
 
 Ref: InternalDataApp.tenantId > Tenant.id [delete: Cascade]
 
+Ref: AWSCognitoApp.tenantId > Tenant.id [delete: Cascade]
+
 Ref: ZohoApp.tenantId > Tenant.id [delete: Cascade]
 
 Ref: SaleorApp.tenantId > Tenant.id [delete: Cascade]
@@ -2624,6 +2654,10 @@ Ref: XentralProxyApp.warehouseId > Warehouse.id [delete: Cascade]
 Ref: XentralProxyAuftrag.xentralProxyAppId > XentralProxyApp.id
 
 Ref: XentralProxyAuftrag.orderId > Order.id
+
+Ref: AWSCognitoUser.contactId > Contact.id
+
+Ref: AWSCognitoUser.awsCognitoAppId > AWSCognitoApp.id
 
 Ref: IncomingWebhook.dpdAppId > DpdApp.id [delete: Cascade]
 
