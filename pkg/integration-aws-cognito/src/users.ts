@@ -6,7 +6,7 @@ import {
     CognitoIdentityProvider,
     ListUsersCommand,
     ListUsersCommandOutput,
-    AdminCreateUserCommand,
+    // AdminCreateUserCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { subHours, subYears } from "date-fns";
@@ -69,17 +69,18 @@ export class CognitoUserSyncService {
         await this.cognitoClient.send(updateUserCommand);
     }
 
-    private async createUserInCognito(
-        email: string,
-        attributes: { Name: string; Value: string }[],
-    ): Promise<void> {
-        const createUserCommand = new AdminCreateUserCommand({
-            UserPoolId: this.AWSCognitoApp.userPoolId,
-            Username: email,
-            UserAttributes: attributes,
-        });
-        await this.cognitoClient.send(createUserCommand);
-    }
+    // private async createUserInCognito(
+    //     email: string,
+    //     attributes: { Name: string; Value: string }[],
+    // ): Promise<void> {
+    //     const createUserCommand = new AdminCreateUserCommand({
+    //         UserPoolId: this.AWSCognitoApp.userPoolId,
+    //         Username: email,
+    //         UserAttributes: attributes,
+    //         MessageAction: "SUPPRESS",
+    //     });
+    //     await this.cognitoClient.send(createUserCommand);
+    // }
 
     /**
      * We search for a user in AWS cognito using the email address as search parameter.
@@ -155,13 +156,27 @@ export class CognitoUserSyncService {
                     );
                     continue;
                 }
-                this.logger.info(`Creating user ${contact.email} in Cognito`);
-                await this.createUserInCognito(contact.email, [
-                    {
-                        Name: "custom:channel",
-                        Value: channelName,
-                    },
-                ]);
+                /**
+                 * We are currently not creating a user in cognito, as
+                 * we can't migrate existing passwords from our DB to cognito.
+                 * There might be other use-cases where we need to enable the
+                 * account creation, and maybe trigger a PW reset email.
+                 */
+                // this.logger.info(`Creating user ${contact.email} in Cognito`);
+                // await this.createUserInCognito(contact.email, [
+                //     {
+                //         Name: "custom:channel",
+                //         Value: channelName,
+                //     },
+                //     {
+                //         Name: "email",
+                //         Value: contact.email,
+                //     },
+                //     {
+                //         Name: "email_verified",
+                //         Value: "true",
+                //     },
+                // ]);
             } else {
                 this.logger.info(`Updating user ${contact.email} in Cognito`);
                 for (const u of cognitoUser) {
