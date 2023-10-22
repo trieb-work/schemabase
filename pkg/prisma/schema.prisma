@@ -177,7 +177,7 @@ model SaleorChannel {
   name String
 
   /// related, internal sales channel. We map this channel manually in most cases, so this field is optional
-  salesChannel  SalesChannel? @relation(fields: [salesChannelId], references: [id], onDelete: Cascade)
+  salesChannel   SalesChannel? @relation(fields: [salesChannelId], references: [id], onDelete: Cascade)
   salesChannelId String?
 
   installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
@@ -259,6 +259,24 @@ model SaleorPayment {
   @@index([installedSaleorAppId])
   @@index([saleorOrderId])
   @@index([saleorOrderId, installedSaleorAppId])
+}
+
+/// Saleor specific model for media files.
+/// we get from Saleor just a media URL. This helps 
+/// us to check, if we have media already uploaded or not.
+model SaleorMedia {
+  /// The URL of the media file
+  url String
+
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String
+
+  media   Media  @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  mediaId String
+
+  @@unique([url, installedSaleorAppId])
+  @@index([installedSaleorAppId])
+  @@index([mediaId])
 }
 
 model SaleorProduct {
@@ -885,7 +903,7 @@ model Contact {
 
   /// Customers can be related to one or multiple sales channels.
   /// Depending on the setup, this means, that customers are allowed to use specific pricelists
-  channels          SalesChannel[]
+  channels SalesChannel[]
 
   /// If we have the users permission to send tracking emails
   trackingEmailsConsent   Boolean @default(true)
@@ -1189,7 +1207,7 @@ model Order {
 /// you can map for example saleor sales channels to this model and pricelists from different
 /// ERP systems
 model SalesChannel {
-  id       String   @id
+  id        String   @id
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1204,21 +1222,19 @@ model SalesChannel {
   saleorChannels SaleorChannel[]
   priceEntries   SalesChannelPriceEntry[]
 
-
   @@unique([normalizedName, tenantId])
   @@index([tenantId])
-
 }
 
 model SalesChannelPriceEntry {
-  id        String   @id
+  id String @id
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  salesChannel SalesChannel @relation(fields: [salesChannelId], references: [id], onDelete: Cascade)
-  salesChannelId String
-  productVariant ProductVariant @relation(fields: [productVariantId], references: [id])
+  salesChannel     SalesChannel   @relation(fields: [salesChannelId], references: [id], onDelete: Cascade)
+  salesChannelId   String
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
   productVariantId String
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -1226,7 +1242,7 @@ model SalesChannelPriceEntry {
 
   price Float
 
-  startDate DateTime @default(now())
+  startDate DateTime  @default(now())
   endDate   DateTime?
 
   /// This price is valid starting with this quantity
@@ -1625,14 +1641,13 @@ model Media {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  products Product[]
+  products        Product[]
   productVariants ProductVariant[]
-  categories Category[]
+  categories      Category[]
+  saleorMedia     SaleorMedia[]
 
-  @@index([tenantId])
   @@unique([url, tenantId])
-
-
+  @@index([tenantId])
 }
 
 /// attributes values for attributes. We have to separate models for product and variant attributes,
@@ -1814,10 +1829,10 @@ model ProductType {
 
 /// matching table between product types and attributes
 model ProductTypeAttribute {
-  id            String @id
+  id        String   @id
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   productTypeId String
 
   /// Indicates if the attribute is for product or variant.
@@ -1837,23 +1852,18 @@ model ProductTypeAttribute {
 /// This model defines the relation between a product and a related product,
 /// frequently bought together.
 model ProductToFrequentlyBoughtWith {
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  productId      String
+  productId        String
   relatedProductId String
 
-  
   product        Product @relation("ProductToRelated", fields: [productId], references: [id])
   relatedProduct Product @relation("RelatedToProduct", fields: [relatedProductId], references: [id])
 
   @@id([productId, relatedProductId])
-
   @@index([relatedProductId])
   @@index([productId])
-
-
 }
 
 // The ECI internal Product model
@@ -1895,8 +1905,7 @@ model Product {
   /// All frequently bought together products as relation
   frequentlyBoughtWith ProductToFrequentlyBoughtWith[] @relation("ProductToRelated")
   /// Just the relation back. Not used in the code
-  boughtTogetherWith ProductToFrequentlyBoughtWith[] @relation("RelatedToProduct")
-
+  boughtTogetherWith   ProductToFrequentlyBoughtWith[] @relation("RelatedToProduct")
 
   @@unique([name, tenantId])
   @@unique([normalizedName, tenantId])
@@ -2689,7 +2698,6 @@ model ReviewsioApp {
 }
 
 model InternalDataApp {
-
   id String @id
 
   enabled Boolean @default(false)
@@ -2703,7 +2711,6 @@ model InternalDataApp {
   tenantId String
 
   @@index([tenantId])
-
 }
 
 model ZohoApp {
@@ -2848,16 +2855,16 @@ model InstalledSaleorApp {
 
   cookies Cookies[]
 
-  syncCustomers     Boolean @default(false)
-  syncWarehouses    Boolean @default(false)
-  syncOrders        Boolean @default(false)
-  syncInvoices      Boolean @default(false)
-  syncPayments      Boolean @default(false)
-  syncProductStocks Boolean @default(false)
-  syncProducts      Boolean @default(false)
-  syncPackages      Boolean @default(false)
-  syncTaxes         Boolean @default(false)
-  syncCategories    Boolean @default(false)
+  syncCustomers       Boolean @default(false)
+  syncWarehouses      Boolean @default(false)
+  syncOrders          Boolean @default(false)
+  syncInvoices        Boolean @default(false)
+  syncPayments        Boolean @default(false)
+  syncProductStocks   Boolean @default(false)
+  syncProducts        Boolean @default(false)
+  syncPackages        Boolean @default(false)
+  syncTaxes           Boolean @default(false)
+  syncCategories      Boolean @default(false)
   /// If this is true, we will create orders in Saleor, that we received from 3rd party systems. Needs min. Saleor 3.17. Will only sync orders, where we have customers in Saleor already
   createHistoricOrdes Boolean @default(false)
 
@@ -2876,6 +2883,7 @@ model InstalledSaleorApp {
   saleorAttribute            SaleorAttribute[]
   saleorProduct              SaleorProduct[]
   saleorChannel              SaleorChannel[]
+  saleorMedia                SaleorMedia[]
 
   @@unique([domain, channelSlug])
   @@index([saleorAppId, domain])
@@ -3030,7 +3038,6 @@ model CronJobState {
 
   @@index([id])
 }
-
 
 model LogisticsIntegration {
   id String @id

@@ -169,6 +169,22 @@ Table SaleorPayment {
   }
 }
 
+Table SaleorMedia {
+  url String [not null, note: 'The URL of the media file']
+  installedSaleorApp InstalledSaleorApp [not null]
+  installedSaleorAppId String [not null]
+  media Media [not null]
+  mediaId String [not null]
+
+  indexes {
+    (url, installedSaleorAppId) [unique]
+  }
+
+  Note: 'Saleor specific model for media files.
+we get from Saleor just a media URL. This helps 
+us to check, if we have media already uploaded or not.'
+}
+
 Table SaleorProduct {
   id String [not null, note: 'Saleor internal product id']
   updatedAt DateTime [not null]
@@ -815,6 +831,7 @@ Table Media {
   products Product [not null]
   productVariants ProductVariant [not null]
   categories Category [not null]
+  saleorMedia SaleorMedia [not null]
 
   indexes {
     (url, tenantId) [unique]
@@ -1628,6 +1645,7 @@ Table InstalledSaleorApp {
   saleorAttribute SaleorAttribute [not null]
   saleorProduct SaleorProduct [not null]
   saleorChannel SaleorChannel [not null]
+  saleorMedia SaleorMedia [not null]
 
   indexes {
     (domain, channelSlug) [unique]
@@ -2256,6 +2274,10 @@ Ref: SaleorPayment.(saleorOrderId, installedSaleorAppId) > SaleorOrder.(id, inst
 Ref: SaleorPayment.paymentId > Payment.id [delete: Cascade]
 
 Ref: SaleorPayment.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
+
+Ref: SaleorMedia.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
+
+Ref: SaleorMedia.mediaId > Media.id [delete: Cascade]
 
 Ref: SaleorProduct.productId > Product.id [delete: Cascade]
 
