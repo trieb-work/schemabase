@@ -1,15 +1,19 @@
 import { ILogger } from "@eci/pkg/logger";
-import { InstalledSaleorApp, SaleorApp } from "@eci/pkg/prisma";
+import { InstalledSaleorApp, PrismaClient, SaleorApp } from "@eci/pkg/prisma";
 
 export class MediaUpload {
     private readonly installedSaleorApp: InstalledSaleorApp & {
         saleorApp: SaleorApp;
     };
 
+    private readonly db: PrismaClient;
+
     constructor(
         installedSaleorApp: InstalledSaleorApp & { saleorApp: SaleorApp },
+        db: PrismaClient,
     ) {
         this.installedSaleorApp = installedSaleorApp;
+        this.db = db;
     }
 
     /**
@@ -30,6 +34,7 @@ export class MediaUpload {
             "webp",
             "bmp",
             "tiff",
+            "pdf",
         ];
         if (!validExtensions.includes(extension.toLowerCase())) {
             return ".png"; // fallback to .png if the extracted extension isn't recognized
@@ -38,29 +43,29 @@ export class MediaUpload {
         return `.${extension}`;
     }
 
-    public async fetchImageBlob(url: string): Promise<Blob> {
+    public async fetchMediaBlob(url: string): Promise<Blob> {
         const imgResp = await fetch(url);
         if (!imgResp.ok) {
             throw new Error("Error downloading image");
         }
-        const imageBlob = await imgResp.blob();
-        if (!imageBlob) {
+        const mediaBlob = await imgResp.blob();
+        if (!mediaBlob) {
             throw new Error("Failed to convert response to blob");
         }
-        return imageBlob;
+        return mediaBlob;
     }
 
     /**
      * Upload the image to saleor using the GraphQL multipart request specification.
      * Returns the image id of the uploaded image.
      * @param saleorProductId
-     * @param imageBlob
+     * @param mediaBlob
      * @param fileExtension
      * @returns
      */
     public async uploadImageToSaleor(
         saleorProductId: string,
-        imageBlob: Blob,
+        mediaBlob: Blob,
         fileExtension: string,
         logger: ILogger,
     ): Promise<string> {
@@ -93,7 +98,7 @@ export class MediaUpload {
         form.append("map", JSON.stringify({ image: ["variables.image"] }));
 
         // Use the file extension when appending the image to the form
-        form.append("image", imageBlob, `image${fileExtension}`);
+        form.append("image", mediaBlob, `image${fileExtension}`);
 
         logger.debug(
             `Uploading image to Saleor with name: image${fileExtension}`,
@@ -129,7 +134,7 @@ export class MediaUpload {
      */
     public async uploadCategoryImageToSaleor(
         saleorCategoryId: string,
-        imageBlob: Blob,
+        mediaBlob: Blob,
         fileExtension: string,
         logger: ILogger,
     ): Promise<string> {
@@ -166,7 +171,7 @@ export class MediaUpload {
         // Use the file extension when appending the image to the form
         form.append(
             "backgroundImage",
-            imageBlob,
+            mediaBlob,
             `backgroundImage${fileExtension}`,
         );
 
@@ -205,6 +210,7 @@ export class MediaUpload {
     public async uploadFileToSaleor(
         fileBlob: Blob,
         fileExtension: string,
+        mediaId: string,
         logger: ILogger,
     ): Promise<string> {
         const form = new FormData();
@@ -215,7 +221,7 @@ export class MediaUpload {
             mutation fileUpload($file: Upload!) {
                 fileUpload(file: $file) {
                     uploadedFile {
-                        id
+                        url
                     }
                 }
             }
@@ -244,6 +250,7 @@ export class MediaUpload {
         });
 
         if (!response.ok) {
+            console.error(await response.text());
             throw new Error("Failed to upload file to Saleor");
         }
         const res = await response.json();
@@ -255,6 +262,33 @@ export class MediaUpload {
                 )}`,
             );
         }
-        return res.data.fileUpload.uploadedFile.url;
+
+        /**
+         * store the media URL in our DB
+         */
+        await this.db.saleorMedia.upsert({
+            where: {
+                url_installedSaleorAppId: {
+                    url: res.data.fileUpload.uploadedFile.url,
+                    installedSaleorAppId: this.installedSaleorApp.id,
+                },
+            },
+            create: {
+                url: res.data.fileUpload.uploadedFile.url,
+                media: {
+                    connect: {
+                        id: mediaId,
+                    },
+                },
+                installedSaleorApp: {
+                    connect: {
+                        id: this.installedSaleorApp.id,
+                    },
+                },
+            },
+            update: {},
+        });
+
+        return res.data.fileUpload.uploadedFile.url as string;
     }
 }
