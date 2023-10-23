@@ -757,13 +757,7 @@ export class SaleorProductSyncService {
                             },
                         },
                     },
-                    media: {
-                        where: {
-                            type: {
-                                notIn: ["MANUAL", "THUMBNAIL"],
-                            },
-                        },
-                    },
+                    media: true,
                 },
             },
         );
@@ -1048,11 +1042,12 @@ export class SaleorProductSyncService {
                     });
                     /**
                      * Media files we need to upload - product videos are not uploaded,
-                     * but just set as youtube URLs
+                     * but just set as youtube URLs. We filter out type PRODUCTVIDEO and MANUAL
                      */
                     const mediaToUpload = product.media.filter(
-                        (m) => m.type !== "PRODUCTVIDEO",
+                        (m) => m.type !== "PRODUCTVIDEO" && m.type !== "MANUAL",
                     );
+
                     if (mediaToUpload.length > 0) {
                         await this.uploadMedia(saleorProductId, mediaToUpload);
                     }
