@@ -981,6 +981,14 @@ export class SaleorProductSyncService {
 
                 let saleorProductId = product.saleorProducts?.[0]?.id;
 
+                /**
+                 * Media files from our DB - product videos are not uploaded,
+                 * but just set as youtube URLs. We filter out type PRODUCTVIDEO and MANUAL
+                 */
+                const schemabaseMedia = product.media.filter(
+                    (m) => m.type !== "PRODUCTVIDEO" && m.type !== "MANUAL",
+                );
+
                 if (!saleorProductId) {
                     this.logger.info(
                         `Creating product ${product.name} in Saleor`,
@@ -1040,13 +1048,8 @@ export class SaleorProductSyncService {
                             updatedAt: product.updatedAt,
                         },
                     });
-                    /**
-                     * Media files we need to upload - product videos are not uploaded,
-                     * but just set as youtube URLs. We filter out type PRODUCTVIDEO and MANUAL
-                     */
-                    const mediaToUpload = product.media.filter(
-                        (m) => m.type !== "PRODUCTVIDEO" && m.type !== "MANUAL",
-                    );
+
+                    const mediaToUpload = schemabaseMedia;
 
                     if (mediaToUpload.length > 0) {
                         await this.uploadMedia(saleorProductId, mediaToUpload);
@@ -1096,7 +1099,6 @@ export class SaleorProductSyncService {
                     // our internal media id or null
                     const saleorMedia =
                         productUpdateResponse.productUpdate.product.media || [];
-                    const schemabaseMedia = product.media;
 
                     const filteredMedia = saleorMedia?.filter(
                         (m) => m.metafield !== null || undefined,
