@@ -15861,6 +15861,7 @@ export enum OrderErrorCode {
     InsufficientStock = "INSUFFICIENT_STOCK",
     Invalid = "INVALID",
     InvalidQuantity = "INVALID_QUANTITY",
+    InvalidVoucher = "INVALID_VOUCHER",
     NotAvailableInChannel = "NOT_AVAILABLE_IN_CHANNEL",
     NotEditable = "NOT_EDITABLE",
     NotFound = "NOT_FOUND",
