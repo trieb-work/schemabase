@@ -32,6 +32,7 @@ import { MediaUpload } from "../mediaUpload";
 import { ChannelAvailability } from "./channelAvailability";
 import { parseBoolean } from "@eci/pkg/miscHelper/parseBoolean";
 import { FrequentlyBoughtTogether } from "./frequentlyBoughtTogether";
+import { SaleorProductManual } from "./productManual";
 
 export interface SaleorProductSyncServiceConfig {
     saleorClient: SaleorClient;
@@ -592,13 +593,13 @@ export class SaleorProductSyncService {
      * GraphQL multipart request specification
      */
     public async uploadMedia(saleorProductId: string, media: Media[]) {
-        const mediaUpload = new MediaUpload(this.installedSaleorApp);
+        const mediaUpload = new MediaUpload(this.installedSaleorApp, this.db);
         for (const element of media) {
             this.logger.info(
                 `Uploading media ${element.id}: ${element.url} to saleor`,
             );
             try {
-                const imageBlob = await mediaUpload.fetchImageBlob(element.url);
+                const imageBlob = await mediaUpload.fetchMediaBlob(element.url);
                 const fileExtension = mediaUpload.getFileExtension(element.url);
                 const imageId = await mediaUpload.uploadImageToSaleor(
                     saleorProductId,
@@ -698,7 +699,21 @@ export class SaleorProductSyncService {
                     },
                     productType: {
                         include: {
-                            attributes: true,
+                            attributes: {
+                                include: {
+                                    attribute: {
+                                        include: {
+                                            saleorAttributes: {
+                                                where: {
+                                                    installedSaleorAppId:
+                                                        this
+                                                            .installedSaleorAppId,
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
                             saleorProductTypes: {
                                 where: {
                                     installedSaleorAppId:
@@ -742,7 +757,13 @@ export class SaleorProductSyncService {
                             },
                         },
                     },
-                    media: true,
+                    media: {
+                        where: {
+                            type: {
+                                notIn: ["MANUAL", "THUMBNAIL"],
+                            },
+                        },
+                    },
                 },
             },
         );
@@ -798,6 +819,7 @@ export class SaleorProductSyncService {
                     );
                     continue;
                 }
+
                 const attributesWithSaleorAttributes =
                     product.attributes.filter(
                         (a) => a.attribute.saleorAttributes.length > 0,
@@ -805,6 +827,82 @@ export class SaleorProductSyncService {
 
                 const attributes: ProductCreateMutationVariables["input"]["attributes"] =
                     [];
+
+                /**
+                 * Products can have related product manuals. We try to upload the corresponding
+                 * media and add it as product attributes to the product. We just upload media,
+                 * that is missing in saleor.
+                 */
+                const productManuals = await this.db.media.findMany({
+                    where: {
+                        products: {
+                            some: {
+                                id: product.id,
+                            },
+                        },
+                        tenantId: this.tenantId,
+                        type: "MANUAL",
+                    },
+                    include: {
+                        saleorMedia: {
+                            where: {
+                                installedSaleorAppId: this.installedSaleorAppId,
+                            },
+                        },
+                    },
+                });
+                if (productManuals.length > 0) {
+                    /**
+                     * Internally, we support multiple product manuals per product. In
+                     * Saleor we currently just support one, so we just take the first
+                     */
+                    let externalMediaUrl =
+                        productManuals[0].saleorMedia?.[0]?.url;
+                    const saleorProdManual = new SaleorProductManual(
+                        this.saleorClient,
+                        this.logger,
+                        this.db,
+                        this.installedSaleorApp,
+                    );
+                    /**
+                     * Just the product manuals that we still need to upload
+                     */
+                    const manualsToUpload = productManuals.filter(
+                        (manual) => !manual.saleorMedia?.[0]?.url,
+                    );
+                    for (const manual of manualsToUpload) {
+                        const resp =
+                            await saleorProdManual.uploadProductManual(manual);
+                        if (resp) {
+                            externalMediaUrl = resp;
+                        }
+                    }
+                    /**
+                     * Adding the manual URL to the product attributes
+                     */
+
+                    /**
+                     * The saleor attribute id for the product manual
+                     */
+                    const saleorAtttribute = productType.attributes.find(
+                        (a) => a.attribute.normalizedName === "productmanual",
+                    )?.attribute?.saleorAttributes[0]?.id;
+
+                    if (!saleorAtttribute) {
+                        this.logger.error(
+                            'We have a product manual, but no saleor attribute for "product manual". Skipping',
+                            {
+                                productManuals: productManuals.map((x) => x.id),
+                                productName: product.name,
+                            },
+                        );
+                        continue;
+                    }
+                    attributes.push({
+                        id: saleorAtttribute,
+                        file: externalMediaUrl,
+                    });
+                }
                 /**
                  * Prepare the attributes to fit the saleor schema
                  */
@@ -949,7 +1047,13 @@ export class SaleorProductSyncService {
                             updatedAt: product.updatedAt,
                         },
                     });
-                    const mediaToUpload = product.media;
+                    /**
+                     * Media files we need to upload - product videos are not uploaded,
+                     * but just set as youtube URLs
+                     */
+                    const mediaToUpload = product.media.filter(
+                        (m) => m.type !== "PRODUCTVIDEO",
+                    );
                     if (mediaToUpload.length > 0) {
                         await this.uploadMedia(saleorProductId, mediaToUpload);
                     }

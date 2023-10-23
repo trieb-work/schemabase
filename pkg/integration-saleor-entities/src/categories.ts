@@ -103,9 +103,9 @@ export class SaleorCategorySyncService {
         url: string,
         saleorCategoryId: string,
     ) {
-        const mediaUpload = new MediaUpload(this.installedSaleorApp);
+        const mediaUpload = new MediaUpload(this.installedSaleorApp, this.db);
 
-        const imageBlob = await mediaUpload.fetchImageBlob(url);
+        const imageBlob = await mediaUpload.fetchMediaBlob(url);
         const fileExtension = mediaUpload.getFileExtension(url);
         await mediaUpload.uploadCategoryImageToSaleor(
             saleorCategoryId,
