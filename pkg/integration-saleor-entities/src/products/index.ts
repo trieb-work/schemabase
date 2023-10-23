@@ -859,7 +859,6 @@ export class SaleorProductSyncService {
                     let externalMediaUrl =
                         productManuals[0].saleorMedia?.[0]?.url;
                     const saleorProdManual = new SaleorProductManual(
-                        this.saleorClient,
                         this.logger,
                         this.db,
                         this.installedSaleorApp,
