@@ -74,15 +74,21 @@ export class KencoveApiClient {
                 decoded &&
                 decoded.exp &&
                 /**
-                 * is the first date after the second date?
+                 * The token is normally valid 1h, but we want to refresh
+                 * 30 minutes before expiration.
                  */
-                isAfter(new Date(decoded.exp * 1000), new Date())
+                isAfter(
+                    new Date(decoded.exp * 1000 - 30 * 60 * 1000),
+                    new Date(),
+                )
+                // isAfter(new Date(decoded.exp * 1000), new Date())
             ) {
                 return this.jwt;
             }
         }
 
         try {
+            this.logger.debug("Requesting new access token");
             const response = await axios.request({
                 method: "post",
                 url: this.app.tokenEndpoint,
