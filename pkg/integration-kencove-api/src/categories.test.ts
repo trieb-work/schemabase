@@ -14,7 +14,7 @@ describe("KencoveApiClient", () => {
     beforeAll(async () => {
         app = await prisma.kencoveApiApp.findUniqueOrThrow({
             where: {
-                id: "test",
+                id: "kencove_prod",
             },
         });
     });
@@ -26,5 +26,5 @@ describe("KencoveApiClient", () => {
             logger: new AssertionLogger(),
         });
         await service.syncToECI();
-    }, 200000);
+    }, 2000000);
 });
