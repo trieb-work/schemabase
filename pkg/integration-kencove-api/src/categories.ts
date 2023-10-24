@@ -140,6 +140,9 @@ export class KencoveApiAppCategorySyncService {
 
             const media = category.images || [];
 
+            /**
+             * Existing KencoveApiCategory from our DB
+             */
             const existingCategory = existingCategories.find(
                 (c) => c.id === category.cateorgyId.toString(),
             );
@@ -178,6 +181,7 @@ export class KencoveApiAppCategorySyncService {
             );
             /**
              * All Kencove Api categories that we need to connect to this category.
+             * We search in our internal DB for parent and children category ids
              */
             const categoriesToConnect =
                 await this.db.kencoveApiCategory.findMany({
@@ -212,15 +216,18 @@ export class KencoveApiAppCategorySyncService {
             /**
              * The parent category of the current category with our internal Id.
              * So when this category has a parent, that we already synced, this Id
-             * is set here
+             * is set here. INTERNAL SCHEMABASE ID
              */
             let parentCategoryId = categoriesToConnect.find(
                 (c) => c.id === category.parentCategoryId.toString(),
             )?.categoryId;
 
-            if (parentCategoryId && parentCategoryId === existingCategory?.id) {
+            if (
+                parentCategoryId &&
+                parentCategoryId === existingCategory?.categoryId
+            ) {
                 this.logger.debug(
-                    `Category ${category.categoryName} is its own parent. Skipping.`,
+                    `Category ${category.categoryName} is its own parent. Skipping the connect of the parent category.`,
                 );
                 parentCategoryId = undefined;
             }
