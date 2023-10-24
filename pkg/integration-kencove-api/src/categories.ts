@@ -304,7 +304,9 @@ export class KencoveApiAppCategorySyncService {
             }
 
             if (!existingCategory) {
-                this.logger.info(`Creating category ${category.cateorgyId}.`);
+                this.logger.info(`Creating category ${category.cateorgyId}.`, {
+                    normalizedName,
+                });
                 await this.db.kencoveApiCategory.create({
                     data: {
                         id: category.cateorgyId.toString(),
