@@ -1007,6 +1007,7 @@ model OrderLineItem {
   zohoOrderLineItems   ZohoOrderLineItem[]
 
   @@unique([uniqueString, tenantId])
+  @@index([id])
   @@index([orderId])
   @@index([productVariantId])
   @@index([warehouseId])
