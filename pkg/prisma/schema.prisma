@@ -2297,6 +2297,9 @@ model Package {
 
 model PackageEvent {
   id        String              @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // When the event happened
   time      DateTime
   state     PackageState
