@@ -90,6 +90,7 @@ export class CustomerNotifier // warum nicht NoticationEventHandler wie alle and
                 {
                     packageEventId: packageEvent.id,
                     state: packageEvent.state,
+                    previousState: event.previousState,
                     trackingId: packageEvent.package.trackingId,
                 },
             );
