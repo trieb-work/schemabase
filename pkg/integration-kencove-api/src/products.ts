@@ -461,20 +461,30 @@ export class KencoveApiAppProductSyncService {
      */
     private async setAttributeValue({
         attribute,
+        attributeInProduct,
         attributeValue,
         productId,
         variantId,
         isForVariant,
     }: {
         attribute: Attribute;
-        attributeValue: string;
+        attributeInProduct?: KencoveApiAttributeInProduct;
+        attributeValue?: string;
         productId?: string;
         variantId?: string;
         isForVariant: boolean;
     }) {
-        const attributeValueDecoded = htmlDecode(attributeValue);
-        const normalizedName =
-            normalizeStrings.attributeValueNames(attributeValue);
+        const valueEncoded = attributeValue || attributeInProduct?.value;
+        if (!valueEncoded) {
+            this.logger.error(
+                `Attribute ${attribute.name} has no value. Skipping.`,
+            );
+            return;
+        }
+        const attributeValueDecoded = htmlDecode(valueEncoded);
+        const normalizedName = normalizeStrings.attributeValueNames(
+            attributeValueDecoded,
+        );
         this.logger.debug(
             `Setting attribute ${attribute.name}, value ${attributeValueDecoded}`,
         );
@@ -513,7 +523,10 @@ export class KencoveApiAppProductSyncService {
                             id: this.kencoveApiApp.tenantId,
                         },
                     },
-                    value: attributeValueDecoded,
+                    value:
+                        hexCode && attributeInProduct?.attribute_text
+                            ? attributeInProduct.attribute_text
+                            : attributeValueDecoded,
                     hexColor: hexCode,
                     productVariant: {
                         connect: {
@@ -547,7 +560,10 @@ export class KencoveApiAppProductSyncService {
                             id: this.kencoveApiApp.tenantId,
                         },
                     },
-                    value: attributeValueDecoded,
+                    value:
+                        hexCode && attributeInProduct?.attribute_text
+                            ? attributeInProduct.attribute_text
+                            : attributeValueDecoded,
                     hexColor: hexCode,
                     product: {
                         connect: {

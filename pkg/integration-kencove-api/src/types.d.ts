@@ -107,6 +107,11 @@ export type KencoveApiAttributeInProduct = {
     attribute_id: number;
     display_type: string;
     attribute_model: string;
+    /**
+     * When attribute value is a hex value, like "#000000"
+     * then this is the text value of the color, like "Black"
+     */
+    attribute_text?: string | null | undefined;
 };
 
 export type KencoveApiContact = {
