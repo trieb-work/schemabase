@@ -1,6 +1,6 @@
 import { Zoho, ZohoApiError } from "@trieb.work/zoho-ts";
 import { ILogger } from "@eci/pkg/logger";
-import { Carrier, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
+import { Carrier, Prisma, PrismaClient, ZohoApp } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import {
     format,
@@ -165,14 +165,14 @@ export class ZohoPackageSyncService {
             /**
              * Only try to update the tracking number if we have one..
              */
-            const packageUpdate = parcel.tracking_number
-                ? {
-                      trackingId: parcel.tracking_number,
-                      carrier,
-                      carrierTrackingUrl,
-                      shipmentStatus: parcel.status,
-                  }
-                : {};
+            const packageUpdate: Prisma.PackageUpdateWithoutZohoPackageInput =
+                parcel.tracking_number
+                    ? {
+                          trackingId: parcel.tracking_number,
+                          carrier,
+                          carrierTrackingUrl,
+                      }
+                    : {};
 
             /**
              * The already existing package - if there. We need the data to decide,
@@ -254,9 +254,7 @@ export class ZohoPackageSyncService {
                     updatedAt: new Date(parcel.last_modified_time),
                     shipmentId: parcel.shipment_id || null,
                     shipmentStatus: parcel.status,
-                    package: {
-                        update: packageUpdate,
-                    },
+                    package: { update: packageUpdate },
                 },
             });
 
