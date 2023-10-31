@@ -23,6 +23,7 @@ import { apiLineItemsWithSchemabase } from "./lineItems";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import async from "async";
 import { shippingMethodMatch } from "@eci/pkg/miscHelper/shippingMethodMatch";
+import { KencoveApiWarehouseSync } from "../warehouses";
 
 interface KencoveApiAppOrderSyncServiceConfig {
     logger: ILogger;
@@ -184,11 +185,11 @@ export class KencoveApiAppOrderSyncService {
         /**
          * Helper to match warehouse
          */
-        // const whHelper = new KencoveApiWarehouseSync({
-        //   db: this.db,
-        //   kencoveApiApp: this.kencoveApiApp,
-        //   logger: this.logger,
-        // });
+        const whHelper = new KencoveApiWarehouseSync({
+            db: this.db,
+            kencoveApiApp: this.kencoveApiApp,
+            logger: this.logger,
+        });
 
         for await (const apiOrders of apiOrdersStream) {
             this.logger.info(`Found ${apiOrders.length} orders to sync`);
@@ -267,6 +268,16 @@ export class KencoveApiAppOrderSyncService {
                     order.carrier.delivery_type || "",
                 );
                 try {
+                    const wareHouseNames = order.orderLines.map(
+                        (ol) => ol.warehouseCode,
+                    );
+                    /**
+                     * Populate the internal warehouse cache
+                     */
+                    for (const wh of wareHouseNames) {
+                        await whHelper.getWareHouseId(wh);
+                    }
+
                     await this.db.kencoveApiOrder.create({
                         data: {
                             id: order.id,
@@ -292,6 +303,7 @@ export class KencoveApiAppOrderSyncService {
                                             order.state,
                                         ),
                                         date,
+                                        currency: "USD",
                                         carrier,
                                         tenant: {
                                             connect: {
@@ -412,6 +424,20 @@ export class KencoveApiAppOrderSyncService {
                                                                     .tenantId,
                                                             },
                                                         },
+                                                        warehouse: {
+                                                            connect: {
+                                                                id: whHelper.getFromCache(
+                                                                    ol.warehouseCode,
+                                                                ),
+                                                            },
+                                                        },
+                                                        totalPriceGross:
+                                                            ol.price_subtotal,
+                                                        undiscountedUnitPriceGross:
+                                                            ol.price_unit,
+                                                        totalPriceNet:
+                                                            ol.price_subtotal -
+                                                            ol.orderLine_tax,
                                                     };
                                                 },
                                             ),
@@ -479,6 +505,7 @@ export class KencoveApiAppOrderSyncService {
                                     },
                                 },
                                 orderStatus: this.matchOrderStatus(order.state),
+                                currency: "USD",
                                 carrier,
                                 totalPriceGross: order.amount_total,
                                 billingAddress: billingAddressId
@@ -506,6 +533,7 @@ export class KencoveApiAppOrderSyncService {
                     this.kencoveApiApp.tenantId,
                     this.db,
                     this.logger,
+                    whHelper,
                 );
             }
         }

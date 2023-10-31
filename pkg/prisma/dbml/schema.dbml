@@ -626,8 +626,10 @@ Table OrderLineItem {
   warehouseId String
   totalPriceNet Float [note: 'The total net price (price excluding taxes) of all line item. Optional, as we might have just one of the two values on hand']
   totalPriceGross Float [note: 'The total gross price (price including taxes) of all line item. Optional, as we might have just one of the two values on hand']
+  undiscountedTotalPriceGross Float
   undiscountedUnitPriceNet Float [note: 'The unit net price (price excluding taxes) of one line item. Optional, as we might have just one of the two values on hand']
   undiscountedUnitPriceGross Float [note: 'The unit gross price (price including taxes) of one line item. Optional, as we might have just one of the two values on hand']
+  undiscountedTotalPriceNet Float
   discountValueNet Float [not null, default: 0, note: 'The disount amount, that is applied to the net price (discount excluding taxes).']
   productVariant ProductVariant [not null, note: 'The disount amount, that is applied to the gross price (discount including taxes).']
   productVariantId String [not null]
@@ -697,6 +699,7 @@ to the net, undiscounted subtotal price.
 Discounts never get applied on shipping costs']
   totalPriceNet Float
   totalPriceGross Float [not null]
+  currency Currency [not null, default: 'EUR']
   mainContact Contact [not null, note: 'The person who has created this Order (In other systems this can also be a Useraccount)']
   mainContactId String [not null]
   firstName String [note: 'First and Lastname as extra fields only for this order. The main contact is not sufficient here

@@ -31678,6 +31678,27 @@ export type AttributeCreateMutation = {
     } | null;
 };
 
+export type BulkOrderCreateMutationVariables = Exact<{
+    orders: Array<OrderBulkCreateInput> | OrderBulkCreateInput;
+}>;
+
+export type BulkOrderCreateMutation = {
+    __typename?: "Mutation";
+    orderBulkCreate?: {
+        __typename?: "OrderBulkCreate";
+        errors: Array<{
+            __typename?: "OrderBulkCreateError";
+            code?: OrderBulkCreateErrorCode | null;
+            message?: string | null;
+            path?: string | null;
+        }>;
+        results: Array<{
+            __typename?: "OrderBulkCreateResult";
+            order?: { __typename?: "Order"; id: string } | null;
+        }>;
+    } | null;
+};
+
 export type CategoryCreateMutationVariables = Exact<{
     input: CategoryInput;
     parent?: InputMaybe<Scalars["ID"]>;
@@ -33101,6 +33122,26 @@ export const AttributeCreateDocument = gql`
         }
     }
 `;
+export const BulkOrderCreateDocument = gql`
+    mutation bulkOrderCreate($orders: [OrderBulkCreateInput!]!) {
+        orderBulkCreate(
+            errorPolicy: REJECT_FAILED_ROWS
+            orders: $orders
+            stockUpdatePolicy: SKIP
+        ) {
+            errors {
+                code
+                message
+                path
+            }
+            results {
+                order {
+                    id
+                }
+            }
+        }
+    }
+`;
 export const CategoryCreateDocument = gql`
     mutation categoryCreate($input: CategoryInput!, $parent: ID) {
         categoryCreate(input: $input, parent: $parent) {
@@ -34058,6 +34099,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<AttributeCreateMutation>;
+        },
+        bulkOrderCreate(
+            variables: BulkOrderCreateMutationVariables,
+            options?: C,
+        ): Promise<BulkOrderCreateMutation> {
+            return requester<
+                BulkOrderCreateMutation,
+                BulkOrderCreateMutationVariables
+            >(
+                BulkOrderCreateDocument,
+                variables,
+                options,
+            ) as Promise<BulkOrderCreateMutation>;
         },
         categoryCreate(
             variables: CategoryCreateMutationVariables,
