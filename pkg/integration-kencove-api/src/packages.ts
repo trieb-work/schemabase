@@ -8,6 +8,7 @@ import { KencoveApiClient } from "./client";
 import { id } from "@eci/pkg/ids";
 import { uniqueStringOrderLine } from "@eci/pkg/utils/uniqueStringOrderline";
 import { KencoveApiWarehouseSync } from "./warehouses";
+import { lbsToKg } from "@eci/pkg/utils/transform";
 
 interface KencoveApiAppPackageSyncServiceConfig {
     logger: ILogger;
@@ -135,6 +136,8 @@ export class KencoveApiAppPackageSyncService {
             const createdAt = new Date(pkg.createdAt);
             const updatedAt = new Date(pkg.updatedAt);
 
+            const weightGrams = lbsToKg(pkg.shippingWeight) * 1000;
+
             try {
                 await this.db.kencoveApiPackage.upsert({
                     where: {
@@ -222,6 +225,7 @@ export class KencoveApiAppPackageSyncService {
                                             }),
                                         ),
                                     },
+                                    weightGrams,
                                 },
                             },
                         },
@@ -244,6 +248,7 @@ export class KencoveApiAppPackageSyncService {
                                         },
                                     },
                                 },
+                                weightGrams,
                             },
                         },
                     },
