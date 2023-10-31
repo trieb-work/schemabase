@@ -26,6 +26,7 @@ import { normalizeStrings } from "@eci/pkg/normalization";
 import addresses from "../addresses";
 import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils";
 import { shippingMethodMatch } from "@eci/pkg/utils/shippingMethodMatch";
+import { SaleorHistoricOrdersSync } from "./historicOrders";
 
 interface SaleorOrderSyncServiceConfig {
     saleorClient: SaleorClient;
@@ -662,6 +663,13 @@ export class SaleorOrderSyncService {
             this.logger.info(
                 `createHistoricOrdes is activated for this installedSaleorApp. Starting sync.`,
             );
+            const histOrders = new SaleorHistoricOrdersSync({
+                db: this.db,
+                logger: this.logger,
+                installedSaleorApp: this.installedSaleorApp,
+                saleorClient: this.saleorClient,
+            });
+            await histOrders.syncHistoricOrders();
         }
     }
 }
