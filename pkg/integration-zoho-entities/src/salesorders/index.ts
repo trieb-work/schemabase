@@ -21,7 +21,7 @@ import {
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { addMinutes, format, isAfter, subHours, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
-import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
+import { uniqueStringOrderLine } from "@eci/pkg/utils/uniqueStringOrderline";
 import { CustomFieldApiName } from "@eci/pkg/zoho-custom-fields/src/registry";
 import addresses from "@eci/pkg/integration-zoho-entities/src/addresses";
 import { calculateDiscount, orderToZohoLineItems } from "./lineItems";
@@ -33,9 +33,9 @@ import {
     SalesOrderShippedStatus,
     SalesOrderStatus,
 } from "@trieb.work/zoho-ts/dist/types/salesOrder";
-import { shippingMethodMatch } from "@eci/pkg/miscHelper/shippingMethodMatch";
-import { sleep } from "@eci/pkg/miscHelper/time";
-import { parseBoolean } from "@eci/pkg/miscHelper/parseBoolean";
+import { shippingMethodMatch } from "@eci/pkg/utils/shippingMethodMatch";
+import { sleep } from "@eci/pkg/utils/time";
+import { parseBoolean } from "@eci/pkg/utils/parseBoolean";
 
 export interface ZohoSalesOrdersSyncConfig {
     logger: ILogger;

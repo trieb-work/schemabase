@@ -12,10 +12,10 @@ import {
     isEqual,
 } from "date-fns";
 import { id } from "@eci/pkg/ids";
-import { uniqueStringPackageLineItem } from "@eci/pkg/miscHelper/uniqueStringOrderline";
+import { uniqueStringPackageLineItem } from "@eci/pkg/utils/uniqueStringOrderline";
 import { generateTrackingPortalURL } from "@eci/pkg/integration-tracking";
 import { packageToZohoLineItems } from "./lineItems";
-import { sleep } from "@eci/pkg/miscHelper/time";
+import { sleep } from "@eci/pkg/utils/time";
 
 export interface ZohoPackageSyncConfig {
     logger: ILogger;

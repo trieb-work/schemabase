@@ -2,7 +2,7 @@
 /* eslint-disable prettier/prettier */
 import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils";
 import { ILogger } from "@eci/pkg/logger";
-import { arrayFromAsyncGenerator } from "@eci/pkg/miscHelper/array";
+import { arrayFromAsyncGenerator } from "@eci/pkg/utils/array";
 import {
     Carrier,
     OrderShipmentStatus,

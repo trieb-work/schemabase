@@ -3,7 +3,7 @@ import { DocumentNode } from "graphql";
 import { GraphQLClient } from "graphql-request";
 import { ECI_TRACE_HEADER } from "@eci/pkg/constants";
 import { InstalledSaleorApp, PrismaClient, SaleorApp } from "@eci/pkg/prisma";
-import { sleep } from "@eci/pkg/miscHelper/time";
+import { sleep } from "@eci/pkg/utils/time";
 
 export interface SaleorServiceConfig {
     /**

@@ -20,12 +20,12 @@ import {
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { subYears, subHours } from "date-fns";
 import { id } from "@eci/pkg/ids";
-import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
+import { uniqueStringOrderLine } from "@eci/pkg/utils/uniqueStringOrderline";
 import { round } from "reliable-round";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import addresses from "../addresses";
 import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils";
-import { shippingMethodMatch } from "@eci/pkg/miscHelper/shippingMethodMatch";
+import { shippingMethodMatch } from "@eci/pkg/utils/shippingMethodMatch";
 
 interface SaleorOrderSyncServiceConfig {
     saleorClient: SaleorClient;

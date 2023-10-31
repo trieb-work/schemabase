@@ -2,7 +2,7 @@
 /* eslint-disable prettier/prettier */
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { ILogger } from "@eci/pkg/logger";
-import { arrayFromAsyncGenerator } from "@eci/pkg/miscHelper/array";
+import { arrayFromAsyncGenerator } from "@eci/pkg/utils/array";
 import {
     Carrier,
     PrismaClient,

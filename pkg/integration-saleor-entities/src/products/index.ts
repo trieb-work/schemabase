@@ -30,7 +30,7 @@ import { subHours, subYears } from "date-fns";
 import { editorJsHelper } from "../editorjs";
 import { MediaUpload } from "../mediaUpload";
 import { ChannelAvailability } from "./channelAvailability";
-import { parseBoolean } from "@eci/pkg/miscHelper/parseBoolean";
+import { parseBoolean } from "@eci/pkg/utils/parseBoolean";
 import { FrequentlyBoughtTogether } from "./frequentlyBoughtTogether";
 import { SaleorProductManual } from "./productManual";
 

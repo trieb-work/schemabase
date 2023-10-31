@@ -1,6 +1,6 @@
 import { id } from "@eci/pkg/ids";
 import { ILogger } from "@eci/pkg/logger";
-import { uniqueStringAddress } from "@eci/pkg/miscHelper/uniqueStringAddress";
+import { uniqueStringAddress } from "@eci/pkg/utils/uniqueStringAddress";
 import { CountryCode, PrismaClient } from "@eci/pkg/prisma";
 import { StandardAddressValuesFragment } from "@eci/pkg/saleor";
 

@@ -16,7 +16,7 @@ import { CronStateHandler } from "@eci/pkg/cronstate";
 import { subHours, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { checkCurrency } from "@eci/pkg/normalization/src/currency";
-import { sleep } from "@eci/pkg/miscHelper/time";
+import { sleep } from "@eci/pkg/utils/time";
 
 interface SaleorPaymentSyncServiceConfig {
     saleorClient: {

@@ -6,7 +6,7 @@ import { id } from "@eci/pkg/ids";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { subHours, subMonths, subYears } from "date-fns";
 import { normalizeStrings } from "@eci/pkg/normalization";
-import { sleep } from "@eci/pkg/miscHelper/time";
+import { sleep } from "@eci/pkg/utils/time";
 import addresses from "../addresses";
 import contactPersonSync from "./contactpersons";
 

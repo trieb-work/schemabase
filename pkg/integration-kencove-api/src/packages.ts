@@ -6,7 +6,7 @@ import { Carrier, KencoveApiApp, PrismaClient } from "@eci/pkg/prisma";
 import { subHours, subYears } from "date-fns";
 import { KencoveApiClient } from "./client";
 import { id } from "@eci/pkg/ids";
-import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
+import { uniqueStringOrderLine } from "@eci/pkg/utils/uniqueStringOrderline";
 import { KencoveApiWarehouseSync } from "./warehouses";
 
 interface KencoveApiAppPackageSyncServiceConfig {

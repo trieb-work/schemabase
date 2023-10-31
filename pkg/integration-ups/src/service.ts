@@ -7,7 +7,7 @@ import {
 } from "@eci/pkg/events";
 import { id } from "@eci/pkg/ids";
 import { ILogger } from "@eci/pkg/logger";
-import { sleep } from "@eci/pkg/miscHelper/time";
+import { sleep } from "@eci/pkg/utils/time";
 import { UPSTrackingApp, PackageState, PrismaClient } from "@eci/pkg/prisma";
 import { subMonths, parse } from "date-fns";
 import axios from "axios";

@@ -17,12 +17,12 @@ import {
 import { subHours, subYears } from "date-fns";
 import { KencoveApiClient } from "../client";
 import { id } from "@eci/pkg/ids";
-import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
+import { uniqueStringOrderLine } from "@eci/pkg/utils/uniqueStringOrderline";
 import { KencoveApiOrder } from "../types";
 import { apiLineItemsWithSchemabase } from "./lineItems";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import async from "async";
-import { shippingMethodMatch } from "@eci/pkg/miscHelper/shippingMethodMatch";
+import { shippingMethodMatch } from "@eci/pkg/utils/shippingMethodMatch";
 import { KencoveApiWarehouseSync } from "../warehouses";
 
 interface KencoveApiAppOrderSyncServiceConfig {

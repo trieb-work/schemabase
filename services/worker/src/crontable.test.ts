@@ -3,7 +3,7 @@ import { beforeEach, describe, jest, test } from "@jest/globals";
 import { CronTable } from "./crontable";
 import { env } from "@eci/pkg/env";
 import { Logger } from "@eci/pkg/logger";
-import { sleep } from "@eci/pkg/miscHelper/time";
+import { sleep } from "@eci/pkg/utils/time";
 import Redis from "ioredis";
 
 beforeEach(() => {

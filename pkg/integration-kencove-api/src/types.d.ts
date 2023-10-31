@@ -47,29 +47,6 @@ export type KencoveApiProductStock = {
     }[];
 };
 
-// {
-//   "salesOrderNo": "7322948",
-//   "packageName": "PACK0090241",
-//   "packageId": "90227",
-//   "height": 5.0,
-//   "width": 5.0,
-//   "length": 11.0,
-//   "shippingWeight": 1.0,
-//   "packageItemline": [
-//       {
-//           "itemCode": "TCTXS",
-//           "quantity": 1.0
-//       }
-//   ],
-//   "pickingId": "278285",
-//   "carrierId": null,
-//   "carrierName": "USPS Priority Mail",
-//   "quoteRef": "29a22d8e-c56c-4243-8a49-92884793f80c",
-//   "trackingUrl": "https://tools.usps.com/go/TrackConfirmAction_input?qtc_tLabels1=9405511206238116836795",
-//   "trackingNumber": "9405511206238116836795",
-//   "createdAt": "2023-08-07T13:53:14.356435",
-//   "updatedAt": "2023-08-07T13:53:35.684303"
-// },
 export type KencoveApiPackage = {
     salesOrderNo: string;
     packageName: string;
@@ -77,6 +54,9 @@ export type KencoveApiPackage = {
     height: number;
     width: number;
     length: number;
+    /**
+     * The package weight in lbs
+     */
     shippingWeight: number;
     packageItemline: {
         itemCode: string;

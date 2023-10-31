@@ -3,10 +3,10 @@ import { ILogger } from "@eci/pkg/logger";
 import { KencoveApiClient } from "./client";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { subHours, subYears } from "date-fns";
-import { uniqueStringAddress } from "@eci/pkg/miscHelper/uniqueStringAddress";
+import { uniqueStringAddress } from "@eci/pkg/utils/uniqueStringAddress";
 import { id } from "@eci/pkg/ids";
 import async from "async";
-import { countryCodeMatch } from "@eci/pkg/miscHelper/countryCodeMatch";
+import { countryCodeMatch } from "@eci/pkg/utils/countryCodeMatch";
 
 interface KencoveApiAppAddressSyncServiceConfig {
     logger: ILogger;

@@ -22,7 +22,7 @@ import { subHours, subYears } from "date-fns";
 import { KencoveApiClient } from "./client";
 import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
-import { countryCodeMatch } from "@eci/pkg/miscHelper/countryCodeMatch";
+import { countryCodeMatch } from "@eci/pkg/utils/countryCodeMatch";
 import {
     KencoveApiAAItem,
     KencoveApiAttributeInProduct,

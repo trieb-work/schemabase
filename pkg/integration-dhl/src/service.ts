@@ -7,7 +7,7 @@ import {
 } from "@eci/pkg/events";
 import { id } from "@eci/pkg/ids";
 import { ILogger } from "@eci/pkg/logger";
-import { sleep } from "@eci/pkg/miscHelper/time";
+import { sleep } from "@eci/pkg/utils/time";
 import { DHLTrackingApp, PackageState, PrismaClient } from "@eci/pkg/prisma";
 import { subMonths } from "date-fns";
 import {

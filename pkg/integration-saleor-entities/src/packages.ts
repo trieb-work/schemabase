@@ -12,7 +12,7 @@ import {
 import { InstalledSaleorApp, Package, PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { subHours, subMonths, subYears } from "date-fns";
-import { closestsMatch } from "@eci/pkg/miscHelper/closestMatch";
+import { closestsMatch } from "@eci/pkg/utils/closestMatch";
 
 interface SaleorPackageSyncServiceConfig {
     saleorClient: SaleorClient;

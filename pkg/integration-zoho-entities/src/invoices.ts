@@ -8,7 +8,7 @@ import { addMinutes, subHours, subMonths, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { Warning } from "./utils";
 import { checkCurrency } from "@eci/pkg/normalization/src/currency";
-import { sleep } from "@eci/pkg/miscHelper/time";
+import { sleep } from "@eci/pkg/utils/time";
 
 export interface ZohoInvoiceSyncConfig {
     logger: ILogger;

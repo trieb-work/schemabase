@@ -1,7 +1,7 @@
 import { PrismaClient } from "@eci/pkg/prisma";
 import { KencoveApiOrder } from "../types";
 import { ILogger } from "@eci/pkg/logger";
-import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
+import { uniqueStringOrderLine } from "@eci/pkg/utils/uniqueStringOrderline";
 import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import { KencoveApiWarehouseSync } from "../warehouses";

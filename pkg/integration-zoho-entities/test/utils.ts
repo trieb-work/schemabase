@@ -1,6 +1,6 @@
 // TODO move to new package pkg/prisma-seeding-utils/eci, pkg/prisma-seeding-utils/zoho
 
-import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
+import { uniqueStringOrderLine } from "@eci/pkg/utils/uniqueStringOrderline";
 import { id } from "@eci/pkg/ids";
 import {
     GatewayType,
