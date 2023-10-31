@@ -4,6 +4,7 @@ import { ILogger } from "@eci/pkg/logger";
 import { uniqueStringOrderLine } from "@eci/pkg/miscHelper/uniqueStringOrderline";
 import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
+import { KencoveApiWarehouseSync } from "../warehouses";
 
 /**
  * takes the order and makes sure, that orderline items
@@ -17,6 +18,7 @@ const apiLineItemsWithSchemabase = async (
     tenantId: string,
     db: PrismaClient,
     logger: ILogger,
+    whHelper: KencoveApiWarehouseSync,
 ) => {
     const orderLineItems = orderFromApi.orderLines;
     if (!orderLineItems || orderLineItems.length === 0) {
@@ -120,12 +122,20 @@ const apiLineItemsWithSchemabase = async (
                     },
                     productVariant,
                     quantity: ol.quantity,
+                    totalPriceGross: ol.price_subtotal,
+                    undiscountedUnitPriceGross: ol.price_unit,
+                    totalPriceNet: ol.price_subtotal - ol.orderLine_tax,
                     tenant: {
                         connect: {
                             id: tenantId,
                         },
                     },
                     uniqueString: ol.uniqueString,
+                    warehouse: {
+                        connect: {
+                            id: await whHelper.getWareHouseId(ol.warehouseCode),
+                        },
+                    },
                 },
             });
         }),

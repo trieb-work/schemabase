@@ -1,0 +1,18 @@
+mutation bulkOrderCreate($orders: [OrderBulkCreateInput!]!) {
+    orderBulkCreate(
+        errorPolicy: REJECT_FAILED_ROWS
+        orders: $orders
+        stockUpdatePolicy: SKIP
+    ) {
+        errors {
+            code
+            message
+            path
+        }
+        results {
+            order {
+                id
+            }
+        }
+    }
+}

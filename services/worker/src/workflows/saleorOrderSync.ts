@@ -51,7 +51,7 @@ export class SaleorOrderSyncWf implements Workflow {
             saleorClient,
             db: this.prisma,
             tenantId: installedSaleorApp.saleorApp.tenantId,
-            installedSaleorAppId: this.installedSaleorAppId,
+            installedSaleorApp: installedSaleorApp,
             channelSlug: installedSaleorApp.channelSlug || "",
             orderPrefix: this.orderPrefix,
         });

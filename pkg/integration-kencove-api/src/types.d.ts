@@ -247,6 +247,11 @@ export type KencoveApiOrderLine = {
      * e.g.: "6.25%"
      */
     orderLine_taxRate: string;
+
+    /**
+     * The total amount of tax for this orderline
+     */
+    orderLine_tax: number;
 };
 
 export type KencoveApiPricelistItem = {

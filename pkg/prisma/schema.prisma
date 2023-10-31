@@ -986,10 +986,14 @@ model OrderLineItem {
   /// The total gross price (price including taxes) of all line item. Optional, as we might have just one of the two values on hand
   totalPriceGross Float?
 
+  undiscountedTotalPriceGross Float?
+
   /// The unit net price (price excluding taxes) of one line item. Optional, as we might have just one of the two values on hand
   undiscountedUnitPriceNet   Float?
   /// The unit gross price (price including taxes) of one line item. Optional, as we might have just one of the two values on hand
   undiscountedUnitPriceGross Float?
+
+  undiscountedTotalPriceNet Float?
 
   /// The disount amount, that is applied to the net price (discount excluding taxes).
   discountValueNet Float @default(0)
@@ -1153,6 +1157,8 @@ model Order {
   // The final, total price
   totalPriceNet   Float?
   totalPriceGross Float
+
+  currency Currency @default(EUR)
 
   /// The person who has created this Order (In other systems this can also be a Useraccount)
   mainContact   Contact @relation(references: [id], fields: [mainContactId])

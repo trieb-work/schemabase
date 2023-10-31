@@ -28,7 +28,7 @@ describe("Saleor Sync Orders Test", () => {
 
         const service = new SaleorOrderSyncService({
             saleorClient,
-            installedSaleorAppId: installedSaleorApp.id,
+            installedSaleorApp: installedSaleorApp,
             logger: new AssertionLogger(),
             db: prismaClient,
             tenantId: tenant.id,

@@ -30,6 +30,7 @@ export class SaleorHistoricOrdersSync {
 
     private readonly db: PrismaClient;
 
+
     private readonly installedSaleorApp: InstalledSaleorApp;
 
     constructor({
