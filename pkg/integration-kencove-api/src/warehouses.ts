@@ -35,6 +35,22 @@ export class KencoveApiWarehouseSync {
     }
 
     /**
+     * Similar to the getWareHouseId function, but this is a sync
+     * function, that is just pulling data from the internal cache. You need to run
+     * getWareHouseId first, to populate the cache.
+     * @param name
+     */
+    public getFromCache(name: string) {
+        const normalizedName = normalizeStrings.warehouseNames(name);
+        for (const warehouse of this.warehouses) {
+            if (warehouse.normalizedName === normalizedName) {
+                return warehouse.warehouseId;
+            }
+        }
+        return undefined;
+    }
+
+    /**
      * get the schemabase warehouse Id for a warehouse name. This function
      * caches results internally - call as often as needed
      * @param name

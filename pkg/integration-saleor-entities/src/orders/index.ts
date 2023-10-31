@@ -2,12 +2,11 @@
 /* eslint-disable prettier/prettier */
 import { ILogger } from "@eci/pkg/logger";
 import {
-    SaleorCronOrdersOverviewQuery,
     queryWithPagination,
-    SaleorCronOrderDetailsQuery,
     OrderStatus,
     PaymentChargeStatusEnum,
     LanguageCodeEnum,
+    SaleorClient,
 } from "@eci/pkg/saleor";
 import {
     PrismaClient,
@@ -16,6 +15,7 @@ import {
     Prisma,
     Tax,
     Language,
+    InstalledSaleorApp,
 } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { subYears, subHours } from "date-fns";
@@ -28,20 +28,9 @@ import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils";
 import { shippingMethodMatch } from "@eci/pkg/miscHelper/shippingMethodMatch";
 
 interface SaleorOrderSyncServiceConfig {
-    saleorClient: {
-        saleorCronOrderDetails: (variables: {
-            id: string;
-        }) => Promise<SaleorCronOrderDetailsQuery>;
-        saleorCronOrdersOverview: (variables: {
-            first: number;
-            channel: string;
-            after: string;
-            createdGte?: string;
-            updatedAtGte?: string;
-        }) => Promise<SaleorCronOrdersOverviewQuery>;
-    };
+    saleorClient: SaleorClient;
     channelSlug: string;
-    installedSaleorAppId: string;
+    installedSaleorApp: InstalledSaleorApp;
     tenantId: string;
     db: PrismaClient;
     logger: ILogger;
@@ -49,24 +38,13 @@ interface SaleorOrderSyncServiceConfig {
 }
 
 export class SaleorOrderSyncService {
-    public readonly saleorClient: {
-        saleorCronOrderDetails: (variables: {
-            id: string;
-        }) => Promise<SaleorCronOrderDetailsQuery>;
-        saleorCronOrdersOverview: (variables: {
-            first: number;
-            channel: string;
-            after: string;
-            createdGte?: string;
-            updatedAtGte?: string;
-        }) => Promise<SaleorCronOrdersOverviewQuery>;
-    };
+    public readonly saleorClient: SaleorClient;
 
     public readonly channelSlug: string;
 
     private readonly logger: ILogger;
 
-    public readonly installedSaleorAppId: string;
+    public readonly installedSaleorApp: InstalledSaleorApp;
 
     public readonly tenantId: string;
 
@@ -82,13 +60,13 @@ export class SaleorOrderSyncService {
         this.saleorClient = config.saleorClient;
         this.channelSlug = config.channelSlug;
         this.logger = config.logger;
-        this.installedSaleorAppId = config.installedSaleorAppId;
+        this.installedSaleorApp = config.installedSaleorApp;
         this.tenantId = config.tenantId;
         this.db = config.db;
         this.orderPrefix = config.orderPrefix;
         this.cronState = new CronStateHandler({
             tenantId: this.tenantId,
-            appId: this.installedSaleorAppId,
+            appId: this.installedSaleorApp.id,
             db: this.db,
             syncEntity: "orders",
         });
@@ -112,6 +90,11 @@ export class SaleorOrderSyncService {
         return this.eciTaxes.find((t) => t.percentage === taxPercentage)?.id;
     }
 
+    /**
+     * Function to match the saleor language code to the internal language enum
+     * @param language 
+     * @returns 
+     */
     private matchLanguage(language: LanguageCodeEnum): Language {
         switch (language) {
             case LanguageCodeEnum.De:
@@ -157,7 +140,6 @@ export class SaleorOrderSyncService {
                 first,
                 after,
                 updatedAtGte: createdGte,
-                channel: this.channelSlug,
             }),
         );
 
@@ -280,14 +262,14 @@ export class SaleorOrderSyncService {
                     where: {
                         id_installedSaleorAppId: {
                             id: order.id,
-                            installedSaleorAppId: this.installedSaleorAppId,
+                            installedSaleorAppId: this.installedSaleorApp.id,
                         },
                     },
                     create: {
                         id: order.id,
                         installedSaleorApp: {
                             connect: {
-                                id: this.installedSaleorAppId,
+                                id: this.installedSaleorApp.id,
                             },
                         },
                         createdAt: order.created,
@@ -498,7 +480,7 @@ export class SaleorOrderSyncService {
                                 id_installedSaleorAppId: {
                                     id: lineItem.id,
                                     installedSaleorAppId:
-                                        this.installedSaleorAppId,
+                                        this.installedSaleorApp.id,
                                 },
                             },
                             create: {
@@ -554,7 +536,7 @@ export class SaleorOrderSyncService {
                                 },
                                 installedSaleorApp: {
                                     connect: {
-                                        id: this.installedSaleorAppId,
+                                        id: this.installedSaleorApp.id,
                                     },
                                 },
                             },
@@ -670,5 +652,16 @@ export class SaleorOrderSyncService {
             lastRun: new Date(),
             lastRunStatus: "success",
         });
+    }
+
+    public async syncFromECI(): Promise<void> {
+        /**
+         * check, if we have the setting "createHistoricOrdes" activated for this installedSaleorApp
+         */
+        if (this.installedSaleorApp.createHistoricOrdes) {
+            this.logger.info(
+                `createHistoricOrdes is activated for this installedSaleorApp. Starting sync.`,
+            );
+        }
     }
 }
