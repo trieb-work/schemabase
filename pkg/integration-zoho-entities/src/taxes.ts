@@ -76,6 +76,7 @@ export class ZohoTaxSyncService {
                     },
                 },
                 update: {
+                    name: tax.tax_name,
                     tax: taxCreateOrConnect,
                 },
             });

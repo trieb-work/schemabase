@@ -61,6 +61,7 @@ function calculateLineItemDiscount(
 export function orderToZohoLineItems(
     order: OrderWithZohoItemsAndZohoWarehouse,
     discount_type: CreateSalesOrder["discount_type"],
+    isExportDelivery: boolean,
 ): CreateSalesOrder["line_items"] {
     return order.orderLineItems.map((lineItem) => {
         if (!lineItem?.productVariant) {
@@ -120,7 +121,7 @@ export function orderToZohoLineItems(
             item_id: lineItem.productVariant.zohoItem[0].id,
             quantity: lineItem.quantity,
             warehouse_id: zohoWarehousesIds[0],
-            tax_id: taxToZohoTaxId(lineItem.tax),
+            tax_id: taxToZohoTaxId(lineItem.tax, isExportDelivery),
             rate: lineItem.undiscountedUnitPriceGross,
             discount: calculateLineItemDiscount(lineItem, discount_type),
             item_order: lineItem.itemOrder || undefined,

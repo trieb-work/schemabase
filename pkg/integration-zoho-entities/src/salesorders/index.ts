@@ -857,7 +857,16 @@ export class ZohoSalesOrdersSyncService {
 
                 const mainContactPerson = orderToMainContactPerson(order);
 
-                // eslint-disable-next-line camelcase
+                /**
+                 * If this order is a export delivery.
+                 * Right now we hard-code DE in here.
+                 * TODO: make this configurable using maybe the
+                 * warehouse address from orderline items
+                 */
+                const isExportDelivery =
+                    order.shippingAddress.countryCode !== "DE";
+
+                // eslint-disable-next-line camelcase, @typescript-eslint/naming-convention
                 const discount_type = order.discountValueNet
                     ? "entity_level"
                     : "item_level";
@@ -867,7 +876,11 @@ export class ZohoSalesOrdersSyncService {
                     is_inclusive_tax: true,
                     salesorder_number: order.orderNumber,
                     reference_number: order.referenceNumber ?? undefined,
-                    line_items: orderToZohoLineItems(order, discount_type),
+                    line_items: orderToZohoLineItems(
+                        order,
+                        discount_type,
+                        isExportDelivery,
+                    ),
                     customer_id: mainContactPerson.zohoContactId,
                     discount_type,
                     discount: calculateDiscount(
@@ -890,7 +903,10 @@ export class ZohoSalesOrdersSyncService {
                     shipping_charge: order.shippingPriceGross ?? undefined,
                     // mit is_inclusive_tax = true klappt das discountValueNet natürlich nicht.
                     shipping_charge_tax_id: order.shippingPriceTax
-                        ? taxToZohoTaxId(order.shippingPriceTax)
+                        ? taxToZohoTaxId(
+                              order.shippingPriceTax,
+                              isExportDelivery,
+                          )
                         : undefined,
                     // TODO: shipment_date?
                 };
