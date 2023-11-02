@@ -93,8 +93,8 @@ export class SaleorOrderSyncService {
 
     /**
      * Function to match the saleor language code to the internal language enum
-     * @param language 
-     * @returns 
+     * @param language
+     * @returns
      */
     private matchLanguage(language: LanguageCodeEnum): Language {
         switch (language) {
