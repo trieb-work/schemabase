@@ -1237,6 +1237,19 @@ export class SaleorProductSyncService {
 
         this.logger.info(`Syncing ${products.length} products`);
 
+        const uniqueProductTypes = products
+            .map((p) => p.productType)
+            .filter((p) => p !== null)
+            .filter((p, i, arr) => arr.findIndex((x) => x?.id === p?.id) === i);
+        /**
+         * Sync the product type
+         * TODO: always pull all product types, as there are not that many.
+         * Not just pull them via the product sync
+         */
+        for (const productType of uniqueProductTypes) {
+            await this.syncProductType(productType);
+        }
+
         for (const product of products) {
             if (!product.variants) {
                 this.logger.warn(
@@ -1264,13 +1277,6 @@ export class SaleorProductSyncService {
             const normalizedProductName = normalizeStrings.productNames(
                 product.name,
             );
-
-            /**
-             * Sync the product type
-             * TODO: always pull all product types, as there are not that many.
-             * Not just pull them via the product sync
-             */
-            await this.syncProductType(product.productType);
 
             for (const variant of product.variants) {
                 const defaultLogFields = {
