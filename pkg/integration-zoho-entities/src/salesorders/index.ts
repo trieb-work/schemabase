@@ -188,6 +188,17 @@ export class ZohoSalesOrdersSyncService {
             return;
         }
 
+        /**
+         * All zoho warehouses with our internal warehouses, so we can connect them
+         */
+        const zohoWarehouseWithWarehouse = await this.db.zohoWarehouse.findMany(
+            {
+                where: {
+                    zohoAppId: this.zohoApp.id,
+                },
+            },
+        );
+
         for (const salesorder of salesorders) {
             // We first have to check, if we already have a Zoho Customer to be connected to
             // this salesorder
@@ -461,6 +472,10 @@ export class ZohoSalesOrdersSyncService {
                             lineItem.item_order,
                         );
 
+                        const warehouseId = zohoWarehouseWithWarehouse.find(
+                            (w) => w.id === lineItem.warehouse_id,
+                        )?.warehouseId;
+
                         // Lookup of the product variant SKU in our internal DB
                         const productVariantLookup =
                             await this.db.productVariant.findUnique({
@@ -506,6 +521,13 @@ export class ZohoSalesOrdersSyncService {
                                                     },
                                                 },
                                                 itemOrder: lineItem.item_order,
+                                                warehouse: warehouseId
+                                                    ? {
+                                                          connect: {
+                                                              id: warehouseId,
+                                                          },
+                                                      }
+                                                    : undefined,
                                                 quantity: lineItem.quantity,
                                                 discountValueNet:
                                                     lineItem.discount_amount,
@@ -569,6 +591,13 @@ export class ZohoSalesOrdersSyncService {
                                                 },
                                             },
                                             totalPriceNet: lineItem.item_total,
+                                            warehouse: warehouseId
+                                                ? {
+                                                      connect: {
+                                                          id: warehouseId,
+                                                      },
+                                                  }
+                                                : undefined,
                                             totalPriceGross:
                                                 lineItem.item_total_inclusive_of_tax,
                                             undiscountedUnitPriceGross:
