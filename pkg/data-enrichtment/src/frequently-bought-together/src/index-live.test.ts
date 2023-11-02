@@ -9,7 +9,7 @@ import { FrequentlyBoughtTogetherService } from ".";
 const prisma = new PrismaClient();
 
 describe("Frequently bought together", () => {
-    it("should be able to run the categories sync", async () => {
+    it("should be able to run the fbt sync", async () => {
         const service = new FrequentlyBoughtTogetherService({
             db: prisma,
             logger: new AssertionLogger(),

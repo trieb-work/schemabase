@@ -135,9 +135,9 @@ export class FrequentlyBoughtTogetherService {
                 continue;
             }
             this.logger.info(
-                `Found ${fbtVariants.length} frequently bought together variants for variant ${variant.variantName}`,
+                `Found ${fbtVariants.length} frequently bought together variants for variant ${variant.sku}`,
                 {
-                    fbtVariants: fbtVariants.map((p) => p.variantName),
+                    fbtVariants: fbtVariants.map((p) => p.sku),
                 },
             );
             // We have the table ProductVariantToFrequentlyBoughtWith storing all entries
