@@ -290,7 +290,7 @@ export default gql`
         hsCode: String
         countryOfOrigin: CountryCode
 
-        #variants      ProductVariant[]
+        variants: [ProductVariant]
         #tags          ProductTag[]
         #productType   ProductType?     @relation(fields: [productTypeId], references: [id])
 
@@ -306,6 +306,32 @@ export default gql`
 
         # frequentlyBoughtTogether: Key product id, value quantity
         frequentlyBoughtTogether: [Product!]
+    }
+
+    type ProductVariant {
+        # eci internal id
+        id: String!
+        createdAt: DateTime
+        updatedAt: DateTime
+
+        sku: String
+        name: String
+        # product: Product @relation(fields: [productId], references: [id])
+        # productId String
+
+        # price: Float
+        # priceCurrency: String
+
+        # tax: Tax @relation(fields: [taxId], references: [id])
+        # taxId String
+
+        # attributes: AttributeValueProductVariant[]
+
+        # media: Media[]
+
+        # productVariantStocks: ProductVariantStock[]
+
+        frequentlyBoughtTogether: [ProductVariant!]
     }
 
     enum Carrier {

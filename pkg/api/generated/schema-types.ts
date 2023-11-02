@@ -498,6 +498,17 @@ export type Product = {
     id: Scalars["String"];
     name?: Maybe<Scalars["String"]>;
     updatedAt?: Maybe<Scalars["DateTime"]>;
+    variants?: Maybe<Array<Maybe<ProductVariant>>>;
+};
+
+export type ProductVariant = {
+    __typename?: "ProductVariant";
+    createdAt?: Maybe<Scalars["DateTime"]>;
+    frequentlyBoughtTogether?: Maybe<Array<ProductVariant>>;
+    id: Scalars["String"];
+    name?: Maybe<Scalars["String"]>;
+    sku?: Maybe<Scalars["String"]>;
+    updatedAt?: Maybe<Scalars["DateTime"]>;
 };
 
 export type ProductsInput = {
@@ -747,6 +758,7 @@ export type ResolversTypes = ResolversObject<{
         }
     >;
     Product: ResolverTypeWrapper<Product>;
+    ProductVariant: ResolverTypeWrapper<ProductVariant>;
     ProductsInput: ProductsInput;
     ProductsResponse: ResolverTypeWrapper<ProductsResponse>;
     Query: ResolverTypeWrapper<{}>;
@@ -800,6 +812,7 @@ export type ResolversParentTypes = ResolversObject<{
         order?: Maybe<ResolversParentTypes["Order"]>;
     };
     Product: Product;
+    ProductVariant: ProductVariant;
     ProductsInput: ProductsInput;
     ProductsResponse: ProductsResponse;
     Query: {};
@@ -1290,6 +1303,37 @@ export type ProductResolvers<
         ParentType,
         ContextType
     >;
+    variants?: Resolver<
+        Maybe<Array<Maybe<ResolversTypes["ProductVariant"]>>>,
+        ParentType,
+        ContextType
+    >;
+    __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ProductVariantResolvers<
+    ContextType = GraphQLModules.Context,
+    ParentType extends
+        ResolversParentTypes["ProductVariant"] = ResolversParentTypes["ProductVariant"],
+> = ResolversObject<{
+    createdAt?: Resolver<
+        Maybe<ResolversTypes["DateTime"]>,
+        ParentType,
+        ContextType
+    >;
+    frequentlyBoughtTogether?: Resolver<
+        Maybe<Array<ResolversTypes["ProductVariant"]>>,
+        ParentType,
+        ContextType
+    >;
+    id?: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+    name?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>;
+    sku?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>;
+    updatedAt?: Resolver<
+        Maybe<ResolversTypes["DateTime"]>,
+        ParentType,
+        ContextType
+    >;
     __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -1478,6 +1522,7 @@ export type Resolvers<ContextType = GraphQLModules.Context> = ResolversObject<{
     PageInfo?: PageInfoResolvers<ContextType>;
     Payment?: PaymentResolvers<ContextType>;
     Product?: ProductResolvers<ContextType>;
+    ProductVariant?: ProductVariantResolvers<ContextType>;
     ProductsResponse?: ProductsResponseResolvers<ContextType>;
     Query?: QueryResolvers<ContextType>;
     SaleorOrder?: SaleorOrderResolvers<ContextType>;

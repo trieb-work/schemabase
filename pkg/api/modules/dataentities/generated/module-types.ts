@@ -119,7 +119,15 @@ export namespace DataentitiesModule {
             | "name"
             | "hsCode"
             | "countryOfOrigin"
+            | "variants"
             | "descriptionHTML"
+            | "frequentlyBoughtTogether";
+        ProductVariant:
+            | "id"
+            | "createdAt"
+            | "updatedAt"
+            | "sku"
+            | "name"
             | "frequentlyBoughtTogether";
     }
 
@@ -467,6 +475,10 @@ export namespace DataentitiesModule {
         Types.TransactionalEmail,
         DefinedFields["TransactionalEmail"]
     >;
+    export type ProductVariant = Pick<
+        Types.ProductVariant,
+        DefinedFields["ProductVariant"]
+    >;
 
     export type QueryResolvers = Pick<
         Types.QueryResolvers,
@@ -532,6 +544,10 @@ export namespace DataentitiesModule {
         Types.ProductResolvers,
         DefinedFields["Product"] | "__isTypeOf"
     >;
+    export type ProductVariantResolvers = Pick<
+        Types.ProductVariantResolvers,
+        DefinedFields["ProductVariant"] | "__isTypeOf"
+    >;
 
     export interface Resolvers {
         Query?: QueryResolvers;
@@ -550,6 +566,7 @@ export namespace DataentitiesModule {
         PackageEvent?: PackageEventResolvers;
         TransactionalEmail?: TransactionalEmailResolvers;
         Product?: ProductResolvers;
+        ProductVariant?: ProductVariantResolvers;
     }
 
     export interface MiddlewareMap {
@@ -723,7 +740,17 @@ export namespace DataentitiesModule {
             name?: gm.Middleware[];
             hsCode?: gm.Middleware[];
             countryOfOrigin?: gm.Middleware[];
+            variants?: gm.Middleware[];
             descriptionHTML?: gm.Middleware[];
+            frequentlyBoughtTogether?: gm.Middleware[];
+        };
+        ProductVariant?: {
+            "*"?: gm.Middleware[];
+            id?: gm.Middleware[];
+            createdAt?: gm.Middleware[];
+            updatedAt?: gm.Middleware[];
+            sku?: gm.Middleware[];
+            name?: gm.Middleware[];
             frequentlyBoughtTogether?: gm.Middleware[];
         };
     }

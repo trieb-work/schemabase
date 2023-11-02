@@ -24,6 +24,9 @@ export class FrequentlyBoughtTogetherService {
         this.tenantId = config.tenantId;
     }
 
+    /**
+     * This workflows works for PRODUCTs and add the frequently bought together products
+     */
     public async addFBTProducts() {
         const products = await this.db.product.findMany({
             where: {
@@ -101,6 +104,90 @@ export class FrequentlyBoughtTogetherService {
                         productId_relatedProductId: {
                             productId: product.id,
                             relatedProductId: id,
+                        },
+                    },
+                });
+            }
+        }
+    }
+
+    /**
+     * This workflows works for VARIANTs and add the frequently bought together variants
+     */
+    public async addFBTVariants() {
+        const variants = await this.db.productVariant.findMany({
+            where: {
+                tenantId: this.tenantId,
+            },
+            include: {
+                attributes: true,
+            },
+        });
+
+        for (const variant of variants) {
+            const fbt = new FBT({
+                db: this.db,
+                tenantId: [variant.tenantId],
+                logger: this.logger,
+            });
+            const fbtVariants = await fbt.getVariantsBoughtTogether(variant.id);
+            if (fbtVariants.length === 0) {
+                continue;
+            }
+            this.logger.info(
+                `Found ${fbtVariants.length} frequently bought together variants for variant ${variant.sku}`,
+                {
+                    fbtVariants: fbtVariants.map((p) => p.sku),
+                },
+            );
+            // We have the table ProductVariantToFrequentlyBoughtWith storing all entries
+            // of frequently bought together variants. Sync this table, so that it fits exactly
+            // the entries from fbtVariants. Only make database write or delete when needed
+            // to avoid unnecessary database load
+            const fbtVariantsIds = fbtVariants.map((p) => p.id);
+            const existingFbtVariants =
+                await this.db.variantToFrequentlyBoughtWith.findMany({
+                    where: {
+                        variantId: variant.id,
+                    },
+                    include: {
+                        relatedVariant: true,
+                    },
+                });
+            const existingFbtVariantsIds = existingFbtVariants.map(
+                (p) => p.relatedVariantId,
+            );
+            const newFbtVariantsIds = fbtVariantsIds.filter(
+                (id) => !existingFbtVariantsIds.includes(id),
+            );
+            const deletedFbtVariantsIds = existingFbtVariantsIds.filter(
+                (id) => !fbtVariantsIds.includes(id),
+            );
+            // add new entries
+            for (const id of newFbtVariantsIds) {
+                await this.db.variantToFrequentlyBoughtWith.create({
+                    data: {
+                        variant: {
+                            connect: {
+                                id: variant.id,
+                            },
+                        },
+                        relatedVariant: {
+                            connect: {
+                                id,
+                            },
+                        },
+                    },
+                });
+            }
+
+            // delete old entries
+            for (const id of deletedFbtVariantsIds) {
+                await this.db.variantToFrequentlyBoughtWith.delete({
+                    where: {
+                        variantId_relatedVariantId: {
+                            variantId: variant.id,
+                            relatedVariantId: id,
                         },
                     },
                 });

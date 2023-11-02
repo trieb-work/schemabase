@@ -1857,8 +1857,25 @@ model ProductTypeAttribute {
   @@index([attributeId])
 }
 
+/// This model defines the relation between a variant and a related variant,
+/// frequently bought together. So this is on variant level
+model VariantToFrequentlyBoughtWith {
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  variantId        String
+  relatedVariantId String
+
+  variant        ProductVariant @relation("VariantToRelated", fields: [variantId], references: [id])
+  relatedVariant ProductVariant @relation("RelatedToVariant", fields: [relatedVariantId], references: [id])
+
+  @@id([variantId, relatedVariantId])
+  @@index([relatedVariantId])
+  @@index([variantId])
+}
+
 /// This model defines the relation between a product and a related product,
-/// frequently bought together.
+/// frequently bought together. So this is on product level
 model ProductToFrequentlyBoughtWith {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1997,6 +2014,11 @@ model ProductVariant {
   billOfMaterialChilds BillOfMaterial[] @relation("childProduct")
 
   media Media[]
+
+  /// All frequently bought together products as relation
+  frequentlyBoughtWith VariantToFrequentlyBoughtWith[] @relation("VariantToRelated")
+  /// Just the relation back. Not used in the code
+  boughtTogetherWith   VariantToFrequentlyBoughtWith[] @relation("RelatedToVariant")
 
   @@unique([sku, tenantId])
   // Just for relational purposes
@@ -2903,6 +2925,7 @@ model InstalledSaleorApp {
   syncPackages        Boolean @default(false)
   syncTaxes           Boolean @default(false)
   syncCategories      Boolean @default(false)
+  syncFrequentlyBoughtTogether Boolean @default(false)
   /// If this is true, we will create orders in Saleor, that we received from 3rd party systems. Needs min. Saleor 3.17. Will only sync orders, where we have customers in Saleor already
   createHistoricOrdes Boolean @default(false)
 

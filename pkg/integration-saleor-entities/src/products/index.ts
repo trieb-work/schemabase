@@ -1591,14 +1591,17 @@ export class SaleorProductSyncService {
          */
         await this.createOrUpdateProductinSaleor(createdGte);
 
-        const frequentlyboughttogether = new FrequentlyBoughtTogether({
-            db: this.db,
-            logger: this.logger,
-            saleorClient: this.saleorClient,
-            tenantId: this.tenantId,
-            installedSaleorAppId: this.installedSaleorAppId,
-        });
-        await frequentlyboughttogether.sync(createdGte);
+        if (this.installedSaleorApp.syncFrequentlyBoughtTogether) {
+            const frequentlyboughttogether = new FrequentlyBoughtTogether({
+                db: this.db,
+                logger: this.logger,
+                saleorClient: this.saleorClient,
+                tenantId: this.tenantId,
+                installedSaleorAppId: this.installedSaleorAppId,
+            });
+            await frequentlyboughttogether.syncVariants(createdGte);
+            await frequentlyboughttogether.syncProducts(createdGte);
+        }
 
         /**
          * get all saleor productVariants where related stockEntries have been updated since last run or where related
