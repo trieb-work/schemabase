@@ -143,11 +143,22 @@ export class XentralProxyOrderSyncService {
                     // packages: {
                     //   none: {},
                     // },
+
+
                     /**
                      * only sync orders which have at least one lineitem for the specified warehouse
+                     * if warehouseId is set, we want that to be the warehouse id for that xentral instance
                      */
                     orderLineItems: {
                         some: {
+                            OR: [
+                                {
+                                    warehouseId: this.warehouseId,
+                                },
+                                {
+                                    warehouseId: null,
+                                }
+                            ],
                             productVariant: {
                                 defaultWarehouseId: this.warehouseId,
                             },
@@ -181,7 +192,11 @@ export class XentralProxyOrderSyncService {
                     shippingAddress: true,
                 },
             });
-            this.logger.info(`Will sync ${orders.length} Orders with Xentral.`);
+
+
+            this.logger.info(`Will sync ${orders.length} Orders with Xentral.`, {
+                orderNumbers: orders.map((o) => o.orderNumber),
+            });
             for (const order of orders) {
                 // TODO add try/catch block from other services
                 const defaultLogFields = {
