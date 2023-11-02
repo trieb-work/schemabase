@@ -2925,6 +2925,7 @@ model InstalledSaleorApp {
   syncPackages        Boolean @default(false)
   syncTaxes           Boolean @default(false)
   syncCategories      Boolean @default(false)
+  syncFrequentlyBoughtTogether Boolean @default(false)
   /// If this is true, we will create orders in Saleor, that we received from 3rd party systems. Needs min. Saleor 3.17. Will only sync orders, where we have customers in Saleor already
   createHistoricOrdes Boolean @default(false)
 

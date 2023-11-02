@@ -5,7 +5,7 @@
 
 import { ILogger } from "@eci/pkg/logger";
 import { PrismaClient } from "@eci/pkg/prisma";
-import { SaleorClient } from "@eci/pkg/saleor";
+import { ProductVariantBulkUpdateInput, SaleorClient } from "@eci/pkg/saleor";
 
 export class FrequentlyBoughtTogether {
     private readonly db: PrismaClient;
@@ -29,7 +29,205 @@ export class FrequentlyBoughtTogether {
         this.saleorClient = config.saleorClient;
     }
 
-    public async sync(gteDate: Date) {
+    /**
+     * sync the product variants frequently bought together. Use the productVriantBulkUpdate API
+     * @param gteDate
+     * @returns
+     */
+    public async syncVariants(gteDate: Date) {
+        const fbts = await this.db.product.findMany({
+            where: {
+                variants: {
+                    some: {
+                        saleorProductVariant: {
+                            some: {
+                                installedSaleorAppId: this.installedSaleorAppId,
+                            },
+                        },
+
+                        frequentlyBoughtWith: {
+                            some: {
+                                updatedAt: {
+                                    gte: gteDate,
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            include: {
+                productType: {
+                    include: {
+                        attributes: {
+                            where: {
+                                attribute: {
+                                    normalizedName: "frequentlyboughttogether",
+                                },
+                            },
+                            include: {
+                                attribute: {
+                                    include: {
+                                        saleorAttributes: {
+                                            where: {
+                                                installedSaleorAppId:
+                                                    this.installedSaleorAppId,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                saleorProducts: {
+                    where: {
+                        installedSaleorAppId: this.installedSaleorAppId,
+                    },
+                },
+                variants: {
+                    include: {
+                        saleorProductVariant: {
+                            where: {
+                                installedSaleorAppId: this.installedSaleorAppId,
+                            },
+                        },
+                        frequentlyBoughtWith: {
+                            include: {
+                                variant: {
+                                    include: {
+                                        saleorProductVariant: {
+                                            where: {
+                                                installedSaleorAppId:
+                                                    this.installedSaleorAppId,
+                                            },
+                                        },
+                                    },
+                                },
+                                relatedVariant: {
+                                    include: {
+                                        saleorProductVariant: {
+                                            where: {
+                                                installedSaleorAppId:
+                                                    this.installedSaleorAppId,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        if (fbts.length === 0) {
+            this.logger.info("No changes in FBT. Exiting.");
+            return;
+        }
+
+        /**
+         * We run the bulk update for each product, including all variants
+         * of the product.
+         */
+        for (const prod of fbts) {
+            /**
+             * The saleor product, whose variants we are updating now
+             */
+            const saleorProduct = prod.saleorProducts.find(
+                (sp) => sp.installedSaleorAppId === this.installedSaleorAppId,
+            );
+
+            if (!saleorProduct) {
+                this.logger.error(
+                    `Product ${prod.id} has no saleor product with installedSaleorAppId ${this.installedSaleorAppId}`,
+                );
+                continue;
+            }
+            const productType = prod.productType;
+            if (
+                !productType?.attributes[0]?.attribute?.saleorAttributes[0]?.id
+            ) {
+                this.logger.error(
+                    `Product ${prod.id} has no attribute with name "frequentlyboughttogether"`,
+                );
+                continue;
+            }
+
+            /**
+             * The bulk update input for the variants
+             */
+            const bulkUpdate: ProductVariantBulkUpdateInput[] = [];
+
+            /**
+             * The variants of the product
+             */
+            const variants = prod.variants;
+
+            /**
+             * Loop over all variants of the product
+             */
+            for (const variant of variants) {
+                const saleorVariant = variant.saleorProductVariant.find(
+                    (spv) =>
+                        spv.installedSaleorAppId === this.installedSaleorAppId,
+                );
+
+                if (!saleorVariant) {
+                    this.logger.error(
+                        `Product variant ${variant.sku} - Product ${prod.id} has` +
+                            `no saleor variant with installedSaleorAppId ${this.installedSaleorAppId}`,
+                    );
+                    continue;
+                }
+
+                /**
+                 * Array of just the saleor ids of all frequentlyBoughtWith variants
+                 */
+                const referingVariants = variant.frequentlyBoughtWith
+                    .map((fbt) => {
+                        const saleorVariantInner =
+                            fbt.relatedVariant.saleorProductVariant.find(
+                                (spv) =>
+                                    spv.installedSaleorAppId ===
+                                    this.installedSaleorAppId,
+                            );
+                        if (!saleorVariantInner) {
+                            this.logger.warn(
+                                `Product ${prod.id} has no saleor product with installedSaleorAppId ${this.installedSaleorAppId}`,
+                            );
+                            return;
+                        }
+                        return saleorVariantInner.id;
+                    })
+                    .filter((id): id is string => id !== undefined) as string[];
+
+                this.logger.info(
+                    `Updating FBT for variant ${variant.sku} with saleor id ${saleorProduct.id} with ${referingVariants.length} variants`,
+                    {
+                        referingVariants,
+                    },
+                );
+
+                bulkUpdate.push({
+                    id: variant.saleorProductVariant[0].id,
+                    attributes: [
+                        {
+                            id: productType.attributes[0].attribute
+                                .saleorAttributes[0].id,
+                            references: referingVariants,
+                        },
+                    ],
+                });
+            }
+
+            await this.saleorClient.productVariantBulkUpdate({
+                productId: saleorProduct.id,
+                variants: bulkUpdate,
+            });
+        }
+    }
+
+    public async syncProducts(gteDate: Date) {
         const fbts = await this.db.product.findMany({
             where: {
                 saleorProducts: {
