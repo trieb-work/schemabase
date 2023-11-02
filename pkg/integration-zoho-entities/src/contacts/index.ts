@@ -434,6 +434,11 @@ export class ZohoContactSyncService {
                 });
             }
         }
+        /**
+         * These are just addresses, that do not exist yet. 
+         * We need to improve that to see, if a zoho address does exist, but needs
+         * to be created again but for a different contact
+         */
         const newAddresses = await this.db.address.findMany({
             where: {
                 tenantId: this.zohoApp.tenantId,
