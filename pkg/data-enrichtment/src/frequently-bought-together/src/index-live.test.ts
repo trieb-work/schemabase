@@ -15,6 +15,6 @@ describe("Frequently bought together", () => {
             logger: new AssertionLogger(),
             tenantId: "tn_kencove235",
         });
-        await service.addFBTProducts();
+        await service.addFBTVariants();
     }, 200000);
 });

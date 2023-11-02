@@ -979,6 +979,22 @@ Table ProductTypeAttribute {
   Note: 'matching table between product types and attributes'
 }
 
+Table VariantToFrequentlyBoughtWith {
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  variantId String [not null]
+  relatedVariantId String [not null]
+  variant ProductVariant [not null]
+  relatedVariant ProductVariant [not null]
+
+  indexes {
+    (variantId, relatedVariantId) [pk]
+  }
+
+  Note: 'This model defines the relation between a variant and a related variant,
+frequently bought together. So this is on variant level'
+}
+
 Table ProductToFrequentlyBoughtWith {
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
@@ -992,7 +1008,7 @@ Table ProductToFrequentlyBoughtWith {
   }
 
   Note: 'This model defines the relation between a product and a related product,
-frequently bought together.'
+frequently bought together. So this is on product level'
 }
 
 Table Product {
@@ -1060,6 +1076,8 @@ normally, product bundles don\'t allocate stock on the individual products']
   billOfMaterial BillOfMaterial [not null]
   billOfMaterialChilds BillOfMaterial [not null, note: 'deprecated']
   media Media [not null]
+  frequentlyBoughtWith VariantToFrequentlyBoughtWith [not null, note: 'All frequently bought together products as relation']
+  boughtTogetherWith VariantToFrequentlyBoughtWith [not null, note: 'Just the relation back. Not used in the code']
 
   indexes {
     (sku, tenantId) [unique]
@@ -2481,6 +2499,10 @@ Ref: ProductType.tenantId > Tenant.id [delete: Cascade]
 Ref: ProductTypeAttribute.productTypeId > ProductType.id
 
 Ref: ProductTypeAttribute.attributeId > Attribute.id
+
+Ref: VariantToFrequentlyBoughtWith.variantId > ProductVariant.id
+
+Ref: VariantToFrequentlyBoughtWith.relatedVariantId > ProductVariant.id
 
 Ref: ProductToFrequentlyBoughtWith.productId > Product.id
 

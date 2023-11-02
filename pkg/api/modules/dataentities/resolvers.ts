@@ -198,4 +198,16 @@ export const resolvers: Resolvers<Context> = {
             return fbt.getProductsBoughtTogether(parent.id);
         },
     },
+    ProductVariant: {
+        frequentlyBoughtTogether: async (parent, _args, ctx) => {
+            if (!parent.id) return null;
+            const claims = await ctx.authorizeUser([]);
+            const fbt = new FBT({
+                db: ctx.dataSources.db.client,
+                tenantId: claims.tenants?.map((t) => t.id) || [],
+                logger: ctx.logger,
+            });
+            return fbt.getVariantsBoughtTogether(parent.id);
+        },
+    },
 };
