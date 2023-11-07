@@ -41,7 +41,7 @@ export class DataEnrichmentFBTSyncWf implements Workflow {
             db: this.prisma,
             tenantId: this.tenantId,
         });
-        await dataEnrichmentFBTSync.addFBTProducts();
+        await dataEnrichmentFBTSync.addFBTVariants();
         this.logger.info("Finished data enrichment FBT sync workflow run");
     }
 }
