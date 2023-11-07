@@ -1163,27 +1163,34 @@ export class KencoveApiAppProductSyncService {
         /**
          * just kencove Api product variants enhanced with all data from their parent product
          */
-        const enhancedProducts = products.map((p) => {
-            return {
-                images: p.images,
-                videos: p.videos,
-                otherMedia: p.other_media,
-                productType: p.productType,
-                accessories: p.accessories,
-                alternatives: p.alternatives,
-                description: p?.website_description,
-                countryOfOrigin: p.countryOfOrigin,
-                productId: p.id,
-                productName: htmlDecode(p.name),
-                categoryId: p?.categoryId?.toString(),
-                variants: p.variants.map((v) => ({
-                    ...v,
+        const enhancedProducts = products
+            .map((p) => {
+                return {
+                    images: p.images,
+                    videos: p.videos,
+                    otherMedia: p.other_media,
+                    productType: p.productType,
+                    accessories: p.accessories,
+                    alternatives: p.alternatives,
+                    description: p?.website_description,
+                    countryOfOrigin: p.countryOfOrigin,
                     productId: p.id,
                     productName: htmlDecode(p.name),
-                    countryOfOrigin: p.countryOfOrigin,
-                })),
-            };
-        });
+                    categoryId: p?.categoryId?.toString(),
+                    variants: p.variants.map((v) => ({
+                        ...v,
+                        productId: p.id,
+                        productName: htmlDecode(p.name),
+                        countryOfOrigin: p.countryOfOrigin,
+                    })),
+                };
+            })
+            // Filter out all products, that have no product type. This should not happen
+            .filter(
+                (p) =>
+                    p.productType?.id !== undefined ||
+                    p.productType.id !== null,
+            );
 
         /**
          * First loop is looping over all products and inner loop is looping
