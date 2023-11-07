@@ -515,6 +515,9 @@ export class KencoveApiAppProductSyncService {
             attribute.type === "SWATCH" &&
             attributeValueDecoded.startsWith("#")
         ) {
+            this.logger.debug(
+                `Attribute ${attribute.name} is a color swatch with hex code: ${attributeValueDecoded}`,
+            );
             hexCode = attributeValueDecoded;
         }
 
@@ -1577,6 +1580,7 @@ export class KencoveApiAppProductSyncService {
                             variantId: existingVariant.id,
                             attribute: matchedAttr.attribute,
                             attributeValue: attribute.value,
+                            attributeInProduct: attribute,
                             isForVariant: matchedAttr?.isForVariant ?? false,
                         });
                     }
