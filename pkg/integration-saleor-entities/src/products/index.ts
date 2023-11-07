@@ -914,7 +914,6 @@ export class SaleorProductSyncService {
                             });
                         }
                     }
-                    // TODO: handle the case when we have a hexcode value
                     if (attr.attribute.type === "PRODUCT_REFERENCE") {
                         /// We store our internal product Id in value of product reference attributes.
                         /// We need to aks our DB for the saleor product id
@@ -970,6 +969,18 @@ export class SaleorProductSyncService {
                             references: [
                                 saleorVariantId.saleorProductVariant[0].id,
                             ],
+                        });
+                        // Handle the special case SWATCH where the hex code and the name is given
+                    } else if (
+                        attr.attribute.type === "SWATCH" &&
+                        attr.hexColor &&
+                        attr.value
+                    ) {
+                        attributes.push({
+                            id: attr.attribute.saleorAttributes[0].id,
+                            swatch: {
+                                value: attr.hexColor,
+                            },
                         });
                     } else {
                         attributes.push({
