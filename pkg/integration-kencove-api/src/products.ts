@@ -309,6 +309,12 @@ export class KencoveApiAppProductSyncService {
     private attributeMatch(
         productData: KencoveApiProduct,
     ): SeparatedAttributes {
+        this.logger.debug(
+            "Matching attributes for product " + productData.name,
+            {
+                odooId: productData.id,
+            },
+        );
         const allVariants = productData.variants;
         /**
          * Attributes in the "selectorValues", that have the same name and value for
