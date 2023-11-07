@@ -757,13 +757,6 @@ export class KencoveApiAppProductSyncService {
                 display_type: "multiselect",
                 attribute_model: "custom",
             });
-            productAttributesUnique.push({
-                name: "Frequently Bought Together",
-                value: "",
-                attribute_id: 333333,
-                display_type: "reference",
-                attribute_model: "custom",
-            });
             variantAttributesUnique.push({
                 name: "Frequently Bought Together",
                 value: "",
