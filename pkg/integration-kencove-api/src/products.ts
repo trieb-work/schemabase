@@ -119,6 +119,12 @@ export class KencoveApiAppProductSyncService {
         isForVariant: boolean,
         isVariantSelection: boolean,
     ) {
+        if (!attribute.name) {
+            this.logger.error(
+                `Attribute ${JSON.stringify(attribute)} has no name. Skipping.`,
+            );
+            return;
+        }
         /**
          * First make sure, that the attribute itself does already exist in the DB
          */
@@ -584,10 +590,17 @@ export class KencoveApiAppProductSyncService {
     private async syncProductTypeAndAttributes(products: KencoveApiProduct[]) {
         const uniqueProductTypes = products
             .map((p) => p.productType)
-            .filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i);
+            .filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i)
+            .filter((pt) => pt.name);
 
+        const uniqueIds = uniqueProductTypes
+            .map((pt) => pt.id)
+            .filter((pt) => pt);
         this.logger.info(
             `Found ${uniqueProductTypes.length} unique product types.`,
+            {
+                uniqueIds,
+            },
         );
 
         /**
@@ -598,7 +611,7 @@ export class KencoveApiAppProductSyncService {
                 where: {
                     kencoveApiAppId: this.kencoveApiApp.id,
                     id: {
-                        in: uniqueProductTypes.map((pt) => pt.id),
+                        in: uniqueIds,
                     },
                 },
                 include: {
