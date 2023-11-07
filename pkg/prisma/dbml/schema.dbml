@@ -504,6 +504,7 @@ Some systems just use a date here']
   zohoPayment ZohoPayment [not null]
   saleorPayment SaleorPayment [not null]
   braintreeTransactions BraintreeTransaction [not null]
+  kencoveApiPayments KencoveApiPayment [not null]
 
   indexes {
     (referenceNumber, tenantId) [unique]
@@ -1416,6 +1417,7 @@ This is a comma separated list of category ids']
   kencoveApiWarehouses KencoveApiWarehouse [not null]
   kencoveApiOrders KencoveApiOrder [not null]
   kencoveApiProductTypes KencoveApiProductType [not null]
+  kencoveApiPayments KencoveApiPayment [not null]
 
   Note: 'The custom app for the kencove api. Using OAuth for authentication'
 }
@@ -1426,6 +1428,20 @@ Table KencoveApiProductType {
   kencoveApiAppId String [not null]
   productType ProductType [not null]
   productTypeId String [not null]
+
+  indexes {
+    (id, kencoveApiAppId) [unique]
+  }
+}
+
+Table KencoveApiPayment {
+  id String [not null]
+  createdAt DateTime [not null]
+  updatedAt DateTime [not null]
+  kencoveApiApp KencoveApiApp [not null]
+  kencoveApiAppId String [not null]
+  payment Payment [not null]
+  paymentId String [not null]
 
   indexes {
     (id, kencoveApiAppId) [unique]
@@ -2598,6 +2614,10 @@ Ref: KencoveApiApp.tenantId > Tenant.id [delete: Cascade]
 Ref: KencoveApiProductType.kencoveApiAppId > KencoveApiApp.id [delete: Cascade]
 
 Ref: KencoveApiProductType.productTypeId > ProductType.id [delete: Cascade]
+
+Ref: KencoveApiPayment.kencoveApiAppId > KencoveApiApp.id [delete: Cascade]
+
+Ref: KencoveApiPayment.paymentId > Payment.id [delete: Cascade]
 
 Ref: KencoveApiWarehouse.warehouseId > Warehouse.id [delete: Cascade]
 

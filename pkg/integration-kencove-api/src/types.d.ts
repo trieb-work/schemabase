@@ -257,6 +257,23 @@ export type KencoveApiPricelist = {
     updatedAt: string;
 };
 
+export type KencoveApiPayment = {
+    partner_id: number;
+    customer_code: string;
+    payment_id: number;
+    invoice_id: number;
+    invoice_number: string;
+    sale_order_id: number;
+    sale_order_number: string;
+    move_type: string;
+    payment_method: string;
+    payment_amount: number;
+    payment_state: "done" | "refunded";
+    website_name: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
 export type KencoveApiOrder = {
     id: string;
     orderNumber: string;

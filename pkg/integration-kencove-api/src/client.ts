@@ -16,6 +16,7 @@ import {
     KencoveApiContact,
     KencoveApiOrder,
     KencoveApiPackage,
+    KencoveApiPayment,
     KencoveApiPricelist,
     KencoveApiProduct,
     KencoveApiProductStock,
@@ -178,6 +179,44 @@ export class KencoveApiClient {
     }> {
         const response = await this.axiosInstance.get(
             `/ecom/address/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            },
+        );
+        return response.data;
+    }
+
+    public async *getPaymentsStream(
+        fromDate: Date,
+    ): AsyncIterableIterator<KencoveApiPayment[]> {
+        let nextPage: string | null = null;
+        let offset: number = 0;
+        do {
+            const accessToken = await this.getAccessToken();
+            const response = await this.getPaymentsPage(
+                fromDate,
+                offset,
+                accessToken,
+            );
+            yield response.data;
+            nextPage = response.next_page;
+            offset += 200;
+        } while (nextPage);
+    }
+
+    private async getPaymentsPage(
+        fromDate: Date,
+        offset: number,
+        accessToken: string,
+    ): Promise<{
+        data: KencoveApiPayment[];
+        result_count: number;
+        next_page: string;
+    }> {
+        const response = await this.axiosInstance.get(
+            `/ecom/payment/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
             {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,

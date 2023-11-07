@@ -787,6 +787,7 @@ model Payment {
   zohoPayment           ZohoPayment[]
   saleorPayment         SaleorPayment[]
   braintreeTransactions BraintreeTransaction[]
+  kencoveApiPayments    KencoveApiPayment[]
 
   @@unique([referenceNumber, tenantId])
   @@index([orderId])
@@ -2558,6 +2559,7 @@ model KencoveApiApp {
   kencoveApiWarehouses      KencoveApiWarehouse[]
   kencoveApiOrders          KencoveApiOrder[]
   kencoveApiProductTypes    KencoveApiProductType[]
+  kencoveApiPayments        KencoveApiPayment[]
 
   @@index([tenantId])
 }
@@ -2574,6 +2576,24 @@ model KencoveApiProductType {
   @@unique([id, kencoveApiAppId])
   @@index([productTypeId])
   @@index([kencoveApiAppId])
+}
+
+model KencoveApiPayment {
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id], onDelete: Cascade)
+  kencoveApiAppId String
+
+  payment   Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  paymentId String
+
+  @@unique([id, kencoveApiAppId])
+  @@index([paymentId])
+  @@index([kencoveApiAppId])
+
 }
 
 model KencoveApiWarehouse {
