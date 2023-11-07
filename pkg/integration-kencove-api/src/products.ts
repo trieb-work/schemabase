@@ -380,7 +380,9 @@ export class KencoveApiAppProductSyncService {
             });
         });
 
-        commonSelectorValues = this.cleanAttributes(commonSelectorValues);
+        commonSelectorValues = this.cleanAttributes(
+            commonSelectorValues,
+        ).filter((vsa) => vsa.name !== "website_ref_desc");
         commonAttributeValues = this.cleanAttributes(commonAttributeValues);
 
         const productAttributes = [
@@ -1371,7 +1373,12 @@ export class KencoveApiAppProductSyncService {
                         variant.selectorValues,
                     )[0];
 
-                    if (variantSelectionAttribute) {
+                    if (variant.name !== product.productName) {
+                        this.logger.info(
+                            `Variant name ${variant.name} is different to ${product.productName}.`,
+                        );
+                        variantName = variant.name;
+                    } else if (variantSelectionAttribute) {
                         this.logger.debug(
                             `Using attribute ${variantSelectionAttribute.value} as variant name`,
                         );
