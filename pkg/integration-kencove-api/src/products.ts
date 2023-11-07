@@ -751,10 +751,13 @@ export class KencoveApiAppProductSyncService {
             const kenProdType = kenProdTypes.find(
                 (pt) => pt.id === product.productType.id,
             );
-            if (!kenProdType)
-                throw new Error(
+            if (!kenProdType) {
+                this.logger.error(
                     `Product type ${product.productType.name} not found in DB`,
                 );
+                continue;
+            }
+
             /**
              * Manually adding three product attributes: Accessory Items, Alternative Items and Frequently Bought Together
              * They get values from the API in a different way, so we have to add them manually, so
