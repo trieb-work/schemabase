@@ -1165,7 +1165,7 @@ export class KencoveApiAppProductSyncService {
          * First sync the product types and related attributes.
          * Not the attribute values.
          */
-        // await this.syncProductTypeAndAttributes(products);
+        await this.syncProductTypeAndAttributes(products);
 
         /**
          * just kencove Api product variants enhanced with all data from their parent product
