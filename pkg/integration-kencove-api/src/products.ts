@@ -602,11 +602,13 @@ export class KencoveApiAppProductSyncService {
         const uniqueProductTypes = products
             .map((p) => p.productType)
             .filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i)
-            .filter((pt) => pt.name);
+            .filter((pt) => pt.name !== null)
+            .filter((pt) => pt.id !== null) as { id: string; name: string }[];
 
         const uniqueIds = uniqueProductTypes
             .map((pt) => pt.id)
-            .filter((pt) => pt);
+            .filter((pt) => pt !== null) as string[];
+
         this.logger.info(
             `Found ${uniqueProductTypes.length} unique product types.`,
             {
@@ -1158,7 +1160,7 @@ export class KencoveApiAppProductSyncService {
          * First sync the product types and related attributes.
          * Not the attribute values.
          */
-        await this.syncProductTypeAndAttributes(products);
+        // await this.syncProductTypeAndAttributes(products);
 
         /**
          * just kencove Api product variants enhanced with all data from their parent product
@@ -1197,6 +1199,13 @@ export class KencoveApiAppProductSyncService {
          * over all variants of the product
          */
         for (const product of enhancedProducts) {
+            if (!product.productType.id) {
+                this.logger.warn(
+                    `Product ${product.productName}, id: ${product.productId} has no product type. Skipping.`,
+                );
+                continue;
+            }
+
             const normalizedProductName = normalizeStrings.productNames(
                 product.productName,
             );

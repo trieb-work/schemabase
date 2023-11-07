@@ -149,8 +149,8 @@ export type KencoveApiProduct = {
     categoryId: number;
     variants: KencoveApiProductVariant[];
     productType: {
-        id: string;
-        name: string;
+        id: string | null;
+        name: string | null;
     };
     website_description: string;
     createdAt: string;
