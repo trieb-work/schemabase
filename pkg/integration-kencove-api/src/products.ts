@@ -332,10 +332,10 @@ export class KencoveApiAppProductSyncService {
         if (allVariants.length === 1) {
             return {
                 productAttributes: this.cleanAttributes(
-                    allVariants[0].attributeValues,
+                    allVariants[0].attributeValues || [],
                 ),
                 productAttributesUnique: this.cleanAttributes(
-                    this.uniqueAttributes(allVariants[0].attributeValues),
+                    this.uniqueAttributes(allVariants[0].attributeValues || []),
                 ),
                 variantAttributes: [],
                 variantAttributesUnique: [],
@@ -363,14 +363,16 @@ export class KencoveApiAppProductSyncService {
                 }
             });
 
+            if (!variant.attributeValues) return;
             variant.attributeValues.forEach((attributeValue) => {
                 if (
-                    allVariants.every((v) =>
-                        v.attributeValues.some(
-                            (av) =>
-                                av.name === attributeValue.name &&
-                                av.value === attributeValue.value,
-                        ),
+                    allVariants.every(
+                        (v) =>
+                            v.attributeValues?.some(
+                                (av) =>
+                                    av.name === attributeValue.name &&
+                                    av.value === attributeValue.value,
+                            ),
                     )
                 ) {
                     commonAttributeValues.push(attributeValue);
@@ -390,7 +392,7 @@ export class KencoveApiAppProductSyncService {
             variant.selectorValues.forEach((selectorValue) => {
                 if (selectorValue.name === "website_ref_desc") {
                     const correspondingAttributeValue =
-                        variant.attributeValues.find(
+                        variant.attributeValues?.find(
                             (av) => av.value?.includes(selectorValue.value),
                         );
                     if (correspondingAttributeValue) {
@@ -433,14 +435,17 @@ export class KencoveApiAppProductSyncService {
         });
 
         const variantAttributes = this.cleanAttributes(
-            allVariants.flatMap((variant) =>
-                variant.attributeValues.filter(
-                    (av) =>
-                        !productAttributes.some((pa) => pa.name === av.name) &&
-                        !variantSelectionAttributes.some(
-                            (vsa) => vsa.attribute_id === av.attribute_id,
-                        ),
-                ),
+            allVariants.flatMap(
+                (variant) =>
+                    variant.attributeValues?.filter(
+                        (av): av is KencoveApiAttributeInProduct =>
+                            !productAttributes.some(
+                                (pa) => pa.name === av.name,
+                            ) &&
+                            !variantSelectionAttributes.some(
+                                (vsa) => vsa.attribute_id === av.attribute_id,
+                            ),
+                    ) || [],
             ),
         );
 
@@ -1470,7 +1475,7 @@ export class KencoveApiAppProductSyncService {
                 /// to see, if an attribute is used as product, or variant
                 /// attribute create a value entry accordingly.
                 const allAttributes = [
-                    ...variant.attributeValues,
+                    ...(variant.attributeValues || []),
                     ...variant.selectorValues,
                 ];
                 const cleanedAttributes = this.cleanAttributes(

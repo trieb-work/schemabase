@@ -121,7 +121,7 @@ export type KencoveApiProductVariant = {
      * The variant selection attribute values
      */
     selectorValues: KencoveApiAttributeInProduct[];
-    attributeValues: KencoveApiAttributeInProduct[];
+    attributeValues: KencoveApiAttributeInProduct[] | null;
     name: string;
     createdAt: string;
     updatedAt: string;
