@@ -1378,7 +1378,7 @@ export class KencoveApiAppProductSyncService {
 
                     if (variant.name !== product.productName) {
                         this.logger.info(
-                            `Variant name ${variant.name} is different to ${product.productName}.`,
+                            `Variant name ${variant.name} is different to ${product.productName}. Using this as variant name`,
                         );
                         variantName = variant.name;
                     } else if (variantSelectionAttribute) {
@@ -1407,8 +1407,14 @@ export class KencoveApiAppProductSyncService {
                     this.logger.info(
                         `Creating variant ${variant.id} of product ${product.productName}`,
                     );
-                    existingVariant = await this.db.productVariant.create({
-                        data: {
+                    existingVariant = await this.db.productVariant.upsert({
+                        where: {
+                            sku_tenantId: {
+                                sku,
+                                tenantId: this.kencoveApiApp.tenantId,
+                            },
+                        },
+                        create: {
                             id: id.id("variant"),
                             sku,
                             weight: variant.weight,
@@ -1443,6 +1449,15 @@ export class KencoveApiAppProductSyncService {
                                         updatedAt,
                                         productId: product.productId,
                                     },
+                                },
+                            },
+                        },
+                        update: {
+                            weight: variant.weight,
+                            variantName,
+                            product: {
+                                connect: {
+                                    id: existingProduct.id,
                                 },
                             },
                         },
