@@ -1416,6 +1416,7 @@ export class KencoveApiAppProductSyncService {
                         },
                         create: {
                             id: id.id("variant"),
+                            ean: variant.upc,
                             sku,
                             weight: variant.weight,
                             variantName,
@@ -1455,6 +1456,7 @@ export class KencoveApiAppProductSyncService {
                         update: {
                             weight: variant.weight,
                             variantName,
+                            ean: variant.upc,
                             product: {
                                 connect: {
                                     id: existingProduct.id,
@@ -1468,7 +1470,8 @@ export class KencoveApiAppProductSyncService {
                      */
                     existingVariant.weight !== variant.weight ||
                     existingVariant.variantName !== variantName ||
-                    existingVariant.productId !== existingProduct.id
+                    existingVariant.productId !== existingProduct.id ||
+                    existingVariant.ean !== variant.upc
                 ) {
                     this.logger.info(
                         `Updating variant ${variant.id} of product ${product.productName}`,
@@ -1480,6 +1483,7 @@ export class KencoveApiAppProductSyncService {
                         data: {
                             weight: variant.weight,
                             variantName,
+                            ean: variant.upc,
                             product: {
                                 connect: {
                                     id: existingProduct.id,
