@@ -22,6 +22,9 @@ import {
     AuftragEditResponse,
 } from "@eci/pkg/xentral/src/xml/types";
 import { subDays } from "date-fns";
+import { RedisConnection } from "@eci/pkg/scheduler/scheduler";
+import Redis from "ioredis";
+
 
 interface XentralProxyOrderSyncServiceConfig {
     xentralProxyApp: XentralProxyApp;
@@ -29,6 +32,7 @@ interface XentralProxyOrderSyncServiceConfig {
     xentralRestClient: XentralRestClient;
     db: PrismaClient;
     logger: ILogger;
+    redisConnection: RedisConnection;
 }
 
 export class XentralProxyOrderSyncService {
@@ -48,6 +52,8 @@ export class XentralProxyOrderSyncService {
 
     private readonly cronState: CronStateHandler;
 
+    private readonly redis: Redis;
+
     public xentralCarriers: XentralCarrier[] | undefined;
 
     public constructor(config: XentralProxyOrderSyncServiceConfig) {
@@ -58,6 +64,7 @@ export class XentralProxyOrderSyncService {
         this.db = config.db;
         this.xentralXmlClient = config.xentralXmlClient;
         this.xentralRestClient = config.xentralRestClient;
+        this.redis = new Redis(config.redisConnection);
         this.cronState = new CronStateHandler({
             tenantId: this.xentralProxyApp.tenantId,
             appId: this.xentralProxyApp.id,
@@ -100,14 +107,29 @@ export class XentralProxyOrderSyncService {
             "Starting sync of ECI Orders to XentralProxy Aufträge",
         );
 
-        // const cronState = await this.cronState.get(true);
         try {
-            // if (cronState.currentlyLocked) {
-            //     this.logger.info(
-            //         `Xentral Auftrag sync for Xentral app ${this.xentralProxyApp.id} - ${this.xentralProxyApp.url} is currently locked. Finishing sync`,
-            //     );
-            //     return;
-            // }
+
+            /**
+             * check in redis, if we have currently a running auftrag sync. Fail, if yes
+             * if not, set a lock in redis. Use ioredis
+             */
+            const lockState = await this.redis.get(`eci:lock:xentralProxyOrderSyncService:${this.xentralProxyApp.id}`);
+            if (lockState === "locked") {
+                throw new Error(
+                    "Sync of ECI Orders to XentralProxy Aufträge is already running. Skipping this run.",
+                );
+            }
+
+            /**
+             * Set the lock state in redis. Automatically unlock after 1 hour
+             */
+            await this.redis.set(
+                `eci:lock:xentralProxyOrderSyncService:${this.xentralProxyApp.id}`,
+                "locked",
+                "EX",
+                60 * 60,
+            );
+
 
             const orders = await this.db.order.findMany({
                 where: {
@@ -170,11 +192,6 @@ export class XentralProxyOrderSyncService {
                      * current xentral integration
                      */
                     orderLineItems: {
-                        where: {
-                            productVariant: {
-                                defaultWarehouseId: this.warehouseId,
-                            },
-                        },
                         include: {
                             productVariant: {
                                 include: {
@@ -493,6 +510,13 @@ export class XentralProxyOrderSyncService {
                 lastRunStatus: "failure",
                 locked: false,
             });
+        } finally {
+            /**
+             * unlock in redis the current run
+             */
+            await this.redis.del(
+                `eci:lock:xentralProxyOrderSyncService:${this.xentralProxyApp.id}`,
+            );
         }
 
         await this.cronState.set({

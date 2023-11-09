@@ -5,6 +5,7 @@ import { XentralProxyOrderSyncService } from "./auftrag";
 import "@eci/pkg/jest-utils/consoleFormatter";
 import { XentralRestClient } from "@eci/pkg/xentral/src/rest";
 import { XentralXmlClient } from "@eci/pkg/xentral/src/xml";
+import { env } from "@eci/pkg/env";
 
 beforeEach(() => {
     jest.clearAllMocks();
@@ -32,12 +33,18 @@ describe("XentralProxy Entity Sync Orders Test", () => {
             );
         const xentralXmlClient = new XentralXmlClient(xentralProxyApp);
         const xentralRestClient = new XentralRestClient(xentralProxyApp);
+        const redisConnection = {
+            host: env.require("REDIS_HOST"),
+            port: parseInt(env.require("REDIS_PORT")),
+            password: env.require("REDIS_PASSWORD"),
+        };
         const service = new XentralProxyOrderSyncService({
             xentralXmlClient,
             xentralRestClient,
             logger: new AssertionLogger(),
             db: prismaClient,
             xentralProxyApp,
+            redisConnection,
         });
         await service.syncFromECI();
     }, 1000000);

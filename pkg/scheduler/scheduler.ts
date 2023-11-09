@@ -139,6 +139,7 @@ export class WorkflowScheduler {
                     const runtimeContext = {
                         logger,
                         job,
+                        redisConnection: this.redisConnection,
                     };
                     const wf = workflow.build(runtimeContext);
                     const before = Date.now();
