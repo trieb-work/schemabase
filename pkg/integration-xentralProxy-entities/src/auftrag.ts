@@ -100,14 +100,14 @@ export class XentralProxyOrderSyncService {
             "Starting sync of ECI Orders to XentralProxy Aufträge",
         );
 
-        const cronState = await this.cronState.get(true);
+        // const cronState = await this.cronState.get(true);
         try {
-            if (cronState.currentlyLocked) {
-                this.logger.info(
-                    `Xentral Auftrag sync for Xentral app ${this.xentralProxyApp.id} - ${this.xentralProxyApp.url} is currently locked. Finishing sync`,
-                );
-                return;
-            }
+            // if (cronState.currentlyLocked) {
+            //     this.logger.info(
+            //         `Xentral Auftrag sync for Xentral app ${this.xentralProxyApp.id} - ${this.xentralProxyApp.url} is currently locked. Finishing sync`,
+            //     );
+            //     return;
+            // }
 
             const orders = await this.db.order.findMany({
                 where: {
