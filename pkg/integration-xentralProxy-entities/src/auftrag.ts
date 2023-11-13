@@ -442,6 +442,8 @@ export class XentralProxyOrderSyncService {
                                 ? "versendet"
                                 : order.orderStatus === "closed"
                                 ? "abgeschlossen"
+                                : order.orderStatus === "canceled" 
+                                ? "storniert"
                                 : existingXentralAuftrag.status;
                         const auftragUpdate: AuftragEditRequest = {
                             ...auftrag,
