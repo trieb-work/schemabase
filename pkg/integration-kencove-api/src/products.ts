@@ -795,7 +795,7 @@ export class KencoveApiAppProductSyncService {
                 name: "Frequently Bought Together",
                 value: "",
                 attribute_id: 333335,
-                display_type: "reference",
+                display_type: "variant_reference",
                 attribute_model: "custom",
             });
             productAttributesUnique.push({
