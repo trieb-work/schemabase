@@ -539,4 +539,10 @@ export class KencoveApiAppOrderSyncService {
         }
         await this.cronState.set({ lastRun: now, lastRunStatus: "success" });
     }
+
+    public async syncFromECI() {
+        /**
+         * The implementation is done in the edi-import module
+         */
+    }
 }
