@@ -1600,7 +1600,6 @@ export class SaleorProductSyncService {
                 installedSaleorAppId: this.installedSaleorAppId,
             });
             await frequentlyboughttogether.syncVariants(createdGte);
-            await frequentlyboughttogether.syncProducts(createdGte);
         }
 
         /**
