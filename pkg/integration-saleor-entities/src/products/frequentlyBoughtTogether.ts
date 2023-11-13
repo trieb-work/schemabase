@@ -50,6 +50,14 @@ export class FrequentlyBoughtTogether {
                                 updatedAt: {
                                     gte: gteDate,
                                 },
+                                variant: {
+                                    saleorProductVariant: {
+                                        some: {
+                                            installedSaleorAppId:
+                                                this.installedSaleorAppId,
+                                        },
+                                    },
+                                },
                             },
                         },
                     },
@@ -201,10 +209,13 @@ export class FrequentlyBoughtTogether {
                     })
                     .filter((id): id is string => id !== undefined) as string[];
 
+                const attributeId =
+                    productType.attributes[0].attribute.saleorAttributes[0].id;
                 this.logger.info(
-                    `Updating FBT for variant ${variant.sku} with saleor id ${saleorProduct.id} with ${referingVariants.length} variants`,
+                    `Updating FBT for variant ${variant.sku} with saleor id ${saleorProduct.id} with ${referingVariants.length} referring variants`,
                     {
                         referingVariants,
+                        attributeId,
                     },
                 );
 
@@ -212,18 +223,28 @@ export class FrequentlyBoughtTogether {
                     id: variant.saleorProductVariant[0].id,
                     attributes: [
                         {
-                            id: productType.attributes[0].attribute
-                                .saleorAttributes[0].id,
+                            id: attributeId,
                             references: referingVariants,
                         },
                     ],
                 });
             }
 
-            await this.saleorClient.productVariantBulkUpdate({
+            const resp = await this.saleorClient.productVariantBulkUpdate({
                 productId: saleorProduct.id,
                 variants: bulkUpdate,
             });
+
+            if (
+                resp.productVariantBulkUpdate?.errors &&
+                resp.productVariantBulkUpdate.errors.length > 0
+            ) {
+                throw new Error(
+                    `Error on bulk update variants: ${JSON.stringify(
+                        resp.productVariantBulkUpdate.errors,
+                    )}`,
+                );
+            }
         }
     }
 
