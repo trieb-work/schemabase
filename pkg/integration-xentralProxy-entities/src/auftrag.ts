@@ -159,12 +159,7 @@ export class XentralProxyOrderSyncService {
                     //     xentralProxyAppId: this.xentralProxyApp.id,
                     //   },
                     // },
-                    /**
-                     * Filter out all orders with packages.
-                     */
-                    // packages: {
-                    //   none: {},
-                    // },
+
 
                     /**
                      * only sync orders which have at least one lineitem for the specified warehouse
@@ -172,17 +167,25 @@ export class XentralProxyOrderSyncService {
                      */
                     orderLineItems: {
                         some: {
+                          
                             OR: [
                                 {
                                     warehouseId: this.warehouseId,
                                 },
                                 {
-                                    warehouseId: null,
-                                },
+                                    AND: [
+                                        {
+                                         warehouseId: null,
+                                        },
+                                        {
+                                            productVariant: {
+                                                defaultWarehouseId: this.warehouseId,
+                                            },
+                                        },
+        
+                                    ]
+                                }
                             ],
-                            productVariant: {
-                                defaultWarehouseId: this.warehouseId,
-                            },
                         },
                     },
                 },
