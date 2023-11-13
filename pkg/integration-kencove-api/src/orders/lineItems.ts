@@ -131,11 +131,15 @@ const apiLineItemsWithSchemabase = async (
                         },
                     },
                     uniqueString: ol.uniqueString,
-                    warehouse: {
-                        connect: {
-                            id: await whHelper.getWareHouseId(ol.warehouseCode),
-                        },
-                    },
+                    warehouse: ol.warehouseCode
+                        ? {
+                              connect: {
+                                  id: await whHelper.getWareHouseId(
+                                      ol.warehouseCode,
+                                  ),
+                              },
+                          }
+                        : undefined,
                 },
             });
         }),

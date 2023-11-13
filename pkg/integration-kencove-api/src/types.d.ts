@@ -226,7 +226,7 @@ export type KencoveApiOrderLine = {
     /**
      * For example "PA"
      */
-    warehouseCode: string;
+    warehouseCode: string | null;
     /**
      * e.g.: "6.25%"
      */

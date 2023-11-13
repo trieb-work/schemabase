@@ -275,7 +275,7 @@ export class KencoveApiAppOrderSyncService {
                      * Populate the internal warehouse cache
                      */
                     for (const wh of wareHouseNames) {
-                        await whHelper.getWareHouseId(wh);
+                        if (wh) await whHelper.getWareHouseId(wh);
                     }
 
                     await this.db.kencoveApiOrder.create({
@@ -424,13 +424,16 @@ export class KencoveApiAppOrderSyncService {
                                                                     .tenantId,
                                                             },
                                                         },
-                                                        warehouse: {
-                                                            connect: {
-                                                                id: whHelper.getFromCache(
-                                                                    ol.warehouseCode,
-                                                                ),
-                                                            },
-                                                        },
+                                                        warehouse:
+                                                            ol.warehouseCode
+                                                                ? {
+                                                                      connect: {
+                                                                          id: whHelper.getFromCache(
+                                                                              ol.warehouseCode,
+                                                                          ),
+                                                                      },
+                                                                  }
+                                                                : undefined,
                                                         totalPriceGross:
                                                             ol.price_subtotal,
                                                         undiscountedUnitPriceGross:
