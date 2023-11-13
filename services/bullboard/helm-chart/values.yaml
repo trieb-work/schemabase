@@ -22,5 +22,5 @@ google:
   clientId:
   clientSecret:
 
-allowedLoginDomains: ["trieb.work"]
+allowedLoginDomains: ["trieb.work", "pfefferundfrost.de"]
 imagePullSecret: github
