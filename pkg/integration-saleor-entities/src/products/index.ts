@@ -109,9 +109,9 @@ export class SaleorProductSyncService {
                 );
             return normalizedDefaultWarehouseName;
         } catch (error: any) {
-            this.logger.warn(
-                `Error determining the default warehouse: ${error.message}`,
-            );
+            // this.logger.warn(
+            //     `Error determining the default warehouse: ${error.message}`,
+            // );
             return undefined;
         }
     }
