@@ -267,8 +267,14 @@ export class KencoveApiAppOrderSyncService {
                 const carrier = shippingMethodMatch(
                     order.carrier.delivery_type || "",
                 );
+                if (!order.orderLines || order.orderLines.length === 0) {
+                    this.logger.info(
+                        `Order ${order.id} - ${order.orderNumber} has no order lines. Don't sync!`,
+                    );
+                    return;
+                }
                 try {
-                    const wareHouseNames = order.orderLines.map(
+                    const wareHouseNames = order?.orderLines?.map(
                         (ol) => ol.warehouseCode,
                     );
                     /**
@@ -457,7 +463,7 @@ export class KencoveApiAppOrderSyncService {
                         );
                     } else {
                         this.logger.error(
-                            `Error working on order: ${order.id} - ${order.orderNumber}`,
+                            `Error working on order: ${order.id} - ${order.orderNumber}:`,
                         );
                         throw error;
                     }
