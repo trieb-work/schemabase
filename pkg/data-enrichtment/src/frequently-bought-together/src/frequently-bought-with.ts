@@ -82,9 +82,10 @@ export class FBT {
             },
             select: { orderId: true },
             orderBy: { order: { createdAt: "desc" } },
+            take: 10000,
         });
         this.logger.debug(
-            `Found ${orders.length} orders with variant ${variantId}`,
+            `Found ${orders.length} orderlines with variant ${variantId}`,
         );
         return orders.map((order) => order.orderId);
     }
