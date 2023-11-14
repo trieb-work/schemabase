@@ -506,6 +506,9 @@ export class KencoveApiAppProductSyncService {
         );
         this.logger.debug(
             `Setting attribute ${attribute.name}, value ${attributeValueDecoded}`,
+            {
+                isForVariant,
+            },
         );
 
         let hexCode: string | undefined = undefined;
