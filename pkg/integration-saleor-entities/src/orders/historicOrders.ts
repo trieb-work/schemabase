@@ -8,6 +8,7 @@ import {
     InstalledSaleorApp,
     Language,
     OrderLineItem,
+    OrderStatus as OrderStatusSchemabase,
     PrismaClient,
     Product,
     ProductVariant,
@@ -19,6 +20,7 @@ import {
     BulkOrderCreateMutationVariables,
     LanguageCodeEnum,
     OrderBulkCreateOrderLineInput,
+    OrderStatus,
     SaleorClient,
 } from "@eci/pkg/saleor";
 
@@ -67,6 +69,26 @@ export class SaleorHistoricOrdersSync {
             postalCode: address.plz,
             city: address.city,
         };
+    }
+
+    /**
+     * From schemabase order status to saleor order status
+     * @param orderStatus
+     * @returns
+     */
+    private schemabaseOrderStatusToSaleorOrderStatus(
+        orderStatus: OrderStatusSchemabase,
+    ): OrderStatus {
+        const orderStatusMapping: {
+            [key in OrderStatusSchemabase]: OrderStatus;
+        } = {
+            [OrderStatusSchemabase.canceled]: OrderStatus.Canceled,
+            [OrderStatusSchemabase.closed]: OrderStatus.Fulfilled,
+            [OrderStatusSchemabase.confirmed]: OrderStatus.Unfulfilled,
+            [OrderStatusSchemabase.draft]: OrderStatus.Draft,
+            [OrderStatusSchemabase.unconfirmed]: OrderStatus.Unconfirmed,
+        };
+        return orderStatusMapping[orderStatus];
     }
 
     private schemabaseLanguageToSaleorLanguage(
@@ -200,6 +222,9 @@ export class SaleorHistoricOrdersSync {
         try {
             const orderInput: BulkOrderCreateMutationVariables["orders"] =
                 orders.map((order) => ({
+                    status: this.schemabaseOrderStatusToSaleorOrderStatus(
+                        order.orderStatus,
+                    ),
                     channel: this.installedSaleorApp.channelSlug || "",
                     externalReference: order.orderNumber,
                     currency: order.currency,
@@ -234,7 +259,7 @@ export class SaleorHistoricOrdersSync {
 
             for (const chunk of chunks) {
                 this.logger.debug("Sending bulkOrderCreate request", {
-                    chunk,
+                    chunk: JSON.stringify(chunk),
                 });
                 const bulkOrderCreateResponse =
                     await this.saleorClient.bulkOrderCreate({
@@ -270,7 +295,8 @@ export class SaleorHistoricOrdersSync {
                     .results) {
                     if (!result?.order?.id) {
                         this.logger.error(
-                            `No order id in bulkOrderCreate response. This should never happen`, {
+                            `No order id in bulkOrderCreate response. This should never happen`,
+                            {
                                 order: JSON.stringify(result.order),
                             },
                         );
