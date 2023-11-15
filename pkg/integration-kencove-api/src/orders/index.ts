@@ -471,6 +471,12 @@ export class KencoveApiAppOrderSyncService {
             });
 
             for (const order of toUpdate) {
+                if (!order.billingAddress?.email) {
+                    this.logger.warn(
+                        `No email found in order ${order.id} - ${order.orderNumber}. Don't sync!`,
+                    );
+                    return;
+                }
                 const updatedAt = new Date(order.updatedAt);
                 const mainContactPromise = this.syncMainContact(order);
                 const carrier = shippingMethodMatch(
