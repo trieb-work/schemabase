@@ -13,3 +13,9 @@ export class PrismaClient extends BaseClient {
         super({ datasources: { db: { url: env.require("DATABASE_URL") } } });
     }
 }
+
+const prisma = new PrismaClient();
+/**
+ * Import this prisma client to prevent the creation of a new prisma instance all the time
+ */
+export default prisma;
