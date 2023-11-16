@@ -66,92 +66,96 @@ const apiLineItemsWithSchemabase = async (
     );
     logger.info(
         `Working on lineItems: (create: ${lineItemsToCreate.length}` +
-            `/ delete: ${lineItemsToDelete.length})`,
+            ` / delete: ${lineItemsToDelete.length})`,
     );
 
-    await Promise.all(
-        lineItemsToCreate.map(async (ol) => {
-            const productName = ol.description.replace(/\[.*?\]\s/g, "");
-            const normalizedName = normalizeStrings.productNames(productName);
-            const productVariant = {
-                connectOrCreate: {
-                    where: {
-                        sku_tenantId: {
-                            sku: ol.itemCode,
-                            tenantId: tenantId,
-                        },
-                    },
-                    create: {
-                        id: id.id("variant"),
+    /**
+     * run through all line items to create and connect them
+     */
+    for (const ol of lineItemsToCreate) {
+        const productName = ol.description.replace(/\[.*?\]\s/g, "");
+        const normalizedName = normalizeStrings.productNames(productName);
+        const productVariant = {
+            connectOrCreate: {
+                where: {
+                    sku_tenantId: {
                         sku: ol.itemCode,
-                        tenant: {
-                            connect: {
-                                id: tenantId,
-                            },
-                        },
-                        product: {
-                            connectOrCreate: {
-                                where: {
-                                    normalizedName_tenantId: {
-                                        normalizedName,
-                                        tenantId: tenantId,
-                                    },
-                                },
-                                create: {
-                                    id: id.id("product"),
-                                    normalizedName,
-                                    name: productName,
-                                    tenant: {
-                                        connect: {
-                                            id: tenantId,
-                                        },
-                                    },
-                                },
-                            },
-                        },
+                        tenantId: tenantId,
                     },
                 },
-            };
-            await db.orderLineItem.create({
-                data: {
-                    id: id.id("lineItem"),
-                    order: {
-                        connect: {
-                            id: existingOrderId,
-                        },
-                    },
-                    productVariant,
-                    quantity: ol.quantity,
-                    totalPriceGross: ol.price_subtotal,
-                    undiscountedUnitPriceGross: ol.price_unit,
-                    totalPriceNet: ol.price_subtotal - ol.orderLine_tax,
+                create: {
+                    id: id.id("variant"),
+                    sku: ol.itemCode,
                     tenant: {
                         connect: {
                             id: tenantId,
                         },
                     },
-                    uniqueString: ol.uniqueString,
-                    warehouse: ol.warehouseCode
-                        ? {
-                              connect: {
-                                  id: await whHelper.getWareHouseId(
-                                      ol.warehouseCode,
-                                  ),
-                              },
-                          }
-                        : undefined,
+                    product: {
+                        connectOrCreate: {
+                            where: {
+                                normalizedName_tenantId: {
+                                    normalizedName,
+                                    tenantId: tenantId,
+                                },
+                            },
+                            create: {
+                                id: id.id("product"),
+                                normalizedName,
+                                name: productName,
+                                tenant: {
+                                    connect: {
+                                        id: tenantId,
+                                    },
+                                },
+                            },
+                        },
+                    },
                 },
-            });
-        }),
-    );
-    await db.orderLineItem.deleteMany({
-        where: {
-            id: {
-                in: lineItemsToDelete.map(
-                    (lineItemToDelete) => lineItemToDelete.id,
-                ),
             },
-        },
-    });
+        };
+        await db.orderLineItem.create({
+            data: {
+                id: id.id("lineItem"),
+                order: {
+                    connect: {
+                        id: existingOrderId,
+                    },
+                },
+                productVariant,
+                quantity: ol.quantity,
+                totalPriceGross: ol.price_subtotal,
+                undiscountedUnitPriceGross: ol.price_unit,
+                totalPriceNet: ol.price_subtotal - ol.orderLine_tax,
+                tenant: {
+                    connect: {
+                        id: tenantId,
+                    },
+                },
+                uniqueString: ol.uniqueString,
+                warehouse: ol.warehouseCode
+                    ? {
+                          connect: {
+                              id: await whHelper.getWareHouseId(
+                                  ol.warehouseCode,
+                              ),
+                          },
+                      }
+                    : undefined,
+            },
+        });
+    }
+
+    if (lineItemsToDelete.length > 0) {
+        await db.orderLineItem.deleteMany({
+            where: {
+                id: {
+                    in: lineItemsToDelete.map(
+                        (lineItemToDelete) => lineItemToDelete.id,
+                    ),
+                },
+            },
+        });
+    }
 };
 export { apiLineItemsWithSchemabase };
