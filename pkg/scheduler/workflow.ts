@@ -1,5 +1,6 @@
 import { ILogger } from "@eci/pkg/logger";
 import { Job } from "bullmq";
+import { RedisConnection } from "./scheduler";
 
 export interface Workflow {
     run: () => Promise<void>;
@@ -8,6 +9,7 @@ export interface Workflow {
 export type RuntimeContext = {
     logger: ILogger;
     job: Job;
+    redisConnection: RedisConnection;
 };
 
 export type WorkflowFactory = {

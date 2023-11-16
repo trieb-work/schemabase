@@ -122,6 +122,10 @@ export type KencoveApiProductVariant = {
      */
     selectorValues: KencoveApiAttributeInProduct[];
     attributeValues: KencoveApiAttributeInProduct[] | null;
+    /**
+     * UPC is unique identifier EAN / GTIN
+     */
+    upc: string | null;
     name: string;
     createdAt: string;
     updatedAt: string;
@@ -222,7 +226,7 @@ export type KencoveApiOrderLine = {
     /**
      * For example "PA"
      */
-    warehouseCode: string;
+    warehouseCode: string | null;
     /**
      * e.g.: "6.25%"
      */

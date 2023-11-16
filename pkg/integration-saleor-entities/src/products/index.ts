@@ -109,9 +109,9 @@ export class SaleorProductSyncService {
                 );
             return normalizedDefaultWarehouseName;
         } catch (error: any) {
-            this.logger.warn(
-                `Error determining the default warehouse: ${error.message}`,
-            );
+            // this.logger.warn(
+            //     `Error determining the default warehouse: ${error.message}`,
+            // );
             return undefined;
         }
     }
@@ -121,6 +121,9 @@ export class SaleorProductSyncService {
      * accordingly
      */
     private async syncProductType(productType: ProductTypeFragment) {
+        this.logger.info(
+            `Syncing product type ${productType.name} with internal DB`,
+        );
         const normalizedProductTypeName = normalizeStrings.productTypeNames(
             productType.name,
         );
@@ -1471,8 +1474,6 @@ export class SaleorProductSyncService {
                                     },
                                 },
                                 update: {
-                                    variantName: variant.name,
-                                    sku: variant.sku,
                                     product: {
                                         update: {
                                             category: category
@@ -1611,7 +1612,6 @@ export class SaleorProductSyncService {
                 installedSaleorAppId: this.installedSaleorAppId,
             });
             await frequentlyboughttogether.syncVariants(createdGte);
-            await frequentlyboughttogether.syncProducts(createdGte);
         }
 
         /**

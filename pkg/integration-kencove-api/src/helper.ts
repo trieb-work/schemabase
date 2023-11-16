@@ -46,6 +46,8 @@ const kenAttributeToEciAttribute = (kenAttribute: string): AttributeType => {
             return AttributeType.BOOLEAN;
         case "reference":
             return AttributeType.PRODUCT_REFERENCE;
+        case "variant_reference":
+            return AttributeType.VARIANT_REFERENCE;
         case "DATE":
             return AttributeType.DATE;
         case "DATE_TIME":

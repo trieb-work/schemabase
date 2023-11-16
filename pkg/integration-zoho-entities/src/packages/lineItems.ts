@@ -60,7 +60,9 @@ export function packageToZohoLineItems(
 
     if (formatted2.length === 0) {
         throw new Warning(
-            `Could not match any Zoho SalesOrder Lines with our package line items! Can't proceed`,
+            `Could not match any Zoho SalesOrder Lines with our package line items! Can't proceed ${JSON.stringify(
+                packageLineItems,
+            )}`,
         );
     }
 

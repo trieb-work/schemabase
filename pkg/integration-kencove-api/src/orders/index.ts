@@ -267,15 +267,21 @@ export class KencoveApiAppOrderSyncService {
                 const carrier = shippingMethodMatch(
                     order.carrier.delivery_type || "",
                 );
+                if (!order.orderLines || order.orderLines.length === 0) {
+                    this.logger.info(
+                        `Order ${order.id} - ${order.orderNumber} has no order lines. Don't sync!`,
+                    );
+                    return;
+                }
                 try {
-                    const wareHouseNames = order.orderLines.map(
+                    const wareHouseNames = order?.orderLines?.map(
                         (ol) => ol.warehouseCode,
                     );
                     /**
                      * Populate the internal warehouse cache
                      */
                     for (const wh of wareHouseNames) {
-                        await whHelper.getWareHouseId(wh);
+                        if (wh) await whHelper.getWareHouseId(wh);
                     }
 
                     await this.db.kencoveApiOrder.create({
@@ -424,13 +430,16 @@ export class KencoveApiAppOrderSyncService {
                                                                     .tenantId,
                                                             },
                                                         },
-                                                        warehouse: {
-                                                            connect: {
-                                                                id: whHelper.getFromCache(
-                                                                    ol.warehouseCode,
-                                                                ),
-                                                            },
-                                                        },
+                                                        warehouse:
+                                                            ol.warehouseCode
+                                                                ? {
+                                                                      connect: {
+                                                                          id: whHelper.getFromCache(
+                                                                              ol.warehouseCode,
+                                                                          ),
+                                                                      },
+                                                                  }
+                                                                : undefined,
                                                         totalPriceGross:
                                                             ol.price_subtotal,
                                                         undiscountedUnitPriceGross:
@@ -454,7 +463,7 @@ export class KencoveApiAppOrderSyncService {
                         );
                     } else {
                         this.logger.error(
-                            `Error working on order: ${order.id} - ${order.orderNumber}`,
+                            `Error working on order: ${order.id} - ${order.orderNumber}:`,
                         );
                         throw error;
                     }
@@ -462,6 +471,12 @@ export class KencoveApiAppOrderSyncService {
             });
 
             for (const order of toUpdate) {
+                if (!order.billingAddress?.email) {
+                    this.logger.warn(
+                        `No email found in order ${order.id} - ${order.orderNumber}. Don't sync!`,
+                    );
+                    return;
+                }
                 const updatedAt = new Date(order.updatedAt);
                 const mainContactPromise = this.syncMainContact(order);
                 const carrier = shippingMethodMatch(

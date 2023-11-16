@@ -82,9 +82,10 @@ export class FBT {
             },
             select: { orderId: true },
             orderBy: { order: { createdAt: "desc" } },
+            take: 10000,
         });
         this.logger.debug(
-            `Found ${orders.length} orders with variant ${variantId}`,
+            `Found ${orders.length} orderlines with variant ${variantId}`,
         );
         return orders.map((order) => order.orderId);
     }
@@ -123,8 +124,8 @@ export class FBT {
                     not: variantId,
                 },
             },
-            include: {
-                productVariant: true,
+            select: {
+                productVariantId: true,
             },
         });
     }
@@ -163,9 +164,7 @@ export class FBT {
     }
 
     private countVariantOccurrences(
-        allVariantsInOrders: (OrderLineItem & {
-            productVariant: ProductVariant;
-        })[],
+        allVariantsInOrders: { productVariantId: string }[],
     ): Record<string, number> {
         const variantCounts: Record<string, number> = {};
         for (let variant of allVariantsInOrders) {

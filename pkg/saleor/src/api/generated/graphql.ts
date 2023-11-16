@@ -7503,9 +7503,21 @@ export type Fulfillment = Node &
          * Added in Saleor 3.3.
          */
         privateMetafields?: Maybe<Scalars["Metadata"]>;
+        /**
+         * Amount of refunded shipping price.
+         *
+         * Added in Saleor 3.14.
+         */
+        shippingRefundedAmount?: Maybe<Money>;
         status: FulfillmentStatus;
         /** User-friendly fulfillment status. */
         statusDisplay?: Maybe<Scalars["String"]>;
+        /**
+         * Total refunded amount assigned to this fulfillment.
+         *
+         * Added in Saleor 3.14.
+         */
+        totalRefundedAmount?: Maybe<Money>;
         trackingNumber: Scalars["String"];
         /** Warehouse from fulfillment was fulfilled. */
         warehouse?: Maybe<Warehouse>;
@@ -31694,7 +31706,16 @@ export type BulkOrderCreateMutation = {
         }>;
         results: Array<{
             __typename?: "OrderBulkCreateResult";
-            order?: { __typename?: "Order"; id: string } | null;
+            order?: {
+                __typename?: "Order";
+                id: string;
+                errors: Array<{
+                    __typename?: "OrderError";
+                    code: OrderErrorCode;
+                    field?: string | null;
+                    message?: string | null;
+                }>;
+            } | null;
         }>;
     } | null;
 };
@@ -33136,6 +33157,11 @@ export const BulkOrderCreateDocument = gql`
             }
             results {
                 order {
+                    errors {
+                        code
+                        field
+                        message
+                    }
                     id
                 }
             }

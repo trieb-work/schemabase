@@ -506,6 +506,9 @@ export class KencoveApiAppProductSyncService {
         );
         this.logger.debug(
             `Setting attribute ${attribute.name}, value ${attributeValueDecoded}`,
+            {
+                isForVariant,
+            },
         );
 
         let hexCode: string | undefined = undefined;
@@ -795,7 +798,7 @@ export class KencoveApiAppProductSyncService {
                 name: "Frequently Bought Together",
                 value: "",
                 attribute_id: 333335,
-                display_type: "reference",
+                display_type: "variant_reference",
                 attribute_model: "custom",
             });
             productAttributesUnique.push({
@@ -1378,7 +1381,7 @@ export class KencoveApiAppProductSyncService {
 
                     if (variant.name !== product.productName) {
                         this.logger.info(
-                            `Variant name ${variant.name} is different to ${product.productName}.`,
+                            `Variant name ${variant.name} is different to ${product.productName}. Using this as variant name`,
                         );
                         variantName = variant.name;
                     } else if (variantSelectionAttribute) {
@@ -1407,9 +1410,16 @@ export class KencoveApiAppProductSyncService {
                     this.logger.info(
                         `Creating variant ${variant.id} of product ${product.productName}`,
                     );
-                    existingVariant = await this.db.productVariant.create({
-                        data: {
+                    existingVariant = await this.db.productVariant.upsert({
+                        where: {
+                            sku_tenantId: {
+                                sku,
+                                tenantId: this.kencoveApiApp.tenantId,
+                            },
+                        },
+                        create: {
                             id: id.id("variant"),
+                            ean: variant.upc,
                             sku,
                             weight: variant.weight,
                             variantName,
@@ -1446,6 +1456,16 @@ export class KencoveApiAppProductSyncService {
                                 },
                             },
                         },
+                        update: {
+                            weight: variant.weight,
+                            variantName,
+                            ean: variant.upc,
+                            product: {
+                                connect: {
+                                    id: existingProduct.id,
+                                },
+                            },
+                        },
                     });
                 } else if (
                     /**
@@ -1453,7 +1473,8 @@ export class KencoveApiAppProductSyncService {
                      */
                     existingVariant.weight !== variant.weight ||
                     existingVariant.variantName !== variantName ||
-                    existingVariant.productId !== existingProduct.id
+                    existingVariant.productId !== existingProduct.id ||
+                    existingVariant.ean !== variant.upc
                 ) {
                     this.logger.info(
                         `Updating variant ${variant.id} of product ${product.productName}`,
@@ -1465,6 +1486,7 @@ export class KencoveApiAppProductSyncService {
                         data: {
                             weight: variant.weight,
                             variantName,
+                            ean: variant.upc,
                             product: {
                                 connect: {
                                     id: existingProduct.id,

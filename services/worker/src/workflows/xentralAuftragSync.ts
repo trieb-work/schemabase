@@ -19,6 +19,8 @@ export class XentralAuftragSyncWf implements Workflow {
 
     private xentralProxyApp: XentralProxyApp;
 
+    private ctx: RuntimeContext;
+
     public constructor(
         ctx: RuntimeContext,
         clients: XentralAuftragSyncWorkflowClients,
@@ -32,6 +34,7 @@ export class XentralAuftragSyncWf implements Workflow {
         this.logger = ctx.logger;
         this.prisma = clients.prisma;
         this.xentralProxyApp = config.xentralProxyApp;
+        this.ctx = ctx;
     }
 
     /**
@@ -50,6 +53,7 @@ export class XentralAuftragSyncWf implements Workflow {
             logger: this.logger,
             db: this.prisma,
             xentralProxyApp: this.xentralProxyApp,
+            redisConnection: this.ctx.redisConnection,
         });
         await xentralAuftragSync.syncFromECI();
         this.logger.info("Finished xentral Auftrag sync workflow run");
