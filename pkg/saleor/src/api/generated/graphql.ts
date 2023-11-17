@@ -21460,6 +21460,7 @@ export enum ProductVariantBulkErrorCode {
     NotProductsVariant = "NOT_PRODUCTS_VARIANT",
     ProductNotAssignedToChannel = "PRODUCT_NOT_ASSIGNED_TO_CHANNEL",
     Required = "REQUIRED",
+    StockAlreadyExists = "STOCK_ALREADY_EXISTS",
     Unique = "UNIQUE",
 }
 
@@ -32251,6 +32252,58 @@ export type AttributeSyncQuery = {
     } | null;
 };
 
+export type AttributeValueSearchQueryVariables = Exact<{
+    attributeId: Scalars["ID"];
+    searchvalue?: InputMaybe<Scalars["String"]>;
+}>;
+
+export type AttributeValueSearchQuery = {
+    __typename?: "Query";
+    attribute?: {
+        __typename?: "Attribute";
+        id: string;
+        name?: string | null;
+        choices?: {
+            __typename?: "AttributeValueCountableConnection";
+            edges: Array<{
+                __typename?: "AttributeValueCountableEdge";
+                node: {
+                    __typename?: "AttributeValue";
+                    id: string;
+                    name?: string | null;
+                    slug?: string | null;
+                    value?: string | null;
+                };
+            }>;
+        } | null;
+    } | null;
+};
+
+export type AttributeHexValueCreateMutationVariables = Exact<{
+    attributeId: Scalars["ID"];
+    attributeValueName: Scalars["String"];
+    attributeValueHex: Scalars["String"];
+}>;
+
+export type AttributeHexValueCreateMutation = {
+    __typename?: "Mutation";
+    attributeValueCreate?: {
+        __typename?: "AttributeValueCreate";
+        errors: Array<{
+            __typename?: "AttributeError";
+            field?: string | null;
+            code: AttributeErrorCode;
+            message?: string | null;
+        }>;
+        attributeValue?: {
+            __typename?: "AttributeValue";
+            id: string;
+            slug?: string | null;
+            value?: string | null;
+        } | null;
+    } | null;
+};
+
 export type CategoryValuesFragment = {
     __typename?: "Category";
     id: string;
@@ -33146,7 +33199,7 @@ export const AttributeCreateDocument = gql`
 export const BulkOrderCreateDocument = gql`
     mutation bulkOrderCreate($orders: [OrderBulkCreateInput!]!) {
         orderBulkCreate(
-            errorPolicy: REJECT_FAILED_ROWS
+            errorPolicy: REJECT_EVERYTHING
             orders: $orders
             stockUpdatePolicy: SKIP
         ) {
@@ -33543,6 +33596,47 @@ export const AttributeSyncDocument = gql`
                     slug
                     valueRequired
                 }
+            }
+        }
+    }
+`;
+export const AttributeValueSearchDocument = gql`
+    query attributeValueSearch($attributeId: ID!, $searchvalue: String) {
+        attribute(id: $attributeId) {
+            choices(first: 2, filter: { search: $searchvalue }) {
+                edges {
+                    node {
+                        id
+                        name
+                        slug
+                        value
+                    }
+                }
+            }
+            id
+            name
+        }
+    }
+`;
+export const AttributeHexValueCreateDocument = gql`
+    mutation attributeHexValueCreate(
+        $attributeId: ID!
+        $attributeValueName: String!
+        $attributeValueHex: String!
+    ) {
+        attributeValueCreate(
+            attribute: $attributeId
+            input: { name: $attributeValueName, value: $attributeValueHex }
+        ) {
+            errors {
+                field
+                code
+                message
+            }
+            attributeValue {
+                id
+                slug
+                value
             }
         }
     }
@@ -34435,6 +34529,32 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<AttributeSyncQuery>;
+        },
+        attributeValueSearch(
+            variables: AttributeValueSearchQueryVariables,
+            options?: C,
+        ): Promise<AttributeValueSearchQuery> {
+            return requester<
+                AttributeValueSearchQuery,
+                AttributeValueSearchQueryVariables
+            >(
+                AttributeValueSearchDocument,
+                variables,
+                options,
+            ) as Promise<AttributeValueSearchQuery>;
+        },
+        attributeHexValueCreate(
+            variables: AttributeHexValueCreateMutationVariables,
+            options?: C,
+        ): Promise<AttributeHexValueCreateMutation> {
+            return requester<
+                AttributeHexValueCreateMutation,
+                AttributeHexValueCreateMutationVariables
+            >(
+                AttributeHexValueCreateDocument,
+                variables,
+                options,
+            ) as Promise<AttributeHexValueCreateMutation>;
         },
         saleorCronCategories(
             variables?: SaleorCronCategoriesQueryVariables,

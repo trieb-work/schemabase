@@ -633,6 +633,65 @@ export class SaleorProductSyncService {
     }
 
     /**
+     * Unfortunately, we can't set swatch attribute values
+     * directly in the product create / update mutation. We need to
+     * first check, if the attribute value does already exist in saleor,
+     * create it if not and return the slug of the attribute value, so
+     * that it can be used as value in the product create / update mutation
+     */
+    private async handleSwatchAttributeInSaleor(
+        saleorAttributeId: string,
+        attributeValueName: string,
+        attributeValueHex: string,
+    ): Promise<string> {
+        const searchResult = await this.saleorClient.attributeValueSearch({
+            attributeId: saleorAttributeId,
+            searchvalue: attributeValueName,
+        });
+        if (!searchResult.attribute?.choices?.edges?.[0].node.id) {
+            this.logger.info(
+                `Creating swatch attribute value ${attributeValueName} for saleor attribute ${saleorAttributeId}`,
+            );
+            const resp = await this.saleorClient.attributeHexValueCreate({
+                attributeId: saleorAttributeId,
+                attributeValueHex,
+                attributeValueName,
+            });
+
+            if (
+                resp.attributeValueCreate?.errors &&
+                resp.attributeValueCreate?.errors.length > 0
+            ) {
+                this.logger.error(
+                    `Error creating swatch attribute value ${attributeValueName} for saleor attribute ${saleorAttributeId}: ${JSON.stringify(
+                        resp.attributeValueCreate.errors,
+                    )}`,
+                );
+                return "";
+            }
+            if (!resp.attributeValueCreate?.attributeValue?.slug) {
+                this.logger.error(
+                    `Error creating swatch attribute value ${attributeValueName} for saleor attribute ${saleorAttributeId}: No slug returned`,
+                );
+                return "";
+            }
+
+            this.logger.info(
+                `Returning swatch slug ${resp.attributeValueCreate?.attributeValue?.slug} for swatch attribute value ${attributeValueName} for saleor attribute ${saleorAttributeId}`,
+            );
+            return resp.attributeValueCreate?.attributeValue?.slug;
+        }
+
+        if (!searchResult.attribute?.choices?.edges?.[0].node.slug) {
+            this.logger.error(
+                `Error getting swatch attribute value ${attributeValueName} for saleor attribute ${saleorAttributeId}: No slug returned`,
+            );
+            return "";
+        }
+        return searchResult.attribute?.choices?.edges?.[0].node.slug;
+    }
+
+    /**
      * Find and create all products, that are not yet created in Saleor.
      * Update products, that got changed since the last run
      */
@@ -903,6 +962,8 @@ export class SaleorProductSyncService {
                  * Prepare the attributes to fit the saleor schema
                  */
                 for (const attr of attributesWithSaleorAttributes) {
+                    const saleorAttributeId =
+                        attr.attribute.saleorAttributes[0].id;
                     if (attr.attribute.type === "BOOLEAN") {
                         const value = parseBoolean(attr.value);
                         if (value === undefined) {
@@ -912,12 +973,11 @@ export class SaleorProductSyncService {
                             continue;
                         } else {
                             attributes.push({
-                                id: attr.attribute.saleorAttributes[0].id,
+                                id: saleorAttributeId,
                                 boolean: value,
                             });
                         }
                     }
-                    // TODO: handle the case when we have a hexcode value
                     if (attr.attribute.type === "PRODUCT_REFERENCE") {
                         /// We store our internal product Id in value of product reference attributes.
                         /// We need to aks our DB for the saleor product id
@@ -942,7 +1002,7 @@ export class SaleorProductSyncService {
                             continue;
                         }
                         attributes.push({
-                            id: attr.attribute.saleorAttributes[0].id,
+                            id: saleorAttributeId,
                             references: [saleorProductId.saleorProducts[0].id],
                         });
                     } else if (attr.attribute.type === "VARIANT_REFERENCE") {
@@ -969,14 +1029,31 @@ export class SaleorProductSyncService {
                             continue;
                         }
                         attributes.push({
-                            id: attr.attribute.saleorAttributes[0].id,
+                            id: saleorAttributeId,
                             references: [
                                 saleorVariantId.saleorProductVariant[0].id,
                             ],
                         });
+                        // Handle the special case SWATCH where the hex code and the name is given
+                    } else if (
+                        attr.attribute.type === "SWATCH" &&
+                        attr.hexColor &&
+                        attr.value
+                    ) {
+                        const value = await this.handleSwatchAttributeInSaleor(
+                            saleorAttributeId,
+                            attr.value,
+                            attr.hexColor,
+                        );
+                        attributes.push({
+                            id: saleorAttributeId,
+                            swatch: {
+                                value,
+                            },
+                        });
                     } else {
                         attributes.push({
-                            id: attr.attribute.saleorAttributes[0].id,
+                            id: saleorAttributeId,
                             values: [attr.value],
                         });
                     }
