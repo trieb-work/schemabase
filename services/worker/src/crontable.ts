@@ -41,6 +41,7 @@ import { SaleorChannelSyncWf } from "./workflows/saleorChannelSync";
 import { DataEnrichmentFBTSyncWf } from "./workflows/dataEnrichmentFBT";
 import { KencoveApiContactSyncWf } from "./workflows/kencoveApiContactSync";
 import { CognitoUserSyncWf } from "./workflows/cognitoUserSync";
+import { SaleorVariantFBTSyncWf } from "./workflows/saleorVariantFBTSync";
 
 interface CronClients {
     logger: ILogger;
@@ -645,6 +646,17 @@ export class CronTable {
                         commonWorkflowConfig,
                     ),
                     { ...commonCronConfig, offset: 9 },
+                    [tenantId.substring(0, 5), id.substring(0, 7)],
+                );
+            }
+            if (enabledSaleorApp.syncFrequentlyBoughtTogether) {
+                this.scheduler.schedule(
+                    createWorkflowFactory(
+                        SaleorVariantFBTSyncWf,
+                        this.clients,
+                        commonWorkflowConfig,
+                    ),
+                    { ...commonCronConfig, offset: 20 },
                     [tenantId.substring(0, 5), id.substring(0, 7)],
                 );
             }

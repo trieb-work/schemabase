@@ -31,7 +31,6 @@ import { editorJsHelper } from "../editorjs";
 import { MediaUpload } from "../mediaUpload";
 import { ChannelAvailability } from "./channelAvailability";
 import { parseBoolean } from "@eci/pkg/utils/parseBoolean";
-import { FrequentlyBoughtTogether } from "./frequentlyBoughtTogether";
 import { SaleorProductManual } from "./productManual";
 
 export interface SaleorProductSyncServiceConfig {
@@ -1668,17 +1667,6 @@ export class SaleorProductSyncService {
          * the ones, where we have a product type already in Saleor
          */
         await this.createOrUpdateProductinSaleor(createdGte);
-
-        if (this.installedSaleorApp.syncFrequentlyBoughtTogether) {
-            const frequentlyboughttogether = new FrequentlyBoughtTogether({
-                db: this.db,
-                logger: this.logger,
-                saleorClient: this.saleorClient,
-                tenantId: this.tenantId,
-                installedSaleorAppId: this.installedSaleorAppId,
-            });
-            await frequentlyboughttogether.syncVariants(createdGte);
-        }
 
         /**
          * get all saleor productVariants where related stockEntries have been updated since last run or where related

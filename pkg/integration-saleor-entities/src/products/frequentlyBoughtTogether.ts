@@ -3,9 +3,11 @@
 // update the saleor product attribute "Frequently Bought Together" with the new list of products. Take the attribute id
 // from the product type attribute with the name "frequentlyboughttogether" and the saleor attribute id from the attribute
 
+import { CronStateHandler } from "@eci/pkg/cronstate";
 import { ILogger } from "@eci/pkg/logger";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { ProductVariantBulkUpdateInput, SaleorClient } from "@eci/pkg/saleor";
+import { subHours, subYears } from "date-fns";
 
 export class FrequentlyBoughtTogether {
     private readonly db: PrismaClient;
@@ -16,17 +18,25 @@ export class FrequentlyBoughtTogether {
 
     private readonly saleorClient: SaleorClient;
 
+    private readonly cronState: CronStateHandler;
+
     public constructor(config: {
         db: PrismaClient;
         installedSaleorAppId: string;
-        tenantId: string;
         logger: ILogger;
         saleorClient: SaleorClient;
+        tenantId: string;
     }) {
         this.db = config.db;
         this.installedSaleorAppId = config.installedSaleorAppId;
         this.logger = config.logger;
         this.saleorClient = config.saleorClient;
+        this.cronState = new CronStateHandler({
+            tenantId: config.tenantId,
+            appId: this.installedSaleorAppId,
+            db: this.db,
+            syncEntity: "fbtVariants",
+        });
     }
 
     /**
@@ -34,7 +44,22 @@ export class FrequentlyBoughtTogether {
      * @param gteDate
      * @returns
      */
-    public async syncVariants(gteDate: Date) {
+    public async syncVariants() {
+        const cronState = await this.cronState.get();
+        const now = new Date();
+        let createdGte: Date;
+        if (!cronState.lastRun) {
+            createdGte = subYears(now, 1);
+            this.logger.info(
+                // eslint-disable-next-line max-len
+                `This seems to be our first sync run. Syncing data from: ${createdGte}`,
+            );
+        } else {
+            // for security purposes, we sync one hour more than the last run
+            createdGte = subHours(cronState.lastRun, 1);
+            this.logger.info(`Setting GTE date to ${createdGte}.`);
+        }
+
         const fbts = await this.db.product.findMany({
             where: {
                 variants: {
@@ -48,7 +73,7 @@ export class FrequentlyBoughtTogether {
                         frequentlyBoughtWith: {
                             some: {
                                 updatedAt: {
-                                    gte: gteDate,
+                                    gte: createdGte,
                                 },
                                 variant: {
                                     saleorProductVariant: {

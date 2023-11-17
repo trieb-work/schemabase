@@ -1,23 +1,23 @@
 mutation bulkOrderCreate($orders: [OrderBulkCreateInput!]!) {
-  orderBulkCreate(
-    errorPolicy: REJECT_EVERYTHING
-    orders: $orders
-    stockUpdatePolicy: SKIP
-  ) {
-    errors {
-      code
-      message
-      path
-    }
-    results {
-      order {
+    orderBulkCreate(
+        errorPolicy: REJECT_EVERYTHING
+        orders: $orders
+        stockUpdatePolicy: SKIP
+    ) {
         errors {
-          code
-          field
-          message
+            code
+            message
+            path
         }
-        id
-      }
+        results {
+            order {
+                errors {
+                    code
+                    field
+                    message
+                }
+                id
+            }
+        }
     }
-  }
 }

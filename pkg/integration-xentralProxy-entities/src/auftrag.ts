@@ -25,7 +25,6 @@ import { subDays } from "date-fns";
 import { RedisConnection } from "@eci/pkg/scheduler/scheduler";
 import Redis from "ioredis";
 
-
 interface XentralProxyOrderSyncServiceConfig {
     xentralProxyApp: XentralProxyApp;
     xentralXmlClient: XentralXmlClient;
@@ -108,12 +107,13 @@ export class XentralProxyOrderSyncService {
         );
 
         try {
-
             /**
              * check in redis, if we have currently a running auftrag sync. Fail, if yes
              * if not, set a lock in redis. Use ioredis
              */
-            const lockState = await this.redis.get(`eci:lock:xentralProxyOrderSyncService:${this.xentralProxyApp.id}`);
+            const lockState = await this.redis.get(
+                `eci:lock:xentralProxyOrderSyncService:${this.xentralProxyApp.id}`,
+            );
             if (lockState === "locked") {
                 throw new Error(
                     "Sync of ECI Orders to XentralProxy Aufträge is already running. Skipping this run.",
@@ -129,7 +129,6 @@ export class XentralProxyOrderSyncService {
                 "EX",
                 60 * 60,
             );
-
 
             const orders = await this.db.order.findMany({
                 where: {
@@ -160,14 +159,12 @@ export class XentralProxyOrderSyncService {
                     //   },
                     // },
 
-
                     /**
                      * only sync orders which have at least one lineitem for the specified warehouse
                      * if warehouseId is set, we want that to be the warehouse id for that xentral instance
                      */
                     orderLineItems: {
                         some: {
-                          
                             OR: [
                                 {
                                     warehouseId: this.warehouseId,
@@ -175,16 +172,16 @@ export class XentralProxyOrderSyncService {
                                 {
                                     AND: [
                                         {
-                                         warehouseId: null,
+                                            warehouseId: null,
                                         },
                                         {
                                             productVariant: {
-                                                defaultWarehouseId: this.warehouseId,
+                                                defaultWarehouseId:
+                                                    this.warehouseId,
                                             },
                                         },
-        
-                                    ]
-                                }
+                                    ],
+                                },
                             ],
                         },
                     },
@@ -442,7 +439,7 @@ export class XentralProxyOrderSyncService {
                                 ? "versendet"
                                 : order.orderStatus === "closed"
                                 ? "abgeschlossen"
-                                : order.orderStatus === "canceled" 
+                                : order.orderStatus === "canceled"
                                 ? "storniert"
                                 : existingXentralAuftrag.status;
                         const auftragUpdate: AuftragEditRequest = {
