@@ -132,7 +132,6 @@ export class CronTable {
                 },
             });
 
-
         /**
          * AWS Cognito App Workflows
          */
@@ -155,7 +154,8 @@ export class CronTable {
                 { ...commonCronConfig, offset: 0 },
                 [tenantId.substring(0, 5), id.substring(0, 5)],
             );
-            
+        }
+
         /**
          * Kencove Api App Workflows
          */
