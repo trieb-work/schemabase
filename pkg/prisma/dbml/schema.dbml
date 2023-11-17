@@ -1591,6 +1591,8 @@ Table AWSCognitoApp {
   secretAccessKey String [not null]
   userPoolId String [not null]
   region String [not null]
+  cronSchedule String [not null, default: '*/30 * * * *']
+  cronTimeout Int [not null, default: 800]
   tenant Tenant [not null]
   tenantId String [not null]
   users AWSCognitoUser [not null]

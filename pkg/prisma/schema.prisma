@@ -2784,6 +2784,9 @@ model AWSCognitoApp {
 
     region String
 
+    cronSchedule String @default("*/30 * * * *")
+    cronTimeout  Int    @default(800)
+
     tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
     tenantId String
 

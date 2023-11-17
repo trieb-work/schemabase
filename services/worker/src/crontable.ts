@@ -40,6 +40,7 @@ import { KencoveApiPricelistSyncWf } from "./workflows/kencoveApiPricelistSync";
 import { SaleorChannelSyncWf } from "./workflows/saleorChannelSync";
 import { DataEnrichmentFBTSyncWf } from "./workflows/dataEnrichmentFBT";
 import { KencoveApiContactSyncWf } from "./workflows/kencoveApiContactSync";
+import { CognitoUserSyncWf } from "./workflows/cognitoUserSync";
 
 interface CronClients {
     logger: ILogger;
@@ -65,6 +66,13 @@ export class CronTable {
                 enabled: true,
             },
         });
+
+        const enabledAWSCognitoApps =
+            await this.clients.prisma.aWSCognitoApp.findMany({
+                where: {
+                    enabled: true,
+                },
+            });
 
         const enabledInternalDataApps =
             await this.clients.prisma.internalDataApp.findMany({
@@ -124,6 +132,30 @@ export class CronTable {
                 },
             });
 
+
+        /**
+         * AWS Cognito App Workflows
+         */
+        for (const enabledAWSCognitoApp of enabledAWSCognitoApps) {
+            const { id, cronTimeout, cronSchedule, tenantId } =
+                enabledAWSCognitoApp;
+            const commonCronConfig = {
+                cron: cronSchedule,
+                timeout: cronTimeout,
+            };
+            const commonWorkflowConfig = {
+                awsCognitoApp: enabledAWSCognitoApp,
+            };
+            new WorkflowScheduler(this.clients).schedule(
+                createWorkflowFactory(
+                    CognitoUserSyncWf,
+                    this.clients,
+                    commonWorkflowConfig,
+                ),
+                { ...commonCronConfig, offset: 0 },
+                [tenantId.substring(0, 5), id.substring(0, 5)],
+            );
+            
         /**
          * Kencove Api App Workflows
          */
