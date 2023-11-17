@@ -27,3 +27,38 @@ query attributeSync($first: Int!, $after: String) {
         }
     }
 }
+
+query attributeValueSearch($attributeId: ID!, $searchvalue: String) {
+  attribute(id: $attributeId) {
+    choices(first: 2, filter: {search: $searchvalue}) {
+      edges {
+        node {
+          id
+          name
+          slug
+          value
+        }
+      }
+    }
+    id
+    name
+  }
+}
+
+mutation attributeHexValueCreate($attributeId: ID!, $attributeValueName: String!, $attributeValueHex: String!) {
+  attributeValueCreate(
+    attribute: $attributeId
+    input: {name: $attributeValueName, value: $attributeValueHex}
+  ) {
+    errors {
+      field
+      code
+      message
+    }
+    attributeValue {
+      id
+      slug
+      value
+    }
+  }
+}
