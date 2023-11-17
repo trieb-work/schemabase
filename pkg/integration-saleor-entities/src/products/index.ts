@@ -647,7 +647,7 @@ export class SaleorProductSyncService {
             attributeId: saleorAttributeId,
             searchvalue: attributeValueName,
         });
-        if (!searchResult.attribute?.choices?.edges?.[0].node.id) {
+        if (!searchResult.attribute?.choices?.edges?.[0]?.node.id) {
             this.logger.info(
                 `Creating swatch attribute value ${attributeValueName} for saleor attribute ${saleorAttributeId}`,
             );
@@ -681,7 +681,7 @@ export class SaleorProductSyncService {
             return resp.attributeValueCreate?.attributeValue?.slug;
         }
 
-        if (!searchResult.attribute?.choices?.edges?.[0].node.slug) {
+        if (!searchResult.attribute?.choices?.edges?.[0]?.node?.slug) {
             this.logger.error(
                 `Error getting swatch attribute value ${attributeValueName} for saleor attribute ${saleorAttributeId}: No slug returned`,
             );
