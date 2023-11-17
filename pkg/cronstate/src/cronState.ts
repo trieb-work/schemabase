@@ -21,6 +21,7 @@ type SyncEntity =
     | "addresses"
     | "categories"
     | "itemstocks"
+    | "fbtVariants"
     | "pricelist";
 
 type CronJobReturn = CronJobState & {
