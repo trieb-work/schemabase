@@ -147,6 +147,7 @@ export class CognitoUserSyncService {
         // if they do, update the user. there could be multiple user identities with the same email address
         // if they don't, create the user
         for (const contact of contacts) {
+            this.logger.info(`Syncing contact ${contact.email}`);
             const cognitoUser = await this.getCognitoUserByEmail(contact.email);
             if (cognitoUser === undefined) {
                 const channelName = contact.channels?.[0]?.name;
@@ -156,6 +157,9 @@ export class CognitoUserSyncService {
                     );
                     continue;
                 }
+                this.logger.info(
+                    `User ${contact.email} does not exist in Cognito. Continue`,
+                );
                 /**
                  * We are currently not creating a user in cognito, as
                  * we can't migrate existing passwords from our DB to cognito.
