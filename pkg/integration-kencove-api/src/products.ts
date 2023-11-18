@@ -1052,7 +1052,11 @@ export class KencoveApiAppProductSyncService {
                 countryOfOrigin,
             },
             include: {
-                variants: true,
+                variants: {
+                    include: {
+                        kencoveApiProductVariant: true,
+                    },
+                },
                 media: true,
             },
         });
@@ -1120,7 +1124,11 @@ export class KencoveApiAppProductSyncService {
                 countryOfOrigin,
             },
             include: {
-                variants: true,
+                variants: {
+                    include: {
+                        kencoveApiProductVariant: true,
+                    },
+                },
                 media: true,
             },
         });
@@ -1279,7 +1287,11 @@ export class KencoveApiAppProductSyncService {
                     },
                 },
                 include: {
-                    variants: true,
+                    variants: {
+                        include: {
+                            kencoveApiProductVariant: true,
+                        },
+                    },
                     media: true,
                 },
             });
@@ -1466,6 +1478,9 @@ export class KencoveApiAppProductSyncService {
                                 },
                             },
                         },
+                        include: {
+                            kencoveApiProductVariant: true,
+                        },
                     });
                 } else if (
                     /**
@@ -1474,7 +1489,9 @@ export class KencoveApiAppProductSyncService {
                     existingVariant.weight !== variant.weight ||
                     existingVariant.variantName !== variantName ||
                     existingVariant.productId !== existingProduct.id ||
-                    existingVariant.ean !== variant.upc
+                    existingVariant.ean !== variant.upc ||
+                    existingVariant.kencoveApiProductVariant?.[0]
+                        ?.productVariantId !== variant.id
                 ) {
                     this.logger.info(
                         `Updating variant ${variant.id} of product ${product.productName}`,
