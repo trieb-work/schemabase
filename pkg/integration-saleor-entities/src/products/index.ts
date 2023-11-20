@@ -687,6 +687,9 @@ export class SaleorProductSyncService {
             );
             return "";
         }
+        this.logger.info(
+            `Returning swatch slug ${searchResult.attribute?.choices?.edges?.[0]?.node?.slug} for swatch attribute value ${attributeValueName} for saleor attribute ${saleorAttributeId}`,
+        );
         return searchResult.attribute?.choices?.edges?.[0].node.slug;
     }
 

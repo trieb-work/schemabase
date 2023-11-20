@@ -40,7 +40,7 @@ export class MediaUpload {
             return ".png"; // fallback to .png if the extracted extension isn't recognized
         }
 
-        return `.${extension}`;
+        return `.${extension.toLowerCase()}`;
     }
 
     public async fetchMediaBlob(url: string): Promise<Blob> {
