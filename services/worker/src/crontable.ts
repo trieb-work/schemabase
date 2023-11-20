@@ -656,7 +656,8 @@ export class CronTable {
                         this.clients,
                         commonWorkflowConfig,
                     ),
-                    { ...commonCronConfig, offset: 20 },
+                    // FrequentlyBoughtTogether runs just once a day
+                    { ...commonCronConfig, offset: 20, cron: "12 2 * * *" },
                     [tenantId.substring(0, 5), id.substring(0, 7)],
                 );
             }
