@@ -226,7 +226,13 @@ export class FrequentlyBoughtTogether {
                             );
                         if (!saleorVariantInner) {
                             this.logger.warn(
-                                `Product ${prod.id} has no saleor product with installedSaleorAppId ${this.installedSaleorAppId}`,
+                                `Product ${
+                                    prod.id
+                                } has no saleor product with installedSaleorAppId ${
+                                    this.installedSaleorAppId
+                                }. This what we got: ${JSON.stringify(
+                                    fbt.relatedVariant.saleorProductVariant,
+                                )}`,
                             );
                             return;
                         }
@@ -236,6 +242,12 @@ export class FrequentlyBoughtTogether {
 
                 const attributeId =
                     productType.attributes[0].attribute.saleorAttributes[0].id;
+                if (referingVariants.length === 0) {
+                    this.logger.info(
+                        `No referring variants for variant ${variant.sku} with saleor id ${saleorProduct.id}`,
+                    );
+                    continue;
+                }
                 this.logger.info(
                     `Updating FBT for variant ${variant.sku} with saleor id ${saleorProduct.id} with ${referingVariants.length} referring variants`,
                     {
@@ -271,6 +283,11 @@ export class FrequentlyBoughtTogether {
                 );
             }
         }
+
+        await this.cronState.set({
+            lastRun: now,
+            lastRunStatus: "success",
+        });
     }
 
     public async syncProducts(gteDate: Date) {
