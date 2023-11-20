@@ -3,7 +3,7 @@ import { PrismaClient } from "@eci/pkg/prisma";
 import { beforeEach, describe, jest, test } from "@jest/globals";
 import "@eci/pkg/jest-utils/consoleFormatter";
 import { getSaleorClientAndEntry } from "@eci/pkg/saleor";
-import { SaleorOrderSyncService } from ".";
+import { FrequentlyBoughtTogether } from "./frequentlyBoughtTogether";
 
 /// Use this file to locally run this service
 
@@ -11,33 +11,33 @@ beforeEach(() => {
     jest.clearAllMocks();
 });
 
-describe("Saleor Sync Orders Test", () => {
+describe("Zoho Entity Sync Orders Test", () => {
     const prismaClient = new PrismaClient();
 
-    test("It should work to sync packages", async () => {
+    test("It should work to sync products", async () => {
         const tenant = await prismaClient.tenant.findUnique({
             where: {
                 // id: "pk_7f165pf-prod",
-                id: "tn_kencove235",
+                id: "ken_prod",
                 // id: "test",
             },
         });
-        if (!tenant) throw new Error("Testing Tenant not found in DB");
+        if (!tenant)
+            throw new Error("Testing Tenant or saleor app not found in DB");
 
         const { client: saleorClient, installedSaleorApp } =
             // await getSaleorClientAndEntry("QXBwOjE2", prismaClient);
-            await getSaleorClientAndEntry("QXBwOjQw", prismaClient);
+            await getSaleorClientAndEntry("QXBwOjE=", prismaClient);
 
-        const service = new SaleorOrderSyncService({
+        const service = new FrequentlyBoughtTogether({
             saleorClient,
-            installedSaleorApp: installedSaleorApp,
+            installedSaleorAppId: installedSaleorApp.id,
             logger: new AssertionLogger(),
             db: prismaClient,
             tenantId: tenant.id,
-            orderPrefix: "STORE",
-            channelSlug: "storefront",
         });
+
         // await service.syncToECI();
-        await service.syncFromECI();
+        await service.syncVariants();
     }, 1000000);
 });
