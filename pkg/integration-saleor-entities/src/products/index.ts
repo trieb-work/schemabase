@@ -647,7 +647,15 @@ export class SaleorProductSyncService {
             attributeId: saleorAttributeId,
             searchvalue: attributeValueName,
         });
-        if (!searchResult.attribute?.choices?.edges?.[0]?.node.id) {
+        /**
+         * When we don't have a search response, or when the value is not
+         * the hex value, we expect, we need to create the attribute value
+         */
+        if (
+            !searchResult.attribute?.choices?.edges?.[0]?.node.id ||
+            searchResult.attribute?.choices?.edges?.[0]?.node.value !==
+                attributeValueHex
+        ) {
             this.logger.info(
                 `Creating swatch attribute value ${attributeValueName} for saleor attribute ${saleorAttributeId}`,
             );
