@@ -255,6 +255,18 @@ export class KencoveApiAppProductSyncService {
                 name: "dim",
                 replaceWith: "Dimensions",
             },
+            {
+                name: "#000000",
+                replaceWith: "Black",
+            },
+            {
+                name: "#FFFFFF",
+                replaceWith: "White",
+            },
+            {
+                name: "#604738",
+                replaceWith: "Brown",
+            },
         ];
 
         return attributes
