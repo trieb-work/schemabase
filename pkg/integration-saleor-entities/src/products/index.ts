@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import { ILogger } from "@eci/pkg/logger";
 import {
-    ProductCreateMutationVariables,
+    AttributeValueInput,
     ProductTypeFragment,
     ProductVariantBulkCreateInput,
     ProductVariantBulkUpdateInput,
@@ -21,6 +21,8 @@ import {
     SaleorAttribute,
     SaleorProductVariant,
     Attribute as SchemaBaseAttribute,
+    Attribute,
+    AttributeValueProduct,
 } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { id } from "@eci/pkg/ids";
@@ -447,17 +449,18 @@ export class SaleorProductSyncService {
             `Found ${variantsToCreate.length} variants to create for product ${product.name} in Saleor`,
         );
         const variantsToCreateInput: ProductVariantBulkCreateInput[] =
-            variantsToCreate.map((v) => ({
-                attributes: v.attributes
-                    .filter((a) => a.attribute.saleorAttributes.length > 0)
-                    .map((a) => ({
-                        id: a.attribute.saleorAttributes[0].id,
-                        values: [a.value],
-                    })),
-                sku: v.sku,
-                name: v.variantName,
-                trackInventory: true,
-            }));
+            await Promise.all(
+                variantsToCreate.map(async (v) => ({
+                    attributes:
+                        await this.schemabaseAttributesToSaleorAttribute(
+                            v.attributes,
+                        ),
+
+                    sku: v.sku,
+                    name: v.variantName,
+                    trackInventory: true,
+                })),
+            );
         this.logger.debug(`Creating variants`, {
             attributes: JSON.stringify(
                 variantsToCreateInput.map((x) => x.attributes),
@@ -702,6 +705,119 @@ export class SaleorProductSyncService {
     }
 
     /**
+     * Generic function to transform our attributes to Saleor attributes.
+     * Handles the creation of swatch attributes and the reference attributes
+     * @param attributesWithSaleorAttributes
+     * @returns
+     */
+    private async schemabaseAttributesToSaleorAttribute(
+        attributesWithSaleorAttributes: ((
+            | AttributeValueVariant
+            | AttributeValueProduct
+        ) & {
+            attribute: Attribute & { saleorAttributes: SaleorAttribute[] };
+        })[],
+    ): Promise<AttributeValueInput[]> {
+        let attributes: AttributeValueInput[] = [];
+        /**
+         * Prepare the attributes to fit the saleor schema
+         */
+        for (const attr of attributesWithSaleorAttributes) {
+            if (!attr.attribute.saleorAttributes[0]?.id) continue;
+            const saleorAttributeId = attr.attribute.saleorAttributes[0].id;
+            if (attr.attribute.type === "BOOLEAN") {
+                const value = parseBoolean(attr.value);
+                if (value === undefined) {
+                    this.logger.warn(
+                        `Can't parse boolean value for boolean attribute ${attr.attribute.name}. Value: ${attr.value}. Skipping}`,
+                    );
+                    continue;
+                } else {
+                    attributes.push({
+                        id: saleorAttributeId,
+                        boolean: value,
+                    });
+                }
+            }
+            if (attr.attribute.type === "PRODUCT_REFERENCE") {
+                /// We store our internal product Id in value of product reference attributes.
+                /// We need to aks our DB for the saleor product id
+                const saleorProductId = await this.db.product.findUnique({
+                    where: {
+                        id: attr.value,
+                    },
+                    select: {
+                        saleorProducts: {
+                            where: {
+                                installedSaleorAppId: this.installedSaleorAppId,
+                            },
+                        },
+                    },
+                });
+                if (!saleorProductId?.saleorProducts?.[0]?.id) {
+                    this.logger.warn(
+                        `Item has a reference to a product, that has no saleor product id. Skipping`,
+                    );
+                    continue;
+                }
+                attributes.push({
+                    id: saleorAttributeId,
+                    references: [saleorProductId.saleorProducts[0].id],
+                });
+            } else if (attr.attribute.type === "VARIANT_REFERENCE") {
+                /// We store our internal variant Id in value of variant reference attributes.
+                /// We need to aks our DB for the saleor variant id
+                const saleorVariantId = await this.db.productVariant.findUnique(
+                    {
+                        where: {
+                            id: attr.value,
+                        },
+                        select: {
+                            saleorProductVariant: {
+                                where: {
+                                    installedSaleorAppId:
+                                        this.installedSaleorAppId,
+                                },
+                            },
+                        },
+                    },
+                );
+                if (!saleorVariantId?.saleorProductVariant?.[0]?.id) {
+                    this.logger.warn(`Item has no saleor variant id. Skipping`);
+                    continue;
+                }
+                attributes.push({
+                    id: saleorAttributeId,
+                    references: [saleorVariantId.saleorProductVariant[0].id],
+                });
+                // Handle the special case SWATCH where the hex code and the name is given
+            } else if (
+                attr.attribute.type === "SWATCH" &&
+                attr.hexColor &&
+                attr.value
+            ) {
+                const value = await this.handleSwatchAttributeInSaleor(
+                    saleorAttributeId,
+                    attr.value,
+                    attr.hexColor,
+                );
+                attributes.push({
+                    id: saleorAttributeId,
+                    swatch: {
+                        value,
+                    },
+                });
+            } else {
+                attributes.push({
+                    id: saleorAttributeId,
+                    values: [attr.value],
+                });
+            }
+        }
+        return attributes;
+    }
+
+    /**
      * Find and create all products, that are not yet created in Saleor.
      * Update products, that got changed since the last run
      */
@@ -891,8 +1007,10 @@ export class SaleorProductSyncService {
                         (a) => a.attribute.saleorAttributes.length > 0,
                     );
 
-                const attributes: ProductCreateMutationVariables["input"]["attributes"] =
-                    [];
+                const attributes: AttributeValueInput[] =
+                    await this.schemabaseAttributesToSaleorAttribute(
+                        attributesWithSaleorAttributes,
+                    );
 
                 /**
                  * Products can have related product manuals. We try to upload the corresponding
@@ -967,106 +1085,6 @@ export class SaleorProductSyncService {
                         id: saleorAtttribute,
                         file: externalMediaUrl,
                     });
-                }
-                /**
-                 * Prepare the attributes to fit the saleor schema
-                 */
-                for (const attr of attributesWithSaleorAttributes) {
-                    const saleorAttributeId =
-                        attr.attribute.saleorAttributes[0].id;
-                    if (attr.attribute.type === "BOOLEAN") {
-                        const value = parseBoolean(attr.value);
-                        if (value === undefined) {
-                            this.logger.warn(
-                                `Product ${product.name} has no valid boolean value for attribute ${attr.attribute.name}. Skipping`,
-                            );
-                            continue;
-                        } else {
-                            attributes.push({
-                                id: saleorAttributeId,
-                                boolean: value,
-                            });
-                        }
-                    }
-                    if (attr.attribute.type === "PRODUCT_REFERENCE") {
-                        /// We store our internal product Id in value of product reference attributes.
-                        /// We need to aks our DB for the saleor product id
-                        const saleorProductId =
-                            await this.db.product.findUnique({
-                                where: {
-                                    id: attr.value,
-                                },
-                                select: {
-                                    saleorProducts: {
-                                        where: {
-                                            installedSaleorAppId:
-                                                this.installedSaleorAppId,
-                                        },
-                                    },
-                                },
-                            });
-                        if (!saleorProductId?.saleorProducts?.[0]?.id) {
-                            this.logger.warn(
-                                `Product ${product.name} has a reference to a product, that has no saleor product id. Skipping`,
-                            );
-                            continue;
-                        }
-                        attributes.push({
-                            id: saleorAttributeId,
-                            references: [saleorProductId.saleorProducts[0].id],
-                        });
-                    } else if (attr.attribute.type === "VARIANT_REFERENCE") {
-                        /// We store our internal variant Id in value of variant reference attributes.
-                        /// We need to aks our DB for the saleor variant id
-                        const saleorVariantId =
-                            await this.db.productVariant.findUnique({
-                                where: {
-                                    id: attr.value,
-                                },
-                                select: {
-                                    saleorProductVariant: {
-                                        where: {
-                                            installedSaleorAppId:
-                                                this.installedSaleorAppId,
-                                        },
-                                    },
-                                },
-                            });
-                        if (!saleorVariantId?.saleorProductVariant?.[0]?.id) {
-                            this.logger.warn(
-                                `Product ${product.name} has no saleor variant id. Skipping`,
-                            );
-                            continue;
-                        }
-                        attributes.push({
-                            id: saleorAttributeId,
-                            references: [
-                                saleorVariantId.saleorProductVariant[0].id,
-                            ],
-                        });
-                        // Handle the special case SWATCH where the hex code and the name is given
-                    } else if (
-                        attr.attribute.type === "SWATCH" &&
-                        attr.hexColor &&
-                        attr.value
-                    ) {
-                        const value = await this.handleSwatchAttributeInSaleor(
-                            saleorAttributeId,
-                            attr.value,
-                            attr.hexColor,
-                        );
-                        attributes.push({
-                            id: saleorAttributeId,
-                            swatch: {
-                                value,
-                            },
-                        });
-                    } else {
-                        attributes.push({
-                            id: saleorAttributeId,
-                            values: [attr.value],
-                        });
-                    }
                 }
 
                 let saleorProductId = product.saleorProducts?.[0]?.id;
@@ -1240,22 +1258,18 @@ export class SaleorProductSyncService {
 
                     const variantsToUpdateInput:
                         | ProductVariantBulkUpdateInput
-                        | ProductVariantBulkUpdateInput[] =
-                        variantsToUpdate.map((v) => ({
-                            attributes: v.attributes
-                                .filter(
-                                    (a) =>
-                                        a.attribute.saleorAttributes.length > 0,
-                                )
-                                .map((a) => ({
-                                    id: a.attribute.saleorAttributes[0].id,
-                                    values: [a.value],
-                                })),
+                        | ProductVariantBulkUpdateInput[] = await Promise.all(
+                        variantsToUpdate.map(async (v) => ({
+                            attributes:
+                                await this.schemabaseAttributesToSaleorAttribute(
+                                    v.attributes,
+                                ),
                             sku: v.sku,
                             name: v.variantName,
                             trackInventory: true,
                             id: v.saleorProductVariant[0].id,
-                        }));
+                        })),
+                    );
                     this.logger.debug(`Updating variants`, {
                         attributes: JSON.stringify(
                             variantsToUpdateInput.map((x) => x.attributes),
