@@ -18,6 +18,7 @@ import {
 import {
     AddressInput,
     BulkOrderCreateMutationVariables,
+    ErrorPolicyEnum,
     LanguageCodeEnum,
     OrderBulkCreateOrderLineInput,
     OrderStatus,
@@ -264,6 +265,7 @@ export class SaleorHistoricOrdersSync {
                 const bulkOrderCreateResponse =
                     await this.saleorClient.bulkOrderCreate({
                         orders: chunk,
+                        errorPolicy: ErrorPolicyEnum.RejectFailedRows,
                     });
                 if (
                     bulkOrderCreateResponse.orderBulkCreate?.errors &&

@@ -44,25 +44,3 @@ query attributeValueSearch($attributeId: ID!, $searchvalue: String) {
         name
     }
 }
-
-mutation attributeHexValueCreate(
-    $attributeId: ID!
-    $attributeValueName: String!
-    $attributeValueHex: String!
-) {
-    attributeValueCreate(
-        attribute: $attributeId
-        input: { name: $attributeValueName, value: $attributeValueHex }
-    ) {
-        errors {
-            field
-            code
-            message
-        }
-        attributeValue {
-            id
-            slug
-            value
-        }
-    }
-}

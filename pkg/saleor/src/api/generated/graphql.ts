@@ -31691,8 +31691,34 @@ export type AttributeCreateMutation = {
     } | null;
 };
 
+export type AttributeHexValueCreateMutationVariables = Exact<{
+    attributeId: Scalars["ID"];
+    attributeValueName: Scalars["String"];
+    attributeValueHex: Scalars["String"];
+}>;
+
+export type AttributeHexValueCreateMutation = {
+    __typename?: "Mutation";
+    attributeValueCreate?: {
+        __typename?: "AttributeValueCreate";
+        errors: Array<{
+            __typename?: "AttributeError";
+            field?: string | null;
+            code: AttributeErrorCode;
+            message?: string | null;
+        }>;
+        attributeValue?: {
+            __typename?: "AttributeValue";
+            id: string;
+            slug?: string | null;
+            value?: string | null;
+        } | null;
+    } | null;
+};
+
 export type BulkOrderCreateMutationVariables = Exact<{
     orders: Array<OrderBulkCreateInput> | OrderBulkCreateInput;
+    errorPolicy: ErrorPolicyEnum;
 }>;
 
 export type BulkOrderCreateMutation = {
@@ -32275,31 +32301,6 @@ export type AttributeValueSearchQuery = {
                     value?: string | null;
                 };
             }>;
-        } | null;
-    } | null;
-};
-
-export type AttributeHexValueCreateMutationVariables = Exact<{
-    attributeId: Scalars["ID"];
-    attributeValueName: Scalars["String"];
-    attributeValueHex: Scalars["String"];
-}>;
-
-export type AttributeHexValueCreateMutation = {
-    __typename?: "Mutation";
-    attributeValueCreate?: {
-        __typename?: "AttributeValueCreate";
-        errors: Array<{
-            __typename?: "AttributeError";
-            field?: string | null;
-            code: AttributeErrorCode;
-            message?: string | null;
-        }>;
-        attributeValue?: {
-            __typename?: "AttributeValue";
-            id: string;
-            slug?: string | null;
-            value?: string | null;
         } | null;
     } | null;
 };
@@ -33196,10 +33197,36 @@ export const AttributeCreateDocument = gql`
         }
     }
 `;
+export const AttributeHexValueCreateDocument = gql`
+    mutation attributeHexValueCreate(
+        $attributeId: ID!
+        $attributeValueName: String!
+        $attributeValueHex: String!
+    ) {
+        attributeValueCreate(
+            attribute: $attributeId
+            input: { name: $attributeValueName, value: $attributeValueHex }
+        ) {
+            errors {
+                field
+                code
+                message
+            }
+            attributeValue {
+                id
+                slug
+                value
+            }
+        }
+    }
+`;
 export const BulkOrderCreateDocument = gql`
-    mutation bulkOrderCreate($orders: [OrderBulkCreateInput!]!) {
+    mutation bulkOrderCreate(
+        $orders: [OrderBulkCreateInput!]!
+        $errorPolicy: ErrorPolicyEnum!
+    ) {
         orderBulkCreate(
-            errorPolicy: REJECT_EVERYTHING
+            errorPolicy: $errorPolicy
             orders: $orders
             stockUpdatePolicy: SKIP
         ) {
@@ -33615,29 +33642,6 @@ export const AttributeValueSearchDocument = gql`
             }
             id
             name
-        }
-    }
-`;
-export const AttributeHexValueCreateDocument = gql`
-    mutation attributeHexValueCreate(
-        $attributeId: ID!
-        $attributeValueName: String!
-        $attributeValueHex: String!
-    ) {
-        attributeValueCreate(
-            attribute: $attributeId
-            input: { name: $attributeValueName, value: $attributeValueHex }
-        ) {
-            errors {
-                field
-                code
-                message
-            }
-            attributeValue {
-                id
-                slug
-                value
-            }
         }
     }
 `;
@@ -34220,6 +34224,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 options,
             ) as Promise<AttributeCreateMutation>;
         },
+        attributeHexValueCreate(
+            variables: AttributeHexValueCreateMutationVariables,
+            options?: C,
+        ): Promise<AttributeHexValueCreateMutation> {
+            return requester<
+                AttributeHexValueCreateMutation,
+                AttributeHexValueCreateMutationVariables
+            >(
+                AttributeHexValueCreateDocument,
+                variables,
+                options,
+            ) as Promise<AttributeHexValueCreateMutation>;
+        },
         bulkOrderCreate(
             variables: BulkOrderCreateMutationVariables,
             options?: C,
@@ -34542,19 +34559,6 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<AttributeValueSearchQuery>;
-        },
-        attributeHexValueCreate(
-            variables: AttributeHexValueCreateMutationVariables,
-            options?: C,
-        ): Promise<AttributeHexValueCreateMutation> {
-            return requester<
-                AttributeHexValueCreateMutation,
-                AttributeHexValueCreateMutationVariables
-            >(
-                AttributeHexValueCreateDocument,
-                variables,
-                options,
-            ) as Promise<AttributeHexValueCreateMutation>;
         },
         saleorCronCategories(
             variables?: SaleorCronCategoriesQueryVariables,
