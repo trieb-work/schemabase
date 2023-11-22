@@ -475,7 +475,7 @@ export class KencoveApiAppOrderSyncService {
                     this.logger.warn(
                         `No email found in order ${order.id} - ${order.orderNumber}. Don't sync!`,
                     );
-                    return;
+                    continue;
                 }
                 const updatedAt = new Date(order.updatedAt);
                 const mainContactPromise = this.syncMainContact(order);
