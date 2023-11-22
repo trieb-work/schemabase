@@ -650,14 +650,17 @@ export class SaleorProductSyncService {
             attributeId: saleorAttributeId,
             searchvalue: attributeValueName,
         });
+
+        const hexMatch = searchResult.attribute?.choices?.edges?.find(
+            (x) => x.node.value === attributeValueHex,
+        );
         /**
          * When we don't have a search response, or when the value is not
          * the hex value, we expect, we need to create the attribute value
          */
         if (
             !searchResult.attribute?.choices?.edges?.[0]?.node.id ||
-            searchResult.attribute?.choices?.edges?.[0]?.node.value !==
-                attributeValueHex
+            !hexMatch
         ) {
             this.logger.info(
                 `Creating swatch attribute value ${attributeValueName} for saleor attribute ${saleorAttributeId}`,
@@ -692,16 +695,16 @@ export class SaleorProductSyncService {
             return resp.attributeValueCreate?.attributeValue?.slug;
         }
 
-        if (!searchResult.attribute?.choices?.edges?.[0]?.node?.slug) {
+        if (!hexMatch.node?.slug) {
             this.logger.error(
                 `Error getting swatch attribute value ${attributeValueName} for saleor attribute ${saleorAttributeId}: No slug returned`,
             );
             return "";
         }
         this.logger.info(
-            `Returning swatch slug ${searchResult.attribute?.choices?.edges?.[0]?.node?.slug} for swatch attribute value ${attributeValueName} for saleor attribute ${saleorAttributeId}`,
+            `Returning swatch slug ${hexMatch?.node.slug} for swatch attribute value ${attributeValueName} for saleor attribute ${saleorAttributeId}`,
         );
-        return searchResult.attribute?.choices?.edges?.[0].node.slug;
+        return hexMatch.node.slug;
     }
 
     /**
