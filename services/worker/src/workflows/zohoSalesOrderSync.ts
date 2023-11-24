@@ -46,7 +46,7 @@ export class ZohoSalesOrderSyncWf implements Workflow {
             zoho,
             db: this.prisma,
             zohoApp,
-            createdTimeOffset: 10,
+            createdTimeOffset: 5,
         });
         await zohoSalesOrdersSyncService.syncToECI();
 
