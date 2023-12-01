@@ -318,6 +318,10 @@ export class XentralProxyLieferscheinSyncService {
                     lieferschein.versandart.toLowerCase().includes("ups")
                 ) {
                     carrier = Carrier.UPS;
+                } else if (
+                    lieferschein.versandart.toLowerCase().includes("wapo_3")
+                ) {
+                    carrier = Carrier.DHL;
                 }
                 // TODO: lieferschein.belegnr is unique and should be enough but only if we do not use the workaround described in line 190
                 // const packageNumber = `LF-${lieferschein.belegnr}_TRN-${matchingTrackingnummer.tracking}`;
