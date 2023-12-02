@@ -410,6 +410,7 @@ export class ZohoSalesOrdersSyncService {
                             orderLineItems: {
                                 select: {
                                     id: true,
+                                    zohoOrderLineItems: true,
                                 },
                             },
                         },
@@ -462,7 +463,10 @@ export class ZohoSalesOrdersSyncService {
                     /**
                      * The order line item ids that are currently valid
                      */
-                    const allEciOrderLineItems: { id: string }[] = [];
+                    const allEciOrderLineItems: {
+                        id: string;
+                        zohoOrderLineId: string;
+                    }[] = [];
 
                     for (const lineItem of lineItems) {
                         const uniqueString = uniqueStringOrderLine(
@@ -615,6 +619,7 @@ export class ZohoSalesOrdersSyncService {
 
                         allEciOrderLineItems.push({
                             id: upsertedLineItem.orderLineItemId,
+                            zohoOrderLineId: upsertedLineItem.id,
                         });
                     }
 
@@ -627,6 +632,20 @@ export class ZohoSalesOrdersSyncService {
                             .includes(x.id);
                     });
 
+                    /**
+                     * sometimes it can happen, that we have changes in Zoho
+                     * and we suddenly have a different Zoho orderline item for
+                     * the same internal orderline. In this case we have to delete
+                     * the old one
+                     */
+                    const toBeDeletedZohoOrderLineIds = oldOrderLines.filter(
+                        (x) => {
+                            return !allEciOrderLineItems
+                                .map((all) => all.zohoOrderLineId)
+                                .includes(x.zohoOrderLineItems[0]?.id);
+                        },
+                    );
+
                     if (toBeDeleted.length > 0) {
                         this.logger.info(
                             `To be deleted orderlines: ${JSON.stringify(
@@ -637,6 +656,23 @@ export class ZohoSalesOrdersSyncService {
                             where: {
                                 id: {
                                     in: toBeDeleted.map((d) => d.id),
+                                },
+                            },
+                        });
+                    }
+                    if (toBeDeletedZohoOrderLineIds.length > 0) {
+                        this.logger.info("Deleting Zoho orderline items", {
+                            toBeDeletedZohoOrderLineIds:
+                                toBeDeletedZohoOrderLineIds.map(
+                                    (d) => d.zohoOrderLineItems[0]?.id,
+                                ),
+                        });
+                        await this.db.zohoOrderLineItem.deleteMany({
+                            where: {
+                                id: {
+                                    in: toBeDeletedZohoOrderLineIds.map(
+                                        (d) => d.zohoOrderLineItems[0]?.id,
+                                    ),
                                 },
                             },
                         });
