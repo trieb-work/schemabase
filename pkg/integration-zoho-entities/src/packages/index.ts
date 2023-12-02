@@ -413,6 +413,7 @@ export class ZohoPackageSyncService {
             },
             include: {
                 packageLineItems: true,
+                order: true,
             },
         });
 
@@ -441,6 +442,7 @@ export class ZohoPackageSyncService {
                     {
                         trackingId: p.trackingId,
                         orderId: p.orderId,
+                        orderNumber: p.order?.orderNumber,
                     },
                 );
                 if (!p.orderId) {
@@ -502,6 +504,16 @@ export class ZohoPackageSyncService {
                     orderLineItems.orderLineItems,
                     p.packageLineItems,
                     this.logger,
+                );
+
+                this.logger.debug(
+                    `Creating package ${p.number} - ${
+                        p.id
+                    } with lineItems ${JSON.stringify(lineItems)}`,
+                    {
+                        orderNumber: orderLineItems.orderNumber,
+                        skus: orderLineItems.orderLineItems.map((x) => x.sku),
+                    },
                 );
 
                 const createdPackage = await this.zoho.package.create(
