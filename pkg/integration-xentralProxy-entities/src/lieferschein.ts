@@ -351,6 +351,7 @@ export class XentralProxyLieferscheinSyncService {
                     },
                     update: {
                         trackingId,
+                        carrier,
                         carrierTrackingUrl,
                     },
                     create: {
