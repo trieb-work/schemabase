@@ -10,6 +10,11 @@ mutation bulkOrderCreate($orders: [OrderBulkCreateInput!]!, $errorPolicy: ErrorP
       path
     }
     results {
+      errors {
+        code
+        message
+        path
+      }
       order {
         errors {
           code

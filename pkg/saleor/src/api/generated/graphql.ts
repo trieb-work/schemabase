@@ -31733,6 +31733,12 @@ export type BulkOrderCreateMutation = {
         }>;
         results: Array<{
             __typename?: "OrderBulkCreateResult";
+            errors?: Array<{
+                __typename?: "OrderBulkCreateError";
+                code?: OrderBulkCreateErrorCode | null;
+                message?: string | null;
+                path?: string | null;
+            }> | null;
             order?: {
                 __typename?: "Order";
                 id: string;
@@ -33236,6 +33242,11 @@ export const BulkOrderCreateDocument = gql`
                 path
             }
             results {
+                errors {
+                    code
+                    message
+                    path
+                }
                 order {
                     errors {
                         code
@@ -33630,7 +33641,7 @@ export const AttributeSyncDocument = gql`
 export const AttributeValueSearchDocument = gql`
     query attributeValueSearch($attributeId: ID!, $searchvalue: String) {
         attribute(id: $attributeId) {
-            choices(first: 2, filter: { search: $searchvalue }) {
+            choices(first: 5, filter: { search: $searchvalue }) {
                 edges {
                     node {
                         id
