@@ -201,6 +201,8 @@ production:
             --set=sendgridApiKey="TO_BE_ADDED"
             --set=secretKey="$SECRET_KEY_WORKER"
             --set=resources.limits.memory="1000Mi"
+            --set=resources.requests.memory="800Mi"
+
         - >
             helm upgrade queue-dashboard-schemabase ./services/bullboard/helm-chart
             --install
