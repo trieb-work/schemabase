@@ -134,10 +134,12 @@ export class SaleorPaymentSyncService {
                 continue;
             }
             const saleorOrder = payment.order;
+
             this.logger.info(
                 `Processing payment for order ${saleorOrder.number} - ${payment.id}`,
                 {
                     referenceNumber: payment?.transactions?.[0]?.token,
+                    saleorPaymentId: payment.id,
                 },
             );
             if (typeof saleorOrder.number !== "string") continue;
@@ -182,6 +184,7 @@ export class SaleorPaymentSyncService {
                     );
                 }
             }
+            let paymentReference = successfullTransactions?.[0]?.token;
 
             // TODO include payment status failed, fully charged etc. somehow!!
             // TODO test failed payments etc.
@@ -260,7 +263,7 @@ export class SaleorPaymentSyncService {
                 );
                 continue;
             }
-            let paymentReference = successfullTransactions?.[0]?.token;
+
             if (
                 !paymentReference ||
                 paymentReference === "NONE_VORKASSE_TOKEN"
@@ -317,6 +320,22 @@ export class SaleorPaymentSyncService {
                   }
                 : undefined;
 
+            const existingContact = await this.db.contact.findUnique({
+                where: {
+                    email_tenantId: {
+                        tenantId: this.tenantId,
+                        email: lowercaseEmail,
+                    },
+                },
+            });
+
+            if (!existingContact) {
+                this.logger.info(
+                    `No contact found for email ${lowercaseEmail}. Can't upsert payment now - skipping`,
+                );
+                continue;
+            }
+
             await this.db.saleorPayment.upsert({
                 where: {
                     id_installedSaleorAppId: {
@@ -325,7 +344,7 @@ export class SaleorPaymentSyncService {
                     },
                 },
                 create: {
-                    id: payment?.id,
+                    id: payment.id,
                     createdAt: payment?.created,
                     updatedAt: payment?.modified,
                     saleorOrder: saleorOrderConnect,
@@ -349,10 +368,7 @@ export class SaleorPaymentSyncService {
                                 date: payment.created,
                                 mainContact: {
                                     connect: {
-                                        email_tenantId: {
-                                            tenantId: this.tenantId,
-                                            email: lowercaseEmail,
-                                        },
+                                        id: existingContact.id,
                                     },
                                 },
                                 tenant: {
@@ -390,10 +406,7 @@ export class SaleorPaymentSyncService {
                                 paymentMethod: paymentMethodConnect,
                                 mainContact: {
                                     connect: {
-                                        email_tenantId: {
-                                            tenantId: this.tenantId,
-                                            email: lowercaseEmail,
-                                        },
+                                        id: existingContact.id,
                                     },
                                 },
                                 order: orderConnect,
@@ -401,7 +414,6 @@ export class SaleorPaymentSyncService {
                         },
                         update: {
                             order: orderConnect,
-                            date: payment.created,
                         },
                     },
                 },
