@@ -47,7 +47,6 @@ const syncTaxClasses = async (
                     id: id.id("tax"),
                     name: taxClass,
                     normalizedName,
-                    percentage: 0,
                     tenant: {
                         connect: {
                             id: tenantId,

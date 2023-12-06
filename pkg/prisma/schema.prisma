@@ -731,7 +731,7 @@ model Tax {
   // Lowercase, trim, whitespace remove, special characters remove etc.
   normalizedName String
   /// default tax percentage.
-  percentage     Float
+  percentage     Float?
 
   /// An array of orders where this tax is used as the tax for the shipping method
   shippingTaxInOrders Order[]

@@ -469,7 +469,7 @@ Table Tax {
   updatedAt DateTime [not null]
   name String [not null]
   normalizedName String [not null]
-  percentage Float [not null]
+  percentage Float [note: 'default tax percentage.']
   shippingTaxInOrders Order [not null, note: 'An array of orders where this tax is used as the tax for the shipping method']
   taxInLineItems OrderLineItem [not null, note: 'An array of lineitems where this tax is used as the tax for the line item']
   productVariants ProductVariant [not null]
