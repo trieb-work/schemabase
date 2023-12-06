@@ -1,4 +1,11 @@
 {
     "typescript.tsdk": "node_modules/typescript/lib",
-    "prisma.fileWatcher": true
+    "prisma.fileWatcher": true,
+    "editor.formatOnSave": true,
+    "editor.indentSize": 2,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true,
+        "source.fixAll.format": true
+    }
 }
