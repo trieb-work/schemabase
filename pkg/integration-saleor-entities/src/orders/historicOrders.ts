@@ -5,6 +5,7 @@
 import { ILogger } from "@eci/pkg/logger";
 import {
     Address,
+    CountryCode,
     InstalledSaleorApp,
     Language,
     OrderLineItem,
@@ -12,6 +13,7 @@ import {
     PrismaClient,
     Product,
     ProductVariant,
+    SaleorProductVariant,
     SaleorWarehouse,
     Warehouse,
 } from "@eci/pkg/prisma";
@@ -23,6 +25,7 @@ import {
     OrderBulkCreateOrderLineInput,
     OrderStatus,
     SaleorClient,
+    CountryCode as SaleorCountryCode,
 } from "@eci/pkg/saleor";
 
 // Saleor. It is using the bulkOrderCreate endpoint of Saleor to create these orders in Saleor.
@@ -52,6 +55,27 @@ export class SaleorHistoricOrdersSync {
         this.installedSaleorApp = installedSaleorApp;
     }
 
+    /**
+     * Our country codes are actually the same as saleors. We just
+     * validate them here dynamically and return the right type
+     * @param countryCode
+     * @returns
+     */
+    private schemabaseCountryCodeToSaleorCountryCode(
+        countryCode: CountryCode,
+    ): SaleorCountryCode {
+        const countryCodeValid = Object.values(SaleorCountryCode).includes(
+            countryCode as any,
+        );
+
+        if (!countryCodeValid)
+            this.logger.error(
+                `Received non valid country code: ${countryCode}`,
+            );
+
+        return countryCode as SaleorCountryCode;
+    }
+
     private schemabaseAddressToSaleorAddress(address: Address): AddressInput {
         /**
          * We don't have separated first and last name, but just fullname
@@ -60,6 +84,25 @@ export class SaleorHistoricOrdersSync {
         const nameParts = (address?.fullname || "Name Missing").split(" ");
         const firstName = nameParts.shift();
         const lastName = nameParts.join(" ");
+        if (!address.countryCode)
+            throw new Error(
+                `No countryCode. This should never happen: ${JSON.stringify(
+                    address,
+                )}`,
+            );
+        this.logger.debug("schemabaseAddressToSaleorAddress", {
+            firstName,
+            lastName,
+            companyName: address.company,
+            phone: address.phone,
+            streetAddress1: address.street,
+            streetAddress2: address.additionalAddressLine,
+            postalCode: address.plz,
+            city: address.city,
+            country: this.schemabaseCountryCodeToSaleorCountryCode(
+                address.countryCode,
+            ),
+        });
         return {
             firstName,
             lastName,
@@ -69,6 +112,10 @@ export class SaleorHistoricOrdersSync {
             streetAddress2: address.additionalAddressLine,
             postalCode: address.plz,
             city: address.city,
+            countryArea: address.state,
+            country: this.schemabaseCountryCodeToSaleorCountryCode(
+                address.countryCode,
+            ),
         };
     }
 
@@ -116,7 +163,10 @@ export class SaleorHistoricOrdersSync {
             warehouse:
                 | (Warehouse & { saleorWarehouse: SaleorWarehouse[] })
                 | null;
-            productVariant: ProductVariant & { product: Product };
+            productVariant: ProductVariant & {
+                product: Product;
+                saleorProductVariant: SaleorProductVariant[];
+            };
         })[],
     ): OrderBulkCreateOrderLineInput[] {
         return orderLineItems
@@ -133,13 +183,20 @@ export class SaleorHistoricOrdersSync {
                     line.warehouseId;
                 if (!warehouseId)
                     throw new Error(`No warehouseId. This should never happen`);
+                const saleorProductVariantId =
+                    line?.productVariant?.saleorProductVariant?.[0]?.id;
                 return {
                     createdAt: line.createdAt,
                     isGiftCard: false,
-                    isShippingRequired: true,
+                    isShippingRequired: false,
                     productName: line.productVariant.product.name,
                     variantName: line.productVariant.variantName,
-                    variantSku: line.productVariant.sku,
+                    variantId: saleorProductVariantId
+                        ? saleorProductVariantId
+                        : undefined,
+                    variantExternalReference: saleorProductVariantId
+                        ? undefined
+                        : line.productVariant.sku,
                     quantity: line.quantity,
                     undiscountedTotalPrice: {
                         gross:
@@ -201,6 +258,12 @@ export class SaleorHistoricOrdersSync {
                         },
                         productVariant: {
                             include: {
+                                saleorProductVariant: {
+                                    where: {
+                                        installedSaleorAppId:
+                                            this.installedSaleorApp.id,
+                                    },
+                                },
                                 product: true,
                             },
                         },
@@ -220,37 +283,74 @@ export class SaleorHistoricOrdersSync {
             `Found ${orders.length} historic orders for saleor customers`,
         );
 
+        /**
+         * filter orders for which we have no saleor customer id or no shipping or billing address
+         * we need to manually tell typescript, that these properties are no longer optional
+         */
+        const filteredOrders = orders.filter((order) => {
+            if (!order.mainContact.saleorCustomers[0].id) {
+                this.logger.warn(
+                    `No saleor customer id for order ${order.orderNumber}. This should never happen`,
+                );
+                return false;
+            }
+            if (!order.shippingAddress) {
+                this.logger.warn(
+                    `No shippingAddress for order ${order.orderNumber}. This should never happen`,
+                );
+                return false;
+            }
+            if (!order.billingAddress) {
+                this.logger.warn(
+                    `No billingAddress for order ${order.orderNumber}. This should never happen`,
+                );
+                return false;
+            }
+            return true;
+        });
+
         try {
             const orderInput: BulkOrderCreateMutationVariables["orders"] =
-                orders.map((order) => ({
-                    status: this.schemabaseOrderStatusToSaleorOrderStatus(
-                        order.orderStatus,
-                    ),
-                    channel: this.installedSaleorApp.channelSlug || "",
-                    externalReference: order.orderNumber,
-                    currency: order.currency,
-                    createdAt: order.date,
-                    shippingAddress: order.shippingAddress
-                        ? this.schemabaseAddressToSaleorAddress(
-                              order.shippingAddress,
-                          )
-                        : {},
-                    billingAddress: order.billingAddress
-                        ? this.schemabaseAddressToSaleorAddress(
-                              order.billingAddress,
-                          )
-                        : {},
-                    user: {
-                        id: order.mainContact.saleorCustomers[0].id,
-                        email: order.mainContact.email,
-                    },
-                    lines: this.orderLineItemsToLines(order.orderLineItems),
-                    // payments: order.payments,
-                    // packages: order.packages,
-                    languageCode: this.schemabaseLanguageToSaleorLanguage(
-                        order.language,
-                    ),
-                }));
+                filteredOrders.map((order) => {
+                    return {
+                        status: this.schemabaseOrderStatusToSaleorOrderStatus(
+                            order.orderStatus,
+                        ),
+                        channel:
+                            this.installedSaleorApp.defaultChannelSlug || "",
+                        externalReference: order.orderNumber,
+                        currency: order.currency,
+                        createdAt: order.date,
+                        shippingAddress: this.schemabaseAddressToSaleorAddress(
+                            order.shippingAddress as Address,
+                        ),
+                        billingAddress: this.schemabaseAddressToSaleorAddress(
+                            order.billingAddress as Address,
+                        ),
+                        user: {
+                            /**
+                             * Either use saleor customer id or email address
+                             */
+                            id: order.mainContact.saleorCustomers[0].id,
+                            email: !order.mainContact.saleorCustomers[0].id
+                                ? order.mainContact.email
+                                : undefined,
+                        },
+                        lines: this.orderLineItemsToLines(order.orderLineItems),
+                        // payments: order.payments,
+                        // packages: order.packages,
+                        languageCode: this.schemabaseLanguageToSaleorLanguage(
+                            order.language,
+                        ),
+                        deliveryMethod: {
+                            shippingMethodName: order.carrier,
+                            shippingPrice: {
+                                gross: order.shippingPriceGross || 0,
+                                net: order.shippingPriceNet || 0,
+                            },
+                        },
+                    };
+                });
 
             const chunkSize = 50;
             const chunks = [];
@@ -267,6 +367,22 @@ export class SaleorHistoricOrdersSync {
                         orders: chunk,
                         errorPolicy: ErrorPolicyEnum.RejectFailedRows,
                     });
+                if (
+                    bulkOrderCreateResponse.orderBulkCreate?.results.find(
+                        (x) => x.errors,
+                    )
+                ) {
+                    this.logger.error(
+                        `Error while creating historic orders in saleor: ${JSON.stringify(
+                            bulkOrderCreateResponse.orderBulkCreate.results,
+                        )}`,
+                    );
+                    throw new Error(
+                        `Error while creating historic orders in saleor: ${JSON.stringify(
+                            bulkOrderCreateResponse.orderBulkCreate.results,
+                        )}`,
+                    );
+                }
                 if (
                     bulkOrderCreateResponse.orderBulkCreate?.errors &&
                     bulkOrderCreateResponse.orderBulkCreate?.errors?.length > 0

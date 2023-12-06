@@ -1671,6 +1671,7 @@ Table InstalledSaleorApp {
   defaultWarehouseId String
   token String [not null]
   channelSlug String
+  defaultChannelSlug String [note: 'For historic orders and other features, we might need a default']
   saleorApp SaleorApp [not null]
   saleorAppId String [not null]
   domain String [not null]

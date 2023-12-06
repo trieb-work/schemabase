@@ -451,6 +451,8 @@ export class KencoveApiAppOrderSyncService {
                                                 },
                                             ),
                                         },
+                                        shippingPriceGross:
+                                            order.shipping_cost_total,
                                     },
                                 },
                             },
@@ -523,6 +525,7 @@ export class KencoveApiAppOrderSyncService {
                                 currency: "USD",
                                 carrier,
                                 totalPriceGross: order.amount_total,
+                                shippingPriceGross: order.shipping_cost_total,
                                 billingAddress: billingAddressId
                                     ? {
                                           connect: {

@@ -2932,6 +2932,9 @@ model InstalledSaleorApp {
 
   channelSlug String?
 
+  /// For historic orders and other features, we might need a default
+  defaultChannelSlug String?
+
   saleorApp   SaleorApp @relation(fields: [saleorAppId, domain], references: [id, domain], onDelete: Cascade)
   saleorAppId String
   domain      String
