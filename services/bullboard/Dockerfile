@@ -23,6 +23,7 @@ WORKDIR /eci
 COPY --from=build /eci/services/bullboard/dist/* ./
 COPY --from=build  /eci/node_modules/.pnpm/bullmq*/node_modules/bullmq/dist/cjs/commands /commands
 
+ENV NODE_ENV=production
 ENV ALLOWED_LOGIN_DOMAINS=["trieb.work"]
 
 RUN npm i @bull-board/ui

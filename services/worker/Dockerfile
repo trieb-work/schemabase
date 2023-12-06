@@ -21,6 +21,7 @@ FROM node:18
 WORKDIR /eci
 ARG commit_sha
 ENV GIT_COMMIT_SHA=$commit_sha
+ENV NODE_ENV=production
 
 COPY --from=build /eci/services/worker/dist/* ./
 COPY --from=build /eci/node_modules/winston-elasticsearch/index-template-mapping.json .
