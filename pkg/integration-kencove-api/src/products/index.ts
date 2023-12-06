@@ -19,7 +19,7 @@ import {
     PrismaClient,
 } from "@eci/pkg/prisma";
 import { subHours, subYears } from "date-fns";
-import { KencoveApiClient } from "./client";
+import { KencoveApiClient } from "../client";
 import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import { countryCodeMatch } from "@eci/pkg/utils/countryCodeMatch";
@@ -30,8 +30,9 @@ import {
     KencoveApiOtherMedia,
     KencoveApiProduct,
     KencoveApiVideo,
-} from "./types";
-import { htmlDecode, kenAttributeToEciAttribute } from "./helper";
+} from "../types";
+import { htmlDecode, kenAttributeToEciAttribute } from "../helper";
+import { syncTaxClasses } from "./taxclasses";
 
 interface KencoveApiAppProductSyncServiceConfig {
     logger: ILogger;
@@ -1191,6 +1192,17 @@ export class KencoveApiAppProductSyncService {
         await this.syncProductTypeAndAttributes(products);
 
         /**
+         * Sync tax classes with our DB. Returns a mapping table,
+         * that can be used to lookup with the Kencove API tax class id
+         */
+        const taxClasses = await syncTaxClasses(
+            products,
+            this.db,
+            this.kencoveApiApp.tenantId,
+            this.logger,
+        );
+
+        /**
          * just kencove Api product variants enhanced with all data from their parent product
          */
         const enhancedProducts = products
@@ -1207,6 +1219,7 @@ export class KencoveApiAppProductSyncService {
                     productId: p.id,
                     productName: htmlDecode(p.name),
                     categoryId: p?.categoryId?.toString(),
+                    taxClass: p.product_tax_code,
                     variants: p.variants.map((v) => ({
                         ...v,
                         productId: p.id,
@@ -1426,6 +1439,13 @@ export class KencoveApiAppProductSyncService {
                 );
 
                 /**
+                 * Schemabase internal tax Id for this product / product variant
+                 */
+                const taxId = product.taxClass
+                    ? taxClasses[product.taxClass]
+                    : undefined;
+
+                /**
                  * We compare the weight, variant name, related productId and only
                  * update when something has been changed. We create the variant if
                  * it does not exist.
@@ -1457,6 +1477,13 @@ export class KencoveApiAppProductSyncService {
                                     id: existingProduct.id,
                                 },
                             },
+                            salesTax: taxId
+                                ? {
+                                      connect: {
+                                          id: taxId,
+                                      },
+                                  }
+                                : undefined,
                             kencoveApiProductVariant: {
                                 connectOrCreate: {
                                     where: {
@@ -1502,6 +1529,7 @@ export class KencoveApiAppProductSyncService {
                     existingVariant.variantName !== variantName ||
                     existingVariant.productId !== existingProduct.id ||
                     existingVariant.ean !== variant.upc ||
+                    existingVariant.salesTaxId !== taxId ||
                     existingVariant.kencoveApiProductVariant?.[0]
                         ?.productVariantId !== variant.id
                 ) {
@@ -1516,6 +1544,13 @@ export class KencoveApiAppProductSyncService {
                             weight: variant.weight,
                             variantName,
                             ean: variant.upc,
+                            salesTax: taxId
+                                ? {
+                                      connect: {
+                                          id: taxId,
+                                      },
+                                  }
+                                : undefined,
                             product: {
                                 connect: {
                                     id: existingProduct.id,

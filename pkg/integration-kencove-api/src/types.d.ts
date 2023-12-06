@@ -170,6 +170,10 @@ export type KencoveApiProduct = {
     images: KencoveApiImage[] | null;
     videos: KencoveApiVideo[] | null;
     other_media: KencoveApiOtherMedia[] | null;
+    /**
+     * The avatax tax code for this product
+     */
+    product_tax_code: string | null;
 };
 type KencoveApiAAItem = {
     /**
