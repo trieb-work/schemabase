@@ -453,6 +453,8 @@ export class KencoveApiAppOrderSyncService {
                                         },
                                         shippingPriceGross:
                                             order.shipping_cost_total,
+                                        shippingPriceNet:
+                                            order.shipping_cost_net,
                                     },
                                 },
                             },

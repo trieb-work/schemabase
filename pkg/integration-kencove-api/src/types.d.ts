@@ -324,7 +324,10 @@ export type KencoveApiOrder = {
         code: string | null;
     };
     total_weight: number;
+    shipping_cost_net: number;
     shipping_cost_total: number;
+    shipping_tax: number;
+    shipping_tax_rate: string;
     has_shipped: string | null;
     date_order: string;
     payment: {
