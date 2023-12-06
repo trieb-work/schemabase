@@ -160,6 +160,7 @@ export class CognitoUserSyncService {
                 this.logger.info(
                     `User ${contact.email} does not exist in Cognito. Continue`,
                 );
+                continue;
                 /**
                  * We are currently not creating a user in cognito, as
                  * we can't migrate existing passwords from our DB to cognito.
@@ -200,12 +201,12 @@ export class CognitoUserSyncService {
                 }
             }
         }
-
-        // Authenticate with AWS cognito and pull a list of all users
-        const getListOfUsersCommand = new ListUsersCommand({
-            UserPoolId: this.AWSCognitoApp.userPoolId,
-        });
-        const response = await this.cognitoClient.send(getListOfUsersCommand);
-        console.log(JSON.stringify(response.Users, null, 2));
     }
 }
+
+// Authenticate with AWS cognito and pull a list of all users
+// const getListOfUsersCommand = new ListUsersCommand({
+//     UserPoolId: this.AWSCognitoApp.userPoolId,
+// });
+// const response = await this.cognitoClient.send(getListOfUsersCommand);
+// console.log(JSON.stringify(response.Users, null, 2));

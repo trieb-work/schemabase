@@ -689,7 +689,7 @@ export class SaleorProductSyncService {
                 return "";
             }
 
-            this.logger.info(
+            this.logger.debug(
                 `Returning swatch slug ${resp.attributeValueCreate?.attributeValue?.slug} for swatch attribute value ${attributeValueName} for saleor attribute ${saleorAttributeId}`,
             );
             return resp.attributeValueCreate?.attributeValue?.slug;
@@ -701,7 +701,7 @@ export class SaleorProductSyncService {
             );
             return "";
         }
-        this.logger.info(
+        this.logger.debug(
             `Returning swatch slug ${hexMatch?.node.slug} for swatch attribute value ${attributeValueName} for saleor attribute ${saleorAttributeId}`,
         );
         return hexMatch.node.slug;
