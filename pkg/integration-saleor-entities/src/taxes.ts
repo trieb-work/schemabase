@@ -9,7 +9,7 @@ import { normalizeStrings } from "@eci/pkg/normalization";
 import { SaleorClient, queryWithPagination } from "@eci/pkg/saleor";
 import { InstalledSaleorApp, SaleorApp, PrismaClient } from "@prisma/client";
 
-interface SaleorTaxesSyncServiceConfig {
+interface SaleorTaxClassSyncServiceConfig {
     saleorClient: SaleorClient;
     installedSaleorApp: InstalledSaleorApp & {
         saleorApp: SaleorApp;
@@ -19,7 +19,7 @@ interface SaleorTaxesSyncServiceConfig {
     logger: ILogger;
 }
 
-export class SaleorTaxesSyncService {
+export class SaleorTaxClassSyncService {
     private readonly saleorClient: SaleorClient;
 
     private readonly installedSaleorApp: InstalledSaleorApp & {
@@ -32,7 +32,7 @@ export class SaleorTaxesSyncService {
 
     private readonly logger: ILogger;
 
-    constructor(config: SaleorTaxesSyncServiceConfig) {
+    constructor(config: SaleorTaxClassSyncServiceConfig) {
         this.saleorClient = config.saleorClient;
         this.installedSaleorApp = config.installedSaleorApp;
         this.tenantId = config.tenantId;

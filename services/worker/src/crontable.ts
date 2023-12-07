@@ -42,6 +42,7 @@ import { DataEnrichmentFBTSyncWf } from "./workflows/dataEnrichmentFBT";
 import { KencoveApiContactSyncWf } from "./workflows/kencoveApiContactSync";
 import { CognitoUserSyncWf } from "./workflows/cognitoUserSync";
 import { SaleorVariantFBTSyncWf } from "./workflows/saleorVariantFBTSync";
+import { SaleorTaxClassSyncWf } from "./workflows/saleorTaxClassSync";
 
 interface CronClients {
     logger: ILogger;
@@ -658,6 +659,17 @@ export class CronTable {
                     ),
                     // FrequentlyBoughtTogether runs just once a day
                     { ...commonCronConfig, offset: 20, cron: "12 2 * * *" },
+                    [tenantId.substring(0, 5), id.substring(0, 7)],
+                );
+            }
+            if (enabledSaleorApp.syncTaxes) {
+                this.scheduler.schedule(
+                    createWorkflowFactory(
+                        SaleorTaxClassSyncWf,
+                        this.clients,
+                        commonWorkflowConfig,
+                    ),
+                    { ...commonCronConfig, cron: "0 3 * * *" },
                     [tenantId.substring(0, 5), id.substring(0, 7)],
                 );
             }
