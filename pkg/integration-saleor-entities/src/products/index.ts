@@ -967,6 +967,10 @@ export class SaleorProductSyncService {
                 `Found ${productsToCreate.length} products to create, ${
                     productsToUpdate.length
                 }  to update in Saleor: ${sortedProducts.map((p) => p.name)}`,
+                {
+                    productsToCreate: productsToCreate.map((p) => p.name),
+                    productsToUpdate: productsToUpdate.map((p) => p.name),
+                },
             );
             for (const product of sortedProducts) {
                 const productType = product.productType;
