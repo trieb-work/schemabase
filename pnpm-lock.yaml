@@ -45,8 +45,8 @@ dependencies:
     specifier: ^5.2.0
     version: 5.2.0(prisma@5.2.0)
   '@saleor/app-sdk':
-    specifier: ^0.43.1
-    version: 0.43.1(graphql@16.6.0)(next@13.4.19)(react-dom@18.2.0)(react@18.2.0)
+    specifier: ^0.47.1
+    version: 0.47.1(graphql@16.6.0)(next@13.4.19)(react-dom@18.2.0)(react@18.2.0)
   '@saleor/macaw-ui':
     specifier: 0.8.0-pre.96
     version: 0.8.0-pre.96(@types/react-dom@17.0.20)(@types/react@17.0.62)(react-dom@18.2.0)(react@18.2.0)
@@ -3626,6 +3626,11 @@ packages:
     resolution: {integrity: sha512-O2yRJce1GOc6PAy3QxFM4NzFiWzvScDC1/5ihYBL6BUEVdq0XMWN01sppE+H6bBXbaFYipjwFLEWLg5PaSOThA==}
     engines: {node: '>=8.0.0'}
 
+  /@opentelemetry/api@1.7.0:
+    resolution: {integrity: sha512-AdY5wvN0P2vXBi3b29hxZgSFvdhdxPB9+f0B6s//P9Q8nibRWeA3cHm8UmLpio9ABigkVHJ5NMPk+Mz8VCCyrw==}
+    engines: {node: '>=8.0.0'}
+    dev: false
+
   /@opentelemetry/core@1.14.0(@opentelemetry/api@1.4.1):
     resolution: {integrity: sha512-MnMZ+sxsnlzloeuXL2nm5QcNczt/iO82UOeQQDHhV83F2fP3sgntW2evvtoxJki0MBLxEsh5ADD7PR/Hn5uzjw==}
     engines: {node: '>=14'}
@@ -3671,6 +3676,11 @@ packages:
     requiresBuild: true
     dev: false
     optional: true
+
+  /@opentelemetry/semantic-conventions@1.18.1:
+    resolution: {integrity: sha512-+NLGHr6VZwcgE/2lw8zDIufOCGnzsA5CbQIMleXZTrgkBd0TanCX+MiDYJ1TOS4KL/Tqk0nFRxawnaYr6pkZkA==}
+    engines: {node: '>=14'}
+    dev: false
 
   /@paljs/display@5.3.3:
     resolution: {integrity: sha512-P1hyayOGbutYGp/B+HGHguApLKw/Rj05rU1V/SrLirvhcISoVKNSjuzsE60lC3cWjjQd+f/8Y2p9W4qjeeSGNQ==}
@@ -5059,14 +5069,20 @@ packages:
       picomatch: 2.3.1
     dev: true
 
-  /@saleor/app-sdk@0.43.1(graphql@16.6.0)(next@13.4.19)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-uq9RD35jMb4oApUqMA+utxot5EjBFgLQ9SH1pBvGvWVrULfB5DmQiazoS82r0vjZbyuCVRi6A2AkVb2+iJCpJA==}
+  /@saleor/app-sdk@0.47.1(graphql@16.6.0)(next@13.4.19)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-TW80QI0PnMa9by/9cmYPe2wUavykC9Oy4oJtXB9jQLr1l/JKaihRTH6g28EfDd8fqAjoFJsptgN5ChD8ABCeHA==}
     peerDependencies:
+      '@vercel/kv': ^1.0.0
       graphql: '>=16.6.0'
       next: '>=12'
       react: '>=17'
       react-dom: '>=17'
+    peerDependenciesMeta:
+      '@vercel/kv':
+        optional: true
     dependencies:
+      '@opentelemetry/api': 1.7.0
+      '@opentelemetry/semantic-conventions': 1.18.1
       debug: 4.3.4(supports-color@9.3.1)
       graphql: 16.6.0
       jose: 4.14.4

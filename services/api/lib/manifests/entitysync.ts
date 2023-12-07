@@ -5,7 +5,7 @@ const getName = () => "schemabase datahub";
 const getPermissions = (): AppPermission[] => {
     return [
         "MANAGE_ORDERS",
-        "MANAGE_ORDERS_IMPORT" as AppPermission,
+        "MANAGE_ORDERS_IMPORT",
         "MANAGE_CHANNELS",
         "MANAGE_PRODUCTS",
         "MANAGE_PRODUCT_TYPES_AND_ATTRIBUTES",
@@ -13,6 +13,7 @@ const getPermissions = (): AppPermission[] => {
         "MANAGE_GIFT_CARD",
         "MANAGE_SHIPPING",
         "MANAGE_USERS",
+        "MANAGE_TAXES",
     ];
 };
 

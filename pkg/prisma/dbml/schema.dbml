@@ -488,7 +488,7 @@ Table Tax {
   tenant Tenant [not null]
   tenantId String [not null]
   zohoTaxes ZohoTax [not null]
-  saleorTaxes SaleorTaxClass [not null]
+  saleorTaxClasses SaleorTaxClass [not null]
 
   indexes {
     (normalizedName, tenantId) [unique]

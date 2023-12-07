@@ -32434,6 +32434,24 @@ export type ProductVariantBulkUpdateMutation = {
     } | null;
 };
 
+export type CreateTaxClassMutationVariables = Exact<{
+    input: TaxClassCreateInput;
+}>;
+
+export type CreateTaxClassMutation = {
+    __typename?: "Mutation";
+    taxClassCreate?: {
+        __typename?: "TaxClassCreate";
+        errors: Array<{
+            __typename?: "TaxClassCreateError";
+            field?: string | null;
+            message?: string | null;
+            code: TaxClassCreateErrorCode;
+        }>;
+        taxClass?: { __typename?: "TaxClass"; id: string } | null;
+    } | null;
+};
+
 export type TokenCreateMutationVariables = Exact<{
     email: Scalars["String"];
     password: Scalars["String"];
@@ -33853,6 +33871,20 @@ export const ProductVariantBulkUpdateDocument = gql`
         }
     }
 `;
+export const CreateTaxClassDocument = gql`
+    mutation createTaxClass($input: TaxClassCreateInput!) {
+        taxClassCreate(input: $input) {
+            errors {
+                field
+                message
+                code
+            }
+            taxClass {
+                id
+            }
+        }
+    }
+`;
 export const TokenCreateDocument = gql`
     mutation tokenCreate($email: String!, $password: String!) {
         tokenCreate(email: $email, password: $password) {
@@ -34811,6 +34843,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<ProductVariantBulkUpdateMutation>;
+        },
+        createTaxClass(
+            variables: CreateTaxClassMutationVariables,
+            options?: C,
+        ): Promise<CreateTaxClassMutation> {
+            return requester<
+                CreateTaxClassMutation,
+                CreateTaxClassMutationVariables
+            >(
+                CreateTaxClassDocument,
+                variables,
+                options,
+            ) as Promise<CreateTaxClassMutation>;
         },
         tokenCreate(
             variables: TokenCreateMutationVariables,

@@ -141,4 +141,78 @@ export class SaleorTaxesSyncService {
             }
         }
     }
+
+    /**
+     * Create tax classes in Saleor, that don't exist yet
+     */
+    async syncFromECI(): Promise<void> {
+        const internalTaxesWithoutSaleorId = await this.db.tax.findMany({
+            where: {
+                saleorTaxClasses: {
+                    none: {
+                        installedSaleorAppId: this.installedSaleorApp.id,
+                    },
+                },
+            },
+        });
+
+        if (internalTaxesWithoutSaleorId.length === 0) {
+            this.logger.info("No taxes to create in Saleor");
+            return;
+        }
+
+        this.logger.info(
+            `Found ${internalTaxesWithoutSaleorId.length} taxes without saleor id. Creating them in Saleor`,
+            {
+                internalTaxesWithoutSaleorId,
+            },
+        );
+
+        for (const tax of internalTaxesWithoutSaleorId) {
+            this.logger.info(`Creating tax ${tax.name} in Saleor`);
+            const res = await this.saleorClient.createTaxClass({
+                input: {
+                    name: tax.name,
+                },
+            });
+
+            if (
+                res.taxClassCreate?.errors &&
+                res.taxClassCreate?.errors?.length > 0
+            ) {
+                this.logger.error(
+                    `Error creating tax ${
+                        tax.name
+                    } in Saleor. Response: ${JSON.stringify(res)}`,
+                );
+                continue;
+            }
+
+            const saleorTaxClass = res.taxClassCreate?.taxClass;
+            if (!saleorTaxClass) {
+                this.logger.error(
+                    `Error creating tax ${
+                        tax.name
+                    } in Saleor. Response: ${JSON.stringify(res)}`,
+                );
+                continue;
+            }
+
+            await this.db.saleorTaxClass.create({
+                data: {
+                    id: saleorTaxClass.id,
+                    installedSaleorApp: {
+                        connect: {
+                            id: this.installedSaleorApp.id,
+                        },
+                    },
+                    tax: {
+                        connect: {
+                            id: tax.id,
+                        },
+                    },
+                },
+            });
+        }
+    }
 }

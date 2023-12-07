@@ -759,7 +759,7 @@ model Tax {
   tenantId String
 
   zohoTaxes ZohoTax[]
-  saleorTaxes SaleorTaxClass[]
+  saleorTaxClasses SaleorTaxClass[]
 
   @@unique([normalizedName, tenantId])
   @@unique([percentage, tenantId])

@@ -1,0 +1,12 @@
+mutation createTaxClass($input: TaxClassCreateInput!) {
+    taxClassCreate(input: $input) {
+        errors {
+            field
+            message
+            code
+        }
+        taxClass {
+            id
+        }
+    }
+}
