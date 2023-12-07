@@ -69,14 +69,6 @@ describe("KencoveApiClient", () => {
         expect(token).toBeTruthy();
     });
 
-    it("should be able to get a list of addresses", async () => {
-        const client = new KencoveApiClient(app, new AssertionLogger());
-        // test the getAddresses method with a date from two days in the past
-        const addresses = await client.getAddresses(subDays(new Date(), 2));
-        console.debug(addresses.length);
-        expect(addresses.length).toBeGreaterThan(0);
-    });
-
     it("should be able to get a list of products", async () => {
         const client = new KencoveApiClient(app, new AssertionLogger());
         // test the getProducts method with a date from two days in the past

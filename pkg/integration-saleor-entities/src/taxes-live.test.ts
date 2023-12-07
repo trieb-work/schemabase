@@ -3,7 +3,7 @@ import { PrismaClient } from "@eci/pkg/prisma";
 import { beforeEach, describe, jest, test } from "@jest/globals";
 import "@eci/pkg/jest-utils/consoleFormatter";
 import { getSaleorClientAndEntry } from "@eci/pkg/saleor";
-import { SaleorTaxesSyncService } from "./taxes";
+import { SaleorTaxClassSyncService } from "./taxes";
 
 /// Use this file to locally run this service
 
@@ -29,7 +29,7 @@ describe("Saleor Taxes sync Test", () => {
             // await getSaleorClientAndEntry("QXBwOjE2", prismaClient);
             await getSaleorClientAndEntry("QXBwOjQw", prismaClient);
 
-        const service = new SaleorTaxesSyncService({
+        const service = new SaleorTaxClassSyncService({
             saleorClient,
             installedSaleorApp: installedSaleorApp,
             logger: new AssertionLogger(),

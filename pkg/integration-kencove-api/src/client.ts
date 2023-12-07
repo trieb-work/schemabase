@@ -118,58 +118,65 @@ export class KencoveApiClient {
      * the continuasly, instead of returning all the data at once.
      * Consume it with a for await loop.
      */
+    // public async *getAddressesStream(
+    //     fromDate: Date,
+    // ): AsyncIterableIterator<KencoveApiAddress[]> {
+    //     let nextPage: string | null = null;
+    //     let offset: number = 0;
+    //     do {
+    //         const accessToken = await this.getAccessToken();
+    //         const response = await this.getAddressesPage(
+    //             fromDate,
+    //             offset,
+    //             accessToken,
+    //         );
+    //         yield response.data;
+    //         nextPage = response.next_page;
+    //         offset += 200;
+    //     } while (nextPage);
+    // }
+
+    /**
+     * Stream addresses, 200 at a time. Use it with a for await loop.
+     * We have to combine from and to to create an efficient sliding window
+     * to efficiently pull orders from the api.
+     * @param fromDate
+     */
     public async *getAddressesStream(
         fromDate: Date,
     ): AsyncIterableIterator<KencoveApiAddress[]> {
-        let nextPage: string | null = null;
-        let offset: number = 0;
-        do {
+        const WINDOW_SIZE = 3;
+        const LIMIT = 200;
+
+        while (isBefore(fromDate, new Date())) {
+            let toDate = addDays(fromDate, WINDOW_SIZE);
+            let offset = 0;
+            let nextPage: string | null = null;
+
             const accessToken = await this.getAccessToken();
-            const response = await this.getAddressesPage(
-                fromDate,
-                offset,
-                accessToken,
-            );
-            yield response.data;
-            nextPage = response.next_page;
-            offset += 200;
-        } while (nextPage);
-    }
 
-    /**
-     * pull the addresses - as we might have a lot here, we send
-     * two api requests in parallel
-     * @param fromDate
-     * @returns
-     */
-    public async getAddresses(fromDate: Date): Promise<KencoveApiAddress[]> {
-        const accessToken = await this.getAccessToken();
-        const addresses: KencoveApiAddress[] = [];
+            do {
+                const response = await this.getAddressesPage(
+                    fromDate,
+                    toDate,
+                    offset,
+                    accessToken,
+                );
 
-        let nextPage: string | null = null;
-        let offset1: number = 0;
-        let offset2: number = 200; // start the second call with an offset of 200
+                if (response.data.length === 0) break; // If no data, move to the next window
 
-        do {
-            const [response1, response2] = await Promise.all([
-                this.getAddressesPage(fromDate, offset1, accessToken),
-                this.getAddressesPage(fromDate, offset2, accessToken),
-            ]);
+                yield response.data;
+                nextPage = response.next_page;
+                offset += LIMIT;
+            } while (nextPage);
 
-            addresses.push(...response1.data, ...response2.data);
-
-            nextPage = response1.next_page || response2.next_page;
-
-            offset1 += 400; // increase offset1 by 400 since you're making two requests in parallel
-            offset2 += 400; // increase offset2 by 400
-        } while (nextPage);
-
-        console.debug(`Found ${addresses.length} addresses`);
-        return addresses;
+            fromDate = toDate;
+        }
     }
 
     private async getAddressesPage(
         fromDate: Date,
+        toDate: Date,
         offset: number,
         accessToken: string,
     ): Promise<{
@@ -178,7 +185,7 @@ export class KencoveApiClient {
         next_page: string;
     }> {
         const response = await this.axiosInstance.get(
-            `/ecom/address/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
+            `/ecom/address/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${toDate.toISOString()}`,
             {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
