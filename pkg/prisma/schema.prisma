@@ -89,6 +89,21 @@ model SaleorProductType {
   @@index([installedSaleorAppId])
 }
 
+model SaleorTaxClass {
+  /// Saleor Internal Id
+  id String
+
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String
+
+  tax       Tax    @relation(fields: [taxId], references: [id], onDelete: Cascade)
+  taxId     String
+
+  @@unique([id, installedSaleorAppId])
+  @@index([taxId])
+  @@index([installedSaleorAppId])
+}
+
 model SaleorAttribute {
   /// Saleor Internal Id
   id String
@@ -744,6 +759,7 @@ model Tax {
   tenantId String
 
   zohoTaxes ZohoTax[]
+  saleorTaxClasses SaleorTaxClass[]
 
   @@unique([normalizedName, tenantId])
   @@unique([percentage, tenantId])
@@ -2972,6 +2988,7 @@ model InstalledSaleorApp {
   saleorProduct              SaleorProduct[]
   saleorChannel              SaleorChannel[]
   saleorMedia                SaleorMedia[]
+  saleorTaxClass             SaleorTaxClass[]
 
   @@unique([domain, channelSlug])
   @@index([saleorAppId, domain])

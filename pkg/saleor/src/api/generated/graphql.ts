@@ -32434,6 +32434,24 @@ export type ProductVariantBulkUpdateMutation = {
     } | null;
 };
 
+export type CreateTaxClassMutationVariables = Exact<{
+    input: TaxClassCreateInput;
+}>;
+
+export type CreateTaxClassMutation = {
+    __typename?: "Mutation";
+    taxClassCreate?: {
+        __typename?: "TaxClassCreate";
+        errors: Array<{
+            __typename?: "TaxClassCreateError";
+            field?: string | null;
+            message?: string | null;
+            code: TaxClassCreateErrorCode;
+        }>;
+        taxClass?: { __typename?: "TaxClass"; id: string } | null;
+    } | null;
+};
+
 export type TokenCreateMutationVariables = Exact<{
     email: Scalars["String"];
     password: Scalars["String"];
@@ -32929,6 +32947,7 @@ export type SaleorCronPaymentsQueryVariables = Exact<{
     createdGte?: InputMaybe<Scalars["Date"]>;
     after?: InputMaybe<Scalars["String"]>;
     updatedAtGte?: InputMaybe<Scalars["DateTime"]>;
+    first?: InputMaybe<Scalars["Int"]>;
 }>;
 
 export type SaleorCronPaymentsQuery = {
@@ -33309,6 +33328,28 @@ export type ProductWithAttributesQuery = {
                 name?: string | null;
                 id: string;
             }>;
+        }>;
+    } | null;
+};
+
+export type SaleorTaxesQueryVariables = Exact<{
+    after?: InputMaybe<Scalars["String"]>;
+    first?: InputMaybe<Scalars["Int"]>;
+}>;
+
+export type SaleorTaxesQuery = {
+    __typename?: "Query";
+    taxClasses?: {
+        __typename?: "TaxClassCountableConnection";
+        pageInfo: {
+            __typename?: "PageInfo";
+            hasNextPage: boolean;
+            endCursor?: string | null;
+            startCursor?: string | null;
+        };
+        edges: Array<{
+            __typename?: "TaxClassCountableEdge";
+            node: { __typename?: "TaxClass"; id: string; name: string };
         }>;
     } | null;
 };
@@ -33830,6 +33871,20 @@ export const ProductVariantBulkUpdateDocument = gql`
         }
     }
 `;
+export const CreateTaxClassDocument = gql`
+    mutation createTaxClass($input: TaxClassCreateInput!) {
+        taxClassCreate(input: $input) {
+            errors {
+                field
+                message
+                code
+            }
+            taxClass {
+                id
+            }
+        }
+    }
+`;
 export const TokenCreateDocument = gql`
     mutation tokenCreate($email: String!, $password: String!) {
         tokenCreate(email: $email, password: $password) {
@@ -34187,9 +34242,10 @@ export const SaleorCronPaymentsDocument = gql`
         $createdGte: Date
         $after: String
         $updatedAtGte: DateTime
+        $first: Int
     ) {
         orders(
-            first: 100
+            first: $first
             after: $after
             filter: {
                 created: { gte: $createdGte }
@@ -34441,6 +34497,23 @@ export const ProductWithAttributesDocument = gql`
                 values {
                     name
                     id
+                }
+            }
+        }
+    }
+`;
+export const SaleorTaxesDocument = gql`
+    query saleorTaxes($after: String, $first: Int) {
+        taxClasses(first: $first, after: $after) {
+            pageInfo {
+                hasNextPage
+                endCursor
+                startCursor
+            }
+            edges {
+                node {
+                    id
+                    name
                 }
             }
         }
@@ -34771,6 +34844,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 options,
             ) as Promise<ProductVariantBulkUpdateMutation>;
         },
+        createTaxClass(
+            variables: CreateTaxClassMutationVariables,
+            options?: C,
+        ): Promise<CreateTaxClassMutation> {
+            return requester<
+                CreateTaxClassMutation,
+                CreateTaxClassMutationVariables
+            >(
+                CreateTaxClassDocument,
+                variables,
+                options,
+            ) as Promise<CreateTaxClassMutation>;
+        },
         tokenCreate(
             variables: TokenCreateMutationVariables,
             options?: C,
@@ -34999,6 +35085,16 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<ProductWithAttributesQuery>;
+        },
+        saleorTaxes(
+            variables?: SaleorTaxesQueryVariables,
+            options?: C,
+        ): Promise<SaleorTaxesQuery> {
+            return requester<SaleorTaxesQuery, SaleorTaxesQueryVariables>(
+                SaleorTaxesDocument,
+                variables,
+                options,
+            ) as Promise<SaleorTaxesQuery>;
         },
         warehouses(
             variables?: WarehousesQueryVariables,
