@@ -1,0 +1,15 @@
+query saleorTaxes($after: String, $first: Int) {
+    taxClasses(first: $first, after: $after) {
+        pageInfo {
+            hasNextPage
+            endCursor
+            startCursor
+        }
+        edges {
+            node {
+                id
+                name
+            }
+        }
+    }
+}

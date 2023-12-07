@@ -49,6 +49,18 @@ Table SaleorProductType {
   }
 }
 
+Table SaleorTaxClass {
+  id String [not null, note: 'Saleor Internal Id']
+  installedSaleorApp InstalledSaleorApp [not null]
+  installedSaleorAppId String [not null]
+  tax Tax [not null]
+  taxId String [not null]
+
+  indexes {
+    (id, installedSaleorAppId) [unique]
+  }
+}
+
 Table SaleorAttribute {
   id String [not null, note: 'Saleor Internal Id']
   attribute Attribute [not null]
@@ -476,6 +488,7 @@ Table Tax {
   tenant Tenant [not null]
   tenantId String [not null]
   zohoTaxes ZohoTax [not null]
+  saleorTaxes SaleorTaxClass [not null]
 
   indexes {
     (normalizedName, tenantId) [unique]
@@ -1704,6 +1717,7 @@ Table InstalledSaleorApp {
   saleorProduct SaleorProduct [not null]
   saleorChannel SaleorChannel [not null]
   saleorMedia SaleorMedia [not null]
+  saleorTaxClass SaleorTaxClass [not null]
 
   indexes {
     (domain, channelSlug) [unique]
@@ -2307,6 +2321,10 @@ Ref: Cookies.installedSaleorAppId > InstalledSaleorApp.id
 Ref: SaleorProductType.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
 
 Ref: SaleorProductType.productTypeId > ProductType.id [delete: Cascade]
+
+Ref: SaleorTaxClass.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
+
+Ref: SaleorTaxClass.taxId > Tax.id [delete: Cascade]
 
 Ref: SaleorAttribute.attributeId > Attribute.id [delete: Cascade]
 

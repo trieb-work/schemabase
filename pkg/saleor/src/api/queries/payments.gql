@@ -2,9 +2,10 @@ query saleorCronPayments(
     $createdGte: Date
     $after: String
     $updatedAtGte: DateTime
+    $first: Int
 ) {
     orders(
-        first: 100
+        first: $first
         after: $after
         filter: {
             created: { gte: $createdGte }

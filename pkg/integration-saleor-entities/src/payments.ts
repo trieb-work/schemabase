@@ -2,9 +2,8 @@
 import { ILogger } from "@eci/pkg/logger";
 import {
     PaymentChargeStatusEnum,
-    PaymentCreateMutation,
     queryWithPagination,
-    SaleorCronPaymentsQuery,
+    SaleorClient,
 } from "@eci/pkg/saleor";
 import {
     GatewayType,
@@ -19,18 +18,7 @@ import { checkCurrency } from "@eci/pkg/normalization/src/currency";
 import { sleep } from "@eci/pkg/utils/time";
 
 interface SaleorPaymentSyncServiceConfig {
-    saleorClient: {
-        saleorCronPayments: (variables: {
-            first: number;
-            after: string;
-            createdGte?: string;
-            updatedAtGte: string;
-        }) => Promise<SaleorCronPaymentsQuery>;
-        paymentCreate: (variables: {
-            id: string;
-            amount: number;
-        }) => Promise<PaymentCreateMutation>;
-    };
+    saleorClient: SaleorClient;
     installedSaleorAppId: string;
     tenantId: string;
     db: PrismaClient;
@@ -39,18 +27,7 @@ interface SaleorPaymentSyncServiceConfig {
 }
 
 export class SaleorPaymentSyncService {
-    public readonly saleorClient: {
-        saleorCronPayments: (variables: {
-            first: number;
-            after: string;
-            createdGte?: string;
-            updatedAtGte: string;
-        }) => Promise<SaleorCronPaymentsQuery>;
-        paymentCreate: (variables: {
-            id: string;
-            amount: number;
-        }) => Promise<PaymentCreateMutation>;
-    };
+    public readonly saleorClient: SaleorClient;
 
     private readonly logger: ILogger;
 
