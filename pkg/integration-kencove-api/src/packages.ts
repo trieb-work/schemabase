@@ -80,103 +80,172 @@ export class KencoveApiAppPackageSyncService {
         }
 
         const client = new KencoveApiClient(this.kencoveApiApp, this.logger);
-        const packages = await client.getPackages(createdGte);
-        this.logger.info(`Found ${packages.length} packages to sync.`);
+        const packagesYield = client.getPackagesStream(createdGte);
 
-        /**
-         * Helper to match warehouse
-         */
-        const whHelper = new KencoveApiWarehouseSync({
-            db: this.db,
-            kencoveApiApp: this.kencoveApiApp,
-            logger: this.logger,
-        });
-
-        for (const pkg of packages) {
-            // we are using the pkg.packageName as the unique identifier for packages.
-            // we work with a upsert command directly.
-            if (!pkg.carrierName) {
-                this.logger.error(
-                    `Package ${pkg.packageName} has no carrier name.`,
-                );
-                continue;
-            }
-            const carrier = this.matchCarrier(pkg?.carrierName);
-
-            const warehouseId = await whHelper.getWareHouseId(
-                pkg.warehouseCode,
-            );
-
+        for await (const packages of packagesYield) {
+            this.logger.info(`Found ${packages.length} packages to sync.`);
             /**
-             * When we find a package with the same salesOrderNo, but a different package name,
-             * we have a multi piece shipment.
+             * Helper to match warehouse
              */
-            const isMultiPieceShipment = !!packages.find(
-                (p) =>
-                    p.salesOrderNo === pkg.salesOrderNo &&
-                    p.packageName !== pkg.packageName,
-            );
+            const whHelper = new KencoveApiWarehouseSync({
+                db: this.db,
+                kencoveApiApp: this.kencoveApiApp,
+                logger: this.logger,
+            });
 
-            // TEMP: when the trackingNumber is a string like: "1Z2632010391767531+1Z2632010394224148"
-            // or "1Z2632010391767531,1Z2632010394224148"
-            // we have a multi piece shipment, that is currently not supported by the ERP.
-            // In that case, we don't write the tracking number to the package
-            let trackingId: string | undefined = pkg.trackingNumber;
-            if (
-                pkg?.trackingNumber?.includes("+") ||
-                pkg?.trackingNumber?.includes(",")
-            ) {
-                this.logger.warn(
-                    // eslint-disable-next-line max-len
-                    `Package ${pkg.packageName} has a multi piece shipment. We don't write the tracking number to the package.`,
+            for (const pkg of packages) {
+                // we are using the pkg.packageName as the unique identifier for packages.
+                // we work with a upsert command directly.
+                if (!pkg.carrierName) {
+                    this.logger.error(
+                        `Package ${pkg.packageName} has no carrier name.`,
+                    );
+                    continue;
+                }
+                const carrier = this.matchCarrier(pkg?.carrierName);
+
+                const warehouseId = await whHelper.getWareHouseId(
+                    pkg.warehouseCode,
                 );
-                trackingId = undefined;
-            }
 
-            const createdAt = new Date(pkg.createdAt);
-            const updatedAt = new Date(pkg.updatedAt);
+                /**
+                 * When we find a package with the same salesOrderNo, but a different package name,
+                 * we have a multi piece shipment.
+                 */
+                const isMultiPieceShipment = !!packages.find(
+                    (p) =>
+                        p.salesOrderNo === pkg.salesOrderNo &&
+                        p.packageName !== pkg.packageName,
+                );
 
-            const weightGrams = lbsToKg(pkg.shippingWeight) * 1000;
+                // TEMP: when the trackingNumber is a string like: "1Z2632010391767531+1Z2632010394224148"
+                // or "1Z2632010391767531,1Z2632010394224148"
+                // we have a multi piece shipment, that is currently not supported by the ERP.
+                // In that case, we don't write the tracking number to the package
+                let trackingId: string | undefined = pkg.trackingNumber;
+                if (
+                    pkg?.trackingNumber?.includes("+") ||
+                    pkg?.trackingNumber?.includes(",")
+                ) {
+                    this.logger.warn(
+                        // eslint-disable-next-line max-len
+                        `Package ${pkg.packageName} has a multi piece shipment. We don't write the tracking number to the package.`,
+                    );
+                    trackingId = undefined;
+                }
 
-            try {
-                await this.db.kencoveApiPackage.upsert({
-                    where: {
-                        id_kencoveApiAppId: {
-                            id: pkg.packageId,
-                            kencoveApiAppId: this.kencoveApiApp.id,
-                        },
-                    },
-                    create: {
-                        id: pkg.packageId,
-                        createdAt,
-                        updatedAt,
-                        kencoveApiApp: {
-                            connect: {
-                                id: this.kencoveApiApp.id,
+                const createdAt = new Date(pkg.createdAt);
+                const updatedAt = new Date(pkg.updatedAt);
+
+                const weightGrams = lbsToKg(pkg.shippingWeight) * 1000;
+
+                try {
+                    await this.db.kencoveApiPackage.upsert({
+                        where: {
+                            id_kencoveApiAppId: {
+                                id: pkg.packageId,
+                                kencoveApiAppId: this.kencoveApiApp.id,
                             },
                         },
-                        package: {
-                            connectOrCreate: {
-                                where: {
-                                    number_tenantId: {
+                        create: {
+                            id: pkg.packageId,
+                            createdAt,
+                            updatedAt,
+                            kencoveApiApp: {
+                                connect: {
+                                    id: this.kencoveApiApp.id,
+                                },
+                            },
+                            package: {
+                                connectOrCreate: {
+                                    where: {
+                                        number_tenantId: {
+                                            number: pkg.packageName,
+                                            tenantId:
+                                                this.kencoveApiApp.tenantId,
+                                        },
+                                    },
+                                    create: {
+                                        id: id.id("package"),
                                         number: pkg.packageName,
-                                        tenantId: this.kencoveApiApp.tenantId,
+                                        trackingId,
+                                        isMultiPieceShipment,
+                                        carrierTrackingUrl: trackingId
+                                            ? pkg.trackingUrl
+                                            : undefined,
+                                        tenant: {
+                                            connect: {
+                                                id: this.kencoveApiApp.tenantId,
+                                            },
+                                        },
+                                        carrier,
+                                        order: {
+                                            connect: {
+                                                orderNumber_tenantId: {
+                                                    orderNumber:
+                                                        pkg.salesOrderNo,
+                                                    tenantId:
+                                                        this.kencoveApiApp
+                                                            .tenantId,
+                                                },
+                                            },
+                                        },
+                                        packageLineItems: {
+                                            // when we miss certain SKUs in our DB, this is going to fail.
+                                            // we don't create the package in that case
+                                            create: pkg.packageItemline.map(
+                                                (item, index) => ({
+                                                    id: id.id(
+                                                        "packageLineItem",
+                                                    ),
+                                                    uniqueString:
+                                                        uniqueStringOrderLine(
+                                                            pkg.salesOrderNo,
+                                                            item.itemCode,
+                                                            item.quantity,
+                                                            index,
+                                                        ),
+                                                    quantity: item.quantity,
+                                                    tenant: {
+                                                        connect: {
+                                                            id: this
+                                                                .kencoveApiApp
+                                                                .tenantId,
+                                                        },
+                                                    },
+                                                    warehouse: {
+                                                        connect: {
+                                                            id: warehouseId,
+                                                        },
+                                                    },
+                                                    productVariant: {
+                                                        connect: {
+                                                            sku_tenantId: {
+                                                                sku: item.itemCode,
+                                                                tenantId:
+                                                                    this
+                                                                        .kencoveApiApp
+                                                                        .tenantId,
+                                                            },
+                                                        },
+                                                    },
+                                                }),
+                                            ),
+                                        },
+                                        weightGrams,
                                     },
                                 },
-                                create: {
-                                    id: id.id("package"),
-                                    number: pkg.packageName,
+                            },
+                        },
+                        update: {
+                            createdAt,
+                            updatedAt,
+                            package: {
+                                update: {
                                     trackingId,
-                                    isMultiPieceShipment,
                                     carrierTrackingUrl: trackingId
                                         ? pkg.trackingUrl
                                         : undefined,
-                                    tenant: {
-                                        connect: {
-                                            id: this.kencoveApiApp.tenantId,
-                                        },
-                                    },
-                                    carrier,
                                     order: {
                                         connect: {
                                             orderNumber_tenantId: {
@@ -186,86 +255,25 @@ export class KencoveApiAppPackageSyncService {
                                             },
                                         },
                                     },
-                                    packageLineItems: {
-                                        // when we miss certain SKUs in our DB, this is going to fail.
-                                        // we don't create the package in that case
-                                        create: pkg.packageItemline.map(
-                                            (item, index) => ({
-                                                id: id.id("packageLineItem"),
-                                                uniqueString:
-                                                    uniqueStringOrderLine(
-                                                        pkg.salesOrderNo,
-                                                        item.itemCode,
-                                                        item.quantity,
-                                                        index,
-                                                    ),
-                                                quantity: item.quantity,
-                                                tenant: {
-                                                    connect: {
-                                                        id: this.kencoveApiApp
-                                                            .tenantId,
-                                                    },
-                                                },
-                                                warehouse: {
-                                                    connect: {
-                                                        id: warehouseId,
-                                                    },
-                                                },
-                                                productVariant: {
-                                                    connect: {
-                                                        sku_tenantId: {
-                                                            sku: item.itemCode,
-                                                            tenantId:
-                                                                this
-                                                                    .kencoveApiApp
-                                                                    .tenantId,
-                                                        },
-                                                    },
-                                                },
-                                            }),
-                                        ),
-                                    },
                                     weightGrams,
                                 },
                             },
                         },
-                    },
-                    update: {
-                        createdAt,
-                        updatedAt,
-                        package: {
-                            update: {
-                                trackingId,
-                                carrierTrackingUrl: trackingId
-                                    ? pkg.trackingUrl
-                                    : undefined,
-                                order: {
-                                    connect: {
-                                        orderNumber_tenantId: {
-                                            orderNumber: pkg.salesOrderNo,
-                                            tenantId:
-                                                this.kencoveApiApp.tenantId,
-                                        },
-                                    },
-                                },
-                                weightGrams,
-                            },
-                        },
-                    },
-                });
-            } catch (error) {
-                this.logger.error(
-                    `Error while syncing package ${
-                        pkg.packageName
-                    } from Kencove API to ECI: ${JSON.stringify(error)}`,
-                );
-            }
+                    });
+                } catch (error) {
+                    this.logger.error(
+                        `Error while syncing package ${
+                            pkg.packageName
+                        } from Kencove API to ECI: ${JSON.stringify(error)}`,
+                    );
+                }
 
-            // we update the last run date
-            await this.cronState.set({
-                lastRun: now,
-                lastRunStatus: "success",
-            });
+                // we update the last run date
+                await this.cronState.set({
+                    lastRun: now,
+                    lastRunStatus: "success",
+                });
+            }
         }
     }
 }

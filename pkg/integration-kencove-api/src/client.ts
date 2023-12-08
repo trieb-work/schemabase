@@ -350,27 +350,65 @@ export class KencoveApiClient {
         return response.data;
     }
 
-    public async getPackages(fromDate: Date): Promise<KencoveApiPackage[]> {
-        const accessToken = await this.getAccessToken();
-        const packages: KencoveApiPackage[] = [];
-        let nextPage: string | null = null;
-        let offset: number = 0;
-        do {
-            const response = await this.getPackagesPage(
-                fromDate,
-                offset,
-                accessToken,
-            );
-            packages.push(...response.data);
-            nextPage = response.next_page;
-            offset += 200;
-        } while (nextPage);
-        console.debug(`Found ${packages.length} packages`);
-        return packages;
+    /**
+     * Stream packages, 200 at a time. Use it with a for await loop.
+     * We have to combine from and to to create an efficient sliding window
+     * @param getPackages
+     */
+    public async *getPackagesStream(
+        fromDate: Date,
+    ): AsyncIterableIterator<KencoveApiPackage[]> {
+        const WINDOW_SIZE = 3;
+        const LIMIT = 200;
+
+        while (isBefore(fromDate, new Date())) {
+            let toDate = addDays(fromDate, WINDOW_SIZE);
+            let offset = 0;
+            let nextPage: string | null = null;
+
+            const accessToken = await this.getAccessToken();
+
+            do {
+                const response = await this.getPackagesPage(
+                    fromDate,
+                    toDate,
+                    offset,
+                    accessToken,
+                );
+
+                if (response.data.length === 0) break; // If no data, move to the next window
+
+                yield response.data;
+                nextPage = response.next_page;
+                offset += LIMIT;
+            } while (nextPage);
+
+            fromDate = toDate;
+        }
     }
+
+    // public async getPackages(fromDate: Date): Promise<KencoveApiPackage[]> {
+    //     const accessToken = await this.getAccessToken();
+    //     const packages: KencoveApiPackage[] = [];
+    //     let nextPage: string | null = null;
+    //     let offset: number = 0;
+    //     do {
+    //         const response = await this.getPackagesPage(
+    //             fromDate,
+    //             offset,
+    //             accessToken,
+    //         );
+    //         packages.push(...response.data);
+    //         nextPage = response.next_page;
+    //         offset += 200;
+    //     } while (nextPage);
+    //     console.debug(`Found ${packages.length} packages`);
+    //     return packages;
+    // }
 
     private async getPackagesPage(
         fromDate: Date,
+        toDate: Date,
         offset: number,
         accessToken: string,
     ): Promise<{
@@ -379,7 +417,7 @@ export class KencoveApiClient {
         next_page: string;
     }> {
         const response = await this.axiosInstance.get(
-            `/ecom/packages/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
+            `/ecom/packages/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${toDate.toISOString()}`,
             {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
