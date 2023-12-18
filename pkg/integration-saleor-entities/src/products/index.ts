@@ -925,6 +925,16 @@ export class SaleorProductSyncService {
                     },
                     variants: {
                         include: {
+                            salesTax: {
+                                include: {
+                                    saleorTaxClasses: {
+                                        where: {
+                                            installedSaleorAppId:
+                                                this.installedSaleorAppId,
+                                        },
+                                    },
+                                },
+                            },
                             attributes: {
                                 include: {
                                     attribute: {
@@ -1097,6 +1107,13 @@ export class SaleorProductSyncService {
                 let saleorProductId = product.saleorProducts?.[0]?.id;
 
                 /**
+                 * We store the tax class on variant level,
+                 * so we need to get the tax class from the first variant
+                 */
+                const taxClass =
+                    product.variants[0].salesTax?.saleorTaxClasses?.[0]?.id;
+
+                /**
                  * Media files from our DB - product videos are not uploaded,
                  * but just set as youtube URLs. We filter out type PRODUCTVIDEO and MANUAL
                  */
@@ -1119,6 +1136,7 @@ export class SaleorProductSyncService {
                                 attributes,
                                 category: saleorCategoryId,
                                 chargeTaxes: true,
+                                taxClass,
                                 collections: [],
                                 description,
                                 name: product.name,
@@ -1183,6 +1201,7 @@ export class SaleorProductSyncService {
                                 attributes,
                                 category: saleorCategoryId,
                                 chargeTaxes: true,
+                                taxClass,
                                 collections: [],
                                 description,
                                 name: product.name,
