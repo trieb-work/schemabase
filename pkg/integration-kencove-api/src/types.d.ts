@@ -217,7 +217,7 @@ export type KencoveApiOrderLine = {
     quantity: 1.0;
     discount: 0.0;
     product_uom: "Units";
-    price_unit: 7.25;
+    price_unit: number;
     /**
      * Text description like: "[MCCHD] Cut Out Switch -Heavy Duty"
      */

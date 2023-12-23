@@ -14,14 +14,16 @@ import {
     Product,
     ProductVariant,
     SaleorProductVariant,
+    SaleorTaxClass,
     SaleorWarehouse,
+    Tax,
     Warehouse,
 } from "@eci/pkg/prisma";
 import {
     AddressInput,
-    BulkOrderCreateMutationVariables,
     ErrorPolicyEnum,
     LanguageCodeEnum,
+    OrderBulkCreateInput,
     OrderBulkCreateOrderLineInput,
     OrderStatus,
     SaleorClient,
@@ -166,6 +168,11 @@ export class SaleorHistoricOrdersSync {
             productVariant: ProductVariant & {
                 product: Product;
                 saleorProductVariant: SaleorProductVariant[];
+                salesTax?:
+                    | (Tax & {
+                          saleorTaxClasses?: SaleorTaxClass[];
+                      })
+                    | null;
             };
         })[],
     ): OrderBulkCreateOrderLineInput[] {
@@ -185,12 +192,16 @@ export class SaleorHistoricOrdersSync {
                     throw new Error(`No warehouseId. This should never happen`);
                 const saleorProductVariantId =
                     line?.productVariant?.saleorProductVariant?.[0]?.id;
+                const saleorTaxClass =
+                    line?.productVariant?.salesTax?.saleorTaxClasses?.[0]?.id;
                 return {
                     createdAt: line.createdAt,
                     isGiftCard: false,
                     isShippingRequired: false,
                     productName: line.productVariant.product.name,
                     variantName: line.productVariant.variantName,
+                    taxClassId: saleorTaxClass,
+                    taxRate: saleorTaxClass ? undefined : 0,
                     variantId: saleorProductVariantId
                         ? saleorProductVariantId
                         : undefined,
@@ -213,6 +224,65 @@ export class SaleorHistoricOrdersSync {
                     warehouse: warehouseId,
                 };
             });
+    }
+
+    /**
+     * Taking schemabase order schema and trying to transform it to saleor order schema.
+     * Proceed only with orders, that match the schema
+     * @param orders
+     * @returns
+     */
+    private ordersToBulkOrders(orders: any): OrderBulkCreateInput[] {
+        const returningBulkOrdes: OrderBulkCreateInput[] = [];
+        for (const order of orders) {
+            try {
+                const transformedOrder = {
+                    status: this.schemabaseOrderStatusToSaleorOrderStatus(
+                        order.orderStatus,
+                    ),
+                    channel: this.installedSaleorApp.defaultChannelSlug || "",
+                    externalReference: order.orderNumber,
+                    currency: order.currency,
+                    createdAt: order.date,
+                    shippingAddress: this.schemabaseAddressToSaleorAddress(
+                        order.shippingAddress as Address,
+                    ),
+                    billingAddress: this.schemabaseAddressToSaleorAddress(
+                        order.billingAddress as Address,
+                    ),
+                    user: {
+                        /**
+                         * Either use saleor customer id or email address
+                         */
+                        id: order.mainContact.saleorCustomers[0].id,
+                        email: !order.mainContact.saleorCustomers[0].id
+                            ? order.mainContact.email
+                            : undefined,
+                    },
+
+                    lines: this.orderLineItemsToLines(order.orderLineItems),
+                    // payments: order.payments,
+                    // packages: order.packages,
+                    languageCode: this.schemabaseLanguageToSaleorLanguage(
+                        order.language,
+                    ),
+                    deliveryMethod: {
+                        shippingMethodName: order.carrier,
+                        shippingPrice: {
+                            gross: order.shippingPriceGross || 0,
+                            net: order.shippingPriceNet || 0,
+                        },
+                    },
+                };
+                returningBulkOrdes.push(transformedOrder);
+            } catch (error) {
+                this.logger.error(
+                    `Error while transforming order ${order.orderNumber} to saleor order: ${error}`,
+                );
+            }
+        }
+
+        return returningBulkOrdes;
     }
 
     public async syncHistoricOrders(): Promise<void> {
@@ -258,6 +328,16 @@ export class SaleorHistoricOrdersSync {
                         },
                         productVariant: {
                             include: {
+                                salesTax: {
+                                    include: {
+                                        saleorTaxClasses: {
+                                            where: {
+                                                installedSaleorAppId:
+                                                    this.installedSaleorApp.id,
+                                            },
+                                        },
+                                    },
+                                },
                                 saleorProductVariant: {
                                     where: {
                                         installedSaleorAppId:
@@ -310,47 +390,7 @@ export class SaleorHistoricOrdersSync {
         });
 
         try {
-            const orderInput: BulkOrderCreateMutationVariables["orders"] =
-                filteredOrders.map((order) => {
-                    return {
-                        status: this.schemabaseOrderStatusToSaleorOrderStatus(
-                            order.orderStatus,
-                        ),
-                        channel:
-                            this.installedSaleorApp.defaultChannelSlug || "",
-                        externalReference: order.orderNumber,
-                        currency: order.currency,
-                        createdAt: order.date,
-                        shippingAddress: this.schemabaseAddressToSaleorAddress(
-                            order.shippingAddress as Address,
-                        ),
-                        billingAddress: this.schemabaseAddressToSaleorAddress(
-                            order.billingAddress as Address,
-                        ),
-                        user: {
-                            /**
-                             * Either use saleor customer id or email address
-                             */
-                            id: order.mainContact.saleorCustomers[0].id,
-                            email: !order.mainContact.saleorCustomers[0].id
-                                ? order.mainContact.email
-                                : undefined,
-                        },
-                        lines: this.orderLineItemsToLines(order.orderLineItems),
-                        // payments: order.payments,
-                        // packages: order.packages,
-                        languageCode: this.schemabaseLanguageToSaleorLanguage(
-                            order.language,
-                        ),
-                        deliveryMethod: {
-                            shippingMethodName: order.carrier,
-                            shippingPrice: {
-                                gross: order.shippingPriceGross || 0,
-                                net: order.shippingPriceNet || 0,
-                            },
-                        },
-                    };
-                });
+            const orderInput = this.ordersToBulkOrders(filteredOrders);
 
             const chunkSize = 50;
             const chunks = [];
@@ -369,15 +409,10 @@ export class SaleorHistoricOrdersSync {
                     });
                 if (
                     bulkOrderCreateResponse.orderBulkCreate?.results.find(
-                        (x) => x.errors,
+                        (x) => x.errors && x.errors?.length > 0,
                     )
                 ) {
                     this.logger.error(
-                        `Error while creating historic orders in saleor: ${JSON.stringify(
-                            bulkOrderCreateResponse.orderBulkCreate.results,
-                        )}`,
-                    );
-                    throw new Error(
                         `Error while creating historic orders in saleor: ${JSON.stringify(
                             bulkOrderCreateResponse.orderBulkCreate.results,
                         )}`,
@@ -392,14 +427,14 @@ export class SaleorHistoricOrdersSync {
                             bulkOrderCreateResponse.orderBulkCreate.errors,
                         )}`,
                     );
-                    throw new Error(
-                        `Error while creating historic orders in saleor: ${JSON.stringify(
-                            bulkOrderCreateResponse.orderBulkCreate.errors,
-                        )}`,
-                    );
                 }
+                const results =
+                    bulkOrderCreateResponse.orderBulkCreate?.results || [];
+                const successfulOrders = results.filter(
+                    (r) => r.order && r.order?.id,
+                );
                 this.logger.info(
-                    `Successfully created ${chunk.length} historic orders in saleor`,
+                    `Successfully created ${successfulOrders.length} historic orders in saleor`,
                 );
                 if (!bulkOrderCreateResponse.orderBulkCreate?.results) {
                     this.logger.error(
@@ -409,19 +444,8 @@ export class SaleorHistoricOrdersSync {
                         `No results in bulkOrderCreate response. This should never happen`,
                     );
                 }
-                for (const result of bulkOrderCreateResponse!.orderBulkCreate!
-                    .results) {
-                    if (!result?.order?.id) {
-                        this.logger.error(
-                            `No order id in bulkOrderCreate response. This should never happen`,
-                            {
-                                order: JSON.stringify(result.order),
-                            },
-                        );
-                        throw new Error(
-                            `No order id in bulkOrderCreate response. This should never happen`,
-                        );
-                    }
+                for (const result of successfulOrders) {
+                    if (!result?.order?.id) continue;
                     await this.db.order.update({
                         where: {
                             id: result.order.id,
