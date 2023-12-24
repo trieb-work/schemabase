@@ -213,7 +213,7 @@ export type KencoveApiOrderLine = {
      * Item SKU
      */
     itemCode: string;
-    weight: 0.5;
+    weight: number;
     quantity: 1.0;
     discount: 0.0;
     product_uom: "Units";

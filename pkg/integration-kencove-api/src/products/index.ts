@@ -1432,6 +1432,11 @@ export class KencoveApiAppProductSyncService {
                 const sku = variant.sku;
 
                 /**
+                 * the weight of the variant, rounded to max two decimals
+                 */
+                const weight = Math.round(variant.weight * 100) / 100;
+
+                /**
                  * The existing variant from our DB. When variant does not exist, we create it.
                  */
                 let existingVariant = existingProduct.variants.find(
@@ -1465,7 +1470,7 @@ export class KencoveApiAppProductSyncService {
                             id: id.id("variant"),
                             ean: variant.upc,
                             sku,
-                            weight: variant.weight,
+                            weight,
                             variantName,
                             tenant: {
                                 connect: {
@@ -1508,7 +1513,7 @@ export class KencoveApiAppProductSyncService {
                             },
                         },
                         update: {
-                            weight: variant.weight,
+                            weight,
                             variantName,
                             ean: variant.upc,
                             product: {
@@ -1525,7 +1530,7 @@ export class KencoveApiAppProductSyncService {
                     /**
                      * Variant exists. We update it, when something has changed.
                      */
-                    existingVariant.weight !== variant.weight ||
+                    existingVariant.weight !== weight ||
                     existingVariant.variantName !== variantName ||
                     existingVariant.productId !== existingProduct.id ||
                     existingVariant.ean !== variant.upc ||
@@ -1541,7 +1546,7 @@ export class KencoveApiAppProductSyncService {
                             id: existingVariant.id,
                         },
                         data: {
-                            weight: variant.weight,
+                            weight,
                             variantName,
                             ean: variant.upc,
                             salesTax: taxId

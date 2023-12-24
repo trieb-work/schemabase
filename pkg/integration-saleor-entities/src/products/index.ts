@@ -459,6 +459,7 @@ export class SaleorProductSyncService {
                     sku: v.sku,
                     name: v.variantName,
                     trackInventory: true,
+                    weight: v.weight,
                 })),
             );
         this.logger.debug(`Creating variants`, {
@@ -1294,15 +1295,15 @@ export class SaleorProductSyncService {
                             name: v.variantName,
                             trackInventory: true,
                             id: v.saleorProductVariant[0].id,
+                            weight: v.weight,
                         })),
                     );
-                    this.logger.debug(`Updating variants`, {
-                        attributes: JSON.stringify(
-                            variantsToUpdateInput.map((x) => x.attributes),
-                            null,
-                            2,
-                        ),
-                    });
+                    this.logger.debug(
+                        `Updating variants for product ${saleorProductId}`,
+                        {
+                            variants: variantsToUpdateInput.map((x) => x.sku),
+                        },
+                    );
                     const productVariantBulkUpdateResponse =
                         await this.saleorClient.productVariantBulkUpdate({
                             variants: variantsToUpdateInput,
