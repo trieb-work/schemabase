@@ -14769,6 +14769,7 @@ export type MutationTransactionInitializeArgs = {
     amount?: InputMaybe<Scalars["PositiveDecimal"]>;
     customerIpAddress?: InputMaybe<Scalars["String"]>;
     id: Scalars["ID"];
+    idempotencyKey?: InputMaybe<Scalars["String"]>;
     paymentGateway: PaymentGatewayToInitialize;
 };
 
@@ -28102,6 +28103,12 @@ export type TransactionEvent = Node & {
     /** The ID of the object. */
     id: Scalars["ID"];
     /**
+     * Idempotency key assigned to the event.
+     *
+     * Added in Saleor 3.14.
+     */
+    idempotencyKey?: Maybe<Scalars["String"]>;
+    /**
      * Message related to the transaction's event.
      *
      * Added in Saleor 3.13.
@@ -28269,6 +28276,7 @@ export enum TransactionInitializeErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
     NotFound = "NOT_FOUND",
+    Unique = "UNIQUE",
 }
 
 /**
@@ -28290,6 +28298,12 @@ export type TransactionInitializeSession = Event & {
     customerIpAddress?: Maybe<Scalars["String"]>;
     /** Payment gateway data in JSON format, received from storefront. */
     data?: Maybe<Scalars["JSON"]>;
+    /**
+     * Idempotency key assigned to the transaction initialize.
+     *
+     * Added in Saleor 3.14.
+     */
+    idempotencyKey: Scalars["String"];
     /** Time of the event. */
     issuedAt?: Maybe<Scalars["DateTime"]>;
     /** The user or application that triggered the event. */
@@ -28346,6 +28360,12 @@ export type TransactionItem = Node &
         chargePendingAmount: Money;
         /** Total amount charged for this payment. */
         chargedAmount: Money;
+        /**
+         * The related checkout.
+         *
+         * Added in Saleor 3.14.
+         */
+        checkout?: Maybe<Checkout>;
         /** Date and time at which payment transaction was created. */
         createdAt: Scalars["DateTime"];
         /**
@@ -32008,6 +32028,7 @@ export type BulkOrderCreateMutation = {
             order?: {
                 __typename?: "Order";
                 id: string;
+                externalReference?: string | null;
                 errors: Array<{
                     __typename?: "OrderError";
                     code: OrderErrorCode;
@@ -32879,6 +32900,15 @@ export type SaleorCronOrderDetailsQuery = {
     } | null;
 };
 
+export type OrderByReferenceQueryVariables = Exact<{
+    externalReference: Scalars["String"];
+}>;
+
+export type OrderByReferenceQuery = {
+    __typename?: "Query";
+    order?: { __typename?: "Order"; id: string } | null;
+};
+
 export type SaleorCronPackagesOverviewQueryVariables = Exact<{
     createdGte?: InputMaybe<Scalars["Date"]>;
     after?: InputMaybe<Scalars["String"]>;
@@ -33561,6 +33591,7 @@ export const BulkOrderCreateDocument = gql`
                         message
                     }
                     id
+                    externalReference
                 }
             }
         }
@@ -34176,6 +34207,13 @@ export const SaleorCronOrderDetailsDocument = gql`
                 }
             }
             paymentStatus
+        }
+    }
+`;
+export const OrderByReferenceDocument = gql`
+    query orderByReference($externalReference: String!) {
+        order(externalReference: $externalReference) {
+            id
         }
     }
 `;
@@ -34984,6 +35022,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<SaleorCronOrderDetailsQuery>;
+        },
+        orderByReference(
+            variables: OrderByReferenceQueryVariables,
+            options?: C,
+        ): Promise<OrderByReferenceQuery> {
+            return requester<
+                OrderByReferenceQuery,
+                OrderByReferenceQueryVariables
+            >(
+                OrderByReferenceDocument,
+                variables,
+                options,
+            ) as Promise<OrderByReferenceQuery>;
         },
         saleorCronPackagesOverview(
             variables: SaleorCronPackagesOverviewQueryVariables,

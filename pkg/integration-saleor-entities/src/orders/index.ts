@@ -668,6 +668,7 @@ export class SaleorOrderSyncService {
                 logger: this.logger,
                 installedSaleorApp: this.installedSaleorApp,
                 saleorClient: this.saleorClient,
+                tenantId: this.tenantId,
             });
             await histOrders.syncHistoricOrders();
         }

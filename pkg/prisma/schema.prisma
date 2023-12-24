@@ -93,6 +93,9 @@ model SaleorTaxClass {
   /// Saleor Internal Id
   id String
 
+  /// When an item has no tax rate (for example for historic orders), we use this tax class
+  fallback Boolean @default(false)
+
   installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
   installedSaleorAppId String
 

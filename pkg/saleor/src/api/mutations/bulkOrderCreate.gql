@@ -1,28 +1,32 @@
-mutation bulkOrderCreate($orders: [OrderBulkCreateInput!]!, $errorPolicy: ErrorPolicyEnum!) {
-  orderBulkCreate(
-    errorPolicy: $errorPolicy
-    orders: $orders
-    stockUpdatePolicy: SKIP
-  ) {
-    errors {
-      code
-      message
-      path
-    }
-    results {
-      errors {
-        code
-        message
-        path
-      }
-      order {
+mutation bulkOrderCreate(
+    $orders: [OrderBulkCreateInput!]!
+    $errorPolicy: ErrorPolicyEnum!
+) {
+    orderBulkCreate(
+        errorPolicy: $errorPolicy
+        orders: $orders
+        stockUpdatePolicy: SKIP
+    ) {
         errors {
-          code
-          field
-          message
+            code
+            message
+            path
         }
-        id
-      }
+        results {
+            errors {
+                code
+                message
+                path
+            }
+            order {
+                errors {
+                    code
+                    field
+                    message
+                }
+                id
+                externalReference
+            }
+        }
     }
-  }
 }

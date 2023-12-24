@@ -40,21 +40,26 @@ export class SaleorHistoricOrdersSync {
 
     private readonly installedSaleorApp: InstalledSaleorApp;
 
+    private readonly tenantId: string;
+
     constructor({
         logger,
         saleorClient,
         db,
         installedSaleorApp,
+        tenantId,
     }: {
         logger: ILogger;
         saleorClient: SaleorClient;
         db: PrismaClient;
         installedSaleorApp: InstalledSaleorApp;
+        tenantId: string;
     }) {
         this.logger = logger;
         this.saleorClient = saleorClient;
         this.db = db;
         this.installedSaleorApp = installedSaleorApp;
+        this.tenantId = tenantId;
     }
 
     /**
@@ -175,6 +180,7 @@ export class SaleorHistoricOrdersSync {
                     | null;
             };
         })[],
+        defaultSaleorTaxRateId?: string,
     ): OrderBulkCreateOrderLineInput[] {
         return orderLineItems
             .filter((o) => o.quantity > 0)
@@ -193,7 +199,12 @@ export class SaleorHistoricOrdersSync {
                 const saleorProductVariantId =
                     line?.productVariant?.saleorProductVariant?.[0]?.id;
                 const saleorTaxClass =
-                    line?.productVariant?.salesTax?.saleorTaxClasses?.[0]?.id;
+                    line?.productVariant?.salesTax?.saleorTaxClasses?.[0]?.id ||
+                    defaultSaleorTaxRateId;
+                if (!saleorTaxClass)
+                    throw new Error(
+                        `No saleorTaxClass and no default saleor tax class given for line item with SKU ${line.productVariant.sku} `,
+                    );
                 return {
                     createdAt: line.createdAt,
                     isGiftCard: false,
@@ -201,7 +212,6 @@ export class SaleorHistoricOrdersSync {
                     productName: line.productVariant.product.name,
                     variantName: line.productVariant.variantName,
                     taxClassId: saleorTaxClass,
-                    taxRate: saleorTaxClass ? undefined : 0,
                     variantId: saleorProductVariantId
                         ? saleorProductVariantId
                         : undefined,
@@ -232,7 +242,10 @@ export class SaleorHistoricOrdersSync {
      * @param orders
      * @returns
      */
-    private ordersToBulkOrders(orders: any): OrderBulkCreateInput[] {
+    private ordersToBulkOrders(
+        orders: any,
+        defaultSaleorTaxRateId?: string,
+    ): OrderBulkCreateInput[] {
         const returningBulkOrdes: OrderBulkCreateInput[] = [];
         for (const order of orders) {
             try {
@@ -260,7 +273,10 @@ export class SaleorHistoricOrdersSync {
                             : undefined,
                     },
 
-                    lines: this.orderLineItemsToLines(order.orderLineItems),
+                    lines: this.orderLineItemsToLines(
+                        order.orderLineItems,
+                        defaultSaleorTaxRateId,
+                    ),
                     // payments: order.payments,
                     // packages: order.packages,
                     languageCode: this.schemabaseLanguageToSaleorLanguage(
@@ -354,6 +370,19 @@ export class SaleorHistoricOrdersSync {
             },
         });
 
+        /**
+         * When we don't have the tax class of an item, we can take this
+         * default saleor tax rate.
+         */
+        const defaultSaleorTaxRateId = (
+            await this.db.saleorTaxClass.findFirst({
+                where: {
+                    installedSaleorAppId: this.installedSaleorApp.id,
+                    fallback: true,
+                },
+            })
+        )?.id;
+
         if (orders.length === 0) {
             this.logger.info("No historic orders for saleor customers found");
             return;
@@ -390,7 +419,10 @@ export class SaleorHistoricOrdersSync {
         });
 
         try {
-            const orderInput = this.ordersToBulkOrders(filteredOrders);
+            const orderInput = this.ordersToBulkOrders(
+                filteredOrders,
+                defaultSaleorTaxRateId,
+            );
 
             const chunkSize = 50;
             const chunks = [];
@@ -407,16 +439,85 @@ export class SaleorHistoricOrdersSync {
                         orders: chunk,
                         errorPolicy: ErrorPolicyEnum.RejectFailedRows,
                     });
+                const bulkOrderResultErrors =
+                    bulkOrderCreateResponse.orderBulkCreate?.results
+                        .filter((x) => x.errors && x.errors?.length > 0)
+                        .flatMap((x) => x.errors);
                 if (
-                    bulkOrderCreateResponse.orderBulkCreate?.results.find(
-                        (x) => x.errors && x.errors?.length > 0,
-                    )
+                    bulkOrderResultErrors &&
+                    bulkOrderResultErrors?.length > 0
                 ) {
-                    this.logger.error(
-                        `Error while creating historic orders in saleor: ${JSON.stringify(
-                            bulkOrderCreateResponse.orderBulkCreate.results,
-                        )}`,
-                    );
+                    for (const error of bulkOrderResultErrors) {
+                        /**
+                         * we already created an order with this externalReference. We store
+                         * the corresponding Saleor Id in our DB. We need to parse the external
+                         * reference out of the message field: "message":"Order with external_reference: 7331981 already exists."
+                         */
+                        if (
+                            error?.code === "UNIQUE" &&
+                            error.path === "external_reference"
+                        ) {
+                            const externalReference =
+                                error.message?.split(" ")[3];
+                            this.logger.info(error.message as string);
+                            if (!externalReference) {
+                                this.logger.error(
+                                    "Could not parse external reference from error message",
+                                );
+                                continue;
+                            }
+                            console.log("external refernce", externalReference);
+                            const saleorOrder =
+                                await this.saleorClient.orderByReference({
+                                    externalReference,
+                                });
+                            const saleorOrderId = saleorOrder.order?.id;
+                            if (!saleorOrderId) {
+                                this.logger.error(
+                                    `Could not find saleor order with external reference "${externalReference}"`,
+                                );
+                                continue;
+                            }
+                            await this.db.saleorOrder.upsert({
+                                where: {
+                                    id_installedSaleorAppId: {
+                                        id: saleorOrderId,
+                                        installedSaleorAppId:
+                                            this.installedSaleorApp.id,
+                                    },
+                                },
+                                create: {
+                                    id: saleorOrderId,
+                                    createdAt: new Date(),
+                                    installedSaleorApp: {
+                                        connect: {
+                                            id: this.installedSaleorApp.id,
+                                        },
+                                    },
+                                    order: {
+                                        connect: {
+                                            orderNumber_tenantId: {
+                                                orderNumber: externalReference,
+                                                tenantId: this.tenantId,
+                                            },
+                                        },
+                                    },
+                                },
+                                update: {
+                                    order: {
+                                        connect: {
+                                            orderNumber_tenantId: {
+                                                orderNumber: externalReference,
+                                                tenantId: this.tenantId,
+                                            },
+                                        },
+                                    },
+                                },
+                            });
+                        } else {
+                            this.logger.error(JSON.stringify(error));
+                        }
+                    }
                 }
                 if (
                     bulkOrderCreateResponse.orderBulkCreate?.errors &&
@@ -424,9 +525,10 @@ export class SaleorHistoricOrdersSync {
                 ) {
                     this.logger.error(
                         `Error while creating historic orders in saleor: ${JSON.stringify(
-                            bulkOrderCreateResponse.orderBulkCreate.errors,
+                            bulkOrderCreateResponse.orderBulkCreate?.errors,
                         )}`,
                     );
+                    continue;
                 }
                 const results =
                     bulkOrderCreateResponse.orderBulkCreate?.results || [];
@@ -445,10 +547,14 @@ export class SaleorHistoricOrdersSync {
                     );
                 }
                 for (const result of successfulOrders) {
-                    if (!result?.order?.id) continue;
+                    if (!result?.order?.id || !result.order.externalReference)
+                        continue;
                     await this.db.order.update({
                         where: {
-                            id: result.order.id,
+                            orderNumber_tenantId: {
+                                orderNumber: result.order.externalReference,
+                                tenantId: this.tenantId,
+                            },
                         },
                         data: {
                             saleorOrders: {

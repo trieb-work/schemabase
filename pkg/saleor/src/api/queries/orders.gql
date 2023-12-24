@@ -137,3 +137,9 @@ query saleorCronOrderDetails($id: ID!) {
         paymentStatus
     }
 }
+
+query orderByReference($externalReference: String!) {
+    order(externalReference: $externalReference) {
+        id
+    }
+}
