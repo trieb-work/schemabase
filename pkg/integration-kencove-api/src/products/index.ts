@@ -346,7 +346,7 @@ export class KencoveApiAppProductSyncService {
             return {
                 productAttributes: this.cleanAttributes(
                     allVariants[0].attributeValues || [],
-                ),
+                ).filter((vsa) => vsa.name !== "variant_website_description"),
                 productAttributesUnique: this.cleanAttributes(
                     this.uniqueAttributes(allVariants[0].attributeValues || []),
                 ),
@@ -466,11 +466,16 @@ export class KencoveApiAppProductSyncService {
 
         /**
          * We filter out website_ref_desc. We never want to use this as
-         * an attribute, but only as variant name.
+         * an attribute, but only as variant name. We never want to have
+         * variant_website_description as product attribute
          */
         return {
-            productAttributesUnique: this.uniqueAttributes(productAttributes),
-            productAttributes,
+            productAttributesUnique: this.uniqueAttributes(
+                productAttributes,
+            ).filter((vsa) => vsa.name !== "variant_website_description"),
+            productAttributes: productAttributes.filter(
+                (vsa) => vsa.name !== "variant_website_description",
+            ),
             variantAttributes,
             variantAttributesUnique: this.cleanAttributes(
                 this.uniqueAttributes(variantAttributes),
