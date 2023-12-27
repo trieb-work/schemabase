@@ -77,7 +77,20 @@ export class KencoveApiAppProductSyncService {
      */
     private kenToEciAttribute: Map<
         string,
-        { isForVariant: boolean; attributeId: string }
+        {
+            isForVariant: boolean;
+            attributeId: string;
+            isVariantSelection: boolean;
+        }
+    > = new Map();
+
+    /**
+     * a cache for the product type attribute function, so that we can skip
+     * the same attribute for the same product type with the same settings
+     */
+    private setProductTypeAttributeCache: Map<
+        string,
+        { isForVariant: boolean; isVariantSelection: boolean }
     > = new Map();
 
     /**
@@ -122,10 +135,30 @@ export class KencoveApiAppProductSyncService {
     ) {
         if (!attribute.name) {
             this.logger.error(
-                `Attribute ${JSON.stringify(attribute)} has no name. Skipping.`,
+                `[setProductTypeAttribute] Attribute ${JSON.stringify(
+                    attribute,
+                )} has no name. Skipping.`,
             );
             return;
         }
+
+        /**
+         * If our cached map is already the same, we can just skip this
+         */
+        const cached = this.setProductTypeAttributeCache.get(
+            `${attribute.attribute_id.toString()}_${kenProdType.productTypeId}`,
+        );
+        if (
+            cached &&
+            cached.isForVariant === isForVariant &&
+            cached.isVariantSelection === isVariantSelection
+        ) {
+            this.logger.debug(
+                `[setProductTypeAttribute] Attribute ${attribute.name} is already set as ${isForVariant} and ${isVariantSelection}. Skipping.`,
+            );
+            return;
+        }
+
         /**
          * First make sure, that the attribute itself does already exist in the DB
          */
@@ -176,11 +209,6 @@ export class KencoveApiAppProductSyncService {
             update: {},
         });
 
-        this.kenToEciAttribute.set(kenAttribute.id, {
-            attributeId: kenAttribute.attributeId,
-            isForVariant,
-        });
-
         const existingProductTypeAttribute =
             await this.db.productTypeAttribute.findUnique({
                 where: {
@@ -218,10 +246,14 @@ export class KencoveApiAppProductSyncService {
             /**
              * A product type attribute can be switched from product attribute to variant attribute, but not back.
              */
-            if (!existingProductTypeAttribute.isForVariant && isForVariant) {
+            if (
+                (!existingProductTypeAttribute.isForVariant && isForVariant) ||
+                (!existingProductTypeAttribute.isVariantSelection &&
+                    isVariantSelection)
+            ) {
                 this.logger.info(
                     // eslint-disable-next-line max-len
-                    `Product type attribute ${attribute.name} isForVariant changed from ${existingProductTypeAttribute.isForVariant} to ${isForVariant}.`,
+                    `[setProductTypeAttribute] Product type attribute ${attribute.name} isForVariant changed to true`,
                 );
                 await this.db.productTypeAttribute.update({
                     where: {
@@ -232,10 +264,25 @@ export class KencoveApiAppProductSyncService {
                     },
                     data: {
                         isForVariant,
+                        isVariantSelection,
                     },
                 });
             }
         }
+
+        this.kenToEciAttribute.set(kenAttribute.id, {
+            attributeId: kenAttribute.attributeId,
+            isForVariant,
+            isVariantSelection,
+        });
+
+        this.setProductTypeAttributeCache.set(
+            `${attribute.attribute_id.toString()}_${kenProdType.productTypeId}`,
+            {
+                isForVariant,
+                isVariantSelection,
+            },
+        );
     }
 
     /**
@@ -269,6 +316,10 @@ export class KencoveApiAppProductSyncService {
                 replaceWith: "Brown",
             },
         ];
+        /**
+         * Attributes with this name don't get HTML decoded
+         */
+        const noHtmlDecode = ["variant_website_description"];
 
         return attributes
             .filter(
@@ -290,7 +341,9 @@ export class KencoveApiAppProductSyncService {
             })
             .map((attribute) => ({
                 ...attribute,
-                value: htmlDecode(attribute.value),
+                value: noHtmlDecode.includes(attribute.name)
+                    ? attribute.value
+                    : htmlDecode(attribute.value),
             }));
     }
 
@@ -309,7 +362,7 @@ export class KencoveApiAppProductSyncService {
     }
 
     /**
-     * The Kencove API is returning all attributes as variant attribtues, even if they are not.
+     * The Kencove API is often returning all attributes as variant attribtues, even if they are not.
      * We group all attributes by name and value. Attributes, that have the same name and value for
      * ALL variants are considered as product attributes and not variant attributes.
      * We set them as product attributes.
@@ -362,19 +415,28 @@ export class KencoveApiAppProductSyncService {
         }
 
         allVariants.forEach((variant) => {
-            variant.selectorValues.forEach((selectorValue) => {
-                if (
-                    allVariants.every((v) =>
-                        v.selectorValues.some(
-                            (sv) =>
-                                sv.name === selectorValue.name &&
-                                sv.value === selectorValue.value,
-                        ),
-                    )
-                ) {
-                    commonSelectorValues.push(selectorValue);
-                }
-            });
+            /**
+             * This logic sets selector values that have same values and names
+             * for all variants as product attributes. This can be bad for product variants,
+             * where we need this information, altough we just have one selection value.
+             */
+            // variant.selectorValues.forEach((selectorValue) => {
+            //     if (
+            //         allVariants.every((v) =>
+            //             v.selectorValues.some(
+            //                 (sv) =>
+            //                     sv.name === selectorValue.name &&
+            //                     sv.value === selectorValue.value,
+            //             ),
+            //         )
+            //     ) {
+            //         this.logger.debug(
+            //             `Selector value ${selectorValue.name} with value ${selectorValue.value} is common for all variants. ` +
+            //                 "Setting it as product attribute",
+            //         );
+            //         commonSelectorValues.push(selectorValue);
+            //     }
+            // });
 
             if (!variant.attributeValues) return;
             variant.attributeValues.forEach((attributeValue) => {
@@ -405,16 +467,27 @@ export class KencoveApiAppProductSyncService {
 
         allVariants.forEach((variant) => {
             variant.selectorValues.forEach((selectorValue) => {
-                if (selectorValue.name === "website_ref_desc") {
+                /**
+                 * If the selector attribute is the "special" website_ref_desc
+                 * and if a value is set for that attribute, we search for a better
+                 * fitting attribute first (sometimes for example we have a "color" attribute)
+                 */
+                if (
+                    selectorValue.name === "website_ref_desc" &&
+                    selectorValue.value
+                ) {
                     const correspondingAttributeValue =
                         variant.attributeValues?.find(
                             (av) => av.value?.includes(selectorValue.value),
                         );
                     if (correspondingAttributeValue) {
                         this.logger.debug(
-                            `Found a matching attribute. Replacing website_ref_desc with ${JSON.stringify(
-                                correspondingAttributeValue,
-                            )}`,
+                            `Found a matching attribute. Replacing website_ref_desc with ${
+                                (JSON.stringify(correspondingAttributeValue),
+                                {
+                                    website_ref_desc: selectorValue.value,
+                                })
+                            }`,
                         );
                         if (
                             !variantSelectionAttributes.some(
@@ -445,6 +518,11 @@ export class KencoveApiAppProductSyncService {
                             variantSelectionAttributes.push(selectorValue);
                         }
                     }
+                } else {
+                    /**
+                     * Regular and clean variant selection attributes
+                     */
+                    variantSelectionAttributes.push(selectorValue);
                 }
             });
         });
@@ -850,9 +928,6 @@ export class KencoveApiAppProductSyncService {
              * Setting the variant Selection attributes for the product type
              */
             for (const attribute of variantSelectionAttributesUnique) {
-                this.logger.debug(
-                    `Setting attribute ${attribute.name} as variant selection attribute`,
-                );
                 await this.setProductTypeAttribute(
                     attribute,
                     kenProdType,
