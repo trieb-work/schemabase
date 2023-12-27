@@ -67,8 +67,13 @@ class NormalizationUtility {
         return this.standardNormalize(input);
     }
 
+    /**
+     * Normalize attribute values. Attribute value
+     * reduced to 150 characters
+     * @param input
+     */
     public attributeValueNames(input: string) {
-        return this.standardNormalize(input);
+        return this.standardNormalize(input).slice(0, 150);
     }
 
     public channelNames(input: string) {
