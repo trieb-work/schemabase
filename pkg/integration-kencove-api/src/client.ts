@@ -233,7 +233,16 @@ export class KencoveApiClient {
         return response.data;
     }
 
-    public async getProducts(fromDate: Date): Promise<KencoveApiProduct[]> {
+    /**
+     *
+     * @param fromDate
+     * @param productTemplateId optionally request just one specific product template id for testing
+     * @returns
+     */
+    public async getProducts(
+        fromDate: Date,
+        productTemplateId?: string,
+    ): Promise<KencoveApiProduct[]> {
         const accessToken = await this.getAccessToken();
         const products: KencoveApiProduct[] = [];
         let nextPage: string | null = null;
@@ -243,6 +252,7 @@ export class KencoveApiClient {
                 fromDate,
                 offset,
                 accessToken,
+                productTemplateId,
             );
             products.push(...response.data);
             nextPage = response.next_page;
@@ -256,13 +266,16 @@ export class KencoveApiClient {
         fromDate: Date,
         offset: number,
         accessToken: string,
+        productTemplateId?: string,
     ): Promise<{
         data: KencoveApiProduct[];
         result_count: number;
         next_page: string;
     }> {
         const response = await this.axiosInstance.get(
-            `/ecom/product/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${new Date().toISOString()}`,
+            `/ecom/product/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${new Date().toISOString()}${
+                productTemplateId ? `&product_tmpl_id=${productTemplateId}` : ""
+            }`,
             {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
