@@ -174,6 +174,10 @@ export type KencoveApiProduct = {
      * The avatax tax code for this product
      */
     product_tax_code: string | null;
+    /**
+     * additional handling - part of shipping details
+     */
+    additional_handing: 0 | 1;
 };
 type KencoveApiAAItem = {
     /**
