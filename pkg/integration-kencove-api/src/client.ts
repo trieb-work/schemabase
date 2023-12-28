@@ -84,6 +84,11 @@ export class KencoveApiClient {
                 )
                 // isAfter(new Date(decoded.exp * 1000), new Date())
             ) {
+                this.logger.debug(
+                    `Using cached access token. Expires in ${
+                        decoded.exp * 1000
+                    }  minutes `,
+                );
                 return this.jwt;
             }
         }
@@ -153,9 +158,8 @@ export class KencoveApiClient {
             let offset = 0;
             let nextPage: string | null = null;
 
-            const accessToken = await this.getAccessToken();
-
             do {
+                const accessToken = await this.getAccessToken();
                 const response = await this.getAddressesPage(
                     fromDate,
                     toDate,
