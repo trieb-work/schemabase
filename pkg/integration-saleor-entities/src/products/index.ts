@@ -1289,19 +1289,23 @@ export class SaleorProductSyncService {
 
                     const variantsToUpdateInput:
                         | ProductVariantBulkUpdateInput
-                        | ProductVariantBulkUpdateInput[] = await Promise.all(
-                        variantsToUpdate.map(async (v) => ({
-                            attributes:
-                                await this.schemabaseAttributesToSaleorAttribute(
-                                    v.attributes,
-                                ),
-                            sku: v.sku,
-                            name: v.variantName,
-                            trackInventory: true,
-                            id: v.saleorProductVariant[0].id,
-                            weight: v.weight,
-                        })),
-                    );
+                        | ProductVariantBulkUpdateInput[] = [];
+                    for (const v of variantsToUpdate) {
+                        const attr =
+                            await this.schemabaseAttributesToSaleorAttribute(
+                                v.attributes,
+                            );
+                        const variantToUpdateInput: ProductVariantBulkUpdateInput =
+                            {
+                                attributes: attr,
+                                sku: v.sku,
+                                name: v.variantName,
+                                trackInventory: true,
+                                id: v.saleorProductVariant[0].id,
+                                weight: v.weight,
+                            };
+                        variantsToUpdateInput.push(variantToUpdateInput);
+                    }
                     this.logger.debug(
                         `Updating variants for product ${saleorProductId}`,
                         {
