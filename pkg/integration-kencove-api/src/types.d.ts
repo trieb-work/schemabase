@@ -178,6 +178,10 @@ export type KencoveApiProduct = {
      * additional handling - part of shipping details
      */
     additional_handing: 0 | 1;
+    /**
+     * Truck only handling: We can't give a quotation for these items.
+     */
+    truck_only: "N" | "Y" | null;
 };
 type KencoveApiAAItem = {
     /**
