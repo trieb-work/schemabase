@@ -3,7 +3,7 @@
     "version": "0.82.6",
     "private": "true",
     "engines": {
-        "node": "18"
+        "node": ">=18 <=20"
     },
     "packageManager": "pnpm@8.6.1",
     "devDependencies": {
