@@ -811,6 +811,10 @@ export class SaleorProductSyncService {
                         value,
                     },
                 });
+            } else if (attr.attribute.type === "PLAIN_TEXT") {
+                /**
+                 * handle the transform of HTML text to editorJS text
+                 */
             } else {
                 attributes.push({
                     id: saleorAttributeId,
@@ -1112,7 +1116,7 @@ export class SaleorProductSyncService {
                  * so we need to get the tax class from the first variant
                  */
                 const taxClass =
-                    product.variants[0].salesTax?.saleorTaxClasses?.[0]?.id;
+                    product.variants[0]?.salesTax?.saleorTaxClasses?.[0]?.id;
 
                 /**
                  * Media files from our DB - product videos are not uploaded,
