@@ -46,7 +46,7 @@ export class SaleorOrderSyncWf implements Workflow {
                 this.prisma,
             );
 
-        const zohoContactSyncService = new SaleorOrderSyncService({
+        const saleorOrderSync = new SaleorOrderSyncService({
             logger: this.logger,
             saleorClient,
             db: this.prisma,
@@ -55,7 +55,9 @@ export class SaleorOrderSyncWf implements Workflow {
             channelSlug: installedSaleorApp.channelSlug || "",
             orderPrefix: this.orderPrefix,
         });
-        await zohoContactSyncService.syncToECI();
+        await saleorOrderSync.syncToECI();
+        await saleorOrderSync.syncFromECI();
+
         this.logger.info("Finished saleor order sync workflow run");
     }
 }
