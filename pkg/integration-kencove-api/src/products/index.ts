@@ -33,6 +33,7 @@ import {
 } from "../types";
 import { htmlDecode, kenAttributeToEciAttribute } from "../helper";
 import { syncTaxClasses } from "./taxclasses";
+import { SyncToOdooEDI } from "./syncToOdooEDI";
 
 interface KencoveApiAppProductSyncServiceConfig {
     logger: ILogger;
@@ -589,19 +590,16 @@ export class KencoveApiAppProductSyncService {
         variantId?: string;
         isForVariant: boolean;
     }) {
-        const valueEncoded = attributeValue || attributeInProduct?.value;
-        if (!valueEncoded) {
+        const value = attributeValue || attributeInProduct?.value;
+        if (!value) {
             this.logger.error(
                 `Attribute ${attribute.name} has no value. Skipping.`,
             );
             return;
         }
-        const attributeValueDecoded = htmlDecode(valueEncoded);
-        const normalizedName = normalizeStrings.attributeValueNames(
-            attributeValueDecoded,
-        );
+        const normalizedName = normalizeStrings.attributeValueNames(value);
         this.logger.debug(
-            `Setting attribute ${attribute.name}, value ${attributeValueDecoded}`,
+            `Setting attribute ${attribute.name}, value ${value}`,
             {
                 isForVariant,
             },
@@ -610,14 +608,11 @@ export class KencoveApiAppProductSyncService {
         let hexCode: string | undefined = undefined;
         // we set an attribute hex value to the hex value field, when type is "swatch"
         // and value starts with "#"
-        if (
-            attribute.type === "SWATCH" &&
-            attributeValueDecoded.startsWith("#")
-        ) {
+        if (attribute.type === "SWATCH" && value.startsWith("#")) {
             this.logger.debug(
-                `Attribute ${attribute.name} is a color swatch with hex code: ${attributeValueDecoded}`,
+                `Attribute ${attribute.name} is a color swatch with hex code: ${value}`,
             );
-            hexCode = attributeValueDecoded;
+            hexCode = value;
         }
 
         if (isForVariant) {
@@ -647,7 +642,7 @@ export class KencoveApiAppProductSyncService {
                     value:
                         hexCode && attributeInProduct?.attribute_text
                             ? attributeInProduct.attribute_text
-                            : attributeValueDecoded,
+                            : value,
                     hexColor: hexCode,
                     productVariant: {
                         connect: {
@@ -684,7 +679,7 @@ export class KencoveApiAppProductSyncService {
                     value:
                         hexCode && attributeInProduct?.attribute_text
                             ? attributeInProduct.attribute_text
-                            : attributeValueDecoded,
+                            : value,
                     hexColor: hexCode,
                     product: {
                         connect: {
@@ -1784,5 +1779,15 @@ export class KencoveApiAppProductSyncService {
                 product.alternatives?.map((a) => a.itemCode),
             );
         }
+    }
+
+    public async syncFromECI() {
+        const odooEdiClass = new SyncToOdooEDI({
+            logger: this.logger,
+            kencoveApiApp: this.kencoveApiApp,
+            db: this.db,
+        });
+
+        await odooEdiClass.sync();
     }
 }
