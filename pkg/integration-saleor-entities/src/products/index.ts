@@ -787,7 +787,12 @@ export class SaleorProductSyncService {
                     },
                 );
                 if (!saleorVariantId?.saleorProductVariant?.[0]?.id) {
-                    this.logger.warn(`Item has no saleor variant id. Skipping`);
+                    this.logger.warn(
+                        `Item has no saleor variant id. Skipping`,
+                        {
+                            productVariantId: attr.value,
+                        },
+                    );
                     continue;
                 }
                 attributes.push({
