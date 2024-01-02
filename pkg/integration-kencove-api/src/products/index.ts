@@ -1167,6 +1167,22 @@ export class KencoveApiAppProductSyncService {
     ) {
         const totalMedia = this.getTotalMediaFromProduct(product);
 
+        // Delete all media items, that are not in totalMedia
+        await this.db.media.deleteMany({
+            where: {
+                products: {
+                    some: {
+                        normalizedName: normalizedProductName,
+                        tenantId: this.kencoveApiApp.tenantId,
+                    },
+                },
+                tenantId: this.kencoveApiApp.tenantId,
+                url: {
+                    notIn: totalMedia.map((media) => media.url),
+                },
+            },
+        });
+
         return this.db.product.update({
             where: {
                 normalizedName_tenantId: {
