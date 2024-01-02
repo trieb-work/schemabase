@@ -21,7 +21,7 @@ import {
     KencoveApiProduct,
     KencoveApiProductStock,
 } from "./types";
-import { addDays, isAfter, isBefore } from "date-fns";
+import { addDays, formatDistance, isAfter, isBefore } from "date-fns";
 import jwt from "jsonwebtoken";
 import { ILogger } from "@eci/pkg/logger";
 
@@ -85,9 +85,10 @@ export class KencoveApiClient {
                 // isAfter(new Date(decoded.exp * 1000), new Date())
             ) {
                 this.logger.debug(
-                    `Using cached access token. Expires in ${
-                        decoded.exp * 1000
-                    }  minutes `,
+                    `Using cached access token. Expires in ${formatDistance(
+                        new Date(),
+                        new Date(decoded.exp * 1000),
+                    )}`,
                 );
                 return this.jwt;
             }
