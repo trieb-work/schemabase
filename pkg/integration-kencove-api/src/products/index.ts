@@ -1640,9 +1640,39 @@ export class KencoveApiAppProductSyncService {
                     ...(variant.attributeValues || []),
                     ...variant.selectorValues,
                 ];
-                const cleanedAttributes = cleanAttributes(allAttributes).filter(
-                    (a) => a.name !== "website_ref_desc",
-                );
+
+                /**
+                 * We only want to set the variant_website_description attribute
+                 * if the value is different to the product.description.
+                 */
+                const variantWebsiteDescription = allAttributes.find(
+                    (a) => a.name === "variant_website_description",
+                )?.value;
+                let filterVariantWebsiteDescription = true;
+                if (
+                    variantWebsiteDescription &&
+                    variantWebsiteDescription !==
+                        product.description
+                            .replace?.(/<[^>]*>?/gm, "")
+                            .trim() &&
+                    variantWebsiteDescription !== product.description
+                ) {
+                    filterVariantWebsiteDescription = false;
+                } else {
+                    this.logger.debug(
+                        "Variant website description is the same as the product description. Removing this attribute",
+                    );
+                    filterVariantWebsiteDescription = true;
+                }
+
+                const cleanedAttributes = cleanAttributes(allAttributes)
+                    .filter((a) => a.name !== "website_ref_desc")
+                    .filter((a) => {
+                        if (filterVariantWebsiteDescription) {
+                            return a.name !== "variant_website_description";
+                        }
+                        return true;
+                    });
                 this.logger.debug(
                     `Will now set attribute values of ${cleanedAttributes.length} attributes`,
                     {
