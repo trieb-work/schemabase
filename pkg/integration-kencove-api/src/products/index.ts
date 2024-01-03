@@ -1201,7 +1201,9 @@ export class KencoveApiAppProductSyncService {
         }
 
         const client = new KencoveApiClient(this.kencoveApiApp, this.logger);
-        const products = await client.getProducts(createdGte, "6527");
+
+        const products = await client.getProducts(createdGte);
+
         this.logger.info(`Found ${products.length} products to sync`);
         if (products.length === 0) {
             this.logger.info("No products to sync. Exiting.");
@@ -1453,7 +1455,10 @@ export class KencoveApiAppProductSyncService {
                         variant.selectorValues,
                     )[0];
 
-                    if (variant.name !== product.productName) {
+                    if (
+                        normalizeStrings.productNames(variant.name) !==
+                        normalizeStrings.productNames(product.productName)
+                    ) {
                         this.logger.info(
                             `Variant name ${variant.name} is different to ${product.productName}. Using this as variant name`,
                         );
