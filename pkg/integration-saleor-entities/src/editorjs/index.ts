@@ -77,19 +77,25 @@ class EditorJSHelper {
                         break;
                     case "UL":
                     case "OL":
-                        const items = Array.from(element.children).map((li) =>
-                            li.innerHTML.replace(/<br>/g, "\n"),
-                        );
-                        blocks.push({
-                            type: "list",
-                            data: {
-                                style:
-                                    element.tagName === "UL"
-                                        ? "unordered"
-                                        : "ordered",
-                                items,
-                            },
-                        });
+                        const listItems = Array.from(element.children)
+                            .filter(
+                                (li) =>
+                                    li.tagName === "LI" &&
+                                    li?.textContent?.trim(),
+                            )
+                            .map((li) => li.innerHTML.replace(/<br>/g, "\n"));
+                        if (listItems.length > 0) {
+                            blocks.push({
+                                type: "list",
+                                data: {
+                                    style:
+                                        element.tagName === "UL"
+                                            ? "unordered"
+                                            : "ordered",
+                                    items: listItems,
+                                },
+                            });
+                        }
                         break;
                     case "H1":
                     case "H2":
