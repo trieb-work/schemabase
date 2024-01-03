@@ -2675,10 +2675,12 @@ model KencoveApiAttribute {
   attribute   Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
   attributeId String
 
+  model String
+
   kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id], onDelete: Cascade)
   kencoveApiAppId String
 
-  @@unique([id, kencoveApiAppId])
+  @@unique([id, model, kencoveApiAppId])
   @@index([attributeId])
   @@index([kencoveApiAppId])
 }

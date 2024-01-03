@@ -7,7 +7,7 @@ import { CronStateHandler } from "@eci/pkg/cronstate";
 import { isSameHour, subHours, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { normalizeStrings } from "@eci/pkg/normalization";
-import { kenAttributeToEciAttribute } from "./helper";
+import { cleanAttributes, kenAttributeToEciAttribute } from "./helper";
 
 interface KencoveApiAppAttributeSyncServiceConfig {
     logger: ILogger;
@@ -53,7 +53,11 @@ export class KencoveApiAppAttributeSyncService {
         }
 
         const client = new KencoveApiClient(this.kencoveApiApp, this.logger);
-        const kencoveApiAppattributes = await client.getAttributes(createdGte);
+        const kencoveApiAppattributesUncleaned =
+            await client.getAttributes(createdGte);
+        const kencoveApiAppattributes = cleanAttributes(
+            kencoveApiAppattributesUncleaned,
+        );
         this.logger.info(
             `Found ${kencoveApiAppattributes.length} kencoveApiAppattributes to sync`,
         );
@@ -99,15 +103,17 @@ export class KencoveApiAppAttributeSyncService {
             );
             await this.db.kencoveApiAttribute.upsert({
                 where: {
-                    id_kencoveApiAppId: {
+                    id_model_kencoveApiAppId: {
                         id: kenAttribute.attribute_id,
                         kencoveApiAppId: this.kencoveApiApp.id,
+                        model: kenAttribute.model,
                     },
                 },
                 create: {
                     id: kenAttribute.attribute_id,
                     createdAt,
                     updatedAt,
+                    model: kenAttribute.model,
                     kencoveApiApp: {
                         connect: {
                             id: this.kencoveApiApp.id,

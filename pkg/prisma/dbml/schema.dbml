@@ -1508,11 +1508,12 @@ Table KencoveApiAttribute {
   updatedAt DateTime [not null]
   attribute Attribute [not null]
   attributeId String [not null]
+  model String [not null]
   kencoveApiApp KencoveApiApp [not null]
   kencoveApiAppId String [not null]
 
   indexes {
-    (id, kencoveApiAppId) [unique]
+    (id, model, kencoveApiAppId) [unique]
   }
 }
 

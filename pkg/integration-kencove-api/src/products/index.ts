@@ -31,7 +31,11 @@ import {
     KencoveApiProduct,
     KencoveApiVideo,
 } from "../types";
-import { htmlDecode, kenAttributeToEciAttribute } from "../helper";
+import {
+    cleanAttributes,
+    htmlDecode,
+    kenAttributeToEciAttribute,
+} from "../helper";
 import { syncTaxClasses } from "./taxclasses";
 
 interface KencoveApiAppProductSyncServiceConfig {
@@ -212,13 +216,6 @@ export class KencoveApiAppProductSyncService {
             update: {},
         });
 
-        this.logger.debug(
-            `[setProductTypeAttribute] Attribute ${attribute.name} from our DB.`,
-            {
-                kenAttribute,
-            },
-        );
-
         const existingProductTypeAttribute =
             await this.db.productTypeAttribute.findUnique({
                 where: {
@@ -295,68 +292,6 @@ export class KencoveApiAppProductSyncService {
         );
     }
 
-    /**
-     * Clean the attributes, remove empty null or undefined values. HTML decode the attribute value.
-     * Replace certain attribute names with our own names. For example "uom" get "Unit of Measure"
-     * @param attributes
-     * @returns
-     */
-    private cleanAttributes(
-        attributes: KencoveApiAttributeInProduct[],
-    ): KencoveApiAttributeInProduct[] {
-        const attributeNamesToReplace = [
-            {
-                name: "uom",
-                replaceWith: "Unit of Measure",
-            },
-            {
-                name: "dim",
-                replaceWith: "Dimensions",
-            },
-            {
-                name: "#000000",
-                replaceWith: "Black",
-            },
-            {
-                name: "#FFFFFF",
-                replaceWith: "White",
-            },
-            {
-                name: "#604738",
-                replaceWith: "Brown",
-            },
-        ];
-        /**
-         * Attributes with this name don't get HTML decoded
-         */
-        const noHtmlDecode = ["variant_website_description"];
-
-        return attributes
-            .filter(
-                (attribute) =>
-                    attribute.value !== undefined &&
-                    attribute.value !== null &&
-                    attribute.value !== "" &&
-                    attribute.value !== " " &&
-                    attribute.value !== "0x0x0",
-            )
-            .map((attribute) => {
-                const attributeNameToReplace = attributeNamesToReplace.find(
-                    (atr) => atr.name === attribute.name,
-                );
-                if (attributeNameToReplace) {
-                    attribute.name = attributeNameToReplace.replaceWith;
-                }
-                return attribute;
-            })
-            .map((attribute) => ({
-                ...attribute,
-                value: noHtmlDecode.includes(attribute.name)
-                    ? attribute.value
-                    : htmlDecode(attribute.value),
-            }));
-    }
-
     private uniqueAttributes(
         attributes: KencoveApiAttributeInProduct[],
     ): KencoveApiAttributeInProduct[] {
@@ -407,18 +342,18 @@ export class KencoveApiAppProductSyncService {
          */
         if (allVariants.length === 1) {
             return {
-                productAttributes: this.cleanAttributes(
+                productAttributes: cleanAttributes(
                     allVariants[0].attributeValues || [],
                 ).filter((vsa) => vsa.name !== "variant_website_description"),
-                productAttributesUnique: this.cleanAttributes(
+                productAttributesUnique: cleanAttributes(
                     this.uniqueAttributes(allVariants[0].attributeValues || []),
                 ),
                 variantAttributes: [],
                 variantAttributesUnique: [],
-                variantSelectionAttributes: this.cleanAttributes(
+                variantSelectionAttributes: cleanAttributes(
                     allVariants[0].selectorValues,
                 ).filter((vsa) => vsa.name !== "website_ref_desc"),
-                variantSelectionAttributesUnique: this.cleanAttributes(
+                variantSelectionAttributesUnique: cleanAttributes(
                     this.uniqueAttributes(allVariants[0].selectorValues),
                 ).filter((vsa) => vsa.name !== "website_ref_desc"),
             };
@@ -465,10 +400,10 @@ export class KencoveApiAppProductSyncService {
             });
         });
 
-        commonSelectorValues = this.cleanAttributes(
-            commonSelectorValues,
-        ).filter((vsa) => vsa.name !== "website_ref_desc");
-        commonAttributeValues = this.cleanAttributes(commonAttributeValues);
+        commonSelectorValues = cleanAttributes(commonSelectorValues).filter(
+            (vsa) => vsa.name !== "website_ref_desc",
+        );
+        commonAttributeValues = cleanAttributes(commonAttributeValues);
 
         const productAttributes = [
             ...commonSelectorValues,
@@ -537,7 +472,7 @@ export class KencoveApiAppProductSyncService {
             });
         });
 
-        const variantAttributes = this.cleanAttributes(
+        const variantAttributes = cleanAttributes(
             allVariants.flatMap(
                 (variant) =>
                     variant.attributeValues?.filter(
@@ -565,13 +500,13 @@ export class KencoveApiAppProductSyncService {
                 (vsa) => vsa.name !== "variant_website_description",
             ),
             variantAttributes,
-            variantAttributesUnique: this.cleanAttributes(
+            variantAttributesUnique: cleanAttributes(
                 this.uniqueAttributes(variantAttributes),
             ),
-            variantSelectionAttributesUnique: this.cleanAttributes(
+            variantSelectionAttributesUnique: cleanAttributes(
                 this.uniqueAttributes(variantSelectionAttributes),
             ).filter((vsa) => vsa.name !== "website_ref_desc"),
-            variantSelectionAttributes: this.cleanAttributes(
+            variantSelectionAttributes: cleanAttributes(
                 variantSelectionAttributes,
             ).filter((vsa) => vsa.name !== "website_ref_desc"),
         };
@@ -1514,7 +1449,7 @@ export class KencoveApiAppProductSyncService {
                     ) &&
                     variant.selectorValues?.[0]?.name === "website_ref_desc"
                 ) {
-                    const variantSelectionAttribute = this.cleanAttributes(
+                    const variantSelectionAttribute = cleanAttributes(
                         variant.selectorValues,
                     )[0];
 
@@ -1700,9 +1635,9 @@ export class KencoveApiAppProductSyncService {
                     ...(variant.attributeValues || []),
                     ...variant.selectorValues,
                 ];
-                const cleanedAttributes = this.cleanAttributes(
-                    allAttributes,
-                ).filter((a) => a.name !== "website_ref_desc");
+                const cleanedAttributes = cleanAttributes(allAttributes).filter(
+                    (a) => a.name !== "website_ref_desc",
+                );
                 this.logger.debug(
                     `Will now set attribute values of ${cleanedAttributes.length} attributes`,
                     {
