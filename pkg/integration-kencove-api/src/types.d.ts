@@ -126,7 +126,7 @@ export type KencoveApiProductVariant = {
      * UPC is unique identifier EAN / GTIN
      */
     upc: string | null;
-    name: string;
+    name: string | null;
     createdAt: string;
     updatedAt: string;
 };

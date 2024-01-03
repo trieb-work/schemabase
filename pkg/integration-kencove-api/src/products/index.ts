@@ -1453,8 +1453,9 @@ export class KencoveApiAppProductSyncService {
                     )[0];
 
                     if (
+                        variant?.name &&
                         normalizeStrings.productNames(variant.name) !==
-                        normalizeStrings.productNames(product.productName)
+                            normalizeStrings.productNames(product.productName)
                     ) {
                         this.logger.info(
                             `Variant name ${variant.name} is different to ${product.productName}. Using this as variant name`,
