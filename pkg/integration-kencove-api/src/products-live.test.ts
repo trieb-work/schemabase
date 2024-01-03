@@ -37,6 +37,7 @@ describe("Kencove product Test", () => {
             logger: new AssertionLogger(),
             db: prismaClient,
         });
-        await service.syncToECI();
+        // await service.syncToECI();
+        await service.syncFromECI();
     }, 10000000);
 });

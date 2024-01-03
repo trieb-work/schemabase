@@ -64,13 +64,13 @@ type EnhancedProduct = {
 };
 
 export class KencoveApiAppProductSyncService {
-    private readonly logger: ILogger;
+    protected readonly logger: ILogger;
 
-    private readonly db: PrismaClient;
+    protected readonly db: PrismaClient;
 
     public readonly kencoveApiApp: KencoveApiApp;
 
-    private readonly cronState: CronStateHandler;
+    protected readonly cronState: CronStateHandler;
 
     /**
      * kencoveApiAttribute Ids as key, value -> isForVariant: boolean and schemabase
