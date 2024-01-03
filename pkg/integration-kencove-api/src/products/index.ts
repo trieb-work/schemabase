@@ -427,12 +427,9 @@ export class KencoveApiAppProductSyncService {
                         );
                     if (correspondingAttributeValue) {
                         this.logger.debug(
-                            `Found a matching attribute. Replacing website_ref_desc with ${
-                                (JSON.stringify(correspondingAttributeValue),
-                                {
-                                    website_ref_desc: selectorValue.value,
-                                })
-                            }`,
+                            `Found a matching attribute. Replacing website_ref_desc with ${JSON.stringify(
+                                correspondingAttributeValue,
+                            )}`,
                         );
                         if (
                             !variantSelectionAttributes.some(
@@ -1655,6 +1652,9 @@ export class KencoveApiAppProductSyncService {
                         product.description.replace(/<[^>]*>?/gm, "")?.trim() &&
                     variantWebsiteDescription !== product?.description
                 ) {
+                    this.logger.debug(
+                        "Variant website description is different to the product description. Setting this attribute",
+                    );
                     filterVariantWebsiteDescription = false;
                 } else {
                     this.logger.debug(
