@@ -33,7 +33,6 @@ import {
 } from "../types";
 import { htmlDecode, kenAttributeToEciAttribute } from "../helper";
 import { syncTaxClasses } from "./taxclasses";
-import { SyncToOdooEDI } from "./syncToOdooEDI";
 
 interface KencoveApiAppProductSyncServiceConfig {
     logger: ILogger;
@@ -129,6 +128,7 @@ export class KencoveApiAppProductSyncService {
             value: string;
             attribute_id: number;
             display_type: string;
+            attribute_model: string;
         },
         kenProdType: KencoveApiProductType,
         isForVariant: boolean,
@@ -165,15 +165,17 @@ export class KencoveApiAppProductSyncService {
          */
         const kenAttribute = await this.db.kencoveApiAttribute.upsert({
             where: {
-                id_kencoveApiAppId: {
+                id_model_kencoveApiAppId: {
                     id: attribute.attribute_id.toString(),
                     kencoveApiAppId: this.kencoveApiApp.id,
+                    model: attribute.attribute_model,
                 },
             },
             create: {
                 id: attribute.attribute_id.toString(),
                 createdAt: new Date(),
                 updatedAt: new Date(),
+                model: attribute.attribute_model,
                 kencoveApiApp: {
                     connect: {
                         id: this.kencoveApiApp.id,
@@ -209,6 +211,13 @@ export class KencoveApiAppProductSyncService {
             },
             update: {},
         });
+
+        this.logger.debug(
+            `[setProductTypeAttribute] Attribute ${attribute.name} from our DB.`,
+            {
+                kenAttribute,
+            },
+        );
 
         const existingProductTypeAttribute =
             await this.db.productTypeAttribute.findUnique({
@@ -981,9 +990,10 @@ export class KencoveApiAppProductSyncService {
             const accessoryItemAttribute =
                 await this.db.kencoveApiAttribute.findUnique({
                     where: {
-                        id_kencoveApiAppId: {
+                        id_model_kencoveApiAppId: {
                             id: "333331",
                             kencoveApiAppId: this.kencoveApiApp.id,
+                            model: "custom",
                         },
                     },
                     include: {
@@ -1013,9 +1023,10 @@ export class KencoveApiAppProductSyncService {
             const alternativeItemAttribute =
                 await this.db.kencoveApiAttribute.findUnique({
                     where: {
-                        id_kencoveApiAppId: {
+                        id_model_kencoveApiAppId: {
                             id: "333330",
                             kencoveApiAppId: this.kencoveApiApp.id,
+                            model: "custom",
                         },
                     },
                     include: {
@@ -1255,7 +1266,7 @@ export class KencoveApiAppProductSyncService {
         }
 
         const client = new KencoveApiClient(this.kencoveApiApp, this.logger);
-        const products = await client.getProducts(createdGte);
+        const products = await client.getProducts(createdGte, "6527");
         this.logger.info(`Found ${products.length} products to sync`);
         if (products.length === 0) {
             this.logger.info("No products to sync. Exiting.");
@@ -1779,15 +1790,5 @@ export class KencoveApiAppProductSyncService {
                 product.alternatives?.map((a) => a.itemCode),
             );
         }
-    }
-
-    public async syncFromECI() {
-        const odooEdiClass = new SyncToOdooEDI({
-            logger: this.logger,
-            kencoveApiApp: this.kencoveApiApp,
-            db: this.db,
-        });
-
-        await odooEdiClass.sync();
     }
 }

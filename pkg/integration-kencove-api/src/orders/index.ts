@@ -24,6 +24,7 @@ import { normalizeStrings } from "@eci/pkg/normalization";
 import async from "async";
 import { shippingMethodMatch } from "@eci/pkg/utils/shippingMethodMatch";
 import { KencoveApiWarehouseSync } from "../warehouses";
+import { SyncToOdooEDI } from "./syncToOdooEDI";
 
 interface KencoveApiAppOrderSyncServiceConfig {
     logger: ILogger;
@@ -558,5 +559,15 @@ export class KencoveApiAppOrderSyncService {
             }
         }
         await this.cronState.set({ lastRun: now, lastRunStatus: "success" });
+    }
+
+    public async syncFromECI() {
+        const odooEdiClass = new SyncToOdooEDI({
+            logger: this.logger,
+            kencoveApiApp: this.kencoveApiApp,
+            db: this.db,
+        });
+
+        await odooEdiClass.sync();
     }
 }
