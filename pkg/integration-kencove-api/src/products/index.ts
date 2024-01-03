@@ -1654,8 +1654,8 @@ export class KencoveApiAppProductSyncService {
                     variantWebsiteDescription !==
                         product.description
                             .replace?.(/<[^>]*>?/gm, "")
-                            .trim() &&
-                    variantWebsiteDescription !== product.description
+                            ?.trim() &&
+                    variantWebsiteDescription !== product?.description
                 ) {
                     filterVariantWebsiteDescription = false;
                 } else {
