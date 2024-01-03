@@ -1724,7 +1724,7 @@ model AttributeValueVariant {
   /// Represent value of the attribute value, like text string. 
   /// When hexColor is additionally used, you always need a string value as well
   /// When the attribute type is "reference", we use the id of the referenced product or variant 
-  value String @db.VarChar(800)
+  value String @db.VarChar(1800)
 
   /// color values for swatch attributes
   hexColor String?
