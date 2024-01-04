@@ -78,7 +78,8 @@ export class SyncToOdooEDI {
     }
 
     private async sendOrderToOdooEDI(order: any): Promise<void> {
-        const url = "https://odooedi.example.com/api/orders";
+        const url = this.kencoveApiApp.ediEndpoint;
+        if (!url) throw new Error("EDI endpoint is not configured");
         const response = await axios.post(url, order);
         if (response.status !== 200) {
             throw new Error(
@@ -182,7 +183,7 @@ export class SyncToOdooEDI {
                         schemabaseOrder.mainContact.kencoveApiContacts[0]?.id,
                 },
                 shippingAddress: {
-                    // fullName: schemabaseOrder?.shippingAddress?.fullName,
+                    fullName: schemabaseOrder?.shippingAddress?.fullname,
                     company: schemabaseOrder.shippingAddress?.company,
                     street: schemabaseOrder.shippingAddress?.street,
                     street2:
@@ -192,7 +193,7 @@ export class SyncToOdooEDI {
                             ?.id,
                 },
                 billingAddress: {
-                    // fullName: schemabaseOrder?.billingAddress?.fullName,
+                    fullName: schemabaseOrder?.billingAddress?.fullname,
                     company: schemabaseOrder.billingAddress?.company,
                     street: schemabaseOrder.billingAddress?.street,
                     street2:

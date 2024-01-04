@@ -2563,6 +2563,11 @@ model KencoveApiApp {
   /// The actual api endpoint. Is different for sandbox and prod
   apiEndpoint   String
 
+  /// The EDI endpoint is different and used to transmit orders back to Odoo.
+  /// we use the official EDI integration, so this nedpoint will be part of
+  // an official Odoo app in the future
+  ediEndpoint String?
+
   /// The scopes we need to access the api. Just comma separated list
   scope String
 

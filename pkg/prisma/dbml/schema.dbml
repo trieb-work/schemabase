@@ -1419,6 +1419,8 @@ Table KencoveApiApp {
   clientSecret String [not null]
   tokenEndpoint String [not null, note: 'Token endpoint for the OAuth flow']
   apiEndpoint String [not null, note: 'The actual api endpoint. Is different for sandbox and prod']
+  ediEndpoint String [note: 'The EDI endpoint is different and used to transmit orders back to Odoo.
+we use the official EDI integration, so this nedpoint will be part of']
   scope String [not null, note: 'The scopes we need to access the api. Just comma separated list']
   skipCategories String [note: 'A user can manually mark categories, that should be skipped when syncing.
 This is a comma separated list of category ids']
