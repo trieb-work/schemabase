@@ -181,6 +181,15 @@ export class KencoveApiAppAddressSyncService {
 
                 this.normalizedAddresses.add(normalizedName);
             });
+
+            /**
+             * Setting the last run to the oldest updatedAt time in the address batch
+             * so we don't have to wait for the
+             * next cron run to sync the next batch of addresses in case of errors
+             */
+            const lastAddress = addresses[addresses.length - 1];
+            const lastUpdatedAt = new Date(lastAddress.updatedAt);
+            await this.cronState.set({ lastRun: lastUpdatedAt });
         }
         await this.cronState.set({ lastRun: now, lastRunStatus: "success" });
     }

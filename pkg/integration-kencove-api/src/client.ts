@@ -161,6 +161,9 @@ export class KencoveApiClient {
 
             do {
                 const accessToken = await this.getAccessToken();
+                this.logger.debug(
+                    `Requesting addresses from ${fromDate} to ${toDate}`,
+                );
                 const response = await this.getAddressesPage(
                     fromDate,
                     toDate,
