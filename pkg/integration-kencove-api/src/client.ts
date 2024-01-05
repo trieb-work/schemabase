@@ -241,6 +241,27 @@ export class KencoveApiClient {
         return response.data;
     }
 
+    public async *getProductsStream(
+        fromDate: Date,
+    ): AsyncIterableIterator<KencoveApiProduct[]> {
+        let nextPage: string | null = null;
+        let offset: number = 0;
+        do {
+            const accessToken = await this.getAccessToken();
+            const response = await this.getProductsPage(
+                fromDate,
+                offset,
+                accessToken,
+            );
+            yield response.data;
+            nextPage = response.next_page;
+            /**
+             * we just go in steps of 50
+             */
+            offset += 50;
+        } while (nextPage);
+    }
+
     /**
      *
      * @param fromDate
@@ -264,7 +285,7 @@ export class KencoveApiClient {
             );
             products.push(...response.data);
             nextPage = response.next_page;
-            offset += 200;
+            offset += 50;
         } while (nextPage);
         console.debug(`Found ${products.length} products`);
         return products;
@@ -281,7 +302,7 @@ export class KencoveApiClient {
         next_page: string;
     }> {
         const response = await this.axiosInstance.get(
-            `/ecom/product/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${new Date().toISOString()}${
+            `/ecom/product/kencove?limit=50&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${new Date().toISOString()}${
                 productTemplateId ? `&product_tmpl_id=${productTemplateId}` : ""
             }`,
             {
