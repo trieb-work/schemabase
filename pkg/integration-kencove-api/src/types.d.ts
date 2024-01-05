@@ -282,6 +282,7 @@ export type KencoveApiPayment = {
     sale_order_id: number;
     sale_order_number: string;
     move_type: string;
+    acquirer_reference: string;
     payment_method: string;
     payment_amount: number;
     payment_state: "done" | "refunded";

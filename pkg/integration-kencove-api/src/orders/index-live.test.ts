@@ -26,5 +26,6 @@ describe("KencoveApiClient", () => {
             logger: new AssertionLogger(),
         });
         await service.syncToECI();
+        await service.syncFromECI();
     }, 2000000);
 });

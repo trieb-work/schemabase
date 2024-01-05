@@ -82,67 +82,131 @@ export class KencoveApiAppPaymentSyncService {
             for (const payment of kencoveApiAppPayment) {
                 const updatedAt = new Date(payment.updatedAt);
                 const createdAt = new Date(payment.createdAt);
-                const referenceNumber = "TOBEIMPLEMENTED";
+                const referenceNumber = payment.acquirer_reference;
                 const gatewayType = this.matchKencovePaymentGatewayType(
                     payment.payment_method,
                 );
                 const methodType = this.matchKencovePaymentMethodType(
                     payment.payment_method,
                 );
-                await this.db.kencoveApiPayment.upsert({
+                if (payment.payment_state !== "done") {
+                    this.logger.info(
+                        `Payment ${payment.payment_id} is not done. Skipping.`,
+                        {
+                            aquirerReference: payment.acquirer_reference,
+                            customerCode: payment.customer_code,
+                        },
+                    );
+                    continue;
+                }
+                /**
+                 * Get the order id by looking for the order number
+                 */
+                const order = await this.db.order.findUnique({
                     where: {
-                        id_kencoveApiAppId: {
-                            id: payment.payment_id.toString(),
-                            kencoveApiAppId: this.kencoveApiApp.id,
-                        },
-                    },
-                    update: {
-                        createdAt,
-                    },
-                    create: {
-                        id: payment.payment_id.toString(),
-                        createdAt,
-                        updatedAt,
-                        kencoveApiApp: {
-                            connect: {
-                                id: this.kencoveApiApp.id,
-                            },
-                        },
-                        payment: {
-                            connectOrCreate: {
-                                where: {
-                                    referenceNumber_tenantId: {
-                                        referenceNumber,
-                                        tenantId: this.kencoveApiApp.tenantId,
-                                    },
-                                },
-                                create: {
-                                    id: id.id("payment"),
-                                    amount: payment.payment_amount,
-                                    referenceNumber,
-                                    tenant: {
-                                        connect: {
-                                            id: this.kencoveApiApp.tenantId,
-                                        },
-                                    },
-                                    paymentMethod: {
-                                        connect: {
-                                            gatewayType_methodType_currency_tenantId:
-                                                {
-                                                    gatewayType,
-                                                    methodType,
-                                                    currency: "USD",
-                                                    tenantId:
-                                                        this.kencoveApiApp
-                                                            .tenantId,
-                                                },
-                                        },
-                                    },
-                                },
-                            },
+                        orderNumber_tenantId: {
+                            orderNumber: payment.sale_order_number,
+                            tenantId: this.kencoveApiApp.tenantId,
                         },
                     },
                 });
+                if (!order) {
+                    this.logger.info(
+                        `Could not find order for ${payment.sale_order_number}. Skipping.`,
+                    );
+                    continue;
+                }
+
+                this.logger.debug("Upserting payment", {
+                    methodType,
+                    gatewayType,
+                    referenceNumber,
+                });
+
+                try {
+                    await this.db.kencoveApiPayment.upsert({
+                        where: {
+                            id_kencoveApiAppId: {
+                                id: payment.payment_id.toString(),
+                                kencoveApiAppId: this.kencoveApiApp.id,
+                            },
+                        },
+                        update: {
+                            createdAt,
+                            payment: {
+                                update: {
+                                    order: {
+                                        connect: {
+                                            id: order.id,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                        create: {
+                            id: payment.payment_id.toString(),
+                            createdAt,
+                            updatedAt,
+                            kencoveApiApp: {
+                                connect: {
+                                    id: this.kencoveApiApp.id,
+                                },
+                            },
+                            payment: {
+                                connectOrCreate: {
+                                    where: {
+                                        referenceNumber_tenantId: {
+                                            referenceNumber,
+                                            tenantId:
+                                                this.kencoveApiApp.tenantId,
+                                        },
+                                    },
+                                    create: {
+                                        id: id.id("payment"),
+                                        amount: payment.payment_amount,
+                                        date: createdAt,
+                                        referenceNumber,
+                                        tenant: {
+                                            connect: {
+                                                id: this.kencoveApiApp.tenantId,
+                                            },
+                                        },
+                                        paymentMethod: {
+                                            connect: {
+                                                gatewayType_methodType_currency_tenantId:
+                                                    {
+                                                        gatewayType,
+                                                        methodType,
+                                                        currency: "USD",
+                                                        tenantId:
+                                                            this.kencoveApiApp
+                                                                .tenantId,
+                                                    },
+                                            },
+                                        },
+                                        order: {
+                                            connect: {
+                                                id: order.id,
+                                            },
+                                        },
+                                        mainContact: {
+                                            connect: {
+                                                id: order.mainContactId,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    });
+                } catch (error) {
+                    this.logger.error("Error upserting payment", {
+                        error,
+                        payment,
+                        currency: "USD",
+                    });
+                    continue;
+                }
             }
         }
     }

@@ -43,6 +43,7 @@ import { KencoveApiContactSyncWf } from "./workflows/kencoveApiContactSync";
 import { CognitoUserSyncWf } from "./workflows/cognitoUserSync";
 import { SaleorVariantFBTSyncWf } from "./workflows/saleorVariantFBTSync";
 import { SaleorTaxClassSyncWf } from "./workflows/saleorTaxClassSync";
+import { KencoveApiPaymentSyncWf } from "./workflows/kencoveApiPaymentSync";
 
 interface CronClients {
     logger: ILogger;
@@ -250,6 +251,15 @@ export class CronTable {
                     commonWorkflowConfig,
                 ),
                 { ...commonCronConfig, offset: 20 },
+                [tenantId.substring(0, 5), id.substring(0, 5)],
+            );
+            new WorkflowScheduler(this.clients).schedule(
+                createWorkflowFactory(
+                    KencoveApiPaymentSyncWf,
+                    this.clients,
+                    commonWorkflowConfig,
+                ),
+                { ...commonCronConfig, offset: 25 },
                 [tenantId.substring(0, 5), id.substring(0, 5)],
             );
         }
