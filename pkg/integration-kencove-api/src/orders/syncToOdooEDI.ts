@@ -78,7 +78,7 @@ export class SyncToOdooEDI {
     }
 
     private async sendOrderToOdooEDI(order: any): Promise<void> {
-        const url = this.kencoveApiApp.ediEndpoint;
+        const url = `${this.kencoveApiApp.ediEndpoint}/api/v1/custom/saleor/order_create_async?db=kencove_20231224`;
         if (!url) throw new Error("EDI endpoint is not configured");
         const response = await axios.post(url, order);
         if (response.status !== 200) {
@@ -100,6 +100,45 @@ export class SyncToOdooEDI {
                 `Failed to send order to Odoo EDI: ${responseBody.payload.message}`,
             );
         }
+
+        // success message: {
+        // "payload": {
+        //     "data": {
+        //     "id": 13,
+        //     "order_number": "322"
+        //     },
+        //     "message": "Exchange record to create order successfully created.",
+        //     "ok": true
+        //     }
+        //     }
+        const exchangeRecordId = responseBody?.payload?.data?.id;
+        if (!exchangeRecordId) {
+            throw new Error(
+                `Failed to send order to Odoo EDI: ${responseBody.payload.message}`,
+            );
+        }
+        this.logger.info(
+            `Successfully sent order to Odoo EDI. Exchange record: ${exchangeRecordId}`,
+        );
+        return exchangeRecordId;
+    }
+
+    /**
+     * The EDI service is an async processing service.
+     * We need to pull the status of the processing from
+     * a different endpoint
+     */
+    private async getOrderExchangeStatus(
+        exchangeRecordId: string,
+    ): Promise<any> {
+        const url = `${this.kencoveApiApp.ediEndpoint}/api/v1/custom/saleor/exchange_record_status?id=${exchangeRecordId}&db=kencove_20231224}`;
+        const response = await axios.get(url);
+        if (response.status !== 200) {
+            throw new Error(
+                `Failed to get order exchange status from Odoo EDI: ${response.statusText}`,
+            );
+        }
+        return response.data;
     }
 
     public async sync(): Promise<void> {
