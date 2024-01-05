@@ -310,6 +310,7 @@ export class KencoveApiAppOrderSyncService {
                                             order.state,
                                         ),
                                         date,
+                                        language: "EN",
                                         currency: "USD",
                                         carrier,
                                         tenant: {
@@ -526,8 +527,14 @@ export class KencoveApiAppOrderSyncService {
                                 },
                                 orderStatus: this.matchOrderStatus(order.state),
                                 currency: "USD",
+                                /**
+                                 * These orders are for US only.
+                                 */
+                                language: "EN",
                                 carrier,
                                 totalPriceGross: order.amount_total,
+                                totalPriceNet: order.amount_untaxed,
+                                shippingPriceNet: order.shipping_cost_net,
                                 shippingPriceGross: order.shipping_cost_total,
                                 billingAddress: billingAddressId
                                     ? {

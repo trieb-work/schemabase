@@ -32798,6 +32798,7 @@ export type SaleorCronOrdersOverviewQuery = {
                 paymentStatus: PaymentChargeStatusEnum;
                 isPaid: boolean;
                 number: string;
+                externalReference?: string | null;
                 billingAddress?: {
                     __typename?: "Address";
                     firstName: string;
@@ -34128,6 +34129,7 @@ export const SaleorCronOrdersOverviewDocument = gql`
                     paymentStatus
                     isPaid
                     number
+                    externalReference
                     total {
                         currency
                         gross {

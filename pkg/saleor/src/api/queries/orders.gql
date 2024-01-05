@@ -58,6 +58,7 @@ query saleorCronOrdersOverview(
                 paymentStatus
                 isPaid
                 number
+                externalReference
                 total {
                     currency
                     gross {
