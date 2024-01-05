@@ -157,7 +157,16 @@ export class SaleorOrderSyncService {
                 if (!order.number || typeof order.number === "undefined") {
                     throw new Error(`No orderNumber in order. Can't sync.`);
                 }
-                const prefixedOrderNumber = `${this.orderPrefix}-${order.number}`;
+
+                if (order.externalReference) {
+                    this.logger.info(
+                        `Saleor order has externalRefernce ${order.externalReference} set. Using this as ordernumber instead of ${order.number}. We skip the internal update for now`,
+                    );
+                    continue;
+                }
+                const prefixedOrderNumber =
+                    order.externalReference ??
+                    `${this.orderPrefix}-${order.number}`;
 
                 if (!order.userEmail) {
                     throw new Error(
@@ -415,7 +424,7 @@ export class SaleorOrderSyncService {
                             `Lineitem of Order has a missing id in saleor response.`,
                         );
                     }
-                    if (!lineItem?.productSku) {
+                    if (!lineItem?.variant?.sku) {
                         throw new Error(
                             `Lineitem of Order is missing the variant sku in saleor response.`,
                         );
@@ -424,14 +433,14 @@ export class SaleorOrderSyncService {
                     const productSku = await this.db.productVariant.findUnique({
                         where: {
                             sku_tenantId: {
-                                sku: lineItem.productSku,
+                                sku: lineItem.variant.sku,
                                 tenantId: this.tenantId,
                             },
                         },
                     });
                     if (!productSku) {
                         throw new Warning(
-                            `No internal product variant found for SKU ${lineItem.productSku}! Can't create line Item. Try again after Product Variant Sync.`,
+                            `No internal product variant found for SKU ${lineItem.variant.sku}! Can't create line Item. Try again after Product Variant Sync.`,
                         );
                     }
 
@@ -440,7 +449,7 @@ export class SaleorOrderSyncService {
 
                     const uniqueString = uniqueStringOrderLine(
                         prefixedOrderNumber,
-                        lineItem.productSku,
+                        lineItem.variant.sku,
                         lineItem.quantity,
                         lineItemOrder,
                     );

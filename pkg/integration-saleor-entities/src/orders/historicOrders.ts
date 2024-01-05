@@ -10,6 +10,8 @@ import {
     Language,
     OrderLineItem,
     OrderStatus as OrderStatusSchemabase,
+    Package,
+    PackageLineItem,
     PrismaClient,
     Product,
     ProductVariant,
@@ -22,7 +24,9 @@ import {
 import {
     AddressInput,
     ErrorPolicyEnum,
+    InputMaybe,
     LanguageCodeEnum,
+    OrderBulkCreateFulfillmentInput,
     OrderBulkCreateInput,
     OrderBulkCreateOrderLineInput,
     OrderStatus,
@@ -236,6 +240,28 @@ export class SaleorHistoricOrdersSync {
             });
     }
 
+    private schemabasePackageToFulfillment(
+        packages: (Package & {
+            packageLineItems: (PackageLineItem & {
+                warehouse: any;
+            })[];
+        })[],
+    ): InputMaybe<Array<OrderBulkCreateFulfillmentInput>> {
+        return packages.map((p) => {
+            return {
+                trackingNumber: p.trackingId,
+                lines: p.packageLineItems.map((l, i) => {
+                    return {
+                        orderLineIndex: i,
+                        quantity: l.quantity,
+                        sku: l.sku,
+                        warehouse: l.warehouse.saleorWarehouse[0].id as string,
+                    };
+                }),
+            };
+        });
+    }
+
     /**
      * Taking schemabase order schema and trying to transform it to saleor order schema.
      * Proceed only with orders, that match the schema
@@ -291,6 +317,9 @@ export class SaleorHistoricOrdersSync {
                             net: order.shippingPriceNet || 0,
                         },
                     },
+                    fulfillments: this.schemabasePackageToFulfillment(
+                        order.packages,
+                    ),
                 };
                 returningBulkOrdes.push(transformedOrder);
             } catch (error) {
@@ -368,7 +397,24 @@ export class SaleorHistoricOrdersSync {
                     },
                 },
                 payments: true,
-                packages: true,
+                packages: {
+                    include: {
+                        packageLineItems: {
+                            include: {
+                                warehouse: {
+                                    include: {
+                                        saleorWarehouse: {
+                                            where: {
+                                                installedSaleorAppId:
+                                                    this.installedSaleorApp.id,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
             },
         });
 
