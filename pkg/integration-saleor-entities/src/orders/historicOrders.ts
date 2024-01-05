@@ -258,10 +258,12 @@ export class SaleorHistoricOrdersSync {
                     currency: order.currency,
                     createdAt: order.date,
                     shippingAddress: this.schemabaseAddressToSaleorAddress(
-                        order.shippingAddress as Address,
+                        (order.shippingAddress ||
+                            order.billingAddress) as Address,
                     ),
                     billingAddress: this.schemabaseAddressToSaleorAddress(
-                        order.billingAddress as Address,
+                        (order.billingAddress ||
+                            order.shippingAddress) as Address,
                     ),
                     user: {
                         /**
@@ -403,17 +405,23 @@ export class SaleorHistoricOrdersSync {
                 );
                 return false;
             }
-            if (!order.shippingAddress) {
+            if (!order.shippingAddress && !order.billingAddress) {
                 this.logger.warn(
-                    `No shippingAddress for order ${order.orderNumber}. This should never happen`,
+                    `No shippingAddress and billing address for order ${order.orderNumber}. This should never happen`,
                 );
                 return false;
             }
-            if (!order.billingAddress) {
+            if (!order.shippingAddress && order.billingAddress) {
                 this.logger.warn(
-                    `No billingAddress for order ${order.orderNumber}. This should never happen`,
+                    `No shippingAddress for order ${order.orderNumber}. Setting billing address as shipping address`,
                 );
-                return false;
+                order.billingAddress = order.shippingAddress;
+            }
+            if (!order.billingAddress && order.shippingAddress) {
+                this.logger.warn(
+                    `No billingAddress for order ${order.orderNumber}. Setting shipping address as billing address`,
+                );
+                order.billingAddress = order.shippingAddress;
             }
             return true;
         });
@@ -537,6 +545,11 @@ export class SaleorHistoricOrdersSync {
                 );
                 this.logger.info(
                     `Successfully created ${successfulOrders.length} historic orders in saleor`,
+                    {
+                        successfulOrders: successfulOrders.map(
+                            (o) => o.order?.externalReference,
+                        ),
+                    },
                 );
                 if (!bulkOrderCreateResponse.orderBulkCreate?.results) {
                     this.logger.error(
