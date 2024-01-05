@@ -75,6 +75,7 @@ class Addresses {
             plz: address.postalCode,
             city: address.city,
             countryCode: address.country.code as CountryCode,
+            state: address.countryArea,
             houseNumber: splitted?.housenumber,
             streetWithoutHouseNumber: splitted?.street,
         };
