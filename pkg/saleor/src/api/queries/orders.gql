@@ -10,6 +10,7 @@ fragment standardAddressValues on Address {
     country {
         code
     }
+    countryArea
 }
 
 query saleorCronOrdersOverview(

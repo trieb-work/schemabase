@@ -32765,6 +32765,7 @@ export type StandardAddressValuesFragment = {
     streetAddress2: string;
     city: string;
     companyName: string;
+    countryArea: string;
     country: { __typename?: "CountryDisplay"; code: string };
 };
 
@@ -32809,6 +32810,7 @@ export type SaleorCronOrdersOverviewQuery = {
                     streetAddress2: string;
                     city: string;
                     companyName: string;
+                    countryArea: string;
                     country: { __typename?: "CountryDisplay"; code: string };
                 } | null;
                 shippingAddress?: {
@@ -32821,6 +32823,7 @@ export type SaleorCronOrdersOverviewQuery = {
                     streetAddress2: string;
                     city: string;
                     companyName: string;
+                    countryArea: string;
                     country: { __typename?: "CountryDisplay"; code: string };
                 } | null;
                 shippingPrice: {
@@ -33461,6 +33464,7 @@ export const StandardAddressValuesFragmentDoc = gql`
         country {
             code
         }
+        countryArea
     }
 `;
 export const VariantFragmentDoc = gql`
