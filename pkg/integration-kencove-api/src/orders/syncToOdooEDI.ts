@@ -128,18 +128,18 @@ export class SyncToOdooEDI {
      * We need to pull the status of the processing from
      * a different endpoint
      */
-    private async getOrderExchangeStatus(
-        exchangeRecordId: string,
-    ): Promise<any> {
-        const url = `${this.kencoveApiApp.ediEndpoint}/api/v1/custom/saleor/exchange_record_status?id=${exchangeRecordId}&db=kencove_20231224}`;
-        const response = await axios.get(url);
-        if (response.status !== 200) {
-            throw new Error(
-                `Failed to get order exchange status from Odoo EDI: ${response.statusText}`,
-            );
-        }
-        return response.data;
-    }
+    // private async getOrderExchangeStatus(
+    //     exchangeRecordId: string,
+    // ): Promise<any> {
+    //     const url = `${this.kencoveApiApp.ediEndpoint}/api/v1/custom/saleor/exchange_record_status?id=${exchangeRecordId}&db=kencove_20231224}`;
+    //     const response = await axios.get(url);
+    //     if (response.status !== 200) {
+    //         throw new Error(
+    //             `Failed to get order exchange status from Odoo EDI: ${response.statusText}`,
+    //         );
+    //     }
+    //     return response.data;
+    // }
 
     public async sync(): Promise<void> {
         // Get all unprocessed orders from the database
