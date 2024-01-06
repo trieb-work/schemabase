@@ -277,6 +277,7 @@ export class KencoveApiClient {
         let nextPage: string | null = null;
         let offset: number = 0;
         do {
+            this.logger.debug(`Requesting 50 products from ${fromDate}`);
             const response = await this.getProductsPage(
                 fromDate,
                 offset,
