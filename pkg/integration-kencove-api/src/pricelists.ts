@@ -239,6 +239,8 @@ export class KencoveApiAppPricelistSyncService {
                                 salesChannelId: salesChannel.id,
                                 productVariantId: productVariant.id,
                                 startDate,
+                                endDate,
+                                minQuantity: pricelistEntry.min_quantity,
                             },
                         });
                     if (!existingPriceEntry) {
@@ -263,14 +265,22 @@ export class KencoveApiAppPricelistSyncService {
                                 startDate,
                                 endDate,
                                 price: pricelistEntry.price,
+                                minQuantity: pricelistEntry.min_quantity,
                             },
                         });
                     } else {
                         this.logger.info(
                             `Price entry for SKU ${pricelist.itemCode} and` +
-                                `${pricelistEntry.pricelist_name} already exists. Doing nothing`,
+                                `${pricelistEntry.pricelist_name} already exists. Updating.`,
                         );
-                        continue;
+                        await this.db.salesChannelPriceEntry.update({
+                            where: {
+                                id: existingPriceEntry.id,
+                            },
+                            data: {
+                                price: pricelistEntry.price,
+                            },
+                        });
                     }
                 }
             }

@@ -268,7 +268,7 @@ export type KencoveApiPricelistItem = {
 export type KencoveApiPricelist = {
     product_template_id: number;
     itemCode: string;
-    priceListItems: KencoApiPricelistItem[];
+    priceListItems: KencoveApiPricelistItem[];
     createdAt: string;
     updatedAt: string;
 };
