@@ -112,6 +112,14 @@ export class KencoveApiAppPricelistSyncService {
                         : "Shipping Fees Apply",
                 },
             });
+            await this.db.product.update({
+                where: {
+                    id: productId,
+                },
+                data: {
+                    updatedAt: new Date(),
+                },
+            });
         } else {
             // only update the entry, if it has changed
             if (
@@ -133,6 +141,14 @@ export class KencoveApiAppPricelistSyncService {
                         value: priceListItem.freeship_qualified
                             ? "FREE Shipping"
                             : "Shipping Fees Apply",
+                    },
+                });
+                await this.db.product.update({
+                    where: {
+                        id: productId,
+                    },
+                    data: {
+                        updatedAt: new Date(),
                     },
                 });
             }
