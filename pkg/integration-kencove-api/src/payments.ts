@@ -43,6 +43,7 @@ export class KencoveApiAppPaymentSyncService {
         const lowercasedInput = input.toLowerCase();
         if (lowercasedInput.includes("authorize"))
             return GatewayType.authorizeNet;
+        if (lowercasedInput.includes("paypal")) return GatewayType.paypal;
 
         throw new Error(`Could not match the gateway type for ${input}`);
     }
