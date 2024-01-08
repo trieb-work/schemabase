@@ -16,7 +16,7 @@ describe("Zoho Inventory Tax Sync", () => {
     const mockedZohoClient = {
         tax: {
             list: async () =>
-                await Promise.resolve([
+                Promise.resolve([
                     {
                         tax_id: "116240000000032144",
                         tax_name: "Reduziert",

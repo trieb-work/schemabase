@@ -22,7 +22,7 @@ let salesorder: SalesOrder;
 let zoho: Zoho;
 
 const sleep = async (ms: number) =>
-    await new Promise((resolve) => setTimeout(resolve, ms));
+    new Promise((resolve) => setTimeout(resolve, ms));
 
 beforeAll(async () => {
     const cookies = env.get("ZOHO_COOKIES");

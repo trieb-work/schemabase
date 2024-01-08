@@ -111,7 +111,7 @@ export class XentralRestClient {
                 }:\n${await xentralRes.text()}`,
             );
         }
-        return await xentralRes.json();
+        return xentralRes.json();
     }
 
     public async *paginatedApiFetch<

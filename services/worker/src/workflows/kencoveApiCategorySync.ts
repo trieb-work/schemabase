@@ -13,7 +13,9 @@ export type KencoveApiCategorySyncWorkflowConfig = {
 
 export class KencoveApiCategorySyncWf implements Workflow {
     private prisma: PrismaClient;
+
     private logger: ILogger;
+
     private kencoveApiApp: KencoveApiApp;
 
     public constructor(

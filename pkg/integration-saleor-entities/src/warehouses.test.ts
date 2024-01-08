@@ -12,7 +12,7 @@ describe("Saleor Entity Sync Warehouses Test", () => {
     const prismaClient = new PrismaClient();
     const mockedSaleorClient = {
         warehouses: async () =>
-            await Promise.resolve({
+            Promise.resolve({
                 warehouses: {
                     edges: [
                         {

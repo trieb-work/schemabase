@@ -81,10 +81,18 @@ export class SaleorProductManual {
         const mediaUpload = new MediaUpload(this.installedSaleorApp, this.db);
         try {
             const fileBlob = await mediaUpload.fetchMediaBlob(manual.url);
-            const fileExtension = mediaUpload.getFileExtension(manual.url);
+            const fileExtension = await mediaUpload.getFileExtension(
+                manual.url,
+            );
+            if (!fileExtension) {
+                this.logger.error(
+                    `Could not determine file extension for media ${manual.id}: ${manual.url}`,
+                );
+                return;
+            }
             const fileURL = await mediaUpload.uploadFileToSaleor(
                 fileBlob,
-                fileExtension,
+                fileExtension.extension,
                 manual.id,
                 this.logger,
             );

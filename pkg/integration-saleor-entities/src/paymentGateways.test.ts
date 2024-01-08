@@ -13,7 +13,7 @@ describe("Saleor Entity Sync payments Test", () => {
     const prismaClient = new PrismaClient();
     const mockedSaleorClient = {
         paymentGateways: async () =>
-            await Promise.resolve({
+            Promise.resolve({
                 shop: {
                     availablePaymentGateways: [
                         {

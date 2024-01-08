@@ -11,7 +11,7 @@ beforeEach(() => {
 describe("Saleor Entity Sync Packages Test", () => {
     const prismaClient = new PrismaClient();
     const mockedSaleorClient = {
-        saleorCronPackages: async () => await Promise.resolve({}),
+        saleorCronPackages: async () => Promise.resolve({}),
     } as unknown as SaleorClient;
 
     test("It should work to sync mocked Packages to internal ECI db", async () => {

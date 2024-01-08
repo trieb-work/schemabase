@@ -16,7 +16,7 @@ describe("Zoho Inventory Contact Sync", () => {
     const mockedZohoClient = {
         contact: {
             list: async () =>
-                await Promise.resolve([
+                Promise.resolve([
                     {
                         contact_id: "116240000000631001",
                         contact_name: "Christina Lang",

@@ -17,7 +17,7 @@ describe("Zoho Inventory Item Sync", () => {
         item: {
             list: async () =>
                 // copied from response of items overview page
-                await Promise.resolve([
+                Promise.resolve([
                     {
                         item_id: "116240000000378951",
                         name: "3 Lebkuche in Bio-Folie",

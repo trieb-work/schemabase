@@ -20,7 +20,7 @@ describe("Zoho Inventory payment Sync", () => {
     const mockedZohoClient = {
         payment: {
             list: async () =>
-                await Promise.resolve([
+                Promise.resolve([
                     {
                         payment_id: "98644000014006109",
                         payment_number: "2711",

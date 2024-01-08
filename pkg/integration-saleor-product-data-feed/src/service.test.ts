@@ -11,7 +11,7 @@ beforeEach(() => {
 describe("generate", () => {
     const mockedSaleorClient = {
         products: async (variables: { first: number; channel: string }) =>
-            await Promise.resolve({
+            Promise.resolve({
                 products: {
                     edges: [
                         {

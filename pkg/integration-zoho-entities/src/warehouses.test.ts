@@ -16,7 +16,7 @@ describe("Zoho Inventory Warehouse Sync", () => {
     const mockedZohoClient = {
         warehouse: {
             list: async () =>
-                await Promise.resolve([
+                Promise.resolve([
                     // {
                     //   warehouse_id: "98644000000108128",
                     //   warehouse_name: "GIGATEC GmbH",
