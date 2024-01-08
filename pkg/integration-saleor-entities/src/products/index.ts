@@ -67,6 +67,12 @@ export class SaleorProductSyncService {
 
     protected readonly db: PrismaClient;
 
+    /**
+     * Cache for swatch attribute values. We need to create them in saleor
+     * only once.
+     */
+    private swatchCache: Record<string, string> = {};
+
     public constructor(config: SaleorProductSyncServiceConfig) {
         this.config = config;
         this.saleorClient = config.saleorClient;
@@ -647,6 +653,18 @@ export class SaleorProductSyncService {
         attributeValueName: string,
         attributeValueHex: string,
     ): Promise<string> {
+        /**
+         * Check if we already have the attribute value in our cache
+         */
+        if (this.swatchCache[saleorAttributeId + attributeValueName]) {
+            this.logger.debug(
+                `Found attribute value ${attributeValueName} in cache, returning slug ${
+                    this.swatchCache[saleorAttributeId + attributeValueName]
+                }`,
+            );
+            return this.swatchCache[saleorAttributeId + attributeValueName];
+        }
+
         const searchResult = await this.saleorClient.attributeValueSearch({
             attributeId: saleorAttributeId,
             searchvalue: attributeValueName,
@@ -705,6 +723,8 @@ export class SaleorProductSyncService {
         this.logger.debug(
             `Returning swatch slug ${hexMatch?.node.slug} for swatch attribute value ${attributeValueName} for saleor attribute ${saleorAttributeId}`,
         );
+        this.swatchCache[saleorAttributeId + attributeValueName] =
+            hexMatch.node.slug;
         return hexMatch.node.slug;
     }
 
@@ -1743,8 +1763,14 @@ export class SaleorProductSyncService {
                     installedSaleorAppId: this.installedSaleorAppId,
                     OR: [
                         {
-                            updatedAt: {
-                                gte: createdGte,
+                            productVariant: {
+                                stockEntries: {
+                                    some: {
+                                        updatedAt: {
+                                            gte: createdGte,
+                                        },
+                                    },
+                                },
                             },
                         },
                         {
