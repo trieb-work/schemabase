@@ -1,5 +1,6 @@
 import { ILogger } from "@eci/pkg/logger";
 import { InstalledSaleorApp, PrismaClient, SaleorApp } from "@eci/pkg/prisma";
+import { fileTypeFromBlob } from "file-type";
 
 export class MediaUpload {
     private readonly installedSaleorApp: InstalledSaleorApp & {
@@ -21,7 +22,10 @@ export class MediaUpload {
      * @param url
      * @returns
      */
-    public getFileExtension(url: string): string {
+    public async getFileExtension(
+        url: string,
+        fileBlob?: Blob,
+    ): Promise<{ extension: string; fileType?: string } | undefined> {
         const extension = url.slice(((url.lastIndexOf(".") - 1) >>> 0) + 2);
 
         // Check if the derived extension is valid (e.g., 'jpg', 'png').
@@ -36,11 +40,19 @@ export class MediaUpload {
             "tiff",
             "pdf",
         ];
+
         if (!validExtensions.includes(extension.toLowerCase())) {
-            return ".png"; // fallback to .png if the extracted extension isn't recognized
+            if (!fileBlob) return undefined;
+            // try to guess the file extension using the file-type library
+            const guess = await fileTypeFromBlob(fileBlob);
+            if (guess) {
+                return { extension: `.${guess.ext}`, fileType: guess.mime };
+            } else {
+                return undefined;
+            }
         }
 
-        return `.${extension.toLowerCase()}`;
+        return { extension: `.${extension.toLowerCase()}` };
     }
 
     public async fetchMediaBlob(url: string): Promise<Blob> {
@@ -63,12 +75,19 @@ export class MediaUpload {
      * @param fileExtension
      * @returns
      */
-    public async uploadImageToSaleor(
-        saleorProductId: string,
-        mediaBlob: Blob,
-        fileExtension: string,
-        logger: ILogger,
-    ): Promise<string> {
+    public async uploadImageToSaleor({
+        saleorProductId,
+        mediaBlob,
+        fileExtension,
+        logger,
+        fileType,
+    }: {
+        saleorProductId: string;
+        mediaBlob: Blob;
+        fileExtension: string;
+        logger: ILogger;
+        fileType?: string;
+    }): Promise<string> {
         const form = new FormData();
         form.append(
             "operations",
@@ -97,8 +116,14 @@ export class MediaUpload {
 
         form.append("map", JSON.stringify({ image: ["variables.image"] }));
 
+        /**
+         * set the filetype if we have one
+         */
+        const fileBlob = fileType
+            ? mediaBlob.slice(0, mediaBlob.size, fileType)
+            : mediaBlob;
         // Use the file extension when appending the image to the form
-        form.append("image", mediaBlob, `image${fileExtension}`);
+        form.append("image", fileBlob, `image${fileExtension}`);
 
         logger.debug(
             `Uploading image to Saleor with name: image${fileExtension}`,

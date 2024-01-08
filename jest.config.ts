@@ -1,9 +1,11 @@
+import type { JestConfigWithTsJest } from "ts-jest";
+
 /*
  * For a detailed explanation regarding each configuration property and type check, visit:
  * https://jestjs.io/docs/configuration
  */
 
-module.exports = {
+const jestConfig: JestConfigWithTsJest = {
     // All imported modules in your tests should be mocked automatically
     // automock: false,
 
@@ -61,13 +63,7 @@ module.exports = {
     // globalTeardown: undefined,
 
     // A set of global variables that need to be available in all test environments
-    globals: {
-        "ts-jest": {
-            diagnostics: {
-                warnOnly: true,
-            },
-        },
-    },
+    globals: {},
 
     // The maximum amount of workers used to run your tests. Can be specified as %
     // or a number. E.g. maxWorkers: 10% will use 10% of your CPU amount + 1 as
@@ -92,6 +88,7 @@ module.exports = {
     // A map from regular expressions to module names or to arrays of module names
     // that allow to stub out resources with a single module
     moduleNameMapper: {
+        "^(\\.{1,2}/.*)\\.js$": "$1",
         "@eci/(.*)": "<rootDir>/$1",
     },
 
@@ -106,7 +103,7 @@ module.exports = {
     // notifyMode: "failure-change",
 
     // A preset that is used as a base for Jest's configuration
-    // preset: undefined,
+    preset: "ts-jest/presets/default-esm",
 
     // Run tests from one or more projects
     // projects: undefined,
@@ -189,7 +186,18 @@ module.exports = {
 
     // A map from regular expressions to paths to transformers
     transform: {
-        "^.+\\.(t|j)sx?$": ["ts-jest"],
+        // '^.+\\.[tj]sx?$' to process js/ts with `ts-jest`
+        // '^.+\\.m?[tj]sx?$' to process js/ts/mjs/mts with `ts-jest`
+        "^.+\\.tsx?$": [
+            "ts-jest",
+            {
+                // ts-jest configuration goes here
+                useESM: true,
+                diagnostics: {
+                    warnOnly: true,
+                },
+            },
+        ],
     },
 
     // An array of regexp pattern strings that are matched against all source file
@@ -216,3 +224,5 @@ module.exports = {
     injectGlobals: false,
     testTimeout: 20_000,
 };
+
+export default jestConfig;
