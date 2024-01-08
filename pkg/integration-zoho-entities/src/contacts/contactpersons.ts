@@ -14,10 +14,15 @@ interface ContactPersonsSyncConfig {
 // TODO rewrite class to use helper function structure
 class ContactPersonsSync {
     private db: PrismaClient;
+
     private tenantId: string;
+
     private zohoAppId: string;
+
     private contactId: string;
+
     private logger: ILogger;
+
     constructor(config: ContactPersonsSyncConfig) {
         this.db = config.db;
         this.tenantId = config.tenantId;

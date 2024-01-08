@@ -7,7 +7,7 @@ export const resolvers: Resolvers<Context> = {
             await ctx.authorizeUser(["read:package"]);
 
             // TODO: change back to findUnique and a the tenant to this query
-            return await ctx.dataSources.db.client.package.findFirst({
+            return ctx.dataSources.db.client.package.findFirst({
                 where: { trackingId },
             });
         },

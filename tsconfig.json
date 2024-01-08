@@ -99,6 +99,12 @@
         "isolatedModules": true,
         "jsx": "preserve"
     },
-    "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.js"],
+    "include": [
+        "next-env.d.ts",
+        "**/*.ts",
+        "**/*.tsx",
+        "**/*.js",
+        "pkg/integration-saleor-entities/src/mediaUpload.ts"
+    ],
     "exclude": ["node_modules", "**/main.js"]
 }

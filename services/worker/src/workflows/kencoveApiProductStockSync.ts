@@ -14,7 +14,9 @@ export type KencoveApiProductStockSyncWorkflowConfig = {
 
 export class KencoveApiProductStockSyncWf implements Workflow {
     private prisma: PrismaClient;
+
     private logger: ILogger;
+
     private kencoveApiApp: KencoveApiApp;
 
     public constructor(

@@ -106,11 +106,17 @@ export class SaleorCategorySyncService {
         const mediaUpload = new MediaUpload(this.installedSaleorApp, this.db);
 
         const imageBlob = await mediaUpload.fetchMediaBlob(url);
-        const fileExtension = mediaUpload.getFileExtension(url);
+        const fileExtension = await mediaUpload.getFileExtension(url);
+        if (!fileExtension) {
+            this.logger.error(
+                `Could not determine file extension for url ${url}`,
+            );
+            return;
+        }
         await mediaUpload.uploadCategoryImageToSaleor(
             saleorCategoryId,
             imageBlob,
-            fileExtension,
+            fileExtension.extension,
             this.logger,
         );
     }

@@ -56,7 +56,7 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
     ): Promise<string> {
         const products = await this.generate(storefrontProductUrl, feedVariant);
         const csv = new ObjectsToCsv(products);
-        return await csv.toString();
+        return csv.toString();
     }
 
     private async generate(

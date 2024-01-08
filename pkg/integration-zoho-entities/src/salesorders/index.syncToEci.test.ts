@@ -18,7 +18,7 @@ describe("Zoho Inventory SalesOrders Sync", () => {
     const mockedZohoClient = {
         salesOrder: {
             list: async () =>
-                await Promise.resolve([
+                Promise.resolve([
                     {
                         salesorder_id: "116240000001637008",
                         zcrm_potential_id: "",
@@ -287,7 +287,7 @@ describe("Zoho Inventory SalesOrders Sync", () => {
                 ]),
             get: async (salesorderid: string) => {
                 const mapping: { [key: string]: SalesOrder } = {};
-                return await Promise.resolve(mapping[salesorderid]);
+                return Promise.resolve(mapping[salesorderid]);
             },
         },
         util: new Zoho(zohoClient).util,

@@ -19,6 +19,7 @@ export class XentralXmlClient {
     public readonly client: DigestClient;
 
     private readonly parser = new XMLParser({ ignoreDeclaration: true });
+
     private readonly builder = new XMLBuilder({});
 
     private readonly url: string;
@@ -93,7 +94,7 @@ export class XentralXmlClient {
     public async AuftragEdit(
         auftrag: AuftragEditRequest,
     ): Promise<AuftragEditResponse> {
-        return await this.edit<AuftragEditResponse>(auftrag, "AuftragEdit");
+        return this.edit<AuftragEditResponse>(auftrag, "AuftragEdit");
     }
 
     public async ArtikelCreate(
@@ -114,7 +115,7 @@ export class XentralXmlClient {
     public async ArtikelEdit(
         artikel: ArtikelEditRequest,
     ): Promise<ArtikelEditResponse> {
-        return await this.edit<ArtikelEditResponse>(artikel, "ArtikelEdit");
+        return this.edit<ArtikelEditResponse>(artikel, "ArtikelEdit");
     }
 
     public async ArtikelGet(

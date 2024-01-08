@@ -30,7 +30,7 @@ import { normalizeStrings } from "@eci/pkg/normalization";
 import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils";
 import { subHours, subYears } from "date-fns";
 import { editorJsHelper } from "../editorjs";
-import { MediaUpload } from "../mediaUpload";
+import { MediaUpload } from "../mediaUpload.js";
 import { ChannelAvailability } from "./channelAvailability";
 import { parseBoolean } from "@eci/pkg/utils/parseBoolean";
 import { SaleorProductManual } from "./productManual";
@@ -611,14 +611,24 @@ export class SaleorProductSyncService {
                 `Uploading media ${element.id}: ${element.url} to saleor`,
             );
             try {
-                const imageBlob = await mediaUpload.fetchMediaBlob(element.url);
-                const fileExtension = mediaUpload.getFileExtension(element.url);
-                const imageId = await mediaUpload.uploadImageToSaleor(
-                    saleorProductId,
-                    imageBlob,
-                    fileExtension,
-                    this.logger,
+                const mediaBlob = await mediaUpload.fetchMediaBlob(element.url);
+                const fileExtension = await mediaUpload.getFileExtension(
+                    element.url,
+                    mediaBlob,
                 );
+                if (!fileExtension) {
+                    this.logger.error(
+                        `Could not get file extension for media ${element.id}: ${element.url}. Can't upload to Saleor`,
+                    );
+                    continue;
+                }
+                const imageId = await mediaUpload.uploadImageToSaleor({
+                    saleorProductId,
+                    mediaBlob,
+                    fileExtension: fileExtension.extension,
+                    fileType: fileExtension.fileType,
+                    logger: this.logger,
+                });
                 await this.saleorClient.saleorUpdateMetadata({
                     id: imageId,
                     input: [

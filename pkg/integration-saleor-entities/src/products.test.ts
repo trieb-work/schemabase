@@ -13,7 +13,7 @@ describe("Saleor Entity Sync Products Test", () => {
     const prismaClient = new PrismaClient();
     const mockedSaleorClient = {
         saleorEntitySyncProducts: async () =>
-            await Promise.resolve({
+            Promise.resolve({
                 products: {
                     pageInfo: {
                         hasNextPage: false,

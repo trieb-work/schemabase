@@ -12,7 +12,7 @@ describe("Saleor Entity Sync payments Test", () => {
     const prismaClient = new PrismaClient();
     const mockedSaleorClient = {
         saleorCronPayments: async () =>
-            await Promise.resolve({
+            Promise.resolve({
                 orders: {
                     totalCount: 100,
                     pageInfo: {
