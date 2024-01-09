@@ -61,6 +61,10 @@ function cleanAttributes(
             name: "Number Range",
             display_type: "radio",
         },
+        {
+            name: "variant_website_description",
+            display_type: "richtext",
+        },
     ];
 
     /**
@@ -155,7 +159,7 @@ const kenAttributeToEciAttribute = (kenAttribute: string): AttributeType => {
             return AttributeType.FILE;
         case "NUMERIC":
             return AttributeType.NUMERIC;
-        case "RICH_TEXT":
+        case "richtext":
             return AttributeType.RICH_TEXT;
         case "text":
             return AttributeType.PLAIN_TEXT;
