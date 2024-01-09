@@ -15,5 +15,5 @@ test("parseBoolean returns boolean value", () => {
 
     expect(parseBoolean(0)).toBe(false);
 
-    expect(parseBoolean("abc")).toBe(false);
+    expect(parseBoolean("abc")).toBe(undefined);
 });
