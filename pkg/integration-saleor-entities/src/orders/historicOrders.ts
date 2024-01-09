@@ -12,6 +12,8 @@ import {
     OrderStatus as OrderStatusSchemabase,
     Package,
     PackageLineItem,
+    Payment,
+    PaymentMethod,
     PrismaClient,
     Product,
     ProductVariant,
@@ -32,6 +34,7 @@ import {
     OrderStatus,
     SaleorClient,
     CountryCode as SaleorCountryCode,
+    TransactionCreateInput,
 } from "@eci/pkg/saleor";
 
 // Saleor. It is using the bulkOrderCreate endpoint of Saleor to create these orders in Saleor.
@@ -235,6 +238,25 @@ export class SaleorHistoricOrdersSync {
             });
     }
 
+    private schemabasePaymentToSaleorTransaction(
+        payments:
+            | (Payment & {
+                  paymentMethod: PaymentMethod;
+              })[]
+            | null,
+    ): InputMaybe<TransactionCreateInput[]> {
+        if (!payments) return [];
+        return payments.map((p) => {
+            return {
+                pspReference: p.referenceNumber,
+                amountCharged: {
+                    amount: p.amount,
+                    currency: p.currency || "USD",
+                },
+            };
+        });
+    }
+
     private schemabasePackageToFulfillment(
         packages: (Package & {
             packageLineItems: (PackageLineItem & {
@@ -249,7 +271,6 @@ export class SaleorHistoricOrdersSync {
                     return {
                         orderLineIndex: i,
                         quantity: l.quantity,
-                        sku: l.sku,
                         warehouse: l.warehouse.saleorWarehouse[0].id as string,
                     };
                 }),
@@ -314,6 +335,9 @@ export class SaleorHistoricOrdersSync {
                     },
                     fulfillments: this.schemabasePackageToFulfillment(
                         order.packages,
+                    ),
+                    transactions: this.schemabasePaymentToSaleorTransaction(
+                        order.payments,
                     ),
                 };
                 returningBulkOrdes.push(transformedOrder);

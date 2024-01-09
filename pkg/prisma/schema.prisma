@@ -770,6 +770,21 @@ model Tax {
   @@index([tenantId])
 }
 
+enum PaymentStatus {
+  /// The payment is not yet processed
+  pending
+  /// The amount is authorized but not captured yet
+  authorized
+  /// The payment is processed / captured / charged
+  paid
+  /// The payment is refunded
+  refunded
+  /// The payment is partially refunded
+  partiallyRefunded
+  /// The payment is cancelled
+  cancelled
+}
+
 /// The ECI internal payments model
 model Payment {
   /// eci internal id
@@ -785,6 +800,12 @@ model Payment {
   date DateTime?
 
   amount Float
+
+  /// The status of the payment. We have default status paid, as we currently work only with paid payments
+  status PaymentStatus @default(paid)
+
+  /// The currency of the payment. We use the ISO 4217 standard here
+  currency Currency?
 
   /// Costs for this transaction, for example bank charges, gateway charges, paypal charges
   transactionFee Float @default(0)

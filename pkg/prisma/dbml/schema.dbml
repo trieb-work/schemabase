@@ -505,6 +505,8 @@ Table Payment {
   date DateTime [note: 'The order date. You can also create an order in the past for example. 
 Some systems just use a date here']
   amount Float [not null]
+  status PaymentStatus [not null, default: 'paid', note: 'The status of the payment. We have default status paid, as we currently work only with paid payments']
+  currency Currency [note: 'The currency of the payment. We use the ISO 4217 standard here']
   transactionFee Float [not null, default: 0, note: 'Costs for this transaction, for example bank charges, gateway charges, paypal charges']
   order Order
   orderId String
@@ -1950,6 +1952,15 @@ Enum ZohoSalesOrderStatus {
 Enum DatevContactType {
   DEBITOR
   KREDITOR
+}
+
+Enum PaymentStatus {
+  pending
+  authorized
+  paid
+  refunded
+  partiallyRefunded
+  cancelled
 }
 
 Enum PaymentMethodType {
