@@ -216,12 +216,7 @@ export class SaleorHistoricOrdersSync {
                     productName: line.productVariant.product.name,
                     variantName: line.productVariant.variantName,
                     taxClassId: saleorTaxClass,
-                    variantId: saleorProductVariantId
-                        ? saleorProductVariantId
-                        : undefined,
-                    variantExternalReference: saleorProductVariantId
-                        ? undefined
-                        : line.productVariant.sku,
+                    variantId: saleorProductVariantId ?? undefined,
                     quantity: line.quantity,
                     undiscountedTotalPrice: {
                         gross:
@@ -491,7 +486,7 @@ export class SaleorHistoricOrdersSync {
                 const bulkOrderCreateResponse =
                     await this.saleorClient.bulkOrderCreate({
                         orders: chunk,
-                        errorPolicy: ErrorPolicyEnum.RejectFailedRows,
+                        errorPolicy: ErrorPolicyEnum.IgnoreFailed,
                     });
                 const bulkOrderResultErrors =
                     bulkOrderCreateResponse.orderBulkCreate?.results
