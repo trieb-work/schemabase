@@ -33035,6 +33035,53 @@ export type SaleorCronPaymentsQuery = {
                         amount: number;
                     } | null;
                 }>;
+                transactions: Array<{
+                    __typename?: "TransactionItem";
+                    id: string;
+                    name: string;
+                    createdAt: any;
+                    actions: Array<TransactionActionEnum>;
+                    message: string;
+                    pspReference: string;
+                    authorizedAmount: {
+                        __typename?: "Money";
+                        currency: string;
+                        amount: number;
+                    };
+                    authorizePendingAmount: {
+                        __typename?: "Money";
+                        currency: string;
+                        amount: number;
+                    };
+                    chargePendingAmount: {
+                        __typename?: "Money";
+                        currency: string;
+                        amount: number;
+                    };
+                    chargedAmount: {
+                        __typename?: "Money";
+                        currency: string;
+                        amount: number;
+                    };
+                    events: Array<{
+                        __typename?: "TransactionEvent";
+                        type?: TransactionEventTypeEnum | null;
+                        amount: { __typename?: "Money"; amount: number };
+                    }>;
+                    createdBy?:
+                        | {
+                              __typename?: "App";
+                              id: string;
+                              name?: string | null;
+                          }
+                        | { __typename?: "User" }
+                        | null;
+                    privateMetadata: Array<{
+                        __typename?: "MetadataItem";
+                        key: string;
+                        value: string;
+                    }>;
+                }>;
             };
         }>;
     } | null;
@@ -34336,6 +34383,46 @@ export const SaleorCronPaymentsDocument = gql`
                         total {
                             currency
                             amount
+                        }
+                    }
+                    transactions {
+                        id
+                        name
+                        createdAt
+                        actions
+                        authorizedAmount {
+                            currency
+                            amount
+                        }
+                        authorizePendingAmount {
+                            currency
+                            amount
+                        }
+                        chargePendingAmount {
+                            currency
+                            amount
+                        }
+                        chargedAmount {
+                            currency
+                            amount
+                        }
+                        events {
+                            type
+                            amount {
+                                amount
+                            }
+                        }
+                        message
+                        createdBy {
+                            ... on App {
+                                id
+                                name
+                            }
+                        }
+                        pspReference
+                        privateMetadata {
+                            key
+                            value
                         }
                     }
                 }

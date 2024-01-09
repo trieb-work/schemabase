@@ -56,6 +56,46 @@ query saleorCronPayments(
                         amount
                     }
                 }
+                transactions {
+                    id
+                    name
+                    createdAt
+                    actions
+                    authorizedAmount {
+                        currency
+                        amount
+                    }
+                    authorizePendingAmount {
+                        currency
+                        amount
+                    }
+                    chargePendingAmount {
+                        currency
+                        amount
+                    }
+                    chargedAmount {
+                        currency
+                        amount
+                    }
+                    events {
+                        type
+                        amount {
+                            amount
+                        }
+                    }
+                    message
+                    createdBy {
+                        ... on App {
+                            id
+                            name
+                        }
+                    }
+                    pspReference
+                    privateMetadata {
+                        key
+                        value
+                    }
+                }
             }
         }
     }
