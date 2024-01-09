@@ -763,7 +763,7 @@ export class SaleorProductSyncService {
                 const value = parseBoolean(attr.value);
                 if (value === undefined) {
                     this.logger.warn(
-                        `Can't parse boolean value for boolean attribute ${attr.attribute.name}. Value: ${attr.value}. Skipping}`,
+                        `Can't parse boolean value for boolean attribute ${attr.attribute.name}. Value: ${attr.value}. Skipping`,
                     );
                     continue;
                 } else {

@@ -5,10 +5,23 @@
  */
 const parseBoolean = (input: string | boolean | unknown) => {
     switch (input) {
-        case "true" || true || "True" || "TRUE":
+        case true:
+        case "true":
+        case "TRUE":
+        case "True":
+        case "true":
+        case "1":
+        case 1:
             return true;
-        case "false" || false || "False" || "FALSE":
+        case false:
+        case "false":
+        case "FALSE":
+        case "False":
+        case "false":
+        case "0":
+        case 0:
             return false;
+
         default:
             return undefined;
     }
