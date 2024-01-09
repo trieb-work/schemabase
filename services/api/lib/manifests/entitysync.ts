@@ -14,6 +14,7 @@ const getPermissions = (): AppPermission[] => {
         "MANAGE_SHIPPING",
         "MANAGE_USERS",
         "MANAGE_TAXES",
+        "HANDLE_PAYMENTS",
     ];
 };
 
