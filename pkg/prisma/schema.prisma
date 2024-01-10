@@ -2844,6 +2844,22 @@ model AWSCognitoApp {
 
 }
 
+model AWSCognitoUser {
+  /// The cognito "username"
+  id String
+
+  contact   Contact @relation(fields: [contactId], references: [id])
+  contactId String
+
+  awsCognitoApp   AWSCognitoApp @relation(fields: [awsCognitoAppId], references: [id])
+  awsCognitoAppId String
+
+  @@index([awsCognitoAppId])
+  @@unique([id, awsCognitoAppId])
+  @@index([contactId])
+}
+
+
 model ZohoApp {
   id String @id
 
@@ -3269,20 +3285,7 @@ model XentralProxyAuftrag {
   @@index([xentralProxyAppId])
 }
 
-model AWSCognitoUser {
-  /// The cognito "username"
-  id String
 
-  contact   Contact @relation(fields: [contactId], references: [id])
-  contactId String
-
-  awsCognitoApp   AWSCognitoApp @relation(fields: [awsCognitoAppId], references: [id])
-  awsCognitoAppId String
-
-  @@index([awsCognitoAppId])
-  @@unique([id, awsCognitoAppId])
-  @@index([contactId])
-}
 
 // ----------------------------------------------------------------------------
 // Every Config/App can have multiple webhooks attached

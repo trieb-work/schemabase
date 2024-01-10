@@ -6,6 +6,7 @@ import {
     CognitoIdentityProvider,
     ListUsersCommand,
     ListUsersCommandOutput,
+    ListUsersResponse,
     // AdminCreateUserCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 import { CronStateHandler } from "@eci/pkg/cronstate";
@@ -83,6 +84,32 @@ export class CognitoUserSyncService {
     // }
 
     /**
+     * exhaustive list of all users in AWS cognito. Is scrolling over
+     * all users using the pagination token
+     */
+    private async getAllCognitoUsers(): Promise<ListUsersResponse["Users"]> {
+        let paginationToken: string | undefined = undefined;
+        let users: ListUsersResponse["Users"] = [];
+
+        do {
+            const command: ListUsersCommand = new ListUsersCommand({
+                UserPoolId: this.AWSCognitoApp.userPoolId,
+                PaginationToken: paginationToken,
+            });
+
+            const response = await this.cognitoClient.send(command);
+
+            if (response.Users) {
+                users = users.concat(response.Users);
+            }
+
+            paginationToken = response.PaginationToken;
+        } while (paginationToken);
+
+        return users;
+    }
+
+    /**
      * We search for a user in AWS cognito using the email address as search parameter.
      * We use the ListUsersCommand to search for the email attribute. Can return multiple identities
      * @param email
@@ -103,6 +130,74 @@ export class CognitoUserSyncService {
         }
 
         return response.Users;
+    }
+
+    public async syncToEci(): Promise<void> {
+        /**
+         * pull all cognito users and store them in our internal DB
+         */
+
+        const allCognitoUsers = await this.getAllCognitoUsers();
+
+        if (!allCognitoUsers) {
+            this.logger.info("No users found in cognito");
+            return;
+        }
+
+        this.logger.info(`Found ${allCognitoUsers.length} users in cognito`);
+
+        const existingCognitoUsers = await this.db.aWSCognitoUser.findMany({
+            where: {
+                awsCognitoAppId: this.AWSCognitoApp.id,
+                id: {
+                    in: allCognitoUsers.map((user) => user.Username!),
+                },
+            },
+        });
+        const existingCognitoUserIds = existingCognitoUsers.map(
+            (user) => user.id,
+        );
+        const newCognitoUsers = allCognitoUsers.filter(
+            (user) => !existingCognitoUserIds.includes(user.Username!),
+        );
+
+        this.logger.info(
+            `Found ${newCognitoUsers.length} new users in cognito`,
+        );
+
+        /**
+         * create the new users in our DB
+         */
+        for (const user of newCognitoUsers) {
+            const email = user.Attributes?.find(
+                (attribute) => attribute.Name === "email",
+            )?.Value?.toLowerCase();
+            if (!email) {
+                this.logger.error(
+                    `User ${user.Username} has no email attribute`,
+                );
+                continue;
+            }
+
+            await this.db.aWSCognitoUser.create({
+                data: {
+                    id: user.Username!,
+                    awsCognitoApp: {
+                        connect: {
+                            id: this.AWSCognitoApp.id,
+                        },
+                    },
+                    contact: {
+                        connect: {
+                            email_tenantId: {
+                                email,
+                                tenantId: this.tenantId,
+                            },
+                        },
+                    },
+                },
+            });
+        }
     }
 
     public async syncFromEci(): Promise<void> {
@@ -127,6 +222,11 @@ export class CognitoUserSyncService {
                 tenantId: this.tenantId,
                 updatedAt: {
                     gte: gteDate,
+                },
+                awsCognitoUsers: {
+                    some: {
+                        awsCognitoAppId: this.AWSCognitoApp.id,
+                    },
                 },
             },
             include: {

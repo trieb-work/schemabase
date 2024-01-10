@@ -43,6 +43,7 @@ export class CognitoUserSyncWf implements Workflow {
             tenantId: this.awsCognitoApp.tenantId,
             AWSCognitoApp: this.awsCognitoApp,
         });
+        await CognitoUserSync.syncToEci();
         await CognitoUserSync.syncFromEci();
         this.logger.info("Finished aws cognito user sync workflow run");
     }
