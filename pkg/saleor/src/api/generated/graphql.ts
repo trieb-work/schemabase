@@ -33081,6 +33081,13 @@ export type SaleorCronPaymentsQuery = {
                         key: string;
                         value: string;
                     }>;
+                    order?: {
+                        __typename?: "Order";
+                        id: string;
+                        created: any;
+                        number: string;
+                        userEmail?: string | null;
+                    } | null;
                 }>;
             };
         }>;
@@ -34423,6 +34430,12 @@ export const SaleorCronPaymentsDocument = gql`
                         privateMetadata {
                             key
                             value
+                        }
+                        order {
+                            id
+                            created
+                            number
+                            userEmail
                         }
                     }
                 }

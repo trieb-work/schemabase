@@ -95,6 +95,12 @@ query saleorCronPayments(
                         key
                         value
                     }
+                    order {
+                        id
+                        created
+                        number
+                        userEmail
+                    }
                 }
             }
         }

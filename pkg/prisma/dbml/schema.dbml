@@ -1619,6 +1619,18 @@ Table AWSCognitoApp {
   Note: 'The admin app for AWS cognito. Using the IAM credentials to authenticate. We store credentials per user pool'
 }
 
+Table AWSCognitoUser {
+  id String [not null, note: 'The cognito "username"']
+  contact Contact [not null]
+  contactId String [not null]
+  awsCognitoApp AWSCognitoApp [not null]
+  awsCognitoAppId String [not null]
+
+  indexes {
+    (id, awsCognitoAppId) [unique]
+  }
+}
+
 Table ZohoApp {
   id String [pk]
   enabled Boolean [not null, default: true]
@@ -1889,18 +1901,6 @@ Table XentralProxyAuftrag {
   indexes {
     (id, xentralProxyAppId) [unique]
     (xentralBelegNr, xentralProxyAppId) [unique]
-  }
-}
-
-Table AWSCognitoUser {
-  id String [not null, note: 'The cognito "username"']
-  contact Contact [not null]
-  contactId String [not null]
-  awsCognitoApp AWSCognitoApp [not null]
-  awsCognitoAppId String [not null]
-
-  indexes {
-    (id, awsCognitoAppId) [unique]
   }
 }
 
@@ -2693,6 +2693,10 @@ Ref: InternalDataApp.tenantId > Tenant.id [delete: Cascade]
 
 Ref: AWSCognitoApp.tenantId > Tenant.id [delete: Cascade]
 
+Ref: AWSCognitoUser.contactId > Contact.id
+
+Ref: AWSCognitoUser.awsCognitoAppId > AWSCognitoApp.id
+
 Ref: ZohoApp.tenantId > Tenant.id [delete: Cascade]
 
 Ref: SaleorApp.tenantId > Tenant.id [delete: Cascade]
@@ -2738,10 +2742,6 @@ Ref: XentralProxyApp.warehouseId > Warehouse.id [delete: Cascade]
 Ref: XentralProxyAuftrag.xentralProxyAppId > XentralProxyApp.id
 
 Ref: XentralProxyAuftrag.orderId > Order.id
-
-Ref: AWSCognitoUser.contactId > Contact.id
-
-Ref: AWSCognitoUser.awsCognitoAppId > AWSCognitoApp.id
 
 Ref: IncomingWebhook.dpdAppId > DpdApp.id [delete: Cascade]
 
