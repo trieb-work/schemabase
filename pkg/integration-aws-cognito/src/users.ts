@@ -186,18 +186,49 @@ export class CognitoUserSyncService {
                 this.logger.info(`Updating user ${contact.email} in Cognito`);
                 for (const u of cognitoUser) {
                     const channelName = contact.channels?.[0]?.name;
+                    const userAttributes = [];
                     if (channelName === undefined) {
                         this.logger.warn(
                             `Contact ${contact.email} has no related sales channel`,
                         );
-                        continue;
-                    }
-                    await this.updateUserAttributesInCognito(u.Username!, [
-                        {
+                    } else {
+                        userAttributes.push({
                             Name: "custom:channel",
                             Value: channelName,
-                        },
-                    ]);
+                        });
+                    }
+                    /**
+                     * when the cognito user has no first and lastname, but we have internally,
+                     * update these attributes
+                     */
+                    if (
+                        !u.Attributes?.find(
+                            (attr) => attr.Name === "given_name",
+                        ) &&
+                        contact.firstName
+                    ) {
+                        userAttributes.push({
+                            Name: "given_name",
+                            Value: contact.firstName,
+                        });
+                    }
+
+                    if (
+                        !u.Attributes?.find(
+                            (attr) => attr.Name === "family_name",
+                        ) &&
+                        contact.lastName
+                    ) {
+                        userAttributes.push({
+                            Name: "family_name",
+                            Value: contact.lastName,
+                        });
+                    }
+
+                    await this.updateUserAttributesInCognito(
+                        u.Username!,
+                        userAttributes,
+                    );
                 }
             }
         }
