@@ -1,6 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { ILogger } from "@eci/pkg/logger";
-import { AWSCognitoApp, PrismaClient } from "@eci/pkg/prisma";
+import { AWSCognitoApp, Prisma, PrismaClient } from "@eci/pkg/prisma";
 import {
     AdminUpdateUserAttributesCommand,
     CognitoIdentityProvider,
@@ -178,25 +178,47 @@ export class CognitoUserSyncService {
                 );
                 continue;
             }
-
-            await this.db.aWSCognitoUser.create({
-                data: {
-                    id: user.Username!,
-                    awsCognitoApp: {
-                        connect: {
-                            id: this.AWSCognitoApp.id,
+            try {
+                await this.db.aWSCognitoUser.create({
+                    data: {
+                        id: user.Username!,
+                        awsCognitoApp: {
+                            connect: {
+                                id: this.AWSCognitoApp.id,
+                            },
                         },
-                    },
-                    contact: {
-                        connect: {
-                            email_tenantId: {
-                                email,
-                                tenantId: this.tenantId,
+                        contact: {
+                            connect: {
+                                email_tenantId: {
+                                    email,
+                                    tenantId: this.tenantId,
+                                },
                             },
                         },
                     },
-                },
-            });
+                });
+            } catch (error) {
+                /**
+                 * When a user email does not exist in our
+                 * DB yet, this call will fail. We can safely
+                 * ignore this error, as we don't create users based
+                 * on cognito internally
+                 */
+                if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                    if (error.code === "P2003") {
+                        this.logger.info(
+                            `User ${user.Username} has no contact`,
+                        );
+                        continue;
+                    }
+                } else {
+                    this.logger.error(
+                        `Error creating user ${user.Username} in our DB`,
+                    );
+                    this.logger.error(JSON.stringify(error));
+                    continue;
+                }
+            }
         }
     }
 
