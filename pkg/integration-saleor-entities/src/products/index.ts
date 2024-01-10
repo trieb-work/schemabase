@@ -846,10 +846,17 @@ export class SaleorProductSyncService {
                         value,
                     },
                 });
-            } else if (attr.attribute.type === "PLAIN_TEXT") {
+            } else if (attr.attribute.type === "PLAIN_TEXT" && attr.value) {
                 /**
                  * handle the transform of HTML text to editorJS text
                  */
+                const richText = JSON.stringify(
+                    await editorJsHelper.HTMLToEditorJS(attr.value),
+                );
+                attributes.push({
+                    id: saleorAttributeId,
+                    richText,
+                });
             } else {
                 attributes.push({
                     id: saleorAttributeId,
