@@ -846,7 +846,7 @@ export class SaleorProductSyncService {
                         value,
                     },
                 });
-            } else if (attr.attribute.type === "PLAIN_TEXT" && attr.value) {
+            } else if (attr.attribute.type === "RICH_TEXT" && attr.value) {
                 /**
                  * handle the transform of HTML text to editorJS text
                  */
