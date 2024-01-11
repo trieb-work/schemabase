@@ -78,13 +78,23 @@ export class SaleorPaymentSyncService {
 
         let gateway: GatewayType | undefined = undefined;
         let paymentMethod: PaymentMethodType | undefined = undefined;
+
         if (createdBy?.toLowerCase().includes("authorize.net")) {
             gateway = GatewayType.authorizeNet;
             paymentMethod = PaymentMethodType.card;
         }
         if (createdBy?.toLowerCase().includes("manual payment method")) {
             gateway = GatewayType.banktransfer;
-            paymentMethod;
+            const privateMeta = transaction.privateMetadata.find(
+                (x) => x.key === "authorizeTransactionId",
+            )?.value;
+            if (privateMeta) {
+                const parsedMeta = JSON.parse(privateMeta);
+
+                if (parsedMeta.method === "prepayment") {
+                    paymentMethod = PaymentMethodType.banktransfer;
+                }
+            }
         }
 
         if (!gateway) {
@@ -94,7 +104,11 @@ export class SaleorPaymentSyncService {
         }
         if (!paymentMethod) {
             throw new Error(
-                `Unknown payment method for transaction ${transaction.id}`,
+                `Unknown payment method for transaction ${
+                    transaction.id
+                } - metadata: ${
+                    transaction.privateMetadata || "undefined"
+                }, gateway: ${gateway}`,
             );
         }
 
