@@ -2001,6 +2001,9 @@ model ProductVariant {
   /// The weight in KG for this product variant
   weight Float?
 
+  /// Weight in pounds
+  weightLb Float?
+
   /// Product rating based on customer reviews from services like reviews.io
   averageRating Float?
   /// Number of ratings for this product variant

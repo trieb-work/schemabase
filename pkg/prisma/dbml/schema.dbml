@@ -1066,6 +1066,7 @@ Table ProductVariant {
   variantName String
   ean String
   weight Float [note: 'The weight in KG for this product variant']
+  weightLb Float [note: 'Weight in pounds']
   averageRating Float [note: 'Product rating based on customer reviews from services like reviews.io']
   ratingCount Int [note: 'Number of ratings for this product variant']
   product Product [not null]
