@@ -125,10 +125,6 @@ export class MediaUpload {
         // Use the file extension when appending the image to the form
         form.append("image", fileBlob, `image${fileExtension}`);
 
-        logger.debug(
-            `Uploading image to Saleor with name: image${fileExtension}`,
-        );
-
         const response = await fetch(this.installedSaleorApp.saleorApp.apiUrl, {
             method: "POST",
             body: form,
@@ -198,10 +194,6 @@ export class MediaUpload {
             "backgroundImage",
             mediaBlob,
             `backgroundImage${fileExtension}`,
-        );
-
-        logger.debug(
-            `Uploading image to Saleor with name: backgroundImage${fileExtension}`,
         );
 
         const response = await fetch(this.installedSaleorApp.saleorApp.apiUrl, {
