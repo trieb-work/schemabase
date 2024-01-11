@@ -844,6 +844,7 @@ enum PaymentMethodType {
   card
   /// banktransfer = Vorkasse
   banktransfer
+  echeck
 }
 
 /// categorize payments by gateway type

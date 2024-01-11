@@ -1967,6 +1967,7 @@ Enum PaymentMethodType {
   paypal
   card
   banktransfer
+  echeck
 }
 
 Enum GatewayType {

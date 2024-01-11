@@ -1,3 +1,52 @@
+fragment TransactionDetails on TransactionItem {
+    id
+    name
+    createdAt
+    modifiedAt
+    actions
+    authorizedAmount {
+        currency
+        amount
+    }
+    authorizePendingAmount {
+        currency
+        amount
+    }
+    chargePendingAmount {
+        currency
+        amount
+    }
+    chargedAmount {
+        currency
+        amount
+    }
+    events {
+        type
+        amount {
+            amount
+        }
+    }
+    message
+    createdBy {
+        __typename
+        ... on App {
+            id
+            name
+        }
+    }
+    pspReference
+    privateMetadata {
+        key
+        value
+    }
+    order {
+        id
+        created
+        number
+        userEmail
+    }
+}
+
 query saleorCronPayments(
     $createdGte: Date
     $after: String
@@ -57,50 +106,7 @@ query saleorCronPayments(
                     }
                 }
                 transactions {
-                    id
-                    name
-                    createdAt
-                    actions
-                    authorizedAmount {
-                        currency
-                        amount
-                    }
-                    authorizePendingAmount {
-                        currency
-                        amount
-                    }
-                    chargePendingAmount {
-                        currency
-                        amount
-                    }
-                    chargedAmount {
-                        currency
-                        amount
-                    }
-                    events {
-                        type
-                        amount {
-                            amount
-                        }
-                    }
-                    message
-                    createdBy {
-                        ... on App {
-                            id
-                            name
-                        }
-                    }
-                    pspReference
-                    privateMetadata {
-                        key
-                        value
-                    }
-                    order {
-                        id
-                        created
-                        number
-                        userEmail
-                    }
+                    ...TransactionDetails
                 }
             }
         }

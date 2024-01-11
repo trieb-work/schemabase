@@ -32977,6 +32977,54 @@ export type PaymentGatewaysQuery = {
     };
 };
 
+export type TransactionDetailsFragment = {
+    __typename?: "TransactionItem";
+    id: string;
+    name: string;
+    createdAt: any;
+    modifiedAt: any;
+    actions: Array<TransactionActionEnum>;
+    message: string;
+    pspReference: string;
+    authorizedAmount: {
+        __typename?: "Money";
+        currency: string;
+        amount: number;
+    };
+    authorizePendingAmount: {
+        __typename?: "Money";
+        currency: string;
+        amount: number;
+    };
+    chargePendingAmount: {
+        __typename?: "Money";
+        currency: string;
+        amount: number;
+    };
+    chargedAmount: { __typename?: "Money"; currency: string; amount: number };
+    events: Array<{
+        __typename?: "TransactionEvent";
+        type?: TransactionEventTypeEnum | null;
+        amount: { __typename?: "Money"; amount: number };
+    }>;
+    createdBy?:
+        | { __typename: "App"; id: string; name?: string | null }
+        | { __typename: "User" }
+        | null;
+    privateMetadata: Array<{
+        __typename?: "MetadataItem";
+        key: string;
+        value: string;
+    }>;
+    order?: {
+        __typename?: "Order";
+        id: string;
+        created: any;
+        number: string;
+        userEmail?: string | null;
+    } | null;
+};
+
 export type SaleorCronPaymentsQueryVariables = Exact<{
     createdGte?: InputMaybe<Scalars["Date"]>;
     after?: InputMaybe<Scalars["String"]>;
@@ -33040,6 +33088,7 @@ export type SaleorCronPaymentsQuery = {
                     id: string;
                     name: string;
                     createdAt: any;
+                    modifiedAt: any;
                     actions: Array<TransactionActionEnum>;
                     message: string;
                     pspReference: string;
@@ -33070,11 +33119,11 @@ export type SaleorCronPaymentsQuery = {
                     }>;
                     createdBy?:
                         | {
-                              __typename?: "App";
+                              __typename: "App";
                               id: string;
                               name?: string | null;
                           }
-                        | { __typename?: "User" }
+                        | { __typename: "User" }
                         | null;
                     privateMetadata: Array<{
                         __typename?: "MetadataItem";
@@ -33519,6 +33568,56 @@ export const StandardAddressValuesFragmentDoc = gql`
             code
         }
         countryArea
+    }
+`;
+export const TransactionDetailsFragmentDoc = gql`
+    fragment TransactionDetails on TransactionItem {
+        id
+        name
+        createdAt
+        modifiedAt
+        actions
+        authorizedAmount {
+            currency
+            amount
+        }
+        authorizePendingAmount {
+            currency
+            amount
+        }
+        chargePendingAmount {
+            currency
+            amount
+        }
+        chargedAmount {
+            currency
+            amount
+        }
+        events {
+            type
+            amount {
+                amount
+            }
+        }
+        message
+        createdBy {
+            __typename
+            ... on App {
+                id
+                name
+            }
+        }
+        pspReference
+        privateMetadata {
+            key
+            value
+        }
+        order {
+            id
+            created
+            number
+            userEmail
+        }
     }
 `;
 export const VariantFragmentDoc = gql`
@@ -34393,55 +34492,13 @@ export const SaleorCronPaymentsDocument = gql`
                         }
                     }
                     transactions {
-                        id
-                        name
-                        createdAt
-                        actions
-                        authorizedAmount {
-                            currency
-                            amount
-                        }
-                        authorizePendingAmount {
-                            currency
-                            amount
-                        }
-                        chargePendingAmount {
-                            currency
-                            amount
-                        }
-                        chargedAmount {
-                            currency
-                            amount
-                        }
-                        events {
-                            type
-                            amount {
-                                amount
-                            }
-                        }
-                        message
-                        createdBy {
-                            ... on App {
-                                id
-                                name
-                            }
-                        }
-                        pspReference
-                        privateMetadata {
-                            key
-                            value
-                        }
-                        order {
-                            id
-                            created
-                            number
-                            userEmail
-                        }
+                        ...TransactionDetails
                     }
                 }
             }
         }
     }
+    ${TransactionDetailsFragmentDoc}
 `;
 export const ProductsDocument = gql`
     query products($first: Int!, $channel: String) {
