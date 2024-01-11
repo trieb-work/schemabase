@@ -78,7 +78,7 @@ export class SyncToOdooEDI {
     }
 
     private async sendOrderToOdooEDI(order: any): Promise<void> {
-        const url = `${this.kencoveApiApp.ediEndpoint}/api/v1/custom/saleor/order_create_async?db=kencove_20231224`;
+        const url = `${this.kencoveApiApp.ediEndpoint}`;
         if (!url) throw new Error("EDI endpoint is not configured");
         const response = await axios.post(url, order);
         if (response.status !== 200) {
@@ -150,6 +150,9 @@ export class SyncToOdooEDI {
                     none: {
                         kencoveApiAppId: this.kencoveApiApp.id,
                     },
+                },
+                orderStatus: {
+                    notIn: ["canceled", "closed", "draft"],
                 },
             },
             include: {
