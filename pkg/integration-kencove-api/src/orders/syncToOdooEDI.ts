@@ -202,6 +202,11 @@ export class SyncToOdooEDI {
                         },
                     },
                 },
+                payments: {
+                    include: {
+                        paymentMethod: true,
+                    },
+                },
             },
         });
 
@@ -230,6 +235,7 @@ export class SyncToOdooEDI {
                     odooAddressId:
                         schemabaseOrder.shippingAddress?.kencoveApiAddress[0]
                             ?.id,
+                    countryCode: schemabaseOrder.shippingAddress?.countryCode,
                 },
                 billingAddress: {
                     fullName: schemabaseOrder?.billingAddress?.fullname,
@@ -240,6 +246,7 @@ export class SyncToOdooEDI {
                     odooAddressId:
                         schemabaseOrder.billingAddress?.kencoveApiAddress[0]
                             ?.id,
+                    countryCode: schemabaseOrder.billingAddress?.countryCode,
                 },
                 orderLineItems: schemabaseOrder.orderLineItems.map(
                     (orderLineItem) => {
@@ -262,6 +269,14 @@ export class SyncToOdooEDI {
                         };
                     },
                 ),
+                payments: schemabaseOrder.payments.map((payment) => {
+                    return {
+                        amount: payment.amount,
+                        currency: payment.currency,
+                        created: payment.date,
+                        paymentMethod: payment.paymentMethod,
+                    };
+                }),
             };
             await this.sendOrderToOdooEDI(order);
         }
