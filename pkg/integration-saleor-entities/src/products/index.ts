@@ -1376,7 +1376,7 @@ export class SaleorProductSyncService {
                         continue;
                     }
                     this.logger.info(
-                        `Successfully updated ${variantsToCreate.length} variants for product ${product.name} in Saleor`,
+                        `Successfully updated ${productVariantBulkUpdateResponse.productVariantBulkUpdate?.results.length} variants for product ${product.name} in Saleor`,
                     );
                 }
             }
