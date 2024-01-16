@@ -117,7 +117,6 @@ export class SaleorCategorySyncService {
             saleorCategoryId,
             imageBlob,
             fileExtension.extension,
-            this.logger,
         );
     }
 

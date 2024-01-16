@@ -58,7 +58,7 @@ export class MediaUpload {
     public async fetchMediaBlob(url: string): Promise<Blob> {
         const imgResp = await fetch(url);
         if (!imgResp.ok) {
-            throw new Error("Error downloading image");
+            throw new Error(`Error downloading media: ${imgResp.statusText}`);
         }
         const mediaBlob = await imgResp.blob();
         if (!mediaBlob) {
@@ -79,13 +79,13 @@ export class MediaUpload {
         saleorProductId,
         mediaBlob,
         fileExtension,
-        logger,
+
         fileType,
     }: {
         saleorProductId: string;
         mediaBlob: Blob;
         fileExtension: string;
-        logger: ILogger;
+
         fileType?: string;
     }): Promise<string> {
         const form = new FormData();
@@ -157,7 +157,6 @@ export class MediaUpload {
         saleorCategoryId: string,
         mediaBlob: Blob,
         fileExtension: string,
-        logger: ILogger,
     ): Promise<string> {
         const form = new FormData();
         form.append(
