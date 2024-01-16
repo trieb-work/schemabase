@@ -869,7 +869,6 @@ export class SaleorProductSyncService {
         const unsortedProductsToCreateOrUpdate = await this.db.product.findMany(
             {
                 where: {
-                    id: "pro_F1LzWG81G8Y9rXTDpVAVD4",
                     OR: [
                         {
                             AND: [
