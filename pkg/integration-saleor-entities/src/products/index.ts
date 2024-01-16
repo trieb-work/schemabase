@@ -627,7 +627,6 @@ export class SaleorProductSyncService {
                     mediaBlob,
                     fileExtension: fileExtension.extension,
                     fileType: fileExtension.fileType,
-                    logger: this.logger,
                 });
                 await this.saleorClient.saleorUpdateMetadata({
                     id: imageId,
@@ -667,11 +666,6 @@ export class SaleorProductSyncService {
          * Check if we already have the attribute value in our cache
          */
         if (this.swatchCache[saleorAttributeId + attributeValueName]) {
-            this.logger.debug(
-                `Found attribute value ${attributeValueName} in cache, returning slug ${
-                    this.swatchCache[saleorAttributeId + attributeValueName]
-                }`,
-            );
             return this.swatchCache[saleorAttributeId + attributeValueName];
         }
 
@@ -875,6 +869,7 @@ export class SaleorProductSyncService {
         const unsortedProductsToCreateOrUpdate = await this.db.product.findMany(
             {
                 where: {
+                    id: "pro_F1LzWG81G8Y9rXTDpVAVD4",
                     OR: [
                         {
                             AND: [
@@ -1300,6 +1295,12 @@ export class SaleorProductSyncService {
                     }
 
                     if (mediaToDelete.length > 0) {
+                        this.logger.info(
+                            `Deleting ${mediaToDelete.length} media for product ${product.name} in Saleor`,
+                            {
+                                mediaToDelete: mediaToDelete.map((x) => x.id),
+                            },
+                        );
                         for (const element of mediaToDelete) {
                             await this.deleteMedia(element.id);
                         }

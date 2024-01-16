@@ -11,7 +11,6 @@ import {
     PrismaClient,
     SaleorApp,
 } from "@eci/pkg/prisma";
-// import { SaleorClient } from "@eci/pkg/saleor";
 import { MediaUpload } from "../mediaUpload";
 
 export class SaleorProductManual {
@@ -107,7 +106,7 @@ export class SaleorProductManual {
                     error?.message ?? error
                 }`,
             );
-            return;
+            return undefined;
         }
     }
 }
