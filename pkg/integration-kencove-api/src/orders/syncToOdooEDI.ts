@@ -1,6 +1,10 @@
 import axios from "axios";
 import { ILogger } from "@eci/pkg/logger";
-import { KencoveApiApp, PrismaClient } from "@eci/pkg/prisma";
+import {
+    KencoveApiApp,
+    KencoveApiContact,
+    PrismaClient,
+} from "@eci/pkg/prisma";
 
 // We send all unprocessed or updated orders to Odoo EDI endpoint for processing.
 // Example of an order:
@@ -82,6 +86,13 @@ export class SyncToOdooEDI {
         if (!url) throw new Error("EDI endpoint is not configured");
         const response = await axios.post(url, order);
         if (response.status !== 200) {
+            if (response.statusText.includes("duplicate key value violates")) {
+                // if the order already exists in Odoo, we don't need to send it again
+                this.logger.info(
+                    `Order already exists in Odoo. We don't need to send it again.`,
+                );
+                return;
+            }
             throw new Error(
                 `Failed to send order to Odoo EDI: ${response.statusText}`,
             );
@@ -96,6 +107,17 @@ export class SyncToOdooEDI {
         // }
         const responseBody = response.data;
         if (responseBody?.payload?.ok === false) {
+            if (
+                responseBody.payload.message.includes(
+                    "duplicate key value violates",
+                )
+            ) {
+                // if the order already exists in Odoo, we don't need to send it again
+                this.logger.info(
+                    `Order already exists in Odoo. We don't need to send it again.`,
+                );
+                return;
+            }
             throw new Error(
                 `Failed to send order to Odoo EDI: ${responseBody.payload.message}`,
             );
@@ -121,6 +143,23 @@ export class SyncToOdooEDI {
             `Successfully sent order to Odoo EDI. Exchange record: ${exchangeRecordId}`,
         );
         return exchangeRecordId;
+    }
+
+    private getOdooContactId(
+        kencoveApiContacts: KencoveApiContact[],
+    ): string | undefined {
+        if (kencoveApiContacts.length === 0) {
+            return undefined;
+        }
+        if (kencoveApiContacts.length === 1) {
+            return kencoveApiContacts[0].id;
+        }
+        // if there are multiple contacts, we can't match them savely.
+        // in this case, we don't send the contact to Odoo EDI
+        this.logger.warn(
+            `Multiple contacts found for the same order. We can't match them savely. We will not send the contact to Odoo EDI.`,
+        );
+        return undefined;
     }
 
     /**
@@ -221,13 +260,15 @@ export class SyncToOdooEDI {
                 orderNumber: schemabaseOrder.orderNumber,
                 date: schemabaseOrder.date,
                 status: schemabaseOrder.orderStatus,
+                totalPriceGross: schemabaseOrder.totalPriceGross,
                 mainContact: {
                     email: schemabaseOrder.mainContact.email,
                     firstName: schemabaseOrder.mainContact.firstName,
                     lastName: schemabaseOrder.mainContact.lastName,
                     phone: schemabaseOrder.mainContact.phone,
-                    odooContactId:
-                        schemabaseOrder.mainContact.kencoveApiContacts[0]?.id,
+                    odooContactId: this.getOdooContactId(
+                        schemabaseOrder.mainContact.kencoveApiContacts,
+                    ),
                 },
                 shippingAddress: {
                     fullName: schemabaseOrder?.shippingAddress?.fullname,
@@ -280,7 +321,13 @@ export class SyncToOdooEDI {
                         paymentMethod: payment.paymentMethod,
                     };
                 }),
+                shippingMethod: {
+                    totalPriceGross: schemabaseOrder.shippingPriceGross,
+                    name: schemabaseOrder.shippingMethodName,
+                    id: schemabaseOrder.shippingMethodId,
+                },
             };
+            this.logger.info(`Sending order ${order.orderNumber} to Odoo EDI`);
             await this.sendOrderToOdooEDI(order);
         }
     }
