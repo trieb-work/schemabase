@@ -1183,6 +1183,10 @@ model Order {
   shippingPriceGross Float?
   shippingPriceTax   Tax?    @relation(fields: [shippingPriceTaxId], references: [id], onDelete: Cascade)
   shippingPriceTaxId String?
+  /// the exact name of the shipping method
+  shippingMethodName String?
+  /// an ID identifier for the shipping method
+  shippingMethodId String?
 
   /// The applied discount code
   discountCode String?

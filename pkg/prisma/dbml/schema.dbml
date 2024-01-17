@@ -707,6 +707,8 @@ We use them as unique identifier between systems']
   shippingPriceGross Float
   shippingPriceTax Tax
   shippingPriceTaxId String
+  shippingMethodName String [note: 'the exact name of the shipping method']
+  shippingMethodId String [note: 'an ID identifier for the shipping method']
   discountCode String [note: 'The applied discount code']
   discountValueNet Float [not null, default: 0, note: 'The disount amount, that is applied
 to the net, undiscounted subtotal price.
