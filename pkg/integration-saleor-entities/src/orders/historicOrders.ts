@@ -98,7 +98,7 @@ export class SaleorHistoricOrdersSync {
         const nameParts = (address?.fullname || "Name Missing").split(" ");
         const firstName = nameParts.shift();
         const lastName = nameParts.join(" ");
-        if (!address.countryCode)
+        if (!address?.countryCode)
             throw new Error(
                 `No countryCode. This should never happen: ${JSON.stringify(
                     address,
@@ -480,7 +480,7 @@ export class SaleorHistoricOrdersSync {
                 this.logger.warn(
                     `No shippingAddress for order ${order.orderNumber}. Setting billing address as shipping address`,
                 );
-                order.billingAddress = order.shippingAddress;
+                order.shippingAddress = order.billingAddress;
             }
             if (!order.billingAddress && order.shippingAddress) {
                 this.logger.warn(
