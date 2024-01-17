@@ -118,6 +118,18 @@ export class SaleorOrderSyncService {
             .split("Order:")[1];
     }
 
+    /**
+     * function to convert the base64 encoded id, that looks decoded like that:
+     * app:kencove-shipping.app:18014 -> we return just 18014
+     * @param shippingMethodId
+     * @returns
+     */
+    private shippingMethodIdDecode(shippingMethodId: string): string {
+        return Buffer.from(shippingMethodId, "base64")
+            .toString("utf8")
+            .split("app:")[2];
+    }
+
     public async syncToECI(): Promise<void> {
         const cronState = await this.cronState.get();
 
@@ -268,6 +280,11 @@ export class SaleorOrderSyncService {
                     order?.shippingMethodName || "",
                 );
 
+                const shippingMethodId =
+                    order.deliveryMethod?.__typename === "ShippingMethod"
+                        ? this.shippingMethodIdDecode(order.deliveryMethod.id)
+                        : undefined;
+
                 const upsertedOrder = await this.db.saleorOrder.upsert({
                     where: {
                         id_installedSaleorAppId: {
@@ -304,6 +321,9 @@ export class SaleorOrderSyncService {
                                     token: orderToken,
                                     discountCode,
                                     carrier,
+                                    shippingMethodName:
+                                        order.shippingMethodName,
+                                    shippingMethodId,
                                     paymentStatus, // TODO: how will this thing be updated and kept in sync by other services? -> Maybe move it into Payment.status and access it via payments[0].status?
                                     mainContact: contactCreateOrConnect,
                                     firstName: order.billingAddress?.firstName,
@@ -328,6 +348,8 @@ export class SaleorOrderSyncService {
                         order: {
                             update: {
                                 carrier,
+                                shippingMethodId,
+                                shippingMethodName: order.shippingMethodName,
                                 language: this.matchLanguage(
                                     order.languageCodeEnum,
                                 ),

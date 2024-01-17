@@ -32836,6 +32836,14 @@ export type SaleorCronOrdersOverviewQuery = {
                     code?: string | null;
                     type: VoucherTypeEnum;
                 } | null;
+                deliveryMethod?:
+                    | {
+                          __typename?: "ShippingMethod";
+                          id: string;
+                          name: string;
+                      }
+                    | { __typename?: "Warehouse" }
+                    | null;
                 total: {
                     __typename?: "TaxedMoney";
                     currency: string;
@@ -34283,6 +34291,12 @@ export const SaleorCronOrdersOverviewDocument = gql`
                     }
                     languageCodeEnum
                     shippingMethodName
+                    deliveryMethod {
+                        ... on ShippingMethod {
+                            id
+                            name
+                        }
+                    }
                     paymentStatus
                     isPaid
                     number
