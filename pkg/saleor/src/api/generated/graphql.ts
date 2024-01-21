@@ -32880,8 +32880,10 @@ export type SaleorCronOrderDetailsQuery = {
             quantity: number;
             unitDiscountType?: DiscountValueTypeEnum | null;
             taxRate: number;
+            skuFromMetadata?: string | null;
             variant?: {
                 __typename?: "ProductVariant";
+                id: string;
                 sku?: string | null;
             } | null;
             unitDiscount: { __typename?: "Money"; amount: number };
@@ -34334,7 +34336,9 @@ export const SaleorCronOrderDetailsDocument = gql`
             lines {
                 id
                 productSku
+                skuFromMetadata: metafield(key: "sku")
                 variant {
+                    id
                     sku
                 }
                 quantity

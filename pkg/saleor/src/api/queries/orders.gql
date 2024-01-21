@@ -97,7 +97,9 @@ query saleorCronOrderDetails($id: ID!) {
         lines {
             id
             productSku
+            skuFromMetadata: metafield(key: "sku")
             variant {
+                id
                 sku
             }
             quantity

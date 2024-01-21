@@ -445,23 +445,53 @@ export class SaleorOrderSyncService {
                             `Lineitem of Order has a missing id in saleor response.`,
                         );
                     }
-                    if (!lineItem?.variant?.sku) {
-                        throw new Error(
-                            `Lineitem of Order is missing the variant sku in saleor response.`,
+                    let variantSku =
+                        lineItem.variant?.sku || lineItem.skuFromMetadata;
+                    if (!variantSku) {
+                        this.logger.debug(
+                            `Lineitem of Order is missing the variant sku in saleor response. Trying to find the variant internally in our DB`,
                         );
+                        if (!lineItem?.variant?.id)
+                            throw new Error(
+                                `Saleor returned us no variant id or SKU for a line item. Can't sync: ${JSON.stringify(
+                                    lineItem,
+                                )}`,
+                            );
+                        const match =
+                            await this.db.saleorProductVariant.findUnique({
+                                where: {
+                                    id_installedSaleorAppId: {
+                                        id: lineItem.variant.id,
+                                        installedSaleorAppId:
+                                            this.installedSaleorApp.id,
+                                    },
+                                },
+                                include: {
+                                    productVariant: true,
+                                },
+                            });
+                        if (!match)
+                            throw new Error(
+                                `No match found for saleor variant id ${lineItem.variant.id} in our DB and also no SKU given. Can't sync`,
+                            );
+                        variantSku = match.productVariant.sku;
                     }
+                    if (!variantSku)
+                        throw new Error(
+                            `No SKU found for line item ${lineItem.id}!`,
+                        );
 
                     const productSku = await this.db.productVariant.findUnique({
                         where: {
                             sku_tenantId: {
-                                sku: lineItem.variant.sku,
+                                sku: variantSku,
                                 tenantId: this.tenantId,
                             },
                         },
                     });
                     if (!productSku) {
                         throw new Warning(
-                            `No internal product variant found for SKU ${lineItem.variant.sku}! Can't create line Item. Try again after Product Variant Sync.`,
+                            `No internal product variant found for SKU ${variantSku}! Can't create line Item. Try again after Product Variant Sync.`,
                         );
                     }
 
@@ -470,7 +500,7 @@ export class SaleorOrderSyncService {
 
                     const uniqueString = uniqueStringOrderLine(
                         prefixedOrderNumber,
-                        lineItem.variant.sku,
+                        variantSku,
                         lineItem.quantity,
                         lineItemOrder,
                     );
@@ -494,12 +524,11 @@ export class SaleorOrderSyncService {
                             `We could not find an internal tax for tax rate ${taxPercentage} for order ${order.number}. We are using the products default now`,
                         );
                         if (!productSku.salesTaxId) {
-                            this.logger.error(
-                                `Product ${productSku.sku} - ${productSku.id} has no default sales tax set! Can't proceed`,
+                            this.logger.warn(
+                                `Product ${productSku.sku} - ${productSku.id} has no default sales tax set! Proceeding without a tax class`,
                             );
-                            continue;
                         }
-                        eciTax = productSku.salesTaxId;
+                        eciTax = productSku.salesTaxId ?? undefined;
                     }
 
                     // TODO: would it not be better to inline this into db.saleorOrder.upsert (line 209) so we do not have partiall order data in ECI db if something fails?
@@ -552,11 +581,13 @@ export class SaleorOrderSyncService {
                                             totalPriceGross:
                                                 lineItem.totalPrice.gross
                                                     .amount,
-                                            tax: {
-                                                connect: {
-                                                    id: eciTax,
-                                                },
-                                            },
+                                            tax: eciTax
+                                                ? {
+                                                      connect: {
+                                                          id: eciTax,
+                                                      },
+                                                  }
+                                                : undefined,
                                             productVariant: {
                                                 connect: {
                                                     id: productSku.id,
@@ -585,11 +616,13 @@ export class SaleorOrderSyncService {
                                         undiscountedUnitPriceGross:
                                             lineItem.undiscountedUnitPrice.gross
                                                 .amount,
-                                        tax: {
-                                            connect: {
-                                                id: eciTax,
-                                            },
-                                        },
+                                        tax: eciTax
+                                            ? {
+                                                  connect: {
+                                                      id: eciTax,
+                                                  },
+                                              }
+                                            : undefined,
                                         productVariant: {
                                             connect: {
                                                 id: productSku.id,
