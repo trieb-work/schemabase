@@ -251,6 +251,11 @@ export class SaleorPackageSyncService {
             id: saleorFulfillmentId,
             input: metadata,
         });
+        this.logger.debug(
+            `Updated metadata for fulfillment ${saleorFulfillmentId} with ${JSON.stringify(
+                metadata,
+            )}`,
+        );
     }
 
     /**
@@ -528,6 +533,9 @@ export class SaleorPackageSyncService {
                         throw new Error(
                             `Fulfillment id missing for ${saleorOrder.id}`,
                         );
+                    this.logger.info(
+                        `Fulfillment created successfully in Saleor: ${fulfillment.id}`,
+                    );
                     await this.upsertSaleorPackage(
                         fulfillment?.id,
                         parcel.id,
