@@ -215,6 +215,7 @@ export class SaleorHistoricOrdersSync {
                     isShippingRequired: false,
                     productName: line.productVariant.product.name,
                     variantName: line.productVariant.variantName,
+                    metadata: [{ key: "sku", value: line.productVariant.sku }],
                     taxClassId: saleorTaxClass,
                     variantId: saleorProductVariantId ?? undefined,
                     quantity: line.quantity,
