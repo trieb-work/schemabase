@@ -10,8 +10,6 @@ import {
     Language,
     OrderLineItem,
     OrderStatus as OrderStatusSchemabase,
-    Package,
-    PackageLineItem,
     Payment,
     PaymentMethod,
     PrismaClient,
@@ -28,7 +26,6 @@ import {
     ErrorPolicyEnum,
     InputMaybe,
     LanguageCodeEnum,
-    OrderBulkCreateFulfillmentInput,
     OrderBulkCreateInput,
     OrderBulkCreateOrderLineInput,
     OrderStatus,
@@ -257,26 +254,26 @@ export class SaleorHistoricOrdersSync {
         });
     }
 
-    private schemabasePackageToFulfillment(
-        packages: (Package & {
-            packageLineItems: (PackageLineItem & {
-                warehouse: any;
-            })[];
-        })[],
-    ): InputMaybe<Array<OrderBulkCreateFulfillmentInput>> {
-        return packages.map((p) => {
-            return {
-                trackingNumber: p.trackingId,
-                lines: p.packageLineItems.map((l, i) => {
-                    return {
-                        orderLineIndex: i,
-                        quantity: l.quantity,
-                        warehouse: l.warehouse.saleorWarehouse[0].id as string,
-                    };
-                }),
-            };
-        });
-    }
+    // private schemabasePackageToFulfillment(
+    //     packages: (Package & {
+    //         packageLineItems: (PackageLineItem & {
+    //             warehouse: any;
+    //         })[];
+    //     })[],
+    // ): InputMaybe<Array<OrderBulkCreateFulfillmentInput>> {
+    //     return packages.map((p) => {
+    //         return {
+    //             trackingCode: p.trackingId,
+    //             lines: p.packageLineItems.map((l, i) => {
+    //                 return {
+    //                     orderLineIndex: i,
+    //                     quantity: l.quantity,
+    //                     warehouse: l.warehouse.saleorWarehouse[0].id as string,
+    //                 };
+    //             }),
+    //         };
+    //     });
+    // }
 
     /**
      * Taking schemabase order schema and trying to transform it to saleor order schema.
@@ -333,9 +330,9 @@ export class SaleorHistoricOrdersSync {
                             net: order.shippingPriceNet || 0,
                         },
                     },
-                    fulfillments: this.schemabasePackageToFulfillment(
-                        order.packages,
-                    ),
+                    // fulfillments: this.schemabasePackageToFulfillment(
+                    //     order.packages,
+                    // ),
                     transactions: this.schemabasePaymentToSaleorTransaction(
                         order.payments,
                     ),
