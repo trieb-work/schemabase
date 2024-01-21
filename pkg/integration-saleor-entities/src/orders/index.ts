@@ -172,9 +172,8 @@ export class SaleorOrderSyncService {
 
                 if (order.externalReference) {
                     this.logger.info(
-                        `Saleor order has externalRefernce ${order.externalReference} set. Using this as ordernumber instead of ${order.number}. We skip the internal update for now`,
+                        `Saleor order has externalRefernce ${order.externalReference} set. Using this as ordernumber instead of ${order.number}.`,
                     );
-                    continue;
                 }
                 const prefixedOrderNumber =
                     order.externalReference ??
