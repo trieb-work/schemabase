@@ -181,6 +181,13 @@ export class SyncToOdooEDI {
     // }
 
     public async sync(): Promise<void> {
+        if (!this.kencoveApiApp.ediEndpoint) {
+            this.logger.warn(
+                `EDI endpoint is not configured. We will not send any orders to Odoo EDI.`,
+            );
+            return;
+        }
+
         // Get all unprocessed orders from the database
         const schemabaseOrders = await this.db.order.findMany({
             where: {

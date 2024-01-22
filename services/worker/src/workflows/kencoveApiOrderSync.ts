@@ -40,6 +40,7 @@ export class KencoveApiOrderSyncWf implements Workflow {
             kencoveApiApp: this.kencoveApiApp,
         });
         await kencoveApiOrderSyncService.syncToECI();
+        await kencoveApiOrderSyncService.syncFromECI();
         this.logger.info("Finished kencove api order sync workflow run");
     }
 }
