@@ -19,6 +19,7 @@ import { subHours, subYears } from "date-fns";
 import { id } from "@eci/pkg/ids";
 import { checkCurrency } from "@eci/pkg/normalization/src/currency";
 import { sleep } from "@eci/pkg/utils/time";
+import { krypto } from "@eci/pkg/krypto";
 
 interface SaleorPaymentSyncServiceConfig {
     saleorClient: SaleorClient;
@@ -59,13 +60,14 @@ export class SaleorPaymentSyncService {
         });
     }
 
-    private transactionToPaymentMethod(
+    private async transactionToPaymentMethod(
         transaction: TransactionDetailsFragment,
-    ): {
+    ): Promise<{
         type: PaymentMethodType;
         gateway: GatewayType;
         currency: Currency;
-    } {
+        metadataJson: any | undefined;
+    }> {
         const currency = checkCurrency(
             transaction.chargedAmount.currency ||
                 transaction.authorizePendingAmount.currency,
@@ -78,6 +80,7 @@ export class SaleorPaymentSyncService {
 
         let gateway: GatewayType | undefined = undefined;
         let paymentMethod: PaymentMethodType | undefined = undefined;
+        let metadataJson: any | undefined = undefined;
 
         if (createdBy?.toLowerCase().includes("authorize.net")) {
             gateway = GatewayType.authorizeNet;
@@ -85,14 +88,37 @@ export class SaleorPaymentSyncService {
         }
         if (createdBy?.toLowerCase().includes("manual payment method")) {
             gateway = GatewayType.banktransfer;
-            const privateMeta = transaction.privateMetadata.find(
-                (x) => x.key === "authorizeTransactionId",
-            )?.value;
-            if (privateMeta) {
-                const parsedMeta = JSON.parse(privateMeta);
 
-                if (parsedMeta.method === "prepayment") {
+            /**
+             * manual payment methods can set the metadata method
+             */
+            const method = transaction.privateMetadata.find(
+                (x) => x.key === "method",
+            )?.value;
+            if (method) {
+                if (method === "prepayment") {
                     paymentMethod = PaymentMethodType.banktransfer;
+                }
+                if (method === "echeck") {
+                    paymentMethod = PaymentMethodType.echeck;
+                    const echeckData = transaction.privateMetadata.find(
+                        (x) => x.key === "echeck",
+                    )?.value;
+                    if (!echeckData) {
+                        throw new Error(
+                            `Method echeck, but missing echeck data for transaction ${transaction.id}`,
+                        );
+                    }
+                    const parsedData = JSON.parse(echeckData);
+                    if (
+                        !parsedData.accountNumber ||
+                        !parsedData.routingNumber
+                    ) {
+                        throw new Error(
+                            `Method echeck, but missing accountNumber or routingNumber for transaction ${transaction.id}`,
+                        );
+                    }
+                    metadataJson = await krypto.encrypt(parsedData);
                 }
             }
         }
@@ -107,12 +133,12 @@ export class SaleorPaymentSyncService {
                 `Unknown payment method for transaction ${
                     transaction.id
                 } - metadata: ${
-                    transaction.privateMetadata || "undefined"
+                    JSON.stringify(transaction.privateMetadata) || "undefined"
                 }, gateway: ${gateway}`,
             );
         }
 
-        return { currency, gateway, type: paymentMethod };
+        return { currency, gateway, type: paymentMethod, metadataJson };
     }
 
     public async syncToECI(): Promise<void> {
@@ -156,20 +182,18 @@ export class SaleorPaymentSyncService {
 
         /**
          * We only sync successfull transactions, that
-         * are authorized or charged successfully
+         * are authorized or charged successfully. We look at the most recent
+         * transaction events for each payment.
          */
-        const successfullTransactions = result.orders?.edges
+        const successfullTransactionsTransactionApi = result.orders?.edges
             .flatMap((order) => order.node.transactions)
             .filter(
                 (transaction) =>
-                    transaction?.events.find(
-                        (event) =>
-                            event?.type === "AUTHORIZATION_SUCCESS" ||
-                            event?.type === "CHARGE_SUCCESS",
-                    ),
+                    transaction?.events[0].type === "AUTHORIZATION_SUCCESS" ||
+                    transaction?.events[0].type === "CHARGE_SUCCESS",
             );
 
-        if (!payments && !successfullTransactions) {
+        if (!payments && !successfullTransactionsTransactionApi) {
             this.logger.info(
                 "Saleor returned no orders with transactions. Don't sync anything",
             );
@@ -485,11 +509,11 @@ export class SaleorPaymentSyncService {
         /**
          * Process the transactions
          */
-        if (successfullTransactions?.length) {
+        if (successfullTransactionsTransactionApi?.length) {
             this.logger.info(
-                `Processing ${successfullTransactions.length} successfull transactions`,
+                `Processing ${successfullTransactionsTransactionApi.length} successfull transactions`,
             );
-            for (const transaction of successfullTransactions) {
+            for (const transaction of successfullTransactionsTransactionApi) {
                 const lowercaseEmail =
                     transaction.order?.userEmail?.toLowerCase();
                 const paymentReference = transaction.pspReference;
@@ -547,7 +571,7 @@ export class SaleorPaymentSyncService {
                     transaction.authorizePendingAmount.amount;
 
                 try {
-                    this.transactionToPaymentMethod(transaction);
+                    await this.transactionToPaymentMethod(transaction);
                 } catch (error) {
                     this.logger.error(
                         `Failed to process transaction ${transaction.id}. Skipping: ${error}`,
@@ -555,8 +579,8 @@ export class SaleorPaymentSyncService {
                     continue;
                 }
 
-                const { type, gateway, currency } =
-                    this.transactionToPaymentMethod(transaction);
+                const { type, gateway, currency, metadataJson } =
+                    await this.transactionToPaymentMethod(transaction);
 
                 const order = await this.db.saleorOrder.findUnique({
                     where: {
@@ -613,6 +637,7 @@ export class SaleorPaymentSyncService {
                                         id: id.id("payment"),
                                         amount,
                                         referenceNumber: paymentReference,
+                                        metadataJson,
                                         tenant: {
                                             connect: {
                                                 id: this.tenantId,

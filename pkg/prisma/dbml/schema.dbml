@@ -508,6 +508,8 @@ Some systems just use a date here']
   status PaymentStatus [not null, default: 'paid', note: 'The status of the payment. We have default status paid, as we currently work only with paid payments']
   currency Currency [note: 'The currency of the payment. We use the ISO 4217 standard here']
   transactionFee Float [not null, default: 0, note: 'Costs for this transaction, for example bank charges, gateway charges, paypal charges']
+  metadata String
+  metadataJson Json [note: 'We store the encrypted echeck data for example here (among other payment data that might be needed). ']
   order Order
   orderId String
   mainContact Contact [note: 'The person who has created this Payment (In other systems this can also be a Useraccount)']

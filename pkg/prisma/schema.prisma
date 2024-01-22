@@ -810,6 +810,11 @@ model Payment {
   /// Costs for this transaction, for example bank charges, gateway charges, paypal charges
   transactionFee Float @default(0)
 
+  metadata String?
+
+  /// We store the encrypted echeck data for example here (among other payment data that might be needed). 
+  metadataJson Json?
+
   order   Order?  @relation(fields: [orderId], references: [id])
   orderId String?
 
@@ -842,7 +847,7 @@ model Payment {
 enum PaymentMethodType {
   paypal
   card
-  /// banktransfer = Vorkasse
+  /// banktransfer = Vorkasse = prepayment
   banktransfer
   echeck
 }
