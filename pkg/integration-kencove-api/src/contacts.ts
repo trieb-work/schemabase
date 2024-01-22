@@ -146,6 +146,8 @@ export class KencoveApiAppContactSyncService {
                                     firstName: contact.firstname,
                                     lastName: contact.lastname,
                                     phone: contact.phone,
+                                    externalIdentifier:
+                                        contact.commerical_customer_code,
                                     company: companyName
                                         ? {
                                               connectOrCreate: {
@@ -196,6 +198,8 @@ export class KencoveApiAppContactSyncService {
                                 firstName: contact.firstname,
                                 lastName: contact.lastname,
                                 phone: contact.phone,
+                                externalIdentifier:
+                                    contact.commerical_customer_code,
                                 company: companyName
                                     ? {
                                           connectOrCreate: {

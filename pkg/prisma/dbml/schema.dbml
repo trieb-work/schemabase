@@ -576,6 +576,8 @@ Table Contact {
   firstName String
   lastName String
   phone String
+  externalIdentifier String [note: 'a different, global identifier that can be used to identify a contact in other systems.
+we set this for example in saleor as external identifier']
   customer Boolean [not null, default: true, note: 'is this contact a customer / debitor? Can be customer and/or vendor']
   vendor Boolean [not null, default: false, note: 'is this contact a vendor / kreditor? Can be customer and/or vendor']
   orders Order [not null]
