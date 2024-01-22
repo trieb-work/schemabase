@@ -1209,9 +1209,13 @@ export class KencoveApiAppProductSyncService {
         }
 
         /**
-         * Kencove API category ids
+         * distinct Kencove API category ids
          */
-        const categoryIds = products.map((p) => p?.categoryId?.toString());
+        const categoryIds = products
+            .map((p) => p?.categoryId?.toString())
+            .filter((p) => p)
+            .filter((p, i, self) => self.indexOf(p) === i);
+
         const existingCategories = await this.db.kencoveApiCategory.findMany({
             where: {
                 kencoveApiAppId: this.kencoveApiApp.id,
@@ -1220,6 +1224,9 @@ export class KencoveApiAppProductSyncService {
                 },
             },
         });
+        this.logger.debug(
+            `Found ${categoryIds.length} distinct Kencove categories over all products. Receive ${existingCategories.length} from our DB`,
+        );
 
         /**
          * First sync the product types and related attributes.
