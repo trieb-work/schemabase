@@ -138,4 +138,57 @@ export class SaleorCustomerSyncService {
             lastRunStatus: "success",
         });
     }
+
+    /**
+     * get all contacts that have been updated since the last sync.
+     * We currently don't create, but just update contacts from Saleor.
+     * We update the externalIdentifier on the contact
+     */
+    public async syncFromECI(): Promise<void> {
+        const cronState = await this.cronState.get();
+
+        let createdGte: Date | undefined = undefined;
+        if (!cronState.lastRun) {
+            this.logger.info(
+                // eslint-disable-next-line max-len
+                `This seems to be our first sync run. Syncing all customers without a last_updated filter`,
+            );
+        } else {
+            createdGte = subHours(cronState.lastRun, 3);
+            this.logger.info(
+                `Setting GTE date to ${createdGte}. Asking Saleor for customers with lastUpdated GTE.`,
+            );
+        }
+
+        /**
+         * get all contacts that have a saleor contact that have been changed since the last run
+         */
+        const contacts = await this.db.contact.findMany({
+            where: {
+                tenantId: this.tenantId,
+                updatedAt: createdGte
+                    ? {
+                          gte: createdGte,
+                      }
+                    : undefined,
+                saleorCustomers: {
+                    some: {
+                        installedSaleorAppId: this.installedSaleorAppId,
+                    },
+                },
+            },
+        });
+
+        if (!contacts || contacts.length === 0) {
+            this.logger.info("ECI returned no contacts. Finishing sync run");
+            return;
+        }
+
+        this.logger.info(
+            `ECI returned ${contacts.length} contacts to update in Saleor`,
+        );
+
+        // for (const contact of contacts) {
+        // }
+    }
 }
