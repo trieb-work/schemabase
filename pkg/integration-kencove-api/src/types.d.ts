@@ -111,6 +111,12 @@ export type KencoveApiContact = {
     };
     createdat: string;
     updatedat: string;
+    commercial_partner_id: number;
+    /**
+     * Use this as external identifier on the customer
+     * to match it for example with avalara. E.g."CC-185982:0"
+     */
+    commerical_customer_code: string;
 };
 
 export type KencoveApiProductVariant = {
