@@ -263,6 +263,12 @@ export class SyncToOdooEDI {
 
         // Send each order to Odoo EDI endpoint
         for (const schemabaseOrder of schemabaseOrders) {
+            if (schemabaseOrder.payments.length === 0) {
+                this.logger.warn(
+                    `Order ${schemabaseOrder.orderNumber} has no payments. We will not send it to Odoo EDI.`,
+                );
+                continue;
+            }
             const order = {
                 orderNumber: schemabaseOrder.orderNumber,
                 date: schemabaseOrder.date,
