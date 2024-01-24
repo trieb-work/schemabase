@@ -639,6 +639,7 @@ export class SaleorPaymentSyncService {
                                         referenceNumber: paymentReference,
                                         metadataJson,
                                         currency,
+                                        date: transaction.createdAt,
                                         status: paymentStatus,
                                         tenant: {
                                             connect: {

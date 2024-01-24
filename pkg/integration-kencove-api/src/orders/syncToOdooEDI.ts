@@ -329,7 +329,8 @@ export class SyncToOdooEDI {
                         amount: payment.amount,
                         currency: payment.currency,
                         created: payment.date,
-                        paymentMethod: payment.paymentMethod,
+                        acquirerReference: payment.referenceNumber,
+                        paymentMethod: payment.paymentMethod.gatewayType,
                     };
                 }),
                 shippingMethod: {
