@@ -638,6 +638,8 @@ export class SaleorPaymentSyncService {
                                         amount,
                                         referenceNumber: paymentReference,
                                         metadataJson,
+                                        currency,
+                                        status: paymentStatus,
                                         tenant: {
                                             connect: {
                                                 id: this.tenantId,
@@ -689,6 +691,11 @@ export class SaleorPaymentSyncService {
                         update: {
                             updatedAt: transaction.modifiedAt,
                             createdAt: transaction.createdAt,
+                            payment: {
+                                update: {
+                                    status: paymentStatus,
+                                },
+                            },
                         },
                     });
                 } catch (error) {
