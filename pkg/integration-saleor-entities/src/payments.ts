@@ -568,7 +568,14 @@ export class SaleorPaymentSyncService {
 
                 const amount =
                     transaction.chargedAmount.amount ||
-                    transaction.authorizePendingAmount.amount;
+                    transaction.authorizedAmount.amount;
+
+                if (!amount) {
+                    this.logger.info(
+                        `No amount found for transaction ${transaction.id}. Skipping`,
+                    );
+                    continue;
+                }
 
                 try {
                     await this.transactionToPaymentMethod(transaction);
