@@ -11,6 +11,20 @@ import {
 import { SaleorClient } from "@eci/pkg/saleor";
 import { isAfter, isBefore } from "date-fns";
 
+type EnhancedSalesChannelPriceEntry = SalesChannelPriceEntry & {
+    salesChannel: SalesChannel & {
+        saleorChannels: SaleorChannel[];
+    };
+    productVariant: ProductVariant & {
+        product: Product & {
+            saleorProducts: {
+                id: string;
+            }[];
+        };
+        saleorProductVariant: SaleorProductVariant[];
+    };
+};
+
 /**
  * Saleor Sync Sub-class to sync product prices in different channels and
  * their general availability
@@ -40,6 +54,41 @@ export class ChannelAvailability {
         this.saleorClient = saleorClient;
     }
 
+    private getCurrentActiveBasePrices(
+        entries: EnhancedSalesChannelPriceEntry[],
+    ): EnhancedSalesChannelPriceEntry[] {
+        // Filter out entries with minQuantity > 1 or with an ended endDate
+        const activeEntries = entries.filter(
+            (entry) =>
+                entry.minQuantity <= 1 &&
+                (!entry.endDate || new Date(entry.endDate) > new Date()),
+        );
+
+        // Group entries by productVariantId and salesChannelId
+        const groupedEntries: Record<string, EnhancedSalesChannelPriceEntry[]> =
+            {};
+        activeEntries.forEach((entry) => {
+            const key = `${entry.productVariantId}_${entry.salesChannelId}`;
+            if (!groupedEntries[key]) {
+                groupedEntries[key] = [];
+            }
+            groupedEntries[key].push(entry);
+        });
+
+        // For each group, find the entry with the most recent startDate
+        const result: EnhancedSalesChannelPriceEntry[] = [];
+        Object.values(groupedEntries).forEach((group) => {
+            const latestEntry = group.reduce((latest, current) =>
+                new Date(current.startDate) > new Date(latest.startDate)
+                    ? current
+                    : latest,
+            );
+            result.push(latestEntry);
+        });
+
+        return result;
+    }
+
     public async syncChannelAvailability(gteDate: Date) {
         this.logger.debug(`Looking for channel updates since ${gteDate}`);
         const channelPricings = await this.db.salesChannelPriceEntry.findMany({
@@ -62,6 +111,9 @@ export class ChannelAvailability {
                         },
                     },
                 },
+            },
+            orderBy: {
+                startDate: "desc",
             },
             include: {
                 salesChannel: {
@@ -112,13 +164,18 @@ export class ChannelAvailability {
             },
         );
 
-        const basePriceEntries = channelPricings.filter(
-            (entry) => entry.minQuantity <= 1,
-        );
+        /**
+         * There can be multiple entries per variant, minQuantity and channel.
+         * We need to filter first for only entries, with startDate before now and
+         * for the entries with the highest startDate, if we
+         * have multiple entries with the same minQuantity and channel.
+         */
+        const basePriceEntries =
+            this.getCurrentActiveBasePrices(channelPricings);
 
         for (const entry of basePriceEntries) {
             this.logger.info(
-                `Syncing channel availability for product variant ${entry.productVariant.variantName}` +
+                `Syncing channel availability (base price) for product ${entry.productVariant.product.name} variant ${entry.productVariant.variantName}` +
                     ` at channel ${entry.salesChannel.name} with price ${entry.price} and min Quanity ${entry.minQuantity}`,
             );
             if (entry && isBefore(entry.startDate, new Date())) continue;
