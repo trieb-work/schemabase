@@ -9,7 +9,7 @@ import {
     SalesChannelPriceEntry,
 } from "@eci/pkg/prisma";
 import { SaleorClient } from "@eci/pkg/saleor";
-import { isAfter, isBefore } from "date-fns";
+import { isAfter } from "date-fns";
 
 type EnhancedSalesChannelPriceEntry = SalesChannelPriceEntry & {
     salesChannel: SalesChannel & {
@@ -174,12 +174,20 @@ export class ChannelAvailability {
             this.getCurrentActiveBasePrices(channelPricings);
 
         for (const entry of basePriceEntries) {
+            if (entry && isAfter(entry.startDate, new Date())) {
+                this.logger.info(
+                    `No base price entry currently valid for product ${entry.productVariant.product.name} ` +
+                        `variant ${entry.productVariant.variantName} at channel ${entry.salesChannel.name}. Start date is in the future`,
+                    {
+                        startDate: entry.startDate,
+                    },
+                );
+                continue;
+            }
             this.logger.info(
                 `Syncing channel availability (base price) for product ${entry.productVariant.product.name} variant ${entry.productVariant.variantName}` +
                     ` at channel ${entry.salesChannel.name} with price ${entry.price} and min Quanity ${entry.minQuantity}`,
             );
-            if (entry && isBefore(entry.startDate, new Date())) continue;
-
             await this.syncBaseAvailability(entry);
         }
 
