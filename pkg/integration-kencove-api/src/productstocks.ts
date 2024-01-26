@@ -96,6 +96,14 @@ export class KencoveApiAppProductStockSyncService {
                 continue;
             }
             for (const warehouseEntry of variant.warehouse_stock) {
+                if (!warehouseEntry.warehouse_code) {
+                    this.logger.error(
+                        `Warehouse code is missing for sku: ${
+                            variant.itemCode
+                        }, ${JSON.stringify(variant.warehouse_stock)}`,
+                    );
+                    continue;
+                }
                 const warehouseId = await whHelper.getWareHouseId(
                     warehouseEntry.warehouse_code,
                 );
