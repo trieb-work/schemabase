@@ -97,11 +97,27 @@ export class KencoveApiAppProductStockSyncService {
             }
             for (const warehouseEntry of variant.warehouse_stock) {
                 if (!warehouseEntry.warehouse_code) {
-                    this.logger.error(
+                    this.logger.debug(
                         `Warehouse code is missing for sku: ${
                             variant.itemCode
-                        }, ${JSON.stringify(variant.warehouse_stock)}`,
+                        }. ${JSON.stringify(variant.warehouse_stock)}`,
                     );
+                    if (warehouseEntry.qty_avail === 0) {
+                        this.logger.info(
+                            `Nulling all stock entries for SKU ${variant.itemCode} `,
+                        );
+
+                        await this.db.stockEntries.updateMany({
+                            where: {
+                                productVariantId: internalVariant.id,
+                                tenantId: this.kencoveApiApp.tenantId,
+                            },
+                            data: {
+                                actualAvailableForSaleStock: 0,
+                            },
+                        });
+                    }
+
                     continue;
                 }
                 const warehouseId = await whHelper.getWareHouseId(
