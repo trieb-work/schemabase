@@ -123,7 +123,7 @@ export class SaleorCategorySyncService {
     public async syncToEci() {
         /**
          * All categories from Saleor. We always fetch all categories,
-         * as there are normally less than 100 and Saleor does not offer
+         * as there are normally less than 300 and Saleor does not offer
          * us a way to filter by updated_at.
          */
         const response = await queryWithPagination(({ first, after }) =>
@@ -334,7 +334,9 @@ export class SaleorCategorySyncService {
             return;
         }
         this.logger.info(
-            `Creating categories: ${categoriesToCreate.map((c) => c.name)}`,
+            `Creating categories in schemabase: ${categoriesToCreate.map(
+                (c) => c.name,
+            )}`,
         );
 
         for (const category of categoriesToCreate) {
@@ -385,8 +387,8 @@ export class SaleorCategorySyncService {
                     category: {
                         connectOrCreate: {
                             where: {
-                                normalizedName_tenantId: {
-                                    normalizedName,
+                                slug_tenantId: {
+                                    slug: category.slug,
                                     tenantId: this.tenantId,
                                 },
                             },
@@ -418,6 +420,10 @@ export class SaleorCategorySyncService {
                     },
                 },
             });
+
+            this.logger.info(
+                `Created category ${category.name} with id ${category.id}`,
+            );
         }
     }
 
@@ -430,7 +436,9 @@ export class SaleorCategorySyncService {
         if (categoriesToDelete.length === 0) {
             return;
         }
-        this.logger.info(`Deleting categories: ${categoriesToDelete}`);
+        this.logger.info(
+            `Deleting categories: ${JSON.stringify(categoriesToDelete)}`,
+        );
         await this.db.saleorCategory.deleteMany({
             where: {
                 id: {
@@ -584,6 +592,15 @@ export class SaleorCategorySyncService {
 
         const categoriesToCreate = await this.db.category.findMany({
             where: {
+                /**
+                 * Filter for categories that have at least 1 product
+                 * related to them
+                 */
+                products: {
+                    some: {
+                        tenantId: this.tenantId,
+                    },
+                },
                 saleorCategories: {
                     none: {
                         installedSaleorAppId: this.installedSaleorApp.id,

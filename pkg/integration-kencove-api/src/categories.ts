@@ -252,6 +252,43 @@ export class KencoveApiAppCategorySyncService {
                     data: {
                         updatedAt,
                         category: {
+                            connectOrCreate: {
+                                where: {
+                                    slug_tenantId: {
+                                        slug: category.categorySlug,
+                                        tenantId: this.kencoveApiApp.tenantId,
+                                    },
+                                },
+                                create: {
+                                    id: id.id("category"),
+                                    normalizedName,
+                                    name: category.categoryName,
+                                    slug: category.categorySlug,
+                                    active: true,
+                                    parentCategory: parentCategoryId
+                                        ? {
+                                              connect: {
+                                                  id: parentCategoryId,
+                                              },
+                                          }
+                                        : undefined,
+                                    childrenCategories: {
+                                        connect: childrenCategories,
+                                    },
+                                    products: {
+                                        connect: relatedProducts?.map((p) => ({
+                                            id: p,
+                                        })),
+                                    },
+                                    descriptionHTML:
+                                        category.websiteDescription,
+                                    tenant: {
+                                        connect: {
+                                            id: this.kencoveApiApp.tenantId,
+                                        },
+                                    },
+                                },
+                            },
                             update: {
                                 name: category.categoryName,
                                 slug: category.categorySlug,
@@ -320,8 +357,8 @@ export class KencoveApiAppCategorySyncService {
                         category: {
                             connectOrCreate: {
                                 where: {
-                                    normalizedName_tenantId: {
-                                        normalizedName,
+                                    slug_tenantId: {
+                                        slug: category.categorySlug,
                                         tenantId: this.kencoveApiApp.tenantId,
                                     },
                                 },

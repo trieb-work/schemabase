@@ -953,7 +953,7 @@ Table Category {
   media Media [not null]
 
   indexes {
-    (normalizedName, tenantId) [unique]
+    (slug, tenantId) [unique]
   }
 
   Note: 'The ECI internal category model. Product categories are used to group products together
