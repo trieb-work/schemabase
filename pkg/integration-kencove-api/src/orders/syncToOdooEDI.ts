@@ -293,8 +293,10 @@ export class SyncToOdooEDI {
                         schemabaseOrder.shippingAddress?.kencoveApiAddress[0]
                             ?.id,
                     countryCode: schemabaseOrder.shippingAddress?.countryCode,
-                    state: schemabaseOrder.shippingAddress?.countryArea,
+                    state: schemabaseOrder.shippingAddress?.state,
                     zip: schemabaseOrder.shippingAddress?.plz,
+                    city: schemabaseOrder.shippingAddress?.city,
+                    phone: schemabaseOrder.shippingAddress?.phone,
                 },
                 billingAddress: {
                     fullName: schemabaseOrder?.billingAddress?.fullname,
@@ -306,14 +308,17 @@ export class SyncToOdooEDI {
                         schemabaseOrder.billingAddress?.kencoveApiAddress[0]
                             ?.id,
                     countryCode: schemabaseOrder.billingAddress?.countryCode,
-                    state: schemabaseOrder.billingAddress?.countryArea,
+                    state: schemabaseOrder.billingAddress?.state,
                     zip: schemabaseOrder.billingAddress?.plz,
+                    city: schemabaseOrder.billingAddress?.city,
+                    phone: schemabaseOrder.shippingAddress?.phone,
                 },
                 orderLineItems: schemabaseOrder.orderLineItems.map(
                     (orderLineItem) => {
                         return {
                             quantity: orderLineItem.quantity,
                             totalPriceGross: orderLineItem.totalPriceGross,
+                            totalPriceNet: orderLineItem.totalPriceNet,
                             productVariant: {
                                 sku: orderLineItem.productVariant.sku,
                                 name: orderLineItem.productVariant.variantName,
