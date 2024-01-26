@@ -17,6 +17,8 @@ import {
     Language,
     InstalledSaleorApp,
 } from "@eci/pkg/prisma";
+import { checkCurrency } from "@eci/pkg/normalization/src/currency";
+
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { subYears, subHours } from "date-fns";
 import { id } from "@eci/pkg/ids";
@@ -279,6 +281,8 @@ export class SaleorOrderSyncService {
                     order?.shippingMethodName || "",
                 );
 
+                const currency = checkCurrency(order.total.currency);
+
                 const shippingMethodId =
                     order.deliveryMethod?.__typename === "ShippingMethod"
                         ? this.shippingMethodIdDecode(order.deliveryMethod.id)
@@ -308,7 +312,6 @@ export class SaleorOrderSyncService {
                                     },
                                 },
                                 create: {
-                                    // TODO add orderCurrency for all prices in an order
                                     id: id.id("order"),
                                     orderNumber: prefixedOrderNumber,
                                     date: new Date(order.created),
@@ -317,6 +320,7 @@ export class SaleorOrderSyncService {
                                         order.languageCodeEnum,
                                     ),
                                     orderStatus,
+                                    currency,
                                     token: orderToken,
                                     discountCode,
                                     carrier,
@@ -357,6 +361,7 @@ export class SaleorOrderSyncService {
                                     order?.shippingPrice.gross.amount,
                                 orderStatus,
                                 discountCode,
+                                currency,
                                 mainContact: contactCreateOrConnect,
                                 paymentStatus:
                                     paymentStatus !== "unpaid"
@@ -399,7 +404,9 @@ export class SaleorOrderSyncService {
                 }
 
                 /**
-                 * The highest Tax Rate is used as the shipping tax rate
+                 * The highest Tax Rate is used as the shipping tax rate.
+                 * This implementation is not clean! Have to verify with Saleor
+                 * again to find a better solution
                  */
                 const highestTaxRate =
                     order.shippingPrice.gross.amount > 0
