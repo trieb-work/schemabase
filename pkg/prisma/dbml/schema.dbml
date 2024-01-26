@@ -803,7 +803,6 @@ This information can be used by some systems like Zoho']
   plz String
   city String
   countryCode CountryCode
-  countryArea String
   company String
   phone String
   fullname String

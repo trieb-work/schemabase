@@ -1589,7 +1589,6 @@ model Address {
   plz                   String?
   city                  String?
   countryCode           CountryCode?
-  countryArea           String?
   company               String?
   phone                 String?
   fullname              String?
