@@ -592,15 +592,6 @@ export class SaleorCategorySyncService {
 
         const categoriesToCreate = await this.db.category.findMany({
             where: {
-                /**
-                 * Filter for categories that have at least 1 product
-                 * related to them
-                 */
-                products: {
-                    some: {
-                        tenantId: this.tenantId,
-                    },
-                },
                 saleorCategories: {
                     none: {
                         installedSaleorAppId: this.installedSaleorApp.id,
@@ -649,10 +640,15 @@ export class SaleorCategorySyncService {
         for (const category of categoriesToCreate) {
             if (
                 category.parentCategoryId &&
+                category.parentCategoryId !== category.id &&
                 !category.parentCategory?.saleorCategories?.[0]?.id
             ) {
                 this.logger.info(
                     `Parent category of ${category.name} does not exist in saleor. Skipping`,
+                    {
+                        categoryId: category.id,
+                        parentCategoryId: category.parentCategoryId,
+                    },
                 );
                 continue;
             }
