@@ -833,6 +833,13 @@ export class KencoveApiAppProductSyncService {
                 display_type: "variant_reference",
                 attribute_model: "custom",
             });
+            variantAttributesUnique.push({
+                name: "Backorder",
+                value: "",
+                attribute_id: 333336,
+                display_type: "checkbox",
+                attribute_model: "custom",
+            });
             productAttributesUnique.push({
                 name: "Product Manual",
                 value: "",
