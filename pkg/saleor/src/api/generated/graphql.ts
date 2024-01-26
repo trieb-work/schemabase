@@ -12995,7 +12995,7 @@ export type Mutation = {
      */
     staffUpdate?: Maybe<StaffUpdate>;
     /**
-     * Updates stocks for a given variant and warehouse.
+     * Updates stocks for a given variant and warehouse. Variant and warehouse selectors have to be the same for all stock inputs. Is not allowed to use 'variantId' in one input and 'variantExternalReference' in another.
      *
      * Added in Saleor 3.13.
      *
@@ -26900,7 +26900,7 @@ export type StockBulkResult = {
 };
 
 /**
- * Updates stocks for a given variant and warehouse.
+ * Updates stocks for a given variant and warehouse. Variant and warehouse selectors have to be the same for all stock inputs. Is not allowed to use 'variantId' in one input and 'variantExternalReference' in another.
  *
  * Added in Saleor 3.13.
  *
@@ -31896,7 +31896,7 @@ export type Weight = {
     __typename?: "Weight";
     /** Weight unit. */
     unit: WeightUnitsEnum;
-    /** Weight value. */
+    /** Weight value. Returns a value with maximal three decimal places */
     value: Scalars["Float"];
 };
 
