@@ -188,6 +188,11 @@ export type KencoveApiProduct = {
      * Truck only handling: We can't give a quotation for these items.
      */
     truck_only: "N" | "Y" | null;
+    /**
+     * all variants are allowed to be backordered by default.
+     * This setting can disable the backorder
+     */
+    do_not_backorder: boolean;
 };
 type KencoveApiAAItem = {
     /**

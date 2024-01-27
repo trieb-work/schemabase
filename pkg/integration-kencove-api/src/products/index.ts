@@ -1270,6 +1270,7 @@ export class KencoveApiAppProductSyncService {
                     productName: htmlDecode(p.name),
                     categoryId: p?.categoryId?.toString(),
                     taxClass: p.product_tax_code,
+                    backorder: !p.do_not_backorder,
                     variants: p.variants.map((v) => ({
                         ...v,
                         productId: p.id,
@@ -1645,12 +1646,25 @@ export class KencoveApiAppProductSyncService {
                     );
                 }
 
+                /**
+                 * We transform the information on backorder to an attribute,
+                 * that we set here
+                 */
+                const backOrderAttribute: KencoveApiAttributeInProduct = {
+                    value: product.backorder ? "true" : "false",
+                    attribute_id: 333336,
+                    attribute_model: "custom",
+                    name: "Backorder",
+                    display_type: "checkbox",
+                };
+
                 /// set the attribute values. We need to check the product type
                 /// to see, if an attribute is used as product, or variant
                 /// attribute create a value entry accordingly.
                 const allAttributes = [
                     ...(variant.attributeValues || []),
                     ...variant.selectorValues,
+                    backOrderAttribute,
                 ];
 
                 /**
