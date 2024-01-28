@@ -147,19 +147,6 @@ export class KencoveApiAppCategorySyncService {
                 (c) => c.id === category.cateorgyId.toString(),
             );
 
-            // if the updatedAt timestamp in our db is the same as the one from kencove,
-            // we skip this category. If the category doesn't exist, we create it.
-            if (
-                existingCategory &&
-                existingCategory.updatedAt.getTime() === updatedAt.getTime() &&
-                !isFirstRun
-            ) {
-                this.logger.info(
-                    `Category ${category.cateorgyId} hasn't changed. Skipping.`,
-                );
-                continue;
-            }
-
             this.logger.debug(`Working on category ${category.categoryName}`, {
                 kencoveApiCategoryId: category.cateorgyId,
                 slug: category.categorySlug,
