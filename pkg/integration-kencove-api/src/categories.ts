@@ -74,16 +74,10 @@ export class KencoveApiAppCategorySyncService {
     }
 
     public async syncToECI() {
-        /**
-         * When this is the first run, or the last run did not complete,
-         * we mark this, so that we don't skip any category.
-         */
-        let isFirstRun = false;
         const cronState = await this.cronState.get();
         const now = new Date();
         let createdGte: Date;
         if (!cronState.lastRun) {
-            isFirstRun = true;
             createdGte = subYears(now, 1);
             this.logger.info(
                 // eslint-disable-next-line max-len
