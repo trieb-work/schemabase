@@ -39,7 +39,7 @@ describe("Zoho Entity Sync Orders Test", () => {
         );
 
         // await service.syncToECI();
-        const gteData = subYears(new Date(), 1);
+        const gteData = subYears(new Date(), 2);
         await service.syncChannelAvailability(gteData);
     }, 1000000);
 });

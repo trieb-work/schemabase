@@ -17,7 +17,8 @@ describe("Zoho Entity Sync Orders Test", () => {
     test("It should work to sync packages", async () => {
         const tenant = await prismaClient.tenant.findUnique({
             where: {
-                id: "pk_7f165pf-prod",
+                // id: "pk_7f165pf-prod",
+                id: "tn_kencove235",
                 // id: "test",
             },
         });
@@ -27,7 +28,8 @@ describe("Zoho Entity Sync Orders Test", () => {
             );
 
         const { client: saleorClient, installedSaleorApp } =
-            await getSaleorClientAndEntry("QXBwOjE2", prismaClient);
+            // await getSaleorClientAndEntry("QXBwOjE2", prismaClient);
+            await getSaleorClientAndEntry("QXBwOjQw", prismaClient);
 
         const service = new SaleorPackageSyncService({
             saleorClient,

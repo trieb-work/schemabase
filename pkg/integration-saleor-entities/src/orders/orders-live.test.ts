@@ -37,7 +37,11 @@ describe("Saleor Sync Orders Test", () => {
             orderPrefix: "STORE",
             channelSlug: "storefront",
         });
-        // await service.syncToECI();
+        await service.syncToECI();
         await service.syncFromECI();
     }, 1000000);
 });
+
+// jannik user accouint: c_6gXrw8cnQnzS8YbUPPVrvk
+// example order: o_GCQsAJvPV5WQmETHo3Bs71
+// S0000063553

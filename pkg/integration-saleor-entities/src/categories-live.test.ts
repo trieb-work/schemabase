@@ -27,7 +27,7 @@ describe("Saleor Categories Test", () => {
             );
 
         const { client: saleorClient, installedSaleorApp } =
-            await getSaleorClientAndEntry("QXBwOjE=", prismaClient);
+            await getSaleorClientAndEntry("QXBwOjQw", prismaClient);
 
         const service = new SaleorCategorySyncService({
             saleorClient,
