@@ -160,9 +160,10 @@ export class KencoveApiAppCategorySyncService {
                 continue;
             }
 
-            this.logger.debug(
-                `Working on category ${JSON.stringify(category)}.`,
-            );
+            this.logger.debug(`Working on category ${category.categoryName}`, {
+                kencoveApiCategoryId: category.cateorgyId,
+                slug: category.categorySlug,
+            });
 
             // for the parent and all children categories of this category, we need to get our
             // corresponding internal ids to be able to connect them to together.
@@ -236,10 +237,13 @@ export class KencoveApiAppCategorySyncService {
                 category.productIds || [],
             );
 
-            this.logger.debug("Updating/creating category in schemabase.", {
-                childrenCategories,
-                parentCategoryId,
-            });
+            this.logger.debug(
+                `Updating/creating category ${category.categoryName} - ${category.categorySlug} in schemabase.`,
+                {
+                    childrenCategories,
+                    parentCategoryId,
+                },
+            );
             if (existingCategory) {
                 this.logger.info(`Updating category ${category.cateorgyId}.`);
                 await this.db.kencoveApiCategory.update({
