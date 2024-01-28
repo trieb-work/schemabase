@@ -81,7 +81,13 @@ export class Logger implements ILogger {
         for (const logDrain of this.logDrains) {
             logDrain.log(
                 JSON.stringify(
-                    { level, message, ...this.meta, ...fields },
+                    {
+                        level,
+                        message,
+                        ...this.meta,
+                        ...fields,
+                        timestamp: new Date(),
+                    },
                     null,
                     2,
                 ),
