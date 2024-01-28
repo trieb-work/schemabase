@@ -422,13 +422,13 @@ export class KencoveApiAppCategorySyncService {
                     },
                 });
             }
-
-            // we update the last run timestamp to now
-            if (!skipCronStateUpdate)
-                await this.cronState.set({
-                    lastRun: now,
-                    lastRunStatus: "success",
-                });
         }
+
+        // we update the last run timestamp to now
+        if (!skipCronStateUpdate)
+            await this.cronState.set({
+                lastRun: now,
+                lastRunStatus: "success",
+            });
     }
 }
