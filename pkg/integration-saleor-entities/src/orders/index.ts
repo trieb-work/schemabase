@@ -637,6 +637,10 @@ export class SaleorOrderSyncService {
                                         },
                                         order: {
                                             update: {
+                                                shippingPriceNet:
+                                                    orderDetails.order
+                                                        ?.shippingPrice.net
+                                                        .amount,
                                                 shippingPriceGross:
                                                     orderDetails.order
                                                         ?.shippingPrice.gross
