@@ -342,6 +342,15 @@ export class SyncToOdooEDI {
                         created: payment.date,
                         acquirerReference: payment.referenceNumber,
                         paymentMethod: payment.paymentMethod.gatewayType,
+                        /**
+                         * should be "authorized" | "sale"
+                         */
+                        state:
+                            payment.status === "authorized"
+                                ? "authorized"
+                                : payment.status === "paid"
+                                ? "sale"
+                                : "",
                     };
                 }),
                 shippingMethod: {
