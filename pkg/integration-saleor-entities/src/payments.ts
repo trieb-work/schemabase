@@ -662,7 +662,7 @@ export class SaleorPaymentSyncService {
                     paymentStatus,
                     paymentReference,
                     userEmail: lowercaseEmail,
-                    orderNumber: order?.orderNumber,
+                    orderNumber: transaction.order?.number,
                     gateway,
                     type,
                 });
