@@ -32837,12 +32837,8 @@ export type SaleorCronOrdersOverviewQuery = {
                     type: VoucherTypeEnum;
                 } | null;
                 deliveryMethod?:
-                    | {
-                          __typename?: "ShippingMethod";
-                          id: string;
-                          name: string;
-                      }
-                    | { __typename?: "Warehouse" }
+                    | { __typename: "ShippingMethod"; id: string; name: string }
+                    | { __typename: "Warehouse" }
                     | null;
                 total: {
                     __typename?: "TaxedMoney";
@@ -34294,7 +34290,9 @@ export const SaleorCronOrdersOverviewDocument = gql`
                     languageCodeEnum
                     shippingMethodName
                     deliveryMethod {
+                        __typename
                         ... on ShippingMethod {
+                            __typename
                             id
                             name
                         }
