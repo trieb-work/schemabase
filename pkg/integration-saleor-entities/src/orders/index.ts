@@ -453,7 +453,9 @@ export class SaleorOrderSyncService {
                         );
                     }
                     let variantSku =
-                        lineItem.variant?.sku || lineItem.skuFromMetadata;
+                        lineItem.variant?.sku ||
+                        lineItem.skuFromMetadata ||
+                        lineItem.productSku;
                     if (!variantSku) {
                         this.logger.debug(
                             `Lineitem of Order is missing the variant sku in saleor response. Trying to find the variant internally in our DB`,
