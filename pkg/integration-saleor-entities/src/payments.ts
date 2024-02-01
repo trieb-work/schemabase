@@ -95,21 +95,21 @@ export class SaleorPaymentSyncService {
             const method = transaction.privateMetadata.find(
                 (x) => x.key === "method",
             )?.value;
-            if (method) {
-                if (method === "prepayment") {
+            const echeck = transaction.privateMetadata.find(
+                (x) => x.key === "echeck",
+            )?.value;
+            const prepayment =
+                transaction.privateMetadata.find((x) => x.key === "prepayment")
+                    ?.value || method === "prepayment";
+
+            if (echeck || prepayment) {
+                if (prepayment) {
                     paymentMethod = PaymentMethodType.banktransfer;
                 }
-                if (method === "echeck") {
+                if (echeck) {
                     paymentMethod = PaymentMethodType.echeck;
-                    const echeckData = transaction.privateMetadata.find(
-                        (x) => x.key === "echeck",
-                    )?.value;
-                    if (!echeckData) {
-                        throw new Error(
-                            `Method echeck, but missing echeck data for transaction ${transaction.id}`,
-                        );
-                    }
-                    const parsedData = JSON.parse(echeckData);
+
+                    const parsedData = JSON.parse(echeck);
                     if (
                         !parsedData.accountNumber ||
                         !parsedData.routingNumber
@@ -118,7 +118,9 @@ export class SaleorPaymentSyncService {
                             `Method echeck, but missing accountNumber or routingNumber for transaction ${transaction.id}`,
                         );
                     }
-                    metadataJson = await krypto.encrypt(parsedData);
+                    metadataJson = await krypto.encrypt(
+                        JSON.stringify(parsedData),
+                    );
                 }
             }
         }
@@ -577,11 +579,69 @@ export class SaleorPaymentSyncService {
                     continue;
                 }
 
+                /**
+                 * Handle the case of imported orders
+                 */
+                if (transaction.pspReference && !transaction.createdBy) {
+                    const existingPayment = await this.db.payment.findUnique({
+                        where: {
+                            referenceNumber_tenantId: {
+                                referenceNumber: transaction.pspReference,
+                                tenantId: this.tenantId,
+                            },
+                        },
+                    });
+                    if (existingPayment && existingPayment.amount === amount) {
+                        this.logger.info(
+                            `Payment ${transaction.pspReference} already exists. Connecting this Saleor payment to it`,
+                        );
+                        await this.db.saleorPayment.upsert({
+                            where: {
+                                id_installedSaleorAppId: {
+                                    id: transaction.id,
+                                    installedSaleorAppId:
+                                        this.installedSaleorAppId,
+                                },
+                            },
+                            create: {
+                                id: transaction.id,
+                                createdAt: new Date(transaction.createdAt),
+                                updatedAt: new Date(transaction.modifiedAt),
+                                installedSaleorApp: {
+                                    connect: {
+                                        id: this.installedSaleorAppId,
+                                    },
+                                },
+                                payment: {
+                                    connect: {
+                                        id: existingPayment.id,
+                                    },
+                                },
+                            },
+                            update: {
+                                updatedAt: new Date(transaction.modifiedAt),
+                                payment: {
+                                    connect: {
+                                        id: existingPayment.id,
+                                    },
+                                },
+                            },
+                        });
+                        continue;
+                    }
+                }
+
+                /**
+                 * Test, if we can process this transaction
+                 */
                 try {
                     await this.transactionToPaymentMethod(transaction);
                 } catch (error) {
                     this.logger.error(
                         `Failed to process transaction ${transaction.id}. Skipping: ${error}`,
+                        {
+                            orderNumber: transaction.order?.number,
+                        },
                     );
                     continue;
                 }
@@ -612,6 +672,7 @@ export class SaleorPaymentSyncService {
                         `No order found for transaction ${transaction.id}. Skipping`,
                         {
                             saleorOrderId: transaction.order?.id,
+                            orderNumber: transaction.order?.number,
                         },
                     );
                     continue;
