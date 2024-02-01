@@ -274,6 +274,7 @@ export class SyncToOdooEDI {
                 date: schemabaseOrder.date,
                 status: schemabaseOrder.orderStatus,
                 totalPriceGross: schemabaseOrder.totalPriceGross,
+                totalPriceNet: schemabaseOrder.totalPriceNet,
                 mainContact: {
                     email: schemabaseOrder.mainContact.email,
                     firstName: schemabaseOrder.mainContact.firstName,
