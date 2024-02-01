@@ -57,7 +57,9 @@ query saleorCronOrdersOverview(
                 languageCodeEnum
                 shippingMethodName
                 deliveryMethod {
+                    __typename
                     ... on ShippingMethod {
+                        __typename
                         id
                         name
                     }
