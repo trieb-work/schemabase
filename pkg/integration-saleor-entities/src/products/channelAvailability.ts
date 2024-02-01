@@ -77,12 +77,27 @@ export class ChannelAvailability {
 
         // For each group, find the entry with the most recent startDate
         const result: EnhancedSalesChannelPriceEntry[] = [];
+
         Object.values(groupedEntries).forEach((group) => {
-            const latestEntry = group.reduce((latest, current) =>
-                new Date(current.startDate) > new Date(latest.startDate)
-                    ? current
-                    : latest,
-            );
+            const latestEntry = group.reduce((latest, current) => {
+                if (!latest) {
+                    return current;
+                }
+                if (!current) {
+                    return latest;
+                }
+                if (!latest.startDate && current.startDate) {
+                    return current;
+                }
+                if (
+                    current.startDate &&
+                    latest.startDate &&
+                    current.startDate > latest.startDate
+                ) {
+                    return current;
+                }
+                return latest;
+            });
             result.push(latestEntry);
         });
 
@@ -174,7 +189,11 @@ export class ChannelAvailability {
             this.getCurrentActiveBasePrices(channelPricings);
 
         for (const entry of basePriceEntries) {
-            if (entry && isAfter(entry.startDate, new Date())) {
+            if (
+                entry &&
+                entry.startDate &&
+                isAfter(entry.startDate, new Date())
+            ) {
                 this.logger.info(
                     `No base price entry currently valid for product ${entry.productVariant.product.name} ` +
                         `variant ${entry.productVariant.variantName} at channel ${entry.salesChannel.name}. Start date is in the future`,

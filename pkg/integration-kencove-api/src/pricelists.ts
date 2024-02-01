@@ -221,7 +221,9 @@ export class KencoveApiAppPricelistSyncService {
                         update: {},
                     });
 
-                    const startDate = new Date(pricelistEntry.date_start);
+                    const startDate = pricelistEntry.date_start
+                        ? new Date(pricelistEntry.date_start)
+                        : null;
                     const endDate = pricelistEntry.date_end
                         ? new Date(pricelistEntry.date_end)
                         : null;

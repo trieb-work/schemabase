@@ -271,7 +271,7 @@ export type KencoveApiPricelistItem = {
     price: number;
     createdAt: string;
     updatedAt: string;
-    date_start: string;
+    date_start: string | null;
     date_end: string | null;
     product_id: null;
     variantItemCode: null;

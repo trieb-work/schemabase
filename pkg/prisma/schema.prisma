@@ -1306,7 +1306,7 @@ model SalesChannelPriceEntry {
 
   price Float
 
-  startDate DateTime  @default(now())
+  startDate DateTime?
   endDate   DateTime?
 
   /// This price is valid starting with this quantity

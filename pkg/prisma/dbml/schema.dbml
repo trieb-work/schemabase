@@ -783,7 +783,7 @@ Table SalesChannelPriceEntry {
   tenant Tenant [not null]
   tenantId String [not null]
   price Float [not null]
-  startDate DateTime [default: `now()`, not null]
+  startDate DateTime
   endDate DateTime
   minQuantity Float [not null, default: 0, note: 'This price is valid starting with this quantity']
 
