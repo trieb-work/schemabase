@@ -125,7 +125,7 @@ export class SaleorPaymentSyncService {
 
         if (!gateway) {
             throw new Error(
-                `Unknown gateway for transaction ${transaction.id}: ${createdBy}`,
+                `Unknown gateway for transaction ${transaction.id}. Created by: ${createdBy}`,
             );
         }
         if (!paymentMethod) {
@@ -603,6 +603,8 @@ export class SaleorPaymentSyncService {
                     paymentReference,
                     userEmail: lowercaseEmail,
                     orderNumber: order?.orderNumber,
+                    gateway,
+                    type,
                 });
 
                 if (!order) {
