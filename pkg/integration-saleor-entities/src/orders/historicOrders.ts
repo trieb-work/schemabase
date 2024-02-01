@@ -113,6 +113,7 @@ export class SaleorHistoricOrdersSync {
             country: this.schemabaseCountryCodeToSaleorCountryCode(
                 address.countryCode,
             ),
+            countryArea: address.state,
         });
         return {
             firstName,
