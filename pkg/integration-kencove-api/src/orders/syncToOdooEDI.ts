@@ -3,71 +3,18 @@ import { ILogger } from "@eci/pkg/logger";
 import {
     KencoveApiApp,
     KencoveApiContact,
+    Payment,
+    PaymentMethod,
     PrismaClient,
 } from "@eci/pkg/prisma";
-
-// We send all unprocessed or updated orders to Odoo EDI endpoint for processing.
-// Example of an order:
-// {
-//     "orderNumber": "321",
-//     "date": "2023-12-29",
-//     "status": "Draft",
-//     "mainContact": {
-//         "email": "john.doe@example.com",
-//         "firstName": "John",
-//         "lastName": "Doe",
-//         "phone": "123456789",
-//         "odooContactId": "C123"
-//     },
-//     "shippingAddress": {
-//         "fullName": "John Doe",
-//         "company": "ABC Inc.",
-//         "street": "123 Main St",
-//         "street2": "Apt 45",
-//         "odooAddressId": "A456"
-//     },
-//     "billingAddress": {
-//         "fullName": "John Doe",
-//         "company": "ABC Inc.",
-//         "street": "123 Main St",
-//         "street2": "Apt 45",
-//         "odooAddressId": "A456"
-//     },
-//     "orderLineItems": [
-//         {
-//             "quantity": 2,
-//             "totalPriceGross": 100,
-//             "productVariant": {
-//                 "sku": "SKU001",
-//                 "name": "Product 1",
-//                 "odooProductId": "1"
-//             },
-//             "warehouse": {
-//                 "name": "Warehouse 1",
-//                 "odooWarehouseId": "1"
-//             }
-//         },
-//         {
-//             "quantity": 1,
-//             "totalPriceGross": 50,
-//             "productVariant": {
-//                 "sku": "SKU002",
-//                 "name": "Product 2",
-//                 "odooProductId": "2"
-//             },
-//             "warehouse": {
-//                 "name": "Warehouse 2",
-//                 "odooWarehouseId": "2"
-//             }
-//         }
-//     ]
-// }
+import { krypto } from "@eci/pkg/krypto";
 
 interface SyncToOdooEDIOptions {
     kencoveApiApp: KencoveApiApp;
     db: PrismaClient;
     logger: ILogger;
 }
+
 export class SyncToOdooEDI {
     private readonly logger: ILogger;
 
@@ -179,6 +126,39 @@ export class SyncToOdooEDI {
     //     }
     //     return response.data;
     // }
+
+    private async schemabaseToOdooPayments(
+        payments: (Payment & { paymentMethod: PaymentMethod })[],
+    ) {
+        const returnPayments = [];
+        for (const payment of payments) {
+            const metadataString = payment.metadataJson
+                ? await krypto.decrypt(payment.metadataJson as string)
+                : undefined;
+            const metadata = metadataString
+                ? JSON.parse(metadataString)
+                : undefined;
+
+            returnPayments.push({
+                amount: payment.amount,
+                currency: payment.currency,
+                created: payment.date,
+                acquirerReference: payment.referenceNumber,
+                paymentMethod: payment.paymentMethod.gatewayType,
+                paymentMetadata: metadata,
+                /**
+                 * should be "authorized" | "sale"
+                 */
+                state:
+                    payment.status === "authorized"
+                        ? "authorized"
+                        : payment.status === "paid"
+                        ? "sale"
+                        : "",
+            });
+        }
+        return returnPayments;
+    }
 
     public async sync(): Promise<void> {
         if (!this.kencoveApiApp.ediEndpoint) {
@@ -336,24 +316,9 @@ export class SyncToOdooEDI {
                         };
                     },
                 ),
-                payments: schemabaseOrder.payments.map((payment) => {
-                    return {
-                        amount: payment.amount,
-                        currency: payment.currency,
-                        created: payment.date,
-                        acquirerReference: payment.referenceNumber,
-                        paymentMethod: payment.paymentMethod.gatewayType,
-                        /**
-                         * should be "authorized" | "sale"
-                         */
-                        state:
-                            payment.status === "authorized"
-                                ? "authorized"
-                                : payment.status === "paid"
-                                ? "sale"
-                                : "",
-                    };
-                }),
+                payments: await this.schemabaseToOdooPayments(
+                    schemabaseOrder.payments,
+                ),
                 shippingMethod: {
                     totalPriceGross: schemabaseOrder.shippingPriceGross,
                     name: schemabaseOrder.shippingMethodName,
