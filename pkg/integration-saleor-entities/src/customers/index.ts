@@ -249,6 +249,7 @@ export class SaleorCustomerSyncService {
             }
             this.logger.debug(`Updating contact ${contact.id} in Saleor`, {
                 externalIdentifier: contact.externalIdentifier,
+                saleorCustomerId,
             });
 
             await this.updateContactInSaleor({
