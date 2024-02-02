@@ -32251,6 +32251,7 @@ export type ProductMediaCreateMutationVariables = Exact<{
     productId: Scalars["ID"];
     alt?: InputMaybe<Scalars["String"]>;
     image?: InputMaybe<Scalars["Upload"]>;
+    URL?: InputMaybe<Scalars["String"]>;
 }>;
 
 export type ProductMediaCreateMutation = {
@@ -33932,9 +33933,19 @@ export const DeleteProductsDocument = gql`
     }
 `;
 export const ProductMediaCreateDocument = gql`
-    mutation productMediaCreate($productId: ID!, $alt: String, $image: Upload) {
+    mutation productMediaCreate(
+        $productId: ID!
+        $alt: String
+        $image: Upload
+        $URL: String
+    ) {
         productMediaCreate(
-            input: { product: $productId, alt: $alt, image: $image }
+            input: {
+                product: $productId
+                alt: $alt
+                image: $image
+                mediaUrl: $URL
+            }
         ) {
             errors {
                 field

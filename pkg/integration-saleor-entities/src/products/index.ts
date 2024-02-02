@@ -610,42 +610,80 @@ export class SaleorProductSyncService {
             this.logger.info(
                 `Uploading media ${element.id}: ${element.url} to saleor`,
             );
-            try {
-                const mediaBlob = await mediaUpload.fetchMediaBlob(element.url);
-                const fileExtension = await mediaUpload.getFileExtension(
-                    element.url,
-                    mediaBlob,
-                );
-                if (!fileExtension) {
-                    this.logger.error(
-                        `Could not get file extension for media ${element.id}: ${element.url}. Can't upload to Saleor`,
+            if (element.type === "PRODUCTIMAGE") {
+                try {
+                    const mediaBlob = await mediaUpload.fetchMediaBlob(
+                        element.url,
                     );
-                    continue;
+                    const fileExtension = await mediaUpload.getFileExtension(
+                        element.url,
+                        mediaBlob,
+                    );
+                    if (!fileExtension) {
+                        this.logger.error(
+                            `Could not get file extension for media ${element.id}: ${element.url}. Can't upload to Saleor`,
+                        );
+                        continue;
+                    }
+                    const imageId = await mediaUpload.uploadImageToSaleor({
+                        saleorProductId,
+                        mediaBlob,
+                        fileExtension: fileExtension.extension,
+                        fileType: fileExtension.fileType,
+                    });
+                    await this.saleorClient.saleorUpdateMetadata({
+                        id: imageId,
+                        input: [
+                            {
+                                key: "schemabase-media-id",
+                                value: element.id,
+                            },
+                        ],
+                    });
+                    this.logger.info(
+                        `Successfully uploaded media ${element.id}: ${element.url} to saleor with id ${imageId}`,
+                    );
+                } catch (error: any) {
+                    this.logger.error(
+                        `Error handling media ${element.id}: ${element.url} - ${
+                            error?.message ?? error
+                        }`,
+                    );
                 }
-                const imageId = await mediaUpload.uploadImageToSaleor({
-                    saleorProductId,
-                    mediaBlob,
-                    fileExtension: fileExtension.extension,
-                    fileType: fileExtension.fileType,
-                });
-                await this.saleorClient.saleorUpdateMetadata({
-                    id: imageId,
-                    input: [
-                        {
-                            key: "schemabase-media-id",
-                            value: element.id,
-                        },
-                    ],
-                });
-                this.logger.info(
-                    `Successfully uploaded media ${element.id}: ${element.url} to saleor with id ${imageId}`,
-                );
-            } catch (error: any) {
-                this.logger.error(
-                    `Error handling media ${element.id}: ${element.url} - ${
-                        error?.message ?? error
-                    }`,
-                );
+            }
+            if (element.type === "PRODUCTVIDEO") {
+                try {
+                    const createMedia =
+                        await this.saleorClient.productMediaCreate({
+                            productId: saleorProductId,
+                            URL: element.url,
+                        });
+                    const newMediaId =
+                        createMedia.productMediaCreate?.media?.id;
+                    if (!newMediaId) {
+                        throw new Error(
+                            `Error creating media ${element.id}: ${element.url} in Saleor. No media id returned`,
+                        );
+                    }
+                    await this.saleorClient.saleorUpdateMetadata({
+                        id: newMediaId,
+                        input: [
+                            {
+                                key: "schemabase-media-id",
+                                value: element.id,
+                            },
+                        ],
+                    });
+                    this.logger.info(
+                        `Successfully uploaded media ${element.id}: ${element.url} to saleor with id ${newMediaId}`,
+                    );
+                } catch (error: any) {
+                    this.logger.error(
+                        `Error handling media ${element.id}: ${element.url} - ${
+                            error?.message ?? error
+                        }`,
+                    );
+                }
             }
         }
     }
@@ -1159,7 +1197,7 @@ export class SaleorProductSyncService {
                  * but just set as youtube URLs. We filter out type PRODUCTVIDEO and MANUAL
                  */
                 const schemabaseMedia = product.media.filter(
-                    (m) => m.type !== "PRODUCTVIDEO" && m.type !== "MANUAL",
+                    (m) => m.type !== "MANUAL",
                 );
 
                 if (!saleorProductId) {
