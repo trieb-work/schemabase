@@ -251,6 +251,8 @@ export class SyncToOdooEDI {
             }
             const order = {
                 orderNumber: schemabaseOrder.orderNumber,
+                externalIdentifier1: schemabaseOrder.id,
+                externalIdentifier2: schemabaseOrder.referenceNumber,
                 date: schemabaseOrder.date,
                 status: schemabaseOrder.orderStatus,
                 totalPriceGross: schemabaseOrder.totalPriceGross,

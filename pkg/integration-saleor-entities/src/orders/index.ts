@@ -314,6 +314,7 @@ export class SaleorOrderSyncService {
                                 create: {
                                     id: id.id("order"),
                                     orderNumber: prefixedOrderNumber,
+                                    referenceNumber: order.id,
                                     date: new Date(order.created),
                                     totalPriceGross: order.total.gross.amount,
                                     language: this.matchLanguage(
