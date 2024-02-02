@@ -155,7 +155,7 @@ export class KencoveApiAppPricelistSyncService {
         }
     }
 
-    public async syncToEci(): Promise<void> {
+    public async syncToEci(gteDataTesting?: Date): Promise<void> {
         const cronState = await this.cronState.get();
         const now = new Date();
         let createdGte: Date;
@@ -169,6 +169,9 @@ export class KencoveApiAppPricelistSyncService {
             // for security purposes, we sync one hour more than the last run
             createdGte = subHours(cronState.lastRun, 1);
             this.logger.info(`Setting GTE date to ${createdGte}.`);
+        }
+        if (gteDataTesting) {
+            createdGte = gteDataTesting;
         }
 
         const client = new KencoveApiClient(this.kencoveApiApp, this.logger);
