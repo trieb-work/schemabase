@@ -32093,6 +32093,25 @@ export type ChannelCreateMutation = {
     } | null;
 };
 
+export type UpdateSaleorCustomerMutationVariables = Exact<{
+    id: Scalars["ID"];
+    input: CustomerInput;
+}>;
+
+export type UpdateSaleorCustomerMutation = {
+    __typename?: "Mutation";
+    customerUpdate?: {
+        __typename?: "CustomerUpdate";
+        user?: { __typename?: "User"; id: string } | null;
+        errors: Array<{
+            __typename?: "AccountError";
+            code: AccountErrorCode;
+            message?: string | null;
+            field?: string | null;
+        }>;
+    } | null;
+};
+
 export type SaleorCreatePackageMutationVariables = Exact<{
     order?: InputMaybe<Scalars["ID"]>;
     input: OrderFulfillInput;
@@ -32728,6 +32747,11 @@ export type SaleorCronCustomersQuery = {
                 languageCode: LanguageCodeEnum;
                 dateJoined: any;
                 updatedAt: any;
+                privateMetadata: Array<{
+                    __typename?: "MetadataItem";
+                    key: string;
+                    value: string;
+                }>;
                 addresses: Array<{
                     __typename?: "Address";
                     id: string;
@@ -33801,6 +33825,20 @@ export const ChannelCreateDocument = gql`
         }
     }
 `;
+export const UpdateSaleorCustomerDocument = gql`
+    mutation updateSaleorCustomer($id: ID!, $input: CustomerInput!) {
+        customerUpdate(id: $id, input: $input) {
+            user {
+                id
+            }
+            errors {
+                code
+                message
+                field
+            }
+        }
+    }
+`;
 export const SaleorCreatePackageDocument = gql`
     mutation saleorCreatePackage($order: ID, $input: OrderFulfillInput!) {
         orderFulfill(order: $order, input: $input) {
@@ -34224,6 +34262,10 @@ export const SaleorCronCustomersDocument = gql`
                     isActive
                     dateJoined
                     updatedAt
+                    privateMetadata {
+                        key
+                        value
+                    }
                     addresses {
                         id
                         firstName
@@ -34855,6 +34897,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<ChannelCreateMutation>;
+        },
+        updateSaleorCustomer(
+            variables: UpdateSaleorCustomerMutationVariables,
+            options?: C,
+        ): Promise<UpdateSaleorCustomerMutation> {
+            return requester<
+                UpdateSaleorCustomerMutation,
+                UpdateSaleorCustomerMutationVariables
+            >(
+                UpdateSaleorCustomerDocument,
+                variables,
+                options,
+            ) as Promise<UpdateSaleorCustomerMutation>;
         },
         saleorCreatePackage(
             variables: SaleorCreatePackageMutationVariables,

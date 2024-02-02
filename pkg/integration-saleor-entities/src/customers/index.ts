@@ -1,20 +1,14 @@
 /* eslint-disable max-len */
 import { ILogger } from "@eci/pkg/logger";
-import { queryWithPagination, SaleorCronCustomersQuery } from "@eci/pkg/saleor";
-import { PrismaClient } from "@eci/pkg/prisma";
+import { queryWithPagination, SaleorClient } from "@eci/pkg/saleor";
+import { Contact, PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 
 import { subHours } from "date-fns";
 import { id } from "@eci/pkg/ids";
 
 interface SaleorCustomerSyncServiceConfig {
-    saleorClient: {
-        saleorCronCustomers: (variables: {
-            first: number;
-            after: string;
-            updatedAtGte: Date;
-        }) => Promise<SaleorCronCustomersQuery>;
-    };
+    saleorClient: SaleorClient;
     channelSlug: string;
     installedSaleorAppId: string;
     tenantId: string;
@@ -23,13 +17,7 @@ interface SaleorCustomerSyncServiceConfig {
 }
 
 export class SaleorCustomerSyncService {
-    public readonly saleorClient: {
-        saleorCronCustomers: (variables: {
-            first: number;
-            after: string;
-            updatedAtGte: Date;
-        }) => Promise<SaleorCronCustomersQuery>;
-    };
+    public readonly saleorClient: SaleorClient;
 
     private readonly logger: ILogger;
 
@@ -53,6 +41,38 @@ export class SaleorCustomerSyncService {
             db: this.db,
             syncEntity: "contacts",
         });
+    }
+
+    private async updateContactInSaleor({
+        saleorCustomerId,
+        contact,
+    }: {
+        saleorCustomerId: string;
+        contact: Contact;
+    }) {
+        const { externalIdentifier } = contact;
+
+        const response = await this.saleorClient.updateSaleorCustomer({
+            id: saleorCustomerId,
+            input: {
+                privateMetadata: externalIdentifier
+                    ? [
+                          {
+                              key: "avataxCustomerCode",
+                              value: externalIdentifier,
+                          },
+                      ]
+                    : undefined,
+            },
+        });
+
+        if (response.customerUpdate?.errors.length) {
+            this.logger.error(
+                `Error updating Saleor customer ${saleorCustomerId}: ${JSON.stringify(
+                    response.customerUpdate.errors,
+                )}`,
+            );
+        }
     }
 
     public async syncToECI(): Promise<void> {
@@ -89,7 +109,7 @@ export class SaleorCustomerSyncService {
         this.logger.info(`Saleor returned ${contacts.length} contacts`);
 
         for (const contact of contacts) {
-            await this.db.saleorCustomer.upsert({
+            const internalContact = await this.db.saleorCustomer.upsert({
                 where: {
                     id_installedSaleorAppId: {
                         id: contact.id,
@@ -130,13 +150,37 @@ export class SaleorCustomerSyncService {
                 update: {
                     updatedAt: new Date(contact.updatedAt),
                 },
+                include: {
+                    customer: true,
+                },
             });
-        }
 
-        await this.cronState.set({
-            lastRun: new Date(),
-            lastRunStatus: "success",
-        });
+            const externalIdentifier =
+                internalContact.customer.externalIdentifier;
+            const saleorAvataxCustomerId = contact.privateMetadata.find(
+                (k) => k.key === "avataxCustomerCode",
+            )?.value;
+
+            /**
+             * if we have an external identifier in our DB, that is different
+             * to the avataxCustomerCode in Saleor, or if the avataxCustomerCode is
+             * missing in Saleor, we set the "updatedAt" timestamp of the schembase customer
+             * to now, so that the syncFromECI call is updating this field afterwards
+             */
+            if (
+                externalIdentifier !== saleorAvataxCustomerId ||
+                (externalIdentifier && !saleorAvataxCustomerId)
+            ) {
+                await this.db.contact.update({
+                    where: {
+                        id: internalContact.customerId,
+                    },
+                    data: {
+                        updatedAt: new Date(),
+                    },
+                });
+            }
+        }
     }
 
     /**
@@ -177,6 +221,13 @@ export class SaleorCustomerSyncService {
                     },
                 },
             },
+            include: {
+                saleorCustomers: {
+                    where: {
+                        installedSaleorAppId: this.installedSaleorAppId,
+                    },
+                },
+            },
         });
 
         if (!contacts || contacts.length === 0) {
@@ -188,7 +239,27 @@ export class SaleorCustomerSyncService {
             `ECI returned ${contacts.length} contacts to update in Saleor`,
         );
 
-        // for (const contact of contacts) {
-        // }
+        for (const contact of contacts) {
+            const saleorCustomerId = contact.saleorCustomers[0].id;
+            if (!saleorCustomerId) {
+                this.logger.error(
+                    `Contact ${contact.id} has no saleorCustomerId. Skipping`,
+                );
+                continue;
+            }
+            this.logger.debug(`Updating contact ${contact.id} in Saleor`, {
+                externalIdentifier: contact.externalIdentifier,
+            });
+
+            await this.updateContactInSaleor({
+                saleorCustomerId,
+                contact,
+            });
+        }
+
+        await this.cronState.set({
+            lastRun: new Date(),
+            lastRunStatus: "success",
+        });
     }
 }

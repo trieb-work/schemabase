@@ -24,6 +24,10 @@ query saleorCronCustomers(
                 isActive
                 dateJoined
                 updatedAt
+                privateMetadata {
+                    key
+                    value
+                }
                 addresses {
                     id
                     firstName

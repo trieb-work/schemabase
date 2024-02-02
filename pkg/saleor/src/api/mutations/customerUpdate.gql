@@ -1,0 +1,12 @@
+mutation updateSaleorCustomer($id: ID!, $input: CustomerInput!) {
+    customerUpdate(id: $id, input: $input) {
+        user {
+            id
+        }
+        errors {
+            code
+            message
+            field
+        }
+    }
+}

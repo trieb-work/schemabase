@@ -43,7 +43,7 @@ export class SaleorCustomerSyncWf implements Workflow {
                 this.prisma,
             );
 
-        const zohoContactSyncService = new SaleorCustomerSyncService({
+        const saleorContactSyncService = new SaleorCustomerSyncService({
             logger: this.logger,
             saleorClient,
             db: this.prisma,
@@ -51,7 +51,8 @@ export class SaleorCustomerSyncWf implements Workflow {
             installedSaleorAppId: this.installedSaleorAppId,
             channelSlug: installedSaleorApp.channelSlug || "",
         });
-        await zohoContactSyncService.syncToECI();
+        await saleorContactSyncService.syncToECI();
+        await saleorContactSyncService.syncFromECI();
         this.logger.info("Finished saleor customer sync workflow run");
     }
 }
