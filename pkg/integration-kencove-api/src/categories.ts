@@ -191,6 +191,10 @@ export class KencoveApiAppCategorySyncService {
                 this.logger.warn(
                     // eslint-disable-next-line max-len
                     `Could not find all categories to connect. Skipping cron state update, so that the next run will be a full run again.`,
+                    {
+                        found: categoriesToConnect.map((c) => c.id),
+                        needed: filteredLookupKencoveIds,
+                    },
                 );
                 skipCronStateUpdate = true;
             }
