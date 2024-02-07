@@ -1442,6 +1442,7 @@ This is a comma separated list of category ids']
   kencoveApiOrders KencoveApiOrder [not null]
   kencoveApiProductTypes KencoveApiProductType [not null]
   kencoveApiPayments KencoveApiPayment [not null]
+  incomingWebhooks IncomingWebhook [not null]
 
   Note: 'The custom app for the kencove api. Using OAuth for authentication'
 }
@@ -1932,6 +1933,8 @@ Table IncomingWebhook {
   installedSaleorAppId String
   vercelLogDrainApp VercelLogDrainApp
   vercelLogDrainAppId String
+  kencoveApiApp KencoveApiApp
+  kencoveApiAppId String
 }
 
 Table SecretKey {
@@ -2765,5 +2768,7 @@ Ref: IncomingWebhook.strapiAppId > StrapiApp.id [delete: Cascade]
 Ref: IncomingWebhook.installedSaleorAppId > InstalledSaleorApp.id [delete: Cascade]
 
 Ref: IncomingWebhook.vercelLogDrainAppId > VercelLogDrainApp.id [delete: Cascade]
+
+Ref: IncomingWebhook.kencoveApiAppId > KencoveApiApp.id [delete: Cascade]
 
 Ref: SecretKey.incomingWebhookId - IncomingWebhook.id [delete: Cascade]

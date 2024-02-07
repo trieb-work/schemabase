@@ -18,7 +18,7 @@ describe("Zoho Entity Sync Orders Test", () => {
         const tenant = await prismaClient.tenant.findUnique({
             where: {
                 // id: "pk_7f165pf-prod",
-                //id: "ken_prod",
+                // id: "ken_prod",
                 id: "tn_kencove235",
                 // id: "test",
             },

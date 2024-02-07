@@ -2622,6 +2622,7 @@ model KencoveApiApp {
   kencoveApiOrders          KencoveApiOrder[]
   kencoveApiProductTypes    KencoveApiProductType[]
   kencoveApiPayments        KencoveApiPayment[]
+  incomingWebhooks          IncomingWebhook[]
 
   @@index([tenantId])
 }
@@ -3332,6 +3333,8 @@ model IncomingWebhook {
   installedSaleorAppId String?
   vercelLogDrainApp    VercelLogDrainApp?  @relation(fields: [vercelLogDrainAppId], references: [id], onDelete: Cascade)
   vercelLogDrainAppId  String?
+  kencoveApiApp        KencoveApiApp?      @relation(fields: [kencoveApiAppId], references: [id], onDelete: Cascade)
+  kencoveApiAppId      String?
 
   @@index([id])
   @@index([dpdAppId])
