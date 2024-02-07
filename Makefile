@@ -93,9 +93,9 @@ build: install
 	$(MAKE) build-prod
 
 build-prod: 
-# check the environment variable DATABASE_URL - when it includes "prisma://" use the command prisma generate --data-proxy, otherwise use prisma generate
+# check the environment variable DATABASE_URL - when it includes "prisma://" use the command prisma generate --no-engine, otherwise use prisma generate
 ifneq (,$(findstring prisma://,$(DATABASE_URL)))
-	pnpm prisma generate --data-proxy	
+	pnpm prisma generate --no-engine	
 else
 	pnpm prisma generate
 endif

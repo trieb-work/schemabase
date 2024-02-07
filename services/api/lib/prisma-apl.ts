@@ -1,8 +1,9 @@
 import { APL, AuthData } from "@saleor/app-sdk/APL";
 import { PrismaClient, SaleorAppType } from "@eci/pkg/prisma";
 import { id } from "@eci/pkg/ids";
+import { withAccelerate } from "@prisma/extension-accelerate";
 
-const prismaClient = new PrismaClient();
+const prismaClient = new PrismaClient().$extends(withAccelerate());
 
 interface AuthDataWithTenant extends AuthData {
     tenantId?: string;
