@@ -1545,6 +1545,7 @@ export class KencoveApiAppProductSyncService {
                                         create: {
                                             id: id.id("media"),
                                             url: media.url,
+                                            type: "PRODUCTIMAGE",
                                             tenant: {
                                                 connect: {
                                                     id: this.kencoveApiApp
@@ -1638,6 +1639,30 @@ export class KencoveApiAppProductSyncService {
                                 connect: {
                                     id: existingProduct.id,
                                 },
+                            },
+                            media: {
+                                connectOrCreate: variant.variant_images?.map(
+                                    (media) => ({
+                                        where: {
+                                            url_tenantId: {
+                                                url: media.url,
+                                                tenantId:
+                                                    this.kencoveApiApp.tenantId,
+                                            },
+                                        },
+                                        create: {
+                                            id: id.id("media"),
+                                            url: media.url,
+                                            type: "PRODUCTIMAGE",
+                                            tenant: {
+                                                connect: {
+                                                    id: this.kencoveApiApp
+                                                        .tenantId,
+                                                },
+                                            },
+                                        },
+                                    }),
+                                ),
                             },
                             kencoveApiProductVariant: {
                                 connectOrCreate: {

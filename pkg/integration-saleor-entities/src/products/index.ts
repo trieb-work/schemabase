@@ -1004,6 +1004,16 @@ export class SaleorProductSyncService {
                     },
                     variants: {
                         include: {
+                            media: {
+                                include: {
+                                    saleorMedia: {
+                                        where: {
+                                            installedSaleorAppId:
+                                                this.installedSaleorAppId,
+                                        },
+                                    },
+                                },
+                            },
                             salesTax: {
                                 include: {
                                     saleorTaxClasses: {
@@ -1194,11 +1204,29 @@ export class SaleorProductSyncService {
 
                 /**
                  * Media files from our DB - product videos are not uploaded,
-                 * but just set as youtube URLs. We filter out type PRODUCTVIDEO and MANUAL
+                 * but just set as youtube URLs. We filter out type MANUAL
                  */
                 const schemabaseMedia = product.media.filter(
                     (m) => m.type !== "MANUAL",
                 );
+
+                /**
+                 * go through all variant media, as we first need
+                 * all media to be uploaded for that product and can later
+                 * assign media items to a specific variant. Only push the
+                 * variant image, if it is not already in the schemabaseMedia
+                 * array
+                 */
+                for (const variant of product.variants) {
+                    for (const media of variant.media) {
+                        if (
+                            media.type === "PRODUCTIMAGE" &&
+                            !schemabaseMedia.find((x) => x.id === media.id)
+                        ) {
+                            schemabaseMedia.push(media);
+                        }
+                    }
+                }
 
                 if (!saleorProductId) {
                     this.logger.info(
@@ -1416,6 +1444,36 @@ export class SaleorProductSyncService {
                     this.logger.info(
                         `Successfully updated ${productVariantBulkUpdateResponse.productVariantBulkUpdate?.results.length} variants for product ${product.name} in Saleor`,
                     );
+
+                    /**
+                     * If we have variant specific media, we need to set that in Saleor
+                     */
+                    for (const variantImage of variantsToUpdate) {
+                        if (variantImage.media.length > 0) {
+                            for (const mediaElement of variantImage.media) {
+                                if (!mediaElement.saleorMedia?.[0]?.mediaId)
+                                    continue;
+                                const r =
+                                    await this.saleorClient.VariantMediaAssign({
+                                        mediaId:
+                                            mediaElement.saleorMedia?.[0]
+                                                .mediaId,
+                                        variantId:
+                                            variantImage.saleorProductVariant[0]
+                                                .id,
+                                    });
+                                if (r.variantMediaAssign?.errors.length) {
+                                    this.logger.error(
+                                        `Error assigning media to variant ${
+                                            variantImage.variantName
+                                        } in Saleor: ${JSON.stringify(
+                                            r.variantMediaAssign.errors,
+                                        )}`,
+                                    );
+                                }
+                            }
+                        }
+                    }
                 }
             }
         } else {
