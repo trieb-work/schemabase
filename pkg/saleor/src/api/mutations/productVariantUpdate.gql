@@ -15,3 +15,12 @@ mutation productVariantBulkUpdate(
         }
     }
 }
+
+mutation VariantMediaAssign($mediaId: ID!, $variantId: ID!) {
+    variantMediaAssign(mediaId: $mediaId, variantId: $variantId) {
+        errors {
+            field
+            message
+        }
+    }
+}

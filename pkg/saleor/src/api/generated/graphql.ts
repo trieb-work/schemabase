@@ -32475,6 +32475,23 @@ export type ProductVariantBulkUpdateMutation = {
     } | null;
 };
 
+export type VariantMediaAssignMutationVariables = Exact<{
+    mediaId: Scalars["ID"];
+    variantId: Scalars["ID"];
+}>;
+
+export type VariantMediaAssignMutation = {
+    __typename?: "Mutation";
+    variantMediaAssign?: {
+        __typename?: "VariantMediaAssign";
+        errors: Array<{
+            __typename?: "ProductError";
+            field?: string | null;
+            message?: string | null;
+        }>;
+    } | null;
+};
+
 export type CreateTaxClassMutationVariables = Exact<{
     input: TaxClassCreateInput;
 }>;
@@ -34115,6 +34132,16 @@ export const ProductVariantBulkUpdateDocument = gql`
         }
     }
 `;
+export const VariantMediaAssignDocument = gql`
+    mutation VariantMediaAssign($mediaId: ID!, $variantId: ID!) {
+        variantMediaAssign(mediaId: $mediaId, variantId: $variantId) {
+            errors {
+                field
+                message
+            }
+        }
+    }
+`;
 export const CreateTaxClassDocument = gql`
     mutation createTaxClass($input: TaxClassCreateInput!) {
         taxClassCreate(input: $input) {
@@ -35126,6 +35153,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<ProductVariantBulkUpdateMutation>;
+        },
+        VariantMediaAssign(
+            variables: VariantMediaAssignMutationVariables,
+            options?: C,
+        ): Promise<VariantMediaAssignMutation> {
+            return requester<
+                VariantMediaAssignMutation,
+                VariantMediaAssignMutationVariables
+            >(
+                VariantMediaAssignDocument,
+                variables,
+                options,
+            ) as Promise<VariantMediaAssignMutation>;
         },
         createTaxClass(
             variables: CreateTaxClassMutationVariables,
