@@ -135,6 +135,14 @@ export type KencoveApiProductVariant = {
     name: string | null;
     createdAt: string;
     updatedAt: string;
+    variant_images:
+        | {
+              url: string;
+              slug: string;
+              alt_name: string | null;
+              mimetype: string | null;
+          }[]
+        | null;
 };
 export type KencoveApiImage = {
     url: string;

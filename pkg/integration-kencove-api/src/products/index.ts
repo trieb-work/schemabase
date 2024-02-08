@@ -1532,6 +1532,29 @@ export class KencoveApiAppProductSyncService {
                                     id: this.kencoveApiApp.tenantId,
                                 },
                             },
+                            media: {
+                                connectOrCreate: variant.variant_images?.map(
+                                    (media) => ({
+                                        where: {
+                                            url_tenantId: {
+                                                url: media.url,
+                                                tenantId:
+                                                    this.kencoveApiApp.tenantId,
+                                            },
+                                        },
+                                        create: {
+                                            id: id.id("media"),
+                                            url: media.url,
+                                            tenant: {
+                                                connect: {
+                                                    id: this.kencoveApiApp
+                                                        .tenantId,
+                                                },
+                                            },
+                                        },
+                                    }),
+                                ),
+                            },
                             product: {
                                 connect: {
                                     id: existingProduct.id,
