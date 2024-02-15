@@ -804,8 +804,7 @@ export class SaleorProductSyncService {
                         boolean: value,
                     });
                 }
-            }
-            if (attr.attribute.type === "PRODUCT_REFERENCE") {
+            } else if (attr.attribute.type === "PRODUCT_REFERENCE") {
                 /// We store our internal product Id in value of product reference attributes.
                 /// We need to aks our DB for the saleor product id
                 const saleorProductId = await this.db.product.findUnique({
