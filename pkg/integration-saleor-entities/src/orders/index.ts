@@ -317,6 +317,7 @@ export class SaleorOrderSyncService {
                                     referenceNumber: order.id,
                                     date: new Date(order.created),
                                     totalPriceGross: order.total.gross.amount,
+                                    totalPriceNet: order.total.net.amount,
                                     language: this.matchLanguage(
                                         order.languageCodeEnum,
                                     ),

@@ -14757,10 +14757,11 @@ export type MutationTransactionEventReportArgs = {
     amount: Scalars["PositiveDecimal"];
     availableActions?: InputMaybe<Array<TransactionActionEnum>>;
     externalUrl?: InputMaybe<Scalars["String"]>;
-    id: Scalars["ID"];
+    id?: InputMaybe<Scalars["ID"]>;
     message?: InputMaybe<Scalars["String"]>;
     pspReference: Scalars["String"];
     time?: InputMaybe<Scalars["DateTime"]>;
+    token?: InputMaybe<Scalars["UUID"]>;
     type: TransactionEventTypeEnum;
 };
 
@@ -14776,22 +14777,26 @@ export type MutationTransactionInitializeArgs = {
 export type MutationTransactionProcessArgs = {
     customerIpAddress?: InputMaybe<Scalars["String"]>;
     data?: InputMaybe<Scalars["JSON"]>;
-    id: Scalars["ID"];
+    id?: InputMaybe<Scalars["ID"]>;
+    token?: InputMaybe<Scalars["UUID"]>;
 };
 
 export type MutationTransactionRequestActionArgs = {
     actionType: TransactionActionEnum;
     amount?: InputMaybe<Scalars["PositiveDecimal"]>;
-    id: Scalars["ID"];
+    id?: InputMaybe<Scalars["ID"]>;
+    token?: InputMaybe<Scalars["UUID"]>;
 };
 
 export type MutationTransactionRequestRefundForGrantedRefundArgs = {
     grantedRefundId: Scalars["ID"];
-    id: Scalars["ID"];
+    id?: InputMaybe<Scalars["ID"]>;
+    token?: InputMaybe<Scalars["UUID"]>;
 };
 
 export type MutationTransactionUpdateArgs = {
-    id: Scalars["ID"];
+    id?: InputMaybe<Scalars["ID"]>;
+    token?: InputMaybe<Scalars["UUID"]>;
     transaction?: InputMaybe<TransactionUpdateInput>;
     transactionEvent?: InputMaybe<TransactionEventInput>;
 };
@@ -24316,7 +24321,8 @@ export type QueryTaxCountryConfigurationArgs = {
 };
 
 export type QueryTransactionArgs = {
-    id: Scalars["ID"];
+    id?: InputMaybe<Scalars["ID"]>;
+    token?: InputMaybe<Scalars["UUID"]>;
 };
 
 export type QueryTranslationArgs = {
@@ -28450,6 +28456,12 @@ export type TransactionItem = Node &
         refundPendingAmount: Money;
         /** Total amount refunded for this payment. */
         refundedAmount: Money;
+        /**
+         * The transaction token.
+         *
+         * Added in Saleor 3.14.
+         */
+        token: Scalars["UUID"];
     };
 
 /**
@@ -32885,6 +32897,7 @@ export type SaleorCronOrdersOverviewQuery = {
                 total: {
                     __typename?: "TaxedMoney";
                     currency: string;
+                    net: { __typename?: "Money"; amount: number };
                     gross: { __typename?: "Money"; amount: number };
                 };
             };
@@ -34383,6 +34396,9 @@ export const SaleorCronOrdersOverviewDocument = gql`
                     externalReference
                     total {
                         currency
+                        net {
+                            amount
+                        }
                         gross {
                             amount
                         }

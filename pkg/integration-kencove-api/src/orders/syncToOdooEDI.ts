@@ -323,6 +323,7 @@ export class SyncToOdooEDI {
                 ),
                 shippingMethod: {
                     totalPriceGross: schemabaseOrder.shippingPriceGross,
+                    totalPriceNet: schemabaseOrder.shippingPriceNet,
                     name: schemabaseOrder.shippingMethodName,
                     id: schemabaseOrder.shippingMethodId,
                 },
