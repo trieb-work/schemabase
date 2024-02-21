@@ -41,15 +41,19 @@ export class MediaUpload {
             "pdf",
         ];
 
-        if (!validExtensions.includes(extension.toLowerCase())) {
-            if (!fileBlob) return undefined;
-            // try to guess the file extension using the file-type library
+        /**
+         * If we have a fileBlob, we can use the file-type library to guess the file type
+         * as this one is more precise than the file extension only
+         */
+        if (fileBlob) {
             const guess = await fileTypeFromBlob(fileBlob);
             if (guess) {
                 return { extension: `.${guess.ext}`, fileType: guess.mime };
-            } else {
-                return undefined;
             }
+        }
+
+        if (!validExtensions.includes(extension.toLowerCase())) {
+            return undefined;
         }
 
         return { extension: `.${extension.toLowerCase()}` };
