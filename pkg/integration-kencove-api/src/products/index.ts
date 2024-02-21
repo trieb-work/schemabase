@@ -1494,7 +1494,9 @@ export class KencoveApiAppProductSyncService {
                 /**
                  * the weight of the variant, rounded to max two decimals
                  */
-                const weight = Math.round(variant.weight * 100) / 100;
+                const weight = variant.weight
+                    ? Math.round(variant.weight * 100) / 100
+                    : null;
 
                 /**
                  * The existing variant from our DB. When variant does not exist, we create it.
@@ -1508,7 +1510,7 @@ export class KencoveApiAppProductSyncService {
                  */
                 const taxId = product.taxClass
                     ? taxClasses[product.taxClass]
-                    : undefined;
+                    : null;
 
                 /**
                  * We compare the weight, variant name, related productId and only
