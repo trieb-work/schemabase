@@ -193,7 +193,9 @@ export class KencoveApiAppOrderSyncService {
         });
 
         for await (const apiOrders of apiOrdersStream) {
-            this.logger.info(`Found ${apiOrders.length} orders to sync`);
+            this.logger.info(`Found ${apiOrders.length} orders to sync`, {
+                orderNumbers: apiOrders.map((o) => o.orderNumber),
+            });
             if (apiOrders.length === 0) {
                 return;
             }
