@@ -37,6 +37,7 @@ import {
     kenAttributeToEciAttribute,
 } from "../helper";
 import { syncTaxClasses } from "./taxclasses";
+import { compareArrays } from "@eci/pkg/utils/array";
 
 interface KencoveApiAppProductSyncServiceConfig {
     logger: ILogger;
@@ -1395,10 +1396,14 @@ export class KencoveApiAppProductSyncService {
                     existingProduct.countryOfOrigin !== countryOfOrigin ||
                     existingProduct.categoryId !== category ||
                     /**
-                     * Compare the media arrays with each other. For simplicity, we just compare the length
+                     * Compare the media arrays with each other and see, if we have other URLs
                      */
-                    existingProduct.media.length !==
-                        this.getTotalMediaFromProduct(product).length
+                    !compareArrays(
+                        existingProduct.media.map((m) => m.url),
+                        this.getTotalMediaFromProduct(product).map(
+                            (m) => m.url,
+                        ),
+                    )
                 ) {
                     this.logger.info(
                         `Updating product ${product.productName} with KencoveId ${product.productId}, as something has changed.`,
