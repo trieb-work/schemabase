@@ -189,10 +189,17 @@ export class SaleorPaymentSyncService {
          */
         const successfullTransactionsTransactionApi = result.orders?.edges
             .flatMap((order) => order.node.transactions)
+            /**
+             * Check, if any of the events is a successfull authorization or charge
+             */
             .filter(
                 (transaction) =>
-                    transaction?.events[0].type === "AUTHORIZATION_SUCCESS" ||
-                    transaction?.events[0].type === "CHARGE_SUCCESS",
+                    transaction?.events.some(
+                        (e) => e.type === "AUTHORIZATION_SUCCESS",
+                    ) ||
+                    transaction?.events.some(
+                        (e) => e.type === "CHARGE_SUCCESS",
+                    ),
             );
 
         if (!payments && !successfullTransactionsTransactionApi) {

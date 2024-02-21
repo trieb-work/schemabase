@@ -33065,6 +33065,7 @@ export type TransactionDetailsFragment = {
     chargedAmount: { __typename?: "Money"; currency: string; amount: number };
     events: Array<{
         __typename?: "TransactionEvent";
+        createdAt: any;
         type?: TransactionEventTypeEnum | null;
         amount: { __typename?: "Money"; amount: number };
     }>;
@@ -33175,6 +33176,7 @@ export type SaleorCronPaymentsQuery = {
                     };
                     events: Array<{
                         __typename?: "TransactionEvent";
+                        createdAt: any;
                         type?: TransactionEventTypeEnum | null;
                         amount: { __typename?: "Money"; amount: number };
                     }>;
@@ -33655,6 +33657,7 @@ export const TransactionDetailsFragmentDoc = gql`
             amount
         }
         events {
+            createdAt
             type
             amount {
                 amount

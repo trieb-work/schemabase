@@ -21,6 +21,7 @@ fragment TransactionDetails on TransactionItem {
         amount
     }
     events {
+        createdAt
         type
         amount {
             amount
