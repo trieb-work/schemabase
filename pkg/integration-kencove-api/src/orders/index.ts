@@ -315,6 +315,8 @@ export class KencoveApiAppOrderSyncService {
                                         language: "EN",
                                         currency: "USD",
                                         carrier,
+                                        shippingMethodName:
+                                            order?.carrier?.name,
                                         tenant: {
                                             connect: {
                                                 id: this.kencoveApiApp.tenantId,
