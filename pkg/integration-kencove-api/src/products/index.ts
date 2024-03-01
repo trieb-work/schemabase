@@ -1777,10 +1777,6 @@ export class KencoveApiAppProductSyncService {
                                     kenAttribute.id ===
                                     attribute.attribute_id.toString()
                                 ) {
-                                    this.logger.debug(
-                                        `Found attribute ${attribute.name} in product ` +
-                                            `type ${kenProdTypeWithProductType.productType.name}. Is Variant: ${a.isForVariant}`,
-                                    );
                                     return true;
                                 }
                                 return false;
