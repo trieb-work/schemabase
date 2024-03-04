@@ -1192,7 +1192,7 @@ export class KencoveApiAppProductSyncService {
         });
     }
 
-    public async syncToECI() {
+    public async syncToECI(productTemplateId?: string) {
         const cronState = await this.cronState.get();
         const now = new Date();
         let createdGte: Date;
@@ -1210,7 +1210,10 @@ export class KencoveApiAppProductSyncService {
 
         const client = new KencoveApiClient(this.kencoveApiApp, this.logger);
 
-        const products = await client.getProducts(createdGte, "150");
+        const products = await client.getProducts(
+            createdGte,
+            productTemplateId,
+        );
 
         this.logger.info(`Found ${products.length} products to sync`);
         if (products.length === 0) {
