@@ -1632,11 +1632,11 @@ export class KencoveApiAppProductSyncService {
                     existingVariant.productId !== existingProduct.id ||
                     existingVariant.ean !== variant.upc ||
                     existingVariant.salesTaxId !== taxId ||
-                    existingVariant.kencoveApiProductVariant?.[0]
-                        ?.productVariantId !== variant.id
+                    existingVariant.kencoveApiProductVariant?.[0]?.id !==
+                        variant.id
                 ) {
                     this.logger.info(
-                        `Updating variant ${variant.id} of product ${product.productName}`,
+                        `Updating variant ${variant.id} of product ${product.productName}, as something has changed`,
                     );
                     await this.db.productVariant.update({
                         where: {
