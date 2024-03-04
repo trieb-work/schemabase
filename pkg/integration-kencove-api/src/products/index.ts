@@ -416,7 +416,8 @@ export class KencoveApiAppProductSyncService {
                 /**
                  * If the selector attribute is the "special" website_ref_desc
                  * and if a value is set for that attribute, we search for a better
-                 * fitting attribute first (sometimes for example we have a "color" attribute)
+                 * fitting attribute first (sometimes for example we have a "color" attribute).
+                 * We make sure to not search in the "variant_website_description" attribute by mistake.
                  */
                 if (
                     selectorValue.name === "website_ref_desc" &&
@@ -424,7 +425,9 @@ export class KencoveApiAppProductSyncService {
                 ) {
                     const correspondingAttributeValue =
                         variant.attributeValues?.find(
-                            (av) => av.value?.includes(selectorValue.value),
+                            (av) =>
+                                av.value?.includes(selectorValue.value) &&
+                                av.name !== "variant_website_description",
                         );
                     if (correspondingAttributeValue) {
                         this.logger.debug(
@@ -1207,7 +1210,7 @@ export class KencoveApiAppProductSyncService {
 
         const client = new KencoveApiClient(this.kencoveApiApp, this.logger);
 
-        const products = await client.getProducts(createdGte);
+        const products = await client.getProducts(createdGte, "150");
 
         this.logger.info(`Found ${products.length} products to sync`);
         if (products.length === 0) {
