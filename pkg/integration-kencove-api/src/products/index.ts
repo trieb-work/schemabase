@@ -159,9 +159,6 @@ export class KencoveApiAppProductSyncService {
             cached.isForVariant === isForVariant &&
             cached.isVariantSelection === isVariantSelection
         ) {
-            this.logger.debug(
-                `[setProductTypeAttribute] Attribute ${attribute.name} is already set as ${isForVariant} and ${isVariantSelection}. Skipping.`,
-            );
             return;
         }
 
@@ -844,6 +841,13 @@ export class KencoveApiAppProductSyncService {
                 display_type: "checkbox",
                 attribute_model: "custom",
             });
+            variantAttributesUnique.push({
+                name: "GTIN",
+                value: "",
+                attribute_id: 333337,
+                display_type: "text",
+                attribute_model: "custom",
+            });
             productAttributesUnique.push({
                 name: "Product Manual",
                 value: "",
@@ -1283,6 +1287,7 @@ export class KencoveApiAppProductSyncService {
                         productId: p.id,
                         productName: htmlDecode(p.name),
                         countryOfOrigin: p.countryOfOrigin,
+                        upc: v.upc,
                     })),
                 };
             })
@@ -1719,6 +1724,17 @@ export class KencoveApiAppProductSyncService {
                     display_type: "checkbox",
                 };
 
+                const gtinAttribute: KencoveApiAttributeInProduct | undefined =
+                    variant.upc
+                        ? {
+                              value: variant.upc,
+                              attribute_id: 333337,
+                              attribute_model: "custom",
+                              name: "GTIN",
+                              display_type: "text",
+                          }
+                        : undefined;
+
                 /// set the attribute values. We need to check the product type
                 /// to see, if an attribute is used as product, or variant
                 /// attribute create a value entry accordingly.
@@ -1727,6 +1743,9 @@ export class KencoveApiAppProductSyncService {
                     ...variant.selectorValues,
                     backOrderAttribute,
                 ];
+                if (gtinAttribute) {
+                    allAttributes.push(gtinAttribute);
+                }
 
                 /**
                  * We only want to set the variant_website_description attribute
