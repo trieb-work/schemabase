@@ -888,6 +888,11 @@ export class SaleorProductSyncService {
                     id: saleorAttributeId,
                     richText,
                 });
+            } else if (attr.attribute.type === "PLAIN_TEXT" && attr.value) {
+                attributes.push({
+                    id: saleorAttributeId,
+                    plainText: attr.value,
+                });
             } else {
                 attributes.push({
                     id: saleorAttributeId,
