@@ -791,6 +791,12 @@ export class KencoveApiAppProductSyncService {
                 productAttributesUnique,
             } = this.attributeMatch(product);
 
+            if (!product.productType.id) {
+                this.logger.error(
+                    `Product type ${product.name} - ${product.id} has no product type id. Skipping.`,
+                );
+                continue;
+            }
             const kenProdType = kenProdTypes.find(
                 (pt) => pt.id === product.productType.id,
             );
