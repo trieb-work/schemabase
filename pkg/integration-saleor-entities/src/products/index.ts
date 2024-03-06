@@ -903,6 +903,9 @@ export class SaleorProductSyncService {
      * Update products, that got changed since the last run
      */
     private async createOrUpdateProductinSaleor(gteDate: Date) {
+        this.logger.info(
+            `Looking in our DB for products to create or update in Saleor. GTE Date: ${gteDate}`,
+        );
         const unsortedProductsToCreateOrUpdate = await this.db.product.findMany(
             {
                 where: {
