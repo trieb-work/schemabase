@@ -1457,6 +1457,12 @@ export class SaleorProductSyncService {
                      */
                     for (const variantImage of variantsToUpdate) {
                         if (variantImage.media.length > 0) {
+                            this.logger.debug(
+                                `Assigning media to variant ${variantImage.variantName} in Saleor`,
+                                {
+                                    media: variantImage.media.map((x) => x.id),
+                                },
+                            );
                             for (const mediaElement of variantImage.media) {
                                 if (!mediaElement.saleorMedia?.[0]?.mediaId)
                                     continue;
