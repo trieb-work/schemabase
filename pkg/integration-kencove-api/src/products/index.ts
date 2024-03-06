@@ -318,12 +318,6 @@ export class KencoveApiAppProductSyncService {
     private attributeMatch(
         productData: KencoveApiProduct,
     ): SeparatedAttributes {
-        this.logger.debug(
-            "Matching attributes for product " + productData.name,
-            {
-                odooId: productData.id,
-            },
-        );
         const allVariants = productData.variants;
         /**
          * Attributes in the "selectorValues", that have the same name and value for
@@ -344,7 +338,11 @@ export class KencoveApiAppProductSyncService {
                     allVariants[0].attributeValues || [],
                 ).filter((vsa) => vsa.name !== "variant_website_description"),
                 productAttributesUnique: cleanAttributes(
-                    this.uniqueAttributes(allVariants[0].attributeValues || []),
+                    this.uniqueAttributes(
+                        allVariants[0].attributeValues || [],
+                    ).filter(
+                        (vsa) => vsa.name !== "variant_website_description",
+                    ),
                 ),
                 variantAttributes: [],
                 variantAttributesUnique: [],
@@ -540,12 +538,6 @@ export class KencoveApiAppProductSyncService {
             return;
         }
         const normalizedName = normalizeStrings.attributeValueNames(value);
-        this.logger.debug(
-            `Setting attribute ${attribute.name}, value ${value}`,
-            {
-                isForVariant,
-            },
-        );
 
         let hexCode: string | undefined = undefined;
         // we set an attribute hex value to the hex value field, when type is "swatch"
