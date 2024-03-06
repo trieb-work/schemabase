@@ -62,8 +62,8 @@ export class KencoveApiAppCategorySyncService {
             const missingIds = kencoveIds.filter(
                 (id) => !products.find((p) => p.productId === id),
             );
-            this.logger.error(
-                `Could not find all products to connect. Missing ids: ${missingIds.join(
+            this.logger.warn(
+                `Could not find all products to connect to category. Missing ids: ${missingIds.join(
                     ", ",
                 )}`,
             );
