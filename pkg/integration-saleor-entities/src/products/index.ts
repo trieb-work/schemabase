@@ -630,6 +630,7 @@ export class SaleorProductSyncService {
                         mediaBlob,
                         fileExtension: fileExtension.extension,
                         fileType: fileExtension.fileType,
+                        mediaId: element.id,
                     });
                     await this.saleorClient.saleorUpdateMetadata({
                         id: imageId,
@@ -750,9 +751,6 @@ export class SaleorProductSyncService {
                 return "";
             }
 
-            this.logger.debug(
-                `Returning swatch slug ${resp.attributeValueCreate?.attributeValue?.slug} for swatch attribute value ${attributeValueName} for saleor attribute ${saleorAttributeId}`,
-            );
             return resp.attributeValueCreate?.attributeValue?.slug;
         }
 
@@ -825,10 +823,19 @@ export class SaleorProductSyncService {
                     );
                     continue;
                 }
-                attributes.push({
-                    id: saleorAttributeId,
-                    references: [saleorProductId.saleorProducts[0].id],
-                });
+                const existingReferences = attributes.find(
+                    (x) => x.id === saleorAttributeId,
+                )?.references;
+                if (existingReferences) {
+                    existingReferences.push(
+                        saleorProductId.saleorProducts[0].id,
+                    );
+                } else {
+                    attributes.push({
+                        id: saleorAttributeId,
+                        references: [saleorProductId.saleorProducts[0].id],
+                    });
+                }
             } else if (attr.attribute.type === "VARIANT_REFERENCE") {
                 /// We store our internal variant Id in value of variant reference attributes.
                 /// We need to aks our DB for the saleor variant id
@@ -856,10 +863,22 @@ export class SaleorProductSyncService {
                     );
                     continue;
                 }
-                attributes.push({
-                    id: saleorAttributeId,
-                    references: [saleorVariantId.saleorProductVariant[0].id],
-                });
+                const existingReferences = attributes.find(
+                    (x) => x.id === saleorAttributeId,
+                )?.references;
+                if (existingReferences) {
+                    existingReferences.push(
+                        saleorVariantId.saleorProductVariant[0].id,
+                    );
+                } else {
+                    attributes.push({
+                        id: saleorAttributeId,
+                        references: [
+                            saleorVariantId.saleorProductVariant[0].id,
+                        ],
+                    });
+                }
+
                 // Handle the special case SWATCH where the hex code and the name is given
             } else if (
                 attr.attribute.type === "SWATCH" &&
@@ -1304,9 +1323,6 @@ export class SaleorProductSyncService {
                 } else {
                     this.logger.info(
                         `Updating product ${product.name} - ${product.id} in Saleor`,
-                        {
-                            attributes,
-                        },
                     );
                     const productUpdateResponse =
                         await this.saleorClient.productUpdate({
@@ -1464,13 +1480,16 @@ export class SaleorProductSyncService {
                                 },
                             );
                             for (const mediaElement of variantImage.media) {
-                                if (!mediaElement.saleorMedia?.[0]?.mediaId)
+                                if (!mediaElement.saleorMedia?.[0]?.id) {
+                                    this.logger.warn(
+                                        `Media ${mediaElement.id} has no saleor media id. Skipping`,
+                                    );
                                     continue;
+                                }
                                 const r =
                                     await this.saleorClient.VariantMediaAssign({
                                         mediaId:
-                                            mediaElement.saleorMedia?.[0]
-                                                .mediaId,
+                                            mediaElement.saleorMedia?.[0].id,
                                         variantId:
                                             variantImage.saleorProductVariant[0]
                                                 .id,
