@@ -77,20 +77,22 @@ export class MediaUpload {
      * @param saleorProductId
      * @param mediaBlob
      * @param fileExtension
+     * @param fileType
+     * @param mediaId Schemabase media id
      * @returns
      */
     public async uploadImageToSaleor({
         saleorProductId,
         mediaBlob,
         fileExtension,
-
         fileType,
+        mediaId,
     }: {
         saleorProductId: string;
         mediaBlob: Blob;
         fileExtension: string;
-
         fileType?: string;
+        mediaId: string;
     }): Promise<string> {
         const form = new FormData();
         form.append(
@@ -106,6 +108,7 @@ export class MediaUpload {
                     }
                     media {
                         id
+                        url
                     }
                 }
             }
@@ -149,6 +152,33 @@ export class MediaUpload {
                 )}`,
             );
         }
+
+        /**
+         * store the media URL in our DB
+         */
+        await this.db.saleorMedia.upsert({
+            where: {
+                url_installedSaleorAppId: {
+                    url: res.data.fileUpload.uploadedFile.url,
+                    installedSaleorAppId: this.installedSaleorApp.id,
+                },
+            },
+            create: {
+                id: res.data.fileUpload.uploadedFile.id,
+                url: res.data.fileUpload.uploadedFile.url,
+                media: {
+                    connect: {
+                        id: mediaId,
+                    },
+                },
+                installedSaleorApp: {
+                    connect: {
+                        id: this.installedSaleorApp.id,
+                    },
+                },
+            },
+            update: {},
+        });
         return res.data.productMediaCreate.media.id;
     }
 

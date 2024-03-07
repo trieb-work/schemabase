@@ -280,9 +280,13 @@ model SaleorPayment {
 }
 
 /// Saleor specific model for media files.
-/// we get from Saleor just a media URL. This helps 
-/// us to check, if we have media already uploaded or not.
+/// sometimes, we get from Saleor just a media URL. This helps 
+/// us to check, if we have media already uploaded or not, so thats why id is
+/// optional
 model SaleorMedia {
+
+  id String?
+
   /// The URL of the media file
   url String
 
@@ -1992,6 +1996,7 @@ model Product {
   @@index([tenantId])
   @@index([categoryId])
   @@index([productTypeId])
+  @@index([updatedAt]) 
 }
 
 // The ECI internal ProductVariant Model. One product can have one ore many Product Variants

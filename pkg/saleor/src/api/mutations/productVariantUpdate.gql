@@ -18,6 +18,11 @@ mutation productVariantBulkUpdate(
 
 mutation VariantMediaAssign($mediaId: ID!, $variantId: ID!) {
     variantMediaAssign(mediaId: $mediaId, variantId: $variantId) {
+        productVariant {
+            media {
+                id
+            }
+        }
         errors {
             field
             message

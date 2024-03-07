@@ -183,6 +183,7 @@ Table SaleorPayment {
 }
 
 Table SaleorMedia {
+  id String
   url String [not null, note: 'The URL of the media file']
   installedSaleorApp InstalledSaleorApp [not null]
   installedSaleorAppId String [not null]
@@ -194,8 +195,9 @@ Table SaleorMedia {
   }
 
   Note: 'Saleor specific model for media files.
-we get from Saleor just a media URL. This helps 
-us to check, if we have media already uploaded or not.'
+sometimes, we get from Saleor just a media URL. This helps 
+us to check, if we have media already uploaded or not, so thats why id is
+optional'
 }
 
 Table SaleorProduct {
