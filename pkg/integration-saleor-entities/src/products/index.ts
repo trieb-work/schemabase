@@ -760,9 +760,7 @@ export class SaleorProductSyncService {
             );
             return "";
         }
-        this.logger.debug(
-            `Returning swatch slug ${hexMatch?.node.slug} for swatch attribute value ${attributeValueName} for saleor attribute ${saleorAttributeId}`,
-        );
+
         this.swatchCache[saleorAttributeId + attributeValueName] =
             hexMatch.node.slug;
         return hexMatch.node.slug;
