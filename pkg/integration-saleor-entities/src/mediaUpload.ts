@@ -152,6 +152,11 @@ export class MediaUpload {
                 )}`,
             );
         }
+        if (!res.data?.productMediaCreate?.media) {
+            throw new Error(
+                `Failed to upload image to Saleor: ${JSON.stringify(res.data)}`,
+            );
+        }
 
         /**
          * store the media URL in our DB
@@ -159,13 +164,13 @@ export class MediaUpload {
         await this.db.saleorMedia.upsert({
             where: {
                 url_installedSaleorAppId: {
-                    url: res.data.fileUpload.uploadedFile.url,
+                    url: res.data.productMediaCreate.media.url,
                     installedSaleorAppId: this.installedSaleorApp.id,
                 },
             },
             create: {
-                id: res.data.fileUpload.uploadedFile.id,
-                url: res.data.fileUpload.uploadedFile.url,
+                id: res.data.productMediaCreate.media.id,
+                url: res.data.productMediaCreate.media.url,
                 media: {
                     connect: {
                         id: mediaId,
