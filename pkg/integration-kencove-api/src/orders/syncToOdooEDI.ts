@@ -249,6 +249,16 @@ export class SyncToOdooEDI {
                 );
                 continue;
             }
+            if (
+                schemabaseOrder.shippingPriceGross &&
+                !schemabaseOrder.shippingPriceNet
+            ) {
+                this.logger.warn(
+                    `Order ${schemabaseOrder.orderNumber} has missing shipping price net. We will not send it to Odoo EDI.`,
+                );
+                continue;
+            }
+
             const order = {
                 orderNumber: schemabaseOrder.orderNumber,
                 externalIdentifier1: schemabaseOrder.id,
