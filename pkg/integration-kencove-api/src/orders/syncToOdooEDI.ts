@@ -275,6 +275,8 @@ export class SyncToOdooEDI {
                     odooContactId: this.getOdooContactId(
                         schemabaseOrder.mainContact.kencoveApiContacts,
                     ),
+                    externalIdentifier:
+                        schemabaseOrder.mainContact.externalIdentifier,
                 },
                 shippingAddress: {
                     fullName: schemabaseOrder?.shippingAddress?.fullname,
