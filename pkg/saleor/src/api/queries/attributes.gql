@@ -30,7 +30,7 @@ query attributeSync($first: Int!, $after: String) {
 
 query attributeValueSearch($attributeId: ID!, $searchvalue: String) {
     attribute(id: $attributeId) {
-        choices(first: 5, filter: { search: $searchvalue }) {
+        choices(first: 100, filter: { search: $searchvalue }) {
             edges {
                 node {
                     id

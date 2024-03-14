@@ -2,6 +2,16 @@ import { ILogger } from "@eci/pkg/logger";
 import { InstalledSaleorApp, PrismaClient, SaleorApp } from "@eci/pkg/prisma";
 import { fileTypeFromBlob } from "file-type";
 
+/**
+ * Define a special NotFoundError in case the media is not found
+ * so that we can handle this case in a special way
+ */
+export class MediaNotFoundError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "MediaNotFoundError";
+    }
+}
 export class MediaUpload {
     private readonly installedSaleorApp: InstalledSaleorApp & {
         saleorApp: SaleorApp;
@@ -62,6 +72,9 @@ export class MediaUpload {
     public async fetchMediaBlob(url: string): Promise<Blob> {
         const imgResp = await fetch(url);
         if (!imgResp.ok) {
+            if (imgResp.status === 404) {
+                throw new MediaNotFoundError(`Media not found: ${url}`);
+            }
             throw new Error(`Error downloading media: ${imgResp.statusText}`);
         }
         const mediaBlob = await imgResp.blob();

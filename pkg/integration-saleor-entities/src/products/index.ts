@@ -30,7 +30,7 @@ import { normalizeStrings } from "@eci/pkg/normalization";
 import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils";
 import { subHours, subYears } from "date-fns";
 import { editorJsHelper } from "../editorjs";
-import { MediaUpload } from "../mediaUpload.js";
+import { MediaNotFoundError, MediaUpload } from "../mediaUpload.js";
 import { ChannelAvailability } from "./channelAvailability";
 import { parseBoolean } from "@eci/pkg/utils/parseBoolean";
 import { SaleorProductManual } from "./productManual";
@@ -654,6 +654,16 @@ export class SaleorProductSyncService {
                         `Successfully uploaded media ${element.id}: ${element.url} to saleor with id ${imageId}`,
                     );
                 } catch (error: any) {
+                    /**
+                     * delete media if NotFound error is thrown
+                     */
+                    if (error instanceof MediaNotFoundError) {
+                        await this.db.media.delete({
+                            where: {
+                                id: element.id,
+                            },
+                        });
+                    }
                     this.logger.error(
                         `Error handling media ${element.id}: ${element.url} - ${
                             error?.message ?? error
@@ -919,6 +929,35 @@ export class SaleorProductSyncService {
                     id: saleorAttributeId,
                     plainText: attr.value,
                 });
+            } else if (attr.attribute.type === "MULTISELECT") {
+                /**
+                 * get all existing choices from Saleor and see, if
+                 * we have a match for the current attribute value.
+                 * If yes, we use the slug as attribute value
+                 */
+                const saleorAttribute =
+                    await this.saleorClient.attributeValueSearch({
+                        attributeId: saleorAttributeId,
+                    });
+                const existingChoices =
+                    saleorAttribute.attribute?.choices?.edges;
+                const existingChoice = existingChoices?.find(
+                    (x) => x.node.name === attr.value,
+                )?.node.slug;
+
+                /**
+                 * handle multiselect - push all values to the array
+                 */
+                const existingValues = attributes.find(
+                    (x) => x.id === saleorAttributeId,
+                )?.values;
+                if (existingValues) {
+                    existingValues.push(existingChoice || attr.value);
+                } else
+                    attributes.push({
+                        id: saleorAttributeId,
+                        values: [existingChoice || attr.value],
+                    });
             } else {
                 attributes.push({
                     id: saleorAttributeId,
@@ -1108,414 +1147,448 @@ export class SaleorProductSyncService {
                 },
             );
             for (const product of sortedProducts) {
-                const productType = product.productType;
-                if (!productType) {
-                    this.logger.warn(
-                        `Product ${product.name} has no product type. Skipping`,
-                    );
-                    continue;
-                }
-                if (!productType.saleorProductTypes?.[0]?.id) {
-                    this.logger.warn(
-                        `Product ${product.name} has no product type in Saleor. Skipping`,
-                    );
-                    continue;
-                }
-                /**
-                 * The description as editorjs json
-                 */
-                const description = product.descriptionHTML
-                    ? JSON.stringify(
-                          await editorJsHelper.HTMLToEditorJS(
-                              product.descriptionHTML,
-                          ),
-                      )
-                    : undefined;
-
-                const saleorCategoryId =
-                    product.category?.saleorCategories?.[0]?.id;
-                if (!saleorCategoryId) {
-                    this.logger.warn(
-                        `Product ${product.name} has no category. Skipping`,
-                        {
-                            category: product.category,
-                        },
-                    );
-                    continue;
-                }
-
-                const attributesWithSaleorAttributes =
-                    product.attributes.filter(
-                        (a) => a.attribute.saleorAttributes.length > 0,
-                    );
-
-                const attributes: AttributeValueInput[] =
-                    await this.schemabaseAttributesToSaleorAttribute(
-                        attributesWithSaleorAttributes,
-                    );
-
-                /**
-                 * Products can have related product manuals. We try to upload the corresponding
-                 * media and add it as product attributes to the product. We just upload media,
-                 * that is missing in saleor.
-                 */
-                const productManuals = await this.db.media.findMany({
-                    where: {
-                        products: {
-                            some: {
-                                id: product.id,
-                            },
-                        },
-                        tenantId: this.tenantId,
-                        type: "MANUAL",
-                    },
-                    include: {
-                        saleorMedia: {
-                            where: {
-                                installedSaleorAppId: this.installedSaleorAppId,
-                            },
-                        },
-                    },
-                });
-                if (productManuals.length > 0) {
-                    /**
-                     * Internally, we support multiple product manuals per product. In
-                     * Saleor we currently just support one, so we just take the first
-                     */
-                    let externalMediaUrl =
-                        productManuals[0].saleorMedia?.[0]?.url;
-                    const saleorProdManual = new SaleorProductManual(
-                        this.logger,
-                        this.db,
-                        this.installedSaleorApp,
-                    );
-                    /**
-                     * Just the product manuals that we still need to upload
-                     */
-                    const manualsToUpload = productManuals.filter(
-                        (manual) => !manual.saleorMedia?.[0]?.url,
-                    );
-                    for (const manual of manualsToUpload) {
-                        const resp =
-                            await saleorProdManual.uploadProductManual(manual);
-                        if (resp) {
-                            externalMediaUrl = resp;
-                        }
+                const errors = [];
+                try {
+                    const productType = product.productType;
+                    if (!productType) {
+                        this.logger.warn(
+                            `Product ${product.name} has no product type. Skipping`,
+                        );
+                        continue;
+                    }
+                    if (!productType.saleorProductTypes?.[0]?.id) {
+                        this.logger.warn(
+                            `Product ${product.name} has no product type in Saleor. Skipping`,
+                        );
+                        continue;
                     }
                     /**
-                     * Adding the manual URL to the product attributes
+                     * The description as editorjs json
                      */
+                    const description = product.descriptionHTML
+                        ? JSON.stringify(
+                              await editorJsHelper.HTMLToEditorJS(
+                                  product.descriptionHTML,
+                              ),
+                          )
+                        : undefined;
 
-                    /**
-                     * The saleor attribute id for the product manual
-                     */
-                    const saleorAtttribute = productType.attributes.find(
-                        (a) => a.attribute.normalizedName === "productmanual",
-                    )?.attribute?.saleorAttributes[0]?.id;
-
-                    if (!saleorAtttribute) {
-                        this.logger.error(
-                            'We have a product manual, but no saleor attribute for "product manual". Skipping',
+                    const saleorCategoryId =
+                        product.category?.saleorCategories?.[0]?.id;
+                    if (!saleorCategoryId) {
+                        this.logger.warn(
+                            `Product ${product.name} has no category. Skipping`,
                             {
-                                productManuals: productManuals.map((x) => x.id),
-                                productName: product.name,
+                                category: product.category,
                             },
                         );
                         continue;
                     }
-                    attributes.push({
-                        id: saleorAtttribute,
-                        file: externalMediaUrl,
-                    });
-                }
 
-                let saleorProductId = product.saleorProducts?.[0]?.id;
-
-                /**
-                 * We store the tax class on variant level,
-                 * so we need to get the tax class from the first variant
-                 */
-                const taxClass =
-                    product.variants[0]?.salesTax?.saleorTaxClasses?.[0]?.id;
-
-                /**
-                 * Media files from our DB - product videos are not uploaded,
-                 * but just set as youtube URLs. We filter out type MANUAL
-                 */
-                const schemabaseMedia = product.media.filter(
-                    (m) => m.type !== "MANUAL",
-                );
-
-                /**
-                 * go through all variant media, as we first need
-                 * all media to be uploaded for that product and can later
-                 * assign media items to a specific variant. Only push the
-                 * variant image, if it is not already in the schemabaseMedia
-                 * array
-                 */
-                for (const variant of product.variants) {
-                    for (const media of variant.media) {
-                        if (
-                            media.type === "PRODUCTIMAGE" &&
-                            !schemabaseMedia.find((x) => x.id === media.id)
-                        ) {
-                            schemabaseMedia.push(media);
-                        }
-                    }
-                }
-
-                if (!saleorProductId) {
-                    this.logger.info(
-                        `Creating product ${product.name} in Saleor`,
-                        {
-                            attributes: JSON.stringify(attributes, null, 2),
-                            productType: productType.name,
-                        },
-                    );
-
-                    const productCreateResponse =
-                        await this.saleorClient.productCreate({
-                            input: {
-                                attributes,
-                                category: saleorCategoryId,
-                                chargeTaxes: true,
-                                taxClass,
-                                collections: [],
-                                description,
-                                name: product.name,
-                                productType:
-                                    productType.saleorProductTypes[0].id,
-                            },
-                        });
-                    if (
-                        (productCreateResponse.productCreate?.errors &&
-                            productCreateResponse.productCreate?.errors.length >
-                                0) ||
-                        !productCreateResponse.productCreate?.product?.id
-                    ) {
-                        this.logger.error(
-                            `Error creating product ${
-                                product.name
-                            } in Saleor: ${JSON.stringify(
-                                productCreateResponse?.productCreate?.errors,
-                            )}`,
+                    const attributesWithSaleorAttributes =
+                        product.attributes.filter(
+                            (a) => a.attribute.saleorAttributes.length > 0,
                         );
-                        continue;
-                    }
-                    const createdProduct =
-                        productCreateResponse.productCreate.product;
-                    saleorProductId = createdProduct.id;
-                    this.logger.info(
-                        `Successfully created product ${product.name} in Saleor`,
-                    );
-                    await this.db.saleorProduct.create({
-                        data: {
-                            id: createdProduct.id,
-                            installedSaleorApp: {
-                                connect: {
-                                    id: this.installedSaleorAppId,
-                                },
-                            },
-                            product: {
-                                connect: {
+
+                    const attributes: AttributeValueInput[] =
+                        await this.schemabaseAttributesToSaleorAttribute(
+                            attributesWithSaleorAttributes,
+                        );
+
+                    /**
+                     * Products can have related product manuals. We try to upload the corresponding
+                     * media and add it as product attributes to the product. We just upload media,
+                     * that is missing in saleor.
+                     */
+                    const productManuals = await this.db.media.findMany({
+                        where: {
+                            products: {
+                                some: {
                                     id: product.id,
                                 },
                             },
-                            updatedAt: product.updatedAt,
+                            tenantId: this.tenantId,
+                            type: "MANUAL",
+                        },
+                        include: {
+                            saleorMedia: {
+                                where: {
+                                    installedSaleorAppId:
+                                        this.installedSaleorAppId,
+                                },
+                            },
                         },
                     });
-
-                    const mediaToUpload = schemabaseMedia;
-
-                    if (mediaToUpload.length > 0) {
-                        await this.uploadMedia(saleorProductId, mediaToUpload);
-                    }
-                } else {
-                    this.logger.info(
-                        `Updating product ${product.name} - ${product.id} in Saleor`,
-                    );
-                    const productUpdateResponse =
-                        await this.saleorClient.productUpdate({
-                            id: saleorProductId,
-                            input: {
-                                attributes,
-                                category: saleorCategoryId,
-                                chargeTaxes: true,
-                                taxClass,
-                                collections: [],
-                                description,
-                                name: product.name,
-                            },
-                        });
-                    if (
-                        (productUpdateResponse.productUpdate?.errors &&
-                            productUpdateResponse.productUpdate?.errors.length >
-                                0) ||
-                        !productUpdateResponse.productUpdate?.product?.id
-                    ) {
-                        this.logger.error(
-                            `Error updating product ${
-                                product.name
-                            } in Saleor: ${JSON.stringify(
-                                productUpdateResponse?.productUpdate?.errors,
-                            )}`,
+                    if (productManuals.length > 0) {
+                        /**
+                         * Internally, we support multiple product manuals per product. In
+                         * Saleor we currently just support one, so we just take the first
+                         */
+                        let externalMediaUrl =
+                            productManuals[0].saleorMedia?.[0]?.url;
+                        const saleorProdManual = new SaleorProductManual(
+                            this.logger,
+                            this.db,
+                            this.installedSaleorApp,
                         );
-                        continue;
-                    }
-                    this.logger.info(
-                        `Successfully updated product ${product.name} in Saleor`,
-                    );
-                    // compare the media we have in our DB with the media currently in saleor.
-                    // upload media, that doesn't exist in saleor yet, delete, media that does no longer exist.
-                    // only take media, with the metadata "schemabase-media-id" set, as these are the media we uploaded.
-                    // delete also media that does exist multiple times in saleor (upload by bugs in schemabase)
-                    // We don't want to delete media, that was uploaded manually in saleor. The field "metafield" is either
-                    // our internal media id or null
-                    const saleorMedia =
-                        productUpdateResponse.productUpdate.product.media || [];
-
-                    const filteredMedia = saleorMedia?.filter(
-                        (m) => m.metafield !== null || undefined,
-                    );
-                    const mediaToDelete = filteredMedia.filter(
-                        (m) =>
-                            !schemabaseMedia.find((sm) => sm.id === m.metafield)
-                                ?.id,
-                    );
-                    const mediaToUpload = schemabaseMedia.filter(
-                        (m) =>
-                            !filteredMedia.find((sm) => sm.metafield === m.id)
-                                ?.id,
-                    );
-
-                    if (mediaToUpload.length > 0) {
-                        await this.uploadMedia(saleorProductId, mediaToUpload);
-                    }
-
-                    if (mediaToDelete.length > 0) {
-                        this.logger.info(
-                            `Deleting ${mediaToDelete.length} media for product ${product.name} in Saleor`,
-                            {
-                                mediaToDelete: mediaToDelete.map((x) => x.id),
-                            },
+                        /**
+                         * Just the product manuals that we still need to upload
+                         */
+                        const manualsToUpload = productManuals.filter(
+                            (manual) => !manual.saleorMedia?.[0]?.url,
                         );
-                        for (const element of mediaToDelete) {
-                            await this.deleteMedia(element.id);
+                        for (const manual of manualsToUpload) {
+                            const resp =
+                                await saleorProdManual.uploadProductManual(
+                                    manual,
+                                );
+                            if (resp) {
+                                externalMediaUrl = resp;
+                            }
                         }
-                    }
-                }
-                /**
-                 * Variants for this product that we need to create
-                 */
-                const variantsToCreate = product.variants.filter(
-                    (v) => v.saleorProductVariant.length === 0,
-                );
-                /**
-                 * Variants of the current product, that we need to update
-                 */
-                const variantsToUpdate = product.variants.filter(
-                    (v) => v.saleorProductVariant.length > 0,
-                );
-                if (variantsToCreate.length > 0) {
-                    await this.createProductVariantsInSaleor(
-                        variantsToCreate,
-                        product,
-                        saleorProductId,
-                    );
-                }
-                if (variantsToUpdate.length > 0) {
-                    this.logger.info(
-                        `Found ${variantsToUpdate.length} variants to update for product ${product.name} in Saleor`,
-                    );
+                        /**
+                         * Adding the manual URL to the product attributes
+                         */
 
-                    const variantsToUpdateInput:
-                        | ProductVariantBulkUpdateInput
-                        | ProductVariantBulkUpdateInput[] = [];
-                    for (const v of variantsToUpdate) {
-                        const attr =
-                            await this.schemabaseAttributesToSaleorAttribute(
-                                v.attributes,
+                        /**
+                         * The saleor attribute id for the product manual
+                         */
+                        const saleorAtttribute = productType.attributes.find(
+                            (a) =>
+                                a.attribute.normalizedName === "productmanual",
+                        )?.attribute?.saleorAttributes[0]?.id;
+
+                        if (!saleorAtttribute) {
+                            this.logger.error(
+                                'We have a product manual, but no saleor attribute for "product manual". Skipping',
+                                {
+                                    productManuals: productManuals.map(
+                                        (x) => x.id,
+                                    ),
+                                    productName: product.name,
+                                },
                             );
-                        const variantToUpdateInput: ProductVariantBulkUpdateInput =
-                            {
-                                attributes: attr,
-                                sku: v.sku,
-                                name: v.variantName,
-                                trackInventory: true,
-                                id: v.saleorProductVariant[0].id,
-                                weight: v.weight,
-                            };
-                        variantsToUpdateInput.push(variantToUpdateInput);
-                    }
-                    this.logger.debug(
-                        `Updating variants for product ${saleorProductId}`,
-                        {
-                            variants: variantsToUpdateInput.map((x) => x.sku),
-                        },
-                    );
-                    const productVariantBulkUpdateResponse =
-                        await this.saleorClient.productVariantBulkUpdate({
-                            variants: variantsToUpdateInput,
-                            productId: saleorProductId,
+                            continue;
+                        }
+                        attributes.push({
+                            id: saleorAtttribute,
+                            file: externalMediaUrl,
                         });
-                    if (
-                        productVariantBulkUpdateResponse
-                            .productVariantBulkUpdate?.errors &&
-                        productVariantBulkUpdateResponse
-                            .productVariantBulkUpdate?.errors.length > 0
-                    ) {
-                        this.logger.error(
-                            `Error creating variants for product ${
-                                product.name
-                            } in Saleor: ${JSON.stringify(
-                                productVariantBulkUpdateResponse
-                                    .productVariantBulkUpdate.errors,
-                            )}`,
-                        );
-                        continue;
                     }
-                    this.logger.info(
-                        `Successfully updated ${productVariantBulkUpdateResponse.productVariantBulkUpdate?.results.length} variants for product ${product.name} in Saleor`,
+
+                    let saleorProductId = product.saleorProducts?.[0]?.id;
+
+                    /**
+                     * We store the tax class on variant level,
+                     * so we need to get the tax class from the first variant
+                     */
+                    const taxClass =
+                        product.variants[0]?.salesTax?.saleorTaxClasses?.[0]
+                            ?.id;
+
+                    /**
+                     * Media files from our DB - product videos are not uploaded,
+                     * but just set as youtube URLs. We filter out type MANUAL
+                     */
+                    const schemabaseMedia = product.media.filter(
+                        (m) => m.type !== "MANUAL",
                     );
 
                     /**
-                     * If we have variant specific media, we need to set that in Saleor
+                     * go through all variant media, as we first need
+                     * all media to be uploaded for that product and can later
+                     * assign media items to a specific variant. Only push the
+                     * variant image, if it is not already in the schemabaseMedia
+                     * array
                      */
-                    for (const variantImage of variantsToUpdate) {
-                        if (variantImage.media.length > 0) {
-                            this.logger.debug(
-                                `Assigning media to variant ${variantImage.variantName} in Saleor`,
+                    for (const variant of product.variants) {
+                        for (const media of variant.media) {
+                            if (
+                                media.type === "PRODUCTIMAGE" &&
+                                !schemabaseMedia.find((x) => x.id === media.id)
+                            ) {
+                                schemabaseMedia.push(media);
+                            }
+                        }
+                    }
+
+                    if (!saleorProductId) {
+                        this.logger.info(
+                            `Creating product ${product.name} in Saleor`,
+                            {
+                                attributes: JSON.stringify(attributes, null, 2),
+                                productType: productType.name,
+                            },
+                        );
+
+                        const productCreateResponse =
+                            await this.saleorClient.productCreate({
+                                input: {
+                                    attributes,
+                                    category: saleorCategoryId,
+                                    chargeTaxes: true,
+                                    taxClass,
+                                    collections: [],
+                                    description,
+                                    name: product.name,
+                                    productType:
+                                        productType.saleorProductTypes[0].id,
+                                },
+                            });
+                        if (
+                            (productCreateResponse.productCreate?.errors &&
+                                productCreateResponse.productCreate?.errors
+                                    .length > 0) ||
+                            !productCreateResponse.productCreate?.product?.id
+                        ) {
+                            this.logger.error(
+                                `Error creating product ${
+                                    product.name
+                                } in Saleor: ${JSON.stringify(
+                                    productCreateResponse?.productCreate
+                                        ?.errors,
+                                )}`,
+                            );
+                            continue;
+                        }
+                        const createdProduct =
+                            productCreateResponse.productCreate.product;
+                        saleorProductId = createdProduct.id;
+                        this.logger.info(
+                            `Successfully created product ${product.name} in Saleor`,
+                        );
+                        await this.db.saleorProduct.create({
+                            data: {
+                                id: createdProduct.id,
+                                installedSaleorApp: {
+                                    connect: {
+                                        id: this.installedSaleorAppId,
+                                    },
+                                },
+                                product: {
+                                    connect: {
+                                        id: product.id,
+                                    },
+                                },
+                                updatedAt: product.updatedAt,
+                            },
+                        });
+
+                        const mediaToUpload = schemabaseMedia;
+
+                        if (mediaToUpload.length > 0) {
+                            await this.uploadMedia(
+                                saleorProductId,
+                                mediaToUpload,
+                            );
+                        }
+                    } else {
+                        this.logger.info(
+                            `Updating product ${product.name} - ${product.id} in Saleor`,
+                        );
+                        const productUpdateResponse =
+                            await this.saleorClient.productUpdate({
+                                id: saleorProductId,
+                                input: {
+                                    attributes,
+                                    category: saleorCategoryId,
+                                    chargeTaxes: true,
+                                    taxClass,
+                                    collections: [],
+                                    description,
+                                    name: product.name,
+                                },
+                            });
+                        if (
+                            (productUpdateResponse.productUpdate?.errors &&
+                                productUpdateResponse.productUpdate?.errors
+                                    .length > 0) ||
+                            !productUpdateResponse.productUpdate?.product?.id
+                        ) {
+                            this.logger.error(
+                                `Error updating product ${
+                                    product.name
+                                } in Saleor: ${JSON.stringify(
+                                    productUpdateResponse?.productUpdate
+                                        ?.errors,
+                                )}`,
+                            );
+                            continue;
+                        }
+                        this.logger.info(
+                            `Successfully updated product ${product.name} in Saleor`,
+                        );
+                        // compare the media we have in our DB with the media currently in saleor.
+                        // upload media, that doesn't exist in saleor yet, delete, media that does no longer exist.
+                        // only take media, with the metadata "schemabase-media-id" set, as these are the media we uploaded.
+                        // delete also media that does exist multiple times in saleor (upload by bugs in schemabase)
+                        // We don't want to delete media, that was uploaded manually in saleor. The field "metafield" is either
+                        // our internal media id or null
+                        const saleorMedia =
+                            productUpdateResponse.productUpdate.product.media ||
+                            [];
+
+                        const filteredMedia = saleorMedia?.filter(
+                            (m) => m.metafield !== null || undefined,
+                        );
+                        const mediaToDelete = filteredMedia.filter(
+                            (m) =>
+                                !schemabaseMedia.find(
+                                    (sm) => sm.id === m.metafield,
+                                )?.id,
+                        );
+                        const mediaToUpload = schemabaseMedia.filter(
+                            (m) =>
+                                !filteredMedia.find(
+                                    (sm) => sm.metafield === m.id,
+                                )?.id,
+                        );
+
+                        if (mediaToUpload.length > 0) {
+                            await this.uploadMedia(
+                                saleorProductId,
+                                mediaToUpload,
+                            );
+                        }
+
+                        if (mediaToDelete.length > 0) {
+                            this.logger.info(
+                                `Deleting ${mediaToDelete.length} media for product ${product.name} in Saleor`,
                                 {
-                                    media: variantImage.media.map((x) => x.id),
+                                    mediaToDelete: mediaToDelete.map(
+                                        (x) => x.id,
+                                    ),
                                 },
                             );
-                            for (const mediaElement of variantImage.media) {
-                                if (!mediaElement.saleorMedia?.[0]?.id) {
-                                    this.logger.warn(
-                                        `Media ${mediaElement.id} has no saleor media id. Skipping`,
-                                    );
-                                    continue;
-                                }
-                                const r =
-                                    await this.saleorClient.VariantMediaAssign({
-                                        mediaId:
-                                            mediaElement.saleorMedia?.[0].id,
-                                        variantId:
-                                            variantImage.saleorProductVariant[0]
-                                                .id,
-                                    });
-                                if (r.variantMediaAssign?.errors.length) {
-                                    this.logger.error(
-                                        `Error assigning media to variant ${
-                                            variantImage.variantName
-                                        } in Saleor: ${JSON.stringify(
-                                            r.variantMediaAssign.errors,
-                                        )}`,
-                                    );
+                            for (const element of mediaToDelete) {
+                                await this.deleteMedia(element.id);
+                            }
+                        }
+                    }
+                    /**
+                     * Variants for this product that we need to create
+                     */
+                    const variantsToCreate = product.variants.filter(
+                        (v) => v.saleorProductVariant.length === 0,
+                    );
+                    /**
+                     * Variants of the current product, that we need to update
+                     */
+                    const variantsToUpdate = product.variants.filter(
+                        (v) => v.saleorProductVariant.length > 0,
+                    );
+                    if (variantsToCreate.length > 0) {
+                        await this.createProductVariantsInSaleor(
+                            variantsToCreate,
+                            product,
+                            saleorProductId,
+                        );
+                    }
+                    if (variantsToUpdate.length > 0) {
+                        this.logger.info(
+                            `Found ${variantsToUpdate.length} variants to update for product ${product.name} in Saleor`,
+                        );
+
+                        const variantsToUpdateInput:
+                            | ProductVariantBulkUpdateInput
+                            | ProductVariantBulkUpdateInput[] = [];
+                        for (const v of variantsToUpdate) {
+                            const attr =
+                                await this.schemabaseAttributesToSaleorAttribute(
+                                    v.attributes,
+                                );
+                            const variantToUpdateInput: ProductVariantBulkUpdateInput =
+                                {
+                                    attributes: attr,
+                                    sku: v.sku,
+                                    name: v.variantName,
+                                    trackInventory: true,
+                                    id: v.saleorProductVariant[0].id,
+                                    weight: v.weight,
+                                };
+                            variantsToUpdateInput.push(variantToUpdateInput);
+                        }
+                        this.logger.debug(
+                            `Updating variants for product ${saleorProductId}`,
+                            {
+                                variants: variantsToUpdateInput.map(
+                                    (x) => x.sku,
+                                ),
+                            },
+                        );
+                        const productVariantBulkUpdateResponse =
+                            await this.saleorClient.productVariantBulkUpdate({
+                                variants: variantsToUpdateInput,
+                                productId: saleorProductId,
+                            });
+                        if (
+                            productVariantBulkUpdateResponse
+                                .productVariantBulkUpdate?.errors &&
+                            productVariantBulkUpdateResponse
+                                .productVariantBulkUpdate?.errors.length > 0
+                        ) {
+                            this.logger.error(
+                                `Error creating variants for product ${
+                                    product.name
+                                } in Saleor: ${JSON.stringify(
+                                    productVariantBulkUpdateResponse
+                                        .productVariantBulkUpdate.errors,
+                                )}`,
+                            );
+                            continue;
+                        }
+                        this.logger.info(
+                            `Successfully updated ${productVariantBulkUpdateResponse.productVariantBulkUpdate?.results.length} variants for product ${product.name} in Saleor`,
+                        );
+
+                        /**
+                         * If we have variant specific media, we need to set that in Saleor
+                         */
+                        for (const variantImage of variantsToUpdate) {
+                            if (variantImage.media.length > 0) {
+                                this.logger.debug(
+                                    `Assigning media to variant ${variantImage.variantName} in Saleor`,
+                                    {
+                                        media: variantImage.media.map(
+                                            (x) => x.id,
+                                        ),
+                                    },
+                                );
+                                for (const mediaElement of variantImage.media) {
+                                    if (!mediaElement.saleorMedia?.[0]?.id) {
+                                        this.logger.warn(
+                                            `Media ${mediaElement.id} has no saleor media id. Skipping`,
+                                        );
+                                        continue;
+                                    }
+                                    const r =
+                                        await this.saleorClient.VariantMediaAssign(
+                                            {
+                                                mediaId:
+                                                    mediaElement
+                                                        .saleorMedia?.[0].id,
+                                                variantId:
+                                                    variantImage
+                                                        .saleorProductVariant[0]
+                                                        .id,
+                                            },
+                                        );
+                                    if (r.variantMediaAssign?.errors.length) {
+                                        this.logger.error(
+                                            `Error assigning media to variant ${
+                                                variantImage.variantName
+                                            } in Saleor: ${JSON.stringify(
+                                                r.variantMediaAssign.errors,
+                                            )}`,
+                                        );
+                                    }
                                 }
                             }
                         }
                     }
+                } catch (error) {
+                    errors.push(error);
+                    this.logger.error(error as any);
                 }
             }
         } else {

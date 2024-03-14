@@ -11,7 +11,7 @@ import {
     PrismaClient,
     SaleorApp,
 } from "@eci/pkg/prisma";
-import { MediaUpload } from "../mediaUpload";
+import { MediaNotFoundError, MediaUpload } from "../mediaUpload";
 
 export class SaleorProductManual {
     // private readonly saleorClient: SaleorClient;
@@ -101,6 +101,16 @@ export class SaleorProductManual {
             );
             return fileURL;
         } catch (error: any) {
+            /**
+             * delete media if NotFound error is thrown
+             */
+            if (error instanceof MediaNotFoundError) {
+                await this.db.media.delete({
+                    where: {
+                        id: manual.id,
+                    },
+                });
+            }
             this.logger.error(
                 `Error handling media ${manual.id}: ${manual.url} - ${
                     error?.message ?? error

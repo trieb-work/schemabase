@@ -238,10 +238,16 @@ export class SaleorAttributeSyncService {
              * Pulling all distinct values from product and variant
              * attribute values
              */
-            const values = attr.productValues.map((v) => ({
+            const productValues = attr.productValues.map((v) => ({
                 value: v.value,
                 normalizedName: v.normalizedName,
             }));
+            const variantValues = attr.productVariantValues.map((v) => ({
+                value: v.value,
+                normalizedName: v.normalizedName,
+            }));
+            const values = productValues.concat(variantValues);
+
             attr.productVariantValues.forEach((v) => {
                 if (!values.find((value) => value.value === v.value)) {
                     values.push({

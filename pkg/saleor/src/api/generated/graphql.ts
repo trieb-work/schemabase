@@ -29597,6 +29597,10 @@ export type UserCreateInput = {
      * User account is confirmed.
      *
      * Added in Saleor 3.15.
+     *
+     * DEPRECATED: this field will be removed in Saleor 4.0.
+     *
+     * The user will be always set as unconfirmed. The confirmation will take place when the user sets the password.
      */
     isConfirmed?: InputMaybe<Scalars["Boolean"]>;
     /** User language code. */
@@ -34621,7 +34625,7 @@ export const AttributeSyncDocument = gql`
 export const AttributeValueSearchDocument = gql`
     query attributeValueSearch($attributeId: ID!, $searchvalue: String) {
         attribute(id: $attributeId) {
-            choices(first: 5, filter: { search: $searchvalue }) {
+            choices(first: 100, filter: { search: $searchvalue }) {
                 edges {
                     node {
                         id
