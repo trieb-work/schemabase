@@ -74,7 +74,9 @@ const apiLineItemsWithSchemabase = async (
      */
     for (const ol of lineItemsToCreate) {
         const productName = ol.description.replace(/\[.*?\]\s/g, "");
-        const normalizedName = normalizeStrings.productNames(productName);
+        const normalizedName = normalizeStrings.productNames(
+            productName + ol.productId,
+        );
         const productVariant = {
             connectOrCreate: {
                 where: {
