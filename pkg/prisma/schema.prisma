@@ -1979,6 +1979,7 @@ model Product {
   tenantId String
 
   saleorProducts SaleorProduct[]
+  kencoveApiProducts KencoveApiProduct[]
 
   descriptionHTML String? @db.Text
 
@@ -1991,7 +1992,6 @@ model Product {
   /// Just the relation back. Not used in the code
   boughtTogetherWith   ProductToFrequentlyBoughtWith[] @relation("RelatedToProduct")
 
-  @@unique([name, tenantId])
   @@unique([normalizedName, tenantId])
   @@index([tenantId])
   @@index([categoryId])
@@ -2620,6 +2620,7 @@ model KencoveApiApp {
   kencoveApiContacts        KencoveApiContact[]
   kencoveApiAddresses       KencoveApiAddress[]
   kencoveApiProductVariants KencoveApiProductVariant[]
+  kencoveApiProducts        KencoveApiProduct[]
   kencoveApiAttributes      KencoveApiAttribute[]
   kencoveApiCategories      KencoveApiCategory[]
   kencoveApiPackages        KencoveApiPackage[]
@@ -2748,6 +2749,26 @@ model KencoveApiPackage {
   @@unique([id, kencoveApiAppId])
   @@index([packageId])
   @@index([kencoveApiAppId])
+}
+
+
+model KencoveApiProduct {
+  id String
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+
+  kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id], onDelete: Cascade)
+  kencoveApiAppId String
+
+  @@unique([id, kencoveApiAppId])
+  @@index([productId])
+  @@index([kencoveApiAppId])
+  @@index([productId, kencoveApiAppId])
+
 }
 
 /// Kencove custom productVariant model
