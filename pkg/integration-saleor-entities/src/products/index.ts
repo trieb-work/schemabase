@@ -1146,8 +1146,8 @@ export class SaleorProductSyncService {
                     productsToUpdate: productsToUpdate.map((p) => p.name),
                 },
             );
+            const errors = [];
             for (const product of sortedProducts) {
-                const errors = [];
                 try {
                     const productType = product.productType;
                     if (!productType) {
@@ -1590,6 +1590,14 @@ export class SaleorProductSyncService {
                     errors.push(error);
                     this.logger.error(error as any);
                 }
+            }
+            if (errors.length > 0) {
+                /**
+                 * we make sure, that this run is marked as failed
+                 */
+                throw new Error(
+                    `${errors.length} errors occurred during product creation or update. See log for error details`,
+                );
             }
         } else {
             this.logger.info(`No products to create or update in Saleor`);
