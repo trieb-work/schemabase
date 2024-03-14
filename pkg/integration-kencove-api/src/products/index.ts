@@ -545,9 +545,6 @@ export class KencoveApiAppProductSyncService {
         // we set an attribute hex value to the hex value field, when type is "swatch"
         // and value starts with "#"
         if (attribute.type === "SWATCH" && value.startsWith("#")) {
-            this.logger.debug(
-                `Attribute ${attribute.name} is a color swatch with hex code: ${value}`,
-            );
             hexCode = value;
         }
 
@@ -1917,12 +1914,7 @@ export class KencoveApiAppProductSyncService {
                         }
                         return true;
                     });
-                this.logger.debug(
-                    `Will now set attribute values of ${cleanedAttributes.length} attributes`,
-                    {
-                        attributes: cleanedAttributes,
-                    },
-                );
+
                 for (const attribute of cleanedAttributes) {
                     const matchedAttr =
                         kenProdTypeWithProductType.productType.attributes.find(
@@ -1960,12 +1952,6 @@ export class KencoveApiAppProductSyncService {
                      */
                     if (attribute.value.match(/^\[.*\]$/)) {
                         const values = JSON.parse(attribute.value);
-                        this.logger.debug(
-                            `Found array of values for attribute ${attribute.name}`,
-                            {
-                                values,
-                            },
-                        );
 
                         for (const value of values) {
                             await this.setAttributeValue({
