@@ -228,9 +228,6 @@ export class SaleorCategorySyncService {
         if (categoriesToUpdate.length === 0) {
             return;
         }
-        this.logger.debug(
-            `Updating categories: ${categoriesToUpdate.map((c) => c.id)}`,
-        );
 
         for (const category of categoriesToUpdate) {
             /**
@@ -292,6 +289,7 @@ export class SaleorCategorySyncService {
                     `Internal fiels differ with the saleor category: ${category.category.name}. Update the category`,
                     {
                         parentCategory: parentCategory?.categoryId,
+                        categoryParentId: category.category.parentCategoryId,
                         normalizedNameInternal:
                             category.category.normalizedName,
                         normalizedNameSaleor: normalizedName,
@@ -664,14 +662,12 @@ export class SaleorCategorySyncService {
                 id: {
                     notIn: created,
                 },
+                updatedAt: {
+                    gte: createdGte,
+                },
                 saleorCategories: {
                     some: {
                         installedSaleorAppId: this.installedSaleorApp.id,
-                        category: {
-                            updatedAt: {
-                                gte: createdGte,
-                            },
-                        },
                     },
                 },
                 active: true,
