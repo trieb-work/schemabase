@@ -65,6 +65,8 @@ type EnhancedProduct = {
     alternatives: KencoveApiAAItem[] | null;
     countryOfOrigin: string | null;
     categoryId: string | undefined;
+    createdAt: Date;
+    updatedAt: Date;
 };
 
 export class KencoveApiAppProductSyncService {
@@ -853,6 +855,20 @@ export class KencoveApiAppProductSyncService {
                 display_type: "file",
                 attribute_model: "custom",
             });
+            productAttributesUnique.push({
+                name: "Additional Handling",
+                value: "",
+                attribute_id: 333338,
+                display_type: "checkbox",
+                attribute_model: "custom",
+            });
+            productAttributesUnique.push({
+                name: "Truck Only",
+                value: "",
+                attribute_id: 333339,
+                display_type: "checkbox",
+                attribute_model: "custom",
+            });
 
             this.logger.debug(
                 "Product Attributes: " +
@@ -1059,51 +1075,140 @@ export class KencoveApiAppProductSyncService {
         category: string | undefined,
     ) {
         const totalMedia = this.getTotalMediaFromProduct(product);
-        return this.db.product.create({
-            data: {
-                id: id.id("product"),
-                name: product.productName,
-                normalizedName: normalizedProductName,
-                descriptionHTML: product.description,
-                media: {
-                    connectOrCreate: totalMedia.map((media) => ({
-                        where: {
-                            url_tenantId: {
-                                url: media.url,
-                                tenantId: this.kencoveApiApp.tenantId,
+        return (
+            await this.db.kencoveApiProduct.upsert({
+                where: {
+                    id_kencoveApiAppId: {
+                        id: product.productId,
+                        kencoveApiAppId: this.kencoveApiApp.id,
+                    },
+                },
+                create: {
+                    id: product.productId,
+                    createdAt: product.createdAt,
+                    updatedAt: product.updatedAt,
+                    kencoveApiApp: {
+                        connect: {
+                            id: this.kencoveApiApp.id,
+                        },
+                    },
+                    product: {
+                        connectOrCreate: {
+                            where: {
+                                normalizedName_tenantId: {
+                                    normalizedName: normalizedProductName,
+                                    tenantId: this.kencoveApiApp.tenantId,
+                                },
+                            },
+                            create: {
+                                id: id.id("product"),
+                                name: product.productName,
+                                normalizedName: normalizedProductName,
+                                descriptionHTML: product.description,
+                                media: {
+                                    connectOrCreate: totalMedia.map(
+                                        (media) => ({
+                                            where: {
+                                                url_tenantId: {
+                                                    url: media.url,
+                                                    tenantId:
+                                                        this.kencoveApiApp
+                                                            .tenantId,
+                                                },
+                                            },
+                                            create: media,
+                                        }),
+                                    ),
+                                },
+                                productType: {
+                                    connect: {
+                                        id: productTypeId,
+                                    },
+                                },
+                                category: category
+                                    ? {
+                                          connect: {
+                                              id: category,
+                                          },
+                                      }
+                                    : undefined,
+                                tenant: {
+                                    connect: {
+                                        id: this.kencoveApiApp.tenantId,
+                                    },
+                                },
+                                countryOfOrigin,
                             },
                         },
-                        create: media,
-                    })),
-                },
-                productType: {
-                    connect: {
-                        id: productTypeId,
                     },
                 },
-                category: category
-                    ? {
-                          connect: {
-                              id: category,
-                          },
-                      }
-                    : undefined,
-                tenant: {
-                    connect: {
-                        id: this.kencoveApiApp.tenantId,
+                update: {
+                    createdAt: product.createdAt,
+                    updatedAt: product.updatedAt,
+                    product: {
+                        connectOrCreate: {
+                            where: {
+                                normalizedName_tenantId: {
+                                    normalizedName: normalizedProductName,
+                                    tenantId: this.kencoveApiApp.tenantId,
+                                },
+                            },
+                            create: {
+                                id: id.id("product"),
+                                name: product.productName,
+                                normalizedName: normalizedProductName,
+                                descriptionHTML: product.description,
+                                media: {
+                                    connectOrCreate: totalMedia.map(
+                                        (media) => ({
+                                            where: {
+                                                url_tenantId: {
+                                                    url: media.url,
+                                                    tenantId:
+                                                        this.kencoveApiApp
+                                                            .tenantId,
+                                                },
+                                            },
+                                            create: media,
+                                        }),
+                                    ),
+                                },
+                                productType: {
+                                    connect: {
+                                        id: productTypeId,
+                                    },
+                                },
+                                category: category
+                                    ? {
+                                          connect: {
+                                              id: category,
+                                          },
+                                      }
+                                    : undefined,
+                                tenant: {
+                                    connect: {
+                                        id: this.kencoveApiApp.tenantId,
+                                    },
+                                },
+                                countryOfOrigin,
+                            },
+                        },
                     },
                 },
-                countryOfOrigin,
-            },
-            include: {
-                variants: {
-                    include: {
-                        kencoveApiProductVariant: true,
+                include: {
+                    product: {
+                        include: {
+                            variants: {
+                                include: {
+                                    kencoveApiProductVariant: true,
+                                },
+                            },
+                            media: true,
+                        },
                     },
                 },
-                media: true,
-            },
-        });
+            })
+        ).product;
     }
 
     /**
@@ -1271,6 +1376,9 @@ export class KencoveApiAppProductSyncService {
                     videos: p.videos,
                     otherMedia: p.other_media,
                     productType: p.productType,
+                    additionalHandling:
+                        p.additional_handing === 0 ? false : true,
+                    truckOnly: p.truck_only === "N" ? false : true,
                     accessories: p.accessories,
                     alternatives: p.alternatives,
                     description: p?.website_description,
@@ -1280,6 +1388,8 @@ export class KencoveApiAppProductSyncService {
                     categoryId: p?.categoryId?.toString(),
                     taxClass: p.product_tax_code,
                     backorder: !p.do_not_backorder,
+                    createdAt: new Date(p.createdAt),
+                    updatedAt: new Date(p.updatedAt),
                     variants: p.variants.map((v) => ({
                         ...v,
                         productId: p.id,
@@ -1308,8 +1418,12 @@ export class KencoveApiAppProductSyncService {
                 continue;
             }
 
+            /**
+             * we include the product template id in the normalised name, as
+             * multiple items can have the same name for kencove
+             */
             const normalizedProductName = normalizeStrings.productNames(
-                product.productName,
+                product.productName + product.productId,
             );
             const kenProdTypeWithProductType =
                 await this.db.kencoveApiProductType.findUnique({
@@ -1365,22 +1479,28 @@ export class KencoveApiAppProductSyncService {
              * The existing product from our DB. When product does not exist, we create it.
              * When product is internally different from the product from the API, we update it.
              */
-            let existingProduct = await this.db.product.findUnique({
-                where: {
-                    normalizedName_tenantId: {
-                        normalizedName: normalizedProductName,
-                        tenantId: this.kencoveApiApp.tenantId,
-                    },
-                },
-                include: {
-                    variants: {
-                        include: {
-                            kencoveApiProductVariant: true,
+            let existingProduct = (
+                await this.db.kencoveApiProduct.findUnique({
+                    where: {
+                        id_kencoveApiAppId: {
+                            id: product.productId,
+                            kencoveApiAppId: this.kencoveApiApp.id,
                         },
                     },
-                    media: true,
-                },
-            });
+                    include: {
+                        product: {
+                            include: {
+                                variants: {
+                                    include: {
+                                        kencoveApiProductVariant: true,
+                                    },
+                                },
+                                media: true,
+                            },
+                        },
+                    },
+                })
+            )?.product;
 
             if (!existingProduct) {
                 this.logger.info(
@@ -1722,6 +1842,23 @@ export class KencoveApiAppProductSyncService {
                     display_type: "checkbox",
                 };
 
+                const additionalHandlingAttribute: KencoveApiAttributeInProduct =
+                    {
+                        value: product.additionalHandling ? "true" : "false",
+                        attribute_id: 333338,
+                        attribute_model: "custom",
+                        name: "Additional Handling",
+                        display_type: "checkbox",
+                    };
+
+                const truckOnlyAttribute: KencoveApiAttributeInProduct = {
+                    value: product.truckOnly ? "true" : "false",
+                    attribute_id: 333339,
+                    attribute_model: "custom",
+                    name: "Truck Only",
+                    display_type: "checkbox",
+                };
+
                 const gtinAttribute: KencoveApiAttributeInProduct | undefined =
                     variant.upc
                         ? {
@@ -1740,6 +1877,8 @@ export class KencoveApiAppProductSyncService {
                     ...(variant.attributeValues || []),
                     ...variant.selectorValues,
                     backOrderAttribute,
+                    additionalHandlingAttribute,
+                    truckOnlyAttribute,
                 ];
                 if (gtinAttribute) {
                     allAttributes.push(gtinAttribute);
