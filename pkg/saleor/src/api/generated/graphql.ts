@@ -27775,7 +27775,7 @@ export type TaxConfiguration = Node &
          */
         privateMetafields?: Maybe<Scalars["Metadata"]>;
         /**
-         * The tax app id that will be used to calculate the taxes for the given channel. Empty value for `TAX_APP` set as `taxCalculationStrategy` means that Saleor will iterate over all installed tax apps. If multiple tax apps exist with provided tax app id use the `App` with newest `created` date. Will become mandatory in 4.0 for `TAX_APP` `taxCalculationStrategy`.
+         * The tax app `App.identifier` that will be used to calculate the taxes for the given channel. Empty value for `TAX_APP` set as `taxCalculationStrategy` means that Saleor will iterate over all installed tax apps. If multiple tax apps exist with provided tax app id use the `App` with newest `created` date. Will become mandatory in 4.0 for `TAX_APP` `taxCalculationStrategy`.
          *
          * Added in Saleor 3.19.
          */
@@ -27856,7 +27856,7 @@ export type TaxConfigurationPerCountry = {
     /** Determines whether displayed prices should include taxes for this country. */
     displayGrossPrices: Scalars["Boolean"];
     /**
-     * The tax app id that will be used to calculate the taxes for the given channel and country. If not provided, use the value from the channel's tax configuration.
+     * The tax app `App.identifier` that will be used to calculate the taxes for the given channel and country. If not provided, use the value from the channel's tax configuration.
      *
      * Added in Saleor 3.19.
      */
@@ -27873,7 +27873,7 @@ export type TaxConfigurationPerCountryInput = {
     /** Determines whether displayed prices should include taxes for this country. */
     displayGrossPrices: Scalars["Boolean"];
     /**
-     * The tax app identifier that will be used to calculate the taxes for the given channel and country. If not provided, use the value from the channel's tax configuration.
+     * The tax app `App.identifier` that will be used to calculate the taxes for the given channel and country. If not provided, use the value from the channel's tax configuration.
      *
      * Added in Saleor 3.19.
      */
@@ -27925,7 +27925,7 @@ export type TaxConfigurationUpdateInput = {
     /** List of country codes for which to remove the tax configuration. */
     removeCountriesConfiguration?: InputMaybe<Array<CountryCode>>;
     /**
-     * The tax app id that will be used to calculate the taxes for the given channel. Empty value for `TAX_APP` set as `taxCalculationStrategy` means that Saleor will iterate over all installed tax apps. If multiple tax apps exist with provided tax app id use the `App` with newest `created` date. It's possible to set plugin by using prefix `plugin:` with `PLUGIN_ID` e.g. with Avalara `plugin:mirumee.taxes.avalara`.Will become mandatory in 4.0 for `TAX_APP` `taxCalculationStrategy`.
+     * The tax app `App.identifier` that will be used to calculate the taxes for the given channel. Empty value for `TAX_APP` set as `taxCalculationStrategy` means that Saleor will iterate over all installed tax apps. If multiple tax apps exist with provided tax app id use the `App` with newest `created` date. It's possible to set plugin by using prefix `plugin:` with `PLUGIN_ID` e.g. with Avalara `plugin:mirumee.taxes.avalara`.Will become mandatory in 4.0 for `TAX_APP` `taxCalculationStrategy`.
      *
      * Added in Saleor 3.19.
      */
@@ -33903,6 +33903,38 @@ export type ProductWithAttributesQuery = {
     } | null;
 };
 
+export type ProductTestQueryVariables = Exact<{
+    first?: InputMaybe<Scalars["Int"]>;
+    after?: InputMaybe<Scalars["String"]>;
+}>;
+
+export type ProductTestQuery = {
+    __typename?: "Query";
+    products?: {
+        __typename?: "ProductCountableConnection";
+        pageInfo: {
+            __typename?: "PageInfo";
+            hasNextPage: boolean;
+            hasPreviousPage: boolean;
+            startCursor?: string | null;
+            endCursor?: string | null;
+        };
+        edges: Array<{
+            __typename?: "ProductCountableEdge";
+            node: {
+                __typename?: "Product";
+                id: string;
+                name: string;
+                channelListings?: Array<{
+                    __typename?: "ProductChannelListing";
+                    id: string;
+                    channel: { __typename?: "Channel"; id: string };
+                }> | null;
+            };
+        }>;
+    } | null;
+};
+
 export type SaleorTaxesQueryVariables = Exact<{
     after?: InputMaybe<Scalars["String"]>;
     first?: InputMaybe<Scalars["Int"]>;
@@ -35194,6 +35226,30 @@ export const ProductWithAttributesDocument = gql`
         }
     }
 `;
+export const ProductTestDocument = gql`
+    query productTest($first: Int, $after: String) {
+        products(first: $first, after: $after) {
+            pageInfo {
+                hasNextPage
+                hasPreviousPage
+                startCursor
+                endCursor
+            }
+            edges {
+                node {
+                    id
+                    name
+                    channelListings {
+                        id
+                        channel {
+                            id
+                        }
+                    }
+                }
+            }
+        }
+    }
+`;
 export const SaleorTaxesDocument = gql`
     query saleorTaxes($after: String, $first: Int) {
         taxClasses(first: $first, after: $after) {
@@ -35816,6 +35872,16 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<ProductWithAttributesQuery>;
+        },
+        productTest(
+            variables?: ProductTestQueryVariables,
+            options?: C,
+        ): Promise<ProductTestQuery> {
+            return requester<ProductTestQuery, ProductTestQueryVariables>(
+                ProductTestDocument,
+                variables,
+                options,
+            ) as Promise<ProductTestQuery>;
         },
         saleorTaxes(
             variables?: SaleorTaxesQueryVariables,

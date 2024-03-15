@@ -235,3 +235,26 @@ query productWithAttributes($id: ID!) {
         }
     }
 }
+
+query productTest($first: Int, $after: String) {
+    products(first: $first, after: $after) {
+        pageInfo {
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+        }
+        edges {
+            node {
+                id
+                name
+                channelListings {
+                    id
+                    channel {
+                        id
+                    }
+                }
+            }
+        }
+    }
+}
