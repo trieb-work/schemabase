@@ -123,6 +123,7 @@ export class SaleorOrderSyncService {
     /**
      * function to convert the base64 encoded id, that looks decoded like that:
      * app:kencove-shipping.app:18014 -> we return just 18014
+     * the product id could also be a base64 encoded string
      * @param shippingMethodId
      * @returns
      */
