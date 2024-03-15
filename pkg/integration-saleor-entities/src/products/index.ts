@@ -1346,6 +1346,9 @@ export class SaleorProductSyncService {
                         saleorProductId = createdProduct.id;
                         this.logger.info(
                             `Successfully created product ${product.name} in Saleor`,
+                            {
+                                saleorProductId,
+                            },
                         );
                         await this.db.saleorProduct.create({
                             data: {
