@@ -259,6 +259,35 @@ export class SyncToOdooEDI {
                 continue;
             }
 
+            let shippingMethodId = schemabaseOrder.shippingMethodId;
+            let quotationId: string | undefined = undefined;
+
+            /**
+             * The shipping method could be a number stored as string or a
+             * base64 encoded string. We need to handle both
+             * cases. If base64 encoded, we decode and get an object
+             * with both shippingMethodId and quotationId
+             */
+            if (shippingMethodId) {
+                if (typeof shippingMethodId === "string") {
+                    if (!shippingMethodId.match(/^[0-9]+$/)) {
+                        // shippingMethodId is a base64 encoded string
+                        const decoded = Buffer.from(
+                            shippingMethodId,
+                            "base64",
+                        ).toString("utf-8");
+                        const decodedObject = JSON.parse(decoded);
+                        if (decodedObject.rateOptionId) {
+                            schemabaseOrder.shippingMethodId =
+                                decodedObject.rateOptionId;
+                        }
+                        if (decodedObject.quotationId) {
+                            quotationId = decodedObject.quotationId;
+                        }
+                    }
+                }
+            }
+
             const order = {
                 orderNumber: schemabaseOrder.orderNumber,
                 externalIdentifier1: schemabaseOrder.id,
@@ -338,6 +367,7 @@ export class SyncToOdooEDI {
                     totalPriceNet: schemabaseOrder.shippingPriceNet,
                     name: schemabaseOrder.shippingMethodName,
                     id: schemabaseOrder.shippingMethodId,
+                    quotationId,
                 },
             };
             this.logger.info(`Sending order ${order.orderNumber} to Odoo EDI`);
