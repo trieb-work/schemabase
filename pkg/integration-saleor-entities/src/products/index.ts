@@ -134,66 +134,58 @@ export class SaleorProductSyncService {
         const normalizedProductTypeName = normalizeStrings.productTypeNames(
             productType.name,
         );
-        await this.db.saleorProductType.upsert({
+        const existingEntry = await this.db.saleorProductType.findUnique({
             where: {
                 id_installedSaleorAppId: {
                     id: productType.id,
                     installedSaleorAppId: this.installedSaleorAppId,
                 },
             },
-            create: {
-                id: productType.id,
-                installedSaleorApp: {
-                    connect: {
-                        id: this.installedSaleorAppId,
-                    },
-                },
-                productType: {
-                    connectOrCreate: {
-                        where: {
-                            normalizedName_tenantId: {
-                                normalizedName: normalizedProductTypeName,
-                                tenantId: this.tenantId,
-                            },
-                        },
-                        create: {
-                            id: id.id("productType"),
-                            name: productType.name,
-                            normalizedName: normalizedProductTypeName,
-                            isVariant: productType.hasVariants,
-                            tenant: {
-                                connect: {
-                                    id: this.tenantId,
-                                },
-                            },
-                        },
-                    },
-                },
-            },
-            update: {
-                productType: {
-                    connectOrCreate: {
-                        where: {
-                            normalizedName_tenantId: {
-                                normalizedName: normalizedProductTypeName,
-                                tenantId: this.tenantId,
-                            },
-                        },
-                        create: {
-                            id: id.id("productType"),
-                            name: productType.name,
-                            normalizedName: normalizedProductTypeName,
-                            isVariant: productType.hasVariants,
-                            tenant: {
-                                connect: {
-                                    id: this.tenantId,
-                                },
-                            },
-                        },
-                    },
-                },
+            include: {
+                productType: true,
             },
         });
+
+        if (!existingEntry?.productType) {
+            this.logger.info(
+                `Creating product type ${productType.name} in internal DB`,
+            );
+            await this.db.productType.create({
+                data: {
+                    id: id.id("productType"),
+                    name: productType.name,
+                    normalizedName: normalizedProductTypeName,
+                    isVariant: productType.hasVariants,
+                    tenant: {
+                        connect: {
+                            id: this.tenantId,
+                        },
+                    },
+                },
+            });
+        }
+
+        /**
+         * Just update, when something has changed
+         */
+        if (
+            existingEntry?.productType?.normalizedName !==
+            normalizedProductTypeName
+        ) {
+            this.logger.info(
+                `Updating product type ${productType.name} in internal DB`,
+            );
+            await this.db.productType.update({
+                where: {
+                    id: existingEntry!.productType.id,
+                },
+                data: {
+                    name: productType.name,
+                    normalizedName: normalizedProductTypeName,
+                    isVariant: productType.hasVariants,
+                },
+            });
+        }
     }
 
     /**
@@ -835,9 +827,7 @@ export class SaleorProductSyncService {
                     },
                 });
                 if (!saleorProductId?.saleorProducts?.[0]?.id) {
-                    this.logger.warn(
-                        `Item has a reference to a product, that has no saleor product id. Skipping`,
-                    );
+                    // `Item has a reference to a product, that has no saleor product id. Skipping`,
                     continue;
                 }
                 const existingReferences = attributes.find(
@@ -1674,9 +1664,17 @@ export class SaleorProductSyncService {
                   })
                 : undefined;
 
-            const normalizedProductName = normalizeStrings.productNames(
-                product.name,
-            );
+            /**
+             * Existing Saleor product from our DB
+             */
+            const existingProduct = await this.db.saleorProduct.findUnique({
+                where: {
+                    id_installedSaleorAppId: {
+                        id: product.id,
+                        installedSaleorAppId: this.installedSaleorAppId,
+                    },
+                },
+            });
 
             for (const variant of product.variants) {
                 const defaultLogFields = {
@@ -1697,6 +1695,43 @@ export class SaleorProductSyncService {
                     }
 
                     /**
+                     * Existing schemabase product variant
+                     */
+                    const existingVariant =
+                        await this.db.productVariant.findUnique({
+                            where: {
+                                sku_tenantId: {
+                                    sku: variant.sku,
+                                    tenantId: this.tenantId,
+                                },
+                            },
+                            include: {
+                                saleorProductVariant: {
+                                    where: {
+                                        installedSaleorAppId:
+                                            this.installedSaleorAppId,
+                                    },
+                                },
+                            },
+                        });
+
+                    const existingProductId =
+                        existingProduct?.productId ||
+                        existingVariant?.productId;
+
+                    /**
+                     * We currently don't have a unique identifier that we can use to
+                     * identify the product in our DB, so we can only work with products,
+                     * that we created with schemabase in Saleor
+                     */
+                    if (!existingProductId) {
+                        this.logger.info(
+                            `Product ${product.name} does not exist in our DB. We don't create new products in our DB. Continue.`,
+                        );
+                        continue;
+                    }
+
+                    /**
                      * if set, this is the default warehouse name
                      */
                     const normalizedDefaultWarehouseName =
@@ -1709,7 +1744,12 @@ export class SaleorProductSyncService {
                         (meta) => meta?.key === "EAN",
                     )?.value;
 
-                    const resp = await this.db.saleorProductVariant.upsert({
+                    this.logger.info(
+                        `Syncing product variant ${variant.id} - ${variant.sku} - ${product.name}`,
+                        defaultLogFields,
+                    );
+
+                    await this.db.saleorProductVariant.upsert({
                         where: {
                             id_installedSaleorAppId: {
                                 id: variant.id,
@@ -1759,32 +1799,8 @@ export class SaleorProductSyncService {
                                             },
                                         },
                                         product: {
-                                            connectOrCreate: {
-                                                where: {
-                                                    normalizedName_tenantId: {
-                                                        normalizedName:
-                                                            normalizedProductName,
-                                                        tenantId: this.tenantId,
-                                                    },
-                                                },
-                                                create: {
-                                                    id: id.id("product"),
-                                                    category: category
-                                                        ? {
-                                                              connect: {
-                                                                  id: category.id,
-                                                              },
-                                                          }
-                                                        : undefined,
-                                                    tenant: {
-                                                        connect: {
-                                                            id: this.tenantId,
-                                                        },
-                                                    },
-                                                    name: product.name,
-                                                    normalizedName:
-                                                        normalizedProductName,
-                                                },
+                                            connect: {
+                                                id: existingProductId,
                                             },
                                         },
                                     },
@@ -1829,32 +1845,8 @@ export class SaleorProductSyncService {
                                             },
                                         },
                                         product: {
-                                            connectOrCreate: {
-                                                where: {
-                                                    normalizedName_tenantId: {
-                                                        normalizedName:
-                                                            normalizedProductName,
-                                                        tenantId: this.tenantId,
-                                                    },
-                                                },
-                                                create: {
-                                                    id: id.id("product"),
-                                                    tenant: {
-                                                        connect: {
-                                                            id: this.tenantId,
-                                                        },
-                                                    },
-                                                    category: category
-                                                        ? {
-                                                              connect: {
-                                                                  id: category.id,
-                                                              },
-                                                          }
-                                                        : undefined,
-                                                    name: product.name,
-                                                    normalizedName:
-                                                        normalizedProductName,
-                                                },
+                                            connect: {
+                                                id: existingProductId,
                                             },
                                         },
                                     },
@@ -1897,6 +1889,10 @@ export class SaleorProductSyncService {
                             },
                         },
                     });
+                    /**
+                     * the saleor product gets upserted as well, but just
+                     * at the first variant
+                     */
                     await this.db.saleorProduct.upsert({
                         where: {
                             id_installedSaleorAppId: {
@@ -1914,7 +1910,7 @@ export class SaleorProductSyncService {
                             },
                             product: {
                                 connect: {
-                                    id: resp.productVariant.product.id,
+                                    id: existingProductId,
                                 },
                             },
                         },
