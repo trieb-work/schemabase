@@ -28,9 +28,4 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ include "eci-worker.fullname" . }}
-          resources:
-            requests:
-              cpu: 350m
-              memory: 280Mi
-            limits:
-              memory: "{{ .Values.resources.limits.memory }}"
+          resources: {{ toYaml .Values.resources | nindent 12 }}

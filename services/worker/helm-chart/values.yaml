@@ -30,8 +30,10 @@ kafka:
 sendgridApiKey: abc
 resources:
   limits:
+    cpu:
+    memory: 
   requests:
-    cpu: 100m
-    memory: 128Mi
+    cpu: 500m
+    memory: 800Mi
 
 secretKey:
