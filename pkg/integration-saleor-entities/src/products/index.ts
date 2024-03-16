@@ -1574,6 +1574,34 @@ export class SaleorProductSyncService {
                                                 r.variantMediaAssign.errors,
                                             )}`,
                                         );
+                                        if (
+                                            r.variantMediaAssign.errors.find(
+                                                (x) =>
+                                                    x.message?.includes(
+                                                        "Couldn't resolve to a node",
+                                                    ),
+                                            )
+                                        ) {
+                                            /**
+                                             * fixing a bug - deleting media that doesn't exist in saleor
+                                             */
+                                            if (mediaElement.saleorMedia[0].url)
+                                                await this.db.saleorMedia.delete(
+                                                    {
+                                                        where: {
+                                                            url_installedSaleorAppId:
+                                                                {
+                                                                    url: mediaElement
+                                                                        .saleorMedia[0]
+                                                                        .url,
+                                                                    installedSaleorAppId:
+                                                                        this
+                                                                            .installedSaleorAppId,
+                                                                },
+                                                        },
+                                                    },
+                                                );
+                                        }
                                     }
                                 }
                             }
