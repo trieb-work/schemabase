@@ -34,7 +34,7 @@ describe("Saleor Sync Orders Test", () => {
             logger: new AssertionLogger(),
             db: prismaClient,
             tenantId: tenant.id,
-            orderPrefix: "STORE",
+            orderPrefix: installedSaleorApp.orderPrefix,
             channelSlug: "storefront",
         });
         await service.syncToECI();
