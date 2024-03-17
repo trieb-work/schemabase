@@ -59,6 +59,9 @@ dependencies:
   '@urql/exchange-auth':
     specifier: ^1.0.0
     version: 1.0.0(graphql@16.6.0)
+  algoliasearch:
+    specifier: 5.0.0-alpha.107
+    version: 5.0.0-alpha.107
   async:
     specifier: ^3.2.4
     version: 3.2.4
@@ -416,6 +419,61 @@ packages:
     resolution: {integrity: sha512-1Yjs2SvM8TflER/OD3cOjhWWOZb58A2t7wpE2S9XfBYTiIl+XFhQG2bjy4Pu1I+EAlCNUzRDYDdFwFYUKvXcIA==}
     engines: {node: '>=0.10.0'}
     dev: true
+
+  /@algolia/client-abtesting@5.0.0-alpha.107:
+    resolution: {integrity: sha512-v1ijvmuMnnML+D8hCQ0VK8mIIvzh7BpRawQZd1scJxCusQlD2h8HcCFo1PXMedVfnwVno/DC+RtJX0wuDPMPUw==}
+    engines: {node: '>= 14.0.0'}
+    dependencies:
+      '@algolia/client-common': 5.0.0-alpha.108
+      '@algolia/requester-browser-xhr': 5.0.0-alpha.108
+      '@algolia/requester-node-http': 5.0.0-alpha.108
+    dev: false
+
+  /@algolia/client-analytics@5.0.0-alpha.107:
+    resolution: {integrity: sha512-HhbUSgfwIPNcAx5txVZUmR1OCKnrM1MbhQZ5I0pK4kcno9Aatfz55oGb+H7/0JvUNTZ1Ijz+SFkJ9bB0R+k17w==}
+    engines: {node: '>= 14.0.0'}
+    dependencies:
+      '@algolia/client-common': 5.0.0-alpha.108
+      '@algolia/requester-browser-xhr': 5.0.0-alpha.108
+      '@algolia/requester-node-http': 5.0.0-alpha.108
+    dev: false
+
+  /@algolia/client-common@5.0.0-alpha.108:
+    resolution: {integrity: sha512-6ierH3JMr+e0sVVSa1BPFs94HxOmph7QNhYmbKr4CAtXfLEWnfnft3HuDyVHlBOnJWVcD4V1xICZ3meIYe/hQg==}
+    engines: {node: '>= 14.0.0'}
+    dev: false
+
+  /@algolia/client-personalization@5.0.0-alpha.107:
+    resolution: {integrity: sha512-E4s0nozbrDjUhw6Xm6FMw0mWNIhTuwVpCdgy3i5VXrngpn0hkN/+6/X9RppQirbWIoan2B2tWN1rsTUz6ZUT9Q==}
+    engines: {node: '>= 14.0.0'}
+    dependencies:
+      '@algolia/client-common': 5.0.0-alpha.108
+      '@algolia/requester-browser-xhr': 5.0.0-alpha.108
+      '@algolia/requester-node-http': 5.0.0-alpha.108
+    dev: false
+
+  /@algolia/client-search@5.0.0-alpha.107:
+    resolution: {integrity: sha512-Biah5f6011NL72PqC3uDSnjDnsvnz3Itkf4/eaELAmBS3RWz4XeIo5+R8CRtRdqF8scpKWmEo26Rqu0Mm6xveA==}
+    engines: {node: '>= 14.0.0'}
+    dependencies:
+      '@algolia/client-common': 5.0.0-alpha.108
+      '@algolia/requester-browser-xhr': 5.0.0-alpha.108
+      '@algolia/requester-node-http': 5.0.0-alpha.108
+    dev: false
+
+  /@algolia/requester-browser-xhr@5.0.0-alpha.108:
+    resolution: {integrity: sha512-IWb3KwggI3xKhCu1zFGwHfgZnGSNbtsK4VupZn/FSM1SFkYv/2sI6oZoQb9CLZFzKEFy/99TNqHt+2vWXV+7IQ==}
+    engines: {node: '>= 14.0.0'}
+    dependencies:
+      '@algolia/client-common': 5.0.0-alpha.108
+    dev: false
+
+  /@algolia/requester-node-http@5.0.0-alpha.108:
+    resolution: {integrity: sha512-MhR0YkU9fMUjWIWgJOqVPQ7N1AuvmfILxib2GHoxtXlAjpQd2iUOlu8in2UiVhd7wIuKEztQGjGFoQmFw7bIog==}
+    engines: {node: '>= 14.0.0'}
+    dependencies:
+      '@algolia/client-common': 5.0.0-alpha.108
+    dev: false
 
   /@ampproject/remapping@2.2.1:
     resolution: {integrity: sha512-lFMjJTrFL3j7L9yBxwYfCq2k6qqwHyzuUl/XBnif78PWTJYyL/dfowQHWE3sp6U6ZzqWiiIZnpTMO96zhkjwtg==}
@@ -6901,6 +6959,19 @@ packages:
       require-from-string: 2.0.2
       uri-js: 4.4.1
     dev: true
+
+  /algoliasearch@5.0.0-alpha.107:
+    resolution: {integrity: sha512-Y5ImPzVzNDlawCPIMYmKl2snoacfjj3w8opAbJIHqHhS2R6mcW6w0KXybFheQ7lE8KfNp78oGwDDCogSJq2jOg==}
+    engines: {node: '>= 14.0.0'}
+    dependencies:
+      '@algolia/client-abtesting': 5.0.0-alpha.107
+      '@algolia/client-analytics': 5.0.0-alpha.107
+      '@algolia/client-common': 5.0.0-alpha.108
+      '@algolia/client-personalization': 5.0.0-alpha.107
+      '@algolia/client-search': 5.0.0-alpha.107
+      '@algolia/requester-browser-xhr': 5.0.0-alpha.108
+      '@algolia/requester-node-http': 5.0.0-alpha.108
+    dev: false
 
   /ansi-escapes@4.3.2:
     resolution: {integrity: sha512-gKXj5ALrKWQLsYG9jlTRmR/xKluxHV+Z9QEwNIgCfM1/uwPMCuzVVnh5mwTd+OuBZcwSIMbqssNWRm1lE51QaQ==}

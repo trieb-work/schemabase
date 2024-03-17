@@ -2862,6 +2862,32 @@ model InternalDataApp {
   @@index([tenantId])
 }
 
+
+model AlgoliaApp {
+    id String @id
+
+    enabled Boolean @default(false)
+
+    applicationId String
+    apiKey         String
+
+    categoryIndexName String
+
+
+
+    syncCategories Boolean @default(false)
+
+    cronSchedule String @default("*/30 * * * *")
+    cronTimeout  Int    @default(800)
+
+    tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+    tenantId String
+
+
+    @@index([tenantId])
+
+}
+
 /// The admin app for AWS cognito. Using the IAM credentials to authenticate. We store credentials per user pool
 model AWSCognitoApp {
     id String @id
@@ -3144,6 +3170,7 @@ model Tenant {
   salesChannelPriceEntry      SalesChannelPriceEntry[]
   internalDataApps            InternalDataApp[]
   awsCognitoApps              AWSCognitoApp[]
+  algoliaApps                 AlgoliaApp[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
