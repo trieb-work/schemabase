@@ -1627,6 +1627,19 @@ Table InternalDataApp {
   tenantId String [not null]
 }
 
+Table AlgoliaApp {
+  id String [pk]
+  enabled Boolean [not null, default: false]
+  applicationId String [not null]
+  apiKey String [not null]
+  categoryIndexName String [not null]
+  syncCategories Boolean [not null, default: false]
+  cronSchedule String [not null, default: '*/30 * * * *']
+  cronTimeout Int [not null, default: 800]
+  tenant Tenant [not null]
+  tenantId String [not null]
+}
+
 Table AWSCognitoApp {
   id String [pk]
   enabled Boolean [not null, default: true]
@@ -1817,6 +1830,7 @@ Table Tenant {
   salesChannelPriceEntry SalesChannelPriceEntry [not null]
   internalDataApps InternalDataApp [not null]
   awsCognitoApps AWSCognitoApp [not null]
+  algoliaApps AlgoliaApp [not null]
 }
 
 Table Subscription {
@@ -2721,6 +2735,8 @@ Ref: KencoveApiContact.kencoveApiAppId > KencoveApiApp.id [delete: Cascade]
 Ref: ReviewsioApp.tenantId > Tenant.id [delete: Cascade]
 
 Ref: InternalDataApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: AlgoliaApp.tenantId > Tenant.id [delete: Cascade]
 
 Ref: AWSCognitoApp.tenantId > Tenant.id [delete: Cascade]
 

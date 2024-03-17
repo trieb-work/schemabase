@@ -44,6 +44,7 @@ import { CognitoUserSyncWf } from "./workflows/cognitoUserSync";
 import { SaleorVariantFBTSyncWf } from "./workflows/saleorVariantFBTSync";
 import { SaleorTaxClassSyncWf } from "./workflows/saleorTaxClassSync";
 import { KencoveApiPaymentSyncWf } from "./workflows/kencoveApiPaymentSync";
+import { AlgoliaCategorySyncWf } from "./workflows/algoliaCategorySync";
 
 interface CronClients {
     logger: ILogger;
@@ -134,6 +135,37 @@ export class CronTable {
                     enabled: true,
                 },
             });
+
+        const enabledAlgoliaApps =
+            await this.clients.prisma.algoliaApp.findMany({
+                where: {
+                    enabled: true,
+                },
+            });
+
+        /**
+         * Algolia App Workflows
+         */
+        for (const enabledAlgoliaApp of enabledAlgoliaApps) {
+            const { id, cronTimeout, cronSchedule, tenantId } =
+                enabledAlgoliaApp;
+            const commonCronConfig = {
+                cron: cronSchedule,
+                timeout: cronTimeout,
+            };
+            const commonWorkflowConfig = {
+                algoliaApp: enabledAlgoliaApp,
+            };
+            new WorkflowScheduler(this.clients).schedule(
+                createWorkflowFactory(
+                    AlgoliaCategorySyncWf,
+                    this.clients,
+                    commonWorkflowConfig,
+                ),
+                { ...commonCronConfig, offset: 0 },
+                [tenantId.substring(0, 5), id.substring(0, 5)],
+            );
+        }
 
         /**
          * AWS Cognito App Workflows
