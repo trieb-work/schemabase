@@ -659,7 +659,7 @@ export class SaleorPaymentSyncService {
                 const order = await this.db.saleorOrder.findUnique({
                     where: {
                         id_installedSaleorAppId: {
-                            id: transaction.order?.id,
+                            id: transaction.order.id,
                             installedSaleorAppId: this.installedSaleorAppId,
                         },
                     },
@@ -670,6 +670,7 @@ export class SaleorPaymentSyncService {
                     paymentReference,
                     userEmail: lowercaseEmail,
                     orderNumber: transaction.order?.number,
+                    orderId: order?.orderId,
                     gateway,
                     type,
                 });
@@ -772,6 +773,11 @@ export class SaleorPaymentSyncService {
                             payment: {
                                 update: {
                                     status: paymentStatus,
+                                    order: {
+                                        connect: {
+                                            id: order.orderId,
+                                        },
+                                    },
                                 },
                             },
                         },
@@ -783,6 +789,10 @@ export class SaleorPaymentSyncService {
                         }: ${JSON.stringify(error)}`,
                     );
                 }
+
+                this.logger.debug(
+                    `Upserted payment for transaction ${transaction.id}`,
+                );
             }
         }
 
