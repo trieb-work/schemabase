@@ -44,34 +44,34 @@ export class KencoveApiAppCategorySyncService {
      * @param kencoveIds
      * @returns
      */
-    private async getProductIds(kencoveIds: string[]) {
-        const products = await this.db.kencoveApiProductVariant.findMany({
-            where: {
-                kencoveApiAppId: this.kencoveApiApp.id,
-                productId: {
-                    in: kencoveIds,
-                },
-            },
-            include: {
-                productVariant: true,
-            },
-        });
+    // private async getProductIds(kencoveIds: string[]) {
+    //     const products = await this.db.kencoveApiProductVariant.findMany({
+    //         where: {
+    //             kencoveApiAppId: this.kencoveApiApp.id,
+    //             productId: {
+    //                 in: kencoveIds,
+    //             },
+    //         },
+    //         include: {
+    //             productVariant: true,
+    //         },
+    //     });
 
-        // When we can't resolve all products, we throw an error.
-        if (products.length !== kencoveIds.length) {
-            const missingIds = kencoveIds.filter(
-                (id) => !products.find((p) => p.productId === id),
-            );
-            this.logger.warn(
-                `Could not find all products to connect to category. Missing ids: ${missingIds.join(
-                    ", ",
-                )}`,
-            );
-            return undefined;
-        }
+    //     // When we can't resolve all products, we throw an error.
+    //     if (products.length !== kencoveIds.length) {
+    //         const missingIds = kencoveIds.filter(
+    //             (id) => !products.find((p) => p.productId === id),
+    //         );
+    //         this.logger.warn(
+    //             `Could not find all products to connect to category. Missing ids: ${missingIds.join(
+    //                 ", ",
+    //             )}`,
+    //         );
+    //         return undefined;
+    //     }
 
-        return products.map((p) => p.productVariant.productId);
-    }
+    //     return products.map((p) => p.productVariant.productId);
+    // }
 
     public async syncToECI() {
         const cronState = await this.cronState.get();
@@ -218,9 +218,13 @@ export class KencoveApiAppCategorySyncService {
                 parentCategoryId = undefined;
             }
 
-            const relatedProducts = await this.getProductIds(
-                category.productIds || [],
-            );
+            /**
+             * Items have product Ids as well, so
+             * we don't connect items here anymore.
+             */
+            // const relatedProducts = await this.getProductIds(
+            //     category.productIds || [],
+            // );
 
             this.logger.debug(
                 `Updating/creating category ${category.categoryName} - ${category.categorySlug} in schemabase.`,
@@ -264,11 +268,11 @@ export class KencoveApiAppCategorySyncService {
                                     childrenCategories: {
                                         connect: childrenCategories,
                                     },
-                                    products: {
-                                        connect: relatedProducts?.map((p) => ({
-                                            id: p,
-                                        })),
-                                    },
+                                    // products: {
+                                    //     connect: relatedProducts?.map((p) => ({
+                                    //         id: p,
+                                    //     })),
+                                    // },
                                     descriptionHTML:
                                         category.websiteDescription,
                                     tenant: {
@@ -292,11 +296,11 @@ export class KencoveApiAppCategorySyncService {
                                 childrenCategories: {
                                     connect: childrenCategories,
                                 },
-                                products: {
-                                    connect: relatedProducts?.map((p) => ({
-                                        id: p,
-                                    })),
-                                },
+                                // products: {
+                                //     connect: relatedProducts?.map((p) => ({
+                                //         id: p,
+                                //     })),
+                                // },
                                 descriptionHTML: category.websiteDescription,
                                 media: {
                                     connectOrCreate: media?.map((m) => ({
@@ -372,11 +376,11 @@ export class KencoveApiAppCategorySyncService {
                                             id: this.kencoveApiApp.tenantId,
                                         },
                                     },
-                                    products: {
-                                        connect: relatedProducts?.map((p) => ({
-                                            id: p,
-                                        })),
-                                    },
+                                    // products: {
+                                    //     connect: relatedProducts?.map((p) => ({
+                                    //         id: p,
+                                    //     })),
+                                    // },
                                     descriptionHTML:
                                         category.websiteDescription,
                                     media: {
