@@ -3,7 +3,6 @@ import { PrismaClient } from "@eci/pkg/prisma";
 import { beforeEach, describe, jest, test } from "@jest/globals";
 import "@eci/pkg/jest-utils/consoleFormatter";
 import { AlgoliaCategorySyncService } from "./categories";
-import { algoliasearch } from "algoliasearch";
 
 /// Use this file to locally run this service
 
@@ -35,12 +34,7 @@ describe("algolia cagtegory Test", () => {
         const service = new AlgoliaCategorySyncService({
             logger: new AssertionLogger(),
             db: prismaClient,
-            tenantId: tenant.id,
             algoliaApp,
-            algoliaClient: algoliasearch(
-                algoliaApp.applicationId,
-                algoliaApp.apiKey,
-            ),
         });
         await service.syncFromECI();
     }, 1000000);

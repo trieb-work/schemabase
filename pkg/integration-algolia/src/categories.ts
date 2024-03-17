@@ -2,14 +2,12 @@ import { CronStateHandler } from "@eci/pkg/cronstate";
 import { ILogger } from "@eci/pkg/logger";
 import { AlgoliaApp, PrismaClient } from "@eci/pkg/prisma";
 import { subHours, subYears } from "date-fns";
-import { Algoliasearch, BatchRequest } from "algoliasearch";
+import { Algoliasearch, BatchRequest, algoliasearch } from "algoliasearch";
 
 interface AlgoliaCategorySyncServiceConfig {
-    tenantId: string;
     db: PrismaClient;
     logger: ILogger;
     algoliaApp: AlgoliaApp;
-    algoliaClient: Algoliasearch;
 }
 
 export class AlgoliaCategorySyncService {
@@ -29,8 +27,11 @@ export class AlgoliaCategorySyncService {
         this.db = config.db;
         this.logger = config.logger;
         this.algoliaApp = config.algoliaApp;
-        this.tenantId = config.tenantId;
-        this.algoliaClient = config.algoliaClient;
+        this.tenantId = config.algoliaApp.tenantId;
+        this.algoliaClient = algoliasearch(
+            this.algoliaApp.applicationId,
+            this.algoliaApp.apiKey,
+        );
         this.cronState = new CronStateHandler({
             tenantId: this.tenantId,
             appId: this.algoliaApp.id,
