@@ -1613,9 +1613,9 @@ export class SaleorProductSyncService {
             }
             if (errors.length > 0) {
                 /**
-                 * we make sure, that this run is marked as failed
+                 * just log the errors for now
                  */
-                throw new Error(
+                this.logger.error(
                     `${errors.length} errors occurred during product creation or update. See log for error details`,
                 );
             }
