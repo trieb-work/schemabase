@@ -3,8 +3,7 @@ import { PrismaClient } from "@eci/pkg/prisma";
 import { beforeEach, describe, jest, test } from "@jest/globals";
 import "@eci/pkg/jest-utils/consoleFormatter";
 import { getSaleorClientAndEntry } from "@eci/pkg/saleor";
-import { ChannelAvailability } from "./channelAvailability";
-import { subYears } from "date-fns";
+import { SaleorChannelAvailabilitySyncService } from "./channelAvailability";
 
 /// Use this file to locally run this service
 
@@ -19,8 +18,8 @@ describe("Zoho Entity Sync Orders Test", () => {
         const tenant = await prismaClient.tenant.findUnique({
             where: {
                 // id: "pk_7f165pf-prod",
-                // id: "tn_kencove235",
-                id: "ken_prod",
+                id: "tn_kencove235",
+                // id: "ken_prod",
                 // id: "test",
             },
         });
@@ -29,10 +28,10 @@ describe("Zoho Entity Sync Orders Test", () => {
 
         const { client: saleorClient, installedSaleorApp } =
             // await getSaleorClientAndEntry("QXBwOjE2", prismaClient);
-            // await getSaleorClientAndEntry("QXBwOjQw", prismaClient);
-            await getSaleorClientAndEntry("QXBwOjE=", prismaClient);
+            await getSaleorClientAndEntry("QXBwOjQw", prismaClient);
+        // await getSaleorClientAndEntry("QXBwOjE=", prismaClient);
 
-        const service = new ChannelAvailability(
+        const service = new SaleorChannelAvailabilitySyncService(
             prismaClient,
             installedSaleorApp.id,
             new AssertionLogger(),
@@ -40,8 +39,6 @@ describe("Zoho Entity Sync Orders Test", () => {
             installedSaleorApp.saleorApp.tenantId,
         );
 
-        // await service.syncToECI();
-        const gteData = subYears(new Date(), 2);
-        await service.syncChannelAvailability(gteData);
+        await service.syncFromEci();
     }, 10000000);
 });

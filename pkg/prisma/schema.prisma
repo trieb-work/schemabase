@@ -206,6 +206,21 @@ model SaleorChannel {
   @@index([installedSaleorAppId])
 }
 
+/// Saleor specific model for channel listing entries for saleor products
+model SaleorChannelListing {
+  id String
+
+  installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
+  installedSaleorAppId String
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+
+  @@unique([id, installedSaleorAppId])
+  @@index([installedSaleorAppId])
+
+}
+
 model SaleorPackage {
   /// Saleor Internal Id
   id String
@@ -1979,6 +1994,7 @@ model Product {
   tenantId String
 
   saleorProducts SaleorProduct[]
+  saleorChannelListings SaleorChannelListing[]
   kencoveApiProducts KencoveApiProduct[]
 
   descriptionHTML String? @db.Text
@@ -3105,6 +3121,7 @@ model InstalledSaleorApp {
   saleorChannel              SaleorChannel[]
   saleorMedia                SaleorMedia[]
   saleorTaxClass             SaleorTaxClass[]
+  saleorChannelListings      SaleorChannelListing[]
 
   @@unique([domain, channelSlug])
   @@index([saleorAppId, domain])

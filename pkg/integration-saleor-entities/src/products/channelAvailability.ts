@@ -1,3 +1,4 @@
+import { CronStateHandler } from "@eci/pkg/cronstate";
 import { ILogger } from "@eci/pkg/logger";
 import {
     PrismaClient,
@@ -9,7 +10,7 @@ import {
     SalesChannelPriceEntry,
 } from "@eci/pkg/prisma";
 import { SaleorClient } from "@eci/pkg/saleor";
-import { isAfter } from "date-fns";
+import { isAfter, subHours, subYears } from "date-fns";
 
 type EnhancedSalesChannelPriceEntry = SalesChannelPriceEntry & {
     salesChannel: SalesChannel & {
@@ -29,7 +30,7 @@ type EnhancedSalesChannelPriceEntry = SalesChannelPriceEntry & {
  * Saleor Sync Sub-class to sync product prices in different channels and
  * their general availability
  */
-export class ChannelAvailability {
+export class SaleorChannelAvailabilitySyncService {
     private readonly db: PrismaClient;
 
     private readonly installedSaleorAppId: string;
@@ -39,6 +40,8 @@ export class ChannelAvailability {
     private readonly logger: ILogger;
 
     private readonly saleorClient: SaleorClient;
+
+    private readonly cronState: CronStateHandler;
 
     public constructor(
         db: PrismaClient,
@@ -52,6 +55,36 @@ export class ChannelAvailability {
         this.tenantId = tenantId;
         this.logger = logger;
         this.saleorClient = saleorClient;
+        this.cronState = new CronStateHandler({
+            tenantId: this.tenantId,
+            appId: installedSaleorAppId,
+            db: this.db,
+            syncEntity: "pricelist",
+        });
+    }
+
+    public async syncFromEci() {
+        const cronState = await this.cronState.get();
+        const now = new Date();
+        let createdGte: Date;
+        if (!cronState.lastRun) {
+            createdGte = subYears(now, 1);
+            this.logger.info(
+                // eslint-disable-next-line max-len
+                `This seems to be our first sync run. Syncing data from: ${createdGte}`,
+            );
+        } else {
+            // for security purposes, we sync one hour more than the last run
+            createdGte = subHours(cronState.lastRun, 1);
+            this.logger.info(`Setting GTE date to ${createdGte}.`);
+        }
+
+        await this.syncChannelAvailability(createdGte);
+
+        await this.cronState.set({
+            lastRun: now,
+            lastRunStatus: "success",
+        });
     }
 
     private getCurrentActiveBasePrices(
@@ -104,63 +137,136 @@ export class ChannelAvailability {
         return result;
     }
 
-    public async syncChannelAvailability(gteDate: Date) {
-        this.logger.debug(`Looking for channel updates since ${gteDate}`);
-        const channelPricings = await this.db.salesChannelPriceEntry.findMany({
-            where: {
-                tenantId: this.tenantId,
-                updatedAt: {
-                    gte: gteDate,
-                },
-                salesChannel: {
-                    saleorChannels: {
-                        some: {
-                            installedSaleorAppId: this.installedSaleorAppId,
-                        },
+    private async syncChannelAvailability(gteDate: Date) {
+        this.logger.debug(
+            `Looking for channel updates since ${gteDate} or items without channel entries set yet`,
+        );
+        const channelPricingsUpdated =
+            await this.db.salesChannelPriceEntry.findMany({
+                where: {
+                    tenantId: this.tenantId,
+                    updatedAt: {
+                        gte: gteDate,
                     },
-                },
-                productVariant: {
-                    saleorProductVariant: {
-                        some: {
-                            installedSaleorAppId: this.installedSaleorAppId,
-                        },
-                    },
-                },
-            },
-            orderBy: {
-                startDate: "desc",
-            },
-            include: {
-                salesChannel: {
-                    include: {
+                    salesChannel: {
                         saleorChannels: {
-                            where: {
+                            some: {
+                                installedSaleorAppId: this.installedSaleorAppId,
+                            },
+                        },
+                    },
+                    productVariant: {
+                        saleorProductVariant: {
+                            some: {
                                 installedSaleorAppId: this.installedSaleorAppId,
                             },
                         },
                     },
                 },
-                productVariant: {
-                    include: {
-                        product: {
-                            include: {
-                                saleorProducts: {
-                                    where: {
-                                        installedSaleorAppId:
-                                            this.installedSaleorAppId,
+                orderBy: {
+                    startDate: "desc",
+                },
+                include: {
+                    salesChannel: {
+                        include: {
+                            saleorChannels: {
+                                where: {
+                                    installedSaleorAppId:
+                                        this.installedSaleorAppId,
+                                },
+                            },
+                        },
+                    },
+                    productVariant: {
+                        include: {
+                            product: {
+                                include: {
+                                    saleorProducts: {
+                                        where: {
+                                            installedSaleorAppId:
+                                                this.installedSaleorAppId,
+                                        },
                                     },
+                                },
+                            },
+                            saleorProductVariant: {
+                                where: {
+                                    installedSaleorAppId:
+                                        this.installedSaleorAppId,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+        const channelPricingsMissing =
+            await this.db.salesChannelPriceEntry.findMany({
+                where: {
+                    id: {
+                        notIn: channelPricingsUpdated.map((entry) => entry.id),
+                    },
+                    tenantId: this.tenantId,
+                    salesChannel: {
+                        saleorChannels: {
+                            some: {
+                                installedSaleorAppId: this.installedSaleorAppId,
+                            },
+                        },
+                    },
+                    productVariant: {
+                        product: {
+                            saleorChannelListings: {
+                                none: {
+                                    installedSaleorAppId:
+                                        this.installedSaleorAppId,
                                 },
                             },
                         },
                         saleorProductVariant: {
-                            where: {
+                            some: {
                                 installedSaleorAppId: this.installedSaleorAppId,
                             },
                         },
                     },
                 },
-            },
-        });
+                include: {
+                    salesChannel: {
+                        include: {
+                            saleorChannels: {
+                                where: {
+                                    installedSaleorAppId:
+                                        this.installedSaleorAppId,
+                                },
+                            },
+                        },
+                    },
+                    productVariant: {
+                        include: {
+                            product: {
+                                include: {
+                                    saleorProducts: {
+                                        where: {
+                                            installedSaleorAppId:
+                                                this.installedSaleorAppId,
+                                        },
+                                    },
+                                },
+                            },
+                            saleorProductVariant: {
+                                where: {
+                                    installedSaleorAppId:
+                                        this.installedSaleorAppId,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+
+        const channelPricings = [
+            ...channelPricingsUpdated,
+            ...channelPricingsMissing,
+        ];
 
         if (channelPricings.length === 0) {
             this.logger.info(`No channel pricings to sync`);
@@ -169,14 +275,6 @@ export class ChannelAvailability {
 
         this.logger.info(
             `Working on ${channelPricings.length} channel pricing entries`,
-            {
-                channelPricings: channelPricings.map((entry) => ({
-                    variantName: entry.productVariant.variantName,
-                    channelName: entry.salesChannel.name,
-                    minQuantity: entry.minQuantity,
-                    price: entry.price,
-                })),
-            },
         );
 
         /**
@@ -372,6 +470,38 @@ export class ChannelAvailability {
             );
             return;
         }
+
+        /**
+         * Store the channel listing id in our DB, so that we know later,
+         * if we have items without any channel listing set yet
+         */
+        const channelListingId =
+            resp1.productChannelListingUpdate?.product?.channelListings?.find(
+                (c) => c.channel.id === entry.salesChannel.saleorChannels[0].id,
+            )?.id;
+        if (channelListingId)
+            await this.db.saleorChannelListing.upsert({
+                where: {
+                    id_installedSaleorAppId: {
+                        id: channelListingId,
+                        installedSaleorAppId: this.installedSaleorAppId,
+                    },
+                },
+                create: {
+                    id: channelListingId,
+                    product: {
+                        connect: {
+                            id: entry.productVariant.productId,
+                        },
+                    },
+                    installedSaleorApp: {
+                        connect: {
+                            id: this.installedSaleorAppId,
+                        },
+                    },
+                },
+                update: {},
+            });
 
         const resp2 =
             await this.saleorClient.productVariantChannelListingUpdate({

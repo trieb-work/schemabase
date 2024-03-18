@@ -45,6 +45,7 @@ import { SaleorVariantFBTSyncWf } from "./workflows/saleorVariantFBTSync";
 import { SaleorTaxClassSyncWf } from "./workflows/saleorTaxClassSync";
 import { KencoveApiPaymentSyncWf } from "./workflows/kencoveApiPaymentSync";
 import { AlgoliaCategorySyncWf } from "./workflows/algoliaCategorySync";
+import { SaleorProductChannelSyncWf } from "./workflows/saleorProductChannelSync";
 
 interface CronClients {
     logger: ILogger;
@@ -644,6 +645,15 @@ export class CronTable {
                         commonWorkflowConfig,
                     ),
                     { ...commonCronConfig, offset: 3 },
+                    [tenantId.substring(0, 5), id.substring(0, 7)],
+                );
+                this.scheduler.schedule(
+                    createWorkflowFactory(
+                        SaleorProductChannelSyncWf,
+                        this.clients,
+                        commonWorkflowConfig,
+                    ),
+                    { ...commonCronConfig, offset: 10 },
                     [tenantId.substring(0, 5), id.substring(0, 7)],
                 );
             }

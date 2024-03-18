@@ -3,6 +3,14 @@ mutation productChannelListingUpdate(
     $input: ProductChannelListingUpdateInput!
 ) {
     productChannelListingUpdate(id: $id, input: $input) {
+        product {
+            channelListings {
+                id
+                channel {
+                    id
+                }
+            }
+        }
         errors {
             field
             message

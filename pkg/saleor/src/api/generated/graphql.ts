@@ -32575,6 +32575,14 @@ export type ProductChannelListingUpdateMutation = {
     __typename?: "Mutation";
     productChannelListingUpdate?: {
         __typename?: "ProductChannelListingUpdate";
+        product?: {
+            __typename?: "Product";
+            channelListings?: Array<{
+                __typename?: "ProductChannelListing";
+                id: string;
+                channel: { __typename?: "Channel"; id: string };
+            }> | null;
+        } | null;
         errors: Array<{
             __typename?: "ProductChannelListingError";
             field?: string | null;
@@ -34332,6 +34340,14 @@ export const ProductChannelListingUpdateDocument = gql`
         $input: ProductChannelListingUpdateInput!
     ) {
         productChannelListingUpdate(id: $id, input: $input) {
+            product {
+                channelListings {
+                    id
+                    channel {
+                        id
+                    }
+                }
+            }
             errors {
                 field
                 message

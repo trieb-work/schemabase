@@ -2241,15 +2241,6 @@ export class SaleorProductSyncService {
             await this.setAggregatedProductRating(productSet);
         }
 
-        const channelAvailability = new ChannelAvailability(
-            this.db,
-            this.installedSaleorAppId,
-            this.logger,
-            this.saleorClient,
-            this.tenantId,
-        );
-        await channelAvailability.syncChannelAvailability(createdGte);
-
         await this.cronState.set({
             lastRun: new Date(),
             lastRunStatus: "success",
