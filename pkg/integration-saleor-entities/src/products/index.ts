@@ -31,7 +31,6 @@ import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils";
 import { subHours, subYears } from "date-fns";
 import { editorJsHelper } from "../editorjs";
 import { MediaNotFoundError, MediaUpload } from "../mediaUpload.js";
-import { ChannelAvailability } from "./channelAvailability";
 import { parseBoolean } from "@eci/pkg/utils/parseBoolean";
 import { SaleorProductManual } from "./productManual";
 

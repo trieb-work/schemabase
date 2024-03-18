@@ -18,8 +18,6 @@ export class SaleorProductChannelSyncWf implements Workflow {
 
     private installedSaleorAppId: string;
 
-    private ctx: RuntimeContext;
-
     public constructor(
         ctx: RuntimeContext,
         clients: SaleorProductChannelSyncWorkflowClients,
@@ -31,7 +29,6 @@ export class SaleorProductChannelSyncWf implements Workflow {
             installedSaleorAppId: this.installedSaleorAppId,
         });
         this.prisma = clients.prisma;
-        this.ctx = ctx;
         this.installedSaleorAppId = config.installedSaleorAppId;
     }
 
