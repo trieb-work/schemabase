@@ -162,21 +162,17 @@ export class SaleorCustomerSyncService {
             )?.value;
 
             /**
-             * if we have an external identifier in our DB, that is different
-             * to the avataxCustomerCode in Saleor, or if the avataxCustomerCode is
-             * missing in Saleor, we set the "updatedAt" timestamp of the schembase customer
-             * to now, so that the syncFromECI call is updating this field afterwards
+             * The Saleor customer app gets a avatax code from Odoo
+             * faster than the ECI, so we need to set this identifier
+             * here
              */
-            if (
-                externalIdentifier !== saleorAvataxCustomerId ||
-                (externalIdentifier && !saleorAvataxCustomerId)
-            ) {
+            if (!externalIdentifier && saleorAvataxCustomerId) {
                 await this.db.contact.update({
                     where: {
                         id: internalContact.customerId,
                     },
                     data: {
-                        updatedAt: new Date(),
+                        externalIdentifier: saleorAvataxCustomerId,
                     },
                 });
             }
