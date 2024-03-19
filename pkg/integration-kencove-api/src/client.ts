@@ -516,23 +516,31 @@ export class KencoveApiClient {
     public async *getContactsStream(
         fromDate: Date,
     ): AsyncIterableIterator<KencoveApiContact[]> {
-        let nextPage: string | null = null;
-        let offset: number = 0;
-        do {
+        const WINDOW_SIZE = 3;
+        const LIMIT = 200;
+        while (isBefore(fromDate, new Date())) {
+            let toDate = addDays(fromDate, WINDOW_SIZE);
+            let offset = 0;
+            let nextPage: string | null = null;
             const accessToken = await this.getAccessToken();
-            const response = await this.getContactsPage(
-                fromDate,
-                offset,
-                accessToken,
-            );
-            yield response.data;
-            nextPage = response.next_page;
-            offset += 200;
-        } while (nextPage);
+            do {
+                const response = await this.getContactsPage(
+                    fromDate,
+                    toDate,
+                    offset,
+                    accessToken,
+                );
+                yield response.data;
+                nextPage = response.next_page;
+                offset += LIMIT;
+            } while (nextPage);
+            fromDate = toDate;
+        }
     }
 
     private async getContactsPage(
         fromDate: Date,
+        toDate: Date,
         offset: number,
         accessToken: string,
     ): Promise<{
@@ -544,7 +552,7 @@ export class KencoveApiClient {
             `requesting contacts from ${fromDate}, offset ${offset}`,
         );
         const response = await this.axiosInstance.get(
-            `/ecom/contact/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
+            `/ecom/contact/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${toDate.toISOString()}`,
             {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
