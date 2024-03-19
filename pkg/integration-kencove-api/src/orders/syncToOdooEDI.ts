@@ -283,6 +283,7 @@ export class SyncToOdooEDI {
                         }
                         if (decodedObject.quotationId) {
                             quotationId = decodedObject.quotationId;
+                            shippingMethodId = decodedObject.rateOptionId;
                         }
                     }
                 }
