@@ -118,6 +118,15 @@ export class KencoveApiAppContactSyncService {
                     (sc) => sc.normalizedName === normalizedName,
                 );
 
+                this.logger.debug(
+                    `Upserting contact ${contact.firstname} ${contact.lastname} - ${email}`,
+                    {
+                        email,
+                        companyName,
+                        externalIdentifier: contact.commerical_customer_code,
+                    },
+                );
+
                 await this.db.kencoveApiContact.upsert({
                     where: {
                         id_kencoveApiAppId: {
