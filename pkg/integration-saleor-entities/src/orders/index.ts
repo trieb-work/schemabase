@@ -289,6 +289,14 @@ export class SaleorOrderSyncService {
                         ? this.shippingMethodIdDecode(order.deliveryMethod.id)
                         : undefined;
 
+                /**
+                 * Customer note / delivery note etc.
+                 * is stored in the metadata of the order
+                 */
+                const customerNote = order.metadata.find(
+                    (m) => m.key === "deliveryNotes",
+                )?.value;
+
                 const upsertedOrder = await this.db.saleorOrder.upsert({
                     where: {
                         id_installedSaleorAppId: {
@@ -317,6 +325,7 @@ export class SaleorOrderSyncService {
                                     orderNumber: prefixedOrderNumber,
                                     referenceNumber: order.id,
                                     date: new Date(order.created),
+                                    customerNote,
                                     totalPriceGross: order.total.gross.amount,
                                     totalPriceNet: order.total.net.amount,
                                     language: this.matchLanguage(
@@ -355,6 +364,7 @@ export class SaleorOrderSyncService {
                             update: {
                                 carrier,
                                 shippingMethodId,
+                                customerNote,
                                 shippingMethodName: order.shippingMethodName,
                                 language: this.matchLanguage(
                                     order.languageCodeEnum,

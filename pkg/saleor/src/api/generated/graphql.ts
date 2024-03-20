@@ -33279,6 +33279,11 @@ export type SaleorCronOrdersOverviewQuery = {
                     net: { __typename?: "Money"; amount: number };
                     gross: { __typename?: "Money"; amount: number };
                 };
+                metadata: Array<{
+                    __typename?: "MetadataItem";
+                    key: string;
+                    value: string;
+                }>;
             };
         }>;
     } | null;
@@ -33933,6 +33938,11 @@ export type ProductTestQuery = {
                 __typename?: "Product";
                 id: string;
                 name: string;
+                variants?: Array<{
+                    __typename?: "ProductVariant";
+                    id: string;
+                    sku?: string | null;
+                }> | null;
                 channelListings?: Array<{
                     __typename?: "ProductChannelListing";
                     id: string;
@@ -34830,6 +34840,10 @@ export const SaleorCronOrdersOverviewDocument = gql`
                             amount
                         }
                     }
+                    metadata {
+                        key
+                        value
+                    }
                 }
             }
         }
@@ -35255,6 +35269,10 @@ export const ProductTestDocument = gql`
                 node {
                     id
                     name
+                    variants {
+                        id
+                        sku
+                    }
                     channelListings {
                         id
                         channel {

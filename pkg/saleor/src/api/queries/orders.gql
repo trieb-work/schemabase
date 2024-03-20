@@ -77,6 +77,10 @@ query saleorCronOrdersOverview(
                         amount
                     }
                 }
+                metadata {
+                    key
+                    value
+                }
             }
         }
     }
