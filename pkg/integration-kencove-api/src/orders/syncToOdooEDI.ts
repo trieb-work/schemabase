@@ -345,6 +345,12 @@ export class SyncToOdooEDI {
                             quantity: orderLineItem.quantity,
                             totalPriceGross: orderLineItem.totalPriceGross,
                             totalPriceNet: orderLineItem.totalPriceNet,
+                            undiscountedUnitPriceGross:
+                                orderLineItem.undiscountedUnitPriceGross,
+                            undiscountedUnitPriceNet:
+                                orderLineItem.undiscountedUnitPriceNet,
+                            unitPriceGross: orderLineItem.unitPriceGross,
+                            unitPriceNet: orderLineItem.unitPriceNet,
                             productVariant: {
                                 sku: orderLineItem.productVariant.sku,
                                 name: orderLineItem.productVariant.variantName,

@@ -598,6 +598,10 @@ export class SaleorOrderSyncService {
                                             undiscountedUnitPriceGross:
                                                 lineItem.undiscountedUnitPrice
                                                     .gross.amount,
+                                            unitPriceNet:
+                                                lineItem.unitPrice.net.amount,
+                                            unitPriceGross:
+                                                lineItem.unitPrice.gross.amount,
                                             totalPriceNet:
                                                 lineItem.totalPrice.net.amount,
                                             totalPriceGross:
@@ -638,6 +642,10 @@ export class SaleorOrderSyncService {
                                         undiscountedUnitPriceGross:
                                             lineItem.undiscountedUnitPrice.gross
                                                 .amount,
+                                        unitPriceNet:
+                                            lineItem.unitPrice.net.amount,
+                                        unitPriceGross:
+                                            lineItem.unitPrice.gross.amount,
                                         tax: eciTax
                                             ? {
                                                   connect: {

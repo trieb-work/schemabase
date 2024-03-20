@@ -125,6 +125,14 @@ query saleorCronOrderDetails($id: ID!) {
                     amount
                 }
             }
+            unitPrice {
+                gross {
+                    amount
+                }
+                net {
+                    amount
+                }
+            }
             taxRate
             totalPrice {
                 gross {

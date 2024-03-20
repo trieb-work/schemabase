@@ -33328,6 +33328,11 @@ export type SaleorCronOrderDetailsQuery = {
                 gross: { __typename?: "Money"; amount: number };
                 net: { __typename?: "Money"; amount: number };
             };
+            unitPrice: {
+                __typename?: "TaxedMoney";
+                gross: { __typename?: "Money"; amount: number };
+                net: { __typename?: "Money"; amount: number };
+            };
             totalPrice: {
                 __typename?: "TaxedMoney";
                 currency: string;
@@ -34883,6 +34888,14 @@ export const SaleorCronOrderDetailsDocument = gql`
                 }
                 undiscountedUnitPrice {
                     currency
+                    gross {
+                        amount
+                    }
+                    net {
+                        amount
+                    }
+                }
+                unitPrice {
                     gross {
                         amount
                     }
