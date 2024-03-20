@@ -635,24 +635,34 @@ export class KencoveApiClient {
     public async *getPricelistStream(
         fromDate: Date,
     ): AsyncIterableIterator<KencoveApiPricelist[]> {
-        let nextPage: string | null = null;
-        let offset: number = 0;
-        do {
+        const WINDOW_SIZE = 3;
+        const LIMIT = 200;
+        while (isBefore(fromDate, new Date())) {
+            let toDate = addDays(fromDate, WINDOW_SIZE);
+            let offset = 0;
+            let nextPage: string | null = null;
             const accessToken = await this.getAccessToken();
+            do {
+                const response = await this.getPricelistPage(
+                    fromDate,
+                    toDate,
+                    offset,
+                    accessToken,
+                );
+                if (response.data.length === 0) break; // If no data, move to the next window
 
-            const response = await this.getPricelistPage(
-                fromDate,
-                offset,
-                accessToken,
-            );
-            yield response.data;
-            nextPage = response.next_page;
-            offset += 200;
-        } while (nextPage);
+                yield response.data;
+                nextPage = response.next_page;
+                offset += LIMIT;
+            } while (nextPage);
+
+            fromDate = toDate;
+        }
     }
 
     private async getPricelistPage(
         fromDate: Date,
+        toDate: Date,
         offset: number,
         accessToken: string,
     ): Promise<{
@@ -660,8 +670,11 @@ export class KencoveApiClient {
         result_count: number;
         next_page: string;
     }> {
+        this.logger.debug(
+            `requesting pricelist from ${fromDate} to ${toDate}, offset ${offset}`,
+        );
         const response = await this.axiosInstance.get(
-            `/ecom/pricelist/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
+            `/ecom/pricelist/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${toDate.toISOString()}`,
             {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,

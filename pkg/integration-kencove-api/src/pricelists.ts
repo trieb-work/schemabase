@@ -168,7 +168,9 @@ export class KencoveApiAppPricelistSyncService {
         } else {
             // for security purposes, we sync one hour more than the last run
             createdGte = subHours(cronState.lastRun, 1);
-            this.logger.info(`Setting GTE date to ${createdGte}.`);
+            this.logger.info(
+                `Setting GTE date to ${gteDataTesting || createdGte}.`,
+            );
         }
         if (gteDataTesting) {
             createdGte = gteDataTesting;
