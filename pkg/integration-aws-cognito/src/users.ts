@@ -354,6 +354,11 @@ export class CognitoUserSyncService {
                 }
             }
         }
+
+        await this.cronState.set({
+            lastRun: now,
+            lastRunStatus: "success",
+        });
     }
 }
 
