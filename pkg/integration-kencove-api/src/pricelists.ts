@@ -180,6 +180,9 @@ export class KencoveApiAppPricelistSyncService {
         const pricelistsYield = client.getPricelistStream(createdGte);
 
         for await (const pricelists of pricelistsYield) {
+            this.logger.info(
+                `Processing ${pricelists.length} pricelist entries from Kencove API`,
+            );
             for (const pricelist of pricelists) {
                 this.logger.info(
                     `Processing pricelist for SKU ${pricelist.itemCode}`,
@@ -277,7 +280,7 @@ export class KencoveApiAppPricelistSyncService {
                         });
                     } else {
                         this.logger.info(
-                            `Price entry for SKU ${pricelist.itemCode} and` +
+                            `Price entry for SKU ${pricelist.itemCode} and ` +
                                 `${pricelistEntry.pricelist_name} already exists. Updating.`,
                         );
                         await this.db.salesChannelPriceEntry.update({
