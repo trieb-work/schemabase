@@ -248,6 +248,10 @@ query productTest($first: Int, $after: String) {
             node {
                 id
                 name
+                variants {
+                    id
+                    sku
+                }
                 channelListings {
                     id
                     channel {
