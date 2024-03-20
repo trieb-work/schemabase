@@ -100,7 +100,7 @@ export class KencoveApiAppProductStockSyncService {
                     this.logger.debug(
                         `Warehouse code is missing for sku: ${
                             variant.itemCode
-                        }. ${JSON.stringify(variant.warehouse_stock)}`,
+                        }, ${JSON.stringify(variant.warehouse_stock)}`,
                     );
                     if (warehouseEntry.qty_avail === 0) {
                         this.logger.info(
