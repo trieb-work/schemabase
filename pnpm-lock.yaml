@@ -48,8 +48,8 @@ dependencies:
     specifier: ^0.6.3
     version: 0.6.3(@prisma/client@5.7.1)
   '@saleor/app-sdk':
-    specifier: ^0.47.1
-    version: 0.47.1(graphql@16.6.0)(next@13.4.19)(react-dom@18.2.0)(react@18.2.0)
+    specifier: ^0.50.0
+    version: 0.50.0(graphql@16.6.0)(next@13.4.19)(react-dom@18.2.0)(react@18.2.0)
   '@saleor/macaw-ui':
     specifier: 0.8.0-pre.96
     version: 0.8.0-pre.96(@types/react-dom@17.0.20)(@types/react@17.0.62)(react-dom@18.2.0)(react@18.2.0)
@@ -148,7 +148,7 @@ dependencies:
     version: 1.10.0
   next:
     specifier: ^13.4.19
-    version: 13.4.19(@babel/core@7.22.5)(@opentelemetry/api@1.4.1)(react-dom@18.2.0)(react@18.2.0)
+    version: 13.4.19(@babel/core@7.22.5)(@opentelemetry/api@1.7.0)(react-dom@18.2.0)(react@18.2.0)
   node-fetch:
     specifier: ^2.6.7
     version: 2.6.7
@@ -713,7 +713,7 @@ packages:
       next: ^12.0.0 || ^13.0.0
     dependencies:
       '@apollo/server': 4.9.2(graphql@16.6.0)
-      next: 13.4.19(@babel/core@7.22.5)(@opentelemetry/api@1.4.1)(react-dom@18.2.0)(react@18.2.0)
+      next: 13.4.19(@babel/core@7.22.5)(@opentelemetry/api@1.7.0)(react-dom@18.2.0)(react@18.2.0)
     dev: false
 
   /@aws-crypto/crc32@3.0.0:
@@ -3899,41 +3899,41 @@ packages:
     engines: {node: '>=8.0.0'}
     dev: false
 
-  /@opentelemetry/core@1.14.0(@opentelemetry/api@1.4.1):
+  /@opentelemetry/core@1.14.0(@opentelemetry/api@1.7.0):
     resolution: {integrity: sha512-MnMZ+sxsnlzloeuXL2nm5QcNczt/iO82UOeQQDHhV83F2fP3sgntW2evvtoxJki0MBLxEsh5ADD7PR/Hn5uzjw==}
     engines: {node: '>=14'}
     requiresBuild: true
     peerDependencies:
       '@opentelemetry/api': '>=1.0.0 <1.5.0'
     dependencies:
-      '@opentelemetry/api': 1.4.1
+      '@opentelemetry/api': 1.7.0
       '@opentelemetry/semantic-conventions': 1.14.0
     dev: false
     optional: true
 
-  /@opentelemetry/resources@1.14.0(@opentelemetry/api@1.4.1):
+  /@opentelemetry/resources@1.14.0(@opentelemetry/api@1.7.0):
     resolution: {integrity: sha512-qRfWIgBxxl3z47E036Aey0Lj2ZjlFb27Q7Xnj1y1z/P293RXJZGLtcfn/w8JF7v1Q2hs3SDGxz7Wb9Dko1YUQA==}
     engines: {node: '>=14'}
     requiresBuild: true
     peerDependencies:
       '@opentelemetry/api': '>=1.0.0 <1.5.0'
     dependencies:
-      '@opentelemetry/api': 1.4.1
-      '@opentelemetry/core': 1.14.0(@opentelemetry/api@1.4.1)
+      '@opentelemetry/api': 1.7.0
+      '@opentelemetry/core': 1.14.0(@opentelemetry/api@1.7.0)
       '@opentelemetry/semantic-conventions': 1.14.0
     dev: false
     optional: true
 
-  /@opentelemetry/sdk-metrics@1.14.0(@opentelemetry/api@1.4.1):
+  /@opentelemetry/sdk-metrics@1.14.0(@opentelemetry/api@1.7.0):
     resolution: {integrity: sha512-F0JXmLqT4LmsaiaE28fl0qMtc5w0YuMWTHt1hnANTNX8hxW4IKSv9+wrYG7BZd61HEbPm032Re7fXyzzNA6nIw==}
     engines: {node: '>=14'}
     requiresBuild: true
     peerDependencies:
       '@opentelemetry/api': '>=1.3.0 <1.5.0'
     dependencies:
-      '@opentelemetry/api': 1.4.1
-      '@opentelemetry/core': 1.14.0(@opentelemetry/api@1.4.1)
-      '@opentelemetry/resources': 1.14.0(@opentelemetry/api@1.4.1)
+      '@opentelemetry/api': 1.7.0
+      '@opentelemetry/core': 1.14.0(@opentelemetry/api@1.7.0)
+      '@opentelemetry/resources': 1.14.0(@opentelemetry/api@1.7.0)
       lodash.merge: 4.6.2
     dev: false
     optional: true
@@ -5369,8 +5369,8 @@ packages:
       picomatch: 2.3.1
     dev: true
 
-  /@saleor/app-sdk@0.47.1(graphql@16.6.0)(next@13.4.19)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-TW80QI0PnMa9by/9cmYPe2wUavykC9Oy4oJtXB9jQLr1l/JKaihRTH6g28EfDd8fqAjoFJsptgN5ChD8ABCeHA==}
+  /@saleor/app-sdk@0.50.0(graphql@16.6.0)(next@13.4.19)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-lg/mRV3lSnCQMiXF2EWWI8FYOBIwQCVZXlMa4fn3mrgkf0pO5tADi+RbgtMKFJtOUxmE4cRIKuZ1JXOTsTmHQg==}
     peerDependencies:
       '@vercel/kv': ^1.0.0
       graphql: '>=16.6.0'
@@ -5386,7 +5386,7 @@ packages:
       debug: 4.3.4(supports-color@9.3.1)
       graphql: 16.6.0
       jose: 4.14.4
-      next: 13.4.19(@babel/core@7.22.5)(@opentelemetry/api@1.4.1)(react-dom@18.2.0)(react@18.2.0)
+      next: 13.4.19(@babel/core@7.22.5)(@opentelemetry/api@1.7.0)(react-dom@18.2.0)(react@18.2.0)
       raw-body: 2.5.2
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
@@ -8907,9 +8907,9 @@ packages:
     requiresBuild: true
     dependencies:
       '@elastic/ecs-pino-format': 1.3.0
-      '@opentelemetry/api': 1.4.1
-      '@opentelemetry/core': 1.14.0(@opentelemetry/api@1.4.1)
-      '@opentelemetry/sdk-metrics': 1.14.0(@opentelemetry/api@1.4.1)
+      '@opentelemetry/api': 1.7.0
+      '@opentelemetry/core': 1.14.0(@opentelemetry/api@1.7.0)
+      '@opentelemetry/sdk-metrics': 1.14.0(@opentelemetry/api@1.7.0)
       after-all-results: 2.0.0
       agentkeepalive: 4.5.0
       async-cache: 1.1.0
@@ -13203,7 +13203,7 @@ packages:
     dev: false
     optional: true
 
-  /next@13.4.19(@babel/core@7.22.5)(@opentelemetry/api@1.4.1)(react-dom@18.2.0)(react@18.2.0):
+  /next@13.4.19(@babel/core@7.22.5)(@opentelemetry/api@1.7.0)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-HuPSzzAbJ1T4BD8e0bs6B9C1kWQ6gv8ykZoRWs5AQoiIuqbGHHdQO7Ljuvg05Q0Z24E2ABozHe6FxDvI6HfyAw==}
     engines: {node: '>=16.8.0'}
     hasBin: true
@@ -13219,7 +13219,7 @@ packages:
         optional: true
     dependencies:
       '@next/env': 13.4.19
-      '@opentelemetry/api': 1.4.1
+      '@opentelemetry/api': 1.7.0
       '@swc/helpers': 0.5.1
       busboy: 1.6.0
       caniuse-lite: 1.0.30001504

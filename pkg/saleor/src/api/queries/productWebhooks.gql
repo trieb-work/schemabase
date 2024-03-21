@@ -1,0 +1,31 @@
+fragment ProductDeleted on ProductDeleted {
+    product {
+        id
+        variants {
+            id
+        }
+    }
+}
+
+fragment ProductVariantDeleted on ProductVariantDeleted {
+    productVariant {
+        id
+        product {
+            id
+        }
+    }
+}
+
+subscription ProductDeletedWebhooks {
+    event {
+        __typename
+        ...ProductDeleted
+    }
+}
+
+subscription ProductVariantDeletedWebhooks {
+    event {
+        __typename
+        ...ProductVariantDeleted
+    }
+}
