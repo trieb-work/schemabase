@@ -120,27 +120,46 @@ export class KencoveApiClient {
     }
 
     /**
-     * Get addresses yield, that is returning data
-     * the continuasly, instead of returning all the data at once.
-     * Consume it with a for await loop.
+     * A generic method to stream API data, automatically managing paging and window size.
+     * Correctly accesses nested data within the API response.
+     *
+     * @param endpoint - The specific API endpoint after the baseURL.
+     * @param fromDate - The start date for the data fetching window.
+     * @param windowSize - Number of days to fetch data for in each iteration.
+     * @param limit - Number of records to fetch per page.
+     * @param extraParams - Additional URL parameters.
      */
-    // public async *getAddressesStream(
-    //     fromDate: Date,
-    // ): AsyncIterableIterator<KencoveApiAddress[]> {
-    //     let nextPage: string | null = null;
-    //     let offset: number = 0;
-    //     do {
-    //         const accessToken = await this.getAccessToken();
-    //         const response = await this.getAddressesPage(
-    //             fromDate,
-    //             offset,
-    //             accessToken,
-    //         );
-    //         yield response.data;
-    //         nextPage = response.next_page;
-    //         offset += 200;
-    //     } while (nextPage);
-    // }
+    public async *streamApiData<T>(
+        endpoint: string,
+        fromDate: Date,
+        windowSize: number = 3,
+        limit: number = 200,
+        extraParams: string = "",
+    ): AsyncIterableIterator<T[]> {
+        let toDate = addDays(new Date(), windowSize);
+        let offset = 0;
+        while (isBefore(fromDate, new Date())) {
+            do {
+                const accessToken = await this.getAccessToken();
+                const response = await this.axiosInstance.get(
+                    `${endpoint}?limit=${limit}&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${toDate.toISOString()}${extraParams}`,
+                    {
+                        headers: { Authorization: `Bearer ${accessToken}` },
+                    },
+                );
+
+                const responseData = response.data.data; // Correctly accessing the nested data
+                if (!responseData || responseData.length === 0) break; // If no data, exit loop
+
+                yield responseData;
+                offset += limit;
+            } while (true); // Implement actual next page logic based on API response
+
+            fromDate = addDays(toDate, 1); // Move to the next window
+            toDate = addDays(fromDate, windowSize);
+            offset = 0; // Reset offset for the next window
+        }
+    }
 
     /**
      * Stream addresses, 200 at a time. Use it with a for await loop.
@@ -395,6 +414,28 @@ export class KencoveApiClient {
         return response.data;
     }
 
+    public async *getCategoriesStream(
+        fromDate: Date,
+    ): AsyncIterableIterator<KencoveApiCategory[]> {
+        // Define endpoint for categories data, adjust if necessary
+        const endpoint = "/ecom/categories/kencove";
+
+        // Specify any extra parameters if needed, for categories this might be empty or specific filters
+        const extraParams = ""; // Adjust as needed
+
+        // Use the generic streamApiData method to fetch categories
+        for await (const batch of this.streamApiData<KencoveApiCategory>(
+            endpoint,
+            fromDate,
+            3,
+            200,
+            extraParams,
+        )) {
+            console.log(`Received ${JSON.stringify(batch)} categories`);
+            yield batch;
+        }
+    }
+
     /**
      * Stream packages, 200 at a time. Use it with a for await loop.
      * We have to combine from and to to create an efficient sliding window
@@ -431,25 +472,6 @@ export class KencoveApiClient {
             fromDate = toDate;
         }
     }
-
-    // public async getPackages(fromDate: Date): Promise<KencoveApiPackage[]> {
-    //     const accessToken = await this.getAccessToken();
-    //     const packages: KencoveApiPackage[] = [];
-    //     let nextPage: string | null = null;
-    //     let offset: number = 0;
-    //     do {
-    //         const response = await this.getPackagesPage(
-    //             fromDate,
-    //             offset,
-    //             accessToken,
-    //         );
-    //         packages.push(...response.data);
-    //         nextPage = response.next_page;
-    //         offset += 200;
-    //     } while (nextPage);
-    //     console.debug(`Found ${packages.length} packages`);
-    //     return packages;
-    // }
 
     private async getPackagesPage(
         fromDate: Date,
