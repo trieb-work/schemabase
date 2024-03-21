@@ -431,7 +431,6 @@ export class KencoveApiClient {
             200,
             extraParams,
         )) {
-            console.log(`Received ${JSON.stringify(batch)} categories`);
             yield batch;
         }
     }
