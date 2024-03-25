@@ -1265,6 +1265,17 @@ export class KencoveApiAppProductSyncService {
                             },
                         },
                     })),
+                    update: totalMedia.map((media) => ({
+                        where: {
+                            url_tenantId: {
+                                url: media.url,
+                                tenantId: this.kencoveApiApp.tenantId,
+                            },
+                        },
+                        data: {
+                            type: media.type,
+                        },
+                    })),
                 },
                 productType: {
                     connect: {
@@ -1525,10 +1536,14 @@ export class KencoveApiAppProductSyncService {
                      * Compare the media arrays with each other and see, if we have other URLs
                      */
                     !compareArrays(
-                        existingProduct.media.map((m) => m.url),
-                        this.getTotalMediaFromProduct(product).map(
-                            (m) => m.url,
-                        ),
+                        existingProduct.media.map((m) => ({
+                            url: m.url,
+                            type: m.type,
+                        })),
+                        this.getTotalMediaFromProduct(product).map((m) => ({
+                            url: m.url,
+                            type: m.type,
+                        })),
                     )
                 ) {
                     this.logger.info(
@@ -1678,7 +1693,7 @@ export class KencoveApiAppProductSyncService {
                                         create: {
                                             id: id.id("media"),
                                             url: media.url,
-                                            type: "PRODUCTIMAGE",
+                                            type: MediaPlacementType.PRODUCTIMAGE,
                                             tenant: {
                                                 connect: {
                                                     id: this.kencoveApiApp
@@ -1786,7 +1801,7 @@ export class KencoveApiAppProductSyncService {
                                         create: {
                                             id: id.id("media"),
                                             url: media.url,
-                                            type: "PRODUCTIMAGE",
+                                            type: MediaPlacementType.PRODUCTIMAGE,
                                             tenant: {
                                                 connect: {
                                                     id: this.kencoveApiApp
@@ -1900,9 +1915,7 @@ export class KencoveApiAppProductSyncService {
                     );
                     filterVariantWebsiteDescription = false;
                 } else {
-                    this.logger.debug(
-                        "Variant website description is the same as the product description. Removing this attribute",
-                    );
+                    // "Variant website description is the same as the product description. Removing this attribute",
                     filterVariantWebsiteDescription = true;
                 }
 
