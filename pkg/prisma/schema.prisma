@@ -2636,6 +2636,10 @@ model KencoveApiApp {
   /// This is a comma separated list of category ids
   skipCategories String?
 
+  /// We can set a fallback tax class (just a string here), that will be set, if 
+  /// no tax class is given in the api
+  fallbackTaxClass String?
+
   kencoveApiContacts        KencoveApiContact[]
   kencoveApiAddresses       KencoveApiAddress[]
   kencoveApiProductVariants KencoveApiProductVariant[]

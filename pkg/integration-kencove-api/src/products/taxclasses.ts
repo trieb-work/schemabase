@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { KencoveApiApp, PrismaClient } from "@prisma/client";
 import { KencoveApiProduct } from "../types";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import { id } from "@eci/pkg/ids";
@@ -13,7 +13,7 @@ import { ILogger } from "@eci/pkg/logger";
 const syncTaxClasses = async (
     products: KencoveApiProduct[],
     db: PrismaClient,
-    tenantId: string,
+    kencoveApiApp: KencoveApiApp,
     logger: ILogger,
 ) => {
     /**
@@ -22,6 +22,8 @@ const syncTaxClasses = async (
     const taxClasses = products.reduce((acc, product) => {
         if (product.product_tax_code) {
             acc.add(product.product_tax_code);
+        } else if (kencoveApiApp.fallbackTaxClass) {
+            acc.add(kencoveApiApp.fallbackTaxClass);
         }
         return acc;
     }, new Set<string>());
@@ -40,7 +42,7 @@ const syncTaxClasses = async (
                 where: {
                     normalizedName_tenantId: {
                         normalizedName,
-                        tenantId,
+                        tenantId: kencoveApiApp.tenantId,
                     },
                 },
                 create: {
@@ -49,7 +51,7 @@ const syncTaxClasses = async (
                     normalizedName,
                     tenant: {
                         connect: {
-                            id: tenantId,
+                            id: kencoveApiApp.tenantId,
                         },
                     },
                 },

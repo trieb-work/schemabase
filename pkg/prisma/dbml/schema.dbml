@@ -1451,6 +1451,8 @@ we use the official EDI integration, so this nedpoint will be part of']
   scope String [not null, note: 'The scopes we need to access the api. Just comma separated list']
   skipCategories String [note: 'A user can manually mark categories, that should be skipped when syncing.
 This is a comma separated list of category ids']
+  fallbackTaxClass String [note: 'We can set a fallback tax class (just a string here), that will be set, if 
+no tax class is given in the api']
   kencoveApiContacts KencoveApiContact [not null]
   kencoveApiAddresses KencoveApiAddress [not null]
   kencoveApiProductVariants KencoveApiProductVariant [not null]

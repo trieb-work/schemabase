@@ -1370,7 +1370,7 @@ export class KencoveApiAppProductSyncService {
         const taxClasses = await syncTaxClasses(
             products,
             this.db,
-            this.kencoveApiApp.tenantId,
+            this.kencoveApiApp,
             this.logger,
         );
 
@@ -1394,7 +1394,9 @@ export class KencoveApiAppProductSyncService {
                     productId: p.id,
                     productName: htmlDecode(p.name),
                     categoryId: p?.categoryId?.toString(),
-                    taxClass: p.product_tax_code,
+                    taxClass:
+                        p.product_tax_code ||
+                        this.kencoveApiApp.fallbackTaxClass,
                     backorder: !p.do_not_backorder,
                     createdAt: new Date(p.createdAt),
                     updatedAt: new Date(p.updatedAt),
