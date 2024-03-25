@@ -3595,6 +3595,12 @@ export type Channel = Node &
          */
         stockSettings: StockSettings;
         /**
+         * Channel specific tax configuration.
+         *
+         * Requires one of the following permissions: AUTHENTICATED_STAFF_USER, AUTHENTICATED_APP.
+         */
+        taxConfiguration: TaxConfiguration;
+        /**
          * List of warehouses assigned to this channel.
          *
          * Added in Saleor 3.5.
@@ -32879,6 +32885,7 @@ export type VariantMediaAssignMutation = {
             __typename?: "ProductError";
             field?: string | null;
             message?: string | null;
+            code: ProductErrorCode;
         }>;
     } | null;
 };
@@ -34988,6 +34995,7 @@ export const VariantMediaAssignDocument = gql`
             errors {
                 field
                 message
+                code
             }
         }
     }

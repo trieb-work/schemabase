@@ -664,8 +664,7 @@ export class SaleorProductSyncService {
                         }`,
                     );
                 }
-            }
-            if (element.type === "PRODUCTVIDEO") {
+            } else if (element.type === "PRODUCTVIDEO") {
                 try {
                     const createMedia =
                         await this.saleorClient.productMediaCreate({
@@ -698,6 +697,10 @@ export class SaleorProductSyncService {
                         }`,
                     );
                 }
+            } else {
+                this.logger.error(
+                    `Media type ${element.type} not supported or media type not defined. Skipping`,
+                );
             }
         }
     }
@@ -1569,13 +1572,26 @@ export class SaleorProductSyncService {
                                             },
                                         );
                                     if (r.variantMediaAssign?.errors.length) {
-                                        this.logger.error(
-                                            `Error assigning media to variant ${
-                                                variantImage.variantName
-                                            } in Saleor: ${JSON.stringify(
-                                                r.variantMediaAssign.errors,
-                                            )}`,
-                                        );
+                                        if (
+                                            r.variantMediaAssign.errors.find(
+                                                (x) =>
+                                                    x.message?.includes(
+                                                        "This media is already assigned",
+                                                    ),
+                                            )
+                                        ) {
+                                            this.logger.info(
+                                                `Media ${mediaElement.id} is already assigned to variant ${variantImage.variantName}`,
+                                            );
+                                        } else {
+                                            this.logger.error(
+                                                `Error assigning media to variant ${
+                                                    variantImage.variantName
+                                                } in Saleor: ${JSON.stringify(
+                                                    r.variantMediaAssign.errors,
+                                                )}`,
+                                            );
+                                        }
                                         if (
                                             r.variantMediaAssign.errors.find(
                                                 (x) =>
@@ -2242,6 +2258,8 @@ export class SaleorProductSyncService {
         for (const productSet of productsWithReviewsChanged) {
             await this.setAggregatedProductRating(productSet);
         }
+
+        this.logger.info("Sync completed. Setting cron state in DB");
 
         await this.cronState.set({
             lastRun: new Date(),

@@ -26,6 +26,7 @@ mutation VariantMediaAssign($mediaId: ID!, $variantId: ID!) {
         errors {
             field
             message
+            code
         }
     }
 }
