@@ -110,12 +110,17 @@ export class SaleorProductManual {
                         id: manual.id,
                     },
                 });
+                this.logger.warn(
+                    `Media ${manual.id}: ${manual.url} not found in source, deleting from DB`,
+                );
+            } else {
+                this.logger.error(
+                    `Error handling media ${manual.id}: ${manual.url} - ${
+                        error?.message ?? error
+                    }`,
+                );
             }
-            this.logger.error(
-                `Error handling media ${manual.id}: ${manual.url} - ${
-                    error?.message ?? error
-                }`,
-            );
+
             return undefined;
         }
     }
