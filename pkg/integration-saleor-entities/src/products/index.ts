@@ -609,6 +609,9 @@ export class SaleorProductSyncService {
         for (const element of media) {
             this.logger.info(
                 `Uploading media ${element.id}: ${element.url} to saleor`,
+                {
+                    type: element.type,
+                },
             );
             if (element.type === "PRODUCTIMAGE") {
                 try {
