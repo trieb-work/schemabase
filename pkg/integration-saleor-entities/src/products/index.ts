@@ -649,6 +649,9 @@ export class SaleorProductSyncService {
                      * delete media if NotFound error is thrown
                      */
                     if (error instanceof MediaNotFoundError) {
+                        this.logger.info(
+                            `Media ${element.id} not found. Deleting in internal DB`,
+                        );
                         await this.db.media.delete({
                             where: {
                                 id: element.id,
