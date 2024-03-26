@@ -161,7 +161,18 @@ export class KencoveApiAppCategorySyncService {
                 if (category.childrenCategoryIds) {
                     lookupKencoveIds.push(...category.childrenCategoryIds);
                 }
-                if (category.parentCategoryId)
+                /**
+                 * The kencoveApi categoryid of the parent category. Is null,
+                 * if no parent or the parent is in the categoriesToSkip list.
+                 */
+                const kencoveParentCategoryId =
+                    category.parentCategoryId &&
+                    !categoriesToSkip.includes(
+                        category.parentCategoryId.toString(),
+                    )
+                        ? category.parentCategoryId?.toString()
+                        : null;
+                if (kencoveParentCategoryId)
                     lookupKencoveIds.push(category.parentCategoryId.toString());
 
                 // we have to filter out the categoriesToSkip here as well
@@ -202,8 +213,12 @@ export class KencoveApiAppCategorySyncService {
                         // eslint-disable-next-line max-len
                         `Could not find all categories to connect. Skipping cron state update, so that the next run will be a full run again.`,
                         {
-                            found: categoriesToConnect.map((c) => c.id),
-                            needed: filteredLookupKencoveIds,
+                            notFoundIds: filteredLookupKencoveIds.filter(
+                                (id) =>
+                                    !categoriesToConnect.find(
+                                        (c) => c.id === id,
+                                    ),
+                            ),
                         },
                     );
                     skipCronStateUpdate = true;
@@ -212,11 +227,13 @@ export class KencoveApiAppCategorySyncService {
                 /**
                  * The parent category of the current category with our internal Id.
                  * So when this category has a parent, that we already synced, this Id
-                 * is set here. INTERNAL SCHEMABASE ID
+                 * is set here. INTERNAL SCHEMABASE ID.
                  */
-                let parentCategoryId = categoriesToConnect.find(
-                    (c) => c.id === category.parentCategoryId.toString(),
-                )?.categoryId;
+                let parentCategoryId = kencoveParentCategoryId
+                    ? categoriesToConnect.find(
+                          (c) => c.id === kencoveParentCategoryId,
+                      )?.categoryId
+                    : null;
 
                 if (
                     parentCategoryId &&
@@ -241,6 +258,7 @@ export class KencoveApiAppCategorySyncService {
                     {
                         childrenCategories,
                         parentCategoryId,
+                        existingCategoryId: existingCategory?.categoryId,
                     },
                 );
                 if (existingCategory) {
@@ -281,11 +299,6 @@ export class KencoveApiAppCategorySyncService {
                                         childrenCategories: {
                                             connect: childrenCategories,
                                         },
-                                        // products: {
-                                        //     connect: relatedProducts?.map((p) => ({
-                                        //         id: p,
-                                        //     })),
-                                        // },
                                         descriptionHTML:
                                             category.websiteDescription,
                                         tenant: {
@@ -305,15 +318,14 @@ export class KencoveApiAppCategorySyncService {
                                                   id: parentCategoryId,
                                               },
                                           }
+                                        : parentCategoryId === null
+                                        ? {
+                                              disconnect: true,
+                                          }
                                         : undefined,
                                     childrenCategories: {
                                         connect: childrenCategories,
                                     },
-                                    // products: {
-                                    //     connect: relatedProducts?.map((p) => ({
-                                    //         id: p,
-                                    //     })),
-                                    // },
                                     descriptionHTML:
                                         category.websiteDescription,
                                     media: {
@@ -395,11 +407,6 @@ export class KencoveApiAppCategorySyncService {
                                                 id: this.kencoveApiApp.tenantId,
                                             },
                                         },
-                                        // products: {
-                                        //     connect: relatedProducts?.map((p) => ({
-                                        //         id: p,
-                                        //     })),
-                                        // },
                                         descriptionHTML:
                                             category.websiteDescription,
                                         media: {
