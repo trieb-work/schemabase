@@ -65,6 +65,21 @@ export class AlgoliaCategorySyncService {
                     gte: createdGte,
                 },
             },
+            include: {
+                parentCategory: {
+                    include: {
+                        parentCategory: {
+                            include: {
+                                parentCategory: {
+                                    include: {
+                                        parentCategory: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
         });
 
         this.logger.info(`Found ${categories.length} categories to sync`);
@@ -74,11 +89,38 @@ export class AlgoliaCategorySyncService {
         const requests: BatchRequest[] = [];
 
         for (const category of categories) {
+            /**
+             * Add all parent category slugs to the category object,
+             * start with level 0 and go up to level 4
+             * parentCategorySlug: { level0: "", level1: "", level2: "", level3: "", level4: "" }
+             * we need to flatten the parentCategory object to get the slugs.
+             * We need to start with the last parentCategory and go up to the first parentCategory
+             */
+            const parentCategorySlug: { [key: string]: string } = {};
+
+            let currentCategory = category;
+            let level = 0; // Start from the deepest level, assuming level0 is the deepest.
+
+            // Navigate through the parent categories, from the deepest to the top.
+            while (currentCategory.parentCategory && level < 5) {
+                // Set the slug for the current level, assuming each category has a slug.
+                // If currentCategory is the initial category or any of its parents, this ensures we capture each slug.
+                parentCategorySlug[`level${level}`] =
+                    currentCategory.parentCategory.slug ?? "";
+
+                // Move to the next parent category for the next iteration.
+                currentCategory = currentCategory.parentCategory;
+
+                // Increment the level after setting the slug for the current parentCategory.
+                level++;
+            }
+
             const algoliaObject = {
                 objectID: category.id,
                 name: category.name,
                 description: category.descriptionHTML,
                 slug: category.slug,
+                parentCategorySlug,
                 createdAt: category.createdAt.toISOString(),
                 updatedAt: category.updatedAt.toISOString(),
             };
