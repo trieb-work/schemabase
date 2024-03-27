@@ -1,0 +1,8 @@
+mutation ProductMediaReorder($productId: ID!, $mediaIds: [ID!]!) {
+    productMediaReorder(productId: $productId, mediaIds: $mediaIds) {
+        errors {
+            field
+            message
+        }
+    }
+}

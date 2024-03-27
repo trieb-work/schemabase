@@ -2226,7 +2226,13 @@ export type AttributeTranslatableContent = Node & {
      * @deprecated This field will be removed in Saleor 4.0. Get model fields from the root level queries.
      */
     attribute?: Maybe<Attribute>;
-    /** The ID of the attribute. */
+    /**
+     * The ID of the attribute to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    attributeId: Scalars["ID"];
+    /** The ID of the attribute translatable content. */
     id: Scalars["ID"];
     /** Name of the attribute to translate. */
     name: Scalars["String"];
@@ -2269,6 +2275,12 @@ export type AttributeTranslation = Node & {
     language: LanguageDisplay;
     /** Translated attribute name. */
     name: Scalars["String"];
+    /**
+     * Represents the attribute fields to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    translatableContent?: Maybe<AttributeTranslatableContent>;
 };
 
 /** An enumeration. */
@@ -2699,6 +2711,12 @@ export type AttributeValueTranslatableContent = Node & {
      * @deprecated This field will be removed in Saleor 4.0. Get model fields from the root level queries.
      */
     attributeValue?: Maybe<AttributeValue>;
+    /**
+     * The ID of the attribute value to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    attributeValueId: Scalars["ID"];
     /** The ID of the attribute value translatable content. */
     id: Scalars["ID"];
     /** Name of the attribute value to translate. */
@@ -2758,6 +2776,12 @@ export type AttributeValueTranslation = Node & {
      * Rich text format. For reference see https://editorjs.io/
      */
     richText?: Maybe<Scalars["JSONString"]>;
+    /**
+     * Represents the attribute value fields to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    translatableContent?: Maybe<AttributeValueTranslatableContent>;
 };
 
 export type AttributeValueTranslationInput = {
@@ -3353,6 +3377,12 @@ export type CategoryTranslatableContent = Node & {
      */
     category?: Maybe<Category>;
     /**
+     * The ID of the category to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    categoryId: Scalars["ID"];
+    /**
      * Category description to translate.
      *
      * Rich text format. For reference see https://editorjs.io/
@@ -3421,6 +3451,12 @@ export type CategoryTranslation = Node & {
     seoDescription?: Maybe<Scalars["String"]>;
     /** Translated SEO title. */
     seoTitle?: Maybe<Scalars["String"]>;
+    /**
+     * Represents the category fields to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    translatableContent?: Maybe<CategoryTranslatableContent>;
 };
 
 /**
@@ -5668,6 +5704,12 @@ export type CollectionTranslatableContent = Node & {
      */
     collection?: Maybe<Collection>;
     /**
+     * The ID of the collection to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    collectionId: Scalars["ID"];
+    /**
      * Collection's description to translate.
      *
      * Rich text format. For reference see https://editorjs.io/
@@ -5736,6 +5778,12 @@ export type CollectionTranslation = Node & {
     seoDescription?: Maybe<Scalars["String"]>;
     /** Translated SEO title. */
     seoTitle?: Maybe<Scalars["String"]>;
+    /**
+     * Represents the collection fields to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    translatableContent?: Maybe<CollectionTranslatableContent>;
 };
 
 /**
@@ -10661,6 +10709,12 @@ export type MenuItemTranslatableContent = Node & {
      * @deprecated This field will be removed in Saleor 4.0. Get model fields from the root level queries.
      */
     menuItem?: Maybe<MenuItem>;
+    /**
+     * The ID of the menu item to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    menuItemId: Scalars["ID"];
     /** Name of the menu item to translate. */
     name: Scalars["String"];
     /** Returns translated menu item fields for the given language code. */
@@ -10694,6 +10748,12 @@ export type MenuItemTranslation = Node & {
     language: LanguageDisplay;
     /** Translated menu item name. */
     name: Scalars["String"];
+    /**
+     * Represents the menu item fields to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    translatableContent?: Maybe<MenuItemTranslatableContent>;
 };
 
 /**
@@ -17906,6 +17966,12 @@ export type PageTranslatableContent = Node & {
      * @deprecated This field will be removed in Saleor 4.0. Get model fields from the root level queries.
      */
     page?: Maybe<Page>;
+    /**
+     * The ID of the page to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    pageId: Scalars["ID"];
     /** SEO description to translate. */
     seoDescription?: Maybe<Scalars["String"]>;
     /** SEO title to translate. */
@@ -17960,6 +18026,12 @@ export type PageTranslation = Node & {
     seoTitle?: Maybe<Scalars["String"]>;
     /** Translated page title. */
     title?: Maybe<Scalars["String"]>;
+    /**
+     * Represents the page fields to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    translatableContent?: Maybe<PageTranslatableContent>;
 };
 
 export type PageTranslationInput = {
@@ -20937,6 +21009,12 @@ export type ProductTranslatableContent = Node & {
      * @deprecated This field will be removed in Saleor 4.0. Get model fields from the root level queries.
      */
     product?: Maybe<Product>;
+    /**
+     * The ID of the product to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    productId: Scalars["ID"];
     /** SEO description to translate. */
     seoDescription?: Maybe<Scalars["String"]>;
     /** SEO title to translate. */
@@ -20997,6 +21075,12 @@ export type ProductTranslation = Node & {
     seoDescription?: Maybe<Scalars["String"]>;
     /** Translated SEO title. */
     seoTitle?: Maybe<Scalars["String"]>;
+    /**
+     * Represents the product fields to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    translatableContent?: Maybe<ProductTranslatableContent>;
 };
 
 /** Represents a type of product. It defines what attributes are available to products of this type. */
@@ -22296,6 +22380,12 @@ export type ProductVariantTranslatableContent = Node & {
      * @deprecated This field will be removed in Saleor 4.0. Get model fields from the root level queries.
      */
     productVariant?: Maybe<ProductVariant>;
+    /**
+     * The ID of the product variant to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    productVariantId: Scalars["ID"];
     /** Returns translated product variant fields for the given language code. */
     translation?: Maybe<ProductVariantTranslation>;
 };
@@ -22335,6 +22425,12 @@ export type ProductVariantTranslation = Node & {
     language: LanguageDisplay;
     /** Translated product variant name. */
     name: Scalars["String"];
+    /**
+     * Represents the product variant fields to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    translatableContent?: Maybe<ProductVariantTranslatableContent>;
 };
 
 /**
@@ -23225,6 +23321,12 @@ export type PromotionRuleTranslatableContent = Node & {
     id: Scalars["ID"];
     /** Name of the promotion rule. */
     name?: Maybe<Scalars["String"]>;
+    /**
+     * ID of the promotion rule to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    promotionRuleId: Scalars["ID"];
     /** Returns translated promotion rule fields for the given language code. */
     translation?: Maybe<PromotionRuleTranslation>;
 };
@@ -23270,6 +23372,12 @@ export type PromotionRuleTranslation = Node & {
     language: LanguageDisplay;
     /** Translated name of the promotion rule. */
     name?: Maybe<Scalars["String"]>;
+    /**
+     * Represents the promotion rule fields to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    translatableContent?: Maybe<PromotionRuleTranslatableContent>;
 };
 
 export type PromotionRuleTranslationInput = {
@@ -23505,6 +23613,8 @@ export type PromotionTranslatableContent = Node & {
     id: Scalars["ID"];
     /** Name of the promotion. */
     name: Scalars["String"];
+    /** ID of the promotion to translate. */
+    promotionId: Scalars["ID"];
     /** Returns translated promotion fields for the given language code. */
     translation?: Maybe<PromotionTranslation>;
 };
@@ -23550,6 +23660,12 @@ export type PromotionTranslation = Node & {
     language: LanguageDisplay;
     /** Translated name of the promotion. */
     name?: Maybe<Scalars["String"]>;
+    /**
+     * Represents the promotion fields to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    translatableContent?: Maybe<PromotionTranslatableContent>;
 };
 
 export type PromotionTranslationInput = {
@@ -25264,6 +25380,12 @@ export type SaleTranslatableContent = Node & {
      * @deprecated This field will be removed in Saleor 4.0. Get model fields from the root level queries.
      */
     sale?: Maybe<Sale>;
+    /**
+     * The ID of the sale to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    saleId: Scalars["ID"];
     /** Returns translated sale fields for the given language code. */
     translation?: Maybe<SaleTranslation>;
 };
@@ -25305,6 +25427,12 @@ export type SaleTranslation = Node & {
     language: LanguageDisplay;
     /** Translated name of sale. */
     name?: Maybe<Scalars["String"]>;
+    /**
+     * Represents the sale fields to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    translatableContent?: Maybe<SaleTranslatableContent>;
 };
 
 export enum SaleType {
@@ -25654,6 +25782,12 @@ export type ShippingMethodTranslatableContent = Node & {
      * @deprecated This field will be removed in Saleor 4.0. Get model fields from the root level queries.
      */
     shippingMethod?: Maybe<ShippingMethodType>;
+    /**
+     * The ID of the shipping method to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    shippingMethodId: Scalars["ID"];
     /** Returns translated shipping method fields for the given language code. */
     translation?: Maybe<ShippingMethodTranslation>;
 };
@@ -25678,6 +25812,12 @@ export type ShippingMethodTranslation = Node & {
     language: LanguageDisplay;
     /** Translated shipping method name. */
     name: Scalars["String"];
+    /**
+     * Represents the shipping method fields to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    translatableContent?: Maybe<ShippingMethodTranslatableContent>;
 };
 
 /** Shipping method are the methods you'll use to get customer's orders to them. They are directly exposed to the customers. */
@@ -30452,6 +30592,12 @@ export type VoucherTranslatableContent = Node & {
      * @deprecated This field will be removed in Saleor 4.0. Get model fields from the root level queries.
      */
     voucher?: Maybe<Voucher>;
+    /**
+     * The ID of the voucher to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    voucherId: Scalars["ID"];
 };
 
 /** Represents voucher's original translatable fields and related translations. */
@@ -30481,6 +30627,12 @@ export type VoucherTranslation = Node & {
     language: LanguageDisplay;
     /** Translated voucher name. */
     name?: Maybe<Scalars["String"]>;
+    /**
+     * Represents the voucher fields to translate.
+     *
+     * Added in Saleor 3.14.
+     */
+    translatableContent?: Maybe<VoucherTranslatableContent>;
 };
 
 export enum VoucherTypeEnum {
@@ -32678,6 +32830,23 @@ export type ProductMediaDeleteMutation = {
     } | null;
 };
 
+export type ProductMediaReorderMutationVariables = Exact<{
+    productId: Scalars["ID"];
+    mediaIds: Array<Scalars["ID"]> | Scalars["ID"];
+}>;
+
+export type ProductMediaReorderMutation = {
+    __typename?: "Mutation";
+    productMediaReorder?: {
+        __typename?: "ProductMediaReorder";
+        errors: Array<{
+            __typename?: "ProductError";
+            field?: string | null;
+            message?: string | null;
+        }>;
+    } | null;
+};
+
 export type ProductTypeCreateMutationVariables = Exact<{
     input: ProductTypeInput;
 }>;
@@ -32759,6 +32928,8 @@ export type ProductUpdateMutation = {
                 __typename?: "ProductMedia";
                 id: string;
                 metafield?: string | null;
+                type: ProductMediaType;
+                sortOrder?: number | null;
             }> | null;
         } | null;
     } | null;
@@ -34838,6 +35009,16 @@ export const ProductMediaDeleteDocument = gql`
         }
     }
 `;
+export const ProductMediaReorderDocument = gql`
+    mutation ProductMediaReorder($productId: ID!, $mediaIds: [ID!]!) {
+        productMediaReorder(productId: $productId, mediaIds: $mediaIds) {
+            errors {
+                field
+                message
+            }
+        }
+    }
+`;
 export const ProductTypeCreateDocument = gql`
     mutation productTypeCreate($input: ProductTypeInput!) {
         productTypeCreate(input: $input) {
@@ -34901,6 +35082,8 @@ export const ProductUpdateDocument = gql`
                 media {
                     id
                     metafield(key: "schemabase-media-id")
+                    type
+                    sortOrder
                 }
             }
         }
@@ -35968,6 +36151,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<ProductMediaDeleteMutation>;
+        },
+        ProductMediaReorder(
+            variables: ProductMediaReorderMutationVariables,
+            options?: C,
+        ): Promise<ProductMediaReorderMutation> {
+            return requester<
+                ProductMediaReorderMutation,
+                ProductMediaReorderMutationVariables
+            >(
+                ProductMediaReorderDocument,
+                variables,
+                options,
+            ) as Promise<ProductMediaReorderMutation>;
         },
         productTypeCreate(
             variables: ProductTypeCreateMutationVariables,

@@ -33,6 +33,7 @@ import { editorJsHelper } from "../editorjs";
 import { MediaNotFoundError, MediaUpload } from "../mediaUpload.js";
 import { parseBoolean } from "@eci/pkg/utils/parseBoolean";
 import { SaleorProductManual } from "./productManual";
+import { sortVideoOrder } from "./helper";
 
 export interface SaleorProductSyncServiceConfig {
     saleorClient: SaleorClient;
@@ -1428,6 +1429,13 @@ export class SaleorProductSyncService {
                         const saleorMedia =
                             productUpdateResponse.productUpdate.product.media ||
                             [];
+
+                        await sortVideoOrder(
+                            this.saleorClient,
+                            this.logger,
+                            saleorProductId,
+                            saleorMedia,
+                        );
 
                         const filteredMedia = saleorMedia?.filter(
                             (m) => m.metafield !== null || undefined,
