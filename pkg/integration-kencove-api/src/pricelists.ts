@@ -3,7 +3,12 @@
 // models SalesChannel and SalesChannelPriceEntry
 
 import { ILogger } from "@eci/pkg/logger";
-import { Attribute, KencoveApiApp, PrismaClient } from "@eci/pkg/prisma";
+import {
+    Attribute,
+    KencoveApiApp,
+    PrismaClient,
+    ProductVariant,
+} from "@eci/pkg/prisma";
 import { KencoveApiClient } from "./client";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { subHours, subYears } from "date-fns";
@@ -155,6 +160,22 @@ export class KencoveApiAppPricelistSyncService {
         }
     }
 
+    private async getItemBySku(sku: string) {
+        const productVariant = await this.db.productVariant.findUnique({
+            where: {
+                sku_tenantId: {
+                    sku: sku,
+                    tenantId: this.kencoveApiApp.tenantId,
+                },
+            },
+        });
+        if (!productVariant) {
+            this.logger.warn(`Could not find item with SKU ${sku}`);
+            return;
+        }
+        return productVariant;
+    }
+
     public async syncToEci(gteDataTesting?: Date): Promise<void> {
         const cronState = await this.cronState.get();
         const now = new Date();
@@ -184,28 +205,50 @@ export class KencoveApiAppPricelistSyncService {
                 `Processing ${pricelists.length} pricelist entries from Kencove API`,
             );
             for (const pricelist of pricelists) {
-                this.logger.info(
-                    `Processing pricelist for SKU ${pricelist.itemCode}`,
-                );
                 /**
                  * The schemabase item that is related to the current pricelist entry
                  */
-                const productVariant = await this.db.productVariant.findUnique({
-                    where: {
-                        sku_tenantId: {
-                            sku: pricelist.itemCode,
-                            tenantId: this.kencoveApiApp.tenantId,
-                        },
-                    },
-                });
-                if (!productVariant) {
-                    this.logger.warn(
-                        `Could not find item with SKU ${pricelist.itemCode}`,
+                let productVariant: ProductVariant | undefined = undefined;
+                if (pricelist.itemCode) {
+                    this.logger.info(
+                        `Processing pricelist for SKU ${pricelist.itemCode}`,
                     );
-                    continue;
+                    const variant = await this.getItemBySku(pricelist.itemCode);
+                    if (!variant) {
+                        continue;
+                    }
+                    productVariant = variant;
+                } else {
+                    this.logger.info(
+                        `Processing pricelist for different variants`,
+                        {
+                            productTemplateId: pricelist.product_template_id,
+                        },
+                    );
                 }
 
                 for (const pricelistEntry of pricelist.priceListItems) {
+                    if (!productVariant && !pricelistEntry.variantItemCode) {
+                        this.logger.warn(
+                            `No product variant found for SKU ${pricelist.itemCode} and no variantItemCode set. Skipping.`,
+                        );
+                        continue;
+                    }
+
+                    if (!productVariant && pricelistEntry.variantItemCode) {
+                        const variant = await this.getItemBySku(
+                            pricelistEntry.variantItemCode,
+                        );
+                        if (!variant) {
+                            continue;
+                        }
+                        productVariant = variant;
+                    }
+
+                    if (!productVariant) {
+                        continue;
+                    }
+
                     const channelNormalizedName = normalizeStrings.channelNames(
                         pricelistEntry.pricelist_name,
                     );
