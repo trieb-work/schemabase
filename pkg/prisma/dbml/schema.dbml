@@ -806,7 +806,7 @@ Table SalesChannelPriceEntry {
   minQuantity Float [not null, default: 0, note: 'This price is valid starting with this quantity']
 
   indexes {
-    (salesChannelId, productVariantId, tenantId, minQuantity, startDate) [unique]
+    (salesChannelId, productVariantId, tenantId, minQuantity, startDate, endDate) [unique]
   }
 }
 

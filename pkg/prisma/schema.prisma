@@ -1334,7 +1334,7 @@ model SalesChannelPriceEntry {
   /// This price is valid starting with this quantity
   minQuantity Float @default(0)
 
-  @@unique([salesChannelId, productVariantId, tenantId, minQuantity, startDate])
+  @@unique([salesChannelId, productVariantId, tenantId, minQuantity, startDate, endDate])
   @@index([salesChannelId])
   @@index([productVariantId])
   @@index([tenantId])

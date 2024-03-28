@@ -248,6 +248,7 @@ export class KencoveApiAppPricelistSyncService {
                             where: {
                                 salesChannelId: salesChannel.id,
                                 productVariantId: productVariant.id,
+                                tenantId: this.kencoveApiApp.tenantId,
                                 startDate,
                                 endDate,
                                 minQuantity: pricelistEntry.min_quantity,
