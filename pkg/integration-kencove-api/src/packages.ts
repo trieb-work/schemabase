@@ -140,6 +140,19 @@ export class KencoveApiAppPackageSyncService {
 
                 const weightGrams = lbsToKg(pkg.shippingWeight) * 1000;
 
+                this.logger.debug(
+                    `Syncing package ${pkg.packageName} from Kencove API to ECI.`,
+                    {
+                        packageId: pkg.packageId,
+                        salesOrderNo: pkg.salesOrderNo,
+                        trackingId,
+                        isMultiPieceShipment,
+                        carrier,
+                        warehouseId,
+                        weightGrams,
+                    },
+                );
+
                 try {
                     await this.db.kencoveApiPackage.upsert({
                         where: {
