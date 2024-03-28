@@ -82,6 +82,7 @@ export class KencoveApiAppPackageSyncService {
         const client = new KencoveApiClient(this.kencoveApiApp, this.logger);
         const packagesYield = client.getPackagesStream(createdGte);
 
+        let errors = [];
         for await (const packages of packagesYield) {
             this.logger.info(`Found ${packages.length} packages to sync.`);
             /**
@@ -266,14 +267,21 @@ export class KencoveApiAppPackageSyncService {
                             pkg.packageName
                         } from Kencove API to ECI: ${JSON.stringify(error)}`,
                     );
+                    errors.push(error);
                 }
-
-                // we update the last run date
-                await this.cronState.set({
-                    lastRun: now,
-                    lastRunStatus: "success",
-                });
             }
+        }
+
+        // we update the last run date
+        if (errors.length === 0) {
+            await this.cronState.set({
+                lastRun: now,
+                lastRunStatus: "success",
+            });
+        } else {
+            this.logger.warn(
+                `${errors.length} errors occurred while syncing packages`,
+            );
         }
     }
 }
