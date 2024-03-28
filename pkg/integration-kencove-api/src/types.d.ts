@@ -282,11 +282,15 @@ export type KencoveApiPricelistItem = {
     date_start: string | null;
     date_end: string | null;
     product_id: null;
-    variantItemCode: null;
+    variantItemCode: null | string;
 };
 export type KencoveApiPricelist = {
     product_template_id: number;
-    itemCode: string;
+    /**
+     * For "real" products with variants in Odoo,
+     * this itemCode is empty, but the variantItemCode is set.
+     */
+    itemCode: string | null;
     priceListItems: KencoveApiPricelistItem[];
     createdAt: string;
     updatedAt: string;
