@@ -61,8 +61,22 @@ export class AlgoliaCategorySyncService {
         const categories = await this.db.category.findMany({
             where: {
                 tenantId: this.tenantId,
-                updatedAt: {
-                    gte: createdGte,
+
+                products: {
+                    some: {
+                        tenantId: this.tenantId,
+                        variants: {
+                            some: {
+                                salesChannelPriceEntries: {
+                                    some: {
+                                        startDate: {
+                                            lte: now,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
                 },
             },
             include: {
@@ -94,15 +108,28 @@ export class AlgoliaCategorySyncService {
              * start with level 0 and go up to level 4
              * parentCategorySlug: { level0: "", level1: "", level2: "", level3: "", level4: "" }
              * we need to flatten the parentCategory object to get the slugs.
-             * We need to start with the last parentCategory and go up to the first parentCategory
+             *
              */
             const parentCategorySlug: { [key: string]: string } = {};
 
             let currentCategory = category;
             let level = 0; // Start from the deepest level, assuming level0 is the deepest.
+            const parentCategoryLevelFilter = 0;
+
+            let skipCategory = false;
 
             // Navigate through the parent categories, from the deepest to the top.
             while (currentCategory.parentCategory && level < 5) {
+                /**
+                 * parentCategory level filter. Filter our everything above level X
+                 * from our settings. Currently set to 0, which means we just
+                 * use categories with one parentCategory.
+                 */
+                if (level > parentCategoryLevelFilter) {
+                    skipCategory = true;
+                    break;
+                }
+
                 // Set the slug for the current level, assuming each category has a slug.
                 // If currentCategory is the initial category or any of its parents, this ensures we capture each slug.
                 parentCategorySlug[`level${level}`] =
@@ -113,6 +140,10 @@ export class AlgoliaCategorySyncService {
 
                 // Increment the level after setting the slug for the current parentCategory.
                 level++;
+            }
+
+            if (skipCategory) {
+                continue;
             }
 
             const algoliaObject = {
@@ -131,6 +162,10 @@ export class AlgoliaCategorySyncService {
             });
         }
 
+        this.logger.info(
+            `Syncing ${requests.length} categories to algolia (after all filters)`,
+        );
+
         const { taskID } = await this.algoliaClient.batch({
             indexName: index,
             batchWriteParams: {
@@ -140,6 +175,47 @@ export class AlgoliaCategorySyncService {
 
         // Wait for indexing to be finished
         await this.algoliaClient.waitForTask({ indexName: index, taskID });
+
+        /**
+         * get all entries to compare with our categories
+         */
+        const algoliaEntries = await this.algoliaClient.searchSingleIndex({
+            indexName: index,
+            searchParams: {
+                attributesToRetrieve: ["objectID"],
+                hitsPerPage: 1000,
+            },
+        });
+
+        const entriesToDelete = algoliaEntries.hits.filter(
+            (entry) =>
+                !categories.some((category) => category.id === entry.objectID),
+        );
+
+        if (entriesToDelete.length > 0) {
+            this.logger.info(
+                `Deleting ${entriesToDelete.length} categories from algolia`,
+            );
+            const deleteRequests: BatchRequest[] = entriesToDelete.map(
+                (entry) => ({
+                    action: "deleteObject",
+                    body: { objectID: entry.objectID },
+                }),
+            );
+
+            const { taskID: deleteTaskID } = await this.algoliaClient.batch({
+                indexName: index,
+                batchWriteParams: {
+                    requests: deleteRequests,
+                },
+            });
+
+            // Wait for indexing to be finished
+            await this.algoliaClient.waitForTask({
+                indexName: index,
+                taskID: deleteTaskID,
+            });
+        }
 
         this.logger.info("Synced categories to algolia");
 
