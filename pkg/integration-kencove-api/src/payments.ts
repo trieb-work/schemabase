@@ -90,6 +90,9 @@ export class KencoveApiAppPaymentSyncService {
                 const methodType = this.matchKencovePaymentMethodType(
                     payment.payment_method,
                 );
+                /**
+                 * We only process payments that are actually paid
+                 */
                 if (payment.payment_state !== "done") {
                     this.logger.info(
                         `Payment ${payment.payment_id} is not done. Skipping.`,
@@ -136,6 +139,15 @@ export class KencoveApiAppPaymentSyncService {
                             createdAt,
                             payment: {
                                 update: {
+                                    /**
+                                     * We filter above for "done" payments, so we can safely set the status to "paid"
+                                     */
+                                    status: "paid",
+                                    /**
+                                     * We could create an authorization, but later
+                                     * charge a smaller amount, so we better update the amount here
+                                     */
+                                    amount: payment.payment_amount,
                                     order: {
                                         connect: {
                                             id: order.id,
@@ -167,6 +179,7 @@ export class KencoveApiAppPaymentSyncService {
                                         amount: payment.payment_amount,
                                         date: createdAt,
                                         referenceNumber,
+                                        status: "paid",
                                         tenant: {
                                             connect: {
                                                 id: this.kencoveApiApp.tenantId,
