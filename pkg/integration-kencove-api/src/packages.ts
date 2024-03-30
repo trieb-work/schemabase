@@ -288,7 +288,11 @@ export class KencoveApiAppPackageSyncService {
                     this.logger.error(
                         `Error while syncing package ${
                             pkg.packageName
-                        } from Kencove API to ECI: ${JSON.stringify(error)}`,
+                        } from Kencove API to ECI: ${JSON.stringify(
+                            error,
+                        )}. Package line items: ${JSON.stringify(
+                            pkg.packageItemline,
+                        )}`,
                     );
                     errors.push(error);
                 }
