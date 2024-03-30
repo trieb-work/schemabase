@@ -150,6 +150,7 @@ export class KencoveApiAppPackageSyncService {
                         carrier,
                         warehouseId,
                         weightGrams,
+                        createdAt,
                     },
                 );
 
@@ -292,7 +293,7 @@ export class KencoveApiAppPackageSyncService {
                 lastRunStatus: "success",
             });
         } else {
-            this.logger.warn(
+            throw new Error(
                 `${errors.length} errors occurred while syncing packages`,
             );
         }
