@@ -492,7 +492,18 @@ export class SaleorPackageSyncService {
                 if (!i.orderLineId) return false;
                 return true;
             });
-            if (!fulfillmentLinesCheck || saleorLines.length === 0) continue;
+            if (!fulfillmentLinesCheck || saleorLines.length === 0) {
+                this.logger.error(
+                    `Can't create fulfillment for order ${saleorOrder.id} - ${
+                        parcel.number
+                    } - ${
+                        parcel.orderId
+                    }. Missing orderLineId or quantity: ${JSON.stringify(
+                        saleorLines,
+                    )}`,
+                );
+                continue;
+            }
 
             this.logger.info(
                 `Creating fulfillment now in Saleor ${saleorOrder.id} - ${parcel.number} - ${parcel.orderId}`,
