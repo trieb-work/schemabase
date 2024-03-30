@@ -498,6 +498,7 @@ export class SaleorPackageSyncService {
                 `Creating fulfillment now in Saleor ${saleorOrder.id} - ${parcel.number} - ${parcel.orderId}`,
                 {
                     orderNumber: saleorOrder.order.orderNumber,
+                    trackingNumber: parcel.trackingId,
                 },
             );
             this.logger.debug(
