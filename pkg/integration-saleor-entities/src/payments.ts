@@ -842,44 +842,6 @@ export class SaleorPaymentSyncService {
             },
         });
 
-        // const paymentsNotYetInSaleor = await this.db.payment.findMany({
-        //   where: {
-        //     AND: [
-        //       {
-        //         order: {
-        //           saleorOrders: {
-        //             some: {
-        //               installedSaleorAppId: {
-        //                 equals: this.installedSaleorAppId,
-        //               },
-        //             },
-        //           },
-        //         },
-        //       },
-        //       {
-        //         saleorPayment: {
-        //           none: {
-        //             installedSaleorAppId: {
-        //               equals: this.installedSaleorAppId,
-        //             },
-        //           },
-        //         },
-        //       },
-        //     ],
-        //   },
-        //   include: {
-        //     order: {
-        //       select: {
-        //         saleorOrders: {
-        //           select: {
-        //             id: true,
-        //             installedSaleorAppId: true,
-        //           },
-        //         },
-        //       },
-        //     },
-        //   },
-        // });
         this.logger.info(
             `Received ${paymentsNotYetInSaleor.length} payments that we try to create in Saleor`,
             {
