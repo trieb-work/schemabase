@@ -127,6 +127,7 @@ export class KencoveApiAppPaymentSyncService {
                     referenceNumber,
                     amount: payment.payment_amount,
                     createdAt: payment.createdAt,
+                    orderNumber: payment.sale_order_number,
                 });
 
                 try {
