@@ -154,6 +154,25 @@ export class KencoveApiAppPackageSyncService {
                     },
                 );
 
+                const schemabaseOrder = await this.db.order.findUnique({
+                    where: {
+                        orderNumber_tenantId: {
+                            orderNumber: pkg.salesOrderNo,
+                            tenantId: this.kencoveApiApp.tenantId,
+                        },
+                    },
+                });
+
+                if (!schemabaseOrder) {
+                    this.logger.warn(
+                        `Could not find order ${pkg.salesOrderNo} for package ${pkg.packageName}. Skipping.`,
+                        {
+                            packageId: pkg.packageId,
+                        },
+                    );
+                    continue;
+                }
+
                 try {
                     await this.db.kencoveApiPackage.upsert({
                         where: {
@@ -196,13 +215,7 @@ export class KencoveApiAppPackageSyncService {
                                         carrier,
                                         order: {
                                             connect: {
-                                                orderNumber_tenantId: {
-                                                    orderNumber:
-                                                        pkg.salesOrderNo,
-                                                    tenantId:
-                                                        this.kencoveApiApp
-                                                            .tenantId,
-                                                },
+                                                id: schemabaseOrder.id,
                                             },
                                         },
                                         packageLineItems: {
@@ -263,11 +276,7 @@ export class KencoveApiAppPackageSyncService {
                                         : undefined,
                                     order: {
                                         connect: {
-                                            orderNumber_tenantId: {
-                                                orderNumber: pkg.salesOrderNo,
-                                                tenantId:
-                                                    this.kencoveApiApp.tenantId,
-                                            },
+                                            id: schemabaseOrder.id,
                                         },
                                     },
                                     weightGrams,
