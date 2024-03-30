@@ -32630,6 +32630,27 @@ export type ChannelCreateMutation = {
     } | null;
 };
 
+export type CreateManualTransactionMutationVariables = Exact<{
+    orderId: Scalars["ID"];
+    pspReference?: InputMaybe<Scalars["String"]>;
+    amountCharged: Scalars["PositiveDecimal"];
+    currency: Scalars["String"];
+}>;
+
+export type CreateManualTransactionMutation = {
+    __typename?: "Mutation";
+    transactionCreate?: {
+        __typename?: "TransactionCreate";
+        transaction?: { __typename?: "TransactionItem"; id: string } | null;
+        errors: Array<{
+            __typename?: "TransactionCreateError";
+            field?: string | null;
+            message?: string | null;
+            code: TransactionCreateErrorCode;
+        }>;
+    } | null;
+};
+
 export type UpdateSaleorCustomerMutationVariables = Exact<{
     id: Scalars["ID"];
     input: CustomerInput;
@@ -34858,6 +34879,32 @@ export const ChannelCreateDocument = gql`
         }
     }
 `;
+export const CreateManualTransactionDocument = gql`
+    mutation CreateManualTransaction(
+        $orderId: ID!
+        $pspReference: String
+        $amountCharged: PositiveDecimal!
+        $currency: String!
+    ) {
+        transactionCreate(
+            id: $orderId
+            transaction: {
+                name: "Manual capture"
+                amountCharged: { amount: $amountCharged, currency: $currency }
+            }
+            transactionEvent: { pspReference: $pspReference }
+        ) {
+            transaction {
+                id
+            }
+            errors {
+                field
+                message
+                code
+            }
+        }
+    }
+`;
 export const UpdateSaleorCustomerDocument = gql`
     mutation updateSaleorCustomer($id: ID!, $input: CustomerInput!) {
         customerUpdate(id: $id, input: $input) {
@@ -36037,6 +36084,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<ChannelCreateMutation>;
+        },
+        CreateManualTransaction(
+            variables: CreateManualTransactionMutationVariables,
+            options?: C,
+        ): Promise<CreateManualTransactionMutation> {
+            return requester<
+                CreateManualTransactionMutation,
+                CreateManualTransactionMutationVariables
+            >(
+                CreateManualTransactionDocument,
+                variables,
+                options,
+            ) as Promise<CreateManualTransactionMutation>;
         },
         updateSaleorCustomer(
             variables: UpdateSaleorCustomerMutationVariables,

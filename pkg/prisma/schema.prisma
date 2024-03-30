@@ -3097,6 +3097,7 @@ model InstalledSaleorApp {
 
   cookies Cookies[]
 
+  // USER SETTINGS
   syncCustomers       Boolean @default(false)
   syncWarehouses      Boolean @default(false)
   syncOrders          Boolean @default(false)
@@ -3110,6 +3111,8 @@ model InstalledSaleorApp {
   syncFrequentlyBoughtTogether Boolean @default(false)
   /// If this is true, we will create orders in Saleor, that we received from 3rd party systems. Needs min. Saleor 3.17. Will only sync orders, where we have customers in Saleor already
   createHistoricOrdes Boolean @default(false)
+  /// Make use of the transaction API instead of the payments API. Mostly used for historic orders import
+  useTransactionApi   Boolean @default(false)
 
   productDataFeedIntegration ProductDataFeedIntegration[]
   saleorPayment              SaleorPayment[]

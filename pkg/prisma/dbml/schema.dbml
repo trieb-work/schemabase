@@ -1775,6 +1775,7 @@ Table InstalledSaleorApp {
   syncCategories Boolean [not null, default: false]
   syncFrequentlyBoughtTogether Boolean [not null, default: false]
   createHistoricOrdes Boolean [not null, default: false, note: 'If this is true, we will create orders in Saleor, that we received from 3rd party systems. Needs min. Saleor 3.17. Will only sync orders, where we have customers in Saleor already']
+  useTransactionApi Boolean [not null, default: false, note: 'Make use of the transaction API instead of the payments API. Mostly used for historic orders import']
   productDataFeedIntegration ProductDataFeedIntegration [not null]
   saleorPayment SaleorPayment [not null]
   saleorPaymentGateway SaleorPaymentGateway [not null]

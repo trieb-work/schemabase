@@ -9,6 +9,8 @@ import {
 import {
     Currency,
     GatewayType,
+    InstalledSaleorApp,
+    Payment,
     PaymentMethodType,
     PaymentStatus,
     Prisma,
@@ -23,7 +25,7 @@ import { krypto } from "@eci/pkg/krypto";
 
 interface SaleorPaymentSyncServiceConfig {
     saleorClient: SaleorClient;
-    installedSaleorAppId: string;
+    installedSaleorApp: InstalledSaleorApp;
     tenantId: string;
     db: PrismaClient;
     logger: ILogger;
@@ -35,7 +37,7 @@ export class SaleorPaymentSyncService {
 
     private readonly logger: ILogger;
 
-    public readonly installedSaleorAppId: string;
+    public readonly installedSaleorApp: InstalledSaleorApp;
 
     public readonly tenantId: string;
 
@@ -48,13 +50,13 @@ export class SaleorPaymentSyncService {
     public constructor(config: SaleorPaymentSyncServiceConfig) {
         this.saleorClient = config.saleorClient;
         this.logger = config.logger;
-        this.installedSaleorAppId = config.installedSaleorAppId;
+        this.installedSaleorApp = config.installedSaleorApp;
         this.tenantId = config.tenantId;
         this.db = config.db;
         this.orderPrefix = config.orderPrefix;
         this.cronState = new CronStateHandler({
             tenantId: this.tenantId,
-            appId: this.installedSaleorAppId,
+            appId: this.installedSaleorApp.id,
             db: this.db,
             syncEntity: "payments",
         });
@@ -398,7 +400,8 @@ export class SaleorPaymentSyncService {
                         where: {
                             id_installedSaleorAppId: {
                                 id: saleorOrder.id,
-                                installedSaleorAppId: this.installedSaleorAppId,
+                                installedSaleorAppId:
+                                    this.installedSaleorApp.id,
                             },
                         },
                     });
@@ -408,7 +411,7 @@ export class SaleorPaymentSyncService {
                               id_installedSaleorAppId: {
                                   id: existingSaleorOrder?.id,
                                   installedSaleorAppId:
-                                      this.installedSaleorAppId,
+                                      this.installedSaleorApp.id,
                               },
                           },
                       }
@@ -434,7 +437,7 @@ export class SaleorPaymentSyncService {
                     where: {
                         id_installedSaleorAppId: {
                             id: payment.id,
-                            installedSaleorAppId: this.installedSaleorAppId,
+                            installedSaleorAppId: this.installedSaleorApp.id,
                         },
                     },
                     create: {
@@ -444,7 +447,7 @@ export class SaleorPaymentSyncService {
                         saleorOrder: saleorOrderConnect,
                         installedSaleorApp: {
                             connect: {
-                                id: this.installedSaleorAppId,
+                                id: this.installedSaleorApp.id,
                             },
                         },
                         payment: {
@@ -587,9 +590,9 @@ export class SaleorPaymentSyncService {
                 }
 
                 /**
-                 * Handle the case of imported orders
+                 * Handle the case of imported orders / manual created transactions by staff users
                  */
-                if (transaction.pspReference && !transaction.createdBy) {
+                if (transaction.pspReference) {
                     const existingPayment = await this.db.payment.findUnique({
                         where: {
                             referenceNumber_tenantId: {
@@ -607,7 +610,7 @@ export class SaleorPaymentSyncService {
                                 id_installedSaleorAppId: {
                                     id: transaction.id,
                                     installedSaleorAppId:
-                                        this.installedSaleorAppId,
+                                        this.installedSaleorApp.id,
                                 },
                             },
                             create: {
@@ -616,7 +619,7 @@ export class SaleorPaymentSyncService {
                                 updatedAt: new Date(transaction.modifiedAt),
                                 installedSaleorApp: {
                                     connect: {
-                                        id: this.installedSaleorAppId,
+                                        id: this.installedSaleorApp.id,
                                     },
                                 },
                                 payment: {
@@ -660,7 +663,7 @@ export class SaleorPaymentSyncService {
                     where: {
                         id_installedSaleorAppId: {
                             id: transaction.order.id,
-                            installedSaleorAppId: this.installedSaleorAppId,
+                            installedSaleorAppId: this.installedSaleorApp.id,
                         },
                     },
                 });
@@ -691,14 +694,15 @@ export class SaleorPaymentSyncService {
                         where: {
                             id_installedSaleorAppId: {
                                 id: transaction.id,
-                                installedSaleorAppId: this.installedSaleorAppId,
+                                installedSaleorAppId:
+                                    this.installedSaleorApp.id,
                             },
                         },
                         create: {
                             id: transaction.id,
                             installedSaleorApp: {
                                 connect: {
-                                    id: this.installedSaleorAppId,
+                                    id: this.installedSaleorApp.id,
                                 },
                             },
                             updatedAt: transaction.modifiedAt,
@@ -822,13 +826,13 @@ export class SaleorPaymentSyncService {
                 order: {
                     saleorOrders: {
                         some: {
-                            installedSaleorAppId: this.installedSaleorAppId,
+                            installedSaleorAppId: this.installedSaleorApp.id,
                         },
                     },
                 },
                 saleorPayment: {
                     none: {
-                        installedSaleorAppId: this.installedSaleorAppId,
+                        installedSaleorAppId: this.installedSaleorApp.id,
                     },
                 },
                 tenantId: this.tenantId,
@@ -851,7 +855,7 @@ export class SaleorPaymentSyncService {
 
         for (const payment of paymentsNotYetInSaleor) {
             const saleorOrder = payment.order?.saleorOrders.find(
-                (o) => o.installedSaleorAppId === this.installedSaleorAppId,
+                (o) => o.installedSaleorAppId === this.installedSaleorApp.id,
             )?.id;
             if (!saleorOrder) {
                 this.logger.error(`Something went wrong`);
@@ -861,55 +865,113 @@ export class SaleorPaymentSyncService {
                 `Working on payment ${payment.id} - ${payment.referenceNumber} for saleor order ${saleorOrder}`,
             );
 
-            // Pull current order data from saleor - only capture payment, if payment
-            // does not exit yet. Uses the orderCapture mutation from saleor
-            try {
-                const data = await this.saleorClient.paymentCreate({
-                    id: saleorOrder,
-                    amount: payment.amount,
-                });
-                if (
-                    data.orderCapture &&
-                    data?.orderCapture?.errors?.length > 0
-                ) {
-                    this.logger.error(
-                        JSON.stringify(data.orderCapture?.errors),
-                    );
-                    continue;
-                }
-                const allPayments = data.orderCapture?.order?.payments;
-                /**
-                 * Check, if we really have a payment in saleor, that is matching the one we expected to be created
-                 */
-                const matchingPayment = allPayments?.find(
-                    (p) =>
-                        p.capturedAmount?.amount === payment.amount &&
-                        p.chargeStatus === PaymentChargeStatusEnum.FullyCharged,
-                );
+            if (this.installedSaleorApp.useTransactionApi) {
+                await this.createTransactionInSaleor(saleorOrder, payment);
+            } else {
+                await this.createPaymentInSaleor(saleorOrder, payment);
+            }
 
-                if (matchingPayment) {
-                    await this.db.saleorPayment.create({
-                        data: {
-                            id: matchingPayment.id,
-                            createdAt: new Date(),
-                            updatedAt: new Date(),
-                            installedSaleorApp: {
-                                connect: {
-                                    id: this.installedSaleorAppId,
-                                },
-                            },
-                            payment: {
-                                connect: {
-                                    id: payment.id,
-                                },
+            await sleep(800);
+        }
+    }
+
+    private async createPaymentInSaleor(
+        saleorOrder: string,
+        payment: Payment,
+    ): Promise<void> {
+        // Pull current order data from saleor - only capture payment, if payment
+        // does not exit yet. Uses the orderCapture mutation from saleor
+        try {
+            const data = await this.saleorClient.paymentCreate({
+                id: saleorOrder,
+                amount: payment.amount,
+            });
+            if (data.orderCapture && data?.orderCapture?.errors?.length > 0) {
+                this.logger.error(JSON.stringify(data.orderCapture?.errors));
+                return;
+            }
+            const allPayments = data.orderCapture?.order?.payments;
+            /**
+             * Check, if we really have a payment in saleor, that is matching the one we expected to be created
+             */
+            const matchingPayment = allPayments?.find(
+                (p) =>
+                    p.capturedAmount?.amount === payment.amount &&
+                    p.chargeStatus === PaymentChargeStatusEnum.FullyCharged,
+            );
+
+            if (matchingPayment) {
+                await this.db.saleorPayment.create({
+                    data: {
+                        id: matchingPayment.id,
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                        installedSaleorApp: {
+                            connect: {
+                                id: this.installedSaleorApp.id,
                             },
                         },
-                    });
-                }
-            } catch (error) {
-                this.logger.error(JSON.stringify(error));
+                        payment: {
+                            connect: {
+                                id: payment.id,
+                            },
+                        },
+                    },
+                });
             }
-            await sleep(800);
+        } catch (error) {
+            this.logger.error(JSON.stringify(error));
+        }
+    }
+
+    private async createTransactionInSaleor(
+        saleorOrder: string,
+        payment: Payment,
+    ): Promise<void> {
+        // Pull current order data from saleor - only capture payment, if payment
+        // does not exit yet. Uses the orderCapture mutation from saleor
+        try {
+            const data = await this.saleorClient.CreateManualTransaction({
+                orderId: saleorOrder,
+                amountCharged: payment.amount,
+                pspReference: payment.referenceNumber,
+                currency: payment.currency?.toString() || "USD",
+            });
+            if (
+                data.transactionCreate?.errors &&
+                data?.transactionCreate?.errors?.length
+            ) {
+                this.logger.error(
+                    JSON.stringify(data.transactionCreate?.errors),
+                );
+                return;
+            }
+            if (!data.transactionCreate?.transaction?.id) {
+                this.logger.error(
+                    `No transaction id returned for payment ${payment.id}`,
+                );
+                return;
+            }
+
+            await this.db.saleorPayment.create({
+                data: {
+                    id: data.transactionCreate.transaction.id,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                    installedSaleorApp: {
+                        connect: {
+                            id: this.installedSaleorApp.id,
+                        },
+                    },
+                    payment: {
+                        connect: {
+                            id: payment.id,
+                        },
+                    },
+                },
+            });
+        } catch (error) {
+            this.logger.error(JSON.stringify(error));
         }
     }
 }

@@ -48,7 +48,7 @@ export class SaleorPaymentSyncWf implements Workflow {
             logger: this.logger,
             saleorClient,
             db: this.prisma,
-            installedSaleorAppId: this.installedSaleorAppId,
+            installedSaleorApp,
             tenantId: installedSaleorApp.saleorApp.tenantId,
             orderPrefix: this.orderPrefix,
         });

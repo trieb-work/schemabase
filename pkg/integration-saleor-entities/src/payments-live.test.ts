@@ -20,6 +20,7 @@ describe("Saleor Entity Sync Orders Test", () => {
                 // id: "pk_7f165pf-prod",
                 // id: "test",
                 id: "tn_kencove235",
+                // id: "ken_prod",
             },
         });
         if (!tenant)
@@ -30,16 +31,17 @@ describe("Saleor Entity Sync Orders Test", () => {
         const { client: saleorClient, installedSaleorApp } =
             // await getSaleorClientAndEntry("QXBwOjE2", prismaClient);
             await getSaleorClientAndEntry("QXBwOjQw", prismaClient);
+        // await getSaleorClientAndEntry("QXBwOjE=", prismaClient);
 
         const service = new SaleorPaymentSyncService({
             saleorClient,
-            installedSaleorAppId: installedSaleorApp.id,
+            installedSaleorApp,
             logger: new AssertionLogger(),
             db: prismaClient,
             tenantId: tenant.id,
             orderPrefix: "STORE",
         });
         await service.syncToECI();
-        //await service.syncFromECI();
+        await service.syncFromECI();
     }, 1000000);
 });

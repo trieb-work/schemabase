@@ -1,0 +1,24 @@
+mutation CreateManualTransaction(
+    $orderId: ID!
+    $pspReference: String
+    $amountCharged: PositiveDecimal!
+    $currency: String!
+) {
+    transactionCreate(
+        id: $orderId
+        transaction: {
+            name: "Manual capture"
+            amountCharged: { amount: $amountCharged, currency: $currency }
+        }
+        transactionEvent: { pspReference: $pspReference }
+    ) {
+        transaction {
+            id
+        }
+        errors {
+            field
+            message
+            code
+        }
+    }
+}
