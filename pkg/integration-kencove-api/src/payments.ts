@@ -126,6 +126,7 @@ export class KencoveApiAppPaymentSyncService {
                     gatewayType,
                     referenceNumber,
                     amount: payment.payment_amount,
+                    createdAt: payment.createdAt,
                 });
 
                 try {
