@@ -267,6 +267,20 @@ export type KencoveApiOrderLine = {
      * The total amount of tax for this orderline
      */
     orderLine_tax: number;
+
+    /**
+     * Carrier is per orderline
+     */
+    line_carrier: {
+        /**
+         * e.g.: "USPS Priority Mail"
+         */
+        name: string | null;
+        delivery_type: "stamps";
+        carrier_type: "parcel";
+        ref: string;
+        code: string;
+    };
 };
 
 export type KencoveApiPricelistItem = {
