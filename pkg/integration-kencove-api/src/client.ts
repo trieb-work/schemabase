@@ -225,39 +225,22 @@ export class KencoveApiClient {
     public async *getPaymentsStream(
         fromDate: Date,
     ): AsyncIterableIterator<KencoveApiPayment[]> {
-        let nextPage: string | null = null;
-        let offset: number = 0;
-        do {
-            const accessToken = await this.getAccessToken();
-            const response = await this.getPaymentsPage(
-                fromDate,
-                offset,
-                accessToken,
-            );
-            yield response.data;
-            nextPage = response.next_page;
-            offset += 200;
-        } while (nextPage);
-    }
+        // Define endpoint for payments data, adjust if necessary
+        const endpoint = "/ecom/payment/kencove";
 
-    private async getPaymentsPage(
-        fromDate: Date,
-        offset: number,
-        accessToken: string,
-    ): Promise<{
-        data: KencoveApiPayment[];
-        result_count: number;
-        next_page: string;
-    }> {
-        const response = await this.axiosInstance.get(
-            `/ecom/payment/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                },
-            },
-        );
-        return response.data;
+        // Specify any extra parameters if needed, for payments this might be empty or specific filters
+        const extraParams = ""; // Adjust as needed
+
+        // Use the generic streamApiData method to fetch payments
+        for await (const batch of this.streamApiData<KencoveApiPayment>(
+            endpoint,
+            fromDate,
+            3,
+            200,
+            extraParams,
+        )) {
+            yield batch;
+        }
     }
 
     public async *getProductsStream(
