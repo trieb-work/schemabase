@@ -315,6 +315,11 @@ export class SaleorPackageSyncService {
                         },
                     },
                 },
+                order: {
+                    select: {
+                        orderNumber: true,
+                    },
+                },
             },
         });
         this.logger.info(
@@ -323,6 +328,11 @@ export class SaleorPackageSyncService {
             } orders that have a package and are saleor orders: ${packagesNotYetInSaleor
                 .map((p) => p.orderId)
                 .join(",")}`,
+            {
+                orderNumbers: packagesNotYetInSaleor
+                    .map((p) => p.order?.orderNumber)
+                    .join(", "),
+            },
         );
 
         /**
@@ -486,6 +496,9 @@ export class SaleorPackageSyncService {
 
             this.logger.info(
                 `Creating fulfillment now in Saleor ${saleorOrder.id} - ${parcel.number} - ${parcel.orderId}`,
+                {
+                    orderNumber: saleorOrder.order.orderNumber,
+                },
             );
             this.logger.debug(
                 `Saleor line items for saleor order ${saleorOrder.id}:` +
