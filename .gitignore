@@ -52,3 +52,6 @@ coverage/
 
 yarn-error.log
 .nx
+
+
+pkg/integration-saleor-entities/src/scripts.*
