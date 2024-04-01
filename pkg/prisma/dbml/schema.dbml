@@ -1901,6 +1901,7 @@ Table CronJobState {
   lastRun DateTime
   lastRunStatus CronJobStatus
   locked Boolean [not null, default: false, note: 'You can lock cron runs to prevent running in parallel for sensitive services like Xentral']
+  errorCount Int [not null, default: 0, note: 'a simple way to let cron jobs stop cracefully instead of retrying them forever. Not all jobs use this counter']
 }
 
 Table LogisticsIntegration {

@@ -110,6 +110,7 @@ export class CronStateHandler {
         lastRun: Date;
         lastRunStatus?: CronJobStatus;
         locked?: boolean;
+        errorCount?: number;
     }) {
         const id = this.generateId();
         const updateObject: Prisma.CronJobStateCreateInput = {
@@ -117,6 +118,7 @@ export class CronStateHandler {
             lastRun: opts.lastRun,
             lastRunStatus: opts.lastRunStatus,
             locked: opts.locked,
+            errorCount: opts.errorCount,
         };
         return this.upsert(id, updateObject);
     }

@@ -79,11 +79,23 @@ export class SaleorChannelAvailabilitySyncService {
             this.logger.info(`Setting GTE date to ${createdGte}.`);
         }
 
+        if (cronState.errorCount > 3) {
+            this.logger.error(
+                `Error count is higher than 3. Not running the sync. Manual intervention required.`,
+            );
+            await this.cronState.set({
+                lastRun: now,
+                lastRunStatus: "failure",
+            });
+            return;
+        }
+
         await this.syncChannelAvailability(createdGte);
 
         await this.cronState.set({
             lastRun: now,
             lastRunStatus: "success",
+            errorCount: 0,
         });
     }
 
