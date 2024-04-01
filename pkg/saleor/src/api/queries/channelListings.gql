@@ -1,0 +1,41 @@
+fragment ChannelListings on Product {
+    id
+    channelListings {
+        id
+        channel {
+            id
+        }
+        isPublished
+        isAvailableForPurchase
+        availableForPurchaseAt
+        visibleInListings
+    }
+    variants {
+        id
+        metafield(key: "volumePricingEntries")
+        channelListings {
+            id
+            channel {
+                id
+            }
+            price {
+                amount
+            }
+        }
+    }
+}
+
+query channelListings($productIds: [ID!]!, $after: String, $first: Int) {
+    products(filter: { ids: $productIds }, first: $first, after: $after) {
+        pageInfo {
+            hasNextPage
+            startCursor
+            endCursor
+        }
+        edges {
+            node {
+                ...ChannelListings
+            }
+        }
+    }
+}

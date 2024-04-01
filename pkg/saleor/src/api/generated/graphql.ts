@@ -33316,6 +33316,77 @@ export type SaleorCronCategoriesQuery = {
     } | null;
 };
 
+export type ChannelListingsFragment = {
+    __typename?: "Product";
+    id: string;
+    channelListings?: Array<{
+        __typename?: "ProductChannelListing";
+        id: string;
+        isPublished: boolean;
+        isAvailableForPurchase?: boolean | null;
+        availableForPurchaseAt?: any | null;
+        visibleInListings: boolean;
+        channel: { __typename?: "Channel"; id: string };
+    }> | null;
+    variants?: Array<{
+        __typename?: "ProductVariant";
+        id: string;
+        metafield?: string | null;
+        channelListings?: Array<{
+            __typename?: "ProductVariantChannelListing";
+            id: string;
+            channel: { __typename?: "Channel"; id: string };
+            price?: { __typename?: "Money"; amount: number } | null;
+        }> | null;
+    }> | null;
+};
+
+export type ChannelListingsQueryVariables = Exact<{
+    productIds: Array<Scalars["ID"]> | Scalars["ID"];
+    after?: InputMaybe<Scalars["String"]>;
+    first?: InputMaybe<Scalars["Int"]>;
+}>;
+
+export type ChannelListingsQuery = {
+    __typename?: "Query";
+    products?: {
+        __typename?: "ProductCountableConnection";
+        pageInfo: {
+            __typename?: "PageInfo";
+            hasNextPage: boolean;
+            startCursor?: string | null;
+            endCursor?: string | null;
+        };
+        edges: Array<{
+            __typename?: "ProductCountableEdge";
+            node: {
+                __typename?: "Product";
+                id: string;
+                channelListings?: Array<{
+                    __typename?: "ProductChannelListing";
+                    id: string;
+                    isPublished: boolean;
+                    isAvailableForPurchase?: boolean | null;
+                    availableForPurchaseAt?: any | null;
+                    visibleInListings: boolean;
+                    channel: { __typename?: "Channel"; id: string };
+                }> | null;
+                variants?: Array<{
+                    __typename?: "ProductVariant";
+                    id: string;
+                    metafield?: string | null;
+                    channelListings?: Array<{
+                        __typename?: "ProductVariantChannelListing";
+                        id: string;
+                        channel: { __typename?: "Channel"; id: string };
+                        price?: { __typename?: "Money"; amount: number } | null;
+                    }> | null;
+                }> | null;
+            };
+        }>;
+    } | null;
+};
+
 export type GetChannelsQueryVariables = Exact<{ [key: string]: never }>;
 
 export type GetChannelsQuery = {
@@ -34610,6 +34681,34 @@ export const CategoryValuesFragmentDoc = gql`
         }
     }
 `;
+export const ChannelListingsFragmentDoc = gql`
+    fragment ChannelListings on Product {
+        id
+        channelListings {
+            id
+            channel {
+                id
+            }
+            isPublished
+            isAvailableForPurchase
+            availableForPurchaseAt
+            visibleInListings
+        }
+        variants {
+            id
+            metafield(key: "volumePricingEntries")
+            channelListings {
+                id
+                channel {
+                    id
+                }
+                price {
+                    amount
+                }
+            }
+        }
+    }
+`;
 export const PageInfoMetaFragmentDoc = gql`
     fragment PageInfoMeta on PageInfo {
         hasNextPage
@@ -35352,6 +35451,23 @@ export const SaleorCronCategoriesDocument = gql`
         }
     }
     ${CategoryValuesFragmentDoc}
+`;
+export const ChannelListingsDocument = gql`
+    query channelListings($productIds: [ID!]!, $after: String, $first: Int) {
+        products(filter: { ids: $productIds }, first: $first, after: $after) {
+            pageInfo {
+                hasNextPage
+                startCursor
+                endCursor
+            }
+            edges {
+                node {
+                    ...ChannelListings
+                }
+            }
+        }
+    }
+    ${ChannelListingsFragmentDoc}
 `;
 export const GetChannelsDocument = gql`
     query getChannels {
@@ -36433,6 +36549,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<SaleorCronCategoriesQuery>;
+        },
+        channelListings(
+            variables: ChannelListingsQueryVariables,
+            options?: C,
+        ): Promise<ChannelListingsQuery> {
+            return requester<
+                ChannelListingsQuery,
+                ChannelListingsQueryVariables
+            >(
+                ChannelListingsDocument,
+                variables,
+                options,
+            ) as Promise<ChannelListingsQuery>;
         },
         getChannels(
             variables?: GetChannelsQueryVariables,

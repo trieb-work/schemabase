@@ -9,7 +9,11 @@ import {
     SalesChannel,
     SalesChannelPriceEntry,
 } from "@eci/pkg/prisma";
-import { SaleorClient } from "@eci/pkg/saleor";
+import {
+    ChannelListingsFragment,
+    SaleorClient,
+    queryWithPagination,
+} from "@eci/pkg/saleor";
 import { isAfter, subHours, subYears } from "date-fns";
 
 type EnhancedSalesChannelPriceEntry = SalesChannelPriceEntry & {
@@ -227,6 +231,12 @@ export class SaleorChannelAvailabilitySyncService {
                     },
                     productVariant: {
                         product: {
+                            saleorProducts: {
+                                some: {
+                                    installedSaleorAppId:
+                                        this.installedSaleorAppId,
+                                },
+                            },
                             saleorChannelListings: {
                                 none: {
                                     installedSaleorAppId:
@@ -287,6 +297,10 @@ export class SaleorChannelAvailabilitySyncService {
 
         this.logger.info(
             `Working on ${channelPricings.length} channel pricing entries`,
+            {
+                channelPricingsUpdated: channelPricingsUpdated.length,
+                channelPricingsMissing: channelPricingsMissing.length,
+            },
         );
 
         /**
@@ -297,6 +311,36 @@ export class SaleorChannelAvailabilitySyncService {
          */
         const basePriceEntries =
             this.getCurrentActiveBasePrices(channelPricings);
+
+        /**
+         * All base price entries are related to product variants.
+         * These are the unique saleor product ids these entries are related to.
+         */
+        const allUniqueSaleorProductIds = [
+            ...new Set(
+                channelPricings.map(
+                    (entry) =>
+                        entry.productVariant.product.saleorProducts[0].id,
+                ),
+            ),
+        ];
+
+        this.logger.info(
+            `Syncing channel availability for ${allUniqueSaleorProductIds.length} unique saleor products. Getting the existing channel listings first`,
+        );
+
+        const res =
+            allUniqueSaleorProductIds.length > 0
+                ? await queryWithPagination(({ first, after }) =>
+                      this.saleorClient.channelListings({
+                          first,
+                          after,
+                          productIds: allUniqueSaleorProductIds,
+                      }),
+                  )
+                : {};
+
+        const existingChannelListings = res.products?.edges.map((x) => x.node);
 
         for (const entry of basePriceEntries) {
             if (
@@ -317,7 +361,7 @@ export class SaleorChannelAvailabilitySyncService {
                 `Syncing channel availability (base price) for product ${entry.productVariant.product.name} variant ${entry.productVariant.variantName}` +
                     ` at channel ${entry.salesChannel.name} with price ${entry.price} and min Quanity ${entry.minQuantity}`,
             );
-            await this.syncBaseAvailability(entry);
+            await this.syncBaseAvailability(entry, existingChannelListings);
         }
 
         // Get all unique product variant ids of volume discount channel pricings.
@@ -334,7 +378,7 @@ export class SaleorChannelAvailabilitySyncService {
             this.logger.info(
                 `Syncing volume discount entries for product variant ${entry}`,
             );
-            await this.syncVolumeDiscounts(entry);
+            await this.syncVolumeDiscounts(entry, existingChannelListings);
         }
     }
 
@@ -344,7 +388,10 @@ export class SaleorChannelAvailabilitySyncService {
      * We will need to update this logic once Saleor implements volume discounts
      * @param entry
      */
-    private async syncVolumeDiscounts(prodVariantId: string) {
+    private async syncVolumeDiscounts(
+        prodVariantId: string,
+        existingListings?: ChannelListingsFragment[],
+    ) {
         /**
          * pull all entries for quantity > 0 for this variant
          * and that are currently valid (no end date or end date after now)
@@ -401,6 +448,12 @@ export class SaleorChannelAvailabilitySyncService {
             );
             return;
         }
+        const saleorProductId =
+            entries[0].productVariant.product.saleorProducts[0].id;
+
+        const existingVariantMetafield = existingListings
+            ?.find((l) => l.id === saleorProductId)
+            ?.variants?.find((v) => v.id === saleorProductVariantId)?.metafield;
 
         const metadataItemValue = filteredEntries.map((entry) => ({
             channel: entry.salesChannel.name.toLowerCase(),
@@ -410,6 +463,20 @@ export class SaleorChannelAvailabilitySyncService {
             endDate: entry.endDate,
             channelListingId: entry.id,
         }));
+
+        /**
+         * compare the existing metadata with the new metadata
+         * and only update if there are changes
+         */
+        if (
+            existingVariantMetafield &&
+            existingVariantMetafield === JSON.stringify(metadataItemValue)
+        ) {
+            this.logger.info(
+                `Volume pricing metadata already up to date for product variant ${prodVariantId}`,
+            );
+            return;
+        }
 
         this.logger.info(
             `Updating metadata with volume pricing for product ${entries[0].productVariant.product.name}, variant ` +
@@ -447,6 +514,7 @@ export class SaleorChannelAvailabilitySyncService {
                 saleorProductVariant: SaleorProductVariant[];
             };
         },
+        existingListings?: ChannelListingsFragment[],
     ) {
         const saleorProductId =
             entry.productVariant.product.saleorProducts?.[0]?.id;
@@ -456,6 +524,50 @@ export class SaleorChannelAvailabilitySyncService {
             );
             return;
         }
+        const existingListing = existingListings?.find(
+            (l) => l.id === saleorProductId,
+        );
+
+        /**
+         * check if existing product and variant channel listing are the
+         * same that we want to update. Skip update in that case
+         */
+        if (existingListing && existingListing.channelListings?.length) {
+            const existingChannelListing = existingListing.channelListings.find(
+                (c) => c.channel.id === entry.salesChannel.saleorChannels[0].id,
+            );
+            if (
+                existingChannelListing &&
+                existingChannelListing.availableForPurchaseAt ===
+                    entry.startDate &&
+                existingChannelListing.isAvailableForPurchase &&
+                existingChannelListing.isPublished &&
+                existingChannelListing.visibleInListings
+            ) {
+                const variant = existingListing.variants?.find(
+                    (v) =>
+                        v.id ===
+                        entry.productVariant.saleorProductVariant[0].id,
+                );
+                if (variant && variant.channelListings?.length) {
+                    const variantChannelListing = variant.channelListings.find(
+                        (c) =>
+                            c.channel.id ===
+                            entry.salesChannel.saleorChannels[0].id,
+                    );
+                    if (
+                        variantChannelListing &&
+                        variantChannelListing.price?.amount === entry.price
+                    ) {
+                        this.logger.info(
+                            `Product and variant channel listing already up to date for product and product variant ${entry.productVariant.id}`,
+                        );
+                        return;
+                    }
+                }
+            }
+        }
+
         const resp1 = await this.saleorClient.productChannelListingUpdate({
             id: saleorProductId,
             input: {
