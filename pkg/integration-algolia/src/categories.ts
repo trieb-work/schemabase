@@ -112,6 +112,7 @@ export class AlgoliaCategorySyncService {
         const index = this.algoliaApp.categoryIndexName;
 
         const requests: BatchRequest[] = [];
+        const filterCategories: string[] = [];
 
         for (const category of categories) {
             /**
@@ -174,6 +175,7 @@ export class AlgoliaCategorySyncService {
                 action: "updateObject",
                 body: algoliaObject,
             });
+            filterCategories.push(category.id);
         }
 
         this.logger.info(
@@ -203,7 +205,9 @@ export class AlgoliaCategorySyncService {
 
         const entriesToDelete = algoliaEntries.hits.filter(
             (entry) =>
-                !categories.some((category) => category.id === entry.objectID),
+                !filterCategories.some(
+                    (category) => category === entry.objectID,
+                ),
         );
 
         if (entriesToDelete.length > 0) {
