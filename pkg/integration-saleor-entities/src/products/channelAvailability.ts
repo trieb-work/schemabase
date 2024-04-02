@@ -536,10 +536,13 @@ export class SaleorChannelAvailabilitySyncService {
             const existingChannelListing = existingListing.channelListings.find(
                 (c) => c.channel.id === entry.salesChannel.saleorChannels[0].id,
             );
+            this.logger.debug(
+                `Existing channel listing: ${JSON.stringify(
+                    existingChannelListing,
+                )}`,
+            );
             if (
                 existingChannelListing &&
-                existingChannelListing.availableForPurchaseAt ===
-                    entry.startDate &&
                 existingChannelListing.isAvailableForPurchase &&
                 existingChannelListing.isPublished &&
                 existingChannelListing.visibleInListings
@@ -555,6 +558,7 @@ export class SaleorChannelAvailabilitySyncService {
                             c.channel.id ===
                             entry.salesChannel.saleorChannels[0].id,
                     );
+
                     if (
                         variantChannelListing &&
                         variantChannelListing.price?.amount === entry.price
