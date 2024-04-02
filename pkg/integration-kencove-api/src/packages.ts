@@ -300,7 +300,7 @@ export class KencoveApiAppPackageSyncService {
         }
 
         // we update the last run date
-        if (errors.length === 0) {
+        if (errors.length < 3) {
             await this.cronState.set({
                 lastRun: now,
                 lastRunStatus: "success",
