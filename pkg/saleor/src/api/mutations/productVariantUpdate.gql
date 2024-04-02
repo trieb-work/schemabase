@@ -12,6 +12,7 @@ mutation productVariantBulkUpdate(
         errors {
             field
             values
+            code
         }
     }
 }

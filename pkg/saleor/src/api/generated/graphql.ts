@@ -33056,6 +33056,7 @@ export type ProductVariantBulkUpdateMutation = {
             __typename?: "ProductVariantBulkError";
             field?: string | null;
             values?: Array<string> | null;
+            code: ProductVariantBulkErrorCode;
         }>;
     } | null;
 };
@@ -35309,6 +35310,7 @@ export const ProductVariantBulkUpdateDocument = gql`
             errors {
                 field
                 values
+                code
             }
         }
     }
