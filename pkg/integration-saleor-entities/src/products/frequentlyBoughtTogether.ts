@@ -249,7 +249,8 @@ export class FrequentlyBoughtTogether {
                     continue;
                 }
                 this.logger.info(
-                    `Updating FBT for variant ${variant.sku} with saleor id ${saleorProduct.id} with ${referingVariants.length} referring variants`,
+                    `Updating FBT for variant ${variant.sku} with saleor product id ` +
+                        `${saleorProduct.id} with ${referingVariants.length} referring variants`,
                     {
                         referingVariants,
                         attributeId,
@@ -276,6 +277,31 @@ export class FrequentlyBoughtTogether {
                 resp.productVariantBulkUpdate?.errors &&
                 resp.productVariantBulkUpdate.errors.length > 0
             ) {
+                // TODO: handle when product variant can't be found and delete this product variant
+                if (
+                    resp.productVariantBulkUpdate.errors[0].field === "id" &&
+                    resp.productVariantBulkUpdate.errors[0].code === "NOT_FOUND"
+                ) {
+                    this.logger.warn(
+                        `Saleor product ${saleorProduct.id} not found. Deleting product + variants from our DB (orphans)`,
+                    );
+                    await this.db.saleorProduct.delete({
+                        where: {
+                            id_installedSaleorAppId: {
+                                id: saleorProduct.id,
+                                installedSaleorAppId: this.installedSaleorAppId,
+                            },
+                        },
+                    });
+                    await this.db.saleorProductVariant.deleteMany({
+                        where: {
+                            installedSaleorAppId: this.installedSaleorAppId,
+                            id: {
+                                in: bulkUpdate.map((v) => v.id),
+                            },
+                        },
+                    });
+                }
                 throw new Error(
                     `Error on bulk update variants: ${JSON.stringify(
                         resp.productVariantBulkUpdate.errors,
