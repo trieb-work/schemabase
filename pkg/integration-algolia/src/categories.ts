@@ -62,22 +62,33 @@ export class AlgoliaCategorySyncService {
             where: {
                 tenantId: this.tenantId,
 
-                products: {
-                    some: {
-                        tenantId: this.tenantId,
-                        variants: {
+                OR: [
+                    {
+                        products: {
                             some: {
-                                salesChannelPriceEntries: {
+                                tenantId: this.tenantId,
+                                variants: {
                                     some: {
-                                        startDate: {
-                                            lte: now,
+                                        salesChannelPriceEntries: {
+                                            some: {
+                                                startDate: {
+                                                    lte: now,
+                                                },
+                                            },
                                         },
                                     },
                                 },
                             },
                         },
                     },
-                },
+                    {
+                        childrenCategories: {
+                            some: {
+                                tenantId: this.tenantId,
+                            },
+                        },
+                    },
+                ],
             },
             include: {
                 parentCategory: {
@@ -143,6 +154,9 @@ export class AlgoliaCategorySyncService {
             }
 
             if (skipCategory) {
+                this.logger.info(
+                    `Skipping category ${category.id} - ${category.name} because it has more than one parentCategory`,
+                );
                 continue;
             }
 
