@@ -501,7 +501,16 @@ export class SaleorPackageSyncService {
                     }. Missing orderLineId or quantity: ${JSON.stringify(
                         saleorLines,
                     )}`,
+                    {
+                        saleorOrderLines: JSON.stringify(
+                            saleorOrder.order.orderLineItems,
+                        ),
+                        packageLineItems: JSON.stringify(
+                            parcel.packageLineItems,
+                        ),
+                    },
                 );
+
                 continue;
             }
 
