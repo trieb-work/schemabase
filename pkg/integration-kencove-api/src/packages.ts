@@ -228,7 +228,7 @@ export class KencoveApiAppPackageSyncService {
                                                     ),
                                                     uniqueString:
                                                         uniqueStringOrderLine(
-                                                            pkg.salesOrderNo,
+                                                            pkg.packageName,
                                                             item.itemCode,
                                                             item.quantity,
                                                             index,
