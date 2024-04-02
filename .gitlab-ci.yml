@@ -65,7 +65,7 @@ review:
             --set=sendgridApiKey="TO_BE_ADDED"
             --set=secretKey="$SECRET_KEY_WORKER"
             --set=resources.requests.memory="1000Mi"
-            --set=resources.limits.memory=""
+            --set=resources.limits.memory="1500Mi"
             --set=resources.requests.cpu="1000m"
             --set=resources.limits.cpu="1000m"
         - >
