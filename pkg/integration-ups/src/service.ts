@@ -129,6 +129,7 @@ export class UPSTrackingSyncService {
                 createdAt: {
                     gt: subMonths(new Date(), 2),
                 },
+                isTrackingEnabled: true,
             },
         });
 
@@ -150,6 +151,25 @@ export class UPSTrackingSyncService {
                 fullPackage.data?.trackResponse?.shipment[0]?.package?.[0];
 
             if (!shipment) {
+                if (
+                    fullPackage.data?.trackResponse?.shipment[0]
+                        ?.inquiryNumber === p.trackingId &&
+                    fullPackage.data?.trackResponse?.shipment[0]?.warnings?.[0]
+                        ?.code === "TW0001"
+                ) {
+                    this.logger.info(
+                        `Package ${p.trackingId} is no longer in the UPS system. Disabling tracking for this package`,
+                    );
+                    await this.db.package.update({
+                        where: {
+                            id: p.id,
+                        },
+                        data: {
+                            isTrackingEnabled: false,
+                        },
+                    });
+                    continue;
+                }
                 this.logger.error(
                     `Could not find package data for ${
                         p.trackingId

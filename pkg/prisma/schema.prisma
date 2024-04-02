@@ -2374,6 +2374,9 @@ model Package {
   /// Optional field if this package is part of a multi piece shipment
   isMultiPieceShipment Boolean @default(false)
 
+  /// we can disable live tracking for a package
+  isTrackingEnabled Boolean @default(true)
+
   /// the parcel weight in grams
   weightGrams Int?
 
