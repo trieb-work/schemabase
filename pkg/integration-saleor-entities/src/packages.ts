@@ -502,6 +502,7 @@ export class SaleorPackageSyncService {
                         saleorLines,
                     )}`,
                     {
+                        orderNumber: saleorOrder.order.orderNumber,
                         saleorOrderLines: JSON.stringify(
                             saleorOrder.order.orderLineItems,
                         ),
