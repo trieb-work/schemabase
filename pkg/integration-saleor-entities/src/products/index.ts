@@ -73,6 +73,12 @@ export class SaleorProductSyncService {
      */
     private swatchCache: Record<string, string> = {};
 
+    /**
+     * Count all Saleor requests that we do
+     * to get a total number of requests at the end
+     */
+    private saleorRequestCounter = 0;
+
     public constructor(config: SaleorProductSyncServiceConfig) {
         this.config = config;
         this.saleorClient = config.saleorClient;
@@ -88,6 +94,16 @@ export class SaleorProductSyncService {
             db: this.db,
             syncEntity: "items",
         });
+    }
+
+    /**
+     * A Saleor client instance, that includes the request counter,
+     * but is other than that just forwarding the requests to the
+     * original Saleor client. E.g.: this.saleorClientWithCounter.productTypeList({})
+     */
+    private get saleorClientWithCounter() {
+        this.saleorRequestCounter++;
+        return this.saleorClient;
     }
 
     /**
@@ -202,10 +218,12 @@ export class SaleorProductSyncService {
                 `Setting variant selection attribute ${selectionAttribute} for saleor product type ${saleorProdTypeId}`,
             );
             const resp =
-                await this.saleorClient.productAttributeVariantSelection({
-                    attributeId: selectionAttribute,
-                    productTypeId: saleorProdTypeId,
-                });
+                await this.saleorClientWithCounter.productAttributeVariantSelection(
+                    {
+                        attributeId: selectionAttribute,
+                        productTypeId: saleorProdTypeId,
+                    },
+                );
             if (
                 resp.productAttributeAssignmentUpdate?.errors &&
                 resp?.productAttributeAssignmentUpdate?.errors?.length > 0
@@ -317,7 +335,7 @@ export class SaleorProductSyncService {
                 );
                 if (!existingProdTypeId) {
                     const productTypeCreateResponse =
-                        await this.saleorClient.productTypeCreate({
+                        await this.saleorClientWithCounter.productTypeCreate({
                             input: {
                                 name: prodType.name,
                                 hasVariants: prodType.isVariant,
@@ -2033,6 +2051,8 @@ export class SaleorProductSyncService {
             this.logger.info(`Setting GTE date to ${createdGte}.`);
         }
 
+        this.saleorRequestCounter = 0;
+
         /**
          * Get all product types, that are not yet created in Saleor
          * or updated since last run
@@ -2092,8 +2112,12 @@ export class SaleorProductSyncService {
 
         if (saleorProductVariants.length === 0) {
             this.logger.info(
-                "Saleor products did not change since last run or we have none in our DB. Aborting sync.",
+                "Saleor product variants did not change since last run or we have none in our DB. Aborting sync.",
             );
+            await this.cronState.set({
+                lastRun: new Date(),
+                lastRunStatus: "success",
+            });
             return;
         }
 
