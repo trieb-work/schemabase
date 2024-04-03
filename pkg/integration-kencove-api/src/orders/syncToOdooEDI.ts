@@ -374,7 +374,7 @@ export class SyncToOdooEDI {
                     totalPriceGross: schemabaseOrder.shippingPriceGross,
                     totalPriceNet: schemabaseOrder.shippingPriceNet,
                     name: schemabaseOrder.shippingMethodName,
-                    id: schemabaseOrder.shippingMethodId,
+                    id: shippingMethodId,
                     quotationId,
                 },
             };

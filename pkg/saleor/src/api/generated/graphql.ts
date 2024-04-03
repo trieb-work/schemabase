@@ -33432,6 +33432,11 @@ export type SaleorCronCustomersQuery = {
                     key: string;
                     value: string;
                 }>;
+                metadata: Array<{
+                    __typename?: "MetadataItem";
+                    key: string;
+                    value: string;
+                }>;
                 addresses: Array<{
                     __typename?: "Address";
                     id: string;
@@ -35507,6 +35512,10 @@ export const SaleorCronCustomersDocument = gql`
                     dateJoined
                     updatedAt
                     privateMetadata {
+                        key
+                        value
+                    }
+                    metadata {
                         key
                         value
                     }
