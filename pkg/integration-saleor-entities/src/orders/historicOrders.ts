@@ -315,12 +315,16 @@ export class SaleorHistoricOrdersSync {
                             ? order.mainContact.email
                             : undefined,
                     },
-
+                    metadata: [
+                        {
+                            key: "orderNumber",
+                            value: order.orderNumber,
+                        },
+                    ],
                     lines: this.orderLineItemsToLines(
                         order.orderLineItems,
                         defaultSaleorTaxRateId,
                     ),
-                    // payments: order.payments,
                     // packages: order.packages,
                     languageCode: this.schemabaseLanguageToSaleorLanguage(
                         order.language,
