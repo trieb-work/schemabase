@@ -55,7 +55,7 @@ export class SaleorCustomerSyncService {
         const response = await this.saleorClient.updateSaleorCustomer({
             id: saleorCustomerId,
             input: {
-                privateMetadata: externalIdentifier
+                metadata: externalIdentifier
                     ? [
                           {
                               key: "avataxCustomerCode",
@@ -157,7 +157,7 @@ export class SaleorCustomerSyncService {
 
             const externalIdentifier =
                 internalContact.customer.externalIdentifier;
-            const saleorAvataxCustomerId = contact.privateMetadata.find(
+            const saleorAvataxCustomerId = contact.metadata.find(
                 (k) => k.key === "avataxCustomerCode",
             )?.value;
 
