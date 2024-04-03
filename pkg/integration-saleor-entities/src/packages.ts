@@ -231,21 +231,21 @@ export class SaleorPackageSyncService {
         saleorFulfillmentId: string,
         parcel: Package,
     ): Promise<void> {
-        const metadata: MetadataInput[] = [
-            {
-                key: "status",
-                value: parcel.state,
-            },
-        ];
+        const metadata: MetadataInput[] = [];
+
+        if (parcel.state) metadata.push({ key: "state", value: parcel.state });
         if (parcel.carrierTrackingUrl)
             metadata.push({
                 key: "carrierTrackingUrl",
                 value: parcel.carrierTrackingUrl,
             });
-        await this.saleorClient.saleorUpdateMetadata({
-            id: saleorFulfillmentId,
-            input: metadata,
-        });
+        if (parcel.carrier)
+            metadata.push({ key: "carrier", value: parcel.carrier });
+        if (metadata.length > 0)
+            await this.saleorClient.saleorUpdateMetadata({
+                id: saleorFulfillmentId,
+                input: metadata,
+            });
         this.logger.debug(
             `Updated metadata for fulfillment ${saleorFulfillmentId} with ${JSON.stringify(
                 metadata,
