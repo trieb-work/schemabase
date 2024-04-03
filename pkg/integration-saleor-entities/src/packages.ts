@@ -218,11 +218,6 @@ export class SaleorPackageSyncService {
                 parcel.created,
             );
         }
-
-        await this.cronState.set({
-            lastRun: new Date(),
-            lastRunStatus: "success",
-        });
     }
 
     /**
@@ -263,6 +258,22 @@ export class SaleorPackageSyncService {
      * and related payments. Tries to create these payments in saleor
      */
     public async syncFromECI(): Promise<void> {
+        const cronState = await this.cronState.get();
+
+        const now = new Date();
+        let createdGte: Date;
+        if (!cronState.lastRun) {
+            createdGte = subYears(now, 2);
+            this.logger.info(
+                // eslint-disable-next-line max-len
+                `This seems to be our first sync run. Syncing data from: ${createdGte}`,
+            );
+        } else {
+            createdGte = subHours(cronState.lastRun, 3);
+            this.logger.info(
+                `Setting GTE date to ${createdGte}. Asking Saleor for all (partially) fulfilled orders with lastUpdated GTE.`,
+            );
+        }
         /**
          * We search all packages that have a related saleor order, but that don't have any related packages in saleor,
          * but related packages in our DB.
@@ -593,5 +604,49 @@ export class SaleorPackageSyncService {
              * in saleor
              */
         }
+
+        /**
+         * Packages, that have a saleor package, that got
+         * updated since the last run
+         */
+        const updatedPackages = await this.db.package.findMany({
+            where: {
+                updatedAt: {
+                    gt: createdGte,
+                },
+                saleorPackage: {
+                    some: {
+                        installedSaleorAppId: {
+                            contains: this.installedSaleorAppId,
+                        },
+                    },
+                },
+            },
+            include: {
+                saleorPackage: true,
+            },
+        });
+
+        this.logger.info(
+            `Found ${updatedPackages.length} packages, that have been updated since the last run`,
+        );
+
+        for (const updatedPackage of updatedPackages) {
+            if (!updatedPackage.saleorPackage?.[0]?.id) {
+                this.logger.error(
+                    `No saleor package found for package ${updatedPackage.id} - ${updatedPackage.number}`,
+                );
+                continue;
+            }
+            await this.updateFulfillmentMetadata(
+                updatedPackage.saleorPackage[0].id,
+                updatedPackage,
+            );
+        }
+
+        await this.cronState.set({
+            lastRun: new Date(),
+            lastRunStatus: "success",
+        });
     }
 }
