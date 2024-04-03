@@ -28,6 +28,10 @@ query saleorCronCustomers(
                     key
                     value
                 }
+                metadata {
+                    key
+                    value
+                }
                 addresses {
                     id
                     firstName
