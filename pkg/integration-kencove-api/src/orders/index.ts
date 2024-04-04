@@ -489,9 +489,27 @@ export class KencoveApiAppOrderSyncService {
                 }
                 const updatedAt = new Date(order.updatedAt);
                 const mainContactPromise = this.syncMainContact(order);
-                const carrier = shippingMethodMatch(
-                    order.carrier.delivery_type || "",
-                );
+
+                /**
+                 * Delivery method could be found in two places -
+                 * carrier.delivery_type is number one.
+                 *  when this one is not set, we check all orderLines
+                 * line_carrier name. If all line items have the same carrier,
+                 * we use this one. When both are not set, we use "" as default.
+                 */
+                let deliveryMethod = order.carrier.name || "";
+
+                if (!deliveryMethod) {
+                    const lineCarriers = order.orderLines.map(
+                        (line) => line.line_carrier?.name,
+                    );
+
+                    const uniqueCarriers = [...new Set(lineCarriers)];
+                    if (uniqueCarriers.length === 1 && uniqueCarriers[0]) {
+                        deliveryMethod = uniqueCarriers[0];
+                    }
+                }
+                const carrier = shippingMethodMatch(deliveryMethod);
                 const billingAddressPromise = this.getAddress(
                     order.billingAddress.billingAddressId,
                 );
@@ -511,6 +529,7 @@ export class KencoveApiAppOrderSyncService {
                         billingAddressId,
                         shippingAddressId,
                         date: order.date_order,
+                        carrier,
                     },
                 );
                 const res = await this.db.kencoveApiOrder.update({
