@@ -119,19 +119,15 @@ export class KencoveApiAppPackageSyncService {
                         p.packageName !== pkg.packageName,
                 );
 
-                // TEMP: when the trackingNumber is a string like: "1Z2632010391767531+1Z2632010394224148"
+                // when the trackingNumber is a string like: "1Z2632010391767531+1Z2632010394224148"
                 // or "1Z2632010391767531,1Z2632010394224148"
                 // we have a multi piece shipment, that is currently not supported by the ERP.
-                // In that case, we don't write the tracking number to the package
+                // In that case, we don't write the tracking number to the package. Newer packages don't face this problem
                 let trackingId: string | undefined = pkg.trackingNumber;
                 if (
                     pkg?.trackingNumber?.includes("+") ||
                     pkg?.trackingNumber?.includes(",")
                 ) {
-                    this.logger.warn(
-                        // eslint-disable-next-line max-len
-                        `Package ${pkg.packageName} has a multi piece shipment. We don't write the tracking number to the package.`,
-                    );
                     trackingId = undefined;
                 }
 
