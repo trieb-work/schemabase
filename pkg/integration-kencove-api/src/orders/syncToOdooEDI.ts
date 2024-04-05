@@ -260,7 +260,12 @@ export class SyncToOdooEDI {
             }
 
             let shippingMethodId = schemabaseOrder.shippingMethodId;
-            let rateOptions: any[] = [];
+            let rateOptions: {
+                shipmentId: number;
+                rateOptionId: number;
+                carrierId: number | null;
+                carrierRef?: string;
+            }[] = [];
             let quotationId: string | undefined = undefined;
 
             /**
@@ -298,6 +303,13 @@ export class SyncToOdooEDI {
                     }
                 }
             }
+
+            /**
+             * currently, we handle split and single Shipments different because of shortcomings from the EDI..
+             *
+             */
+            const singleShipment =
+                rateOptions.length === 1 ? rateOptions[0] : null;
 
             const order = {
                 orderNumber: schemabaseOrder.orderNumber,
@@ -387,6 +399,8 @@ export class SyncToOdooEDI {
                     id: shippingMethodId,
                     rateOptions,
                     quotationId,
+                    deliveryCarrierId: singleShipment?.carrierId,
+                    deliveryCarrierRef: singleShipment?.carrierRef,
                 },
             };
             this.logger.info(`Sending order ${order.orderNumber} to Odoo EDI`);
