@@ -1217,7 +1217,7 @@ model Order {
   /// the exact name of the shipping method
   shippingMethodName String?
   /// an ID identifier for the shipping method
-  shippingMethodId String?
+  shippingMethodId String? @db.Text
 
   /// The applied discount code
   discountCode String?
