@@ -260,6 +260,7 @@ export class SyncToOdooEDI {
             }
 
             let shippingMethodId = schemabaseOrder.shippingMethodId;
+            let rateOptions: any[] = [];
             let quotationId: string | undefined = undefined;
 
             /**
@@ -284,6 +285,15 @@ export class SyncToOdooEDI {
                         if (decodedObject.quotationId) {
                             quotationId = decodedObject.quotationId;
                             shippingMethodId = decodedObject.rateOptionId;
+                        }
+                        /**
+                         * the new format looks like this:
+                         * {"options":[{"shipmentId":4213,"rateOptionId":30965},{"shipmentId":4214,"rateOptionId":30966}],
+                         * "quotationId":"855bd5eb-e0cc-4bd2-af90-550616759ecf"}
+                         */
+                        if (decodedObject.options) {
+                            rateOptions = decodedObject.options;
+                            quotationId = decodedObject.quotationId;
                         }
                     }
                 }
@@ -375,6 +385,7 @@ export class SyncToOdooEDI {
                     totalPriceNet: schemabaseOrder.shippingPriceNet,
                     name: schemabaseOrder.shippingMethodName,
                     id: shippingMethodId,
+                    rateOptions,
                     quotationId,
                 },
             };
