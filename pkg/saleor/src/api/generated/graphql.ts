@@ -33538,6 +33538,7 @@ export type SaleorCronOrdersOverviewQuery = {
                 shippingPrice: {
                     __typename?: "TaxedMoney";
                     gross: { __typename?: "Money"; amount: number };
+                    net: { __typename?: "Money"; amount: number };
                 };
                 voucher?: {
                     __typename?: "Voucher";
@@ -35574,6 +35575,9 @@ export const SaleorCronOrdersOverviewDocument = gql`
                     }
                     shippingPrice {
                         gross {
+                            amount
+                        }
+                        net {
                             amount
                         }
                     }

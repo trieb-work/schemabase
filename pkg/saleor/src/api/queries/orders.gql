@@ -48,6 +48,9 @@ query saleorCronOrdersOverview(
                     gross {
                         amount
                     }
+                    net {
+                        amount
+                    }
                 }
                 voucher {
                     id

@@ -350,6 +350,8 @@ export class SaleorOrderSyncService {
                                         paymentStatus === "fullyPaid",
                                     shippingPriceGross:
                                         order.shippingPrice.gross.amount,
+                                    shippingPriceNet:
+                                        order.shippingPrice.net.amount,
                                     tenant: {
                                         connect: {
                                             id: this.tenantId,
