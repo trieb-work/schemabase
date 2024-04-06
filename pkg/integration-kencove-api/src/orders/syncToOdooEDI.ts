@@ -359,7 +359,7 @@ export class SyncToOdooEDI {
                     state: schemabaseOrder.billingAddress?.state,
                     zip: schemabaseOrder.billingAddress?.plz,
                     city: schemabaseOrder.billingAddress?.city,
-                    phone: schemabaseOrder.shippingAddress?.phone,
+                    phone: schemabaseOrder.billingAddress?.phone,
                 },
                 orderLineItems: schemabaseOrder.orderLineItems.map(
                     (orderLineItem) => {

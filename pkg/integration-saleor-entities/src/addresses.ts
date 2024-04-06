@@ -78,6 +78,7 @@ class Addresses {
             state: address.countryArea,
             houseNumber: splitted?.housenumber,
             streetWithoutHouseNumber: splitted?.street,
+            phone: address.phone,
         };
         this.logger.debug("Constructed Address", addObj);
         const uniqueString = uniqueStringAddress(addObj);
