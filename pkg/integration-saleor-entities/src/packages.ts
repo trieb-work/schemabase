@@ -541,6 +541,7 @@ export class SaleorPackageSyncService {
             const response = await this.saleorClient.saleorCreatePackage({
                 order: saleorOrder.id,
                 input: {
+                    allowStockToBeExceeded: true,
                     lines: saleorLines,
                     trackingNumber,
                 },
