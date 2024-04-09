@@ -265,6 +265,76 @@ export class KencoveApiAppPackageSyncService {
                             createdAt,
                             updatedAt,
                             package: {
+                                connectOrCreate: {
+                                    where: {
+                                        number_tenantId: {
+                                            number: pkg.packageName,
+                                            tenantId:
+                                                this.kencoveApiApp.tenantId,
+                                        },
+                                    },
+                                    create: {
+                                        id: id.id("package"),
+                                        number: pkg.packageName,
+                                        trackingId,
+                                        isMultiPieceShipment,
+                                        carrierTrackingUrl: trackingId
+                                            ? pkg.trackingUrl
+                                            : undefined,
+                                        tenant: {
+                                            connect: {
+                                                id: this.kencoveApiApp.tenantId,
+                                            },
+                                        },
+                                        carrier,
+                                        order: {
+                                            connect: {
+                                                id: schemabaseOrder.id,
+                                            },
+                                        },
+                                        packageLineItems: {
+                                            create: pkg.packageItemline.map(
+                                                (item, index) => ({
+                                                    id: id.id(
+                                                        "packageLineItem",
+                                                    ),
+                                                    uniqueString:
+                                                        uniqueStringOrderLine(
+                                                            pkg.packageName,
+                                                            item.itemCode,
+                                                            item.quantity,
+                                                            index,
+                                                        ),
+                                                    quantity: item.quantity,
+                                                    tenant: {
+                                                        connect: {
+                                                            id: this
+                                                                .kencoveApiApp
+                                                                .tenantId,
+                                                        },
+                                                    },
+                                                    warehouse: {
+                                                        connect: {
+                                                            id: warehouseId,
+                                                        },
+                                                    },
+                                                    productVariant: {
+                                                        connect: {
+                                                            sku_tenantId: {
+                                                                sku: item.itemCode,
+                                                                tenantId:
+                                                                    this
+                                                                        .kencoveApiApp
+                                                                        .tenantId,
+                                                            },
+                                                        },
+                                                    },
+                                                }),
+                                            ),
+                                        },
+                                        weightGrams,
+                                    },
+                                },
                                 update: {
                                     trackingId,
                                     carrierTrackingUrl: trackingId
