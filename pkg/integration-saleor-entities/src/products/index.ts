@@ -1119,7 +1119,9 @@ export class SaleorProductSyncService {
             include: productInclude,
         });
 
-        this.logger.debug(`Received ${itemsToCreate.length} items to create`);
+        this.logger.debug(`Received ${itemsToCreate.length} items to create`, {
+            itemsToCreate: itemsToCreate.map((x) => x.name),
+        });
 
         const updatedItemsDatabase = await this.db.product.findMany({
             where: {
