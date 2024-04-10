@@ -1976,6 +1976,9 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  /// Old products get disabled - this would normally set them to unavailable for purchase
+  active Boolean @default(true)
+
   name            String
   // Lowercase, trim, whitespace remove, special characters remove
   normalizedName  String

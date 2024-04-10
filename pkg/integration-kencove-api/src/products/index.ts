@@ -1406,6 +1406,7 @@ export class KencoveApiAppProductSyncService {
                         productName: htmlDecode(p.name),
                         countryOfOrigin: p.countryOfOrigin,
                         upc: v.upc,
+                        active: v.active,
                     })),
                 };
             })
@@ -1677,6 +1678,7 @@ export class KencoveApiAppProductSyncService {
                             sku,
                             weight,
                             variantName,
+                            active: variant.active,
                             tenant: {
                                 connect: {
                                     id: this.kencoveApiApp.tenantId,
@@ -1763,6 +1765,7 @@ export class KencoveApiAppProductSyncService {
                     existingVariant.variantName !== variantName ||
                     existingVariant.productId !== existingProduct.id ||
                     existingVariant.ean !== variant.upc ||
+                    existingVariant.active !== variant.active ||
                     existingVariant.salesTaxId !== taxId ||
                     existingVariant.kencoveApiProductVariant?.[0]?.id !==
                         variant.id
@@ -1778,6 +1781,7 @@ export class KencoveApiAppProductSyncService {
                             weight,
                             variantName,
                             ean: variant.upc,
+                            active: variant.active,
                             salesTax: taxId
                                 ? {
                                       connect: {
