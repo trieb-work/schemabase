@@ -1781,7 +1781,9 @@ export class SaleorProductSyncService {
                                                 (x) =>
                                                     x.message?.includes(
                                                         "Couldn't resolve to a node",
-                                                    ),
+                                                    ) ||
+                                                    x.code ===
+                                                        "NOT_PRODUCTS_IMAGE",
                                             )
                                         ) {
                                             /**
