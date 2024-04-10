@@ -1477,6 +1477,7 @@ export class SaleorProductSyncService {
                     } else {
                         this.logger.info(
                             `Updating product ${product.name} - ${product.id} in Saleor`,
+                            { saleorProductId },
                         );
 
                         const productUpdateInput: ProductInput = {
@@ -1586,6 +1587,45 @@ export class SaleorProductSyncService {
                             }
                         }
                     }
+                    /**
+                     * check, if we have variants in saleor, that we don't have in our
+                     * DB and delete them in Saleor. It can happen, that variants get assign to
+                     * new products
+                     */
+                    const variantIds = product.variants.map(
+                        (v) => v.saleorProductVariant[0]?.id,
+                    );
+                    const variantsInSaleor =
+                        saleorProductToCompare?.product?.variants;
+                    if (variantsInSaleor) {
+                        const variantIdsInSaleor = variantsInSaleor.map(
+                            (v) => v.id,
+                        );
+                        const variantIdsToDelete = variantIdsInSaleor.filter(
+                            (v) => !variantIds.includes(v),
+                        );
+                        if (variantIdsToDelete.length > 0) {
+                            this.logger.info(
+                                `Deleting ${variantIdsToDelete.length} variants in Saleor, that do not exist in our DB any more`,
+                                {
+                                    variantIdsToDelete,
+                                },
+                            );
+                            await this.saleorClient.productVariantBulkDelete({
+                                ids: variantIdsToDelete,
+                            });
+                            await this.db.saleorProductVariant.deleteMany({
+                                where: {
+                                    id: {
+                                        in: variantIdsToDelete,
+                                    },
+                                    installedSaleorAppId:
+                                        this.installedSaleorAppId,
+                                },
+                            });
+                        }
+                    }
+
                     /**
                      * Variants for this product that we need to create
                      */
@@ -1727,7 +1767,13 @@ export class SaleorProductSyncService {
                                                     variantImage.variantName
                                                 } in Saleor: ${JSON.stringify(
                                                     r.variantMediaAssign.errors,
-                                                )}`,
+                                                )}, tried to assign media with Saleor id ${mediaElement
+                                                    .saleorMedia?.[0]
+                                                    .id} to variant with Saleor id ${
+                                                    variantImage
+                                                        .saleorProductVariant[0]
+                                                        .id
+                                                }`,
                                             );
                                         }
                                         if (

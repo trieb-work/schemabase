@@ -33009,6 +33009,23 @@ export type ProductVariantBulkCreateMutation = {
     } | null;
 };
 
+export type ProductVariantBulkDeleteMutationVariables = Exact<{
+    ids: Array<Scalars["ID"]> | Scalars["ID"];
+}>;
+
+export type ProductVariantBulkDeleteMutation = {
+    __typename?: "Mutation";
+    productVariantBulkDelete?: {
+        __typename?: "ProductVariantBulkDelete";
+        errors: Array<{
+            __typename?: "ProductError";
+            field?: string | null;
+            message?: string | null;
+            code: ProductErrorCode;
+        }>;
+    } | null;
+};
+
 export type ProductVariantStockEntryUpdateMutationVariables = Exact<{
     variantId: Scalars["ID"];
     stocks: Array<StockInput> | StockInput;
@@ -35332,6 +35349,17 @@ export const ProductVariantBulkCreateDocument = gql`
         }
     }
 `;
+export const ProductVariantBulkDeleteDocument = gql`
+    mutation productVariantBulkDelete($ids: [ID!]!) {
+        productVariantBulkDelete(ids: $ids) {
+            errors {
+                field
+                message
+                code
+            }
+        }
+    }
+`;
 export const ProductVariantStockEntryUpdateDocument = gql`
     mutation productVariantStockEntryUpdate(
         $variantId: ID!
@@ -36531,6 +36559,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<ProductVariantBulkCreateMutation>;
+        },
+        productVariantBulkDelete(
+            variables: ProductVariantBulkDeleteMutationVariables,
+            options?: C,
+        ): Promise<ProductVariantBulkDeleteMutation> {
+            return requester<
+                ProductVariantBulkDeleteMutation,
+                ProductVariantBulkDeleteMutationVariables
+            >(
+                ProductVariantBulkDeleteDocument,
+                variables,
+                options,
+            ) as Promise<ProductVariantBulkDeleteMutation>;
         },
         productVariantStockEntryUpdate(
             variables: ProductVariantStockEntryUpdateMutationVariables,
