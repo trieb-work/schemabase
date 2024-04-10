@@ -1570,17 +1570,6 @@ export class KencoveApiAppProductSyncService {
                         },
                     );
 
-                    console.log(
-                        existingProduct.media.map((m) => ({
-                            url: m.url,
-                            type: m.type,
-                        })),
-                        this.getTotalMediaFromProduct(product).map((m) => ({
-                            url: m.url,
-                            type: m.type,
-                        })),
-                    );
-
                     existingProduct = await this.updateProductSchemabase(
                         product,
                         normalizedProductName,
