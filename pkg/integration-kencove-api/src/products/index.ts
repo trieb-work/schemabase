@@ -37,7 +37,7 @@ import {
     kenAttributeToEciAttribute,
 } from "../helper";
 import { syncTaxClasses } from "./taxclasses";
-import { compareArrays } from "@eci/pkg/utils/array";
+import { compareArraysWithoutOrder } from "@eci/pkg/utils/array";
 
 interface KencoveApiAppProductSyncServiceConfig {
     logger: ILogger;
@@ -868,19 +868,6 @@ export class KencoveApiAppProductSyncService {
             });
 
             this.logger.debug(
-                "Product Attributes: " +
-                    JSON.stringify(productAttributesUnique, null, 2),
-            );
-            this.logger.debug(
-                "Variant Attributes: " +
-                    JSON.stringify(variantAttributesUnique, null, 2),
-            );
-            this.logger.debug(
-                "Variant Selection Attributes: " +
-                    JSON.stringify(variantSelectionAttributesUnique, null, 2),
-            );
-
-            this.logger.debug(
                 // eslint-disable-next-line max-len
                 `Got ${variantAttributesUnique.length} variant attributes, ${variantSelectionAttributesUnique.length} ` +
                     `variant selection attributes and ${productAttributesUnique.length} product attributes.`,
@@ -1538,7 +1525,7 @@ export class KencoveApiAppProductSyncService {
                     /**
                      * Compare the media arrays with each other and see, if we have other URLs
                      */
-                    !compareArrays(
+                    !compareArraysWithoutOrder(
                         existingProduct.media.map((m) => ({
                             url: m.url,
                             type: m.type,
@@ -1549,25 +1536,51 @@ export class KencoveApiAppProductSyncService {
                         })),
                     )
                 ) {
+                    /**
+                     * log, which fields have changed
+                     */
                     this.logger.info(
                         `Updating product ${product.productName} with KencoveId ${product.productId}, as something has changed.`,
+                        {
+                            name:
+                                existingProduct.normalizedName !==
+                                normalizedProductName,
+                            description:
+                                existingProduct.descriptionHTML !==
+                                product.description,
+                            productType:
+                                existingProduct.productTypeId !==
+                                kenProdTypeWithProductType.productTypeId,
+                            countryOfOrigin:
+                                existingProduct.countryOfOrigin !==
+                                countryOfOrigin,
+                            category: existingProduct.categoryId !== category,
+                            media: !compareArraysWithoutOrder(
+                                existingProduct.media.map((m) => ({
+                                    url: m.url,
+                                    type: m.type,
+                                })),
+                                this.getTotalMediaFromProduct(product).map(
+                                    (m) => ({
+                                        url: m.url,
+                                        type: m.type,
+                                    }),
+                                ),
+                            ),
+                        },
                     );
-                    this.logger.debug("", {
-                        normalizedProductName,
-                        description: product.description,
-                        productTypeId: kenProdTypeWithProductType.productTypeId,
-                        countryOfOrigin,
-                        category,
-                        mediaLength:
-                            this.getTotalMediaFromProduct(product).length,
-                        existingNormalizedName: existingProduct.normalizedName,
-                        existingDescription: existingProduct.descriptionHTML,
-                        existingProductTypeId: existingProduct.productTypeId,
-                        existingCountryOfOrigin:
-                            existingProduct.countryOfOrigin,
-                        existingCategoryId: existingProduct.categoryId,
-                        existingMediaLength: existingProduct.media.length,
-                    });
+
+                    console.log(
+                        existingProduct.media.map((m) => ({
+                            url: m.url,
+                            type: m.type,
+                        })),
+                        this.getTotalMediaFromProduct(product).map((m) => ({
+                            url: m.url,
+                            type: m.type,
+                        })),
+                    );
+
                     existingProduct = await this.updateProductSchemabase(
                         product,
                         normalizedProductName,

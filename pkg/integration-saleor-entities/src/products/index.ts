@@ -327,7 +327,7 @@ export class SaleorProductSyncService {
                     // Saleor only supports certain attribute types for variant selection.
                     .filter((a) =>
                         ["dropdown", "boolean", "swatch", "numeric"].includes(
-                            a.attribute.type.toString().toLowerCase(),
+                            a.attribute?.type.toString().toLowerCase(),
                         ),
                     )
                     .map((a) => a.attribute.saleorAttributes[0].id);
@@ -631,7 +631,7 @@ export class SaleorProductSyncService {
             this.logger.info(
                 `Uploading media ${element.id}: ${element.url} to saleor`,
                 {
-                    type: element.type,
+                    type: element?.type,
                 },
             );
             if (element.type === "PRODUCTIMAGE") {
@@ -1177,8 +1177,49 @@ export class SaleorProductSyncService {
             itemsToCreate: itemsToCreate.map((x) => x.name),
         });
 
+        /**
+         * It can happen, that we have products, where the variants are not yet created in Saleor.
+         */
+        const itemsWithMissingVariants = await this.db.product.findMany({
+            where: {
+                id: {
+                    notIn: itemsToCreate.map((x) => x.id),
+                },
+                saleorProducts: {
+                    some: {
+                        installedSaleorAppId: this.installedSaleorAppId,
+                    },
+                },
+                variants: {
+                    none: {
+                        saleorProductVariant: {
+                            some: {
+                                installedSaleorAppId: this.installedSaleorAppId,
+                            },
+                        },
+                    },
+                },
+            },
+            include: productInclude,
+        });
+
+        this.logger.debug(
+            `Received ${itemsWithMissingVariants.length} items with missing variants`,
+            {
+                itemsWithMissingVariants: itemsWithMissingVariants.map(
+                    (x) => x.name,
+                ),
+            },
+        );
+
         const updatedItemsDatabase = await this.db.product.findMany({
             where: {
+                id: {
+                    notIn: [
+                        ...itemsToCreate.map((x) => x.id),
+                        ...itemsWithMissingVariants.map((x) => x.id),
+                    ],
+                },
                 updatedAt: {
                     gte: gteDate,
                 },
@@ -1198,6 +1239,7 @@ export class SaleorProductSyncService {
         const unsortedProductsToCreateOrUpdate = [
             ...itemsToCreate,
             ...updatedItemsDatabase,
+            ...itemsWithMissingVariants,
         ];
 
         const productsToCreate = unsortedProductsToCreateOrUpdate.filter(
@@ -1211,9 +1253,7 @@ export class SaleorProductSyncService {
 
         if (sortedProducts.length > 0) {
             this.logger.info(
-                `Found ${productsToCreate.length} products to create, ${
-                    productsToUpdate.length
-                }  to update in Saleor: ${sortedProducts.map((p) => p.name)}`,
+                `Found ${productsToCreate.length} products to create, ${productsToUpdate.length}  to update in Saleor`,
                 {
                     productsToCreate: productsToCreate.map((p) => p.name),
                     productsToUpdate: productsToUpdate.map((p) => p.name),

@@ -9,9 +9,29 @@ export async function arrayFromAsyncGenerator<T>(
 }
 
 /**
- * Just compare two arrays with each other using sort and stringify.
- * Return true, if the arrays entries are equal, otherwise false.
+ * Compares two arrays without considering the order of elements.
+ * just check, if the two arrays have the same elements.
  */
-export function compareArrays<T>(a: T[], b: T[]): boolean {
-    return JSON.stringify(a.sort()) === JSON.stringify(b.sort());
+export async function compareArraysWithoutOrder<T>(
+    a: T[],
+    b: T[],
+): Promise<boolean> {
+    if (a.length !== b.length) {
+        return false;
+    }
+
+    const aSet = new Set(a);
+    const bSet = new Set(b);
+
+    if (aSet.size !== bSet.size) {
+        return false;
+    }
+
+    for (const item of aSet) {
+        if (!bSet.has(item)) {
+            return false;
+        }
+    }
+
+    return true;
 }
