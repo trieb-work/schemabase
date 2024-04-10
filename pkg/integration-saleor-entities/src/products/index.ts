@@ -2,6 +2,8 @@
 import { ILogger } from "@eci/pkg/logger";
 import {
     AttributeValueInput,
+    ProductAndVariantsToCompareQuery,
+    ProductInput,
     ProductTypeFragment,
     ProductVariantBulkCreateInput,
     ProductVariantBulkUpdateInput,
@@ -985,6 +987,58 @@ export class SaleorProductSyncService {
         return attributes;
     }
 
+    private checkSaleorProductNeedsUpdate(
+        productFromSaleor: ProductAndVariantsToCompareQuery | undefined,
+        productUpdateInput: ProductInput,
+    ): boolean {
+        if (!productFromSaleor) {
+            return true;
+        }
+        const productFromSaleorInput = productFromSaleor!.product;
+        if (!productFromSaleorInput) {
+            throw new Error(`Product from Saleor has no name. Can't compare`);
+        }
+
+        if (
+            productFromSaleorInput.name !== productUpdateInput.name ||
+            editorJsHelper.compareEditorJsData(
+                productFromSaleorInput.description,
+                productUpdateInput.description,
+            ) ||
+            productFromSaleorInput.seoTitle !== productUpdateInput.seo?.title ||
+            productFromSaleorInput.seoDescription !==
+                productUpdateInput.seo?.description ||
+            productFromSaleorInput?.category?.id !== productUpdateInput.category
+        ) {
+            /**
+             * console log which fields are different
+             */
+            this.logger.debug(
+                `Product ${productFromSaleorInput.name} needs update. Fields that are different:`,
+                {
+                    name:
+                        productFromSaleorInput.name !== productUpdateInput.name,
+                    description: editorJsHelper.compareEditorJsData(
+                        productFromSaleorInput.description,
+                        productUpdateInput.description,
+                    ),
+                    seoTitle:
+                        productFromSaleorInput.seoTitle !==
+                        productUpdateInput.seo?.title,
+                    seoDescription:
+                        productFromSaleorInput.seoDescription !==
+                        productUpdateInput.seo?.description,
+                    category:
+                        productFromSaleorInput?.category?.id !==
+                        productUpdateInput.category,
+                },
+            );
+
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Find and create all products, that are not yet created in Saleor.
      * Update products, that got changed since the last run
@@ -1331,6 +1385,22 @@ export class SaleorProductSyncService {
                         }
                     }
 
+                    /**
+                     * If we have an existing Saleor product id,
+                     * we pull the item from Saleor to compare it with our
+                     * existing data. We also pull all variants, to see, if we might
+                     * have wrong connected variants in Saleor (as they changed in our DB)
+                     * and which images are related to which variant
+                     */
+                    const saleorProductToCompare = saleorProductId
+                        ? await this.saleorClient.productAndVariantsToCompare({
+                              id: saleorProductId,
+                          })
+                        : undefined;
+
+                    /**
+                     * Create the product if it does not exist in Saleor
+                     */
                     if (!saleorProductId) {
                         this.logger.info(
                             `Creating product ${product.name} in Saleor`,
@@ -1408,56 +1478,78 @@ export class SaleorProductSyncService {
                         this.logger.info(
                             `Updating product ${product.name} - ${product.id} in Saleor`,
                         );
-                        const productUpdateResponse =
-                            await this.saleorClient.productUpdate({
-                                id: saleorProductId,
-                                input: {
-                                    attributes,
-                                    category: saleorCategoryId,
-                                    chargeTaxes: true,
-                                    taxClass,
-                                    collections: [],
-                                    description,
-                                    name: product.name,
-                                },
-                            });
-                        if (
-                            (productUpdateResponse.productUpdate?.errors &&
-                                productUpdateResponse.productUpdate?.errors
-                                    .length > 0) ||
-                            !productUpdateResponse.productUpdate?.product?.id
-                        ) {
-                            this.logger.error(
-                                `Error updating product ${
-                                    product.name
-                                } in Saleor: ${JSON.stringify(
-                                    productUpdateResponse?.productUpdate
-                                        ?.errors,
-                                )}`,
-                            );
-                            continue;
-                        }
-                        this.logger.info(
-                            `Successfully updated product ${product.name} in Saleor`,
+
+                        const productUpdateInput: ProductInput = {
+                            attributes,
+                            category: saleorCategoryId,
+                            chargeTaxes: true,
+                            taxClass,
+                            collections: [],
+                            description,
+                            name: product.name,
+                            seo: {
+                                title: null,
+                                description: null,
+                            },
+                        };
+
+                        /**
+                         * Comparing the product pulled from Saleor with the data
+                         * we want to update We only update the item if it has changed
+                         */
+                        const needsUpdate = this.checkSaleorProductNeedsUpdate(
+                            saleorProductToCompare,
+                            productUpdateInput,
                         );
+
+                        let saleorProductMedia =
+                            saleorProductToCompare?.product?.media || [];
+
+                        if (needsUpdate) {
+                            const productUpdateResponse =
+                                await this.saleorClient.productUpdate({
+                                    id: saleorProductId,
+                                    input: productUpdateInput,
+                                });
+                            if (
+                                (productUpdateResponse.productUpdate?.errors &&
+                                    productUpdateResponse.productUpdate?.errors
+                                        .length > 0) ||
+                                !productUpdateResponse.productUpdate?.product
+                                    ?.id
+                            ) {
+                                this.logger.error(
+                                    `Error updating product ${
+                                        product.name
+                                    } in Saleor: ${JSON.stringify(
+                                        productUpdateResponse?.productUpdate
+                                            ?.errors,
+                                    )}`,
+                                );
+                                continue;
+                            }
+                            this.logger.info(
+                                `Successfully updated product ${product.name} in Saleor`,
+                            );
+                            saleorProductMedia =
+                                productUpdateResponse.productUpdate.product
+                                    .media || [];
+                        }
+
                         // compare the media we have in our DB with the media currently in saleor.
                         // upload media, that doesn't exist in saleor yet, delete, media that does no longer exist.
                         // only take media, with the metadata "schemabase-media-id" set, as these are the media we uploaded.
                         // delete also media that does exist multiple times in saleor (upload by bugs in schemabase)
                         // We don't want to delete media, that was uploaded manually in saleor. The field "metafield" is either
                         // our internal media id or null
-                        const saleorMedia =
-                            productUpdateResponse.productUpdate.product.media ||
-                            [];
-
                         await sortVideoOrder(
                             this.saleorClient,
                             this.logger,
                             saleorProductId,
-                            saleorMedia,
+                            saleorProductMedia,
                         );
 
-                        const filteredMedia = saleorMedia?.filter(
+                        const filteredMedia = saleorProductMedia?.filter(
                             (m) => m.metafield !== null || undefined,
                         );
                         const mediaToDelete = filteredMedia.filter(
@@ -1575,14 +1667,6 @@ export class SaleorProductSyncService {
                          */
                         for (const variantImage of variantsToUpdate) {
                             if (variantImage.media.length > 0) {
-                                this.logger.debug(
-                                    `Assigning media to variant ${variantImage.variantName} in Saleor`,
-                                    {
-                                        media: variantImage.media.map(
-                                            (x) => x.id,
-                                        ),
-                                    },
-                                );
                                 for (const mediaElement of variantImage.media) {
                                     if (!mediaElement.saleorMedia?.[0]?.id) {
                                         this.logger.warn(
@@ -1590,6 +1674,29 @@ export class SaleorProductSyncService {
                                         );
                                         continue;
                                     }
+                                    /**
+                                     * We are checking the existing saleor product variant media.
+                                     * If this media item is already assigned to the variant, we skip it.
+                                     */
+                                    const existingVariantMedia =
+                                        saleorProductToCompare?.product?.variants?.find(
+                                            (v) =>
+                                                v.id ===
+                                                variantImage
+                                                    .saleorProductVariant[0].id,
+                                        )?.media;
+
+                                    if (
+                                        existingVariantMedia?.find(
+                                            (x) =>
+                                                x.id ===
+                                                mediaElement.saleorMedia[0].id,
+                                        )
+                                    ) {
+                                        // Media is already assigned to variant. No API request needed
+                                        continue;
+                                    }
+
                                     const r =
                                         await this.saleorClient.VariantMediaAssign(
                                             {

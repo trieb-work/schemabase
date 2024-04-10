@@ -262,3 +262,43 @@ query productTest($first: Int, $after: String) {
         }
     }
 }
+
+query productAndVariantsToCompare($id: ID!) {
+    product(id: $id) {
+        id
+        name
+        seoTitle
+        seoDescription
+        category {
+            id
+            name
+        }
+        taxClass {
+            id
+        }
+        media {
+            ...SaleorProductMedia
+        }
+        description
+        attributes {
+            values {
+                externalReference
+                boolean
+                value
+                file {
+                    url
+                }
+            }
+            attribute {
+                id
+            }
+        }
+        variants {
+            id
+            media {
+                id
+            }
+            sku
+        }
+    }
+}

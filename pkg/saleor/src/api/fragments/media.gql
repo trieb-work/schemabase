@@ -1,0 +1,6 @@
+fragment SaleorProductMedia on ProductMedia {
+    id
+    metafield(key: "schemabase-media-id")
+    type
+    sortOrder
+}

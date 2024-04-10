@@ -32467,6 +32467,14 @@ export type _Service = {
     sdl?: Maybe<Scalars["String"]>;
 };
 
+export type SaleorProductMediaFragment = {
+    __typename?: "ProductMedia";
+    id: string;
+    metafield?: string | null;
+    type: ProductMediaType;
+    sortOrder?: number | null;
+};
+
 export type AppInstallMutationVariables = Exact<{
     input: AppInstallInput;
 }>;
@@ -34610,6 +34618,48 @@ export type ProductTestQuery = {
     } | null;
 };
 
+export type ProductAndVariantsToCompareQueryVariables = Exact<{
+    id: Scalars["ID"];
+}>;
+
+export type ProductAndVariantsToCompareQuery = {
+    __typename?: "Query";
+    product?: {
+        __typename?: "Product";
+        id: string;
+        name: string;
+        seoTitle?: string | null;
+        seoDescription?: string | null;
+        description?: any | null;
+        category?: { __typename?: "Category"; id: string; name: string } | null;
+        taxClass?: { __typename?: "TaxClass"; id: string } | null;
+        media?: Array<{
+            __typename?: "ProductMedia";
+            id: string;
+            metafield?: string | null;
+            type: ProductMediaType;
+            sortOrder?: number | null;
+        }> | null;
+        attributes: Array<{
+            __typename?: "SelectedAttribute";
+            values: Array<{
+                __typename?: "AttributeValue";
+                externalReference?: string | null;
+                boolean?: boolean | null;
+                value?: string | null;
+                file?: { __typename?: "File"; url: string } | null;
+            }>;
+            attribute: { __typename?: "Attribute"; id: string };
+        }>;
+        variants?: Array<{
+            __typename?: "ProductVariant";
+            id: string;
+            sku?: string | null;
+            media?: Array<{ __typename?: "ProductMedia"; id: string }> | null;
+        }> | null;
+    } | null;
+};
+
 export type SaleorTaxesQueryVariables = Exact<{
     after?: InputMaybe<Scalars["String"]>;
     first?: InputMaybe<Scalars["Int"]>;
@@ -34647,6 +34697,14 @@ export type WarehousesQuery = {
     } | null;
 };
 
+export const SaleorProductMediaFragmentDoc = gql`
+    fragment SaleorProductMedia on ProductMedia {
+        id
+        metafield(key: "schemabase-media-id")
+        type
+        sortOrder
+    }
+`;
 export const ValuesFragmentDoc = gql`
     fragment Values on AttributeValue {
         id
@@ -35233,14 +35291,12 @@ export const ProductUpdateDocument = gql`
                     id
                 }
                 media {
-                    id
-                    metafield(key: "schemabase-media-id")
-                    type
-                    sortOrder
+                    ...SaleorProductMedia
                 }
             }
         }
     }
+    ${SaleorProductMediaFragmentDoc}
 `;
 export const ProductVariantChannelListingUpdateDocument = gql`
     mutation productVariantChannelListingUpdate(
@@ -36079,6 +36135,48 @@ export const ProductTestDocument = gql`
         }
     }
 `;
+export const ProductAndVariantsToCompareDocument = gql`
+    query productAndVariantsToCompare($id: ID!) {
+        product(id: $id) {
+            id
+            name
+            seoTitle
+            seoDescription
+            category {
+                id
+                name
+            }
+            taxClass {
+                id
+            }
+            media {
+                ...SaleorProductMedia
+            }
+            description
+            attributes {
+                values {
+                    externalReference
+                    boolean
+                    value
+                    file {
+                        url
+                    }
+                }
+                attribute {
+                    id
+                }
+            }
+            variants {
+                id
+                media {
+                    id
+                }
+                sku
+            }
+        }
+    }
+    ${SaleorProductMediaFragmentDoc}
+`;
 export const SaleorTaxesDocument = gql`
     query saleorTaxes($after: String, $first: Int) {
         taxClasses(first: $first, after: $after) {
@@ -36776,6 +36874,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<ProductTestQuery>;
+        },
+        productAndVariantsToCompare(
+            variables: ProductAndVariantsToCompareQueryVariables,
+            options?: C,
+        ): Promise<ProductAndVariantsToCompareQuery> {
+            return requester<
+                ProductAndVariantsToCompareQuery,
+                ProductAndVariantsToCompareQueryVariables
+            >(
+                ProductAndVariantsToCompareDocument,
+                variables,
+                options,
+            ) as Promise<ProductAndVariantsToCompareQuery>;
         },
         saleorTaxes(
             variables?: SaleorTaxesQueryVariables,

@@ -130,6 +130,19 @@ class EditorJSHelper {
 
         return { blocks };
     }
+
+    /**
+     * compare editorJS stringified data.
+     * just compares the blocks and data of the blocks.
+     */
+    public compareEditorJsData(data1: string, data2: string): boolean {
+        const parsedData1 = JSON.parse(data1);
+        const parsedData2 = JSON.parse(data2);
+        return (
+            JSON.stringify(parsedData1.blocks) ===
+            JSON.stringify(parsedData2.blocks)
+        );
+    }
 }
 const editorJsHelper = new EditorJSHelper();
 

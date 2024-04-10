@@ -11,10 +11,7 @@ mutation productUpdate($input: ProductInput!, $id: ID!) {
                 id
             }
             media {
-                id
-                metafield(key: "schemabase-media-id")
-                type
-                sortOrder
+                ...SaleorProductMedia
             }
         }
     }

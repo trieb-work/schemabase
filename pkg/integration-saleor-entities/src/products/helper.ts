@@ -1,5 +1,9 @@
 import { ILogger } from "@eci/pkg/logger";
-import { ProductMediaType, SaleorClient } from "@eci/pkg/saleor";
+import {
+    ProductMediaType,
+    SaleorClient,
+    SaleorProductMediaFragment,
+} from "@eci/pkg/saleor";
 
 /**
  * Saleor helper function to sort
@@ -9,13 +13,15 @@ const sortVideoOrder = async (
     saleorClient: SaleorClient,
     logger: ILogger,
     productId: string,
-    media: {
-        __typename?: "ProductMedia" | undefined;
-        id: string;
-        metafield?: string | null | undefined;
-        type: ProductMediaType;
-        sortOrder?: number | null | undefined;
-    }[],
+    media:
+        | {
+              __typename?: "ProductMedia" | undefined;
+              id: string;
+              metafield?: string | null | undefined;
+              type: ProductMediaType;
+              sortOrder?: number | null | undefined;
+          }[]
+        | SaleorProductMediaFragment[],
 ) => {
     if (media[0].type === "VIDEO") {
         // first item is a video. Creating a new

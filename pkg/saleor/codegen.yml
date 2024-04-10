@@ -1,7 +1,7 @@
 overwrite: true
 # schema: "./pkg/saleor/src/api/schema.gql"
 schema: "https://ken-dev-test.saleor.cloud/graphql/"
-documents: "./pkg/saleor/src/api/{mutations,queries}/**/*.gql"
+documents: "./pkg/saleor/src/api/{mutations,queries,fragments}/**/*.gql"
 generates:
     ./pkg/saleor/src/api/generated/graphql.ts:
         plugins:
