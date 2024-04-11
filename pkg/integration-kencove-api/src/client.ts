@@ -455,6 +455,27 @@ export class KencoveApiClient {
         }
     }
 
+    public async *getProductStocksStream(
+        fromDate: Date,
+    ): AsyncIterableIterator<KencoveApiProductStock[]> {
+        // Define endpoint for categories data, adjust if necessary
+        const endpoint = "/ecom/stock/kencove";
+
+        // Specify any extra parameters if needed, for categories this might be empty or specific filters
+        const extraParams = ""; // Adjust as needed
+
+        // Use the generic streamApiData method to fetch categories
+        for await (const batch of this.streamApiData<KencoveApiProductStock>(
+            endpoint,
+            fromDate,
+            3,
+            200,
+            extraParams,
+        )) {
+            yield batch;
+        }
+    }
+
     private async getPackagesPage(
         fromDate: Date,
         toDate: Date,
