@@ -1200,7 +1200,7 @@ export class KencoveApiAppProductSyncService {
      */
     private async updateProductSchemabase(
         product: EnhancedProduct,
-        normalizedProductName: string,
+        schemabaseProductId: string,
         countryOfOrigin: $Enums.CountryCode | null,
         productTypeId: string,
         category: string | undefined,
@@ -1212,7 +1212,7 @@ export class KencoveApiAppProductSyncService {
             where: {
                 products: {
                     some: {
-                        normalizedName: normalizedProductName,
+                        id: schemabaseProductId,
                         tenantId: this.kencoveApiApp.tenantId,
                     },
                 },
@@ -1225,10 +1225,7 @@ export class KencoveApiAppProductSyncService {
 
         return this.db.product.update({
             where: {
-                normalizedName_tenantId: {
-                    normalizedName: normalizedProductName,
-                    tenantId: this.kencoveApiApp.tenantId,
-                },
+                id: schemabaseProductId,
             },
             data: {
                 name: product.productName,
@@ -1572,7 +1569,7 @@ export class KencoveApiAppProductSyncService {
 
                     existingProduct = await this.updateProductSchemabase(
                         product,
-                        normalizedProductName,
+                        existingProduct.id,
                         countryOfOrigin,
                         kenProdTypeWithProductType.productTypeId,
                         category,
