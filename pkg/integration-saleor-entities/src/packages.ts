@@ -537,7 +537,7 @@ export class SaleorPackageSyncService {
                 `Saleor line items for saleor order ${saleorOrder.id}:` +
                     JSON.stringify(saleorLines),
             );
-            const trackingNumber = parcel.trackingId;
+            const trackingNumber = parcel.trackingId || undefined;
             const response = await this.saleorClient.saleorCreatePackage({
                 order: saleorOrder.id,
                 input: {
