@@ -41,9 +41,10 @@ export type KencoveApiProductStock = {
     able_to_make: number;
     total_avail: number;
     warehouse_stock: {
-        qty_avail: number;
-        warehouse_id: number;
-        warehouse_code: string;
+        qty_avail: number | null;
+        warehouse_id: number | null;
+        warehouse_code: string | null;
+        warehouse_able_to_make: number | null;
     }[];
 };
 
