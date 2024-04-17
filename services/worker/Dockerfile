@@ -1,7 +1,7 @@
 FROM node:18 as build
 WORKDIR /eci
 
-RUN npm i -g pnpm@^v8.6.1
+RUN npm i -g pnpm@^v8.15.1
 
 COPY pnpm-lock.yaml ./
 
