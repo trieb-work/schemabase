@@ -109,6 +109,12 @@ export class SaleorCustomerSyncService {
         this.logger.info(`Saleor returned ${contacts.length} contacts`);
 
         for (const contact of contacts) {
+            this.logger.info(`Syncing contact ${contact.id} to ECI`, {
+                email: contact.email,
+                firstName: contact.firstName,
+                lastName: contact.lastName,
+            });
+
             const internalContact = await this.db.saleorCustomer.upsert({
                 where: {
                     id_installedSaleorAppId: {
@@ -173,6 +179,21 @@ export class SaleorCustomerSyncService {
                     },
                     data: {
                         externalIdentifier: saleorAvataxCustomerId,
+                    },
+                });
+            }
+
+            if (
+                (!internalContact.customer.firstName && contact.firstName) ||
+                (!internalContact.customer.lastName && contact.lastName)
+            ) {
+                await this.db.contact.update({
+                    where: {
+                        id: internalContact.customerId,
+                    },
+                    data: {
+                        firstName: contact.firstName,
+                        lastName: contact.lastName,
                     },
                 });
             }
