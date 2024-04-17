@@ -500,7 +500,7 @@ export class KencoveApiAppOrderSyncService {
                 let deliveryMethod = order.carrier.name || "";
 
                 if (!deliveryMethod) {
-                    const lineCarriers = order.orderLines.map(
+                    const lineCarriers = order.orderLines?.map(
                         (line) => line.line_carrier?.name,
                     );
 
