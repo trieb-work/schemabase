@@ -99,13 +99,22 @@ export class KencoveApiAppProductStockSyncService {
                     continue;
                 }
                 for (const warehouseEntry of variant.warehouse_stock) {
+                    /**
+                     * we have the qty available and the warehouse_able_to_make. Some kits might
+                     * have a qty_avail of 0 / null but warehouse_able_to_make > 0. We are adding
+                     * the warehouse_able_to_make to the qty_avail to get the total available stock
+                     */
+                    const totalAvailableStock =
+                        (warehouseEntry.qty_avail || 0) +
+                        (warehouseEntry.warehouse_able_to_make || 0);
+
                     if (!warehouseEntry.warehouse_code) {
                         this.logger.debug(
                             `Warehouse code is missing for sku: ${
                                 variant.itemCode
                             }, ${JSON.stringify(variant.warehouse_stock)}`,
                         );
-                        if (warehouseEntry.qty_avail === 0) {
+                        if (totalAvailableStock === 0) {
                             this.logger.info(
                                 `Nulling all stock entries for SKU ${variant.itemCode} `,
                             );
@@ -141,7 +150,7 @@ export class KencoveApiAppProductStockSyncService {
                     if (existingStock) {
                         if (
                             existingStock.actualAvailableForSaleStock ===
-                            warehouseEntry.qty_avail
+                            totalAvailableStock
                         ) {
                             this.logger.info(
                                 `Stock entry for ${internalVariant.sku} did not change`,
@@ -150,7 +159,7 @@ export class KencoveApiAppProductStockSyncService {
                         }
                         this.logger.info(
                             `Updating stock entry for ${internalVariant.sku} ` +
-                                `from ${existingStock.actualAvailableForSaleStock} to ${warehouseEntry.qty_avail}`,
+                                `from ${existingStock.actualAvailableForSaleStock} to ${totalAvailableStock}`,
                         );
                         await this.db.stockEntries.update({
                             where: {
@@ -158,7 +167,7 @@ export class KencoveApiAppProductStockSyncService {
                             },
                             data: {
                                 actualAvailableForSaleStock:
-                                    warehouseEntry.qty_avail,
+                                    totalAvailableStock,
                             },
                         });
                     } else {
@@ -181,7 +190,7 @@ export class KencoveApiAppProductStockSyncService {
                                     },
                                 },
                                 actualAvailableForSaleStock:
-                                    warehouseEntry.qty_avail,
+                                    totalAvailableStock,
                             },
                         });
                     }
