@@ -42,7 +42,7 @@ export class KencoveApiAppProductStockSyncService {
      * @memberof KencoveApiAppStockSyncService
      * @throws
      */
-    public syncToEci = async (): Promise<void> => {
+    public syncToEci = async (productTemplateId?: string): Promise<void> => {
         const cronState = await this.cronState.get();
         const now = new Date();
         let createdGte: Date;
@@ -59,7 +59,10 @@ export class KencoveApiAppProductStockSyncService {
         }
 
         const client = new KencoveApiClient(this.kencoveApiApp, this.logger);
-        const stockStream = client.getProductStocksStream(createdGte);
+        const stockStream = client.getProductStocksStream(
+            createdGte,
+            productTemplateId,
+        );
 
         /**
          * Helper to match warehouse
