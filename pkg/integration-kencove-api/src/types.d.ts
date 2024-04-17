@@ -388,7 +388,7 @@ export type KencoveApiOrder = {
         payment_method: string;
         payment_token: string;
     };
-    orderLines: KencoveApiOrderLine[];
+    orderLines?: KencoveApiOrderLine[];
     amount_untaxed: number;
     amount_tax: number;
     amount_total: number;
