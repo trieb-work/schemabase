@@ -2854,6 +2854,7 @@ model KencoveApiContact {
   kencoveApiAppId String
 
   @@unique([id, kencoveApiAppId])
+  @@unique([customerCode, kencoveApiAppId])
   @@index([kencoveApiAppId])
   @@index([contactId])
 }

@@ -1624,6 +1624,7 @@ Table KencoveApiContact {
 
   indexes {
     (id, kencoveApiAppId) [unique]
+    (customerCode, kencoveApiAppId) [unique]
   }
 
   Note: 'Kencove custom customer model. Relation between internal customer
