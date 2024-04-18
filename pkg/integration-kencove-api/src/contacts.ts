@@ -136,6 +136,7 @@ export class KencoveApiAppContactSyncService {
                     },
                     create: {
                         id: contact.id.toString(),
+                        customerCode: contact.customer_code,
                         kencoveApiApp: {
                             connect: {
                                 id: this.kencoveApiApp.id,
@@ -202,6 +203,7 @@ export class KencoveApiAppContactSyncService {
                         },
                     },
                     update: {
+                        customerCode: contact.customer_code,
                         contact: {
                             update: {
                                 firstName: contact.firstname,

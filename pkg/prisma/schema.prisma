@@ -2846,6 +2846,7 @@ model KencoveApiAddress {
 /// object and kencove customer object
 model KencoveApiContact {
   id        String
+  customerCode String?
   contact   Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
   contactId String
 

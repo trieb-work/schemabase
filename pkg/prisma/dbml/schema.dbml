@@ -1616,6 +1616,7 @@ object and kencove address object'
 
 Table KencoveApiContact {
   id String [not null]
+  customerCode String
   contact Contact [not null]
   contactId String [not null]
   kencoveApiApp KencoveApiApp [not null]
