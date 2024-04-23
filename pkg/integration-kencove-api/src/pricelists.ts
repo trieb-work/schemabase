@@ -176,7 +176,10 @@ export class KencoveApiAppPricelistSyncService {
         return productVariant;
     }
 
-    public async syncToEci(gteDataTesting?: Date): Promise<void> {
+    public async syncToEci(
+        gteDataTesting?: Date,
+        productTemplateId?: string,
+    ): Promise<void> {
         const cronState = await this.cronState.get();
         const now = new Date();
         let createdGte: Date;
@@ -198,7 +201,10 @@ export class KencoveApiAppPricelistSyncService {
         }
 
         const client = new KencoveApiClient(this.kencoveApiApp, this.logger);
-        const pricelistsYield = client.getPricelistStream(createdGte);
+        const pricelistsYield = client.getPricelistStream(
+            createdGte,
+            productTemplateId,
+        );
 
         for await (const pricelists of pricelistsYield) {
             this.logger.info(
@@ -226,7 +232,9 @@ export class KencoveApiAppPricelistSyncService {
                         },
                     );
                 }
-
+                this.logger.debug(
+                    `Working on ${pricelist.priceListItems.length} entries for ${pricelist.product_template_id}`,
+                );
                 for (const pricelistEntry of pricelist.priceListItems) {
                     if (!productVariant && !pricelistEntry.variantItemCode) {
                         this.logger.warn(
@@ -235,7 +243,7 @@ export class KencoveApiAppPricelistSyncService {
                         continue;
                     }
 
-                    if (!productVariant && pricelistEntry.variantItemCode) {
+                    if (!pricelist.itemCode && pricelistEntry.variantItemCode) {
                         const variant = await this.getItemBySku(
                             pricelistEntry.variantItemCode,
                         );
@@ -324,8 +332,12 @@ export class KencoveApiAppPricelistSyncService {
                         });
                     } else {
                         this.logger.info(
-                            `Price entry for SKU ${pricelist.itemCode} and ` +
+                            `Price entry for SKU ${productVariant.sku} and ` +
                                 `${pricelistEntry.pricelist_name} already exists. Updating.`,
+                            {
+                                productVariantId: productVariant.id,
+                                existingPriceEntryId: existingPriceEntry.id,
+                            },
                         );
                         await this.db.salesChannelPriceEntry.update({
                             where: {

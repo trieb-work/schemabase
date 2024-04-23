@@ -662,6 +662,7 @@ export class KencoveApiClient {
 
     public async *getPricelistStream(
         fromDate: Date,
+        productTemplateId?: string,
     ): AsyncIterableIterator<KencoveApiPricelist[]> {
         const WINDOW_SIZE = 3;
         const LIMIT = 200;
@@ -676,6 +677,7 @@ export class KencoveApiClient {
                     toDate,
                     offset,
                     accessToken,
+                    productTemplateId,
                 );
                 if (response.data.length === 0) break; // If no data, move to the next window
 
@@ -693,6 +695,7 @@ export class KencoveApiClient {
         toDate: Date,
         offset: number,
         accessToken: string,
+        productTemplateId?: string,
     ): Promise<{
         data: KencoveApiPricelist[];
         result_count: number;
@@ -702,7 +705,9 @@ export class KencoveApiClient {
             `requesting pricelist from ${fromDate} to ${toDate}, offset ${offset}`,
         );
         const response = await this.axiosInstance.get(
-            `/ecom/pricelist/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${toDate.toISOString()}`,
+            `/ecom/pricelist/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${toDate.toISOString()}${
+                productTemplateId ? `&product_tmpl_id=${productTemplateId}` : ""
+            }`,
             {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
