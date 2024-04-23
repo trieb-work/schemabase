@@ -744,8 +744,14 @@ export class SaleorProductSyncService {
         /**
          * Check if we already have the attribute value in our cache
          */
-        if (this.swatchCache[saleorAttributeId + attributeValueName]) {
-            return this.swatchCache[saleorAttributeId + attributeValueName];
+        if (
+            this.swatchCache[
+                saleorAttributeId + attributeValueName + attributeValueHex
+            ]
+        ) {
+            return this.swatchCache[
+                saleorAttributeId + attributeValueName + attributeValueHex
+            ];
         }
 
         const searchResult = await this.saleorClient.attributeValueSearch({
@@ -801,8 +807,9 @@ export class SaleorProductSyncService {
             return "";
         }
 
-        this.swatchCache[saleorAttributeId + attributeValueName] =
-            hexMatch.node.slug;
+        this.swatchCache[
+            saleorAttributeId + attributeValueName + attributeValueHex
+        ] = hexMatch.node.slug;
         return hexMatch.node.slug;
     }
 
