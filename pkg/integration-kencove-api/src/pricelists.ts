@@ -339,14 +339,16 @@ export class KencoveApiAppPricelistSyncService {
                                 existingPriceEntryId: existingPriceEntry.id,
                             },
                         );
-                        await this.db.salesChannelPriceEntry.update({
-                            where: {
-                                id: existingPriceEntry.id,
-                            },
-                            data: {
-                                price: pricelistEntry.price,
-                            },
-                        });
+                        if (existingPriceEntry.price !== pricelistEntry.price) {
+                            await this.db.salesChannelPriceEntry.update({
+                                where: {
+                                    id: existingPriceEntry.id,
+                                },
+                                data: {
+                                    price: pricelistEntry.price,
+                                },
+                            });
+                        }
                     }
                 }
             }
