@@ -16,7 +16,8 @@ describe("Kencove product Test", () => {
     test("It should work to sync products", async () => {
         const tenant = await prismaClient.tenant.findUnique({
             where: {
-                id: "tn_kencove235",
+                // id: "tn_kencove235",
+                id: "ken_prod",
                 // id: "test",
             },
         });
@@ -27,7 +28,8 @@ describe("Kencove product Test", () => {
 
         const kencoveApiApp = await prismaClient.kencoveApiApp.findUnique({
             where: {
-                id: "kencove_prod",
+                // id: "kencove_prod",
+                id: "ken_app_prod",
             },
         });
         if (!kencoveApiApp) throw new Error("Kencove Api App not found in DB");
@@ -37,6 +39,6 @@ describe("Kencove product Test", () => {
             logger: new AssertionLogger(),
             db: prismaClient,
         });
-        await service.syncToECI("150");
+        await service.syncToECI("148");
     }, 10000000);
 });

@@ -35,6 +35,6 @@ describe("Kencove payment Test", () => {
             logger: new AssertionLogger(),
             db: prismaClient,
         });
-        await service.syncToEci(subYears(new Date(), 1), "6527");
+        await service.syncToEci(subYears(new Date(), 1), "6484");
     }, 10000000);
 });
