@@ -550,8 +550,8 @@ export class KencoveApiClient {
             let toDate = addDays(fromDate, WINDOW_SIZE);
             let offset = 0;
             let nextPage: string | null = null;
-            const accessToken = await this.getAccessToken();
             do {
+                const accessToken = await this.getAccessToken();
                 const response = await this.getContactsPage(
                     fromDate,
                     toDate,
