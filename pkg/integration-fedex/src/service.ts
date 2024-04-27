@@ -13,7 +13,7 @@ import { subMonths } from "date-fns";
 import axios, { AxiosInstance } from "axios";
 
 interface FedexTrackingSyncServiceConfig {
-    FedexTrackingApp: FedexTrackingApp;
+    fedexTrackingApp: FedexTrackingApp;
     db: PrismaClient;
     logger: ILogger;
     testMode?: boolean;
@@ -232,7 +232,7 @@ type FedexResponse = {
 export class FedexTrackingSyncService {
     private readonly logger: ILogger;
 
-    public readonly FedexTrackingApp: FedexTrackingApp;
+    public readonly fedexTrackingApp: FedexTrackingApp;
 
     private readonly db: PrismaClient;
 
@@ -240,11 +240,11 @@ export class FedexTrackingSyncService {
 
     public constructor(config: FedexTrackingSyncServiceConfig) {
         this.logger = config.logger;
-        this.FedexTrackingApp = config.FedexTrackingApp;
+        this.fedexTrackingApp = config.FedexTrackingApp;
         this.db = config.db;
         this.cronState = new CronStateHandler({
-            tenantId: this.FedexTrackingApp.tenantId,
-            appId: this.FedexTrackingApp.id,
+            tenantId: this.fedexTrackingApp.tenantId,
+            appId: this.fedexTrackingApp.id,
             db: this.db,
             syncEntity: "packageState",
         });
@@ -347,15 +347,15 @@ export class FedexTrackingSyncService {
     public async syncToECI(): Promise<void> {
         await this.cronState.get();
         const fedexClient = await this.createAPIClient(
-            this.FedexTrackingApp.clientId,
-            this.FedexTrackingApp.clientSecret,
+            this.fedexTrackingApp.clientId,
+            this.fedexTrackingApp.clientSecret,
         );
 
         /// get all Fedex packages, that are not delivered
         // with last status update older than 2 hours, to prevent too many API calls
         const fedexPackages = await this.db.package.findMany({
             where: {
-                tenantId: this.FedexTrackingApp.tenantId,
+                tenantId: this.fedexTrackingApp.tenantId,
                 carrier: "FEDEX",
                 state: {
                     not: "DELIVERED",
@@ -413,9 +413,9 @@ export class FedexTrackingSyncService {
             // eslint-disable-next-line max-len
             const shipmentLocation = `${lastState.scanLocation.city}, ${lastState.scanLocation.stateOrProvinceCode}, ${lastState.scanLocation.countryCode}`;
 
-            if (!this.FedexTrackingApp.trackingIntegrationId) {
+            if (!this.fedexTrackingApp.trackingIntegrationId) {
                 this.logger.info(
-                    `There is no tracking integration configured for Fedex App ${this.FedexTrackingApp.id}.` +
+                    `There is no tracking integration configured for Fedex App ${this.fedexTrackingApp.id}.` +
                         "Not updating package state",
                 );
                 continue;
@@ -433,7 +433,7 @@ export class FedexTrackingSyncService {
                 location: shipmentLocation,
                 state: internalState,
                 trackingIntegrationId:
-                    this.FedexTrackingApp.trackingIntegrationId,
+                    this.fedexTrackingApp.trackingIntegrationId,
                 message: statusMessage,
             };
 
@@ -441,7 +441,7 @@ export class FedexTrackingSyncService {
                 EventSchemaRegistry.PackageUpdate["message"]
             >({
                 topic: Topic.PACKAGE_UPDATE,
-                tenantId: this.FedexTrackingApp.tenantId,
+                tenantId: this.fedexTrackingApp.tenantId,
             });
 
             const message = new Message({

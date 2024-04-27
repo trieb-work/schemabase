@@ -46,6 +46,7 @@ import { SaleorTaxClassSyncWf } from "./workflows/saleorTaxClassSync";
 import { KencoveApiPaymentSyncWf } from "./workflows/kencoveApiPaymentSync";
 import { AlgoliaCategorySyncWf } from "./workflows/algoliaCategorySync";
 import { SaleorProductChannelSyncWf } from "./workflows/saleorProductChannelSync";
+import { FedexTrackingSyncWf } from "./workflows/fedexTrackingSync";
 
 interface CronClients {
     logger: ILogger;
@@ -112,6 +113,13 @@ export class CronTable {
 
         const enabledUpsTrackingApps =
             await this.clients.prisma.uPSTrackingApp.findMany({
+                where: {
+                    enabled: true,
+                },
+            });
+
+        const enabledFedexTrackingApps =
+            await this.clients.prisma.fedexTrackingApp.findMany({
                 where: {
                     enabled: true,
                 },
@@ -460,6 +468,30 @@ export class CronTable {
             new WorkflowScheduler(this.clients).schedule(
                 createWorkflowFactory(
                     UPSTrackingSyncWf,
+                    this.clients,
+                    commonWorkflowConfig,
+                ),
+                { ...commonCronConfig, offset: 0 },
+                [tenantId.substring(0, 5), id.substring(0, 5)],
+            );
+        }
+
+        /**
+         * Fedex Tracking App Workflow
+         */
+        for (const enabledFedexTrackingApp of enabledFedexTrackingApps) {
+            const { id, cronTimeout, cronSchedule, tenantId } =
+                enabledFedexTrackingApp;
+            const commonCronConfig = {
+                cron: cronSchedule,
+                timeout: cronTimeout,
+            };
+            const commonWorkflowConfig = {
+                fedexTrackingApp: enabledFedexTrackingApp,
+            };
+            new WorkflowScheduler(this.clients).schedule(
+                createWorkflowFactory(
+                    FedexTrackingSyncWf,
                     this.clients,
                     commonWorkflowConfig,
                 ),

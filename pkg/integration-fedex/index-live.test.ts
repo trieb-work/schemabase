@@ -34,7 +34,7 @@ describe("Fedex package sync", () => {
         const service = new FedexTrackingSyncService({
             logger: new AssertionLogger(),
             db: prismaClient,
-            FedexTrackingApp: fedexTrackingApp,
+            fedexTrackingApp,
         });
 
         await service.syncToECI();

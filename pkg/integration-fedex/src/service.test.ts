@@ -10,7 +10,7 @@ describe("Fedex package sync test", () => {
     test("Test client", async () => {
         const db = new PrismaClient();
 
-        const FedexTrackingApp = await db.fedexTrackingApp.findUniqueOrThrow({
+        const fedexTrackingApp = await db.fedexTrackingApp.findUniqueOrThrow({
             where: {
                 id: "fedex_test",
             },
@@ -33,7 +33,7 @@ describe("Fedex package sync test", () => {
         const client = new FedexTrackingSyncService({
             db,
             logger: new AssertionLogger(),
-            FedexTrackingApp,
+            fedexTrackingApp,
         });
         await client.syncToECI();
     });
