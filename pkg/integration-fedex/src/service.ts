@@ -240,7 +240,7 @@ export class FedexTrackingSyncService {
 
     public constructor(config: FedexTrackingSyncServiceConfig) {
         this.logger = config.logger;
-        this.fedexTrackingApp = config.FedexTrackingApp;
+        this.fedexTrackingApp = config.fedexTrackingApp;
         this.db = config.db;
         this.cronState = new CronStateHandler({
             tenantId: this.fedexTrackingApp.tenantId,
