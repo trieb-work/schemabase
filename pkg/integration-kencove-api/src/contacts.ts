@@ -121,6 +121,7 @@ export class KencoveApiAppContactSyncService {
                 this.logger.debug(
                     `Upserting contact ${contact.firstname} ${contact.lastname} - ${email}`,
                     {
+                        id: contact.id,
                         email,
                         companyName,
                         externalIdentifier: contact.commerical_customer_code,

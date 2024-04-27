@@ -1,6 +1,6 @@
 {
     "name": "schemabase",
-    "version": "0.128.15",
+    "version": "0.128.16",
     "private": "true",
     "engines": {
         "node": ">=18 <=20"
@@ -100,7 +100,7 @@
     "dependencies": {
         "@47ng/cloak": "^1.1.0",
         "@apollo/server": "^4.9.2",
-        "@as-integrations/next": "^2.0.2",
+        "@as-integrations/next": "^3.0.0",
         "@aws-sdk/client-cognito-identity-provider": "^3.429.0",
         "@bull-board/api": "5.9.1",
         "@bull-board/express": "5.9.1",
