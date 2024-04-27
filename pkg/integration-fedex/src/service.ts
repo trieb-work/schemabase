@@ -393,6 +393,16 @@ export class FedexTrackingSyncService {
             }
 
             const lastState = fullPackage.trackResults[0].latestStatusDetail;
+            if (!lastState || !lastState.code) {
+                this.logger.error(
+                    `Package state from Fedex not including current status code: ${p.trackingId}`,
+                    {
+                        lastState,
+                        trackingId: p.trackingId,
+                    },
+                );
+                continue;
+            }
             const internalState = this.parseState(lastState.code);
             if (!internalState) {
                 this.logger.error(
