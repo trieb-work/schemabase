@@ -12365,7 +12365,7 @@ export type Mutation = {
     /** Check payment balance. */
     paymentCheckBalance?: Maybe<PaymentCheckBalance>;
     /**
-     * Initializes a payment gateway session. It triggers the webhook `PAYMENT_GATEWAY_INITIALIZE_SESSION`, to the requested `paymentGateways`. If `paymentGateways` is not provided, the webhook will be send to all subscribed payment gateways.
+     * Initializes a payment gateway session. It triggers the webhook `PAYMENT_GATEWAY_INITIALIZE_SESSION`, to the requested `paymentGateways`. If `paymentGateways` is not provided, the webhook will be send to all subscribed payment gateways. There is a limit of 100 transaction items per checkout / order.
      *
      * Added in Saleor 3.13.
      *
@@ -13224,7 +13224,7 @@ export type Mutation = {
      */
     transactionEventReport?: Maybe<TransactionEventReport>;
     /**
-     * Initializes a transaction session. It triggers the webhook `TRANSACTION_INITIALIZE_SESSION`, to the requested `paymentGateways`.
+     * Initializes a transaction session. It triggers the webhook `TRANSACTION_INITIALIZE_SESSION`, to the requested `paymentGateways`. There is a limit of 100 transaction items per checkout / order.
      *
      * Added in Saleor 3.13.
      *
@@ -18690,7 +18690,7 @@ export enum PaymentGatewayConfigErrorCode {
 }
 
 /**
- * Initializes a payment gateway session. It triggers the webhook `PAYMENT_GATEWAY_INITIALIZE_SESSION`, to the requested `paymentGateways`. If `paymentGateways` is not provided, the webhook will be send to all subscribed payment gateways.
+ * Initializes a payment gateway session. It triggers the webhook `PAYMENT_GATEWAY_INITIALIZE_SESSION`, to the requested `paymentGateways`. If `paymentGateways` is not provided, the webhook will be send to all subscribed payment gateways. There is a limit of 100 transaction items per checkout / order.
  *
  * Added in Saleor 3.13.
  *
@@ -28713,7 +28713,7 @@ export enum TransactionFlowStrategyEnum {
 }
 
 /**
- * Initializes a transaction session. It triggers the webhook `TRANSACTION_INITIALIZE_SESSION`, to the requested `paymentGateways`.
+ * Initializes a transaction session. It triggers the webhook `TRANSACTION_INITIALIZE_SESSION`, to the requested `paymentGateways`. There is a limit of 100 transaction items per checkout / order.
  *
  * Added in Saleor 3.13.
  *
@@ -32393,7 +32393,7 @@ export type WebhookUpdateInput = {
     /** The asynchronous events that webhook wants to subscribe. */
     asyncEvents?: InputMaybe<Array<WebhookEventTypeAsyncEnum>>;
     /**
-     * Custom headers, which will be added to HTTP request. There is a limitation of 5 headers per webhook and 998 characters per header.Only "X-*" and "Authorization*" keys are allowed.
+     * Custom headers, which will be added to HTTP request. There is a limitation of 5 headers per webhook and 998 characters per header.Only `X-*`, `Authorization*`, and `BrokerProperties` keys are allowed.
      *
      * Added in Saleor 3.12.
      *

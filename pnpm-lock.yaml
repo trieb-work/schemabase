@@ -12,8 +12,8 @@ dependencies:
     specifier: ^4.9.2
     version: 4.9.2(graphql@16.6.0)
   '@as-integrations/next':
-    specifier: ^2.0.2
-    version: 2.0.2(@apollo/server@4.9.2)(next@13.4.19)
+    specifier: ^3.0.0
+    version: 3.0.0(@apollo/server@4.9.2)(next@13.4.19)
   '@aws-sdk/client-cognito-identity-provider':
     specifier: ^3.429.0
     version: 3.429.0
@@ -705,12 +705,12 @@ packages:
       - encoding
     dev: true
 
-  /@as-integrations/next@2.0.2(@apollo/server@4.9.2)(next@13.4.19):
-    resolution: {integrity: sha512-nznFAbWpgB60aF44vLfy9AieYY0t9yv4QqYX0DfPQ24Qa9qny/6uUdKoDpDC0MLWSBLC64XVfzaNylJUpiXVUA==}
-    engines: {node: '>=16'}
+  /@as-integrations/next@3.0.0(@apollo/server@4.9.2)(next@13.4.19):
+    resolution: {integrity: sha512-FmqJjoH5XamyBZQVTnnG9ssE3ywf/TPIanFGwYjp3YFsX92F1lY7FDcrQJa/gCJQnb8gSZAdqAIgrWo4K325sA==}
+    engines: {node: '>=18'}
     peerDependencies:
       '@apollo/server': ^4.0.0
-      next: ^12.0.0 || ^13.0.0
+      next: ^12.0.0 || ^13.0.0 || ^14.0.0
     dependencies:
       '@apollo/server': 4.9.2(graphql@16.6.0)
       next: 13.4.19(@babel/core@7.22.5)(@opentelemetry/api@1.7.0)(react-dom@18.2.0)(react@18.2.0)
