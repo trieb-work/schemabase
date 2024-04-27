@@ -4,7 +4,7 @@ WORKDIR /eci
 ARG DATABASE_URL
 ENV DATABASE_URL $DATABASE_URL
 
-RUN npm i -g pnpm
+RUN npm i -g pnpm@^v8.15.1
 
 COPY pnpm-lock.yaml ./
 RUN pnpm fetch
