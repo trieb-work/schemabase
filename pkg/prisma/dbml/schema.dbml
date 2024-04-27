@@ -1406,6 +1406,21 @@ Access key only auth is no longer working - we need Oauth2 now']
   Note: 'UPS Tracking App model'
 }
 
+Table FedexTrackingApp {
+  id String [pk]
+  enabled Boolean [not null, default: false]
+  tenant Tenant [not null]
+  tenantId String [unique, not null]
+  clientId String [not null]
+  clientSecret String [not null]
+  trackingIntegration TrackingIntegration
+  trackingIntegrationId String
+  cronSchedule String [not null, default: '0 */4 * * *']
+  cronTimeout Int [not null, default: 800]
+
+  Note: 'Fedex Tracking App model'
+}
+
 Table ProductDataFeedApp {
   id String [pk]
   productDetailStorefrontURL String [not null]
@@ -1856,6 +1871,7 @@ Table Tenant {
   internalDataApps InternalDataApp [not null]
   awsCognitoApps AWSCognitoApp [not null]
   algoliaApps AlgoliaApp [not null]
+  fedexTrackingApps FedexTrackingApp [not null]
 }
 
 Table Subscription {
@@ -1881,6 +1897,7 @@ Table TrackingIntegration {
   dhlTrackingApps DHLTrackingApp [not null]
   upsTrackingApps UPSTrackingApp [not null]
   easyPostApps EasyPostApp [not null]
+  fedexTrackingApps FedexTrackingApp [not null]
   trackingEmailApp TrackingEmailApp [not null]
   trackingEmailAppId String [not null]
   zohoApp ZohoApp
@@ -2709,6 +2726,10 @@ Ref: DHLTrackingApp.trackingIntegrationId > TrackingIntegration.id
 Ref: UPSTrackingApp.tenantId > Tenant.id [delete: Cascade]
 
 Ref: UPSTrackingApp.trackingIntegrationId > TrackingIntegration.id
+
+Ref: FedexTrackingApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: FedexTrackingApp.trackingIntegrationId > TrackingIntegration.id
 
 Ref: ProductDataFeedApp.tenantId > Tenant.id [delete: Cascade]
 
