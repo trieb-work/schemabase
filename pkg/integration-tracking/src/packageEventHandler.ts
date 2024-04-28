@@ -46,11 +46,12 @@ export class PackageEventHandler {
             `Package Event Handler - new message. State: ${event.state} - Tracking Number: ${event.trackingId}`,
             {
                 trackingId: event.trackingId,
+                packageId: event.packageId,
             },
         );
-        const storedPackage = await this.db.package.findFirst({
+        const storedPackage = await this.db.package.findUnique({
             where: {
-                trackingId: event.trackingId,
+                id: event.packageId,
             },
             include: {
                 events: {
@@ -66,6 +67,7 @@ export class PackageEventHandler {
                 `No package found with tracking id: ${event.trackingId}`,
                 {
                     trackingId: event.trackingId,
+                    packageId: event.packageId,
                 },
             );
             /**

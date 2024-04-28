@@ -23,6 +23,7 @@ export namespace EventSchemaRegistry {
             state: PackageState;
             message?: string;
             trackingIntegrationId: string;
+            packageId: string;
         }
     >;
 

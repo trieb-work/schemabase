@@ -439,6 +439,7 @@ export class FedexTrackingSyncService {
             const time = new Date(lastScanEvent.date);
             const packageEvent: EventSchemaRegistry.PackageUpdate["message"] = {
                 trackingId: p.trackingId,
+                packageId: p.id,
                 time: time.getTime() / 1000,
                 location: shipmentLocation,
                 state: internalState,

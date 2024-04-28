@@ -151,6 +151,7 @@ export class DHLTrackingSyncService {
             const time = new Date(shipment.status.timestamp as string);
             const packageEvent: EventSchemaRegistry.PackageUpdate["message"] = {
                 trackingId: p.trackingId,
+                packageId: p.id,
                 time: time.getTime() / 1000,
                 location:
                     shipment.status.location?.address?.addressLocality || "",

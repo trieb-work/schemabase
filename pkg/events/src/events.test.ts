@@ -14,6 +14,7 @@ describe("Events test cases", () => {
     test("it should work to create a new event", async () => {
         const packageEvent: EventSchemaRegistry.PackageUpdate["message"] = {
             trackingId: "334455",
+            packageId: "12345",
             time: new Date().getTime() / 1000,
             location: "",
             state: "DELIVERED",
