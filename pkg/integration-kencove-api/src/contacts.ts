@@ -125,6 +125,7 @@ export class KencoveApiAppContactSyncService {
                         email,
                         companyName,
                         externalIdentifier: contact.commerical_customer_code,
+                        customerCode: contact.customer_code,
                     },
                 );
 
