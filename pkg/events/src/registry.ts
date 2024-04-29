@@ -23,7 +23,12 @@ export namespace EventSchemaRegistry {
             state: PackageState;
             message?: string;
             trackingIntegrationId: string;
-            packageId: string;
+            /**
+             * Package id is optional, as we might have cases,
+             * where we want to add package updates to the queue before
+             * the package is created in the database.
+             */
+            packageId?: string;
         }
     >;
 
