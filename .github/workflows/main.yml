@@ -138,7 +138,7 @@ jobs:
           version: 'v3.10.0'      
 
       - name: Set Kubernetes Context
-        uses: azure/k8s-set-context@v3
+        uses: azure/k8s-set-context@v4
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
@@ -206,7 +206,7 @@ jobs:
            version: 'v3.10.0'   
 
       - name: Set Kubernetes Context
-        uses: azure/k8s-set-context@v3
+        uses: azure/k8s-set-context@v4
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
@@ -270,7 +270,7 @@ jobs:
           version: 'v3.10.0'   
 
       - name: Set Kubernetes Context
-        uses: azure/k8s-set-context@v3
+        uses: azure/k8s-set-context@v4
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
