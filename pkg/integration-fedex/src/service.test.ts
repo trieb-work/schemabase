@@ -24,7 +24,7 @@ describe("Fedex package sync test", () => {
                 id: "test",
                 tenantId: "test",
                 carrier: "FEDEX",
-                trackingId: "785609834778",
+                trackingId: "789285796287",
                 number: "test",
             },
             update: {},
@@ -35,6 +35,6 @@ describe("Fedex package sync test", () => {
             logger: new AssertionLogger(),
             fedexTrackingApp,
         });
-        await client.syncToECI();
+        await client.syncToECI("789285796287");
     });
 });

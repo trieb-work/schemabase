@@ -306,7 +306,9 @@ export class FedexTrackingSyncService {
             if (axios.isAxiosError(e)) {
                 const error = e.response?.data;
                 this.logger.error(
-                    `Could not fetch package data from Fedex for ${trackingId}: ${error.errors[0].message}`,
+                    `Could not fetch package data from Fedex for ${trackingId}: ${JSON.stringify(
+                        error,
+                    )}`,
                 );
             } else {
                 this.logger.error(
@@ -344,7 +346,7 @@ export class FedexTrackingSyncService {
         return instance;
     }
 
-    public async syncToECI(): Promise<void> {
+    public async syncToECI(testTrackingId?: string): Promise<void> {
         await this.cronState.get();
         const fedexClient = await this.createAPIClient(
             this.fedexTrackingApp.clientId,
@@ -353,22 +355,28 @@ export class FedexTrackingSyncService {
 
         /// get all Fedex packages, that are not delivered
         // with last status update older than 2 hours, to prevent too many API calls
-        const fedexPackages = await this.db.package.findMany({
-            where: {
-                tenantId: this.fedexTrackingApp.tenantId,
-                carrier: "FEDEX",
-                state: {
-                    not: "DELIVERED",
-                },
-                trackingId: {
-                    not: null,
-                },
-                createdAt: {
-                    gt: subMonths(new Date(), 2),
-                },
-                isTrackingEnabled: true,
-            },
-        });
+        const fedexPackages = testTrackingId
+            ? await this.db.package.findMany({
+                  where: {
+                      trackingId: testTrackingId,
+                  },
+              })
+            : await this.db.package.findMany({
+                  where: {
+                      tenantId: this.fedexTrackingApp.tenantId,
+                      carrier: "FEDEX",
+                      state: {
+                          not: "DELIVERED",
+                      },
+                      trackingId: {
+                          not: null,
+                      },
+                      createdAt: {
+                          gt: subMonths(new Date(), 2),
+                      },
+                      isTrackingEnabled: true,
+                  },
+              });
 
         this.logger.info(
             `Receiving ${fedexPackages.length} Fedex packages, that we pull status updates from`,
@@ -392,7 +400,7 @@ export class FedexTrackingSyncService {
                 continue;
             }
 
-            const lastState = fullPackage.trackResults[0].latestStatusDetail;
+            const lastState = fullPackage.trackResults?.[0].latestStatusDetail;
             if (!lastState || !lastState.code) {
                 this.logger.error(
                     `Package state from Fedex not including current status code: ${p.trackingId}`,
