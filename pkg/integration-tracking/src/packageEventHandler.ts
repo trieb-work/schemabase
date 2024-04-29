@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { Context } from "@eci/pkg/context";
 import { EventSchemaRegistry, RuntimeContextHandler } from "@eci/pkg/events";
 import { isValidTransition } from "./eventSorting";
+import { isSameMinute } from "date-fns";
 
 export interface PackageEventHandlerConfig {
     db: PrismaClient;
@@ -85,7 +86,7 @@ export class PackageEventHandler {
 
         if (
             existingEvents &&
-            existingEvents.some((e) => e.time === eventDate)
+            existingEvents.some((e) => isSameMinute(e.time, eventDate))
         ) {
             logger.info(`The current event date is the same as from an existing one in \
       our DB: ${eventDate}. Assuming, that we already have this event in our DB. Skipping..`);
