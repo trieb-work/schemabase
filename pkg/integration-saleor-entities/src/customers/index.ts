@@ -58,6 +58,8 @@ export class SaleorCustomerSyncService {
         const { externalIdentifier, externalIdentifier2 } = contact;
 
         const metadataInput: InputMaybe<MetadataInput[]> = [];
+        const privateMetadataInput: InputMaybe<MetadataInput[]> = [];
+
         if (externalIdentifier) {
             metadataInput.push({
                 key: "avataxCustomerCode",
@@ -65,7 +67,7 @@ export class SaleorCustomerSyncService {
             });
         }
         if (externalIdentifier2) {
-            metadataInput.push({
+            privateMetadataInput.push({
                 key: "customerNumber",
                 value: externalIdentifier2,
             });
@@ -74,6 +76,7 @@ export class SaleorCustomerSyncService {
             id: saleorCustomerId,
             input: {
                 metadata: metadataInput,
+                privateMetadata: privateMetadataInput,
             },
         });
 
