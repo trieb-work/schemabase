@@ -1,6 +1,11 @@
 /* eslint-disable max-len */
 import { ILogger } from "@eci/pkg/logger";
-import { queryWithPagination, SaleorClient } from "@eci/pkg/saleor";
+import {
+    InputMaybe,
+    MetadataInput,
+    queryWithPagination,
+    SaleorClient,
+} from "@eci/pkg/saleor";
 import { Contact, PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 
@@ -50,19 +55,25 @@ export class SaleorCustomerSyncService {
         saleorCustomerId: string;
         contact: Contact;
     }) {
-        const { externalIdentifier } = contact;
+        const { externalIdentifier, externalIdentifier2 } = contact;
 
+        const metadataInput: InputMaybe<MetadataInput[]> = [];
+        if (externalIdentifier) {
+            metadataInput.push({
+                key: "avataxCustomerCode",
+                value: externalIdentifier,
+            });
+        }
+        if (externalIdentifier2) {
+            metadataInput.push({
+                key: "customerNumber",
+                value: externalIdentifier2,
+            });
+        }
         const response = await this.saleorClient.updateSaleorCustomer({
             id: saleorCustomerId,
             input: {
-                metadata: externalIdentifier
-                    ? [
-                          {
-                              key: "avataxCustomerCode",
-                              value: externalIdentifier,
-                          },
-                      ]
-                    : undefined,
+                metadata: metadataInput,
             },
         });
 
