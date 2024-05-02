@@ -289,21 +289,6 @@ export class CognitoUserSyncService {
                  * There might be other use-cases where we need to enable the
                  * account creation, and maybe trigger a PW reset email.
                  */
-                // this.logger.info(`Creating user ${contact.email} in Cognito`);
-                // await this.createUserInCognito(contact.email, [
-                //     {
-                //         Name: "custom:channel",
-                //         Value: channelName,
-                //     },
-                //     {
-                //         Name: "email",
-                //         Value: contact.email,
-                //     },
-                //     {
-                //         Name: "email_verified",
-                //         Value: "true",
-                //     },
-                // ]);
             } else {
                 this.logger.info(`Updating user ${contact.email} in Cognito`);
                 for (const u of cognitoUser) {
@@ -317,6 +302,12 @@ export class CognitoUserSyncService {
                         userAttributes.push({
                             Name: "custom:channel",
                             Value: channelName,
+                        });
+                    }
+                    if (contact.externalIdentifier2) {
+                        userAttributes.push({
+                            Name: "custom:externalIdentifier2",
+                            Value: contact.externalIdentifier2,
                         });
                     }
                     /**

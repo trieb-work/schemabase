@@ -949,6 +949,9 @@ model Contact {
   /// we set this for example in saleor as external identifier
   externalIdentifier String?
 
+  /// a different, global identifier that can be used to identify a contact in other systems.
+  externalIdentifier2 String?
+
   /// is this contact a customer / debitor? Can be customer and/or vendor
   customer Boolean @default(true)
 
