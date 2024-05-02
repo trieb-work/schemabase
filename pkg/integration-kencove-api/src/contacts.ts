@@ -163,6 +163,9 @@ export class KencoveApiAppContactSyncService {
                     where: {
                         customerCode: contact.customer_code,
                         kencoveApiAppId: this.kencoveApiApp.id,
+                        id: {
+                            not: contact.id.toString(),
+                        },
                     },
                 });
 
