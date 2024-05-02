@@ -68,7 +68,7 @@ export class SaleorCustomerSyncService {
         }
         if (externalIdentifier2) {
             privateMetadataInput.push({
-                key: "customerNumber",
+                key: "customerCode",
                 value: externalIdentifier2,
             });
         }
