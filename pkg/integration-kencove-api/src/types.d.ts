@@ -118,6 +118,7 @@ export type KencoveApiContact = {
      * to match it for example with avalara. E.g."CC-185982:0"
      */
     commerical_customer_code: string;
+    active: boolean;
 };
 
 export type KencoveApiProductVariant = {
