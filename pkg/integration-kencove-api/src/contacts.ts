@@ -70,6 +70,30 @@ export class KencoveApiAppContactSyncService {
         for await (const contacts of contactYield) {
             this.logger.info(`Found ${contacts.length} contacts to sync`);
             for (const contact of contacts) {
+                if (!contact.active) {
+                    this.logger.info(
+                        `Deleting Kencove contact ${contact.id}, because it is no longer active`,
+                        {
+                            contactId: contact.id,
+                            contactNumber: contact.customer_code,
+                        },
+                    );
+                    try {
+                        await this.db.kencoveApiContact.delete({
+                            where: {
+                                id_kencoveApiAppId: {
+                                    id: contact.id.toString(),
+                                    kencoveApiAppId: this.kencoveApiApp.id,
+                                },
+                            },
+                        });
+                    } catch (error) {
+                        this.logger.error(
+                            `Error deleting contact ${contact.id} (maybe it doesn't exist anymore)`,
+                        );
+                    }
+                }
+
                 if (!contact.email) {
                     continue;
                 }
@@ -129,6 +153,19 @@ export class KencoveApiAppContactSyncService {
                     },
                 );
 
+                /**
+                 * When contacts get merged, we might have the old, exiting customerCode
+                 * still in the DB. We check at the beginning already, that this contact
+                 * is active - so all existing contacts with this customerCode should be
+                 * deleted.
+                 */
+                await this.db.kencoveApiContact.deleteMany({
+                    where: {
+                        customerCode: contact.customer_code,
+                        kencoveApiAppId: this.kencoveApiApp.id,
+                    },
+                });
+
                 await this.db.kencoveApiContact.upsert({
                     where: {
                         id_kencoveApiAppId: {
@@ -160,6 +197,7 @@ export class KencoveApiAppContactSyncService {
                                     phone: contact.phone,
                                     externalIdentifier:
                                         contact.commerical_customer_code,
+                                    externalIdentifier2: contact.customer_code,
                                     company: companyName
                                         ? {
                                               connectOrCreate: {
@@ -213,6 +251,7 @@ export class KencoveApiAppContactSyncService {
                                 phone: contact.phone,
                                 externalIdentifier:
                                     contact.commerical_customer_code,
+                                externalIdentifier2: contact.customer_code,
                                 company: companyName
                                     ? {
                                           connectOrCreate: {
