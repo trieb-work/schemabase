@@ -222,7 +222,7 @@ export type KencoveApiCategoryImage = {
 };
 export type KencoveApiCategory = {
     cateorgyId: number;
-    categorySlug: string;
+    categorySlug: string | null;
     categoryName: string;
     parentCategoryId: string;
     childrenCategoryIds: string[] | null;

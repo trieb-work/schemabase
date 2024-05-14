@@ -118,7 +118,7 @@ export class KencoveApiAppCategorySyncService {
             const categoriesToSkip =
                 this.kencoveApiApp.skipCategories?.split(",") ?? [];
 
-            // remove categories that are configured to be skipped
+            // remove categories that are configured to be skipped and categories without a slug
             const categoriesToSync = kenApiCategories.filter(
                 (c) => !categoriesToSkip.includes(c.cateorgyId.toString()),
             );
@@ -135,6 +135,13 @@ export class KencoveApiAppCategorySyncService {
                 const normalizedName = normalizeStrings.categoryNames(
                     category.categoryName,
                 );
+
+                if (!category.categorySlug) {
+                    this.logger.warn(
+                        `Category ${category.categoryName} has no slug. Skipping.`,
+                    );
+                    continue;
+                }
 
                 const media = category.images || [];
 
