@@ -96,8 +96,8 @@ dependencies:
     specifier: ^3.4.3
     version: 3.4.3
   express:
-    specifier: ^4.18.2
-    version: 4.18.2
+    specifier: ^4.19.2
+    version: 4.19.2
   express-session:
     specifier: ^1.17.3
     version: 1.17.3
@@ -275,8 +275,8 @@ devDependencies:
     specifier: ^0.1.7
     version: 0.1.7
   '@types/express':
-    specifier: ^4.17.17
-    version: 4.17.17
+    specifier: ^4.17.21
+    version: 4.17.21
   '@types/express-session':
     specifier: ^1.17.7
     version: 1.17.7
@@ -555,13 +555,13 @@ packages:
       '@apollo/utils.withrequired': 2.0.1
       '@graphql-tools/schema': 9.0.19(graphql@16.6.0)
       '@josephg/resolvable': 1.0.1
-      '@types/express': 4.17.17
+      '@types/express': 4.17.21
       '@types/express-serve-static-core': 4.17.35
       '@types/node-fetch': 2.6.4
       async-retry: 1.3.3
       body-parser: 1.20.2
       cors: 2.8.5
-      express: 4.18.2
+      express: 4.19.2
       graphql: 16.6.0
       loglevel: 1.8.1
       lru-cache: 7.18.3
@@ -6236,7 +6236,7 @@ packages:
   /@types/connect-ensure-login@0.1.7:
     resolution: {integrity: sha512-3sbxb57/Cqz/o/fLre0vqEOid52hebUUCWjE/yTOjJX0qdtbSKkGvgQ+nLikavxWi7S51irh9JRlKVUfLUbR9w==}
     dependencies:
-      '@types/express': 4.17.17
+      '@types/express': 4.17.21
     dev: true
 
   /@types/connect@3.4.35:
@@ -6271,11 +6271,11 @@ packages:
   /@types/express-session@1.17.7:
     resolution: {integrity: sha512-L25080PBYoRLu472HY/HNCxaXY8AaGgqGC8/p/8+BYMhG0RDOLQ1wpXOpAzr4Gi5TGozTKyJv5BVODM5UNyVMw==}
     dependencies:
-      '@types/express': 4.17.17
+      '@types/express': 4.17.21
     dev: true
 
-  /@types/express@4.17.17:
-    resolution: {integrity: sha512-Q4FmmuLGBG58btUnfS1c1r/NQdlp3DMfGDGig8WhfpA2YRUtEkxAjkZb0yvplJGYdF1fsQ81iMDcH24sSCNC/Q==}
+  /@types/express@4.17.21:
+    resolution: {integrity: sha512-ejlPM315qwLpaQlQDTjPdsUFSc6ZsP4AN6AlWnogPjQ7CVi7PYF3YVz+CY3jE2pwYf7E/7HlDAN0rV2GxTG0HQ==}
     dependencies:
       '@types/body-parser': 1.19.2
       '@types/express-serve-static-core': 4.17.35
@@ -6406,7 +6406,7 @@ packages:
   /@types/passport@1.0.12:
     resolution: {integrity: sha512-QFdJ2TiAEoXfEQSNDISJR1Tm51I78CymqcBa8imbjo6dNNu+l2huDxxbDEIoFIwOSKMkOfHEikyDuZ38WwWsmw==}
     dependencies:
-      '@types/express': 4.17.17
+      '@types/express': 4.17.21
     dev: true
 
   /@types/prettier@2.7.3:
@@ -7547,26 +7547,6 @@ packages:
       - supports-color
     dev: false
 
-  /body-parser@1.20.1:
-    resolution: {integrity: sha512-jWi7abTbYwajOytWCQc37VulmWiRae5RyTpaCyDcS5/lMdtwSz5lOpDE67srw/HYe35f1z3fDQw+3txg7gNtWw==}
-    engines: {node: '>= 0.8', npm: 1.2.8000 || >= 1.4.16}
-    dependencies:
-      bytes: 3.1.2
-      content-type: 1.0.5
-      debug: 2.6.9
-      depd: 2.0.0
-      destroy: 1.2.0
-      http-errors: 2.0.0
-      iconv-lite: 0.4.24
-      on-finished: 2.4.1
-      qs: 6.11.0
-      raw-body: 2.5.1
-      type-is: 1.6.18
-      unpipe: 1.0.0
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
-
   /body-parser@1.20.2:
     resolution: {integrity: sha512-ml9pReCu3M61kGlqoTm2umSXTlRTuGTx0bfYj+uIUKKYycG5NtSbeetV3faSU6R7ajOPw0g/J1PvK4qNy7s5bA==}
     engines: {node: '>= 0.8', npm: 1.2.8000 || >= 1.4.16}
@@ -8290,6 +8270,12 @@ packages:
 
   /cookie@0.5.0:
     resolution: {integrity: sha512-YZ3GUyn/o8gfKJlnlX7g7xq4gyO6OSuhGPKaaGssGB2qgDUS0gPgtTvoyZLTt9Ab6dC4hfc9dV5arkvc/OCmrw==}
+    engines: {node: '>= 0.6'}
+    dev: false
+    optional: true
+
+  /cookie@0.6.0:
+    resolution: {integrity: sha512-U71cyTamuh1CRNCfpGY6to28lxvNwPG4Guz/EVjgf3Jmzv0vlDp1atT9eS5dDjMYHucpHbWns6Lwf3BKz6svdw==}
     engines: {node: '>= 0.6'}
     dev: false
 
@@ -10097,16 +10083,16 @@ packages:
       - supports-color
     dev: false
 
-  /express@4.18.2:
-    resolution: {integrity: sha512-5/PsL6iGPdfQ/lKM1UuielYgv3BUoJfz1aUwU9vHZ+J7gyvwdQXFEBIEIaxeGf0GIcreATNyBExtalisDbuMqQ==}
+  /express@4.19.2:
+    resolution: {integrity: sha512-5T6nhjsT+EOMzuck8JjBHARTHfMht0POzlA60WV2pMD3gyXw2LZnZ+ueGdNxG+0calOJcWKbpFcuzLZ91YWq9Q==}
     engines: {node: '>= 0.10.0'}
     dependencies:
       accepts: 1.3.8
       array-flatten: 1.1.1
-      body-parser: 1.20.1
+      body-parser: 1.20.2
       content-disposition: 0.5.4
       content-type: 1.0.5
-      cookie: 0.5.0
+      cookie: 0.6.0
       cookie-signature: 1.0.6
       debug: 2.6.9
       depd: 2.0.0
@@ -14359,16 +14345,6 @@ packages:
     dependencies:
       bytes: 3.1.2
       http-errors: 1.8.1
-      iconv-lite: 0.4.24
-      unpipe: 1.0.0
-    dev: false
-
-  /raw-body@2.5.1:
-    resolution: {integrity: sha512-qqJBtEyVgS0ZmPGdCFPWJ3FreoqvG4MVQln/kCgF7Olq95IbOp0/BWyMwbdtn4VTvkM8Y7khCQ2Xgk/tcrCXig==}
-    engines: {node: '>= 0.8'}
-    dependencies:
-      bytes: 3.1.2
-      http-errors: 2.0.0
       iconv-lite: 0.4.24
       unpipe: 1.0.0
     dev: false
