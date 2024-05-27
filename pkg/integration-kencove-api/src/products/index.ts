@@ -633,6 +633,7 @@ export class KencoveApiAppProductSyncService {
     private async syncProductTypeAndAttributes(products: KencoveApiProduct[]) {
         const uniqueProductTypes = products
             .map((p) => p.productType)
+            .filter((pt) => pt?.id !== null)
             .filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i)
             .filter((pt) => pt.name !== null)
             .filter((pt) => pt.id !== null) as { id: string; name: string }[];
