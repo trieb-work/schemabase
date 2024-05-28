@@ -2583,6 +2583,28 @@ model FedexTrackingApp {
   @@index([tenantId])
 }
 
+model UspsTrackingApp {
+  id String @id
+
+  enabled Boolean @default(false)
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String @unique
+
+  clientId     String
+  clientSecret String
+
+  trackingIntegration   TrackingIntegration? @relation(fields: [trackingIntegrationId], references: [id])
+  trackingIntegrationId String?
+
+  cronSchedule String @default("0 */4 * * *")
+  // Time in seconds how long one workflow can run before a timeout occurs.
+  cronTimeout  Int    @default(800)
+
+  @@index([trackingIntegrationId])
+  @@index([tenantId])
+}
+
 model ProductDataFeedApp {
   id String @id
 
@@ -3235,6 +3257,7 @@ model Tenant {
   awsCognitoApps              AWSCognitoApp[]
   algoliaApps                 AlgoliaApp[]
   fedexTrackingApps           FedexTrackingApp[]
+  uspsTrackingApps            UspsTrackingApp[]
 }
 
 // A subscription indicates a tenant has payed for one integration.
@@ -3275,6 +3298,7 @@ model TrackingIntegration {
   upsTrackingApps    UPSTrackingApp[]
   easyPostApps       EasyPostApp[]
   fedexTrackingApps  FedexTrackingApp[]
+  uspsTrackingApps   UspsTrackingApp[]
   trackingEmailApp   TrackingEmailApp @relation(fields: [trackingEmailAppId], references: [id])
   trackingEmailAppId String
   zohoApp            ZohoApp?         @relation(fields: [zohoAppId], references: [id])

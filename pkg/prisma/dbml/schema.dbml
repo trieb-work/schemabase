@@ -1422,6 +1422,19 @@ Table FedexTrackingApp {
   Note: 'Fedex Tracking App model'
 }
 
+Table UspsTrackingApp {
+  id String [pk]
+  enabled Boolean [not null, default: false]
+  tenant Tenant [not null]
+  tenantId String [unique, not null]
+  clientId String [not null]
+  clientSecret String [not null]
+  trackingIntegration TrackingIntegration
+  trackingIntegrationId String
+  cronSchedule String [not null, default: '0 */4 * * *']
+  cronTimeout Int [not null, default: 800]
+}
+
 Table ProductDataFeedApp {
   id String [pk]
   productDetailStorefrontURL String [not null]
@@ -1873,6 +1886,7 @@ Table Tenant {
   awsCognitoApps AWSCognitoApp [not null]
   algoliaApps AlgoliaApp [not null]
   fedexTrackingApps FedexTrackingApp [not null]
+  uspsTrackingApps UspsTrackingApp [not null]
 }
 
 Table Subscription {
@@ -1899,6 +1913,7 @@ Table TrackingIntegration {
   upsTrackingApps UPSTrackingApp [not null]
   easyPostApps EasyPostApp [not null]
   fedexTrackingApps FedexTrackingApp [not null]
+  uspsTrackingApps UspsTrackingApp [not null]
   trackingEmailApp TrackingEmailApp [not null]
   trackingEmailAppId String [not null]
   zohoApp ZohoApp
@@ -2731,6 +2746,10 @@ Ref: UPSTrackingApp.trackingIntegrationId > TrackingIntegration.id
 Ref: FedexTrackingApp.tenantId > Tenant.id [delete: Cascade]
 
 Ref: FedexTrackingApp.trackingIntegrationId > TrackingIntegration.id
+
+Ref: UspsTrackingApp.tenantId > Tenant.id [delete: Cascade]
+
+Ref: UspsTrackingApp.trackingIntegrationId > TrackingIntegration.id
 
 Ref: ProductDataFeedApp.tenantId > Tenant.id [delete: Cascade]
 
