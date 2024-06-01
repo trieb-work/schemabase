@@ -4251,7 +4251,7 @@ describe("Saleor Entity Sync payments Test", () => {
             saleorClient: mockedSaleorClient,
             logger: new NoopLogger(),
             db: prismaClient,
-            installedSaleorAppId: installedSaleorApp.id,
+            installedSaleorApp,
             tenantId: tenant.id,
             orderPrefix: "STORE",
         });
