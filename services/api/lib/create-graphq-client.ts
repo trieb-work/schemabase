@@ -4,7 +4,7 @@ import {
     createClient as urqlCreateClient,
     dedupExchange,
     fetchExchange,
-} from "urql";
+} from "@urql/core";
 
 interface IAuthState {
     token: string;

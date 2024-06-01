@@ -650,6 +650,14 @@ export type AddressInput = {
     phone?: InputMaybe<Scalars["String"]>;
     /** Postal code. */
     postalCode?: InputMaybe<Scalars["String"]>;
+    /**
+     * Determine if the address should be validated. By default, Saleor accepts only address inputs matching ruleset from [Google Address Data]{https://chromium-i18n.appspot.com/ssl-address), using [i18naddress](https://github.com/mirumee/google-i18n-address) library. Some mutations may require additional permissions to use the the field. More info about permissions can be found in relevant mutation.
+     *
+     * Added in Saleor 3.19.
+     *
+     * Note: this API is currently in Feature Preview and can be subject to changes at later point.
+     */
+    skipValidation?: InputMaybe<Scalars["Boolean"]>;
     /** Address. */
     streetAddress1?: InputMaybe<Scalars["String"]>;
     /** Address. */
@@ -4437,6 +4445,8 @@ export type CheckoutCountableEdge = {
 /**
  * Create a new checkout.
  *
+ * `skipValidation` field requires HANDLE_CHECKOUTS and AUTHENTICATED_APP permissions.
+ *
  * Triggers the following webhook events:
  * - CHECKOUT_CREATED (async): A checkout was created.
  */
@@ -4513,7 +4523,7 @@ export enum CheckoutCreateFromOrderUnavailableVariantErrorCode {
 }
 
 export type CheckoutCreateInput = {
-    /** Billing address of the customer. */
+    /** Billing address of the customer. `skipValidation` requires HANDLE_CHECKOUTS and AUTHENTICATED_APP permissions. */
     billingAddress?: InputMaybe<AddressInput>;
     /** Slug of a channel in which to create a checkout. */
     channel?: InputMaybe<Scalars["String"]>;
@@ -4523,7 +4533,7 @@ export type CheckoutCreateInput = {
     languageCode?: InputMaybe<LanguageCodeEnum>;
     /** A list of checkout lines, each containing information about an item in the checkout. */
     lines: Array<CheckoutLineInput>;
-    /** The mailing address to where the checkout will be shipped. Note: the address will be ignored if the checkout doesn't contain shippable items. */
+    /** The mailing address to where the checkout will be shipped. Note: the address will be ignored if the checkout doesn't contain shippable items. `skipValidation` requires HANDLE_CHECKOUTS and AUTHENTICATED_APP permissions. */
     shippingAddress?: InputMaybe<AddressInput>;
     /**
      * The checkout validation rules that can be changed.
@@ -11396,6 +11406,8 @@ export type Mutation = {
     checkoutComplete?: Maybe<CheckoutComplete>;
     /**
      * Create a new checkout.
+     *
+     * `skipValidation` field requires HANDLE_CHECKOUTS and AUTHENTICATED_APP permissions.
      *
      * Triggers the following webhook events:
      * - CHECKOUT_CREATED (async): A checkout was created.
@@ -18624,6 +18636,7 @@ export enum PaymentErrorCode {
     BalanceCheckError = "BALANCE_CHECK_ERROR",
     BillingAddressNotSet = "BILLING_ADDRESS_NOT_SET",
     ChannelInactive = "CHANNEL_INACTIVE",
+    CheckoutCompletionInProgress = "CHECKOUT_COMPLETION_IN_PROGRESS",
     CheckoutEmailNotSet = "CHECKOUT_EMAIL_NOT_SET",
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
@@ -23885,7 +23898,7 @@ export type Query = {
     /**
      * Look up a checkout by id.
      *
-     * Requires one of the following permissions to query checkouts that belong to other users: MANAGE_CHECKOUTS, IMPERSONATE_USER.
+     * Requires one of the following permissions to query a checkout, if a checkout is in inactive channel: MANAGE_CHECKOUTS, IMPERSONATE_USER, HANDLE_PAYMENTS.
      */
     checkout?: Maybe<Checkout>;
     /**
@@ -23897,7 +23910,7 @@ export type Query = {
     /**
      * List of checkouts.
      *
-     * Requires one of the following permissions: MANAGE_CHECKOUTS.
+     * Requires one of the following permissions: MANAGE_CHECKOUTS, HANDLE_PAYMENTS.
      */
     checkouts?: Maybe<CheckoutCountableConnection>;
     /** Look up a collection by ID. Requires one of the following permissions to include the unpublished items: MANAGE_ORDERS, MANAGE_DISCOUNTS, MANAGE_PRODUCTS. */
