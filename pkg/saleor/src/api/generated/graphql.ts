@@ -31114,7 +31114,7 @@ export type WebhookCreateInput = {
     /** The asynchronous events that webhook wants to subscribe. */
     asyncEvents?: InputMaybe<Array<WebhookEventTypeAsyncEnum>>;
     /**
-     * Custom headers, which will be added to HTTP request. There is a limitation of 5 headers per webhook and 998 characters per header.Only "X-*" and "Authorization*" keys are allowed.
+     * Custom headers, which will be added to HTTP request. There is a limitation of 5 headers per webhook and 998 characters per header.Only `X-*`, `Authorization*`, and `BrokerProperties` keys are allowed.
      *
      * Added in Saleor 3.12.
      *
