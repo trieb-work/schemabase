@@ -154,7 +154,7 @@ export class CronTable {
             });
 
         const enabledUspsTrackingApps =
-            await this.clients.prisma.uPSTrackingApp.findMany({
+            await this.clients.prisma.uspsTrackingApp.findMany({
                 where: {
                     enabled: true,
                 },
