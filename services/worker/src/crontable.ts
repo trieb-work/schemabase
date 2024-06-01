@@ -47,6 +47,7 @@ import { KencoveApiPaymentSyncWf } from "./workflows/kencoveApiPaymentSync";
 import { AlgoliaCategorySyncWf } from "./workflows/algoliaCategorySync";
 import { SaleorProductChannelSyncWf } from "./workflows/saleorProductChannelSync";
 import { FedexTrackingSyncWf } from "./workflows/fedexTrackingSync";
+import { UspsTrackingSyncWf } from "./workflows/uspsTrackingSync";
 
 interface CronClients {
     logger: ILogger;
@@ -152,6 +153,12 @@ export class CronTable {
                 },
             });
 
+        const enabledUspsTrackingApps =
+            await this.clients.prisma.uPSTrackingApp.findMany({
+                where: {
+                    enabled: true,
+                },
+            });
         /**
          * Algolia App Workflows
          */
@@ -492,6 +499,30 @@ export class CronTable {
             new WorkflowScheduler(this.clients).schedule(
                 createWorkflowFactory(
                     FedexTrackingSyncWf,
+                    this.clients,
+                    commonWorkflowConfig,
+                ),
+                { ...commonCronConfig, offset: 0 },
+                [tenantId.substring(0, 5), id.substring(0, 5)],
+            );
+        }
+
+        /**
+         * USPS Tracking App Workflow
+         */
+        for (const enabledUspsTrackingApp of enabledUspsTrackingApps) {
+            const { id, cronTimeout, cronSchedule, tenantId } =
+                enabledUspsTrackingApp;
+            const commonCronConfig = {
+                cron: cronSchedule,
+                timeout: cronTimeout,
+            };
+            const commonWorkflowConfig = {
+                uspsTrackingApp: enabledUspsTrackingApp,
+            };
+            new WorkflowScheduler(this.clients).schedule(
+                createWorkflowFactory(
+                    UspsTrackingSyncWf,
                     this.clients,
                     commonWorkflowConfig,
                 ),
