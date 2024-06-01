@@ -12,9 +12,9 @@ describe("Fedex package sync test", () => {
 
         //
 
-        const fedexTrackingApp = await db.fedexTrackingApp.findUniqueOrThrow({
+        const uspsTrackingApp = await db.uspsTrackingApp.findUniqueOrThrow({
             where: {
-                id: "fedex_test",
+                id: "usps_test",
             },
         });
 
@@ -32,10 +32,10 @@ describe("Fedex package sync test", () => {
         //     update: {},
         // });
 
-        const client = new FedexTrackingSyncService({
+        const client = new USPSTrackingSyncService({
             db,
             logger: new AssertionLogger(),
-            fedexTrackingApp,
+            uspsTrackingApp,
         });
         await client.syncToECI("789285796287");
     });
