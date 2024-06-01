@@ -3,7 +3,7 @@ import { USPSTrackingSyncService } from "./service";
 import { PrismaClient } from "@eci/pkg/prisma";
 import { AssertionLogger } from "@eci/pkg/logger";
 
-describe("Fedex package sync test", () => {
+describe("USPS package sync test", () => {
     // make sure, we have a USPS testing package
 
     // testing the USPS service app. Use the Fedex account with id "test"
@@ -37,6 +37,6 @@ describe("Fedex package sync test", () => {
             logger: new AssertionLogger(),
             uspsTrackingApp,
         });
-        await client.syncToECI("789285796287");
+        await client.syncToECI();
     });
 });
