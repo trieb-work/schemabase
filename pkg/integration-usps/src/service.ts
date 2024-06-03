@@ -193,7 +193,7 @@ export class USPSTrackingSyncService {
         } catch (e) {
             if (axios.isAxiosError(e)) {
                 const error = e.response?.data;
-                if (error.error.code === 400) {
+                if (error?.error?.code === 400) {
                     this.logger.info(
                         "A status update is not yet available on your Priority Mail",
                     );
