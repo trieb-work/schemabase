@@ -53,9 +53,9 @@ export class SyncToOdooEDI {
         // }
         // }
         const responseBody = response.data;
-        if (responseBody?.payload?.ok === false) {
+        if (responseBody?.result?.payload?.ok === false) {
             if (
-                responseBody.payload.message.includes(
+                responseBody?.result?.payload?.message.includes(
                     "duplicate key value violates",
                 )
             ) {
@@ -66,7 +66,11 @@ export class SyncToOdooEDI {
                 return;
             }
             throw new Error(
-                `Failed to send order to Odoo EDI: ${responseBody.payload.message}`,
+                `Failed to send order to Odoo EDI: ${
+                    responseBody?.result?.payload?.message ??
+                    responseBody?.result?.payload ??
+                    responseBody
+                }`,
             );
         }
 
@@ -80,10 +84,14 @@ export class SyncToOdooEDI {
         //     "ok": true
         //     }
         //     }
-        const exchangeRecordId = responseBody?.payload?.data?.id;
+        const exchangeRecordId = responseBody?.result?.payload?.data?.id;
         if (!exchangeRecordId) {
             throw new Error(
-                `Failed to send order to Odoo EDI: ${responseBody.payload.message}`,
+                `Failed to send order to Odoo EDI: ${
+                    responseBody?.result?.payload?.message ??
+                    responseBody?.result?.payload ??
+                    JSON.stringify(responseBody)
+                }`,
             );
         }
         this.logger.info(
