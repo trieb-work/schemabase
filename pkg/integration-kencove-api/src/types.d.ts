@@ -17,7 +17,7 @@ export type KencoveApiAttribute = {
 };
 
 export type KencoveApiAddress = {
-    id: string;
+    id: string | number;
     customerId: string;
     street: string;
     additionalAddressLine: string | null;

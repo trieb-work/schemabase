@@ -145,12 +145,12 @@ export class KencoveApiAppAddressSyncService {
                 await this.db.kencoveApiAddress.upsert({
                     where: {
                         id_kencoveApiAppId: {
-                            id: address.id,
+                            id: address.id.toString(),
                             kencoveApiAppId: this.kencoveApiApp.id,
                         },
                     },
                     create: {
-                        id: address.id,
+                        id: address.id.toString(),
                         createdAt,
                         updatedAt,
                         kencoveApiApp: {
