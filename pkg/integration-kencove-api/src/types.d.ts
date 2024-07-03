@@ -169,10 +169,10 @@ export type KencoveApiProduct = {
     countryOfOrigin: "CN" | "US" | "PT" | "NZ" | "AU" | "CA" | "GB" | "IE";
     categoryId: number;
     variants: KencoveApiProductVariant[];
-    productType: {
+    productType?: {
         id: string | null;
         name: string | null;
-    };
+    } | null;
     website_description: string;
     createdAt: string;
     updatedAt: string;
