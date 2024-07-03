@@ -690,7 +690,7 @@ export class KencoveApiAppProductSyncService {
              */
             const isVariant = products.some(
                 (p) =>
-                    p.productType.id === productType.id &&
+                    p.productType?.id === productType.id &&
                     p.variants.length > 1,
             );
             const existingProductType = existingProductTypes.find(
@@ -792,14 +792,14 @@ export class KencoveApiAppProductSyncService {
                 productAttributesUnique,
             } = this.attributeMatch(product);
 
-            if (!product.productType.id) {
+            if (!product.productType?.id || !product.productType.name) {
                 this.logger.error(
                     `Product type ${product.name} - ${product.id} has no product type id. Skipping.`,
                 );
                 continue;
             }
             const kenProdType = kenProdTypes.find(
-                (pt) => pt.id === product.productType.id,
+                (pt) => pt.id === product.productType!.id,
             );
             if (!kenProdType) {
                 this.logger.error(
@@ -1408,7 +1408,7 @@ export class KencoveApiAppProductSyncService {
             .filter(
                 (p) =>
                     p.productType?.id !== undefined ||
-                    p.productType.id !== null,
+                    p.productType?.id !== null,
             );
 
         /**
@@ -1416,7 +1416,7 @@ export class KencoveApiAppProductSyncService {
          * over all variants of the product
          */
         for (const product of enhancedProducts) {
-            if (!product.productType.id) {
+            if (!product.productType?.id) {
                 this.logger.warn(
                     `Product ${product.productName}, id: ${product.productId} has no product type. Skipping.`,
                 );
@@ -1462,7 +1462,7 @@ export class KencoveApiAppProductSyncService {
                 });
             if (!kenProdTypeWithProductType) {
                 this.logger.error(
-                    `Could not find product type ${product.productType.name}. ` +
+                    `Could not find product type ${product.productType?.name}. ` +
                         "This should not happen, as we created the product type in the previous step.",
                 );
                 continue;
