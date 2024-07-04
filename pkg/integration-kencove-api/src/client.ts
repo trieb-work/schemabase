@@ -599,7 +599,7 @@ export class KencoveApiClient {
     public async *getOrdersStream(
         fromDate: Date,
     ): AsyncIterableIterator<KencoveApiOrder[]> {
-        const WINDOW_SIZE = 3;
+        const WINDOW_SIZE = 2;
         const LIMIT = 200;
 
         while (isBefore(fromDate, new Date())) {
