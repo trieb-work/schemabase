@@ -17,7 +17,7 @@ export type KencoveApiAttribute = {
 };
 
 export type KencoveApiAddress = {
-    id: string | number;
+    id: number;
     customerId: string;
     street: string;
     additionalAddressLine: string | null;
@@ -107,7 +107,7 @@ export type KencoveApiContact = {
     mobile: string | null;
     type: string;
     pricelist: {
-        id: string;
+        id: number;
         name: string;
     };
     createdat: string;
@@ -122,7 +122,7 @@ export type KencoveApiContact = {
 };
 
 export type KencoveApiProductVariant = {
-    id: string;
+    id: number;
     sku: string;
     weight: number;
     /**
@@ -164,13 +164,13 @@ export type KencoveApiOtherMedia = {
     url: string;
 };
 export type KencoveApiProduct = {
-    id: string;
+    id: number;
     name: string;
     countryOfOrigin: "CN" | "US" | "PT" | "NZ" | "AU" | "CA" | "GB" | "IE";
     categoryId: number;
     variants: KencoveApiProductVariant[];
     productType?: {
-        id: string | number | null;
+        id: number | number | null;
         name: string | null;
     } | null;
     website_description: string;
@@ -332,7 +332,7 @@ export type KencoveApiPayment = {
 };
 
 export type KencoveApiOrder = {
-    id: string;
+    id: number;
     orderNumber: string;
     client_order_ref: string | null;
     /**
@@ -341,7 +341,7 @@ export type KencoveApiOrder = {
     state: "cancel" | "sale" | "sent" | "draft" | "done";
     access_token: string;
     billingAddress: {
-        billingAddressId: string;
+        billingAddressId: number;
         name: string;
         email: string;
         street: string;
@@ -355,7 +355,7 @@ export type KencoveApiOrder = {
         customerCode: string;
     };
     shippingAddress: {
-        shippingAddressId: string;
+        shippingAddressId: number;
         name: string;
         email: string;
         street: string;

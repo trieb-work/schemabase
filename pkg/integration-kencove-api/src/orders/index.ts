@@ -204,16 +204,21 @@ export class KencoveApiAppOrderSyncService {
                 await this.db.kencoveApiOrder.findMany({
                     where: {
                         id: {
-                            in: apiOrders.map((o) => o.id),
+                            in: apiOrders.map((o) => o.id.toString()),
                         },
                         kencoveApiAppId: this.kencoveApiApp.id,
                     },
                 });
             const toCreate = apiOrders.filter(
-                (o) => !existingKencoveApiOrders.find((eo) => eo.id === o.id),
+                (o) =>
+                    !existingKencoveApiOrders.find(
+                        (eo) => eo.id === o.id.toString(),
+                    ),
             );
             const toUpdate = apiOrders.filter((o) =>
-                existingKencoveApiOrders.find((eo) => eo.id === o.id),
+                existingKencoveApiOrders.find(
+                    (eo) => eo.id === o.id.toString(),
+                ),
             );
 
             this.logger.info(
@@ -239,10 +244,10 @@ export class KencoveApiAppOrderSyncService {
 
                 const mainContactPromise = this.syncMainContact(order);
                 const billingAddressPromise = this.getAddress(
-                    order.billingAddress.billingAddressId,
+                    order.billingAddress.billingAddressId.toString(),
                 );
                 const shippingAddressPromise = this.getAddress(
-                    order.shippingAddress.shippingAddressId,
+                    order.shippingAddress.shippingAddressId.toString(),
                 );
 
                 const [billingAddressId, shippingAddressId, mainContactId] =
@@ -289,7 +294,7 @@ export class KencoveApiAppOrderSyncService {
 
                     await this.db.kencoveApiOrder.create({
                         data: {
-                            id: order.id,
+                            id: order.id.toString(),
                             updatedAt,
                             createdAt,
                             kencoveApiApp: {
@@ -511,10 +516,10 @@ export class KencoveApiAppOrderSyncService {
                 }
                 const carrier = shippingMethodMatch(deliveryMethod);
                 const billingAddressPromise = this.getAddress(
-                    order.billingAddress.billingAddressId,
+                    order.billingAddress.billingAddressId.toString(),
                 );
                 const shippingAddressPromise = this.getAddress(
-                    order.shippingAddress.shippingAddressId,
+                    order.shippingAddress.shippingAddressId.toString(),
                 );
                 const [billingAddressId, shippingAddressId, mainContactId] =
                     await Promise.all([
@@ -535,7 +540,7 @@ export class KencoveApiAppOrderSyncService {
                 const res = await this.db.kencoveApiOrder.update({
                     where: {
                         id_kencoveApiAppId: {
-                            id: order.id,
+                            id: order.id.toString(),
                             kencoveApiAppId: this.kencoveApiApp.id,
                         },
                     },

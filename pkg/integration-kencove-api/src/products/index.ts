@@ -443,7 +443,7 @@ export class KencoveApiAppProductSyncService {
                                 correspondingAttributeValue,
                             );
                             this.kenVariantSelectionAttributeOverwrite.set(
-                                variant.id,
+                                variant.id.toString(),
                                 correspondingAttributeValue.attribute_id,
                             );
                         }
@@ -634,8 +634,17 @@ export class KencoveApiAppProductSyncService {
         const uniqueProductTypes = (
             products
                 .map((p) => p.productType)
-                .filter((pt) => pt?.id !== null)
+                .filter(
+                    (pt) =>
+                        pt?.id !== null &&
+                        pt?.name !== null &&
+                        pt?.id !== undefined,
+                )
                 .filter((pt) => pt?.name !== null)
+                .map((pt) => ({
+                    id: (pt!.id as number).toString(),
+                    name: pt!.name,
+                }))
                 .filter(
                     (pt) =>
                         pt?.id !== null &&
@@ -690,7 +699,7 @@ export class KencoveApiAppProductSyncService {
              */
             const isVariant = products.some(
                 (p) =>
-                    p.productType?.id === productType.id &&
+                    p.productType?.id?.toString() === productType.id &&
                     p.variants.length > 1,
             );
             const existingProductType = existingProductTypes.find(
@@ -799,7 +808,8 @@ export class KencoveApiAppProductSyncService {
                 continue;
             }
             const kenProdType = kenProdTypes.find(
-                (pt) => pt.id === product.productType!.id,
+                (pt) =>
+                    pt.id.toString() === product.productType!.id?.toString(),
             );
             if (!kenProdType) {
                 this.logger.error(
@@ -1385,7 +1395,7 @@ export class KencoveApiAppProductSyncService {
                     alternatives: p.alternatives,
                     description: p?.website_description,
                     countryOfOrigin: p.countryOfOrigin,
-                    productId: p.id,
+                    productId: p.id.toString(),
                     productName: htmlDecode(p.name),
                     categoryId: p?.categoryId?.toString(),
                     taxClass:
@@ -1396,6 +1406,7 @@ export class KencoveApiAppProductSyncService {
                     updatedAt: new Date(p.updatedAt),
                     variants: p.variants.map((v) => ({
                         ...v,
+                        id: v.id.toString(),
                         productId: p.id,
                         productName: htmlDecode(p.name),
                         countryOfOrigin: p.countryOfOrigin,
@@ -1488,7 +1499,7 @@ export class KencoveApiAppProductSyncService {
                 await this.db.kencoveApiProduct.findUnique({
                     where: {
                         id_kencoveApiAppId: {
-                            id: product.productId,
+                            id: product.productId.toString(),
                             kencoveApiAppId: this.kencoveApiApp.id,
                         },
                     },
