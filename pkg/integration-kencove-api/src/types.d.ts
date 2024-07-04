@@ -170,7 +170,7 @@ export type KencoveApiProduct = {
     categoryId: number;
     variants: KencoveApiProductVariant[];
     productType?: {
-        id: string | null;
+        id: string | number | null;
         name: string | null;
     } | null;
     website_description: string;

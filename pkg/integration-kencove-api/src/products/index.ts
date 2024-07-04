@@ -648,7 +648,7 @@ export class KencoveApiAppProductSyncService {
             .filter((pt) => pt.id !== null) as { id: string; name: string }[];
 
         const uniqueIds = uniqueProductTypes
-            .map((pt) => pt.id)
+            .map((pt) => pt.id.toString())
             .filter((pt) => pt !== null) as string[];
 
         this.logger.info(
@@ -1434,7 +1434,7 @@ export class KencoveApiAppProductSyncService {
                 await this.db.kencoveApiProductType.findUnique({
                     where: {
                         id_kencoveApiAppId: {
-                            id: product.productType.id,
+                            id: product.productType.id.toString(),
                             kencoveApiAppId: this.kencoveApiApp.id,
                         },
                     },
