@@ -173,12 +173,12 @@ export class KencoveApiAppPackageSyncService {
                     await this.db.kencoveApiPackage.upsert({
                         where: {
                             id_kencoveApiAppId: {
-                                id: pkg.packageId,
+                                id: pkg.packageId.toString(),
                                 kencoveApiAppId: this.kencoveApiApp.id,
                             },
                         },
                         create: {
-                            id: pkg.packageId,
+                            id: pkg.packageId.toString(),
                             createdAt,
                             updatedAt,
                             kencoveApiApp: {

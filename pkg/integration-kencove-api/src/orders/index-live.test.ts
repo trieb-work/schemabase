@@ -25,7 +25,7 @@ describe("KencoveApiClient", () => {
             kencoveApiApp: app,
             logger: new AssertionLogger(),
         });
-        await service.syncToECI();
-        // await service.syncFromECI();
+        // await service.syncToECI();
+        await service.syncFromECI();
     }, 2000000);
 });

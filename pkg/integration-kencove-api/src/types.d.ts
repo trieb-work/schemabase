@@ -51,7 +51,7 @@ export type KencoveApiProductStock = {
 export type KencoveApiPackage = {
     salesOrderNo: string;
     packageName: string;
-    packageId: string;
+    packageId: number;
     height: number;
     width: number;
     length: number;
