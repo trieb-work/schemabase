@@ -1,6 +1,6 @@
 {
     "name": "schemabase",
-    "version": "0.135.11",
+    "version": "0.136.0",
     "private": "true",
     "engines": {
         "node": ">=18 <=20"
