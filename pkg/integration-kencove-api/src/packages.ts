@@ -358,7 +358,7 @@ export class KencoveApiAppPackageSyncService {
                             error,
                         )}. Package line items: ${JSON.stringify(
                             pkg.packageItemline,
-                        )}`,
+                        )}. Error: ${error}`,
                     );
                     errors.push(error);
                 }
