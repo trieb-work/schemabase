@@ -2425,7 +2425,7 @@ model PackageEvent {
   state     PackageState
   // What happened
   // eg: "The shipment has cleared customs"
-  message   String?
+  message   String? @db.Text
   package   Package             @relation(fields: [packageId], references: [id], onDelete: Cascade)
   packageId String
   // `Nürnberg, Deutschland` for example
