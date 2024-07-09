@@ -48,6 +48,7 @@ export class PackageEventHandler {
             {
                 trackingId: event.trackingId,
                 packageId: event.packageId,
+                message: event.message,
             },
         );
         const storedPackage = await this.db.package.findUnique({
