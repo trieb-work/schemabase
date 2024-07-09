@@ -217,7 +217,7 @@ export class KencoveApiAppPackageSyncService {
                                         packageLineItems: {
                                             // when we miss certain SKUs in our DB, this is going to fail.
                                             // we don't create the package in that case
-                                            create: pkg.packageItemline.map(
+                                            create: pkg?.packageItemline?.map(
                                                 (item, index) => ({
                                                     id: id.id(
                                                         "packageLineItem",
@@ -293,7 +293,7 @@ export class KencoveApiAppPackageSyncService {
                                             },
                                         },
                                         packageLineItems: {
-                                            create: pkg.packageItemline.map(
+                                            create: pkg.packageItemline?.map(
                                                 (item, index) => ({
                                                     id: id.id(
                                                         "packageLineItem",

@@ -59,10 +59,12 @@ export type KencoveApiPackage = {
      * The package weight in lbs
      */
     shippingWeight: number;
-    packageItemline: {
-        itemCode: string;
-        quantity: number;
-    }[];
+    packageItemline?:
+        | {
+              itemCode: string;
+              quantity: number;
+          }[]
+        | null;
     pickingId: string;
     carrierId: string | null;
     carrierName: string | null;
