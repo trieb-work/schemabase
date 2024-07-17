@@ -39,6 +39,8 @@ spec:
               value: "{{ .Values.ingress.host }}"
             - name: ALLOWED_LOGIN_DOMAINS
               value: "{{ .Values.allowedLoginDomains }}"  
+            - name: BYPASS_AUTH_PARAM  
+              value: "{{ .Values.bypassAuthParam }}"
           resources:
             requests:
               cpu: 150m

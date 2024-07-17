@@ -1,6 +1,6 @@
 
 image:
-  imageName: ghcr.io/trieb.work/anwr-qualibet-statistics/bullboard
+  imageName: xx
 
 ingress:
   enabled: true
@@ -22,5 +22,7 @@ google:
   clientId:
   clientSecret:
 
-allowedLoginDomains: ["trieb.work", "pfefferundfrost.de"]
+allowedLoginDomains: ["trieb.work"]
 imagePullSecret: github
+
+bypassAuthParam:
