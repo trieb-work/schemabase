@@ -64,6 +64,9 @@ const NewPage: NextPage = () => {
                             onChange={(e: React.FormEvent<HTMLInputElement>) =>
                                 setUrl(e.currentTarget.value)
                             }
+                            onPointerEnterCapture={undefined}
+                            onPointerLeaveCapture={undefined}
+                            crossOrigin={undefined}
                         >
                             Url
                         </Input>
@@ -78,6 +81,9 @@ const NewPage: NextPage = () => {
                             onChange={(e: React.FormEvent<HTMLInputElement>) =>
                                 setUsername(e.currentTarget.value)
                             }
+                            onPointerEnterCapture={undefined}
+                            onPointerLeaveCapture={undefined}
+                            crossOrigin={undefined}
                         >
                             Username
                         </Input>
@@ -106,6 +112,9 @@ const NewPage: NextPage = () => {
                     <Grid>
                         <Button
                             loading={loading}
+                            onPointerEnterCapture={undefined}
+                            onPointerLeaveCapture={undefined}
+                            placeholder={undefined}
                             onClick={async () => {
                                 try {
                                     if (loading) {

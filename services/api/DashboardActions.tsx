@@ -1,5 +1,5 @@
-import { useAppBridge } from "@saleor/app-sdk/app-bridge";
-import { Button } from "@saleor/macaw-ui/next";
+// import { useAppBridge } from "@saleor/app-sdk/app-bridge";
+// import { Button } from "@saleor/macaw-ui/next";
 
 /**
  * This is example of using AppBridge, when App is mounted in Dashboard
@@ -9,7 +9,7 @@ import { Button } from "@saleor/macaw-ui/next";
  * -> You can safely remove this file!
  */
 export const DashboardActions = () => {
-    const { appBridge } = useAppBridge();
+    // const { appBridge } = useAppBridge();
 
     return (
         <div>
@@ -21,7 +21,7 @@ export const DashboardActions = () => {
                     gridTemplateColumns: "50% 50%",
                 }}
             >
-                <Button
+                {/* <Button
                     variant={"secondary"}
                     onClick={() => {
                         appBridge?.dispatch({
@@ -50,7 +50,7 @@ export const DashboardActions = () => {
                     }}
                 >
                     Redirect to orders ➡️💰
-                </Button>
+                </Button> */}
             </div>
         </div>
     );

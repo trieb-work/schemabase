@@ -111,7 +111,7 @@
         "@prisma/client": "^5.17.0",
         "@prisma/extension-accelerate": "^0.6.3",
         "@saleor/app-sdk": "^0.50.1",
-        "@saleor/macaw-ui": "0.8.0-pre.96",
+        "@saleor/macaw-ui": "^1.1.6",
         "@trieb.work/zoho-ts": "^0.8.2",
         "@types/react": "18",
         "@urql/core": "4.3.0",

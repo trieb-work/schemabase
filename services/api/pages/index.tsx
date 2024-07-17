@@ -2,7 +2,7 @@ import { NextPage } from "next";
 import { useAppBridge } from "@saleor/app-sdk/app-bridge";
 import dynamic from "next/dynamic";
 import { MouseEventHandler, useEffect, useState } from "react";
-import { Box, Input, Text, Button } from "@saleor/macaw-ui/next";
+import { Box, Input, Text, Button } from "@saleor/macaw-ui";
 
 const ClientContent = dynamic(() => import("../DashboardActions"), {
     ssr: false,
@@ -73,14 +73,12 @@ const IndexPage: NextPage = () => {
 
     return (
         <Box padding={8}>
-            <Text variant={"hero"}>
-                Welcome to Saleor App Template (Next.js) 🚀
-            </Text>
+            <Text>Welcome to Saleor App Template (Next.js) 🚀</Text>
             <Text as={"p"} marginTop={8}>
                 This is a boilerplate you can start with, to create an app
                 connected to Saleor
             </Text>
-            <Text variant={"heading"} marginTop={8} as={"h2"}>
+            <Text marginTop={8} as={"h2"}>
                 Resources
             </Text>
             <ul>
@@ -91,9 +89,7 @@ const IndexPage: NextPage = () => {
                         rel="noreferrer"
                         href="https://github.com/saleor/app-examples"
                     >
-                        <Text color={"text3Decorative"}>
-                            App Examples repository
-                        </Text>
+                        <Text>App Examples repository</Text>
                     </a>
                 </li>
                 <li>
@@ -103,7 +99,7 @@ const IndexPage: NextPage = () => {
                         rel="noreferrer"
                         href="https://github.com/saleor/saleor-app-sdk"
                     >
-                        <Text color={"text3Decorative"}>Saleor App SDK</Text>
+                        <Text>Saleor App SDK</Text>
                     </a>
                 </li>
                 <li>
@@ -113,9 +109,7 @@ const IndexPage: NextPage = () => {
                         href="https://docs.saleor.io/docs/3.x/developer/extending/apps/key-concepts"
                         rel="noreferrer"
                     >
-                        <Text color={"text3Decorative"}>
-                            Apps documentation{" "}
-                        </Text>
+                        <Text>Apps documentation </Text>
                     </a>
                 </li>
                 <li>
@@ -125,7 +119,7 @@ const IndexPage: NextPage = () => {
                         href="https://github.com/saleor/saleor-cli"
                         rel="noreferrer"
                     >
-                        <Text color={"text3Decorative"}>Saleor CLI</Text>
+                        <Text>Saleor CLI</Text>
                     </a>
                 </li>
                 <li>
@@ -135,9 +129,7 @@ const IndexPage: NextPage = () => {
                         href="https://macaw-ui-next.vercel.app/?path=/docs/getting-started-installation--docs"
                         rel="noreferrer"
                     >
-                        <Text color={"text3Decorative"}>
-                            Macaw UI - storybook
-                        </Text>
+                        <Text>Macaw UI - storybook</Text>
                     </a>
                 </li>
                 <li>
@@ -147,9 +139,7 @@ const IndexPage: NextPage = () => {
                         href="https://github.com/saleor/apps"
                         rel="noreferrer"
                     >
-                        <Text color={"text3Decorative"}>
-                            Saleor Apps - official apps by Saleor Team
-                        </Text>
+                        <Text>Saleor Apps - official apps by Saleor Team</Text>
                     </a>
                 </li>
             </ul>

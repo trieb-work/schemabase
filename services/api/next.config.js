@@ -1,3 +1,4 @@
+/** @type {import('next').NextConfig} */
 module.exports = {
     experimental: {
         externalDir: true,
@@ -10,6 +11,7 @@ module.exports = {
 
         return config;
     },
+    output: process.env.DOCKER ? "standalone" : undefined,
     async rewrites() {
         return [
             {
