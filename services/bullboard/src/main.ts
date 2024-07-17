@@ -132,8 +132,12 @@ async function main() {
         res: Response,
         next: NextFunction,
     ) => {
-        if (req.query.authparam === bypassAuthValue) {
-            return next();
+        if (req.query.authparam) {
+            if (req.query.authparam === bypassAuthValue) {
+                return next();
+            } else {
+                console.error(`Invalid authparam: ${req.query.authparam}`);
+            }
         }
         return ensureLoggedIn({ redirectTo: "/login" })(req, res, next);
     };
