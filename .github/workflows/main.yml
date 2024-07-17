@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: ["worker", "bullboard"]
+        service: ["worker", "bullboard", "api"]
     env:
       REGISTRY: ghcr.io
       IMAGE_NAME: ${{ github.repository }}/${{matrix.service}}
@@ -112,12 +112,12 @@ jobs:
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/bullboard:${{ env.CURRENT_VERSION }}
 
 
-          # docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/logdrain:sha-${{ env.DOCKER_TAG_SHA }}
-          # docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/logdrain:sha-${{ env.DOCKER_TAG_SHA }} ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/logdrain:${{ env.CURRENT_VERSION }}
-          # docker push ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/logdrain:${{ env.CURRENT_VERSION }}
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/api:sha-${{ env.DOCKER_TAG_SHA }}
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/api:sha-${{ env.DOCKER_TAG_SHA }} ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/api:${{ env.CURRENT_VERSION }}
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_BASE }}/api:${{ env.CURRENT_VERSION }}
 
 
-  deploy-worker:
+  # deploy-worker:
     name: Deploy Worker
     needs: build
     runs-on: ubuntu-latest
@@ -249,7 +249,7 @@ jobs:
   #         --set=logdrain.redirectUri="${{ secrets.LOGDRAIN_REDIRECT_URI }}"
   #         --set=ingress.host="${{ secrets.LOGDRAIN_HOST }}"
 
-  deploy-bullboard:
+  # deploy-bullboard:
     name: Deploy bullboard
     needs: build
     runs-on: ubuntu-latest
