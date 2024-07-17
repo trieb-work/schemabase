@@ -6,7 +6,7 @@ import { createBullBoard } from "@bull-board/api";
 import { ExpressAdapter } from "@bull-board/express";
 import morgan from "morgan";
 import passport from "passport";
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import { ensureLoggedIn } from "connect-ensure-login";
 import session from "express-session";
 import bodyParser from "body-parser";
@@ -19,6 +19,10 @@ if (!HOST)
     throw new Error("$HOST not set! Can't create the callback URL for google");
 
 const allowedLoginDomains = process.env.ALLOWED_LOGIN_DOMAINS;
+/**
+ * When setting the authparam=XXXXX in the URL, the authentication is bypassed
+ */
+const bypassAuthValue = process.env.BYPASS_AUTH_PARAM;
 
 passport.use(
     new GoogleStrategy(
@@ -122,6 +126,18 @@ async function main() {
     app.use(passport.initialize());
     app.use(passport.session());
 
+    // Middleware to check for bypass query parameter
+    const bypassAuthMiddleware = (
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        if (req.query.authparam === bypassAuthValue) {
+            return next();
+        }
+        return ensureLoggedIn({ redirectTo: "/login" })(req, res, next);
+    };
+
     app.get(
         "/login",
         passport.authenticate("google", { scope: ["profile", "email"] }),
@@ -136,11 +152,7 @@ async function main() {
         },
     );
 
-    app.use(
-        "/ui",
-        ensureLoggedIn({ redirectTo: "/login" }),
-        serverAdapter.getRouter(),
-    );
+    app.use("/ui", bypassAuthMiddleware, serverAdapter.getRouter());
 
     app.use("/health", (_req, res) => {
         res.send({ status: "ok" });

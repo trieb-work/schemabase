@@ -37,7 +37,7 @@ export type Scalars = {
 /**
  * Create a new address for the customer.
  *
- * Requires one of the following permissions: AUTHENTICATED_USER.
+ * Requires one of following set of permissions: AUTHENTICATED_USER or AUTHENTICATED_APP + IMPERSONATE_USER.
  *
  * Triggers the following webhook events:
  * - CUSTOMER_UPDATED (async): A customer account was updated.
@@ -304,6 +304,7 @@ export enum AccountErrorCode {
     JwtMissingToken = "JWT_MISSING_TOKEN",
     JwtSignatureExpired = "JWT_SIGNATURE_EXPIRED",
     LeftNotManageablePermission = "LEFT_NOT_MANAGEABLE_PERMISSION",
+    LoginAttemptDelayed = "LOGIN_ATTEMPT_DELAYED",
     MissingChannelSlug = "MISSING_CHANNEL_SLUG",
     NotFound = "NOT_FOUND",
     OutOfScopeGroup = "OUT_OF_SCOPE_GROUP",
@@ -316,6 +317,7 @@ export enum AccountErrorCode {
     PasswordTooSimilar = "PASSWORD_TOO_SIMILAR",
     Required = "REQUIRED",
     Unique = "UNIQUE",
+    UnknownIpAddress = "UNKNOWN_IP_ADDRESS",
 }
 
 /** Fields required to update the user. */
@@ -372,7 +374,7 @@ export type AccountRegisterInput = {
     metadata?: InputMaybe<Array<MetadataInput>>;
     /** Password. */
     password: Scalars["String"];
-    /** Base of frontend URL that will be needed to create confirmation URL. */
+    /** Base of frontend URL that will be needed to create confirmation URL. Required when account confirmation is enabled. */
     redirectUrl?: InputMaybe<Scalars["String"]>;
 };
 
@@ -439,7 +441,7 @@ export type AccountSetPasswordRequested = Event & {
 /**
  * Updates the account of the logged-in user.
  *
- * Requires one of the following permissions: AUTHENTICATED_USER.
+ * Requires one of following set of permissions: AUTHENTICATED_USER or AUTHENTICATED_APP + IMPERSONATE_USER.
  *
  * Triggers the following webhook events:
  * - CUSTOMER_UPDATED (async): A customer account was updated.
@@ -733,7 +735,7 @@ export type AddressValidationData = {
      * Many fields in the JSON refer to address fields by one-letter abbreviations. These are defined as follows:
      *
      * - `N`: Name
-     * - `O`: Organisation
+     * - `O`: Organization
      * - `A`: Street Address Line(s)
      * - `D`: Dependent locality (may be an inner-city district or a suburb)
      * - `C`: City or Locality
@@ -750,7 +752,7 @@ export type AddressValidationData = {
      * Many fields in the JSON refer to address fields by one-letter abbreviations. These are defined as follows:
      *
      * - `N`: Name
-     * - `O`: Organisation
+     * - `O`: Organization
      * - `A`: Street Address Line(s)
      * - `D`: Dependent locality (may be an inner-city district or a suburb)
      * - `C`: City or Locality
@@ -832,7 +834,7 @@ export type App = Node &
         __typename?: "App";
         /** Description of this app. */
         aboutApp?: Maybe<Scalars["String"]>;
-        /** JWT token used to authenticate by thridparty app. */
+        /** JWT token used to authenticate by third-party app. */
         accessToken?: Maybe<Scalars["String"]>;
         /** URL to iframe with the app. */
         appUrl?: Maybe<Scalars["String"]>;
@@ -2412,7 +2414,7 @@ export type AttributeValue = Node & {
     inputType?: Maybe<AttributeInputTypeEnum>;
     /** Name of a value displayed in the interface. */
     name?: Maybe<Scalars["String"]>;
-    /** Represents the text of the attribute value, plain text without formating. */
+    /** Represents the text of the attribute value, plain text without formatting. */
     plainText?: Maybe<Scalars["String"]>;
     /** The ID of the attribute reference. */
     reference?: Maybe<Scalars["ID"]>;
@@ -2550,7 +2552,7 @@ export type AttributeValueCreateInput = {
     /** Name of a value displayed in the interface. */
     name: Scalars["String"];
     /**
-     * Represents the text of the attribute value, plain text without formating.
+     * Represents the text of the attribute value, plain text without formatting.
      *
      * DEPRECATED: this field will be removed in Saleor 4.0.The plain text attribute hasn't got predefined value, so can be specified only from instance that supports the given attribute.
      */
@@ -2837,7 +2839,7 @@ export type AttributeValueUpdateInput = {
     /** Name of a value displayed in the interface. */
     name?: InputMaybe<Scalars["String"]>;
     /**
-     * Represents the text of the attribute value, plain text without formating.
+     * Represents the text of the attribute value, plain text without formatting.
      *
      * DEPRECATED: this field will be removed in Saleor 4.0.The plain text attribute hasn't got predefined value, so can be specified only from instance that supports the given attribute.
      */
@@ -3641,6 +3643,8 @@ export type Channel = Node &
         /**
          * Channel specific tax configuration.
          *
+         * Added in Saleor 3.20.
+         *
          * Requires one of the following permissions: AUTHENTICATED_STAFF_USER, AUTHENTICATED_APP.
          */
         taxConfiguration: TaxConfiguration;
@@ -4252,7 +4256,7 @@ export type Checkout = Node &
          */
         totalBalance: Money;
         /**
-         * The sum of the the checkout line prices, with all the taxes,shipping costs, and discounts included.
+         * The sum of the checkout line prices, with all the taxes,shipping costs, and discounts included.
          *
          * Triggers the following webhook events:
          * - CHECKOUT_CALCULATE_TAXES (sync): Optionally triggered when checkout prices are expired.
@@ -4639,7 +4643,7 @@ export type CheckoutError = {
     lines?: Maybe<Array<Scalars["ID"]>>;
     /** The error message. */
     message?: Maybe<Scalars["String"]>;
-    /** List of varint IDs which causes the error. */
+    /** List of variant IDs which causes the error. */
     variants?: Maybe<Array<Scalars["ID"]>>;
 };
 
@@ -5913,7 +5917,11 @@ export type ConfirmEmailChange = {
     user?: Maybe<User>;
 };
 
-/** An enumeration. */
+/**
+ * Represents country codes defined by the ISO 3166-1 alpha-2 standard.
+ *
+ * The `EU` value is DEPRECATED and will be removed in Saleor 3.21.
+ */
 export enum CountryCode {
     Ad = "AD",
     Ae = "AE",
@@ -7536,7 +7544,7 @@ export type ExternalNotificationTrigger = {
 export type ExternalNotificationTriggerInput = {
     /** External event type. This field is passed to a plugin as an event type. */
     externalEventType: Scalars["String"];
-    /** Additional payload that will be merged with the one based on the bussines object ID. */
+    /** Additional payload that will be merged with the one based on the business object ID. */
     extraPayload?: InputMaybe<Scalars["JSONString"]>;
     /** The list of customers or orders node IDs that will be serialized and included in the notification payload. */
     ids: Array<Scalars["ID"]>;
@@ -10951,7 +10959,7 @@ export type Mutation = {
     /**
      * Create a new address for the customer.
      *
-     * Requires one of the following permissions: AUTHENTICATED_USER.
+     * Requires one of following set of permissions: AUTHENTICATED_USER or AUTHENTICATED_APP + IMPERSONATE_USER.
      *
      * Triggers the following webhook events:
      * - CUSTOMER_UPDATED (async): A customer account was updated.
@@ -11012,7 +11020,7 @@ export type Mutation = {
     /**
      * Updates the account of the logged-in user.
      *
-     * Requires one of the following permissions: AUTHENTICATED_USER.
+     * Requires one of following set of permissions: AUTHENTICATED_USER or AUTHENTICATED_APP + IMPERSONATE_USER.
      *
      * Triggers the following webhook events:
      * - CUSTOMER_UPDATED (async): A customer account was updated.
@@ -13450,6 +13458,7 @@ export type Mutation = {
 };
 
 export type MutationAccountAddressCreateArgs = {
+    customerId?: InputMaybe<Scalars["ID"]>;
     input: AddressInput;
     type?: InputMaybe<AddressTypeEnum>;
 };
@@ -13482,6 +13491,7 @@ export type MutationAccountSetDefaultAddressArgs = {
 };
 
 export type MutationAccountUpdateArgs = {
+    customerId?: InputMaybe<Scalars["ID"]>;
     input: AccountInput;
 };
 
@@ -16530,6 +16540,7 @@ export type OrderGrantRefundCreateError = {
 
 /** An enumeration. */
 export enum OrderGrantRefundCreateErrorCode {
+    AmountGreaterThanAvailable = "AMOUNT_GREATER_THAN_AVAILABLE",
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
     NotFound = "NOT_FOUND",
@@ -16558,6 +16569,14 @@ export type OrderGrantRefundCreateInput = {
     lines?: InputMaybe<Array<OrderGrantRefundCreateLineInput>>;
     /** Reason of the granted refund. */
     reason?: InputMaybe<Scalars["String"]>;
+    /**
+     * The ID of the transaction item related to the granted refund. If `amount` provided in the input, the transaction.chargedAmount needs to be equal or greater than provided `amount`.If `amount` is not provided in the input and calculated automatically by Saleor, the `min(calculatedAmount, transaction.chargedAmount)` will be used.Field will be required starting from Saleor 3.21.
+     *
+     * Added in Saleor 3.20.
+     *
+     * Note: this API is currently in Feature Preview and can be subject to changes at later point.
+     */
+    transactionId?: InputMaybe<Scalars["ID"]>;
 };
 
 export type OrderGrantRefundCreateLineError = {
@@ -16634,6 +16653,7 @@ export type OrderGrantRefundUpdateError = {
 
 /** An enumeration. */
 export enum OrderGrantRefundUpdateErrorCode {
+    AmountGreaterThanAvailable = "AMOUNT_GREATER_THAN_AVAILABLE",
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
     NotFound = "NOT_FOUND",
@@ -16670,6 +16690,14 @@ export type OrderGrantRefundUpdateInput = {
      * Note: this API is currently in Feature Preview and can be subject to changes at later point.
      */
     removeLines?: InputMaybe<Array<Scalars["ID"]>>;
+    /**
+     * The ID of the transaction item related to the granted refund. If `amount` provided in the input, the transaction.chargedAmount needs to be equal or greater than provided `amount`.If `amount` is not provided in the input and calculated automatically by Saleor, the `min(calculatedAmount, transaction.chargedAmount)` will be used.Field will be required starting from Saleor 3.21.
+     *
+     * Added in Saleor 3.20.
+     *
+     * Note: this API is currently in Feature Preview and can be subject to changes at later point.
+     */
+    transactionId?: InputMaybe<Scalars["ID"]>;
 };
 
 export type OrderGrantRefundUpdateLineAddInput = {
@@ -16734,6 +16762,24 @@ export type OrderGrantedRefund = {
      * Note: this API is currently in Feature Preview and can be subject to changes at later point.
      */
     shippingCostsIncluded: Scalars["Boolean"];
+    /**
+     * Status of the granted refund calculated based on transactionItem assigned to granted refund.
+     *
+     * Added in Saleor 3.20.
+     */
+    status: OrderGrantedRefundStatusEnum;
+    /**
+     * The transaction assigned to the granted refund.
+     *
+     * Added in Saleor 3.20.
+     */
+    transaction?: Maybe<TransactionItem>;
+    /**
+     * List of refund events associated with the granted refund.
+     *
+     * Added in Saleor 3.20.
+     */
+    transactionEvents?: Maybe<Array<TransactionEvent>>;
     /** Time of last update. */
     updatedAt: Scalars["DateTime"];
     /** User who performed the action. Requires of of the following permissions: MANAGE_USERS, MANAGE_STAFF, OWNER. */
@@ -16758,6 +16804,22 @@ export type OrderGrantedRefundLine = {
     reason?: Maybe<Scalars["String"]>;
 };
 
+/**
+ * Represents the status of a granted refund.
+ *
+ *     NONE - the refund on related transactionItem is not processed
+ *     PENDING - the refund on related transactionItem is pending
+ *     FULL - the refund on related transactionItem is fully processed
+ *     FAIL - the refund on related transactionItem failed
+ *
+ */
+export enum OrderGrantedRefundStatusEnum {
+    Failure = "FAILURE",
+    None = "NONE",
+    Pending = "PENDING",
+    Success = "SUCCESS",
+}
+
 /** Represents order line of particular order. */
 export type OrderLine = Node &
     ObjectWithMetadata & {
@@ -16779,6 +16841,12 @@ export type OrderLine = Node &
          * Note: this API is currently in Feature Preview and can be subject to changes at later point.
          */
         isGift?: Maybe<Scalars["Boolean"]>;
+        /**
+         * Returns True, if the line unit price was overridden.
+         *
+         * Added in Saleor 3.14.
+         */
+        isPriceOverridden?: Maybe<Scalars["Boolean"]>;
         /** Whether the product variant requires shipping. */
         isShippingRequired: Scalars["Boolean"];
         /**
@@ -17277,7 +17345,7 @@ export type OrderReturnProductsInput = {
 export type OrderSettings = {
     __typename?: "OrderSettings";
     /**
-     * Determine if it is possible to place unpdaid order by calling `checkoutComplete` mutation.
+     * Determine if it is possible to place unpaid order by calling `checkoutComplete` mutation.
      *
      * Added in Saleor 3.15.
      *
@@ -17350,7 +17418,7 @@ export type OrderSettingsInput = {
     allowUnpaidOrders?: InputMaybe<Scalars["Boolean"]>;
     /** When disabled, all new orders from checkout will be marked as unconfirmed. When enabled orders from checkout will become unfulfilled immediately. By default set to True */
     automaticallyConfirmAllNewOrders?: InputMaybe<Scalars["Boolean"]>;
-    /** When enabled, all non-shippable gift card orders will be fulfilled automatically. By defualt set to True. */
+    /** When enabled, all non-shippable gift card orders will be fulfilled automatically. By default set to True. */
     automaticallyFulfillNonShippableGiftCard?: InputMaybe<Scalars["Boolean"]>;
     /**
      * The time in days after expired orders will be deleted.Allowed range is from 1 to 120.
@@ -19337,7 +19405,7 @@ export type PermissionGroupDeleted = Event & {
 
 export type PermissionGroupError = {
     __typename?: "PermissionGroupError";
-    /** List of chnnels IDs which causes the error. */
+    /** List of channels IDs which causes the error. */
     channels?: Maybe<Array<Scalars["ID"]>>;
     /** The error code. */
     code: PermissionGroupErrorCode;
@@ -22772,13 +22840,9 @@ export type PromotionCreateInput = {
     /**
      * Defines the promotion type. Implicate the required promotion rules predicate type and whether the promotion rules will give the catalogue or order discount.
      *
-     * The default value is `Catalogue`.
-     *
-     * This field will be required from Saleor 3.20.
-     *
      * Added in Saleor 3.19.
      */
-    type?: InputMaybe<PromotionTypeEnum>;
+    type: PromotionTypeEnum;
 };
 
 /**
@@ -23918,7 +23982,7 @@ export type Query = {
     /** List of the shop's collections. Requires one of the following permissions to include the unpublished items: MANAGE_ORDERS, MANAGE_DISCOUNTS, MANAGE_PRODUCTS. */
     collections?: Maybe<CollectionCountableConnection>;
     /**
-     * List of the shop's customers.
+     * List of the shop's customers. This list includes all users who registered through the accountRegister mutation. Additionally, staff users who have placed an order using their account will also appear in this list.
      *
      * Requires one of the following permissions: MANAGE_ORDERS, MANAGE_USERS.
      */
@@ -24204,7 +24268,10 @@ export type Query = {
      * Requires one of the following permissions: AUTHENTICATED_STAFF_USER, AUTHENTICATED_APP.
      */
     taxCountryConfigurations?: Maybe<Array<TaxCountryConfiguration>>;
-    /** List of all tax rates available from tax gateway. */
+    /**
+     * List of all tax rates available from tax gateway.
+     * @deprecated This field will be removed in Saleor 4.0. Use `taxClasses` field instead.
+     */
     taxTypes?: Maybe<Array<TaxType>>;
     /**
      * Look up a transaction by ID.
@@ -26539,7 +26606,7 @@ export type ShippingZoneUpdatedShippingZoneArgs = {
 export type Shop = ObjectWithMetadata & {
     __typename?: "Shop";
     /**
-     * Determines if user can login without confirmation when `enableAccountConfrimation` is enabled.
+     * Determines if user can login without confirmation when `enableAccountConfirmation` is enabled.
      *
      * Added in Saleor 3.15.
      *
@@ -28234,7 +28301,7 @@ export type TaxableObject = {
     lines: Array<TaxableObjectLine>;
     /** Determines if prices contain entered tax.. */
     pricesEnteredWithTax: Scalars["Boolean"];
-    /** The price of shipping method. */
+    /** The price of shipping method, includes shipping voucher discount if applied. */
     shippingPrice: Money;
     /** The source object related to this tax object. */
     sourceObject: TaxSourceObject;
@@ -28261,9 +28328,9 @@ export type TaxableObjectLine = {
     quantity: Scalars["Int"];
     /** The source line related to this tax line. */
     sourceLine: TaxSourceLine;
-    /** Price of the order line. */
+    /** Price of the order line. The price includes catalogue promotions, specific product and applied once per order voucher discounts. The price does not include the entire order discount. */
     totalPrice: Money;
-    /** Price of the single item in the order line. */
+    /** Price of the single item in the order line. The price includes catalogue promotions, specific product and applied once per order voucher discounts. The price does not include the entire order discount. */
     unitPrice: Money;
     /** The variant name. */
     variantName: Scalars["String"];
@@ -28755,6 +28822,7 @@ export type TransactionInitializeError = {
 
 /** An enumeration. */
 export enum TransactionInitializeErrorCode {
+    CheckoutCompletionInProgress = "CHECKOUT_COMPLETION_IN_PROGRESS",
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
     NotFound = "NOT_FOUND",
@@ -29056,6 +29124,7 @@ export type TransactionProcessError = {
 
 /** An enumeration. */
 export enum TransactionProcessErrorCode {
+    CheckoutCompletionInProgress = "CHECKOUT_COMPLETION_IN_PROGRESS",
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
     MissingPaymentApp = "MISSING_PAYMENT_APP",
@@ -29190,10 +29259,13 @@ export type TransactionRequestRefundForGrantedRefundError = {
 
 /** An enumeration. */
 export enum TransactionRequestRefundForGrantedRefundErrorCode {
+    AmountGreaterThanAvailable = "AMOUNT_GREATER_THAN_AVAILABLE",
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
     MissingTransactionActionRequestWebhook = "MISSING_TRANSACTION_ACTION_REQUEST_WEBHOOK",
     NotFound = "NOT_FOUND",
+    RefundAlreadyProcessed = "REFUND_ALREADY_PROCESSED",
+    RefundIsPending = "REFUND_IS_PENDING",
 }
 
 /**
@@ -30766,6 +30838,14 @@ export type Warehouse = Node &
         shippingZones: ShippingZoneCountableConnection;
         /** Warehouse slug. */
         slug: Scalars["String"];
+        /**
+         * Stocks that belong to this warehouse.
+         *
+         * Added in Saleor 3.20.
+         *
+         * Requires one of the following permissions: MANAGE_PRODUCTS, MANAGE_ORDERS.
+         */
+        stocks?: Maybe<StockCountableConnection>;
     };
 
 /** Represents warehouse. */
@@ -30790,6 +30870,14 @@ export type WarehousePrivateMetafieldsArgs = {
 
 /** Represents warehouse. */
 export type WarehouseShippingZonesArgs = {
+    after?: InputMaybe<Scalars["String"]>;
+    before?: InputMaybe<Scalars["String"]>;
+    first?: InputMaybe<Scalars["Int"]>;
+    last?: InputMaybe<Scalars["Int"]>;
+};
+
+/** Represents warehouse. */
+export type WarehouseStocksArgs = {
     after?: InputMaybe<Scalars["String"]>;
     before?: InputMaybe<Scalars["String"]>;
     first?: InputMaybe<Scalars["Int"]>;
