@@ -84,6 +84,9 @@ export class KencoveApiAppPaymentSyncService {
                 const updatedAt = new Date(payment.updatedAt);
                 const createdAt = new Date(payment.createdAt);
                 const referenceNumber = payment.acquirer_reference;
+                if (!referenceNumber) {
+                    throw new Error("Reference number is missing");
+                }
                 const gatewayType = this.matchKencovePaymentGatewayType(
                     payment.payment_method,
                 );
