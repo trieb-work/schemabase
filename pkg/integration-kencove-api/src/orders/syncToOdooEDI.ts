@@ -161,8 +161,8 @@ export class SyncToOdooEDI {
                     payment.status === "authorized"
                         ? "authorized"
                         : payment.status === "paid"
-                        ? "sale"
-                        : "",
+                          ? "sale"
+                          : "",
             });
         }
         return returnPayments;
@@ -411,6 +411,18 @@ export class SyncToOdooEDI {
                     deliveryCarrierRef: singleShipment?.carrierRef,
                 },
             };
+
+            if (
+                !order.shippingAddress ||
+                !order.billingAddress ||
+                !order.billingAddress.fullName ||
+                !order.shippingAddress.fullName
+            ) {
+                this.logger.warn(
+                    `Order ${order.orderNumber} has missing address information. We will not send it to Odoo EDI.`,
+                );
+                continue;
+            }
             this.logger.info(`Sending order ${order.orderNumber} to Odoo EDI`);
             await this.sendOrderToOdooEDI(order);
         }
