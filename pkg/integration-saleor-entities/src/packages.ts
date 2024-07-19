@@ -454,6 +454,10 @@ export class SaleorPackageSyncService {
                         if (filteredForSKU.length === 0) {
                             this.logger.warn(
                                 `Can't find a package line item for orderline with SKU ${line.sku}`,
+                                {
+                                    saleorOrderNumber: saleorOrder.id,
+                                    orderNumber: saleorOrder.order.orderNumber,
+                                },
                             );
                             return undefined;
                         }
