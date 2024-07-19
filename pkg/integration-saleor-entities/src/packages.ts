@@ -531,6 +531,7 @@ export class SaleorPackageSyncService {
                 {
                     orderNumber: saleorOrder.order.orderNumber,
                     trackingNumber: parcel.trackingId,
+                    saleorOrderId: saleorOrder.id,
                 },
             );
             this.logger.debug(
