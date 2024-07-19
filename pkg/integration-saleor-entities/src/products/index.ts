@@ -1814,9 +1814,10 @@ export class SaleorProductSyncService {
                                                     variantImage.variantName
                                                 } in Saleor: ${JSON.stringify(
                                                     r.variantMediaAssign.errors,
-                                                )}, tried to assign media with Saleor id ${mediaElement
-                                                    .saleorMedia?.[0]
-                                                    .id} to variant with Saleor id ${
+                                                )}, tried to assign media with Saleor id ${
+                                                    mediaElement
+                                                        .saleorMedia?.[0].id
+                                                } to variant with Saleor id ${
                                                     variantImage
                                                         .saleorProductVariant[0]
                                                         .id
@@ -2398,9 +2399,9 @@ export class SaleorProductSyncService {
 
                 // only update the stock entry in saleor, if the stock has changed
                 if (saleorStockEntry?.quantity === totalQuantity) {
-                    this.logger.debug(
-                        `Stock for ${variant.productVariant.sku} - id ${variant.id} has not changed. Skipping`,
-                    );
+                    // this.logger.debug(
+                    //     `Stock for ${variant.productVariant.sku} - id ${variant.id} has not changed. Skipping`,
+                    // );
                     continue;
                 }
                 await this.saleorClient.productVariantStockEntryUpdate({
