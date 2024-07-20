@@ -1891,13 +1891,15 @@ export class SaleorProductSyncService {
         } else {
             // for security purposes, we sync one hour more than the last run
             createdGte = subHours(cronState.lastRun, 1);
-            this.logger.info(`Setting GTE date to ${createdGte}.`);
+            this.logger.info(`Setting GTE date to ${createdGte}.`, {
+                saleorRun: "syncToECI",
+                updatedAtGte: createdGte.toISOString(),
+            });
         }
         const response = await queryWithPagination(({ first, after }) =>
             this.saleorClient.saleorEntitySyncProducts({
                 first,
                 after,
-                channel: this.channelSlug,
                 updatedAtGte: createdGte.toISOString(),
                 /**
                  * for testing purposes we can limit the result to just specific product ids
