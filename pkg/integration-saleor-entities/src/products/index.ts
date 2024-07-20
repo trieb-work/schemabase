@@ -2238,6 +2238,52 @@ export class SaleorProductSyncService {
                     }
                 }
             }
+
+            /**
+             * we just make sure, that connected media is still connected.
+             * Sometimes, connections get lost.
+             */
+            const existingSchemabaseMedia =
+                product?.media?.filter((m) => m?.schemabaseMediaId) || [];
+            for (const existingMedia of existingSchemabaseMedia) {
+                if (!existingMedia.schemabaseMediaId) continue;
+                try {
+                    await this.db.saleorMedia.upsert({
+                        where: {
+                            url_installedSaleorAppId: {
+                                url: existingMedia.url,
+                                installedSaleorAppId: this.installedSaleorAppId,
+                            },
+                        },
+                        create: {
+                            id: existingMedia.id,
+                            url: existingMedia.url,
+                            installedSaleorApp: {
+                                connect: {
+                                    id: this.installedSaleorAppId,
+                                },
+                            },
+                            media: {
+                                connect: {
+                                    id: existingMedia.schemabaseMediaId,
+                                },
+                            },
+                        },
+                        update: {
+                            id: existingMedia.id,
+                        },
+                    });
+                } catch (error) {
+                    this.logger.error(
+                        `Error upserting media ${existingMedia.id} for product ${product.id} from Saleor: ${error}`,
+                        {
+                            mediaId: existingMedia.id,
+                            productId: product.id,
+                            url: existingMedia.url,
+                        },
+                    );
+                }
+            }
         }
     }
 

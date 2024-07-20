@@ -153,6 +153,11 @@ query saleorEntitySyncProducts(
                     id
                 }
                 updatedAt
+                media {
+                    id
+                    schemabaseMediaId: metafield(key: "schemabase-media-id")
+                    url
+                }
                 variants {
                     ...variant
                 }

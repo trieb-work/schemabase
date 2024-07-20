@@ -34570,6 +34570,12 @@ export type SaleorEntitySyncProductsQuery = {
                     }> | null;
                 };
                 category?: { __typename?: "Category"; id: string } | null;
+                media?: Array<{
+                    __typename?: "ProductMedia";
+                    id: string;
+                    url: string;
+                    schemabaseMediaId?: string | null;
+                }> | null;
                 variants?: Array<{
                     __typename?: "ProductVariant";
                     id: string;
@@ -36148,6 +36154,11 @@ export const SaleorEntitySyncProductsDocument = gql`
                         id
                     }
                     updatedAt
+                    media {
+                        id
+                        schemabaseMediaId: metafield(key: "schemabase-media-id")
+                        url
+                    }
                     variants {
                         ...variant
                     }
