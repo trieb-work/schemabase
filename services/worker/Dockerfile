@@ -1,4 +1,4 @@
-FROM node:18 as build
+FROM node:20 as build
 WORKDIR /eci
 
 RUN npm i -g pnpm@^v8.15.1
@@ -17,7 +17,7 @@ RUN pnpm prisma generate
 WORKDIR /eci/services/worker/dist
 RUN cp -r /eci/node_modules/.pnpm/@prisma+client@*_prisma@*/node_modules/.prisma/client/* .
 
-FROM node:18
+FROM node:20
 WORKDIR /eci
 ARG commit_sha
 ENV GIT_COMMIT_SHA=$commit_sha

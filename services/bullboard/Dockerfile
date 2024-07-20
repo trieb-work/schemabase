@@ -1,4 +1,4 @@
-FROM node:18 as build
+FROM node:20 as build
 WORKDIR /eci
 
 RUN npm i -g pnpm@^v8.6.1 
@@ -16,7 +16,7 @@ RUN pnpm esbuild --platform=node --target=node18 --bundle --outfile=services/bul
 
 WORKDIR /eci/services/bullboard/dist
 
-FROM node:18-slim
+FROM node:20-slim
 WORKDIR /eci
 
 

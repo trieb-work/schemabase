@@ -1,5 +1,5 @@
 # Install dependencies only when needed
-FROM node:18 AS deps
+FROM node:20 AS deps
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 WORKDIR /eci
 RUN npm i -g pnpm@^v8.15.1
@@ -8,7 +8,7 @@ RUN pnpm fetch
 
 
 # Rebuild the source code only when needed
-FROM node:18 AS builder
+FROM node:20 AS builder
 RUN npm i -g pnpm@^v8.15.1
 
 
@@ -23,7 +23,7 @@ RUN pnpm prune --prod
 RUN curl -sf https://gobinaries.com/tj/node-prune | sh
 RUN /usr/local/bin/node-prune
 
-FROM node:18 AS runner
+FROM node:20 AS runner
 WORKDIR /eci
 
 ENV NODE_ENV production
