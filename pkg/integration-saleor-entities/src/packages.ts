@@ -491,7 +491,7 @@ export class SaleorPackageSyncService {
                         };
                         if (bestMatchByQuantity.quantity < 0) {
                             this.logger.warn(
-                                `Quantity is below 0 for SKU ${line.sku}. This is not supported by Saleor. We are setting it to 1, SaleorOrderLineId: ${saleorOrderLineId}`,
+                                `Quantity is below 0 for SKU ${line.sku}. This is not supported by Saleor. SaleorOrderLineId: ${saleorOrderLineId}`,
                                 {
                                     orderNumber: saleorOrder.order.orderNumber,
                                     saleorOrderLineId: saleorOrderLineId,
@@ -503,10 +503,7 @@ export class SaleorPackageSyncService {
                             stocks: [
                                 {
                                     warehouse: saleorWarehouse(),
-                                    quantity:
-                                        bestMatchByQuantity.quantity < 0
-                                            ? 1
-                                            : bestMatchByQuantity.quantity,
+                                    quantity: bestMatchByQuantity.quantity,
                                 },
                             ],
                         };
