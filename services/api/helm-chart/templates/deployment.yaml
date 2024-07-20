@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    {{- include "schemabase-api.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "schemabase-api.selectorLabels" . | nindent 6 }}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        {{- include "schemabase-api.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- if .Values.imagePullSecret }}
+      imagePullSecrets: 
+        - name: {{ .Values.imagePullSecret }}
+      {{- end }}
+      containers:
+        - name: schemabase-api
+          imagePullPolicy: IfNotPresent
+          image: "{{ .Values.image.imageName }}"
+          env:  
+            - name: REDIS_HOST
+              value: "{{ or .Values.redis.service .Values.redis.host }}"
+            - name: REDIS_PORT
+              value: "{{ .Values.redis.port }}"
+            - name: REDIS_PASSWORD
+              value: "{{ .Values.redis.password }}"
+ 
+          resources:
+            requests:
+              cpu: 150m
+              memory: 800Mi
+            limits:
+          ports:
+            - containerPort: 3000
+              name: web
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 4
+          readinessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            successThreshold: 2
+            timeoutSeconds: 4

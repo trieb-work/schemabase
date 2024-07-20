@@ -1,0 +1,22 @@
+
+image:
+  imageName: xx
+
+ingress:
+  enabled: true
+  ingressClass: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  host:
+  tls:
+    secretName:
+
+redis:
+  password:
+  host: ""
+  service:
+  port: 6379 
+nodeEnv: production
+
+
+imagePullSecret: github

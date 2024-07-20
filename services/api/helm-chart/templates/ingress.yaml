@@ -1,0 +1,31 @@
+{{- $fullName := include "schemabase-api.fullname" . -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.ingressClass }}
+    {{- if .Values.ingress.annotations }}
+    {{- toYaml .Values.ingress.annotations | nindent 4 }}
+    {{- end }}
+  name: {{ .Release.Name }}
+spec:
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: "/"
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{ .Release.Name }}
+                port: 
+                  number: 3000
+            
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      {{- if .Values.ingress.tls.secretName }}  
+      secretName:  {{ .Values.ingress.tls.secretName }}
+      {{- else }}
+      secretName: "{{ $fullName }}-tls-secret"
+      {{- end }}      
