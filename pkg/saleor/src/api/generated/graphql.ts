@@ -34528,6 +34528,7 @@ export type SaleorEntitySyncProductsQueryVariables = Exact<{
     channel?: InputMaybe<Scalars["String"]>;
     after?: InputMaybe<Scalars["String"]>;
     updatedAtGte?: InputMaybe<Scalars["DateTime"]>;
+    ids?: InputMaybe<Array<Scalars["ID"]> | Scalars["ID"]>;
 }>;
 
 export type SaleorEntitySyncProductsQuery = {
@@ -36128,12 +36129,13 @@ export const SaleorEntitySyncProductsDocument = gql`
         $channel: String
         $after: String
         $updatedAtGte: DateTime
+        $ids: [ID!]
     ) {
         products(
             first: $first
             after: $after
             channel: $channel
-            filter: { updatedAt: { gte: $updatedAtGte } }
+            filter: { updatedAt: { gte: $updatedAtGte }, ids: $ids }
         ) {
             pageInfo {
                 hasNextPage

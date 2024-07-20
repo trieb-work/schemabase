@@ -1899,6 +1899,10 @@ export class SaleorProductSyncService {
                 after,
                 channel: this.channelSlug,
                 updatedAtGte: createdGte.toISOString(),
+                /**
+                 * for testing purposes we can limit the result to just specific product ids
+                 */
+                // ids: ["UHJvZHVjdDo4MTk="],
             }),
         );
 
