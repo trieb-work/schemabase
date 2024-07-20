@@ -1454,6 +1454,7 @@ export class SaleorProductSyncService {
                             {
                                 attributes: JSON.stringify(attributes, null, 2),
                                 productType: productType.name,
+                                schemabaseId: product.id,
                             },
                         );
 
