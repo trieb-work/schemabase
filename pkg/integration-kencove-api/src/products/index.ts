@@ -384,13 +384,12 @@ export class KencoveApiAppProductSyncService {
             if (!variant.attributeValues) return;
             variant.attributeValues.forEach((attributeValue) => {
                 if (
-                    allVariants.every(
-                        (v) =>
-                            v.attributeValues?.some(
-                                (av) =>
-                                    av.name === attributeValue.name &&
-                                    av.value === attributeValue.value,
-                            ),
+                    allVariants.every((v) =>
+                        v.attributeValues?.some(
+                            (av) =>
+                                av.name === attributeValue.name &&
+                                av.value === attributeValue.value,
+                        ),
                     )
                 ) {
                     commonAttributeValues.push(attributeValue);
@@ -1208,6 +1207,7 @@ export class KencoveApiAppProductSyncService {
                                 },
                             },
                             media: true,
+                            attributes: true,
                         },
                     },
                 },
@@ -1307,6 +1307,7 @@ export class KencoveApiAppProductSyncService {
                     },
                 },
                 media: true,
+                attributes: true,
             },
         });
     }
@@ -1512,6 +1513,7 @@ export class KencoveApiAppProductSyncService {
                                     },
                                 },
                                 media: true,
+                                attributes: true,
                             },
                         },
                     },
@@ -1646,9 +1648,9 @@ export class KencoveApiAppProductSyncService {
                         );
                         variantName = variant.name;
                     } else if (variantSelectionAttribute) {
-                        this.logger.debug(
-                            `Using attribute ${variantSelectionAttribute.value} as variant name`,
-                        );
+                        // this.logger.debug(
+                        //     `Using attribute ${variantSelectionAttribute.value} as variant name`,
+                        // );
                         variantName = variantSelectionAttribute.value;
                     }
                 }
@@ -1981,6 +1983,27 @@ export class KencoveApiAppProductSyncService {
                                 `type ${kenProdTypeWithProductType.productType.name}`,
                         );
                         continue;
+                    }
+
+                    /**
+                     * This is a security check, as attributes can sometimes change from being a product attribute to being a variant attribute.
+                     * We need to cleanup existing values in that case
+                     */
+                    if (
+                        matchedAttr.isForVariant &&
+                        existingProduct.attributes.find(
+                            (a) => a.attributeId === matchedAttr.attribute.id,
+                        )
+                    ) {
+                        this.logger.debug(
+                            `Attribute ${attribute.name} is a variant attribute, but is set as product attribute. Deleting the attribute value.`,
+                        );
+                        await this.db.attributeValueProduct.deleteMany({
+                            where: {
+                                attributeId: matchedAttr.attribute.id,
+                                productId: existingProduct.id,
+                            },
+                        });
                     }
 
                     /**
