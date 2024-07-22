@@ -190,6 +190,11 @@ export class SaleorPackageSyncService {
                     this.logger.info(
                         `Connecting saleor fulfillment ${parcel.id} with order ${orderExist.orderNumber} - Package number ${thisPackage.id}`,
                     );
+                } else {
+                    this.logger.warn(
+                        `We can't find an internal Package entity for order ${order.number}, as we don't have a tracking number. Skipping creation`,
+                    );
+                    continue;
                 }
             }
 
