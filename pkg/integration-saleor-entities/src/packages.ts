@@ -300,6 +300,9 @@ export class SaleorPackageSyncService {
                                         contains: this.installedSaleorAppId,
                                     },
                                 },
+                                none: {
+                                    status: "FULFILLED",
+                                },
                             },
                         },
                     },
@@ -420,6 +423,15 @@ export class SaleorPackageSyncService {
                 );
                 continue;
             }
+
+            this.logger.debug(
+                `Working on package ${parcel.id} - ${parcel.number} for order ${parcel.orderId} - ${saleorOrder.order.orderNumber}`,
+                {
+                    saleorOrderNumber: saleorOrder.id,
+                    orderNumber: saleorOrder.order.orderNumber,
+                    packageNumber: parcel.number,
+                },
+            );
 
             /**
              * False if any of the lineItems of this package are missing the information
@@ -570,17 +582,42 @@ export class SaleorPackageSyncService {
 
             // Catch all mutation errors and handle them correctly
             if (
-                response.orderFulfill?.errors ||
+                response.orderFulfill?.errors.length ||
                 !response.orderFulfill?.fulfillments
             ) {
-                response.orderFulfill?.errors.map((e) => {
+                for (const e of response.orderFulfill!.errors) {
                     if (
                         e.code === "FULFILL_ORDER_LINE" &&
                         e.message?.includes("Only 0 items remaining to fulfill")
                     ) {
                         this.logger.info(
-                            `Saleor orderline ${e.orderLines} from order ${saleorOrder.orderNumber} - ${saleorOrder.id}  is already fulfilled: ${e.message}. Continue`,
+                            `Saleor orderline ${e.orderLines} from order ${saleorOrder.orderNumber} - ${saleorOrder.id} is already fulfilled: ${e.message}. Continue`,
+                            {
+                                orderStatus:
+                                    response.orderFulfill?.order?.status,
+                            },
                         );
+
+                        // if (
+                        //     response.orderFulfill?.order?.status ===
+                        //     OrderStatus.Fulfilled
+                        // ) {
+                        //     this.logger.info(
+                        //         `Order ${saleorOrder.orderNumber} - ${saleorOrder.id} is already completely fulfilled. Skipping further fulfillments`,
+                        //     );
+                        //     await this.db.saleorOrder.update({
+                        //         where: {
+                        //             id_installedSaleorAppId: {
+                        //                 id: saleorOrder.id,
+                        //                 installedSaleorAppId:
+                        //                     this.installedSaleorAppId,
+                        //             },
+                        //         },
+                        //         data: {
+                        //             status: SaleorOrderStatus.FULFILLED,
+                        //         },
+                        //     });
+                        // }
                         // TODO: create internal package for that / check if order is already fulfilled and write status back
                     } else if (e.code === "INSUFFICIENT_STOCK") {
                         this.logger.error(
@@ -597,8 +634,8 @@ export class SaleorPackageSyncService {
                     } else {
                         throw new Error(JSON.stringify(e));
                     }
-                    return true;
-                });
+                    continue;
+                }
             } else {
                 /**
                  * one package = one fullfillment in Saleor, so we should actually never have more than one

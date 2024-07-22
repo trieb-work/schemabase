@@ -76,6 +76,7 @@ Table SaleorAttribute {
 
 Table SaleorOrder {
   id String [not null, note: 'Saleor Internal Id']
+  status SaleorOrderStatus [note: 'This order status is mostly used, to make sure, that we do no longer try to create packages for this order']
   createdAt DateTime [not null]
   order Order [not null]
   orderId String [not null]
@@ -2039,6 +2040,14 @@ Table SecretKey {
 Enum eci_User_Tenant_Role {
   MEMBER
   OWNER
+}
+
+Enum SaleorOrderStatus {
+  DRAFT
+  UNFULFILLED
+  PARTIALLY_FULFILLED
+  CANCELED
+  FULFILLED
 }
 
 Enum ZohoSalesOrderStatus {
