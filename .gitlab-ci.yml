@@ -27,6 +27,7 @@ review:
     stage: review
     variables:
         AUTO_DEVOPS_COMMON_NAME: $CI_PROJECT_ID-staging.gc.review-kencove.com
+        API_COMMON_NAME: staging-api-schemabase.gc.review-kencove.com
         KUBE_NAMESPACE: schemabase-staging
     environment:
         name: staging
@@ -82,8 +83,21 @@ review:
             --set-string=ingress.annotations."kubernetes\.io/tls-acme"=true
             --set=ingress.annotations."cert-manager\.io/cluster-issuer"=null
             --set=bypassAuthParam="$BYPASS_AUTH_PARAM"
+        - >
+            helm upgrade schemabase-api ./services/api/helm-chart
+            --install
+            --namespace=$KUBE_NAMESPACE
+            --set=image.imageName="ghcr.io/trieb-work/schemabase/api:$SCHEMA_VERSION"
+            --set=redis.host="redis-schemabase-staging-master"
+            --set=redis.password="$REDIS_PASSWORD"
+            --set=ingress.host=$API_COMMON_NAME
+            --set=databaseUrl="$DATABASE_URL"
+            --set=secretKey="$SECRET_KEY_WORKER"
+            --set-string=ingress.annotations."kubernetes\.io/tls-acme"=true
+            --set=ingress.annotations."cert-manager\.io/cluster-issuer"=null
 
         - auto-deploy persist_environment_url
+        - echo "API deployed to https://$API_COMMON_NAME"
         - echo "Queue dashboard deployed to https://$AUTO_DEVOPS_COMMON_NAME"
 
     rules:
