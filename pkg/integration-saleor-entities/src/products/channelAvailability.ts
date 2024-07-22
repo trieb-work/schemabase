@@ -110,7 +110,7 @@ export class SaleorChannelAvailabilitySyncService {
         const activeEntries = entries.filter(
             (entry) =>
                 entry.minQuantity <= 1 &&
-                (!entry.endDate || new Date(entry.endDate) > new Date()),
+                (!entry.endDate || new Date(entry.endDate) < new Date()),
         );
 
         // Group entries by productVariantId and salesChannelId
@@ -407,6 +407,8 @@ export class SaleorChannelAvailabilitySyncService {
                         `variant ${entry.productVariant.variantName} at channel ${entry.salesChannel.name}. Start date is in the future`,
                     {
                         startDate: entry.startDate,
+                        productVariantId: entry.productVariant.id,
+                        sku: entry.productVariant.sku,
                     },
                 );
                 continue;
@@ -414,6 +416,12 @@ export class SaleorChannelAvailabilitySyncService {
             this.logger.info(
                 `Syncing channel availability (base price) for product ${entry.productVariant.product.name} variant ${entry.productVariant.variantName}` +
                     ` at channel ${entry.salesChannel.name} with price ${entry.price} and min Quanity ${entry.minQuantity}`,
+                {
+                    productVariantId: entry.productVariant.id,
+                    sku: entry.productVariant.sku,
+                    basePrice: entry.price,
+                    channel: entry.salesChannel.name,
+                },
             );
             await this.syncBaseAvailability(entry, existingChannelListings);
         }
@@ -619,6 +627,11 @@ export class SaleorChannelAvailabilitySyncService {
                     ) {
                         this.logger.info(
                             `Product and variant channel listing already up to date for product and product variant ${entry.productVariant.id}`,
+                            {
+                                sku: entry.productVariant.sku,
+                                productVariantId: entry.productVariant.id,
+                                basePrice: entry.price,
+                            },
                         );
                         return;
                     }
