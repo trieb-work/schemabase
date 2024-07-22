@@ -1,4 +1,10 @@
-Nextjs application used for incoming webhooks and to be installed as Saleor app.
+Nextjs application used for incoming webhooks and to be installed as Saleor app. This app can be used to consume any kind of webhook and trigger actions based on the incoming data.
+It is connected to the database and the REDIS queue for batch processing.
+
+Env variables needed:
+
+-   DATABASE_URL
+-   SECRET_KEY
 
 ## Saleor App
 
