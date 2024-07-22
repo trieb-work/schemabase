@@ -29,6 +29,10 @@ spec:
               value: "{{ .Values.redis.port }}"
             - name: REDIS_PASSWORD
               value: "{{ .Values.redis.password }}"
+            - name: SECRET_KEY
+              value: "{{ .Values.secretKey }}"
+            - name: DATABASE_URL
+              value: "{{ .Values.databaseUrl }}"    
  
           resources:
             requests:
