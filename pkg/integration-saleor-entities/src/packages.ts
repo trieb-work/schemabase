@@ -581,11 +581,19 @@ export class SaleorPackageSyncService {
                         this.logger.info(
                             `Saleor orderline ${e.orderLines} from order ${saleorOrder.orderNumber} - ${saleorOrder.id}  is already fulfilled: ${e.message}. Continue`,
                         );
-                        // TODO: create internal package for that
+                        // TODO: create internal package for that / check if order is already fulfilled and write status back
                     } else if (e.code === "INSUFFICIENT_STOCK") {
                         this.logger.error(
                             `Saleor has not enough stock to fulfill order ${saleorOrder.id}: ${e.message}`,
                         );
+                    } else if (
+                        e.code === "FULFILL_ORDER_LINE" &&
+                        e.message?.includes("items remaining to fulfill")
+                    ) {
+                        this.logger.warn(
+                            `We try to fulfill more items than still to fulfill: ${e.message}`,
+                        );
+                        // TODO: further investigate this case and why it is happening..we just don't want to fail on that currently
                     } else {
                         throw new Error(JSON.stringify(e));
                     }
@@ -619,12 +627,6 @@ export class SaleorPackageSyncService {
                     );
                 }
             }
-
-            /**
-             * Find packages that received updates since the last run
-             * (updates in the package) and update the metadata of the fulfillment
-             * in saleor
-             */
         }
 
         /**
