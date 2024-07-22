@@ -497,6 +497,8 @@ export class SaleorPackageSyncService {
                                     saleorOrderLineId: saleorOrderLineId,
                                 },
                             );
+                            // we currently can't handle this case and need to skip this line
+                            return undefined;
                         }
                         return {
                             orderLineId: saleorOrderLineId,
