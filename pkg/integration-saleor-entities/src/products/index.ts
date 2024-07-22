@@ -1216,12 +1216,46 @@ export class SaleorProductSyncService {
             },
         );
 
+        /**
+         * It can happen, that we have products, where the media is not yet created in Saleor.
+         */
+        const itemsWithMissingMedia = await this.db.product.findMany({
+            where: {
+                id: {
+                    notIn: itemsToCreate.map((x) => x.id),
+                },
+                saleorProducts: {
+                    some: {
+                        installedSaleorAppId: this.installedSaleorAppId,
+                    },
+                },
+                media: {
+                    some: {
+                        saleorMedia: {
+                            none: {
+                                installedSaleorAppId: this.installedSaleorAppId,
+                            },
+                        },
+                    },
+                },
+            },
+            include: productInclude,
+        });
+
+        this.logger.debug(
+            `Received ${itemsWithMissingMedia.length} items with missing media`,
+            {
+                itemsWithMissingMedia: itemsWithMissingMedia.map((x) => x.name),
+            },
+        );
+
         const updatedItemsDatabase = await this.db.product.findMany({
             where: {
                 id: {
                     notIn: [
                         ...itemsToCreate.map((x) => x.id),
                         ...itemsWithMissingVariants.map((x) => x.id),
+                        ...itemsWithMissingMedia.map((x) => x.id),
                     ],
                 },
                 updatedAt: {
@@ -1244,6 +1278,7 @@ export class SaleorProductSyncService {
             ...itemsToCreate,
             ...updatedItemsDatabase,
             ...itemsWithMissingVariants,
+            ...itemsWithMissingMedia,
         ];
 
         const productsToCreate = unsortedProductsToCreateOrUpdate.filter(
