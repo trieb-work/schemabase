@@ -489,7 +489,7 @@ export class SaleorPackageSyncService {
                             return defaultWarehouse?.saleorWarehouse?.[0]
                                 .id as string;
                         };
-                        if (bestMatchByQuantity.quantity < 0) {
+                        if (bestMatchByQuantity.quantity < 1) {
                             this.logger.warn(
                                 `Quantity is below 0 for SKU ${line.sku}. This is not supported by Saleor. SaleorOrderLineId: ${saleorOrderLineId}`,
                                 {
