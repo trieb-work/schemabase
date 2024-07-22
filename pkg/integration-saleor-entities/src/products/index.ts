@@ -1005,7 +1005,7 @@ export class SaleorProductSyncService {
 
         if (
             productFromSaleorInput.name !== productUpdateInput.name ||
-            editorJsHelper.compareEditorJsData(
+            !editorJsHelper.compareEditorJsData(
                 productFromSaleorInput.description,
                 productUpdateInput.description,
             ) ||
@@ -1022,7 +1022,7 @@ export class SaleorProductSyncService {
                 {
                     name:
                         productFromSaleorInput.name !== productUpdateInput.name,
-                    description: editorJsHelper.compareEditorJsData(
+                    description: !editorJsHelper.compareEditorJsData(
                         productFromSaleorInput.description,
                         productUpdateInput.description,
                     ),
@@ -1615,6 +1615,14 @@ export class SaleorProductSyncService {
                             saleorProductMedia =
                                 productUpdateResponse.productUpdate.product
                                     .media || [];
+                        } else {
+                            this.logger.info(
+                                `Product ${product.name} does not need update, all fields are the same`,
+                                {
+                                    saleorProductId,
+                                    productName: product.name,
+                                },
+                            );
                         }
 
                         // compare the media we have in our DB with the media currently in saleor.
@@ -1726,9 +1734,9 @@ export class SaleorProductSyncService {
                         );
                     }
                     if (variantsToUpdate.length > 0) {
-                        this.logger.info(
-                            `Found ${variantsToUpdate.length} variants to update for product ${product.name} in Saleor`,
-                        );
+                        // this.logger.info(
+                        //     `Found ${variantsToUpdate.length} variants to update for product ${product.name} in Saleor`,
+                        // );
 
                         const variantsToUpdateInput:
                             | ProductVariantBulkUpdateInput

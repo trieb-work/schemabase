@@ -156,15 +156,44 @@ class EditorJSHelper {
 
     /**
      * compare editorJS stringified data.
-     * just compares the blocks and data of the blocks.
+     * just compares the blocks and data of the blocks. Returns true if they are the same.
      */
     public compareEditorJsData(data1: string, data2: string): boolean {
-        const parsedData1 = JSON.parse(data1);
-        const parsedData2 = JSON.parse(data2);
+        const normalizedData1 = this.normalizeEditorJSData(JSON.parse(data1));
+        const normalizedData2 = this.normalizeEditorJSData(JSON.parse(data2));
+
         return (
-            JSON.stringify(parsedData1.blocks) ===
-            JSON.stringify(parsedData2.blocks)
+            JSON.stringify(normalizedData1) === JSON.stringify(normalizedData2)
         );
+    }
+
+    private normalizeEditorJSData(data: any): object {
+        // Sort blocks to ensure order does not matter
+        if (!data.blocks) {
+            throw new Error("Invalid EditorJS data. Can't compare");
+        }
+        const sortedBlocks = data.blocks.map((block: any) => {
+            const sortedData = Object.keys(block.data)
+                .sort()
+                .reduce((acc, key) => {
+                    acc[key] = block.data[key];
+                    return acc;
+                }, {} as any);
+
+            return {
+                type: block.type,
+                data: sortedData,
+            };
+        });
+
+        // Sort the outer blocks array based on type and data for consistency
+        sortedBlocks.sort((a: any, b: any) =>
+            JSON.stringify(a).localeCompare(JSON.stringify(b)),
+        );
+
+        return {
+            blocks: sortedBlocks,
+        };
     }
 }
 const editorJsHelper = new EditorJSHelper();
