@@ -122,10 +122,21 @@ model SaleorAttribute {
   @@index([installedSaleorAppId])
 }
 
+enum SaleorOrderStatus {
+  DRAFT
+  UNFULFILLED
+  PARTIALLY_FULFILLED
+  CANCELED
+  FULFILLED
+}
+
 // Saleor specific model for orders.
 model SaleorOrder {
   /// Saleor Internal Id
   id String
+
+  /// This order status is mostly used, to make sure, that we do no longer try to create packages for this order
+  status SaleorOrderStatus?
 
   createdAt DateTime
 
