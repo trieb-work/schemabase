@@ -23,7 +23,7 @@ const sortVideoOrder = async (
           }[]
         | SaleorProductMediaFragment[],
 ) => {
-    if (media[0].type === "VIDEO") {
+    if (media[0]?.type === "VIDEO") {
         // first item is a video. Creating a new
         // array with the video as the last item.
         // taking only the ids of the media to send it to saleor
