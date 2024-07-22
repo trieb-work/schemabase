@@ -155,7 +155,7 @@ export class SaleorChannelAvailabilitySyncService {
 
     private async syncChannelAvailability(gteDate: Date) {
         this.logger.debug(
-            `Looking for channel updates since ${gteDate} or items without channel entries set yet`,
+            `Looking for channel updates since ${gteDate} or items without channel entries set yet or entries, whose end date is today`,
         );
         const channelPricingsUpdated =
             await this.db.salesChannelPriceEntry.findMany({
@@ -284,10 +284,64 @@ export class SaleorChannelAvailabilitySyncService {
                     },
                 },
             });
+        const channelPricingEndDatesToday =
+            await this.db.salesChannelPriceEntry.findMany({
+                where: {
+                    tenantId: this.tenantId,
+                    endDate: new Date(),
+                    salesChannel: {
+                        saleorChannels: {
+                            some: {
+                                installedSaleorAppId: this.installedSaleorAppId,
+                            },
+                        },
+                    },
+                    productVariant: {
+                        saleorProductVariant: {
+                            some: {
+                                installedSaleorAppId: this.installedSaleorAppId,
+                            },
+                        },
+                    },
+                },
+                include: {
+                    salesChannel: {
+                        include: {
+                            saleorChannels: {
+                                where: {
+                                    installedSaleorAppId:
+                                        this.installedSaleorAppId,
+                                },
+                            },
+                        },
+                    },
+                    productVariant: {
+                        include: {
+                            product: {
+                                include: {
+                                    saleorProducts: {
+                                        where: {
+                                            installedSaleorAppId:
+                                                this.installedSaleorAppId,
+                                        },
+                                    },
+                                },
+                            },
+                            saleorProductVariant: {
+                                where: {
+                                    installedSaleorAppId:
+                                        this.installedSaleorAppId,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
 
         const channelPricings = [
             ...channelPricingsUpdated,
             ...channelPricingsMissing,
+            ...channelPricingEndDatesToday,
         ];
 
         if (channelPricings.length === 0) {
