@@ -53,8 +53,6 @@ export class SaleorProductSyncService {
 
     protected readonly config: SaleorProductSyncServiceConfig;
 
-    private readonly channelSlug?: string;
-
     protected readonly logger: ILogger;
 
     public readonly installedSaleorApp: InstalledSaleorApp & {
@@ -84,7 +82,6 @@ export class SaleorProductSyncService {
     public constructor(config: SaleorProductSyncServiceConfig) {
         this.config = config;
         this.saleorClient = config.saleorClient;
-        this.channelSlug = config.channelSlug;
         this.logger = config.logger;
         this.installedSaleorApp = config.installedSaleorApp;
         this.installedSaleorAppId = config.installedSaleorApp.id;
