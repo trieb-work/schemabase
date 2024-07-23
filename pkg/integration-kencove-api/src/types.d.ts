@@ -206,6 +206,13 @@ export type KencoveApiProduct = {
      * This setting can disable the backorder
      */
     do_not_backorder: boolean;
+
+    /**
+     * The product is active and can be ordered. When disabled, we should hide it in product listings.
+     */
+    active: boolean;
+
+    brand_name: string | null;
 };
 type KencoveApiAAItem = {
     /**

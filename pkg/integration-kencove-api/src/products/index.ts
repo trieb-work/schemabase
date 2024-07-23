@@ -57,6 +57,15 @@ interface SeparatedAttributes {
 type EnhancedProduct = {
     productId: string;
     productName: string;
+    active: boolean;
+    productType?:
+        | {
+              id: number | number | null;
+              name: string | null;
+          }
+        | null
+        | undefined;
+    brand: string | null;
     description: string;
     images: KencoveApiImage[] | null;
     videos: KencoveApiVideo[] | null;
@@ -885,6 +894,13 @@ export class KencoveApiAppProductSyncService {
                 display_type: "checkbox",
                 attribute_model: "custom",
             });
+            productAttributesUnique.push({
+                name: "Brand",
+                value: "",
+                attribute_id: 333340,
+                display_type: "text",
+                attribute_model: "custom",
+            });
 
             this.logger.debug(
                 // eslint-disable-next-line max-len
@@ -1106,6 +1122,7 @@ export class KencoveApiAppProductSyncService {
                             create: {
                                 id: id.id("product"),
                                 name: product.productName,
+                                active: product.active,
                                 normalizedName: normalizedProductName,
                                 descriptionHTML: product.description,
                                 media: {
@@ -1159,6 +1176,7 @@ export class KencoveApiAppProductSyncService {
                             create: {
                                 id: id.id("product"),
                                 name: product.productName,
+                                active: product.active,
                                 normalizedName: normalizedProductName,
                                 descriptionHTML: product.description,
                                 media: {
@@ -1250,6 +1268,7 @@ export class KencoveApiAppProductSyncService {
             data: {
                 name: product.productName,
                 descriptionHTML: product.description,
+                active: product.active,
                 media: {
                     connectOrCreate: totalMedia.map((media) => ({
                         where: {
@@ -1405,6 +1424,8 @@ export class KencoveApiAppProductSyncService {
                     backorder: !p.do_not_backorder,
                     createdAt: new Date(p.createdAt),
                     updatedAt: new Date(p.updatedAt),
+                    active: p.active || true,
+                    brand: p.brand_name,
                     variants: p.variants.map((v) => ({
                         ...v,
                         id: v.id.toString(),
@@ -1542,6 +1563,7 @@ export class KencoveApiAppProductSyncService {
                         kenProdTypeWithProductType.productTypeId ||
                     existingProduct.countryOfOrigin !== countryOfOrigin ||
                     existingProduct.categoryId !== category ||
+                    existingProduct.active !== product.active ||
                     /**
                      * Compare the media arrays with each other and see, if we have other URLs
                      */
@@ -1575,6 +1597,7 @@ export class KencoveApiAppProductSyncService {
                                 existingProduct.countryOfOrigin !==
                                 countryOfOrigin,
                             category: existingProduct.categoryId !== category,
+                            active: existingProduct.active !== product.active,
                             media: !compareArraysWithoutOrder(
                                 existingProduct.media.map((m) => ({
                                     url: m.url,
