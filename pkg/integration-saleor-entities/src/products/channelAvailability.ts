@@ -639,6 +639,8 @@ export class SaleorChannelAvailabilitySyncService {
             }
         }
 
+        const productIsActive = entry.productVariant.product.active;
+
         const resp1 = await this.saleorClient.productChannelListingUpdate({
             id: saleorProductId,
             input: {
@@ -646,8 +648,8 @@ export class SaleorChannelAvailabilitySyncService {
                     {
                         availableForPurchaseAt: entry.startDate,
                         channelId: entry.salesChannel.saleorChannels[0].id,
-                        visibleInListings: true,
-                        isAvailableForPurchase: true,
+                        visibleInListings: productIsActive,
+                        isAvailableForPurchase: productIsActive,
                         isPublished: true,
                     },
                 ],
