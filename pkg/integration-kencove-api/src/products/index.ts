@@ -2070,6 +2070,33 @@ export class KencoveApiAppProductSyncService {
                 product.accessories?.map((a) => a.itemCode),
                 product.alternatives?.map((a) => a.itemCode),
             );
+
+            /**
+             * Set the brand as product attribute
+             */
+            if (product.brand) {
+                const brandAttribute =
+                    await this.db.kencoveApiAttribute.findUnique({
+                        where: {
+                            id_model_kencoveApiAppId: {
+                                id: "333340",
+                                kencoveApiAppId: this.kencoveApiApp.id,
+                                model: "custom",
+                            },
+                        },
+                        include: {
+                            attribute: true,
+                        },
+                    });
+                if (!brandAttribute)
+                    throw new Error("Brand Attribute not found in DB");
+                await this.setAttributeValue({
+                    attribute: brandAttribute.attribute,
+                    attributeValue: product.brand,
+                    productId: existingProduct.id,
+                    isForVariant: false,
+                });
+            }
         }
     }
 }
