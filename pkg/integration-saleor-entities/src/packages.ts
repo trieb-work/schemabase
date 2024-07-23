@@ -592,10 +592,6 @@ export class SaleorPackageSyncService {
                     ) {
                         this.logger.info(
                             `Saleor orderline ${e.orderLines} from order ${saleorOrder.orderNumber} - ${saleorOrder.id} is already fulfilled: ${e.message}. Continue`,
-                            {
-                                orderStatus:
-                                    response.orderFulfill?.order?.status,
-                            },
                         );
 
                         // if (
