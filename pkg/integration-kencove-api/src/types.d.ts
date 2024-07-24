@@ -233,8 +233,8 @@ export type KencoveApiCategory = {
     cateorgyId: number;
     categorySlug: string | null;
     categoryName: string;
-    parentCategoryId: string;
-    childrenCategoryIds: string[] | null;
+    parentCategoryId: number | null;
+    childrenCategoryIds: number[] | null;
     // for example: "kencove.com > Clearance > Connectors-Clearance"
     menuPath: string;
     productIds: string[] | null;

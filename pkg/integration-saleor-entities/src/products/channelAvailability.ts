@@ -153,6 +153,89 @@ export class SaleorChannelAvailabilitySyncService {
         return result;
     }
 
+    /**
+     * take the product id and the existing channel listings and
+     * disable the product in Saleor if needed
+     * @param product
+     */
+    private async disableProductInSaleor(
+        productId: string,
+        channelListings: ChannelListingsFragment[] | undefined,
+    ) {
+        const existingEntry = channelListings?.find((l) => l.id === productId);
+
+        /**
+         * In Saleor, we have the product availability at a channel level.
+         * Checking all existing channels if item is not availableForpurchase and not
+         * visibleInProductListings
+         */
+        const isAlreadyDisabled =
+            existingEntry?.channelListings?.every(
+                (c) => !c.isAvailableForPurchase && !c.visibleInListings,
+            ) || false;
+
+        if (isAlreadyDisabled) {
+            return;
+        }
+        const resp = await this.saleorClient.productChannelListingUpdate({
+            id: productId,
+            input: {
+                updateChannels: existingEntry?.channelListings?.map(
+                    (c) =>
+                        ({
+                            channelId: c.channel.id,
+                            availableForPurchaseAt: null,
+                            visibleInListings: false,
+                            isAvailableForPurchase: false,
+                        }) || [],
+                ),
+            },
+        });
+        if (
+            resp.productChannelListingUpdate?.errors &&
+            resp.productChannelListingUpdate?.errors.length > 0
+        ) {
+            this.logger.error(
+                `Error updating product channel availability for product ${productId}: ${JSON.stringify(
+                    resp.productChannelListingUpdate.errors,
+                )}`,
+            );
+            return;
+        }
+
+        if (resp.productChannelListingUpdate?.product?.channelListings) {
+            await Promise.all(
+                resp.productChannelListingUpdate.product.channelListings.map(
+                    async (c) => {
+                        await this.db.saleorChannelListing.upsert({
+                            where: {
+                                id_installedSaleorAppId: {
+                                    id: c.id,
+                                    installedSaleorAppId:
+                                        this.installedSaleorAppId,
+                                },
+                            },
+                            create: {
+                                id: c.id,
+                                product: {
+                                    connect: {
+                                        id: productId,
+                                    },
+                                },
+                                installedSaleorApp: {
+                                    connect: {
+                                        id: this.installedSaleorAppId,
+                                    },
+                                },
+                            },
+                            update: {},
+                        });
+                    },
+                ),
+            );
+        }
+    }
+
     private async syncChannelAvailability(gteDate: Date) {
         this.logger.debug(
             `Looking for channel updates since ${gteDate} or items without channel entries set yet or entries, whose end date is today`,
@@ -338,13 +421,38 @@ export class SaleorChannelAvailabilitySyncService {
                 },
             });
 
+        const disabledProductsSinceLastRun = await this.db.product.findMany({
+            where: {
+                tenantId: this.tenantId,
+                updatedAt: {
+                    gte: gteDate,
+                },
+                active: false,
+                saleorProducts: {
+                    some: {
+                        installedSaleorAppId: this.installedSaleorAppId,
+                    },
+                },
+            },
+            include: {
+                saleorProducts: {
+                    where: {
+                        installedSaleorAppId: this.installedSaleorAppId,
+                    },
+                },
+            },
+        });
+
         const channelPricings = [
             ...channelPricingsUpdated,
             ...channelPricingsMissing,
             ...channelPricingEndDatesToday,
         ];
 
-        if (channelPricings.length === 0) {
+        if (
+            channelPricings.length === 0 &&
+            disabledProductsSinceLastRun.length === 0
+        ) {
             this.logger.info(`No channel pricings to sync`);
             return;
         }
@@ -354,6 +462,9 @@ export class SaleorChannelAvailabilitySyncService {
             {
                 channelPricingsUpdated: channelPricingsUpdated.length,
                 channelPricingsMissing: channelPricingsMissing.length,
+                channelPricingEndDatesToday: channelPricingEndDatesToday.length,
+                disabledProductsSinceLastRun:
+                    disabledProductsSinceLastRun.length,
             },
         );
 
@@ -366,16 +477,20 @@ export class SaleorChannelAvailabilitySyncService {
         const basePriceEntries =
             this.getCurrentActiveBasePrices(channelPricings);
 
+        const disabledProductIds = disabledProductsSinceLastRun.map(
+            (product) => product.saleorProducts[0].id,
+        );
+        const channelPricingIds = channelPricings.map(
+            (entry) => entry.productVariant.product.saleorProducts[0].id,
+        );
+
         /**
          * All base price entries are related to product variants.
          * These are the unique saleor product ids these entries are related to.
          */
         const allUniqueSaleorProductIds = [
             ...new Set(
-                channelPricings.map(
-                    (entry) =>
-                        entry.productVariant.product.saleorProducts[0].id,
-                ),
+                disabledProductIds.concat(channelPricingIds).filter(Boolean),
             ),
         ];
 
@@ -424,6 +539,15 @@ export class SaleorChannelAvailabilitySyncService {
                 },
             );
             await this.syncBaseAvailability(entry, existingChannelListings);
+        }
+        for (const entry of disabledProductsSinceLastRun) {
+            this.logger.info(
+                `Disabling product in Saleor for product ${entry.name}`,
+            );
+            await this.disableProductInSaleor(
+                entry.saleorProducts[0].id,
+                existingChannelListings,
+            );
         }
 
         // Get all unique product variant ids of volume discount channel pricings.
