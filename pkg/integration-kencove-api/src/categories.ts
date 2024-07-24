@@ -105,8 +105,8 @@ export class KencoveApiAppCategorySyncService {
                     where: {
                         kencoveApiAppId: this.kencoveApiApp.id,
                         id: {
-                            in: kenApiCategories.map(
-                                (c) => c.cateorgyId?.toString(),
+                            in: kenApiCategories.map((c) =>
+                                c.cateorgyId?.toString(),
                             ),
                         },
                     },
@@ -164,9 +164,11 @@ export class KencoveApiAppCategorySyncService {
                 // corresponding internal ids to be able to connect them to together.
                 // We do this by merging together all the category ids and then
                 // querying our db for all categories with those ids.
-                const lookupKencoveIds = [];
+                const lookupKencoveIds: string[] = [];
                 if (category.childrenCategoryIds) {
-                    lookupKencoveIds.push(...category.childrenCategoryIds);
+                    lookupKencoveIds.push(
+                        ...category.childrenCategoryIds.toString(),
+                    );
                 }
                 /**
                  * The kencoveApi categoryid of the parent category. Is null,
@@ -180,7 +182,7 @@ export class KencoveApiAppCategorySyncService {
                         ? category.parentCategoryId?.toString()
                         : null;
                 if (kencoveParentCategoryId)
-                    lookupKencoveIds.push(category.parentCategoryId.toString());
+                    lookupKencoveIds.push(kencoveParentCategoryId.toString());
 
                 // we have to filter out the categoriesToSkip here as well
                 const filteredLookupKencoveIds = lookupKencoveIds.filter(
@@ -205,7 +207,7 @@ export class KencoveApiAppCategorySyncService {
                  */
                 const childrenCategories = categoriesToConnect
                     .filter(
-                        (c) => c.id !== category.parentCategoryId.toString(),
+                        (c) => c.id !== category.parentCategoryId?.toString(),
                     )
                     .map((c) => ({ id: c.categoryId }));
 
@@ -326,10 +328,10 @@ export class KencoveApiAppCategorySyncService {
                                               },
                                           }
                                         : parentCategoryId === null
-                                        ? {
-                                              disconnect: true,
-                                          }
-                                        : undefined,
+                                          ? {
+                                                disconnect: true,
+                                            }
+                                          : undefined,
                                     childrenCategories: {
                                         connect: childrenCategories,
                                     },
