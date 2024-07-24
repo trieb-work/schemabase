@@ -101,6 +101,20 @@ export class KencoveApiAppProductStockSyncService {
                     );
                     continue;
                 }
+
+                const allExistingStockEntries =
+                    await this.db.stockEntries.findMany({
+                        where: {
+                            productVariantId: internalVariant.id,
+                            tenantId: this.kencoveApiApp.tenantId,
+                        },
+                    });
+
+                /**
+                 * From the stock entries from the API we don't receive our internal warehouse ids. This array contains
+                 * just our internal warehouse ids for verification
+                 */
+                const allWarehouseId: string[] = [];
                 for (const warehouseEntry of variant.warehouse_stock) {
                     /**
                      * we have the qty available and the warehouse_able_to_make. Some kits might
@@ -138,17 +152,10 @@ export class KencoveApiAppProductStockSyncService {
                     const warehouseId = await whHelper.getWareHouseId(
                         warehouseEntry.warehouse_code,
                     );
+                    allWarehouseId.push(warehouseId);
 
-                    const existingStock = await this.db.stockEntries.findUnique(
-                        {
-                            where: {
-                                warehouseId_productVariantId_tenantId: {
-                                    warehouseId: warehouseId,
-                                    productVariantId: internalVariant.id,
-                                    tenantId: this.kencoveApiApp.tenantId,
-                                },
-                            },
-                        },
+                    const existingStock = allExistingStockEntries.find(
+                        (e) => e.warehouseId === warehouseId,
                     );
                     if (existingStock) {
                         if (
@@ -157,6 +164,11 @@ export class KencoveApiAppProductStockSyncService {
                         ) {
                             this.logger.info(
                                 `Stock entry for ${internalVariant.sku} did not change`,
+                                {
+                                    warehouse: warehouseEntry.warehouse_code,
+                                    warehouseId,
+                                    totalAvailableStock,
+                                },
                             );
                             continue;
                         }
@@ -197,6 +209,32 @@ export class KencoveApiAppProductStockSyncService {
                             },
                         });
                     }
+                }
+
+                /**
+                 * Stock entries, that are no longer in the kencove api, but still in our
+                 * DB get nulled
+                 */
+                const entriesToNull = allExistingStockEntries
+                    .filter((e) => !allWarehouseId.includes(e.warehouseId))
+                    .filter((e) => e.actualAvailableForSaleStock > 0);
+                if (entriesToNull.length > 0) {
+                    this.logger.info(
+                        `Nulling ${entriesToNull.length} stock entries for ${internalVariant.sku}`,
+                        {
+                            entriesToNull,
+                        },
+                    );
+                    await this.db.stockEntries.updateMany({
+                        where: {
+                            id: {
+                                in: entriesToNull.map((e) => e.id),
+                            },
+                        },
+                        data: {
+                            actualAvailableForSaleStock: 0,
+                        },
+                    });
                 }
             }
         }
