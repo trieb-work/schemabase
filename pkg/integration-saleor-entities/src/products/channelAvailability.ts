@@ -478,10 +478,10 @@ export class SaleorChannelAvailabilitySyncService {
             this.getCurrentActiveBasePrices(channelPricings);
 
         const disabledProductIds = disabledProductsSinceLastRun.map(
-            (product) => product.saleorProducts[0].id,
+            (product) => product.saleorProducts[0]?.id,
         );
         const channelPricingIds = channelPricings.map(
-            (entry) => entry.productVariant.product.saleorProducts[0].id,
+            (entry) => entry.productVariant.product.saleorProducts[0]?.id,
         );
 
         /**
