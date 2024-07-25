@@ -177,6 +177,13 @@ export class SaleorChannelAvailabilitySyncService {
         if (isAlreadyDisabled) {
             return;
         }
+        this.logger.info(
+            `Disabling product in Saleor for product ${productId}`,
+            {
+                product: productId,
+                productName: existingEntry?.name,
+            },
+        );
         const resp = await this.saleorClient.productChannelListingUpdate({
             id: productId,
             input: {
@@ -233,6 +240,45 @@ export class SaleorChannelAvailabilitySyncService {
                     },
                 ),
             );
+        }
+    }
+
+    /**
+     * Handle the disabling of product variants. When this is a single variant, we don't remove the
+     * channel from the variant, but instead just disable the product.
+     * @param variantId
+     * @param channelListings
+     * @returns
+     */
+    private async disableVariantInSaleor(
+        variantId: string,
+        channelListings: ChannelListingsFragment[] | undefined,
+    ) {
+        const existingEntry = channelListings?.find((l) =>
+            l.variants?.some((v) => v.id === variantId),
+        );
+
+        const singleVariant = existingEntry?.variants?.length === 1;
+
+        if (singleVariant && existingEntry.id) {
+            return this.disableProductInSaleor(
+                existingEntry.id,
+                channelListings,
+            );
+        }
+
+        /**
+         * In Saleor, we have the product availability at a channel level.
+         * Checking all existing channels if item is not availableForpurchase and not
+         * visibleInProductListings
+         */
+        const isAlreadyDisabled =
+            existingEntry?.variants
+                ?.find((v) => v.id === variantId)
+                ?.channelListings?.every((c) => !c.channel.id) || false;
+
+        if (isAlreadyDisabled) {
+            return;
         }
     }
 
@@ -443,6 +489,39 @@ export class SaleorChannelAvailabilitySyncService {
             },
         });
 
+        const disabledVariantsSinceLastRun =
+            await this.db.productVariant.findMany({
+                where: {
+                    tenantId: this.tenantId,
+                    updatedAt: {
+                        gte: gteDate,
+                    },
+                    active: false,
+                    saleorProductVariant: {
+                        some: {
+                            installedSaleorAppId: this.installedSaleorAppId,
+                        },
+                    },
+                },
+                include: {
+                    saleorProductVariant: {
+                        where: {
+                            installedSaleorAppId: this.installedSaleorAppId,
+                        },
+                    },
+                    product: {
+                        include: {
+                            saleorProducts: {
+                                where: {
+                                    installedSaleorAppId:
+                                        this.installedSaleorAppId,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+
         const channelPricings = [
             ...channelPricingsUpdated,
             ...channelPricingsMissing,
@@ -451,7 +530,8 @@ export class SaleorChannelAvailabilitySyncService {
 
         if (
             channelPricings.length === 0 &&
-            disabledProductsSinceLastRun.length === 0
+            disabledProductsSinceLastRun.length === 0 &&
+            disabledVariantsSinceLastRun.length === 0
         ) {
             this.logger.info(`No channel pricings to sync`);
             return;
@@ -465,6 +545,8 @@ export class SaleorChannelAvailabilitySyncService {
                 channelPricingEndDatesToday: channelPricingEndDatesToday.length,
                 disabledProductsSinceLastRun:
                     disabledProductsSinceLastRun.length,
+                disabledVariantsSinceLastRun:
+                    disabledVariantsSinceLastRun.length,
             },
         );
 
@@ -480,6 +562,11 @@ export class SaleorChannelAvailabilitySyncService {
         const disabledProductIds = disabledProductsSinceLastRun.map(
             (product) => product.saleorProducts[0]?.id,
         );
+
+        const productIdsFromDisabledVariants = disabledVariantsSinceLastRun.map(
+            (variant) => variant.product.saleorProducts[0]?.id,
+        );
+
         const channelPricingIds = channelPricings.map(
             (entry) => entry.productVariant.product.saleorProducts[0]?.id,
         );
@@ -490,7 +577,10 @@ export class SaleorChannelAvailabilitySyncService {
          */
         const allUniqueSaleorProductIds = [
             ...new Set(
-                disabledProductIds.concat(channelPricingIds).filter(Boolean),
+                disabledProductIds
+                    .concat(channelPricingIds)
+                    .concat(productIdsFromDisabledVariants)
+                    .filter(Boolean),
             ),
         ];
 
@@ -546,6 +636,16 @@ export class SaleorChannelAvailabilitySyncService {
             );
             await this.disableProductInSaleor(
                 entry.saleorProducts[0].id,
+                existingChannelListings,
+            );
+        }
+
+        for (const entry of disabledVariantsSinceLastRun) {
+            this.logger.info(
+                `Disabling product variant in Saleor for product variant ${entry.variantName}`,
+            );
+            await this.disableVariantInSaleor(
+                entry.saleorProductVariant[0].id,
                 existingChannelListings,
             );
         }
