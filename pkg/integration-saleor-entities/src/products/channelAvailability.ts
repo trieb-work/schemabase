@@ -258,6 +258,8 @@ export class SaleorChannelAvailabilitySyncService {
             l.variants?.some((v) => v.id === variantId),
         );
 
+        const saleorProductId = existingEntry?.id;
+
         const singleVariant = existingEntry?.variants?.length === 1;
 
         if (singleVariant && existingEntry.id) {
@@ -277,7 +279,34 @@ export class SaleorChannelAvailabilitySyncService {
                 ?.find((v) => v.id === variantId)
                 ?.channelListings?.every((c) => !c.channel.id) || false;
 
-        if (isAlreadyDisabled) {
+        if (isAlreadyDisabled || !saleorProductId) {
+            return;
+        }
+
+        const res = await this.saleorClient.productChannelListingUpdate({
+            id: saleorProductId,
+            input: {
+                updateChannels: existingEntry?.variants
+                    ?.find((v) => v.id === variantId)
+                    ?.channelListings?.map(
+                        (c) =>
+                            ({
+                                channelId: c.channel.id,
+                                removeVariants: [variantId],
+                            }) || [],
+                    ),
+            },
+        });
+
+        if (
+            res.productChannelListingUpdate?.errors &&
+            res.productChannelListingUpdate?.errors.length > 0
+        ) {
+            this.logger.error(
+                `Error updating product variant channel price for product variant ${variantId}: ${JSON.stringify(
+                    res.productChannelListingUpdate.errors,
+                )}`,
+            );
             return;
         }
     }
