@@ -159,10 +159,13 @@ export class SaleorChannelAvailabilitySyncService {
      * @param product
      */
     private async disableProductInSaleor(
-        productId: string,
+        saleorProductId: string,
         channelListings: ChannelListingsFragment[] | undefined,
+        schemabaseProductId: string,
     ) {
-        const existingEntry = channelListings?.find((l) => l.id === productId);
+        const existingEntry = channelListings?.find(
+            (l) => l.id === saleorProductId,
+        );
 
         /**
          * In Saleor, we have the product availability at a channel level.
@@ -178,14 +181,14 @@ export class SaleorChannelAvailabilitySyncService {
             return;
         }
         this.logger.info(
-            `Disabling product in Saleor for product ${productId}`,
+            `Disabling product in Saleor for product ${saleorProductId}`,
             {
-                product: productId,
+                product: saleorProductId,
                 productName: existingEntry?.name,
             },
         );
         const resp = await this.saleorClient.productChannelListingUpdate({
-            id: productId,
+            id: saleorProductId,
             input: {
                 updateChannels: existingEntry?.channelListings?.map(
                     (c) =>
@@ -203,7 +206,7 @@ export class SaleorChannelAvailabilitySyncService {
             resp.productChannelListingUpdate?.errors.length > 0
         ) {
             this.logger.error(
-                `Error updating product channel availability for product ${productId}: ${JSON.stringify(
+                `Error updating product channel availability for product ${saleorProductId}: ${JSON.stringify(
                     resp.productChannelListingUpdate.errors,
                 )}`,
             );
@@ -226,7 +229,7 @@ export class SaleorChannelAvailabilitySyncService {
                                 id: c.id,
                                 product: {
                                     connect: {
-                                        id: productId,
+                                        id: schemabaseProductId,
                                     },
                                 },
                                 installedSaleorApp: {
@@ -253,6 +256,7 @@ export class SaleorChannelAvailabilitySyncService {
     private async disableVariantInSaleor(
         variantId: string,
         channelListings: ChannelListingsFragment[] | undefined,
+        schemabaseProductId: string,
     ) {
         const existingEntry = channelListings?.find((l) =>
             l.variants?.some((v) => v.id === variantId),
@@ -266,6 +270,7 @@ export class SaleorChannelAvailabilitySyncService {
             return this.disableProductInSaleor(
                 existingEntry.id,
                 channelListings,
+                schemabaseProductId,
             );
         }
 
@@ -666,6 +671,7 @@ export class SaleorChannelAvailabilitySyncService {
             await this.disableProductInSaleor(
                 entry.saleorProducts[0].id,
                 existingChannelListings,
+                entry.id,
             );
         }
 
@@ -676,6 +682,7 @@ export class SaleorChannelAvailabilitySyncService {
             await this.disableVariantInSaleor(
                 entry.saleorProductVariant[0].id,
                 existingChannelListings,
+                entry.productId,
             );
         }
 
