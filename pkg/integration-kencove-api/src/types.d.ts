@@ -199,8 +199,9 @@ export type KencoveApiProduct = {
     additional_handing: 0 | 1;
     /**
      * Truck only handling: We can't give a quotation for these items.
+     * F: flat bed items
      */
-    truck_only: "N" | "Y" | null;
+    truck_only: "F" | "N" | "Y" | null;
     /**
      * all variants are allowed to be backordered by default.
      * This setting can disable the backorder
