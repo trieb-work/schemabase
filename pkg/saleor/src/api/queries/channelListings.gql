@@ -1,5 +1,6 @@
 fragment ChannelListings on Product {
     id
+    name
     channelListings {
         id
         channel {

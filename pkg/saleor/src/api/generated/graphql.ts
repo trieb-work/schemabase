@@ -15419,6 +15419,12 @@ export type Order = Node &
          * @deprecated This field will be removed in Saleor 4.0. Use the `discounts` field instead.
          */
         translatedDiscountName?: Maybe<Scalars["String"]>;
+        /**
+         * Undiscounted total price of shipping.
+         *
+         * Added in Saleor 3.19.
+         */
+        undiscountedShippingPrice?: Maybe<Money>;
         /** Undiscounted total amount of the order. */
         undiscountedTotal: TaxedMoney;
         /** Date and time when the order was created. */
@@ -33446,6 +33452,7 @@ export type SaleorCronCategoriesQuery = {
 export type ChannelListingsFragment = {
     __typename?: "Product";
     id: string;
+    name: string;
     channelListings?: Array<{
         __typename?: "ProductChannelListing";
         id: string;
@@ -33489,6 +33496,7 @@ export type ChannelListingsQuery = {
             node: {
                 __typename?: "Product";
                 id: string;
+                name: string;
                 channelListings?: Array<{
                     __typename?: "ProductChannelListing";
                     id: string;
@@ -34874,6 +34882,7 @@ export const CategoryValuesFragmentDoc = gql`
 export const ChannelListingsFragmentDoc = gql`
     fragment ChannelListings on Product {
         id
+        name
         channelListings {
             id
             channel {
