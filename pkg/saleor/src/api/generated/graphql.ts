@@ -33774,6 +33774,15 @@ export type OrderByReferenceQuery = {
     order?: { __typename?: "Order"; id: string } | null;
 };
 
+export type OrderStatusQueryVariables = Exact<{
+    id: Scalars["ID"];
+}>;
+
+export type OrderStatusQuery = {
+    __typename?: "Query";
+    order?: { __typename?: "Order"; status: OrderStatus } | null;
+};
+
 export type SaleorCronPackagesOverviewQueryVariables = Exact<{
     createdGte?: InputMaybe<Scalars["Date"]>;
     after?: InputMaybe<Scalars["String"]>;
@@ -35907,6 +35916,13 @@ export const OrderByReferenceDocument = gql`
         }
     }
 `;
+export const OrderStatusDocument = gql`
+    query orderStatus($id: ID!) {
+        order(id: $id) {
+            status
+        }
+    }
+`;
 export const SaleorCronPackagesOverviewDocument = gql`
     query saleorCronPackagesOverview(
         $createdGte: Date
@@ -36901,6 +36917,16 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<OrderByReferenceQuery>;
+        },
+        orderStatus(
+            variables: OrderStatusQueryVariables,
+            options?: C,
+        ): Promise<OrderStatusQuery> {
+            return requester<OrderStatusQuery, OrderStatusQueryVariables>(
+                OrderStatusDocument,
+                variables,
+                options,
+            ) as Promise<OrderStatusQuery>;
         },
         saleorCronPackagesOverview(
             variables: SaleorCronPackagesOverviewQueryVariables,

@@ -173,3 +173,9 @@ query orderByReference($externalReference: String!) {
         id
     }
 }
+
+query orderStatus($id: ID!) {
+    order(id: $id) {
+        status
+    }
+}

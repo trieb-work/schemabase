@@ -747,14 +747,116 @@ export class SaleorOrderSyncService {
                 }
             }
         }
+    }
 
-        await this.cronState.set({
-            lastRun: new Date(),
-            lastRunStatus: "success",
+    private async cancelSaleorOrder(saleorOrderId: string): Promise<void> {
+        /**
+         * First get the current order status of the orders
+         */
+        const orderStatus = await this.saleorClient.orderStatus({
+            id: saleorOrderId,
         });
+        if (!orderStatus || !orderStatus.order?.status) {
+            throw new Error(
+                `Can't get order status for order ${saleorOrderId}`,
+            );
+        }
+
+        if (orderStatus.order.status === OrderStatus.Canceled) {
+            this.logger.info(
+                `Order ${saleorOrderId} is already canceled. Nothing to do.`,
+            );
+            return;
+        }
+
+        const cancelOrder = await this.saleorClient.cancelOrder({
+            id: saleorOrderId,
+        });
+
+        if (!cancelOrder || !cancelOrder.orderCancel?.errors.length) {
+            throw new Error(
+                `Can't cancel order ${saleorOrderId}, ${JSON.stringify(cancelOrder.orderCancel?.errors)}`,
+            );
+        }
     }
 
     public async syncFromECI(): Promise<void> {
+        const cronState = await this.cronState.get();
+
+        const now = new Date();
+        let createdGte: string;
+        if (!cronState.lastRun) {
+            createdGte = subYears(now, 2).toISOString();
+            this.logger.info(
+                // eslint-disable-next-line max-len
+                `This seems to be our first sync run. Syncing data from: ${createdGte}`,
+            );
+        } else {
+            createdGte = subHours(cronState.lastRun, 3).toISOString();
+            this.logger.info(
+                `Setting GTE date to ${createdGte}. Asking Saleor for all orders with lastUpdated GTE.`,
+            );
+        }
+        /**
+         * Get orders, that have been updated since last run and are canceled.
+         * We try to cancel them in Saleor as well
+         */
+        const canceledOrders = await this.db.order.findMany({
+            where: {
+                tenantId: this.tenantId,
+                orderStatus: "canceled",
+                updatedAt: {
+                    gte: new Date(createdGte),
+                },
+                saleorOrders: {
+                    some: {
+                        installedSaleorAppId: this.installedSaleorApp.id,
+                    },
+                },
+            },
+        });
+
+        if (canceledOrders.length === 0) {
+            this.logger.info(
+                `No orders with status canceled found since ${createdGte}. Nothing to do.`,
+            );
+            return;
+        }
+
+        for (const order of canceledOrders) {
+            try {
+                const saleorOrder = await this.db.saleorOrder.findFirst({
+                    where: {
+                        orderId: order.id,
+                        installedSaleorAppId: this.installedSaleorApp.id,
+                    },
+                });
+
+                if (!saleorOrder) {
+                    throw new Error(
+                        `No saleor order found for order ${order.orderNumber} - ${order.id}`,
+                    );
+                }
+
+                await this.cancelSaleorOrder(saleorOrder.id);
+            } catch (err) {
+                const defaultLogFields = {
+                    eciOrderId: order.id,
+                    eciOrderNumber: order.orderNumber,
+                };
+                if (err instanceof Warning) {
+                    this.logger.warn(err.message, defaultLogFields);
+                } else if (err instanceof Error) {
+                    this.logger.error(err.message, defaultLogFields);
+                } else {
+                    this.logger.error(
+                        "An unknown Error occured: " + (err as any)?.toString(),
+                        defaultLogFields,
+                    );
+                }
+            }
+        }
+
         /**
          * check, if we have the setting "createHistoricOrdes" activated for this installedSaleorApp
          */
@@ -771,5 +873,10 @@ export class SaleorOrderSyncService {
             });
             await histOrders.syncHistoricOrders();
         }
+
+        await this.cronState.set({
+            lastRun: new Date(),
+            lastRunStatus: "success",
+        });
     }
 }
