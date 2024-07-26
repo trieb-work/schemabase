@@ -621,7 +621,8 @@ export class SaleorPackageSyncService {
                         );
                     } else if (
                         e.code === "FULFILL_ORDER_LINE" &&
-                        e.message?.includes("item remaining to fulfill.")
+                        (e.message?.includes("item remaining to fulfill.") ||
+                            e.message?.includes("items remaining to fulfill."))
                     ) {
                         this.logger.warn(
                             `We try to fulfill more items than still to fulfill: ${e.message}`,
