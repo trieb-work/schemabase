@@ -247,7 +247,12 @@ export class SyncToOdooEDI {
             },
         });
 
-        this.logger.info(`Found ${schemabaseOrders.length} orders to sync`);
+        this.logger.info(
+            `Found ${schemabaseOrders.length} orders to sync to Odoo EDI`,
+            {
+                orders: schemabaseOrders.map((order) => order.orderNumber),
+            },
+        );
 
         // Send each order to Odoo EDI endpoint
         for (const schemabaseOrder of schemabaseOrders) {
@@ -263,6 +268,19 @@ export class SyncToOdooEDI {
             ) {
                 this.logger.warn(
                     `Order ${schemabaseOrder.orderNumber} has missing shipping price net. We will not send it to Odoo EDI.`,
+                );
+                continue;
+            }
+
+            if (
+                !schemabaseOrder.mainContact?.firstName &&
+                !schemabaseOrder.mainContact?.lastName
+            ) {
+                this.logger.warn(
+                    `Order ${schemabaseOrder.orderNumber} has missing contact information. We will not send it to Odoo EDI.`,
+                    {
+                        orderNumber: schemabaseOrder.orderNumber,
+                    },
                 );
                 continue;
             }
