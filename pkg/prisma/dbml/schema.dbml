@@ -77,6 +77,7 @@ Table SaleorAttribute {
 Table SaleorOrder {
   id String [not null, note: 'Saleor Internal Id']
   status SaleorOrderStatus [note: 'This order status is mostly used, to make sure, that we do no longer try to create packages for this order']
+  paymentStatus SaleorPaymentStatus
   createdAt DateTime [not null]
   order Order [not null]
   orderId String [not null]
@@ -2048,6 +2049,17 @@ Enum SaleorOrderStatus {
   PARTIALLY_FULFILLED
   CANCELED
   FULFILLED
+}
+
+Enum SaleorPaymentStatus {
+  NOT_CHARGED
+  PENDING
+  PARTIALLY_CHARGED
+  FULLY_CHARGED
+  PARTIALLY_REFUNDED
+  FULLY_REFUNDED
+  REFUSED
+  CANCELLED
 }
 
 Enum ZohoSalesOrderStatus {

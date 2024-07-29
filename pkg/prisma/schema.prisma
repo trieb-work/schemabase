@@ -99,8 +99,8 @@ model SaleorTaxClass {
   installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
   installedSaleorAppId String
 
-  tax       Tax    @relation(fields: [taxId], references: [id], onDelete: Cascade)
-  taxId     String
+  tax   Tax    @relation(fields: [taxId], references: [id], onDelete: Cascade)
+  taxId String
 
   @@unique([id, installedSaleorAppId])
   @@index([taxId])
@@ -130,6 +130,17 @@ enum SaleorOrderStatus {
   FULFILLED
 }
 
+enum SaleorPaymentStatus {
+  NOT_CHARGED
+  PENDING
+  PARTIALLY_CHARGED
+  FULLY_CHARGED
+  PARTIALLY_REFUNDED
+  FULLY_REFUNDED
+  REFUSED
+  CANCELLED
+}
+
 // Saleor specific model for orders.
 model SaleorOrder {
   /// Saleor Internal Id
@@ -137,6 +148,8 @@ model SaleorOrder {
 
   /// This order status is mostly used, to make sure, that we do no longer try to create packages for this order
   status SaleorOrderStatus?
+
+  paymentStatus SaleorPaymentStatus?
 
   createdAt DateTime
 
@@ -229,7 +242,6 @@ model SaleorChannelListing {
 
   @@unique([id, installedSaleorAppId])
   @@index([installedSaleorAppId])
-
 }
 
 model SaleorPackage {
@@ -310,7 +322,6 @@ model SaleorPayment {
 /// us to check, if we have media already uploaded or not, so thats why id is
 /// optional
 model SaleorMedia {
-
   id String?
 
   /// The URL of the media file
@@ -791,7 +802,7 @@ model Tax {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  zohoTaxes ZohoTax[]
+  zohoTaxes        ZohoTax[]
   saleorTaxClasses SaleorTaxClass[]
 
   @@unique([normalizedName, tenantId])
@@ -1231,7 +1242,7 @@ model Order {
   /// the exact name of the shipping method
   shippingMethodName String?
   /// an ID identifier for the shipping method
-  shippingMethodId String? @db.Text
+  shippingMethodId   String? @db.Text
 
   /// The applied discount code
   discountCode String?
@@ -2013,9 +2024,9 @@ model Product {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
 
-  saleorProducts SaleorProduct[]
+  saleorProducts        SaleorProduct[]
   saleorChannelListings SaleorChannelListing[]
-  kencoveApiProducts KencoveApiProduct[]
+  kencoveApiProducts    KencoveApiProduct[]
 
   descriptionHTML String? @db.Text
 
@@ -2032,7 +2043,7 @@ model Product {
   @@index([tenantId])
   @@index([categoryId])
   @@index([productTypeId])
-  @@index([updatedAt]) 
+  @@index([updatedAt])
 }
 
 // The ECI internal ProductVariant Model. One product can have one ore many Product Variants
@@ -2427,7 +2438,7 @@ model Package {
 }
 
 model PackageEvent {
-  id        String              @id
+  id        String   @id
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -2436,7 +2447,7 @@ model PackageEvent {
   state     PackageState
   // What happened
   // eg: "The shipment has cleared customs"
-  message   String? @db.Text
+  message   String?             @db.Text
   package   Package             @relation(fields: [packageId], references: [id], onDelete: Cascade)
   packageId String
   // `Nürnberg, Deutschland` for example
@@ -2568,8 +2579,6 @@ model UPSTrackingApp {
 
   @@index([trackingIntegrationId])
 }
-
-
 
 /// Fedex Tracking App model
 model FedexTrackingApp {
@@ -2752,7 +2761,6 @@ model KencoveApiPayment {
   @@unique([id, kencoveApiAppId])
   @@index([paymentId])
   @@index([kencoveApiAppId])
-
 }
 
 model KencoveApiWarehouse {
@@ -2841,7 +2849,6 @@ model KencoveApiPackage {
   @@index([kencoveApiAppId])
 }
 
-
 model KencoveApiProduct {
   id String
 
@@ -2858,7 +2865,6 @@ model KencoveApiProduct {
   @@index([productId])
   @@index([kencoveApiAppId])
   @@index([productId, kencoveApiAppId])
-
 }
 
 /// Kencove custom productVariant model
@@ -2906,10 +2912,10 @@ model KencoveApiAddress {
 /// Kencove custom customer model. Relation between internal customer
 /// object and kencove customer object
 model KencoveApiContact {
-  id        String
+  id           String
   customerCode String?
-  contact   Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
-  contactId String
+  contact      Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  contactId    String
 
   kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id], onDelete: Cascade)
   kencoveApiAppId String
@@ -2954,55 +2960,49 @@ model InternalDataApp {
   @@index([tenantId])
 }
 
-
 model AlgoliaApp {
-    id String @id
+  id String @id
 
-    enabled Boolean @default(false)
+  enabled Boolean @default(false)
 
-    applicationId String
-    apiKey         String
+  applicationId String
+  apiKey        String
 
-    categoryIndexName String
+  categoryIndexName String
 
+  syncCategories Boolean @default(false)
 
+  cronSchedule String @default("*/30 * * * *")
+  cronTimeout  Int    @default(800)
 
-    syncCategories Boolean @default(false)
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
 
-    cronSchedule String @default("*/30 * * * *")
-    cronTimeout  Int    @default(800)
-
-    tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-    tenantId String
-
-
-    @@index([tenantId])
-
+  @@index([tenantId])
 }
 
 /// The admin app for AWS cognito. Using the IAM credentials to authenticate. We store credentials per user pool
 model AWSCognitoApp {
-    id String @id
+  id String @id
 
-    enabled Boolean @default(true)
+  enabled Boolean @default(true)
 
-    accessKeyId    String
-    secretAccessKey String
+  accessKeyId     String
+  secretAccessKey String
 
-    userPoolId String
+  userPoolId String
 
-    region String
+  region String
 
-    cronSchedule String @default("*/30 * * * *")
-    cronTimeout  Int    @default(800)
+  cronSchedule String @default("*/30 * * * *")
+  cronTimeout  Int    @default(800)
 
-    tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-    tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
 
-    users   AWSCognitoUser[]
+  users AWSCognitoUser[]
 
-    @@index([tenantId])
-
+  @@index([tenantId])
 }
 
 model AWSCognitoUser {
@@ -3015,11 +3015,10 @@ model AWSCognitoUser {
   awsCognitoApp   AWSCognitoApp @relation(fields: [awsCognitoAppId], references: [id])
   awsCognitoAppId String
 
-  @@index([awsCognitoAppId])
   @@unique([id, awsCognitoAppId])
+  @@index([awsCognitoAppId])
   @@index([contactId])
 }
-
 
 model ZohoApp {
   id String @id
@@ -3167,21 +3166,21 @@ model InstalledSaleorApp {
   cookies Cookies[]
 
   // USER SETTINGS
-  syncCustomers       Boolean @default(false)
-  syncWarehouses      Boolean @default(false)
-  syncOrders          Boolean @default(false)
-  syncInvoices        Boolean @default(false)
-  syncPayments        Boolean @default(false)
-  syncProductStocks   Boolean @default(false)
-  syncProducts        Boolean @default(false)
-  syncPackages        Boolean @default(false)
-  syncTaxes           Boolean @default(false)
-  syncCategories      Boolean @default(false)
+  syncCustomers                Boolean @default(false)
+  syncWarehouses               Boolean @default(false)
+  syncOrders                   Boolean @default(false)
+  syncInvoices                 Boolean @default(false)
+  syncPayments                 Boolean @default(false)
+  syncProductStocks            Boolean @default(false)
+  syncProducts                 Boolean @default(false)
+  syncPackages                 Boolean @default(false)
+  syncTaxes                    Boolean @default(false)
+  syncCategories               Boolean @default(false)
   syncFrequentlyBoughtTogether Boolean @default(false)
   /// If this is true, we will create orders in Saleor, that we received from 3rd party systems. Needs min. Saleor 3.17. Will only sync orders, where we have customers in Saleor already
-  createHistoricOrdes Boolean @default(false)
+  createHistoricOrdes          Boolean @default(false)
   /// Make use of the transaction API instead of the payments API. Mostly used for historic orders import
-  useTransactionApi   Boolean @default(false)
+  useTransactionApi            Boolean @default(false)
 
   productDataFeedIntegration ProductDataFeedIntegration[]
   saleorPayment              SaleorPayment[]
@@ -3296,13 +3295,13 @@ model Subscription {
 // ----------------------------------------------------------------------------
 
 model TrackingIntegration {
-  id                 String           @id
+  id                 String             @id
   // Allow the user to manually enabled or disable the integration
   // Regardless of current subscription state.
-  enabled            Boolean          @default(true)
-  subscription       Subscription?    @relation(fields: [subscriptionId], references: [id])
-  subscriptionId     String?          @unique
-  tenant             Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  enabled            Boolean            @default(true)
+  subscription       Subscription?      @relation(fields: [subscriptionId], references: [id])
+  subscriptionId     String?            @unique
+  tenant             Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId           String
   dpdApps            DpdApp[]
   dhlTrackingApps    DHLTrackingApp[]
@@ -3310,9 +3309,9 @@ model TrackingIntegration {
   easyPostApps       EasyPostApp[]
   fedexTrackingApps  FedexTrackingApp[]
   uspsTrackingApps   UspsTrackingApp[]
-  trackingEmailApp   TrackingEmailApp @relation(fields: [trackingEmailAppId], references: [id])
+  trackingEmailApp   TrackingEmailApp   @relation(fields: [trackingEmailAppId], references: [id])
   trackingEmailAppId String
-  zohoApp            ZohoApp?         @relation(fields: [zohoAppId], references: [id])
+  zohoApp            ZohoApp?           @relation(fields: [zohoAppId], references: [id])
   zohoAppId          String?
 
   @@index([zohoAppId])
@@ -3360,7 +3359,7 @@ model CronJobState {
   locked        Boolean        @default(false)
 
   /// a simple way to let cron jobs stop cracefully instead of retrying them forever. Not all jobs use this counter
-  errorCount    Int            @default(0)
+  errorCount Int @default(0)
 
   @@index([id])
 }
@@ -3457,8 +3456,6 @@ model XentralProxyAuftrag {
   @@index([orderId])
   @@index([xentralProxyAppId])
 }
-
-
 
 // ----------------------------------------------------------------------------
 // Every Config/App can have multiple webhooks attached

@@ -659,7 +659,7 @@ export class SaleorPaymentSyncService {
                 const { type, gateway, currency, metadataJson } =
                     await this.transactionToPaymentMethod(transaction);
 
-                const order = await this.db.saleorOrder.findUnique({
+                const saleorOrder = await this.db.saleorOrder.findUnique({
                     where: {
                         id_installedSaleorAppId: {
                             id: transaction.order.id,
@@ -673,12 +673,12 @@ export class SaleorPaymentSyncService {
                     paymentReference,
                     userEmail: lowercaseEmail,
                     orderNumber: transaction.order?.number,
-                    orderId: order?.orderId,
+                    orderId: saleorOrder?.orderId,
                     gateway,
                     type,
                 });
 
-                if (!order) {
+                if (!saleorOrder) {
                     this.logger.info(
                         `No order found for transaction ${transaction.id}. Skipping`,
                         {
@@ -764,7 +764,7 @@ export class SaleorPaymentSyncService {
                                         },
                                         order: {
                                             connect: {
-                                                id: order.orderId,
+                                                id: saleorOrder.orderId,
                                             },
                                         },
                                     },
@@ -779,7 +779,7 @@ export class SaleorPaymentSyncService {
                                     status: paymentStatus,
                                     order: {
                                         connect: {
-                                            id: order.orderId,
+                                            id: saleorOrder.orderId,
                                         },
                                     },
                                 },
@@ -830,6 +830,7 @@ export class SaleorPaymentSyncService {
                         },
                     },
                 },
+                // We can have multiple payments for one order. We need to find payments that do not yet have a related saleor payment
                 saleorPayment: {
                     none: {
                         installedSaleorAppId: this.installedSaleorApp.id,
