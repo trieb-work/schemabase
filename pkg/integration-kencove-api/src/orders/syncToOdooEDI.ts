@@ -272,19 +272,6 @@ export class SyncToOdooEDI {
                 continue;
             }
 
-            if (
-                !schemabaseOrder.mainContact?.firstName &&
-                !schemabaseOrder.mainContact?.lastName
-            ) {
-                this.logger.warn(
-                    `Order ${schemabaseOrder.orderNumber} has missing contact information. We will not send it to Odoo EDI.`,
-                    {
-                        orderNumber: schemabaseOrder.orderNumber,
-                    },
-                );
-                continue;
-            }
-
             let shippingMethodId = schemabaseOrder.shippingMethodId;
             let rateOptions: {
                 shipmentId: number;
@@ -350,8 +337,12 @@ export class SyncToOdooEDI {
                 discountCode: schemabaseOrder.discountCode,
                 mainContact: {
                     email: schemabaseOrder.mainContact.email,
-                    firstName: schemabaseOrder.mainContact.firstName,
-                    lastName: schemabaseOrder.mainContact.lastName,
+                    firstName:
+                        schemabaseOrder.mainContact.firstName ||
+                        schemabaseOrder.firstName,
+                    lastName:
+                        schemabaseOrder.mainContact.lastName ||
+                        schemabaseOrder.lastName,
                     phone: schemabaseOrder.mainContact.phone,
                     odooContactId: this.getOdooContactId(
                         schemabaseOrder.mainContact.kencoveApiContacts,
@@ -431,6 +422,16 @@ export class SyncToOdooEDI {
                     deliveryCarrierRef: singleShipment?.carrierRef,
                 },
             };
+
+            if (!order.mainContact?.firstName || !order.mainContact?.lastName) {
+                this.logger.warn(
+                    `Order ${schemabaseOrder.orderNumber} has missing contact information. We will not send it to Odoo EDI.`,
+                    {
+                        orderNumber: schemabaseOrder.orderNumber,
+                    },
+                );
+                continue;
+            }
 
             if (
                 !order.shippingAddress ||
