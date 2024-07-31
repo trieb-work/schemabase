@@ -338,11 +338,11 @@ export class SyncToOdooEDI {
                 mainContact: {
                     email: schemabaseOrder.mainContact.email,
                     firstName:
-                        schemabaseOrder.mainContact.firstName ||
-                        schemabaseOrder.firstName,
+                        schemabaseOrder.firstName ||
+                        schemabaseOrder.mainContact.firstName,
                     lastName:
-                        schemabaseOrder.mainContact.lastName ||
-                        schemabaseOrder.lastName,
+                        schemabaseOrder.lastName ||
+                        schemabaseOrder.mainContact.lastName,
                     phone: schemabaseOrder.mainContact.phone,
                     odooContactId: this.getOdooContactId(
                         schemabaseOrder.mainContact.kencoveApiContacts,
