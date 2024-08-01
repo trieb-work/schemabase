@@ -102,12 +102,12 @@ export class SyncToOdooEDI {
 
     private getOdooContactId(
         kencoveApiContacts: KencoveApiContact[],
-    ): string | undefined {
+    ): number | undefined {
         if (kencoveApiContacts.length === 0) {
             return undefined;
         }
-        if (kencoveApiContacts.length === 1) {
-            return kencoveApiContacts[0].id;
+        if (kencoveApiContacts.length === 1 && kencoveApiContacts[0].id) {
+            return Number(kencoveApiContacts[0].id);
         }
         // if there are multiple contacts, we can't match them savely.
         // in this case, we don't send the contact to Odoo EDI
