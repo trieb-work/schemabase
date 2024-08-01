@@ -603,9 +603,8 @@ export class SaleorChannelAvailabilitySyncService {
          * for the entries with the highest startDate, if we
          * have multiple entries with the same minQuantity and channel.
          */
-        const basePriceEntries = this.getCurrentActiveBasePrices(
-            channelPricings.filter((x) => x.productVariant.sku === "R2GW"),
-        );
+        const basePriceEntries =
+            this.getCurrentActiveBasePrices(channelPricings);
 
         const disabledProductIds = disabledProductsSinceLastRun.map(
             (product) => product.saleorProducts[0]?.id,
