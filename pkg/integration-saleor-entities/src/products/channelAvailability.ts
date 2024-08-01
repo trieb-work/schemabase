@@ -106,11 +106,11 @@ export class SaleorChannelAvailabilitySyncService {
     private getCurrentActiveBasePrices(
         entries: EnhancedSalesChannelPriceEntry[],
     ): EnhancedSalesChannelPriceEntry[] {
-        // Filter out entries with minQuantity > 1 or with an ended endDate
+        // Filter out entries with minQuantity > 1 or with an endDate in the past
         const activeEntries = entries.filter(
             (entry) =>
                 entry.minQuantity <= 1 &&
-                (!entry.endDate || new Date(entry.endDate) < new Date()),
+                (!entry.endDate || isAfter(entry.endDate, new Date())),
         );
 
         // Group entries by productVariantId and salesChannelId
@@ -447,12 +447,12 @@ export class SaleorChannelAvailabilitySyncService {
                     },
                 },
             });
-        const channelPricingEndDatesToday =
+        const channelPricingStartDatesToday =
             await this.db.salesChannelPriceEntry.findMany({
                 where: {
                     tenantId: this.tenantId,
-                    endDate: {
-                        gt: startOfDay(new Date()),
+                    startDate: {
+                        gte: startOfDay(new Date()),
                         lte: endOfDay(new Date()),
                     },
                     salesChannel: {
@@ -559,10 +559,19 @@ export class SaleorChannelAvailabilitySyncService {
                 },
             });
 
-        const channelPricings = [
+        const channelPricingsMixed = [
             ...channelPricingsUpdated,
             ...channelPricingsMissing,
-            ...channelPricingEndDatesToday,
+            ...channelPricingStartDatesToday,
+        ];
+        /**
+         * We can have multiple duplicate entries, so we create a new array, with
+         * unique channelpricing id, but same data
+         */
+        const channelPricings = [
+            ...new Map(
+                channelPricingsMixed.map((entry) => [entry.id, entry]),
+            ).values(),
         ];
 
         if (
@@ -579,7 +588,8 @@ export class SaleorChannelAvailabilitySyncService {
             {
                 channelPricingsUpdated: channelPricingsUpdated.length,
                 channelPricingsMissing: channelPricingsMissing.length,
-                channelPricingEndDatesToday: channelPricingEndDatesToday.length,
+                channelPricingStartDatesToday:
+                    channelPricingStartDatesToday.length,
                 disabledProductsSinceLastRun:
                     disabledProductsSinceLastRun.length,
                 disabledVariantsSinceLastRun:
@@ -593,8 +603,9 @@ export class SaleorChannelAvailabilitySyncService {
          * for the entries with the highest startDate, if we
          * have multiple entries with the same minQuantity and channel.
          */
-        const basePriceEntries =
-            this.getCurrentActiveBasePrices(channelPricings);
+        const basePriceEntries = this.getCurrentActiveBasePrices(
+            channelPricings.filter((x) => x.productVariant.sku === "R2GW"),
+        );
 
         const disabledProductIds = disabledProductsSinceLastRun.map(
             (product) => product.saleorProducts[0]?.id,
