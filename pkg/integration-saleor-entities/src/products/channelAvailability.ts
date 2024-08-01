@@ -14,7 +14,7 @@ import {
     SaleorClient,
     queryWithPagination,
 } from "@eci/pkg/saleor";
-import { isAfter, subHours, subYears } from "date-fns";
+import { endOfDay, isAfter, startOfDay, subHours, subYears } from "date-fns";
 
 type EnhancedSalesChannelPriceEntry = SalesChannelPriceEntry & {
     salesChannel: SalesChannel & {
@@ -451,7 +451,10 @@ export class SaleorChannelAvailabilitySyncService {
             await this.db.salesChannelPriceEntry.findMany({
                 where: {
                     tenantId: this.tenantId,
-                    endDate: new Date(),
+                    endDate: {
+                        gt: startOfDay(new Date()),
+                        lte: endOfDay(new Date()),
+                    },
                     salesChannel: {
                         saleorChannels: {
                             some: {
@@ -893,6 +896,36 @@ export class SaleorChannelAvailabilitySyncService {
                                 basePrice: entry.price,
                             },
                         );
+                        /**
+                         * If we don't have a channel listing id stored in our DB yet,
+                         * we store it now
+                         */
+                        const saleorProductChannelListingId =
+                            existingChannelListing.id;
+                        await this.db.saleorChannelListing.upsert({
+                            where: {
+                                id_installedSaleorAppId: {
+                                    id: saleorProductChannelListingId,
+                                    installedSaleorAppId:
+                                        this.installedSaleorAppId,
+                                },
+                            },
+                            create: {
+                                id: saleorProductChannelListingId,
+                                product: {
+                                    connect: {
+                                        id: entry.productVariant.productId,
+                                    },
+                                },
+                                installedSaleorApp: {
+                                    connect: {
+                                        id: this.installedSaleorAppId,
+                                    },
+                                },
+                            },
+                            update: {},
+                        });
+
                         return;
                     }
                 }
