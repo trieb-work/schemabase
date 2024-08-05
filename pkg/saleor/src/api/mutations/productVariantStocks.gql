@@ -21,3 +21,14 @@ mutation productVariantStockEntryUpdate(
         }
     }
 }
+
+mutation bulkVariantStockUpdate($stocks: [StockBulkUpdateInput!]!) {
+    stockBulkUpdate(stocks: $stocks) {
+        count
+        errors {
+            field
+            message
+            code
+        }
+    }
+}

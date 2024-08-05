@@ -16358,6 +16358,7 @@ export type OrderFilterInput = {
     channels?: InputMaybe<Array<Scalars["ID"]>>;
     chargeStatus?: InputMaybe<Array<OrderChargeStatusEnum>>;
     checkoutIds?: InputMaybe<Array<Scalars["ID"]>>;
+    checkoutTokens?: InputMaybe<Array<Scalars["UUID"]>>;
     created?: InputMaybe<DateRangeInput>;
     customer?: InputMaybe<Scalars["String"]>;
     giftCardBought?: InputMaybe<Scalars["Boolean"]>;
@@ -33165,6 +33166,24 @@ export type ProductVariantStockEntryUpdateMutation = {
     } | null;
 };
 
+export type BulkVariantStockUpdateMutationVariables = Exact<{
+    stocks: Array<StockBulkUpdateInput> | StockBulkUpdateInput;
+}>;
+
+export type BulkVariantStockUpdateMutation = {
+    __typename?: "Mutation";
+    stockBulkUpdate?: {
+        __typename?: "StockBulkUpdate";
+        count: number;
+        errors: Array<{
+            __typename?: "StockBulkUpdateError";
+            field?: string | null;
+            message?: string | null;
+            code: StockBulkUpdateErrorCode;
+        }>;
+    } | null;
+};
+
 export type ProductVariantBulkUpdateMutationVariables = Exact<{
     variants:
         | Array<ProductVariantBulkUpdateInput>
@@ -34631,7 +34650,7 @@ export type SaleorEntitySyncProductsQuery = {
 };
 
 export type SaleorProductVariantsBasicDataQueryVariables = Exact<{
-    ids: Array<Scalars["ID"]> | Scalars["ID"];
+    ids?: InputMaybe<Array<Scalars["ID"]> | Scalars["ID"]>;
     first?: InputMaybe<Scalars["Int"]>;
     after?: InputMaybe<Scalars["String"]>;
 }>;
@@ -34653,6 +34672,7 @@ export type SaleorProductVariantsBasicDataQuery = {
                 __typename?: "ProductVariant";
                 id: string;
                 name: string;
+                sku?: string | null;
                 product: { __typename?: "Product"; id: string; name: string };
                 metadata: Array<{
                     __typename?: "MetadataItem";
@@ -35511,6 +35531,18 @@ export const ProductVariantStockEntryUpdateDocument = gql`
         }
     }
 `;
+export const BulkVariantStockUpdateDocument = gql`
+    mutation bulkVariantStockUpdate($stocks: [StockBulkUpdateInput!]!) {
+        stockBulkUpdate(stocks: $stocks) {
+            count
+            errors {
+                field
+                message
+                code
+            }
+        }
+    }
+`;
 export const ProductVariantBulkUpdateDocument = gql`
     mutation productVariantBulkUpdate(
         $variants: [ProductVariantBulkUpdateInput!]!
@@ -36198,7 +36230,7 @@ export const SaleorEntitySyncProductsDocument = gql`
 `;
 export const SaleorProductVariantsBasicDataDocument = gql`
     query saleorProductVariantsBasicData(
-        $ids: [ID!]!
+        $ids: [ID!]
         $first: Int
         $after: String
     ) {
@@ -36213,6 +36245,7 @@ export const SaleorProductVariantsBasicDataDocument = gql`
                 node {
                     id
                     name
+                    sku
                     product {
                         id
                         name
@@ -36725,6 +36758,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 options,
             ) as Promise<ProductVariantStockEntryUpdateMutation>;
         },
+        bulkVariantStockUpdate(
+            variables: BulkVariantStockUpdateMutationVariables,
+            options?: C,
+        ): Promise<BulkVariantStockUpdateMutation> {
+            return requester<
+                BulkVariantStockUpdateMutation,
+                BulkVariantStockUpdateMutationVariables
+            >(
+                BulkVariantStockUpdateDocument,
+                variables,
+                options,
+            ) as Promise<BulkVariantStockUpdateMutation>;
+        },
         productVariantBulkUpdate(
             variables: ProductVariantBulkUpdateMutationVariables,
             options?: C,
@@ -37017,7 +37063,7 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
             ) as Promise<SaleorEntitySyncProductsQuery>;
         },
         saleorProductVariantsBasicData(
-            variables: SaleorProductVariantsBasicDataQueryVariables,
+            variables?: SaleorProductVariantsBasicDataQueryVariables,
             options?: C,
         ): Promise<SaleorProductVariantsBasicDataQuery> {
             return requester<

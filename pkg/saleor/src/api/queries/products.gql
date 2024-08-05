@@ -167,11 +167,7 @@ query saleorEntitySyncProducts(
     }
 }
 
-query saleorProductVariantsBasicData(
-    $ids: [ID!]!
-    $first: Int
-    $after: String
-) {
+query saleorProductVariantsBasicData($ids: [ID!], $first: Int, $after: String) {
     productVariants(ids: $ids, first: $first, after: $after) {
         pageInfo {
             hasNextPage
@@ -183,6 +179,7 @@ query saleorProductVariantsBasicData(
             node {
                 id
                 name
+                sku
                 product {
                     id
                     name

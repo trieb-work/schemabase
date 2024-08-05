@@ -106,6 +106,7 @@
         "@chronark/prefixed-id": "^0.4.1",
         "@elastic/ecs-winston-format": "^1.5.3",
         "@elastic/elasticsearch": "^8.14.0",
+        "@esbuild/darwin-arm64": "^0.23.0",
         "@geist-ui/react": "^2.2.5",
         "@paljs/plugins": "^6.0.7",
         "@prisma/client": "^5.17.0",

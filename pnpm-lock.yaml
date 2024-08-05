@@ -35,6 +35,9 @@ dependencies:
   '@elastic/elasticsearch':
     specifier: ^8.14.0
     version: 8.14.0
+  '@esbuild/darwin-arm64':
+    specifier: ^0.23.0
+    version: 0.23.0
   '@geist-ui/react':
     specifier: ^2.2.5
     version: 2.2.5(react-dom@18.3.1)(react@18.3.1)
@@ -2211,6 +2214,13 @@ packages:
     requiresBuild: true
     dev: false
     optional: true
+
+  /@esbuild/darwin-arm64@0.23.0:
+    resolution: {integrity: sha512-YLntie/IdS31H54Ogdn+v50NuoWF5BDkEUFpiOChVa9UnKpftgwzZRrI4J132ETIi+D8n6xh9IviFV3eXdxfow==}
+    engines: {node: '>=18'}
+    cpu: [arm64]
+    os: [darwin]
+    dev: false
 
   /@esbuild/darwin-x64@0.21.5:
     resolution: {integrity: sha512-se/JjF8NlmKVG4kNIuyWMV/22ZaerB+qaSi5MdrXtd6R08kvs2qCN4C09miupktDitvh8jRFflwGFBQcxZRjbw==}
