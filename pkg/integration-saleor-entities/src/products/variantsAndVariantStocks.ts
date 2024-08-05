@@ -226,6 +226,9 @@ export class VariantAndVariantStocks {
 
         this.logger.info(
             `Found ${variantWithUpdates.length} product variants with updates since the last run`,
+            {
+                variantWithUpdates: variantWithUpdates.map((x) => x.sku),
+            },
         );
 
         if (
