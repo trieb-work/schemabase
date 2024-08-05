@@ -1139,6 +1139,13 @@ export class SaleorProductSyncService {
                         },
                     },
                 },
+                productType: {
+                    saleorProductTypes: {
+                        some: {
+                            installedSaleorAppId: this.installedSaleorAppId,
+                        },
+                    },
+                },
             },
             include: productInclude,
         });
@@ -1200,6 +1207,13 @@ export class SaleorProductSyncService {
                 saleorProducts: {
                     some: {
                         installedSaleorAppId: this.installedSaleorAppId,
+                    },
+                },
+                productType: {
+                    saleorProductTypes: {
+                        some: {
+                            installedSaleorAppId: this.installedSaleorAppId,
+                        },
                     },
                 },
             },
