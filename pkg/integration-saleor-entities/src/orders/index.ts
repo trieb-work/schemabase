@@ -794,7 +794,7 @@ export class SaleorOrderSyncService {
         } else {
             createdGte = subHours(cronState.lastRun, 3).toISOString();
             this.logger.info(
-                `Setting GTE date to ${createdGte}. Asking Saleor for all orders with lastUpdated GTE.`,
+                `Setting GTE date to ${createdGte}. Asking ECI for all orders with lastUpdated GTE / canceled Orders / historic orders`,
             );
         }
         /**
@@ -818,9 +818,8 @@ export class SaleorOrderSyncService {
 
         if (canceledOrders.length === 0) {
             this.logger.info(
-                `No orders with status canceled found since ${createdGte}. Nothing to do.`,
+                `No orders with status canceled found since ${createdGte}. Nothing to cancel.`,
             );
-            return;
         }
 
         for (const order of canceledOrders) {
