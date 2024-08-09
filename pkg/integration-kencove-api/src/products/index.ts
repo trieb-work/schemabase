@@ -1411,6 +1411,7 @@ export class KencoveApiAppProductSyncService {
                     additionalHandling:
                         p.additional_handing === 0 ? false : true,
                     truckOnly: p.truck_only === "N" ? false : true,
+                    flatBed: p.truck_only === "F" ? true : false,
                     accessories: p.accessories,
                     alternatives: p.alternatives,
                     description: p?.website_description,
@@ -1922,6 +1923,21 @@ export class KencoveApiAppProductSyncService {
                     display_type: "checkbox",
                 };
 
+                /**
+                 * In the product sync, we just set the flatbed shipping status for certain items
+                 */
+                const shippingStatusAttribute:
+                    | KencoveApiAttributeInProduct
+                    | undefined = product.flatBed
+                    ? {
+                          value: "Flatbed",
+                          attribute_id: 333332,
+                          attribute_model: "custom",
+                          name: "Shipping Status",
+                          display_type: "multiselect",
+                      }
+                    : undefined;
+
                 const gtinAttribute: KencoveApiAttributeInProduct | undefined =
                     variant.upc
                         ? {
@@ -1945,6 +1961,9 @@ export class KencoveApiAppProductSyncService {
                 ];
                 if (gtinAttribute) {
                     allAttributes.push(gtinAttribute);
+                }
+                if (shippingStatusAttribute) {
+                    allAttributes.push(shippingStatusAttribute);
                 }
 
                 /**
