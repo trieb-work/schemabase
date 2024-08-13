@@ -29,6 +29,7 @@ import {
     KencoveApiImage,
     KencoveApiOtherMedia,
     KencoveApiProduct,
+    KencoveApiProductVariant,
     KencoveApiVideo,
 } from "../types";
 import {
@@ -1382,17 +1383,49 @@ export class KencoveApiAppProductSyncService {
         );
 
         /**
+         * typeguard to make sure, that we have product variants array existing
+         */
+        function hasVariants(
+            product: KencoveApiProduct,
+        ): product is KencoveApiProduct & {
+            variants: KencoveApiProductVariant[];
+        } {
+            return (
+                (
+                    product as KencoveApiProduct & {
+                        variants: KencoveApiProductVariant[];
+                    }
+                ).variants !== undefined
+            );
+        }
+
+        /**
+         * warn for items without variants
+         */
+        const productsWithoutVariants = products.filter((p) => !hasVariants(p));
+        if (productsWithoutVariants.length > 0) {
+            this.logger.warn(
+                `Found ${productsWithoutVariants.length} products without variants. This should not happen.`,
+                {
+                    productsWithoutVariants,
+                },
+            );
+        }
+
+        const productsWithVariants = products.filter(hasVariants);
+
+        /**
          * First sync the product types and related attributes.
          * Not the attribute values.
          */
-        await this.syncProductTypeAndAttributes(products);
+        await this.syncProductTypeAndAttributes(productsWithVariants);
 
         /**
          * Sync tax classes with our DB. Returns a mapping table,
          * that can be used to lookup with the Kencove API tax class id
          */
         const taxClasses = await syncTaxClasses(
-            products,
+            productsWithVariants,
             this.db,
             this.kencoveApiApp,
             this.logger,
@@ -1401,7 +1434,7 @@ export class KencoveApiAppProductSyncService {
         /**
          * just kencove Api product variants enhanced with all data from their parent product
          */
-        const enhancedProducts = products
+        const enhancedProducts = productsWithVariants
             .map((p) => {
                 return {
                     images: p.images,

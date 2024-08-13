@@ -170,6 +170,9 @@ export type KencoveApiProduct = {
     name: string;
     countryOfOrigin: "CN" | "US" | "PT" | "NZ" | "AU" | "CA" | "GB" | "IE";
     categoryId: number;
+    /**
+     * the API might give us also products without variants... so we have a typeguard and filter check
+     */
     variants: KencoveApiProductVariant[];
     productType?: {
         id: number | number | null;
