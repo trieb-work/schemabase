@@ -130,7 +130,7 @@ export type KencoveApiProductVariant = {
     /**
      * The variant selection attribute values
      */
-    selectorValues: KencoveApiAttributeInProduct[];
+    selectorValues: KencoveApiAttributeInProduct[] | null;
     attributeValues: KencoveApiAttributeInProduct[] | null;
     /**
      * UPC is unique identifier EAN / GTIN

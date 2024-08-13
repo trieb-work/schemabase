@@ -359,10 +359,10 @@ export class KencoveApiAppProductSyncService {
                 variantAttributes: [],
                 variantAttributesUnique: [],
                 variantSelectionAttributes: cleanAttributes(
-                    allVariants[0].selectorValues,
+                    allVariants[0]?.selectorValues || [],
                 ).filter((vsa) => vsa.name !== "website_ref_desc"),
                 variantSelectionAttributesUnique: cleanAttributes(
-                    this.uniqueAttributes(allVariants[0].selectorValues),
+                    this.uniqueAttributes(allVariants[0]?.selectorValues || []),
                 ).filter((vsa) => vsa.name !== "website_ref_desc"),
             };
         }
@@ -418,7 +418,7 @@ export class KencoveApiAppProductSyncService {
         ];
 
         allVariants.forEach((variant) => {
-            variant.selectorValues.forEach((selectorValue) => {
+            variant.selectorValues?.forEach((selectorValue) => {
                 /**
                  * If the selector attribute is the "special" website_ref_desc
                  * and if a value is set for that attribute, we search for a better
@@ -1987,7 +1987,7 @@ export class KencoveApiAppProductSyncService {
                 /// attribute create a value entry accordingly.
                 const allAttributes = [
                     ...(variant.attributeValues || []),
-                    ...variant.selectorValues,
+                    ...(variant.selectorValues || []),
                     backOrderAttribute,
                     additionalHandlingAttribute,
                     truckOnlyAttribute,
