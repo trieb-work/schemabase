@@ -974,6 +974,9 @@ export class SaleorProductSyncService {
                     }
                 }
 
+                /**
+                 * Compare multi-select attributes
+                 */
                 if (attr.values?.length) {
                     /**
                      * go through all values and check if they are in the saleor values.
