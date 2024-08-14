@@ -10,5 +10,6 @@
     },
     "[prisma]": {
         "editor.defaultFormatter": "Prisma.prisma"
-    }
+    },
+    "makefile.configureOnOpen": false
 }
