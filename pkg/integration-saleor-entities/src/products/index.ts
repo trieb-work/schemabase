@@ -631,6 +631,26 @@ export class SaleorProductSyncService {
                         });
                     const newMediaId =
                         createMedia.productMediaCreate?.media?.id;
+                    if (createMedia.productMediaCreate?.errors.length) {
+                        if (
+                            createMedia.productMediaCreate.errors[0].code ===
+                            "UNSUPPORTED_MEDIA_PROVIDER"
+                        ) {
+                            this.logger.error(
+                                `Error creating media ${element.id}: ${element.url} in Saleor. Unsupported media provider. Deleting media element in our DB`,
+                                {
+                                    error: createMedia.productMediaCreate
+                                        .errors[0].message,
+                                    url: element.url,
+                                },
+                            );
+                            await this.db.media.delete({
+                                where: {
+                                    id: element.id,
+                                },
+                            });
+                        }
+                    }
                     if (!newMediaId) {
                         throw new Error(
                             `Error creating media ${element.id}: ${element.url} in Saleor. No media id returned`,
