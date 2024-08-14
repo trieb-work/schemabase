@@ -34780,6 +34780,20 @@ export type ProductTestQuery = {
     } | null;
 };
 
+export type AttributesInProductAndVariantsCompareFragment = {
+    __typename?: "SelectedAttribute";
+    values: Array<{
+        __typename?: "AttributeValue";
+        externalReference?: string | null;
+        reference?: string | null;
+        slug?: string | null;
+        boolean?: boolean | null;
+        value?: string | null;
+        file?: { __typename?: "File"; url: string } | null;
+    }>;
+    attribute: { __typename?: "Attribute"; id: string };
+};
+
 export type ProductAndVariantsToCompareQueryVariables = Exact<{
     id: Scalars["ID"];
 }>;
@@ -34807,6 +34821,8 @@ export type ProductAndVariantsToCompareQuery = {
             values: Array<{
                 __typename?: "AttributeValue";
                 externalReference?: string | null;
+                reference?: string | null;
+                slug?: string | null;
                 boolean?: boolean | null;
                 value?: string | null;
                 file?: { __typename?: "File"; url: string } | null;
@@ -35072,6 +35088,23 @@ export const ProductTypeFragmentDoc = gql`
                 name
             }
             variantSelection
+        }
+    }
+`;
+export const AttributesInProductAndVariantsCompareFragmentDoc = gql`
+    fragment AttributesInProductAndVariantsCompare on SelectedAttribute {
+        values {
+            externalReference
+            reference
+            slug
+            boolean
+            value
+            file {
+                url
+            }
+        }
+        attribute {
+            id
         }
     }
 `;
@@ -36354,17 +36387,7 @@ export const ProductAndVariantsToCompareDocument = gql`
             }
             description
             attributes {
-                values {
-                    externalReference
-                    boolean
-                    value
-                    file {
-                        url
-                    }
-                }
-                attribute {
-                    id
-                }
+                ...AttributesInProductAndVariantsCompare
             }
             variants {
                 id
@@ -36376,6 +36399,7 @@ export const ProductAndVariantsToCompareDocument = gql`
         }
     }
     ${SaleorProductMediaFragmentDoc}
+    ${AttributesInProductAndVariantsCompareFragmentDoc}
 `;
 export const SaleorTaxesDocument = gql`
     query saleorTaxes($after: String, $first: Int) {

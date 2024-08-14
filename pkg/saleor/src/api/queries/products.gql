@@ -266,6 +266,21 @@ query productTest($first: Int, $after: String) {
     }
 }
 
+fragment AttributesInProductAndVariantsCompare on SelectedAttribute {
+    values {
+        externalReference
+        reference
+        slug
+        boolean
+        value
+        file {
+            url
+        }
+    }
+    attribute {
+        id
+    }
+}
 query productAndVariantsToCompare($id: ID!) {
     product(id: $id) {
         id
@@ -284,17 +299,7 @@ query productAndVariantsToCompare($id: ID!) {
         }
         description
         attributes {
-            values {
-                externalReference
-                boolean
-                value
-                file {
-                    url
-                }
-            }
-            attribute {
-                id
-            }
+            ...AttributesInProductAndVariantsCompare
         }
         variants {
             id

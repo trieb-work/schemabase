@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 import { ILogger } from "@eci/pkg/logger";
 import {
+    AttributesInProductAndVariantsCompareFragment,
     AttributeValueInput,
     ProductAndVariantsToCompareQuery,
     ProductInput,
@@ -939,6 +940,56 @@ export class SaleorProductSyncService {
             throw new Error(`Product from Saleor has no name. Can't compare`);
         }
 
+        /**
+         * Compare attributes with each other to see, if we need to update.
+         * Not completed for all attribute types yet.
+         * @param a
+         * @param b
+         * @returns
+         */
+        const compareAttributes = (
+            /**
+             * Attributes from Saleor
+             */
+            a: AttributesInProductAndVariantsCompareFragment[],
+            /**
+             * Attributes we want to update
+             */
+            b: ProductInput["attributes"],
+        ) => {
+            let isEqual = true;
+            if (!b || b.length === 0) {
+                return false;
+            }
+            for (const attr of b) {
+                const saleorAttr = a.find((x) => x.attribute.id === attr.id);
+                if (!saleorAttr) {
+                    isEqual = false;
+                    break;
+                }
+                if (attr.boolean !== undefined) {
+                    if (attr.boolean !== saleorAttr.values?.[0]?.boolean) {
+                        isEqual = false;
+                        break;
+                    }
+                }
+
+                if (attr.values?.length) {
+                    /**
+                     * go through all values and check if they are in the saleor values.
+                     * In Saleor, we have the slug of the multi-select attribute values
+                     */
+                    for (const value of attr.values) {
+                        if (!saleorAttr.values?.find((x) => x.slug === value)) {
+                            isEqual = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            return isEqual;
+        };
+
         if (
             productFromSaleorInput.name !== productUpdateInput.name ||
             !editorJsHelper.compareEditorJsData(
@@ -948,7 +999,12 @@ export class SaleorProductSyncService {
             productFromSaleorInput.seoTitle !== productUpdateInput.seo?.title ||
             productFromSaleorInput.seoDescription !==
                 productUpdateInput.seo?.description ||
-            productFromSaleorInput?.category?.id !== productUpdateInput.category
+            productFromSaleorInput?.category?.id !==
+                productUpdateInput.category ||
+            !compareAttributes(
+                productFromSaleorInput.attributes,
+                productUpdateInput.attributes,
+            )
         ) {
             /**
              * console log which fields are different
@@ -971,6 +1027,10 @@ export class SaleorProductSyncService {
                     category:
                         productFromSaleorInput?.category?.id !==
                         productUpdateInput.category,
+                    attributes: !compareAttributes(
+                        productFromSaleorInput.attributes,
+                        productUpdateInput.attributes,
+                    ),
                 },
             );
 
@@ -1174,6 +1234,9 @@ export class SaleorProductSyncService {
                 },
                 media: {
                     some: {
+                        type: {
+                            not: null,
+                        },
                         saleorMedia: {
                             none: {
                                 installedSaleorAppId: this.installedSaleorAppId,
