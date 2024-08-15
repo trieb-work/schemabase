@@ -15,6 +15,7 @@ const requestValidation = z.object({
             "product_variant_out_of_stock",
             "product_deleted",
             "product_variant_deleted",
+            "order_created",
         ]),
     }),
 });
