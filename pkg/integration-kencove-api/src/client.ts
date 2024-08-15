@@ -84,12 +84,12 @@ export class KencoveApiClient {
                 )
                 // isAfter(new Date(decoded.exp * 1000), new Date())
             ) {
-                this.logger.debug(
-                    `Using cached access token. Expires in ${formatDistance(
-                        new Date(),
-                        new Date(decoded.exp * 1000),
-                    )}`,
-                );
+                // this.logger.debug(
+                //     `Using cached access token. Expires in ${formatDistance(
+                //         new Date(),
+                //         new Date(decoded.exp * 1000),
+                //     )}`,
+                // );
                 return this.jwt;
             }
         }
@@ -437,6 +437,9 @@ export class KencoveApiClient {
             const accessToken = await this.getAccessToken();
 
             do {
+                this.logger.debug(
+                    `Requesting packages from ${fromDate}, offset ${offset}`,
+                );
                 const response = await this.getPackagesPage(
                     fromDate,
                     toDate,

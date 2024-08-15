@@ -262,7 +262,6 @@ export class KencoveApiAppPackageSyncService {
                             },
                         },
                         update: {
-                            createdAt,
                             updatedAt,
                             package: {
                                 connectOrCreate: {
