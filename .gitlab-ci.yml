@@ -191,6 +191,7 @@ production:
     variables:
         AUTO_DEVOPS_COMMON_NAME: queue-manager.kencove.com
         KUBE_NAMESPACE: schemabase-production
+        API_COMMON_NAME: api-schemabase.gc.kencove.com
     script:
         - helm repo add azure-marketplace https://marketplace.azurecr.io/helm/v1/repo
         # Add a redis deployment with nodeport service, limit CPU and memory, set a password, set standard persistent storage 3 GB. Name: redis-schemabase-production
@@ -232,6 +233,18 @@ production:
             --set=google.clientId="$GC_CLIENT_ID"
             --set=allowedLoginDomains="kencove.com"
             --set=google.clientSecret="$GC_CLIENT_SECRET"
+            --set-string=ingress.annotations."kubernetes\.io/tls-acme"=true
+            --set=ingress.annotations."cert-manager\.io/cluster-issuer"=null
+        - >
+            helm upgrade schemabase-api ./services/api/helm-chart
+            --install
+            --namespace=$KUBE_NAMESPACE
+            --set=image.imageName="ghcr.io/trieb-work/schemabase/api:$SCHEMA_VERSION"
+            --set=redis.host="redis-schemabase-production-master"
+            --set=redis.password="$REDIS_PASSWORD"
+            --set=ingress.host=$API_COMMON_NAME
+            --set=databaseUrl="$DATABASE_URL"
+            --set=secretKey="$SECRET_KEY_WORKER"
             --set-string=ingress.annotations."kubernetes\.io/tls-acme"=true
             --set=ingress.annotations."cert-manager\.io/cluster-issuer"=null
 
