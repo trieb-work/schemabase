@@ -234,7 +234,7 @@ export class SaleorPackageSyncService {
      */
     public async updateFulfillmentMetadata(
         saleorFulfillmentId: string,
-        parcel: Package,
+        parcel: Package & { order: { orderNumber: string } | null },
     ): Promise<void> {
         const metadata: MetadataInput[] = [];
 
@@ -255,6 +255,10 @@ export class SaleorPackageSyncService {
             `Updated metadata for fulfillment ${saleorFulfillmentId} with ${JSON.stringify(
                 metadata,
             )}`,
+            {
+                orderNumber: parcel?.order?.orderNumber,
+                packageNumber: parcel.number,
+            },
         );
     }
 
@@ -682,6 +686,7 @@ export class SaleorPackageSyncService {
             },
             include: {
                 saleorPackage: true,
+                order: true,
             },
         });
 
