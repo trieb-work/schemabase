@@ -1,4 +1,5 @@
 import {
+    OrderCreatedWebhookDocument,
     ProductDeletedWebhooksDocument,
     ProductDeletedWebhooksSubscription,
     ProductVariantDeletedWebhooksDocument,
@@ -43,12 +44,19 @@ export const productVariantDeletedWebhook =
         apl: saleorApp.apl,
         query: ProductVariantDeletedWebhooksDocument,
     });
-
+export const orderCreated = new SaleorAsyncWebhook({
+    name: "Order Created in Saleor",
+    webhookPath: "api/saleor/webhook/v1",
+    event: "ORDER_CREATED",
+    apl: saleorApp.apl,
+    query: OrderCreatedWebhookDocument,
+});
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getWebhookManifest = (baseUrl: string): WebhookManifest[] => {
     return [
         productDeletedWebhook.getWebhookManifest(baseUrl),
         productVariantDeletedWebhook.getWebhookManifest(baseUrl),
+        orderCreated.getWebhookManifest(baseUrl),
     ];
 };
 

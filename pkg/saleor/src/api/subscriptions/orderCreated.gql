@@ -1,0 +1,13 @@
+fragment orderCreated on OrderCreated {
+    order {
+        id
+        number
+    }
+}
+
+subscription OrderCreatedWebhook {
+    event {
+        __typename
+        ...orderCreated
+    }
+}
