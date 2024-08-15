@@ -10,6 +10,7 @@ import { CronStateHandler } from "@eci/pkg/cronstate";
 import { ILogger } from "@eci/pkg/logger";
 import {
     KencoveApiApp,
+    OrderShipmentStatus,
     OrderStatus,
     Prisma,
     PrismaClient,
@@ -140,6 +141,34 @@ export class KencoveApiAppOrderSyncService {
         }
         this.addressCache.set(kenAddressId, existingAddress.addressId);
         return existingAddress.addressId;
+    }
+
+    /**
+     * using the order lines qty_delivered information to gather the shipment status
+     * every orderline has qty_delivered and quantity. When all qty_delivered are
+     * equal to the quantity, we have a full shipment. When some orderlines have
+     * not all of the quantity delivered, we have a partial shipment.
+     * @param order
+     */
+    private matchOrderShippmentStatus(
+        order: KencoveApiOrder,
+    ): OrderShipmentStatus {
+        if (!order.orderLines) {
+            return OrderShipmentStatus.pending;
+        }
+        const allDelivered = order.orderLines.every(
+            (ol) => ol.qty_delivered === ol.quantity,
+        );
+        if (allDelivered) {
+            return OrderShipmentStatus.shipped;
+        }
+        const someDelivered = order.orderLines.some(
+            (ol) => ol.qty_delivered < ol.quantity,
+        );
+        if (someDelivered) {
+            return OrderShipmentStatus.partiallyShipped;
+        }
+        return OrderShipmentStatus.pending;
     }
 
     /**
@@ -316,6 +345,10 @@ export class KencoveApiAppOrderSyncService {
                                         orderStatus: this.matchOrderStatus(
                                             order.state,
                                         ),
+                                        shipmentStatus:
+                                            this.matchOrderShippmentStatus(
+                                                order,
+                                            ),
                                         date,
                                         language: "EN",
                                         currency: "USD",
@@ -535,6 +568,7 @@ export class KencoveApiAppOrderSyncService {
                         shippingAddressId,
                         date: order.date_order,
                         carrier,
+                        shippmentStatus: this.matchOrderShippmentStatus(order),
                     },
                 );
                 const res = await this.db.kencoveApiOrder.update({
@@ -554,6 +588,8 @@ export class KencoveApiAppOrderSyncService {
                                     },
                                 },
                                 orderStatus: this.matchOrderStatus(order.state),
+                                shipmentStatus:
+                                    this.matchOrderShippmentStatus(order),
                                 currency: "USD",
                                 /**
                                  * These orders are for US only.
