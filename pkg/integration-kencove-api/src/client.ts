@@ -21,7 +21,7 @@ import {
     KencoveApiProduct,
     KencoveApiProductStock,
 } from "./types";
-import { addDays, formatDistance, isAfter, isBefore } from "date-fns";
+import { addDays, isAfter, isBefore } from "date-fns";
 import jwt from "jsonwebtoken";
 import { ILogger } from "@eci/pkg/logger";
 
