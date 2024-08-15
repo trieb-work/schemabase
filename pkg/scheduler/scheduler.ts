@@ -41,6 +41,44 @@ export class WorkflowScheduler {
          */
     }
 
+    /**
+     * generate the queue name for bullmq. We are using the workflow name and unique job identifiers
+     * @param queueNameGroups
+     * @param workflowName
+     * @returns
+     */
+    private getQueueName(
+        queueNameGroups: (string | number)[],
+        workflowName: string,
+    ) {
+        return ["eci", ...queueNameGroups, workflowName].join(":");
+    }
+
+    /**
+     * looks for a scheduled job and calls promote on it
+     * @param queueNameGroups
+     * @param workflowName
+     */
+    public async promoteJob(
+        queueNameGroups: (string | number)[],
+        workflowName: string,
+    ) {
+        const queueName = this.getQueueName(queueNameGroups, workflowName);
+        const queue = new Queue(queueName, {
+            connection: this.redisConnection,
+        });
+        const job = await queue.getDelayed();
+        if (job.length > 0) {
+            await job[0].promote();
+            this.logger.info("Promoted job", { queueName, workflowName });
+        } else {
+            this.logger.warn("No job found to promote", {
+                queueName,
+                workflowName,
+            });
+        }
+    }
+
     public async schedule(
         workflow: WorkflowFactory,
         config: {
@@ -55,6 +93,10 @@ export class WorkflowScheduler {
              */
             offset?: number;
         },
+        /**
+         * To build the final name of the queue, add unique identifiers here, like:
+         * [tenantId.substring(0, 5), id.substring(0, 7)]
+         */
         queueNameGroups: (string | number)[] = [],
     ): Promise<void> {
         if (
@@ -68,7 +110,7 @@ export class WorkflowScheduler {
             return;
         }
 
-        const queueName = ["eci", ...queueNameGroups, workflow.name].join(":");
+        const queueName = this.getQueueName(queueNameGroups, workflow.name);
         if (this.scheduledWorkflows.includes(queueName)) {
             throw new Error("Workflow is already scheduled");
         }
@@ -101,7 +143,7 @@ export class WorkflowScheduler {
                 jobId: queueName,
                 repeat,
                 attempts: config?.attempts ?? 1,
-                keepLogs: 1000,
+                keepLogs: 2000,
                 backoff: {
                     type: "exponential",
                     delay: 60_000, // 1min, 2min, 4min...
