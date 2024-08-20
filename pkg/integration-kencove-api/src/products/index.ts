@@ -1032,7 +1032,7 @@ export class KencoveApiAppProductSyncService {
      * to our internal media format to directy connectOrCreate them in the DB
      * @param product
      */
-    private getTotalMediaFromProduct(product: EnhancedProduct): {
+    private getTotalMediaFromProduct(_product: EnhancedProduct): {
         id: string;
         url: string;
         type: MediaPlacementType;
@@ -1047,41 +1047,45 @@ export class KencoveApiAppProductSyncService {
          * "PRODUCTVIDEO" when we create them in the DB. For otherMedia we
          * just take media with type "Manual" and create them in the DB with type "MANUAL"
          */
-        const productImages = product.images || [];
-        const productVideos = product.videos || [];
-        const productOtherMedia = product.otherMedia || [];
-        return [
-            ...productImages.map((image) => ({
-                id: id.id("media"),
-                url: image.url,
-                type: MediaPlacementType.PRODUCTIMAGE,
-                tenant: {
-                    connect: {
-                        id: this.kencoveApiApp.tenantId,
-                    },
-                },
-            })),
-            ...productVideos.map((video) => ({
-                id: id.id("media"),
-                url: video.url,
-                type: MediaPlacementType.PRODUCTVIDEO,
-                tenant: {
-                    connect: {
-                        id: this.kencoveApiApp.tenantId,
-                    },
-                },
-            })),
-            ...productOtherMedia.map((media) => ({
-                id: id.id("media"),
-                url: media.url,
-                type: MediaPlacementType.MANUAL,
-                tenant: {
-                    connect: {
-                        id: this.kencoveApiApp.tenantId,
-                    },
-                },
-            })),
-        ];
+        // const productImages = product.images || [];
+        // const productVideos = product.videos || [];
+        // const productOtherMedia = product.otherMedia || [];
+        /**
+         * TEMP: we are not using media from the API until it is fixed
+         */
+        return [];
+        // return [
+        //     ...productImages.map((image) => ({
+        //         id: id.id("media"),
+        //         url: image.url,
+        //         type: MediaPlacementType.PRODUCTIMAGE,
+        //         tenant: {
+        //             connect: {
+        //                 id: this.kencoveApiApp.tenantId,
+        //             },
+        //         },
+        //     })),
+        //     ...productVideos.map((video) => ({
+        //         id: id.id("media"),
+        //         url: video.url,
+        //         type: MediaPlacementType.PRODUCTVIDEO,
+        //         tenant: {
+        //             connect: {
+        //                 id: this.kencoveApiApp.tenantId,
+        //             },
+        //         },
+        //     })),
+        //     ...productOtherMedia.map((media) => ({
+        //         id: id.id("media"),
+        //         url: media.url,
+        //         type: MediaPlacementType.MANUAL,
+        //         tenant: {
+        //             connect: {
+        //                 id: this.kencoveApiApp.tenantId,
+        //             },
+        //         },
+        //     })),
+        // ];
     }
 
     /**
