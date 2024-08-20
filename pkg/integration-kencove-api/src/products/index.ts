@@ -1723,10 +1723,14 @@ export class KencoveApiAppProductSyncService {
 
                 /**
                  * The existing variant from our DB. When variant does not exist, we create it.
+                 * We first try to find the variant using the Kencove Variant ID, if no match found,
+                 * we use the SKU. Like this, we can support updates of SKUs.
                  */
-                let existingVariant = existingProduct.variants.find(
-                    (v) => v.sku === sku,
-                );
+                let existingVariant =
+                    existingProduct.variants.find(
+                        (v) =>
+                            v.kencoveApiProductVariant?.[0]?.id === variant.id,
+                    ) || existingProduct.variants.find((v) => v.sku === sku);
 
                 /**
                  * Schemabase internal tax Id for this product / product variant
@@ -1847,7 +1851,8 @@ export class KencoveApiAppProductSyncService {
                     existingVariant.active !== variant.active ||
                     existingVariant.salesTaxId !== taxId ||
                     existingVariant.kencoveApiProductVariant?.[0]?.id !==
-                        variant.id
+                        variant.id ||
+                    existingVariant.sku !== sku
                 ) {
                     this.logger.info(
                         `Updating variant ${variant.id} of product ${product.productName}, as something has changed`,
