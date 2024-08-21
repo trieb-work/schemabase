@@ -65,6 +65,14 @@ function cleanAttributes(
             name: "variant_website_description",
             display_type: "richtext",
         },
+        {
+            name: "uom",
+            display_type: "radio",
+        },
+        {
+            name: "Unit of Measure",
+            display_type: "radio",
+        },
     ];
 
     /**
