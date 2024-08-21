@@ -2022,9 +2022,7 @@ export class KencoveApiAppProductSyncService {
                         product.description.replace(/<[^>]*>?/gm, "")?.trim() &&
                     variantWebsiteDescription !== product?.description
                 ) {
-                    this.logger.debug(
-                        "Variant website description is different to the product description. Setting this attribute",
-                    );
+                    // "Variant website description is different to the product description. Setting this attribute",
                     filterVariantWebsiteDescription = false;
                 } else {
                     // "Variant website description is the same as the product description. Removing this attribute",
