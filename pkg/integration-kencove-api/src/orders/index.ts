@@ -632,13 +632,13 @@ export class KencoveApiAppOrderSyncService {
         await this.cronState.set({ lastRun: now, lastRunStatus: "success" });
     }
 
-    public async syncFromECI() {
+    public async syncFromECI(orderNumber?: string) {
         const odooEdiClass = new SyncToOdooEDI({
             logger: this.logger,
             kencoveApiApp: this.kencoveApiApp,
             db: this.db,
         });
 
-        await odooEdiClass.sync();
+        await odooEdiClass.sync(orderNumber);
     }
 }
