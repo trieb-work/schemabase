@@ -168,7 +168,7 @@ export class SyncToOdooEDI {
         return returnPayments;
     }
 
-    public async sync(): Promise<void> {
+    public async sync(orderNumber?: string): Promise<void> {
         if (!this.kencoveApiApp.ediEndpoint) {
             this.logger.warn(
                 `EDI endpoint is not configured. We will not send any orders to Odoo EDI.`,
@@ -180,6 +180,7 @@ export class SyncToOdooEDI {
         const schemabaseOrders = await this.db.order.findMany({
             where: {
                 tenantId: this.kencoveApiApp.tenantId,
+                orderNumber,
                 kencoveApiOrders: {
                     none: {
                         kencoveApiAppId: this.kencoveApiApp.id,
@@ -295,23 +296,26 @@ export class SyncToOdooEDI {
                             shippingMethodId,
                             "base64",
                         ).toString("utf-8");
-                        const decodedObject = JSON.parse(decoded);
-                        if (decodedObject.rateOptionId) {
-                            schemabaseOrder.shippingMethodId =
-                                decodedObject.rateOptionId;
-                        }
-                        if (decodedObject.quotationId) {
-                            quotationId = decodedObject.quotationId;
-                            shippingMethodId = decodedObject.rateOptionId;
-                        }
-                        /**
-                         * the new format looks like this:
-                         * {"options":[{"shipmentId":4213,"rateOptionId":30965},{"shipmentId":4214,"rateOptionId":30966}],
-                         * "quotationId":"855bd5eb-e0cc-4bd2-af90-550616759ecf"}
-                         */
-                        if (decodedObject.options) {
-                            rateOptions = decodedObject.options;
-                            quotationId = decodedObject.quotationId;
+                        // Check if the length of the string is a multiple of 4
+                        if (shippingMethodId.length % 4 === 0) {
+                            const decodedObject = JSON.parse(decoded);
+                            if (decodedObject.rateOptionId) {
+                                schemabaseOrder.shippingMethodId =
+                                    decodedObject.rateOptionId;
+                            }
+                            if (decodedObject.quotationId) {
+                                quotationId = decodedObject.quotationId;
+                                shippingMethodId = decodedObject.rateOptionId;
+                            }
+                            /**
+                             * the new format looks like this:
+                             * {"options":[{"shipmentId":4213,"rateOptionId":30965},{"shipmentId":4214,"rateOptionId":30966}],
+                             * "quotationId":"855bd5eb-e0cc-4bd2-af90-550616759ecf"}
+                             */
+                            if (decodedObject.options) {
+                                rateOptions = decodedObject.options;
+                                quotationId = decodedObject.quotationId;
+                            }
                         }
                     }
                 }
