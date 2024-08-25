@@ -673,7 +673,8 @@ export class SaleorPaymentSyncService {
                     paymentReference,
                     userEmail: lowercaseEmail,
                     orderNumber: transaction.order?.number,
-                    orderId: saleorOrder?.orderId,
+                    schemabaseOrderId: saleorOrder?.orderId,
+                    saleorOrderNumber: saleorOrder?.orderNumber,
                     gateway,
                     type,
                 });
