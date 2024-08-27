@@ -532,6 +532,11 @@ export class SaleorPaymentSyncService {
                 if (!paymentReference) {
                     this.logger.info(
                         `No payment reference found for transaction ${transaction.id}. Skipping`,
+                        {
+                            orderNumber: transaction.order?.number,
+                            saleorOrderId: transaction.order?.id,
+                            transactionId: transaction.id,
+                        },
                     );
                     continue;
                 }
