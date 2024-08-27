@@ -710,9 +710,8 @@ export class SaleorChannelAvailabilitySyncService {
         ];
 
         for (const entry of uniqueVariantIdsWithVolumeDiscounts) {
-            this.logger.info(
-                `Syncing volume discount entries for product variant ${entry}`,
-            );
+            // `Syncing volume discount entries for product variant ${entry}`,
+
             await this.syncVolumeDiscounts(entry, existingChannelListings);
         }
     }
@@ -809,6 +808,10 @@ export class SaleorChannelAvailabilitySyncService {
         ) {
             this.logger.info(
                 `Volume pricing metadata already up to date for product variant ${prodVariantId}`,
+                {
+                    sku: entries[0].productVariant.sku,
+                    productVariantId: prodVariantId,
+                },
             );
             return;
         }
@@ -816,6 +819,11 @@ export class SaleorChannelAvailabilitySyncService {
         this.logger.info(
             `Updating metadata with volume pricing for product ${entries[0].productVariant.product.name}, variant ` +
                 `${entries[0].productVariant.variantName} with saleor product variant ${saleorProductVariantId}`,
+            {
+                sku: entries[0].productVariant.sku,
+                productVariantId: prodVariantId,
+                saleorProductVariantId,
+            },
         );
 
         await this.saleorClient.saleorUpdateMetadata({
