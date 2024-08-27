@@ -807,7 +807,7 @@ export class SaleorPaymentSyncService {
                         },
                     });
                 } catch (error) {
-                    this.logger.error(
+                    throw new Error(
                         `Failed to create payment for transaction ${
                             transaction.id
                         }: ${JSON.stringify(error)}`,
