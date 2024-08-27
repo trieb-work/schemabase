@@ -151,7 +151,8 @@ export class SyncToOdooEDI {
                 amount: payment.amount,
                 currency: payment.currency,
                 created: payment.date,
-                acquirerReference: payment.referenceNumber,
+                acquirerReference:
+                    payment.paymentProfileId || payment.referenceNumber,
                 paymentMethod: payment.paymentMethod.gatewayType,
                 paymentMetadata: metadata,
                 /**

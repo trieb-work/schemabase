@@ -528,7 +528,18 @@ export class SaleorPaymentSyncService {
             for (const transaction of successfullTransactionsTransactionApi) {
                 const lowercaseEmail =
                     transaction.order?.userEmail?.toLowerCase();
-                const paymentReference = transaction.pspReference;
+                /**
+                 * We check if the pspReference is in a format like 1069951317-1081461880
+                 * should be improved with metadata!
+                 */
+                const isPaymentProfile =
+                    transaction.pspReference?.match(/\d{10}-\d{10}/);
+                const paymentProfileId = isPaymentProfile
+                    ? transaction.pspReference
+                    : undefined;
+                const paymentReference = isPaymentProfile
+                    ? transaction.id
+                    : transaction.pspReference;
                 if (!paymentReference) {
                     this.logger.info(
                         `No payment reference found for transaction ${transaction.id}. Skipping`,
@@ -682,6 +693,7 @@ export class SaleorPaymentSyncService {
                     saleorOrderNumber: saleorOrder?.orderNumber,
                     gateway,
                     type,
+                    paymentProfileId,
                 });
 
                 if (!saleorOrder) {
@@ -725,6 +737,7 @@ export class SaleorPaymentSyncService {
                                         id: id.id("payment"),
                                         amount,
                                         referenceNumber: paymentReference,
+                                        paymentProfileId,
                                         metadataJson,
                                         currency,
                                         date: transaction.createdAt,
@@ -783,6 +796,7 @@ export class SaleorPaymentSyncService {
                             payment: {
                                 update: {
                                     status: paymentStatus,
+                                    paymentProfileId,
                                     order: {
                                         connect: {
                                             id: saleorOrder.orderId,

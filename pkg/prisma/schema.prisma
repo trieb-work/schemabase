@@ -836,6 +836,9 @@ model Payment {
   /// Unique identifier for a customer payment. We use the payment gateway id as reference.
   referenceNumber String
 
+  /// A payment can be just a payment profile id
+  paymentProfileId String?
+
   /// The order date. You can also create an order in the past for example. 
   /// Some systems just use a date here
   date DateTime?

@@ -26739,6 +26739,7 @@ export type Shop = ObjectWithMetadata & {
      * Resource limitations and current usage if any set for a shop
      *
      * Requires one of the following permissions: AUTHENTICATED_STAFF_USER.
+     * @deprecated This field will be removed in Saleor 4.0.
      */
     limits: LimitInfo;
     /** List of public metadata items. Can be accessed without permissions. */
@@ -27691,11 +27692,191 @@ export type StringFilterInput = {
 export type Subscription = {
     __typename?: "Subscription";
     /**
+     * Event sent when new draft order is created.
+     *
+     * Added in Saleor 3.20.
+     *
+     * Note: this API is currently in Feature Preview and can be subject to changes at later point.
+     */
+    draftOrderCreated?: Maybe<DraftOrderCreated>;
+    /**
+     * Event sent when draft order is deleted.
+     *
+     * Added in Saleor 3.20.
+     *
+     * Note: this API is currently in Feature Preview and can be subject to changes at later point.
+     */
+    draftOrderDeleted?: Maybe<DraftOrderDeleted>;
+    /**
+     * Event sent when draft order is updated.
+     *
+     * Added in Saleor 3.20.
+     *
+     * Note: this API is currently in Feature Preview and can be subject to changes at later point.
+     */
+    draftOrderUpdated?: Maybe<DraftOrderUpdated>;
+    /**
      * Look up subscription event.
      *
      * Added in Saleor 3.2.
      */
     event?: Maybe<Event>;
+    /**
+     * Event sent when orders are imported.
+     *
+     * Added in Saleor 3.20.
+     *
+     * Note: this API is currently in Feature Preview and can be subject to changes at later point.
+     */
+    orderBulkCreated?: Maybe<OrderBulkCreated>;
+    /**
+     * Event sent when order is cancelled.
+     *
+     * Added in Saleor 3.20.
+     *
+     * Note: this API is currently in Feature Preview and can be subject to changes at later point.
+     */
+    orderCancelled?: Maybe<OrderCancelled>;
+    /**
+     * Event sent when order is confirmed.
+     *
+     * Added in Saleor 3.20.
+     *
+     * Note: this API is currently in Feature Preview and can be subject to changes at later point.
+     */
+    orderConfirmed?: Maybe<OrderConfirmed>;
+    /**
+     * Event sent when new order is created.
+     *
+     * Added in Saleor 3.20.
+     *
+     * Note: this API is currently in Feature Preview and can be subject to changes at later point.
+     */
+    orderCreated?: Maybe<OrderCreated>;
+    /**
+     * Event sent when order becomes expired.
+     *
+     * Added in Saleor 3.20.
+     *
+     * Note: this API is currently in Feature Preview and can be subject to changes at later point.
+     */
+    orderExpired?: Maybe<OrderExpired>;
+    /**
+     * Event sent when order is fulfilled.
+     *
+     * Added in Saleor 3.20.
+     *
+     * Note: this API is currently in Feature Preview and can be subject to changes at later point.
+     */
+    orderFulfilled?: Maybe<OrderFulfilled>;
+    /**
+     * Event sent when order is fully paid.
+     *
+     * Added in Saleor 3.20.
+     *
+     * Note: this API is currently in Feature Preview and can be subject to changes at later point.
+     */
+    orderFullyPaid?: Maybe<OrderFullyPaid>;
+    /**
+     * The order is fully refunded.
+     *
+     * Added in Saleor 3.20.
+     *
+     * Note: this API is currently in Feature Preview and can be subject to changes at later point.
+     */
+    orderFullyRefunded?: Maybe<OrderFullyRefunded>;
+    /**
+     * Event sent when order metadata is updated.
+     *
+     * Added in Saleor 3.20.
+     *
+     * Note: this API is currently in Feature Preview and can be subject to changes at later point.
+     */
+    orderMetadataUpdated?: Maybe<OrderMetadataUpdated>;
+    /**
+     * Payment has been made. The order may be partially or fully paid.
+     *
+     * Added in Saleor 3.20.
+     *
+     * Note: this API is currently in Feature Preview and can be subject to changes at later point.
+     */
+    orderPaid?: Maybe<OrderPaid>;
+    /**
+     * The order received a refund. The order may be partially or fully refunded.
+     *
+     * Added in Saleor 3.20.
+     *
+     * Note: this API is currently in Feature Preview and can be subject to changes at later point.
+     */
+    orderRefunded?: Maybe<OrderRefunded>;
+    /**
+     * Event sent when order is updated.
+     *
+     * Added in Saleor 3.20.
+     *
+     * Note: this API is currently in Feature Preview and can be subject to changes at later point.
+     */
+    orderUpdated?: Maybe<OrderUpdated>;
+};
+
+export type SubscriptionDraftOrderCreatedArgs = {
+    channels?: InputMaybe<Array<Scalars["String"]>>;
+};
+
+export type SubscriptionDraftOrderDeletedArgs = {
+    channels?: InputMaybe<Array<Scalars["String"]>>;
+};
+
+export type SubscriptionDraftOrderUpdatedArgs = {
+    channels?: InputMaybe<Array<Scalars["String"]>>;
+};
+
+export type SubscriptionOrderBulkCreatedArgs = {
+    channels?: InputMaybe<Array<Scalars["String"]>>;
+};
+
+export type SubscriptionOrderCancelledArgs = {
+    channels?: InputMaybe<Array<Scalars["String"]>>;
+};
+
+export type SubscriptionOrderConfirmedArgs = {
+    channels?: InputMaybe<Array<Scalars["String"]>>;
+};
+
+export type SubscriptionOrderCreatedArgs = {
+    channels?: InputMaybe<Array<Scalars["String"]>>;
+};
+
+export type SubscriptionOrderExpiredArgs = {
+    channels?: InputMaybe<Array<Scalars["String"]>>;
+};
+
+export type SubscriptionOrderFulfilledArgs = {
+    channels?: InputMaybe<Array<Scalars["String"]>>;
+};
+
+export type SubscriptionOrderFullyPaidArgs = {
+    channels?: InputMaybe<Array<Scalars["String"]>>;
+};
+
+export type SubscriptionOrderFullyRefundedArgs = {
+    channels?: InputMaybe<Array<Scalars["String"]>>;
+};
+
+export type SubscriptionOrderMetadataUpdatedArgs = {
+    channels?: InputMaybe<Array<Scalars["String"]>>;
+};
+
+export type SubscriptionOrderPaidArgs = {
+    channels?: InputMaybe<Array<Scalars["String"]>>;
+};
+
+export type SubscriptionOrderRefundedArgs = {
+    channels?: InputMaybe<Array<Scalars["String"]>>;
+};
+
+export type SubscriptionOrderUpdatedArgs = {
+    channels?: InputMaybe<Array<Scalars["String"]>>;
 };
 
 export enum TaxCalculationStrategy {
