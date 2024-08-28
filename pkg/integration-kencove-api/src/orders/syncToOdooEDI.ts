@@ -32,7 +32,7 @@ export class SyncToOdooEDI {
         const url = `${this.kencoveApiApp.ediEndpoint}`;
         if (!url) throw new Error("EDI endpoint is not configured");
         const response = await axios.post(url, order);
-        if (response.status !== 200) {
+        if (response.status >= 400) {
             if (response.statusText.includes("duplicate key value violates")) {
                 // if the order already exists in Odoo, we don't need to send it again
                 this.logger.info(
