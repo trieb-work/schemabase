@@ -46,6 +46,7 @@ const prefixes = {
     media: "media",
     salesChannel: "sc",
     salesChannelPriceEntry: "sc_pe",
+    metadata: "meta",
 };
 
 export const id = new IdGenerator({ crypto: nodeCrypto, prefixes });
