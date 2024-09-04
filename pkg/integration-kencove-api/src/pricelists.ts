@@ -184,14 +184,14 @@ export class KencoveApiAppPricelistSyncService {
         const now = new Date();
         let createdGte: Date;
         if (!cronState.lastRun) {
-            createdGte = subYears(now, 1);
+            createdGte = subYears(now, 3);
             this.logger.info(
                 // eslint-disable-next-line max-len
                 `This seems to be our first sync run. Syncing data from: ${createdGte}`,
             );
         } else {
-            // for security purposes, we sync one hour more than the last run
-            createdGte = subHours(cronState.lastRun, 1);
+            // for security purposes, we sync 5 hours more than the last run. We got issues otherwise
+            createdGte = subHours(cronState.lastRun, 5);
             this.logger.info(
                 `Setting GTE date to ${gteDataTesting || createdGte}.`,
             );
