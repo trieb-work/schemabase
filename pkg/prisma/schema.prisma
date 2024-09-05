@@ -1111,6 +1111,7 @@ model OrderLineItem {
   zohoPackageLineItems ZohoPackageLineItem[]
   saleorOrderLineItems SaleorOrderLineItem[]
   zohoOrderLineItems   ZohoOrderLineItem[]
+  metadata             Metadata[]
 
   @@unique([uniqueString, tenantId])
   @@index([id])
@@ -1122,6 +1123,29 @@ model OrderLineItem {
   @@index([sku])
   @@index([productVariantId, sku])
   @@index([taxId])
+}
+
+/// a generic metadata model, that can be attached to different entities
+model Metadata {
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  key   String
+  value String @db.Text
+
+  orderLineItem   OrderLineItem? @relation(fields: [orderLineItemId], references: [id], onDelete: Cascade)
+  orderLineItemId String?
+
+  tenant   Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+  order    Order?  @relation(fields: [orderId], references: [id])
+  orderId  String?
+
+  @@unique([id, tenantId])
+  @@index([orderLineItemId])
+  @@index([tenantId])
+  @@index([orderId])
 }
 
 model PackageLineItem {
@@ -1294,6 +1318,8 @@ model Order {
   zohoSalesOrders       ZohoSalesOrder[]
   xentralProxyAuftraege XentralProxyAuftrag[]
   kencoveApiOrders      KencoveApiOrder[]
+
+  metadata Metadata[]
 
   invoices Invoice[]
 
@@ -3271,6 +3297,7 @@ model Tenant {
   algoliaApps                 AlgoliaApp[]
   fedexTrackingApps           FedexTrackingApp[]
   uspsTrackingApps            UspsTrackingApp[]
+  Metadata                    Metadata[]
 }
 
 // A subscription indicates a tenant has payed for one integration.

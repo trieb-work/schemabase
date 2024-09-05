@@ -357,6 +357,18 @@ export class SaleorOrderSyncService {
                                             id: this.tenantId,
                                         },
                                     },
+                                    metadata: {
+                                        create: order.metadata.map((m) => ({
+                                            id: id.id("metadata"),
+                                            key: m.key,
+                                            value: m.value,
+                                            tenant: {
+                                                connect: {
+                                                    id: this.tenantId,
+                                                },
+                                            },
+                                        })),
+                                    },
                                 },
                             },
                         },
