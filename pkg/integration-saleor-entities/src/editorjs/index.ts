@@ -159,6 +159,9 @@ class EditorJSHelper {
      * just compares the blocks and data of the blocks. Returns true if they are the same.
      */
     public compareEditorJsData(data1: string, data2: string): boolean {
+        if (!data1 && !data2) {
+            return true;
+        }
         const normalizedData1 = this.normalizeEditorJSData(JSON.parse(data1));
         const normalizedData2 = this.normalizeEditorJSData(JSON.parse(data2));
 
@@ -169,7 +172,7 @@ class EditorJSHelper {
 
     private normalizeEditorJSData(data: any): object {
         // Sort blocks to ensure order does not matter
-        if (!data.blocks) {
+        if (!data?.blocks) {
             throw new Error("Invalid EditorJS data. Can't compare");
         }
         const sortedBlocks = data.blocks.map((block: any) => {
