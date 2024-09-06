@@ -33,7 +33,12 @@ export class SyncToOdooEDI {
         if (!url) throw new Error("EDI endpoint is not configured");
         const response = await axios.post(url, order);
         if (response.status >= 400) {
-            if (response.statusText.includes("duplicate key value violates")) {
+            if (
+                response.statusText.includes("duplicate key value violates") ||
+                response.statusText.includes(
+                    "Duplicate Order Request was found",
+                )
+            ) {
                 // if the order already exists in Odoo, we don't need to send it again
                 this.logger.info(
                     `Order already exists in Odoo. We don't need to send it again.`,
