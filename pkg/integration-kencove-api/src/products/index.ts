@@ -949,7 +949,9 @@ export class KencoveApiAppProductSyncService {
 
     /**
      * Set the accessory and alternative items for a product
-     * as product attributes
+     * as product attributes. Compare the existing accessory and alternative attributes
+     * and update them if necessary. Make sure, that the current list matches exactly the
+     * list from the API. Delete values, that are not in the API anymore.
      * @param productId Internal schemabase productId
      * @param accessorySKUs The SKUs of the accessory items related to this item
      * @param alternativeSKUs The SKUs of the alternative items related to this item
@@ -959,6 +961,8 @@ export class KencoveApiAppProductSyncService {
         accessorySKUs: string[] | undefined,
         alternativeSKUs: string[] | undefined,
     ) {
+        let hasChanged = false;
+
         if (accessorySKUs) {
             const accessoryItems = await this.db.productVariant.findMany({
                 where: {
@@ -983,6 +987,14 @@ export class KencoveApiAppProductSyncService {
                 });
             if (!accessoryItemAttribute)
                 throw new Error("Accessory Item Attribute not found in DB");
+
+            const existingAccessoryItems =
+                await this.db.attributeValueProduct.findMany({
+                    where: {
+                        attributeId: accessoryItemAttribute.attributeId,
+                        productId,
+                    },
+                });
             for (const accessoryItem of accessoryItems) {
                 await this.setAttributeValue({
                     attribute: accessoryItemAttribute.attribute,
@@ -990,6 +1002,29 @@ export class KencoveApiAppProductSyncService {
                     productId,
                     isForVariant: false,
                 });
+                // if value did not exist before, mark product as updated
+                if (
+                    !existingAccessoryItems.some(
+                        (eai) => eai.value === accessoryItem.productId,
+                    )
+                ) {
+                    hasChanged = true;
+                }
+            }
+
+            const toDelete = existingAccessoryItems.filter(
+                (eai) =>
+                    !accessoryItems.some((ai) => ai.productId === eai.value),
+            );
+            // delete all values, that are not in the API anymore
+            for (const del of toDelete) {
+                await this.db.attributeValueProduct.delete({
+                    where: {
+                        id: del.id,
+                    },
+                });
+                // mark product as updated
+                hasChanged = true;
             }
         }
         if (alternativeSKUs) {
@@ -1016,6 +1051,13 @@ export class KencoveApiAppProductSyncService {
                 });
             if (!alternativeItemAttribute)
                 throw new Error("Alternative Item Attribute not found in DB");
+            const existingAlternativeItems =
+                await this.db.attributeValueProduct.findMany({
+                    where: {
+                        attributeId: alternativeItemAttribute.attributeId,
+                        productId,
+                    },
+                });
             for (const alternativeItem of alternativeItems) {
                 await this.setAttributeValue({
                     attribute: alternativeItemAttribute.attribute,
@@ -1023,7 +1065,40 @@ export class KencoveApiAppProductSyncService {
                     productId,
                     isForVariant: false,
                 });
+                // if value did not exist before, mark product as updated
+                if (
+                    !existingAlternativeItems.some(
+                        (eai) => eai.value === alternativeItem.productId,
+                    )
+                ) {
+                    hasChanged = true;
+                }
             }
+
+            const toDelete = existingAlternativeItems.filter(
+                (eai) =>
+                    !alternativeItems.some((ai) => ai.productId === eai.value),
+            );
+            // delete all values, that are not in the API anymore
+            for (const del of toDelete) {
+                await this.db.attributeValueProduct.delete({
+                    where: {
+                        id: del.id,
+                    },
+                });
+                hasChanged = true;
+            }
+        }
+
+        if (hasChanged) {
+            await this.db.product.update({
+                where: {
+                    id: productId,
+                },
+                data: {
+                    updatedAt: new Date(),
+                },
+            });
         }
     }
 
