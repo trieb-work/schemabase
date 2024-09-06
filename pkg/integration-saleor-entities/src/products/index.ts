@@ -1009,6 +1009,18 @@ export class SaleorProductSyncService {
                         }
                     }
                 }
+                if (attr.references?.length) {
+                    for (const reference of attr.references) {
+                        if (
+                            !saleorAttr.values?.find(
+                                (x) => x.reference === reference,
+                            )
+                        ) {
+                            isEqual = false;
+                            break;
+                        }
+                    }
+                }
             }
             return isEqual;
         };
