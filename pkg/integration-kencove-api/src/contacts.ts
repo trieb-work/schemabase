@@ -150,6 +150,7 @@ export class KencoveApiAppContactSyncService {
                         companyName,
                         externalIdentifier: contact.commerical_customer_code,
                         customerCode: contact.customer_code,
+                        salesChannel: salesChannel?.name,
                     },
                 );
 
@@ -169,7 +170,7 @@ export class KencoveApiAppContactSyncService {
                     },
                 });
 
-                await this.db.kencoveApiContact.upsert({
+                const kenContact = await this.db.kencoveApiContact.upsert({
                     where: {
                         id_kencoveApiAppId: {
                             id: contact.id.toString(),
@@ -292,7 +293,40 @@ export class KencoveApiAppContactSyncService {
                             },
                         },
                     },
+                    include: {
+                        contact: {
+                            include: {
+                                channels: true,
+                            },
+                        },
+                    },
                 });
+                /**
+                 * our DB model supports multiple sales channels per contact, but for kencove we only have one.
+                 * we need to make sure, that we delete other channel that are no longer active
+                 */
+                if (kenContact.contact.channels.length > 1) {
+                    const channels = kenContact.contact.channels.filter(
+                        (c) => c.id !== salesChannel?.id,
+                    );
+                    if (channels.length > 0) {
+                        this.logger.info(
+                            `Deleting ${channels.length} channels for contact ${kenContact.contact.id}`,
+                        );
+                        await this.db.contact.update({
+                            where: {
+                                id: kenContact.contact.id,
+                            },
+                            data: {
+                                channels: {
+                                    disconnect: channels.map((c) => ({
+                                        id: c.id,
+                                    })),
+                                },
+                            },
+                        });
+                    }
+                }
             }
         }
         await this.cronState.set({ lastRun: now, lastRunStatus: "success" });
