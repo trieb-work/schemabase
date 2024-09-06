@@ -1166,7 +1166,18 @@ export class SaleorProductSyncService {
                     },
                 },
             },
-            media: true,
+            media: {
+                where: {
+                    deleted: false,
+                },
+                include: {
+                    saleorMedia: {
+                        where: {
+                            installedSaleorAppId: this.installedSaleorAppId,
+                        },
+                    },
+                },
+            },
         };
 
         const itemsToCreate = await this.db.product.findMany({
@@ -1487,7 +1498,9 @@ export class SaleorProductSyncService {
                      * all media to be uploaded for that product and can later
                      * assign media items to a specific variant. Only push the
                      * variant image, if it is not already in the schemabaseMedia
-                     * array
+                     * array. In our database, we have product and variant images separated
+                     * but in Saleor they get uploaded on the product level and later just assigned
+                     * on variant level.
                      */
                     for (const variant of product.variants) {
                         for (const media of variant.media) {
@@ -2040,6 +2053,43 @@ export class SaleorProductSyncService {
                         installedSaleorAppId: this.installedSaleorAppId,
                     },
                 },
+                include: {
+                    product: {
+                        include: {
+                            variants: {
+                                include: {
+                                    saleorProductVariant: {
+                                        where: {
+                                            installedSaleorAppId:
+                                                this.installedSaleorAppId,
+                                        },
+                                    },
+                                    media: {
+                                        include: {
+                                            saleorMedia: {
+                                                where: {
+                                                    installedSaleorAppId:
+                                                        this
+                                                            .installedSaleorAppId,
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                            media: {
+                                include: {
+                                    saleorMedia: {
+                                        where: {
+                                            installedSaleorAppId:
+                                                this.installedSaleorAppId,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
             });
 
             for (const variant of product.variants) {
@@ -2325,9 +2375,9 @@ export class SaleorProductSyncService {
              * we just make sure, that connected media is still connected.
              * Sometimes, connections get lost.
              */
-            const existingSchemabaseMedia =
+            const existingSchemabaseMediaInSaleor =
                 product?.media?.filter((m) => m?.schemabaseMediaId) || [];
-            for (const existingMedia of existingSchemabaseMedia) {
+            for (const existingMedia of existingSchemabaseMediaInSaleor) {
                 if (!existingMedia.schemabaseMediaId) continue;
                 try {
                     await this.db.saleorMedia.upsert({
@@ -2365,6 +2415,54 @@ export class SaleorProductSyncService {
                         },
                     );
                 }
+            }
+
+            /**
+             * media, that has a Saleor id in our db, but does no longer exist in Saleor. We can assume,
+             * that this media was deleted in Saleor and we can mark it as deleted in our DB. We compare
+             * product and variant media
+             */
+            const productMediaToDelete =
+                existingProduct?.product?.media?.filter(
+                    (m) =>
+                        product.media &&
+                        !product.media.find(
+                            (x) => x.id === m.saleorMedia?.[0]?.id,
+                        ),
+                ) || [];
+            // marking media as deleted in our DB
+            for (const m of productMediaToDelete) {
+                await this.db.media.update({
+                    where: {
+                        id: m.id,
+                    },
+                    data: {
+                        deleted: true,
+                    },
+                });
+            }
+
+            const variantMediaToDelete =
+                existingProduct?.product?.variants
+                    .map((v) => v.media)
+                    .flat()
+                    .filter(
+                        (m) =>
+                            product.media &&
+                            !product.media.find(
+                                (x) => x.id === m.saleorMedia?.[0]?.id,
+                            ),
+                    ) || [];
+            // marking media as deleted in our DB
+            for (const m of variantMediaToDelete) {
+                await this.db.media.update({
+                    where: {
+                        id: m.id,
+                    },
+                    data: {
+                        deleted: true,
+                    },
+                });
             }
         }
     }

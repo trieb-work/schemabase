@@ -25898,7 +25898,7 @@ export type ShippingMethodTranslation = Node & {
     /** Translation language. */
     language: LanguageDisplay;
     /** Translated shipping method name. */
-    name: Scalars["String"];
+    name?: Maybe<Scalars["String"]>;
     /**
      * Represents the shipping method fields to translate.
      *
