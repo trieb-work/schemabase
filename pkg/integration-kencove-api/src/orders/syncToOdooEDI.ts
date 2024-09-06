@@ -246,6 +246,7 @@ export class SyncToOdooEDI {
                         paymentMethod: true,
                     },
                 },
+                metadata: true,
             },
         });
 
@@ -426,6 +427,12 @@ export class SyncToOdooEDI {
                     deliveryCarrierId: singleShipment?.carrierId,
                     deliveryCarrierRef: singleShipment?.carrierRef,
                 },
+                metadata: schemabaseOrder.metadata.map((meta) => {
+                    return {
+                        key: meta.key,
+                        value: meta.value,
+                    };
+                }),
             };
 
             if (!order.mainContact?.firstName || !order.mainContact?.lastName) {
