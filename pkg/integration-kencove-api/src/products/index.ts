@@ -1247,6 +1247,7 @@ export class KencoveApiAppProductSyncService {
         countryOfOrigin: $Enums.CountryCode | null,
         productTypeId: string,
         category: string | undefined,
+        normalizedName: string,
     ) {
         const totalMedia = this.getTotalMediaFromProduct(product);
 
@@ -1272,6 +1273,7 @@ export class KencoveApiAppProductSyncService {
             },
             data: {
                 name: product.productName,
+                normalizedName,
                 descriptionHTML: product.description,
                 active: product.active,
                 media: {
@@ -1657,6 +1659,7 @@ export class KencoveApiAppProductSyncService {
                         countryOfOrigin,
                         kenProdTypeWithProductType.productTypeId,
                         category,
+                        normalizedProductName,
                     );
                 } else {
                     this.logger.info(
