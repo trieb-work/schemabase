@@ -169,6 +169,13 @@ export class SaleorCustomerSyncService {
                 },
                 update: {
                     updatedAt: new Date(contact.updatedAt),
+                    customer: {
+                        update: {
+                            email: contact.email.toLowerCase(),
+                            firstName: contact.firstName,
+                            lastName: contact.lastName,
+                        },
+                    },
                 },
                 include: {
                     customer: true,
