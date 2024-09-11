@@ -504,6 +504,62 @@ export class SaleorChannelAvailabilitySyncService {
                 },
             });
 
+        const channelPricingEndDatesToday =
+            await this.db.salesChannelPriceEntry.findMany({
+                where: {
+                    tenantId: this.tenantId,
+                    endDate: {
+                        gte: startOfDay(new Date()),
+                        lte: endOfDay(new Date()),
+                    },
+                    salesChannel: {
+                        saleorChannels: {
+                            some: {
+                                installedSaleorAppId: this.installedSaleorAppId,
+                            },
+                        },
+                    },
+                    productVariant: {
+                        saleorProductVariant: {
+                            some: {
+                                installedSaleorAppId: this.installedSaleorAppId,
+                            },
+                        },
+                    },
+                },
+                include: {
+                    salesChannel: {
+                        include: {
+                            saleorChannels: {
+                                where: {
+                                    installedSaleorAppId:
+                                        this.installedSaleorAppId,
+                                },
+                            },
+                        },
+                    },
+                    productVariant: {
+                        include: {
+                            product: {
+                                include: {
+                                    saleorProducts: {
+                                        where: {
+                                            installedSaleorAppId:
+                                                this.installedSaleorAppId,
+                                        },
+                                    },
+                                },
+                            },
+                            saleorProductVariant: {
+                                where: {
+                                    installedSaleorAppId:
+                                        this.installedSaleorAppId,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
         const disabledProductsSinceLastRun = await this.db.product.findMany({
             where: {
                 tenantId: this.tenantId,
@@ -563,6 +619,7 @@ export class SaleorChannelAvailabilitySyncService {
             ...channelPricingsUpdated,
             ...channelPricingsMissing,
             ...channelPricingStartDatesToday,
+            ...channelPricingEndDatesToday,
         ];
         /**
          * We can have multiple duplicate entries, so we create a new array, with
@@ -577,7 +634,11 @@ export class SaleorChannelAvailabilitySyncService {
         if (
             channelPricings.length === 0 &&
             disabledProductsSinceLastRun.length === 0 &&
-            disabledVariantsSinceLastRun.length === 0
+            disabledVariantsSinceLastRun.length === 0 &&
+            channelPricingsUpdated.length === 0 &&
+            channelPricingsMissing.length === 0 &&
+            channelPricingStartDatesToday.length === 0 &&
+            channelPricingEndDatesToday.length === 0
         ) {
             this.logger.info(`No channel pricings to sync`);
             return;
@@ -590,6 +651,7 @@ export class SaleorChannelAvailabilitySyncService {
                 channelPricingsMissing: channelPricingsMissing.length,
                 channelPricingStartDatesToday:
                     channelPricingStartDatesToday.length,
+                channelPricingEndDatesToday: channelPricingEndDatesToday.length,
                 disabledProductsSinceLastRun:
                     disabledProductsSinceLastRun.length,
                 disabledVariantsSinceLastRun:
