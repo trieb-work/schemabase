@@ -31,7 +31,11 @@ export class SyncToOdooEDI {
     private async sendOrderToOdooEDI(order: any): Promise<void> {
         const url = `${this.kencoveApiApp.ediEndpoint}`;
         if (!url) throw new Error("EDI endpoint is not configured");
-        const response = await axios.post(url, order);
+        const response = await axios.post(url, order, {
+            headers: {
+                "user-agent": "eci-service/1.0 (+https://trieb.work)",
+            },
+        });
         if (response.status >= 400) {
             if (
                 response.statusText.includes("duplicate key value violates") ||
