@@ -830,7 +830,7 @@ Table SalesChannelPriceEntry {
   startDate DateTime
   endDate DateTime
   minQuantity Float [not null, default: 0, note: 'This price is valid starting with this quantity']
-  KencoveApiPricelistItem KencoveApiPricelistItem [not null]
+  kencoveApiPricelistItems KencoveApiPricelistItem [not null]
 
   indexes {
     (salesChannelId, productVariantId, tenantId, minQuantity, startDate, endDate) [unique]

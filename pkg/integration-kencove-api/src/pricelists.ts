@@ -243,6 +243,9 @@ export class KencoveApiAppPricelistSyncService {
                         continue;
                     }
 
+                    /**
+                     * SKU can be found on pricelist or on pricelistEntry level, depending on the setup in Odoo
+                     */
                     if (!pricelist.itemCode && pricelistEntry.variantItemCode) {
                         const variant = await this.getItemBySku(
                             pricelistEntry.variantItemCode,
@@ -304,6 +307,9 @@ export class KencoveApiAppPricelistSyncService {
                                 endDate,
                                 minQuantity: pricelistEntry.min_quantity,
                             },
+                            include: {
+                                kencoveApiPricelistItems: true,
+                            },
                         });
                     if (!existingPriceEntry) {
                         await this.db.salesChannelPriceEntry.create({
@@ -328,7 +334,7 @@ export class KencoveApiAppPricelistSyncService {
                                 endDate,
                                 price: pricelistEntry.price,
                                 minQuantity: pricelistEntry.min_quantity,
-                                KencoveApiPricelistItem: {
+                                kencoveApiPricelistItems: {
                                     create: {
                                         id: pricelistEntry.pricelist_item_id.toString(),
                                         kencoveApiApp: {
@@ -349,14 +355,20 @@ export class KencoveApiAppPricelistSyncService {
                                 existingPriceEntryId: existingPriceEntry.id,
                             },
                         );
-                        if (existingPriceEntry.price !== pricelistEntry.price) {
+                        if (
+                            existingPriceEntry.price !== pricelistEntry.price ||
+                            !existingPriceEntry.kencoveApiPricelistItems ||
+                            existingPriceEntry.kencoveApiPricelistItems[0]
+                                ?.id !==
+                                pricelistEntry.pricelist_item_id.toString()
+                        ) {
                             await this.db.salesChannelPriceEntry.update({
                                 where: {
                                     id: existingPriceEntry.id,
                                 },
                                 data: {
                                     price: pricelistEntry.price,
-                                    KencoveApiPricelistItem: {
+                                    kencoveApiPricelistItems: {
                                         connectOrCreate: {
                                             where: {
                                                 id_kencoveApiAppId: {
@@ -381,11 +393,6 @@ export class KencoveApiAppPricelistSyncService {
                         }
                     }
                 }
-
-                /**
-                 * We need to delete eventually existing price entries. We check all existing pricelist entries with kencove id
-                 * and delete them, if they are not in the current pricelist anymore
-                 */
             }
         }
 

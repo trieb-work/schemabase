@@ -1386,8 +1386,8 @@ model SalesChannelPriceEntry {
   endDate   DateTime?
 
   /// This price is valid starting with this quantity
-  minQuantity             Float                     @default(0)
-  KencoveApiPricelistItem KencoveApiPricelistItem[]
+  minQuantity              Float                     @default(0)
+  kencoveApiPricelistItems KencoveApiPricelistItem[]
 
   @@unique([salesChannelId, productVariantId, tenantId, minQuantity, startDate, endDate])
   @@index([salesChannelId])
