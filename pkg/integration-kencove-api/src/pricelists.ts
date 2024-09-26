@@ -328,6 +328,16 @@ export class KencoveApiAppPricelistSyncService {
                                 endDate,
                                 price: pricelistEntry.price,
                                 minQuantity: pricelistEntry.min_quantity,
+                                KencoveApiPricelistItem: {
+                                    create: {
+                                        id: pricelistEntry.pricelist_item_id.toString(),
+                                        kencoveApiApp: {
+                                            connect: {
+                                                id: this.kencoveApiApp.id,
+                                            },
+                                        },
+                                    },
+                                },
                             },
                         });
                     } else {
@@ -346,11 +356,36 @@ export class KencoveApiAppPricelistSyncService {
                                 },
                                 data: {
                                     price: pricelistEntry.price,
+                                    KencoveApiPricelistItem: {
+                                        connectOrCreate: {
+                                            where: {
+                                                id_kencoveApiAppId: {
+                                                    id: pricelistEntry.pricelist_item_id.toString(),
+                                                    kencoveApiAppId:
+                                                        this.kencoveApiApp.id,
+                                                },
+                                            },
+                                            create: {
+                                                id: pricelistEntry.pricelist_item_id.toString(),
+                                                kencoveApiApp: {
+                                                    connect: {
+                                                        id: this.kencoveApiApp
+                                                            .id,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
                                 },
                             });
                         }
                     }
                 }
+
+                /**
+                 * We need to delete eventually existing price entries. We check all existing pricelist entries with kencove id
+                 * and delete them, if they are not in the current pricelist anymore
+                 */
             }
         }
 

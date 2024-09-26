@@ -305,6 +305,7 @@ export type KencoveApiPricelistItem = {
      * for example KEN-R or KEN-D
      */
     pricelist_name: string;
+    pricelist_item_id: number;
     min_quantity: number;
     freeship_qualified: boolean;
     price: number;

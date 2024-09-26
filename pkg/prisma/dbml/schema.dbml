@@ -830,6 +830,7 @@ Table SalesChannelPriceEntry {
   startDate DateTime
   endDate DateTime
   minQuantity Float [not null, default: 0, note: 'This price is valid starting with this quantity']
+  KencoveApiPricelistItem KencoveApiPricelistItem [not null]
 
   indexes {
     (salesChannelId, productVariantId, tenantId, minQuantity, startDate, endDate) [unique]
@@ -1522,6 +1523,7 @@ no tax class is given in the api']
   kencoveApiProductTypes KencoveApiProductType [not null]
   kencoveApiPayments KencoveApiPayment [not null]
   incomingWebhooks IncomingWebhook [not null]
+  KencoveApiPricelistItem KencoveApiPricelistItem [not null]
 
   Note: 'The custom app for the kencove api. Using OAuth for authentication'
 }
@@ -1684,6 +1686,20 @@ Table KencoveApiContact {
 
   Note: 'Kencove custom customer model. Relation between internal customer
 object and kencove customer object'
+}
+
+Table KencoveApiPricelistItem {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  salesChannelPriceEntry SalesChannelPriceEntry [not null]
+  salesChannelPriceEntryId String [not null]
+  kencoveApiApp KencoveApiApp [not null]
+  kencoveApiAppId String [not null]
+
+  indexes {
+    (id, kencoveApiAppId) [unique]
+  }
 }
 
 Table ReviewsioApp {
@@ -2854,6 +2870,10 @@ Ref: KencoveApiAddress.kencoveApiAppId > KencoveApiApp.id
 Ref: KencoveApiContact.contactId > Contact.id [delete: Cascade]
 
 Ref: KencoveApiContact.kencoveApiAppId > KencoveApiApp.id [delete: Cascade]
+
+Ref: KencoveApiPricelistItem.salesChannelPriceEntryId > SalesChannelPriceEntry.id [delete: Cascade]
+
+Ref: KencoveApiPricelistItem.kencoveApiAppId > KencoveApiApp.id [delete: Cascade]
 
 Ref: ReviewsioApp.tenantId > Tenant.id [delete: Cascade]
 

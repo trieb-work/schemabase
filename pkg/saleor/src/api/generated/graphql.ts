@@ -14893,7 +14893,7 @@ export type MutationTransactionCreateArgs = {
 };
 
 export type MutationTransactionEventReportArgs = {
-    amount: Scalars["PositiveDecimal"];
+    amount?: InputMaybe<Scalars["PositiveDecimal"]>;
     availableActions?: InputMaybe<Array<TransactionActionEnum>>;
     externalUrl?: InputMaybe<Scalars["String"]>;
     id?: InputMaybe<Scalars["ID"]>;
@@ -28502,7 +28502,15 @@ export type TaxableObjectDiscount = {
     amount: Money;
     /** The name of the discount. */
     name?: Maybe<Scalars["String"]>;
+    /** Indicates which part of the order the discount should affect: SUBTOTAL or SHIPPING. */
+    type: TaxableObjectDiscountTypeEnum;
 };
+
+/** Indicates which part of the order the discount should affect: SUBTOTAL or SHIPPING. */
+export enum TaxableObjectDiscountTypeEnum {
+    Shipping = "SHIPPING",
+    Subtotal = "SUBTOTAL",
+}
 
 export type TaxableObjectLine = {
     __typename?: "TaxableObjectLine";
@@ -28917,6 +28925,7 @@ export enum TransactionEventReportErrorCode {
     IncorrectDetails = "INCORRECT_DETAILS",
     Invalid = "INVALID",
     NotFound = "NOT_FOUND",
+    Required = "REQUIRED",
 }
 
 /**

@@ -1386,7 +1386,8 @@ model SalesChannelPriceEntry {
   endDate   DateTime?
 
   /// This price is valid starting with this quantity
-  minQuantity Float @default(0)
+  minQuantity             Float                     @default(0)
+  KencoveApiPricelistItem KencoveApiPricelistItem[]
 
   @@unique([salesChannelId, productVariantId, tenantId, minQuantity, startDate, endDate])
   @@index([salesChannelId])
@@ -2760,6 +2761,7 @@ model KencoveApiApp {
   kencoveApiProductTypes    KencoveApiProductType[]
   kencoveApiPayments        KencoveApiPayment[]
   incomingWebhooks          IncomingWebhook[]
+  KencoveApiPricelistItem   KencoveApiPricelistItem[]
 
   @@index([tenantId])
 }
@@ -2956,6 +2958,23 @@ model KencoveApiContact {
   @@unique([customerCode, kencoveApiAppId])
   @@index([kencoveApiAppId])
   @@index([contactId])
+}
+
+model KencoveApiPricelistItem {
+  id String @id
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  salesChannelPriceEntry   SalesChannelPriceEntry @relation(fields: [salesChannelPriceEntryId], references: [id], onDelete: Cascade)
+  salesChannelPriceEntryId String
+
+  kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id], onDelete: Cascade)
+  kencoveApiAppId String
+
+  @@unique([id, kencoveApiAppId])
+  @@index([kencoveApiAppId])
+  @@index([salesChannelPriceEntryId])
 }
 
 model ReviewsioApp {
