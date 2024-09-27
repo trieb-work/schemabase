@@ -62,6 +62,11 @@ export class FrequentlyBoughtTogether {
 
         const fbts = await this.db.product.findMany({
             where: {
+                saleorProducts: {
+                    some: {
+                        installedSaleorAppId: this.installedSaleorAppId,
+                    },
+                },
                 variants: {
                     some: {
                         active: true,
@@ -208,7 +213,7 @@ export class FrequentlyBoughtTogether {
 
                 if (!saleorVariant) {
                     this.logger.error(
-                        `Product variant ${variant.sku} - Product ${prod.id} has` +
+                        `Product variant ${variant.sku} - Product ${prod.id} has ` +
                             `no saleor variant with installedSaleorAppId ${this.installedSaleorAppId}`,
                     );
                     continue;
@@ -255,6 +260,8 @@ export class FrequentlyBoughtTogether {
                     {
                         referingVariants,
                         attributeId,
+                        saleorVariantId: saleorVariant.id,
+                        saleorProductId: saleorProduct.id,
                     },
                 );
 

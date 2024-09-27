@@ -840,6 +840,12 @@ export class SaleorProductSyncService {
                     {
                         where: {
                             id: attr.value,
+                            saleorProductVariant: {
+                                some: {
+                                    installedSaleorAppId:
+                                        this.installedSaleorAppId,
+                                },
+                            },
                         },
                         select: {
                             saleorProductVariant: {
@@ -1501,9 +1507,9 @@ export class SaleorProductSyncService {
                      * Media files from our DB - product videos are not uploaded,
                      * but just set as youtube URLs. We filter out type MANUAL
                      */
-                    const schemabaseMedia = product.media.filter(
-                        (m) => m.type !== "MANUAL",
-                    );
+                    const schemabaseMedia = product.media
+                        .filter((m) => m.type !== "MANUAL")
+                        .filter((m) => m.deleted === false);
 
                     /**
                      * go through all variant media, as we first need

@@ -13,6 +13,8 @@ mutation productVariantBulkUpdate(
             field
             values
             code
+            path
+            message
         }
     }
 }
