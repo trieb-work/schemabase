@@ -234,6 +234,10 @@ export class KencoveApiAppPricelistSyncService {
                 }
                 this.logger.debug(
                     `Working on ${pricelist.priceListItems.length} entries for ${pricelist.product_template_id}`,
+                    {
+                        productTemplateId,
+                        sku: pricelist.itemCode,
+                    },
                 );
                 for (const pricelistEntry of pricelist.priceListItems) {
                     if (!productVariant && !pricelistEntry.variantItemCode) {
@@ -335,13 +339,25 @@ export class KencoveApiAppPricelistSyncService {
                                 price: pricelistEntry.price,
                                 minQuantity: pricelistEntry.min_quantity,
                                 kencoveApiPricelistItems: {
-                                    create: {
-                                        id: pricelistEntry.pricelist_item_id.toString(),
-                                        productTemplateId:
-                                            pricelist.product_template_id.toString(),
-                                        kencoveApiApp: {
-                                            connect: {
-                                                id: this.kencoveApiApp.id,
+                                    connectOrCreate: {
+                                        where: {
+                                            id_productTemplateId_kencoveApiAppId:
+                                                {
+                                                    id: pricelistEntry.pricelist_item_id.toString(),
+                                                    productTemplateId:
+                                                        pricelist.product_template_id.toString(),
+                                                    kencoveApiAppId:
+                                                        this.kencoveApiApp.id,
+                                                },
+                                        },
+                                        create: {
+                                            id: pricelistEntry.pricelist_item_id.toString(),
+                                            productTemplateId:
+                                                pricelist.product_template_id.toString(),
+                                            kencoveApiApp: {
+                                                connect: {
+                                                    id: this.kencoveApiApp.id,
+                                                },
                                             },
                                         },
                                     },
