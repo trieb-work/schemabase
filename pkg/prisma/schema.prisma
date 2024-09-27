@@ -2960,6 +2960,8 @@ model KencoveApiContact {
   @@index([contactId])
 }
 
+/// Kencove custom pricelist item model. Relation between internal pricelist item and kencove pricelist item. Pricelist ids from the API are not unique unfortunately, so we
+/// have to use the combination of the pricelist id and the product template id as unique key
 model KencoveApiPricelistItem {
   id String
 
