@@ -337,6 +337,8 @@ export class KencoveApiAppPricelistSyncService {
                                 kencoveApiPricelistItems: {
                                     create: {
                                         id: pricelistEntry.pricelist_item_id.toString(),
+                                        productTemplateId:
+                                            pricelist.product_template_id.toString(),
                                         kencoveApiApp: {
                                             connect: {
                                                 id: this.kencoveApiApp.id,
@@ -371,14 +373,20 @@ export class KencoveApiAppPricelistSyncService {
                                     kencoveApiPricelistItems: {
                                         connectOrCreate: {
                                             where: {
-                                                id_kencoveApiAppId: {
-                                                    id: pricelistEntry.pricelist_item_id.toString(),
-                                                    kencoveApiAppId:
-                                                        this.kencoveApiApp.id,
-                                                },
+                                                id_productTemplateId_kencoveApiAppId:
+                                                    {
+                                                        id: pricelistEntry.pricelist_item_id.toString(),
+                                                        productTemplateId:
+                                                            pricelist.product_template_id.toString(),
+                                                        kencoveApiAppId:
+                                                            this.kencoveApiApp
+                                                                .id,
+                                                    },
                                             },
                                             create: {
                                                 id: pricelistEntry.pricelist_item_id.toString(),
+                                                productTemplateId:
+                                                    pricelist.product_template_id.toString(),
                                                 kencoveApiApp: {
                                                     connect: {
                                                         id: this.kencoveApiApp

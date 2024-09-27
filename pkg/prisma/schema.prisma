@@ -2961,7 +2961,9 @@ model KencoveApiContact {
 }
 
 model KencoveApiPricelistItem {
-  id String @id
+  id String
+
+  productTemplateId String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2972,7 +2974,7 @@ model KencoveApiPricelistItem {
   kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id], onDelete: Cascade)
   kencoveApiAppId String
 
-  @@unique([id, kencoveApiAppId])
+  @@unique([id, productTemplateId, kencoveApiAppId])
   @@index([kencoveApiAppId])
   @@index([salesChannelPriceEntryId])
 }
