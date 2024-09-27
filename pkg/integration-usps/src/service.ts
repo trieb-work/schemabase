@@ -311,8 +311,14 @@ export class USPSTrackingSyncService {
             const statusMessage =
                 fullPackage.statusSummary || lastState.eventType;
 
-            // eslint-disable-next-line max-len
-            const shipmentLocation = `${lastState.eventCity}, ${lastState.eventZIP}, ${lastState.eventCountry}`;
+            const locationParts = [
+                lastState.eventCity,
+                lastState.eventZIP,
+                lastState.eventCountry,
+            ]
+                .filter((part) => part)
+                .join(", ");
+            const shipmentLocation = locationParts;
 
             if (!this.uspsTrackingApp.trackingIntegrationId) {
                 this.logger.info(
