@@ -64,18 +64,19 @@ export class FrequentlyBoughtTogether {
             where: {
                 variants: {
                     some: {
+                        active: true,
                         saleorProductVariant: {
                             some: {
                                 installedSaleorAppId: this.installedSaleorAppId,
                             },
                         },
-
                         frequentlyBoughtWith: {
                             some: {
                                 updatedAt: {
                                     gte: createdGte,
                                 },
                                 variant: {
+                                    active: true,
                                     saleorProductVariant: {
                                         some: {
                                             installedSaleorAppId:
