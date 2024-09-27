@@ -393,6 +393,55 @@ export class KencoveApiAppPricelistSyncService {
                         }
                     }
                 }
+
+                if (productVariant) {
+                    /**
+                     * we check all pricelist items for the current product variant from the kencove api
+                     * and compare them with all existing sales channel price entries for the current product variant
+                     * that include a kencove api pricelist item. We delete all sales channel price entries that
+                     * are not in the current pricelist items anymore.
+                     */
+                    const existingPriceEntries =
+                        await this.db.salesChannelPriceEntry.findMany({
+                            where: {
+                                productVariantId: productVariant.id,
+                                tenantId: this.kencoveApiApp.tenantId,
+                                kencoveApiPricelistItems: {
+                                    some: {
+                                        kencoveApiAppId: this.kencoveApiApp.id,
+                                    },
+                                },
+                            },
+                            include: {
+                                kencoveApiPricelistItems: true,
+                            },
+                        });
+                    for (const existingPriceEntry of existingPriceEntries) {
+                        const found = pricelist.priceListItems.find(
+                            (item) =>
+                                item.pricelist_item_id.toString() ===
+                                existingPriceEntry.kencoveApiPricelistItems[0]
+                                    ?.id,
+                        );
+                        if (!found) {
+                            this.logger.info(
+                                `Deleting sales channel price entry for SKU ${productVariant.sku} and ` +
+                                    `${existingPriceEntry.salesChannelId} as it is not in the current pricelist anymore.`,
+                                {
+                                    productVariantId: productVariant.id,
+                                    salesChannelId:
+                                        existingPriceEntry.salesChannelId,
+                                    existingPriceEntryId: existingPriceEntry.id,
+                                },
+                            );
+                            await this.db.salesChannelPriceEntry.delete({
+                                where: {
+                                    id: existingPriceEntry.id,
+                                },
+                            });
+                        }
+                    }
+                }
             }
         }
 

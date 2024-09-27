@@ -33398,6 +33398,8 @@ export type ProductVariantBulkUpdateMutation = {
             field?: string | null;
             values?: Array<string> | null;
             code: ProductVariantBulkErrorCode;
+            path?: string | null;
+            message?: string | null;
         }>;
     } | null;
 };
@@ -35972,6 +35974,8 @@ export const ProductVariantBulkUpdateDocument = gql`
                 field
                 values
                 code
+                path
+                message
             }
         }
     }
