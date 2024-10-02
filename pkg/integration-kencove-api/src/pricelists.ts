@@ -11,7 +11,7 @@ import {
 } from "@eci/pkg/prisma";
 import { KencoveApiClient } from "./client";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { subHours, subYears } from "date-fns";
+import { subDays, subYears } from "date-fns";
 import { normalizeStrings } from "@eci/pkg/normalization";
 import { id } from "@eci/pkg/ids";
 import { KencoveApiPricelistItem } from "./types";
@@ -190,8 +190,8 @@ export class KencoveApiAppPricelistSyncService {
                 `This seems to be our first sync run. Syncing data from: ${createdGte}`,
             );
         } else {
-            // for security purposes, we sync 5 hours more than the last run. We got issues otherwise
-            createdGte = subHours(cronState.lastRun, 5);
+            // for security purposes, we sync 1 day more than the last run. We got issues otherwise
+            createdGte = subDays(cronState.lastRun, 1);
             this.logger.info(
                 `Setting GTE date to ${gteDataTesting || createdGte}.`,
             );
@@ -235,7 +235,7 @@ export class KencoveApiAppPricelistSyncService {
                 this.logger.debug(
                     `Working on ${pricelist.priceListItems.length} entries for ${pricelist.product_template_id}`,
                     {
-                        productTemplateId,
+                        productTemplateId: pricelist.product_template_id,
                         sku: pricelist.itemCode,
                     },
                 );
@@ -301,173 +301,205 @@ export class KencoveApiAppPricelistSyncService {
                         );
                     }
 
+                    /**
+                     * the existing pricelist entry for the current product variant and sales channel
+                     * so that we can check, if we actually need to update
+                     */
                     const existingPriceEntry =
-                        await this.db.salesChannelPriceEntry.findFirst({
+                        await this.db.kencoveApiPricelistItem.findUnique({
                             where: {
-                                salesChannelId: salesChannel.id,
-                                productVariantId: productVariant.id,
-                                tenantId: this.kencoveApiApp.tenantId,
-                                startDate,
-                                endDate,
-                                minQuantity: pricelistEntry.min_quantity,
+                                id_productTemplateId_kencoveApiAppId: {
+                                    id: pricelistEntry.pricelist_item_id.toString(),
+                                    productTemplateId:
+                                        pricelist.product_template_id.toString(),
+                                    kencoveApiAppId: this.kencoveApiApp.id,
+                                },
                             },
                             include: {
-                                kencoveApiPricelistItems: true,
+                                salesChannelPriceEntry: true,
                             },
                         });
+
                     if (!existingPriceEntry) {
-                        await this.db.salesChannelPriceEntry.create({
+                        /**
+                         * Existing salesPriceEntry
+                         */
+                        const existingSalesChannelPriceEntry =
+                            await this.db.salesChannelPriceEntry.findFirst({
+                                where: {
+                                    salesChannelId: salesChannel.id,
+                                    productVariantId: productVariant.id,
+                                    tenantId: this.kencoveApiApp.tenantId,
+                                    minQuantity: pricelistEntry.min_quantity,
+                                    /**
+                                     * Typescript makes weird things here, so we need to cast it to any, as these dates are
+                                     * actually optional
+                                     */
+                                    startDate: startDate ?? (undefined as any),
+                                    endDate: endDate ?? (undefined as any),
+                                },
+                            });
+                        await this.db.kencoveApiPricelistItem.create({
                             data: {
-                                id: id.id("salesChannelPriceEntry"),
-                                tenant: {
+                                id: pricelistEntry.pricelist_item_id.toString(),
+                                productTemplateId:
+                                    pricelist.product_template_id.toString(),
+                                kencoveApiApp: {
                                     connect: {
-                                        id: this.kencoveApiApp.tenantId,
+                                        id: this.kencoveApiApp.id,
                                     },
                                 },
-                                salesChannel: {
-                                    connect: {
-                                        id: salesChannel.id,
-                                    },
-                                },
-                                productVariant: {
-                                    connect: {
-                                        id: productVariant.id,
-                                    },
-                                },
-                                startDate,
-                                endDate,
-                                price: pricelistEntry.price,
-                                minQuantity: pricelistEntry.min_quantity,
-                                kencoveApiPricelistItems: {
+                                salesChannelPriceEntry: {
                                     connectOrCreate: {
                                         where: {
-                                            id_productTemplateId_kencoveApiAppId:
-                                                {
-                                                    id: pricelistEntry.pricelist_item_id.toString(),
-                                                    productTemplateId:
-                                                        pricelist.product_template_id.toString(),
-                                                    kencoveApiAppId:
-                                                        this.kencoveApiApp.id,
-                                                },
+                                            id: existingSalesChannelPriceEntry?.id,
                                         },
                                         create: {
-                                            id: pricelistEntry.pricelist_item_id.toString(),
-                                            productTemplateId:
-                                                pricelist.product_template_id.toString(),
-                                            kencoveApiApp: {
+                                            id: id.id("salesChannelPriceEntry"),
+                                            tenant: {
                                                 connect: {
-                                                    id: this.kencoveApiApp.id,
+                                                    id: this.kencoveApiApp
+                                                        .tenantId,
                                                 },
                                             },
+                                            salesChannel: {
+                                                connect: {
+                                                    id: salesChannel.id,
+                                                },
+                                            },
+                                            productVariant: {
+                                                connect: {
+                                                    id: productVariant.id,
+                                                },
+                                            },
+                                            startDate,
+                                            endDate,
+                                            price: pricelistEntry.price,
+                                            minQuantity:
+                                                pricelistEntry.min_quantity,
                                         },
                                     },
                                 },
                             },
                         });
                     } else {
-                        this.logger.info(
-                            `Price entry for SKU ${productVariant.sku} and ` +
-                                `${pricelistEntry.pricelist_name} already exists. Updating.`,
-                            {
-                                productVariantId: productVariant.id,
-                                existingPriceEntryId: existingPriceEntry.id,
-                            },
-                        );
+                        /**
+                         * We check if any entries of the pricelist item have changed and update in this case
+                         */
                         if (
-                            existingPriceEntry.price !== pricelistEntry.price ||
-                            !existingPriceEntry.kencoveApiPricelistItems ||
-                            existingPriceEntry.kencoveApiPricelistItems[0]
-                                ?.id !==
-                                pricelistEntry.pricelist_item_id.toString()
+                            existingPriceEntry.salesChannelPriceEntry?.price !==
+                                pricelistEntry.price ||
+                            existingPriceEntry.salesChannelPriceEntry
+                                ?.minQuantity !== pricelistEntry.min_quantity ||
+                            existingPriceEntry.salesChannelPriceEntry?.startDate?.getTime() !==
+                                startDate?.getTime() ||
+                            existingPriceEntry.salesChannelPriceEntry?.endDate?.getTime() !==
+                                endDate?.getTime()
                         ) {
-                            await this.db.salesChannelPriceEntry.update({
+                            this.logger.info(
+                                `Price entry for SKU ${productVariant.sku} and ` +
+                                    `${pricelistEntry.pricelist_name} already exists. Updating.`,
+                                {
+                                    productVariantId: productVariant.id,
+                                    existingPriceEntryId:
+                                        existingPriceEntry
+                                            .salesChannelPriceEntry?.id,
+                                    changedEntity: {
+                                        price:
+                                            existingPriceEntry
+                                                .salesChannelPriceEntry
+                                                ?.price !==
+                                            pricelistEntry.price,
+                                        minQuantity:
+                                            existingPriceEntry
+                                                .salesChannelPriceEntry
+                                                ?.minQuantity !==
+                                            pricelistEntry.min_quantity,
+                                        startDate:
+                                            existingPriceEntry.salesChannelPriceEntry?.startDate?.getTime() !==
+                                            startDate?.getTime(),
+                                        endDate:
+                                            existingPriceEntry.salesChannelPriceEntry?.endDate?.getTime() !==
+                                            endDate?.getTime(),
+                                    },
+                                },
+                            );
+
+                            await this.db.kencoveApiPricelistItem.update({
                                 where: {
-                                    id: existingPriceEntry.id,
+                                    id_productTemplateId_kencoveApiAppId: {
+                                        id: pricelistEntry.pricelist_item_id.toString(),
+                                        productTemplateId:
+                                            pricelist.product_template_id.toString(),
+                                        kencoveApiAppId: this.kencoveApiApp.id,
+                                    },
                                 },
                                 data: {
-                                    price: pricelistEntry.price,
-                                    kencoveApiPricelistItems: {
-                                        connectOrCreate: {
-                                            where: {
-                                                id_productTemplateId_kencoveApiAppId:
-                                                    {
-                                                        id: pricelistEntry.pricelist_item_id.toString(),
-                                                        productTemplateId:
-                                                            pricelist.product_template_id.toString(),
-                                                        kencoveApiAppId:
-                                                            this.kencoveApiApp
-                                                                .id,
-                                                    },
-                                            },
-                                            create: {
-                                                id: pricelistEntry.pricelist_item_id.toString(),
-                                                productTemplateId:
-                                                    pricelist.product_template_id.toString(),
-                                                kencoveApiApp: {
-                                                    connect: {
-                                                        id: this.kencoveApiApp
-                                                            .id,
-                                                    },
-                                                },
-                                            },
+                                    salesChannelPriceEntry: {
+                                        update: {
+                                            price: pricelistEntry.price,
+                                            minQuantity:
+                                                pricelistEntry.min_quantity,
+                                            startDate,
+                                            endDate,
                                         },
                                     },
                                 },
                             });
                         }
                     }
-                }
 
-                /// This is currently now working as expected, as I just get all pricelist items that got changed, leaving away
-                /// older ones, which means, that we would delete them.
-                // if (productVariant) {
-                //     /**
-                //      * we check all pricelist items for the current product variant from the kencove api
-                //      * and compare them with all existing sales channel price entries for the current product variant
-                //      * that include a kencove api pricelist item. We delete all sales channel price entries that
-                //      * are not in the current pricelist items anymore.
-                //      */
-                //     const existingPriceEntries =
-                //         await this.db.salesChannelPriceEntry.findMany({
-                //             where: {
-                //                 productVariantId: productVariant.id,
-                //                 tenantId: this.kencoveApiApp.tenantId,
-                //                 kencoveApiPricelistItems: {
-                //                     some: {
-                //                         kencoveApiAppId: this.kencoveApiApp.id,
-                //                     },
-                //                 },
-                //             },
-                //             include: {
-                //                 kencoveApiPricelistItems: true,
-                //             },
-                //         });
-                //     for (const existingPriceEntry of existingPriceEntries) {
-                //         const found = pricelist.priceListItems.find(
-                //             (item) =>
-                //                 item.pricelist_item_id.toString() ===
-                //                 existingPriceEntry.kencoveApiPricelistItems[0]
-                //                     ?.id,
-                //         );
-                //         if (!found) {
-                //             this.logger.info(
-                //                 `Deleting sales channel price entry for SKU ${productVariant.sku} and ` +
-                //                     `${existingPriceEntry.salesChannelId} as it is not in the current pricelist anymore.`,
-                //                 {
-                //                     productVariantId: productVariant.id,
-                //                     salesChannelId:
-                //                         existingPriceEntry.salesChannelId,
-                //                     existingPriceEntryId: existingPriceEntry.id,
-                //                 },
-                //             );
-                //             await this.db.salesChannelPriceEntry.delete({
-                //                 where: {
-                //                     id: existingPriceEntry.id,
-                //                 },
-                //             });
-                //         }
-                //     }
-                // }
+                    /// This is currently now working as expected, as I just get all pricelist items that got changed, leaving away
+                    /// older ones, which means, that we would delete them.
+                    // if (productVariant) {
+                    //     /**
+                    //      * we check all pricelist items for the current product variant from the kencove api
+                    //      * and compare them with all existing sales channel price entries for the current product variant
+                    //      * that include a kencove api pricelist item. We delete all sales channel price entries that
+                    //      * are not in the current pricelist items anymore.
+                    //      */
+                    //     const existingPriceEntries =
+                    //         await this.db.salesChannelPriceEntry.findMany({
+                    //             where: {
+                    //                 productVariantId: productVariant.id,
+                    //                 tenantId: this.kencoveApiApp.tenantId,
+                    //                 kencoveApiPricelistItems: {
+                    //                     some: {
+                    //                         kencoveApiAppId: this.kencoveApiApp.id,
+                    //                     },
+                    //                 },
+                    //             },
+                    //             include: {
+                    //                 kencoveApiPricelistItems: true,
+                    //             },
+                    //         });
+                    //     for (const existingPriceEntry of existingPriceEntries) {
+                    //         const found = pricelist.priceListItems.find(
+                    //             (item) =>
+                    //                 item.pricelist_item_id.toString() ===
+                    //                 existingPriceEntry.kencoveApiPricelistItems[0]
+                    //                     ?.id,
+                    //         );
+                    //         if (!found) {
+                    //             this.logger.info(
+                    //                 `Deleting sales channel price entry for SKU ${productVariant.sku} and ` +
+                    //                     `${existingPriceEntry.salesChannelId} as it is not in the current pricelist anymore.`,
+                    //                 {
+                    //                     productVariantId: productVariant.id,
+                    //                     salesChannelId:
+                    //                         existingPriceEntry.salesChannelId,
+                    //                     existingPriceEntryId: existingPriceEntry.id,
+                    //                 },
+                    //             );
+                    //             await this.db.salesChannelPriceEntry.delete({
+                    //                 where: {
+                    //                     id: existingPriceEntry.id,
+                    //                 },
+                    //             });
+                    //         }
+                    //     }
+                    // }
+                }
             }
         }
 
