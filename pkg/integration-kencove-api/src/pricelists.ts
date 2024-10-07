@@ -339,6 +339,16 @@ export class KencoveApiAppPricelistSyncService {
                                     endDate: endDate ?? (undefined as any),
                                 },
                             });
+                        this.logger.info(
+                            `Creating new price entry for SKU ${productVariant.sku} and ` +
+                                `${pricelistEntry.pricelist_name}.`,
+                            {
+                                productVariantId: productVariant.id,
+                                salesChannelId: salesChannel.id,
+                                pricelistEntryId:
+                                    pricelistEntry.pricelist_item_id,
+                            },
+                        );
                         await this.db.kencoveApiPricelistItem.create({
                             data: {
                                 id: pricelistEntry.pricelist_item_id.toString(),
@@ -350,35 +360,39 @@ export class KencoveApiAppPricelistSyncService {
                                     },
                                 },
                                 salesChannelPriceEntry: {
-                                    connectOrCreate: {
-                                        where: {
-                                            id: existingSalesChannelPriceEntry?.id,
-                                        },
-                                        create: {
-                                            id: id.id("salesChannelPriceEntry"),
-                                            tenant: {
-                                                connect: {
-                                                    id: this.kencoveApiApp
-                                                        .tenantId,
-                                                },
-                                            },
-                                            salesChannel: {
-                                                connect: {
-                                                    id: salesChannel.id,
-                                                },
-                                            },
-                                            productVariant: {
-                                                connect: {
-                                                    id: productVariant.id,
-                                                },
-                                            },
-                                            startDate,
-                                            endDate,
-                                            price: pricelistEntry.price,
-                                            minQuantity:
-                                                pricelistEntry.min_quantity,
-                                        },
-                                    },
+                                    connect: existingSalesChannelPriceEntry?.id
+                                        ? {
+                                              id: existingSalesChannelPriceEntry.id,
+                                          }
+                                        : undefined,
+                                    create: !existingSalesChannelPriceEntry?.id
+                                        ? {
+                                              id: id.id(
+                                                  "salesChannelPriceEntry",
+                                              ),
+                                              tenant: {
+                                                  connect: {
+                                                      id: this.kencoveApiApp
+                                                          .tenantId,
+                                                  },
+                                              },
+                                              salesChannel: {
+                                                  connect: {
+                                                      id: salesChannel.id,
+                                                  },
+                                              },
+                                              productVariant: {
+                                                  connect: {
+                                                      id: productVariant.id,
+                                                  },
+                                              },
+                                              startDate,
+                                              endDate,
+                                              price: pricelistEntry.price,
+                                              minQuantity:
+                                                  pricelistEntry.min_quantity,
+                                          }
+                                        : undefined,
                                 },
                             },
                         });
