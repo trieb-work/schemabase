@@ -324,10 +324,10 @@ export class VariantAndVariantStocks {
 
                 // only update the stock entry in saleor, if the stock has changed
                 if (saleorStockEntry?.quantity === totalQuantity) {
-                    this.logger.debug(
-                        `Stock for ${schemabaseVariant.sku} - id ${saleorVariant.id} has not changed. Skipping`,
-                        { saleorStockEntry, totalQuantity },
-                    );
+                    // this.logger.debug(
+                    //     `Stock for ${schemabaseVariant.sku} - id ${saleorVariant.id} has not changed. Skipping`,
+                    //     { saleorStockEntry, totalQuantity },
+                    // );
                     continue;
                 }
                 await this.saleorClient.productVariantStockEntryUpdate({
@@ -379,15 +379,15 @@ export class VariantAndVariantStocks {
             )?.value;
             productRatingFromSaleor.ratingCount = parseInt(ratingCount || "0");
 
+            /**
+             * check, if user ratings did change and update them in saleor
+             */
             if (
-                productRatingFromSaleor?.averageRating !==
-                schemabaseVariant.averageRating
+                schemabaseVariant.averageRating &&
+                schemabaseVariant.ratingCount &&
+                productRatingFromSaleor.averageRating !==
+                    schemabaseVariant.averageRating
             ) {
-                if (
-                    schemabaseVariant.averageRating === null ||
-                    schemabaseVariant.ratingCount === null
-                )
-                    continue;
                 this.logger.info(
                     `Updating average rating for ${variant.id} / ${schemabaseVariant.sku} to ${schemabaseVariant.averageRating}. Old rating was ${productRatingFromSaleor?.averageRating}`,
                 );
@@ -424,6 +424,24 @@ export class VariantAndVariantStocks {
                 await this.saleorClient.saleorUpdateMetadata({
                     id: variant.id,
                     input: metadataNew,
+                });
+            }
+
+            /**
+             * check, if the variant name has changed and update it in saleor
+             */
+            if (variant.name !== schemabaseVariant.variantName) {
+                this.logger.info(
+                    `Updating name for ${variant.id} / ${schemabaseVariant.sku} to ${schemabaseVariant.variantName}. Old name was ${variant.name}`,
+                );
+                await this.saleorClient.productVariantBulkUpdate({
+                    productId: variant.product.id,
+                    variants: [
+                        {
+                            id: variant.id,
+                            name: schemabaseVariant.variantName,
+                        },
+                    ],
                 });
             }
         }
