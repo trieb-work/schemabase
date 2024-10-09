@@ -1294,6 +1294,7 @@ export class SaleorProductSyncService {
                                 installedSaleorAppId: this.installedSaleorAppId,
                             },
                         },
+                        deleted: false,
                     },
                 },
             },
