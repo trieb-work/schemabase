@@ -903,11 +903,10 @@ export class KencoveApiAppProductSyncService {
                 attribute_model: "custom",
             });
 
-            this.logger.debug(
-                // eslint-disable-next-line max-len
-                `Got ${variantAttributesUnique.length} variant attributes, ${variantSelectionAttributesUnique.length} ` +
-                    `variant selection attributes and ${productAttributesUnique.length} product attributes.`,
-            );
+            // this.logger.debug(
+            //     `Got ${variantAttributesUnique.length} variant attributes, ${variantSelectionAttributesUnique.length} ` +
+            //         `variant selection attributes and ${productAttributesUnique.length} product attributes.`,
+            // );
 
             /**
              * Setting the variant Selection attributes for the product type
@@ -1775,15 +1774,14 @@ export class KencoveApiAppProductSyncService {
                  * The product variant name. This value is often not clean coming from the API, so we
                  * set the value from the API just as fallback. When we have website_ref_desc attribute
                  * and we did not replace it with a different attribute, we use the value of the
-                 * attribute as variant name
+                 * attribute as variant name.
+                 * For "real" variants, with clean selector attributes, the variant name is not important normally, as
+                 * we use selector values like "blue" and "112f" or similar to distinguish between variants.
+                 * But there are also cases, where we replaced the website_ref_desc with a different attribute. In this case, we need to use
+                 * this one as variant name.
                  */
                 let variantName = variant.name;
-                if (
-                    !this.kenVariantSelectionAttributeOverwrite.get(
-                        variant.id,
-                    ) &&
-                    variant.selectorValues?.[0]?.name === "website_ref_desc"
-                ) {
+                if (variant.selectorValues?.length === 1) {
                     const variantSelectionAttribute = cleanAttributes(
                         variant.selectorValues,
                     )[0];
