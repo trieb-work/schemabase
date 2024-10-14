@@ -1677,21 +1677,25 @@ export class KencoveApiAppProductSyncService {
                     existingProduct.productTypeId !==
                         kenProdTypeWithProductType.productTypeId ||
                     existingProduct.countryOfOrigin !== countryOfOrigin ||
-                    existingProduct.categoryId !== category ||
-                    existingProduct.active !== product.active ||
-                    /**
-                     * Compare the media arrays with each other and see, if we have other URLs
-                     */
-                    !compareArraysWithoutOrder(
-                        existingProduct.media.map((m) => ({
-                            url: m.url,
-                            type: m.type,
-                        })),
-                        this.getTotalMediaFromProduct(product).map((m) => ({
-                            url: m.url,
-                            type: m.type,
-                        })),
-                    )
+                    category
+                        ? existingProduct.categoryId !== category
+                        : false ||
+                          existingProduct.active !== product.active ||
+                          /**
+                           * Compare the media arrays with each other and see, if we have other URLs
+                           */
+                          !compareArraysWithoutOrder(
+                              existingProduct.media.map((m) => ({
+                                  url: m.url,
+                                  type: m.type,
+                              })),
+                              this.getTotalMediaFromProduct(product).map(
+                                  (m) => ({
+                                      url: m.url,
+                                      type: m.type,
+                                  }),
+                              ),
+                          )
                 ) {
                     /**
                      * log, which fields have changed
@@ -1711,7 +1715,9 @@ export class KencoveApiAppProductSyncService {
                             countryOfOrigin:
                                 existingProduct.countryOfOrigin !==
                                 countryOfOrigin,
-                            category: existingProduct.categoryId !== category,
+                            category: category
+                                ? existingProduct.categoryId !== category
+                                : false,
                             active: existingProduct.active !== product.active,
                             media: !compareArraysWithoutOrder(
                                 existingProduct.media.map((m) => ({
@@ -1726,6 +1732,11 @@ export class KencoveApiAppProductSyncService {
                                 ),
                             ),
                         },
+                    );
+                    console.log(
+                        "CATEGORY",
+                        existingProduct.categoryId,
+                        category,
                     );
 
                     existingProduct = await this.updateProductSchemabase(
