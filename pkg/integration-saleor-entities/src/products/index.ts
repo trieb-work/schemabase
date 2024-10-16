@@ -1340,11 +1340,40 @@ export class SaleorProductSyncService {
             `Received ${updatedItemsDatabase.length} items to update`,
         );
 
+        /**
+         * get all products with variants that need to be updated
+         */
+        const updatedVariants = await this.db.product.findMany({
+            where: {
+                id: {
+                    notIn: [
+                        ...itemsToCreate.map((x) => x.id),
+                        ...itemsWithMissingVariants.map((x) => x.id),
+                        ...itemsWithMissingMedia.map((x) => x.id),
+                        ...updatedItemsDatabase.map((x) => x.id),
+                    ],
+                },
+                variants: {
+                    some: {
+                        updatedAt: {
+                            gte: gteDate,
+                        },
+                    },
+                },
+            },
+            include: productInclude,
+        });
+
+        this.logger.debug(
+            `Received ${updatedVariants.length} items with variants to update`,
+        );
+
         const unsortedProductsToCreateOrUpdate = [
             ...itemsToCreate,
             ...updatedItemsDatabase,
             ...itemsWithMissingVariants,
             ...itemsWithMissingMedia,
+            ...updatedVariants,
         ];
 
         const productsToCreate = unsortedProductsToCreateOrUpdate.filter(
