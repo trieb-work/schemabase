@@ -234,7 +234,7 @@ export type KencoveApiCategoryImage = {
     tag: "icon" | "banner";
 };
 export type KencoveApiCategory = {
-    cateorgyId: number;
+    categoryId: number;
     categorySlug: string | null;
     categoryName: string;
     parentCategoryId: number | null;

@@ -106,7 +106,7 @@ export class KencoveApiAppCategorySyncService {
                         kencoveApiAppId: this.kencoveApiApp.id,
                         id: {
                             in: kenApiCategories.map((c) =>
-                                c.cateorgyId?.toString(),
+                                c.categoryId?.toString(),
                             ),
                         },
                     },
@@ -120,7 +120,7 @@ export class KencoveApiAppCategorySyncService {
 
             // remove categories that are configured to be skipped and categories without a slug
             const categoriesToSync = kenApiCategories.filter(
-                (c) => !categoriesToSkip.includes(c.cateorgyId.toString()),
+                (c) => !categoriesToSkip.includes(c.categoryId.toString()),
             );
 
             for (const category of categoriesToSync) {
@@ -149,13 +149,13 @@ export class KencoveApiAppCategorySyncService {
                  * Existing KencoveApiCategory from our DB
                  */
                 const existingCategory = existingCategories.find(
-                    (c) => c.id === category.cateorgyId.toString(),
+                    (c) => c.id === category.categoryId.toString(),
                 );
 
                 this.logger.debug(
                     `Working on category ${category.categoryName}`,
                     {
-                        kencoveApiCategoryId: category.cateorgyId,
+                        kencoveApiCategoryId: category.categoryId,
                         slug: category.categorySlug,
                     },
                 );
@@ -272,7 +272,7 @@ export class KencoveApiAppCategorySyncService {
                 );
                 if (existingCategory) {
                     this.logger.info(
-                        `Updating category ${category.cateorgyId}.`,
+                        `Updating category ${category.categoryId}.`,
                     );
                     await this.db.kencoveApiCategory.update({
                         where: {
@@ -371,14 +371,14 @@ export class KencoveApiAppCategorySyncService {
 
                 if (!existingCategory) {
                     this.logger.info(
-                        `Creating category ${category.cateorgyId}.`,
+                        `Creating category ${category.categoryId}.`,
                         {
                             normalizedName,
                         },
                     );
                     await this.db.kencoveApiCategory.create({
                         data: {
-                            id: category.cateorgyId.toString(),
+                            id: category.categoryId.toString(),
                             kencoveApiApp: {
                                 connect: {
                                     id: this.kencoveApiApp.id,
