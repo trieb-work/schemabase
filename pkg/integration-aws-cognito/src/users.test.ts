@@ -23,7 +23,7 @@ describe("CognitoUserSyncService", () => {
     it("should be able to run the user sync", async () => {
         const cognitoApp = await db.aWSCognitoApp.findFirst({
             where: {
-                tenantId: "test",
+                tenantId: "ken_prod",
             },
         });
 
@@ -32,14 +32,15 @@ describe("CognitoUserSyncService", () => {
         }
 
         const sync = new CognitoUserSyncService({
-            tenantId: "test",
-            db: null as any,
+            tenantId: cognitoApp.tenantId,
+            db,
             logger: new AssertionLogger(),
             AWSCognitoApp: cognitoApp,
         });
 
-        await sync.syncFromEci();
-    });
+        await sync.syncToEci();
+        // await sync.syncFromEci();
+    }, 200000000);
 
     // it("should be able to get a list of users", async () => {
     //     // Authenticate with AWS cognito and pull a list of all users

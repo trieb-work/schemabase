@@ -11,6 +11,7 @@ import {
 } from "@aws-sdk/client-cognito-identity-provider";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { subHours, subYears } from "date-fns";
+import { id } from "@eci/pkg/ids";
 
 export interface CognitoUserSyncServiceConfig {
     tenantId: string;
@@ -134,17 +135,14 @@ export class CognitoUserSyncService {
 
     public async syncToEci(): Promise<void> {
         /**
-         * pull all cognito users and store them in our internal DB
+         * pull all cognito users
          */
-
         const allCognitoUsers = await this.getAllCognitoUsers();
 
         if (!allCognitoUsers) {
             this.logger.info("No users found in cognito");
             return;
         }
-
-        this.logger.info(`Found ${allCognitoUsers.length} users in cognito`);
 
         const existingCognitoUsers = await this.db.aWSCognitoUser.findMany({
             where: {
@@ -154,6 +152,11 @@ export class CognitoUserSyncService {
                 },
             },
         });
+
+        this.logger.info(
+            `Found ${allCognitoUsers.length} users in cognito, ${existingCognitoUsers.length} already in our DB`,
+        );
+
         const existingCognitoUserIds = existingCognitoUsers.map(
             (user) => user.id,
         );
@@ -163,6 +166,9 @@ export class CognitoUserSyncService {
 
         this.logger.info(
             `Found ${newCognitoUsers.length} new users in cognito`,
+            {
+                newCognitoUsers: newCognitoUsers.map((user) => user.Username),
+            },
         );
 
         /**
@@ -172,6 +178,12 @@ export class CognitoUserSyncService {
             const email = user.Attributes?.find(
                 (attribute) => attribute.Name === "email",
             )?.Value?.toLowerCase();
+            const firstName = user.Attributes?.find(
+                (attribute) => attribute.Name === "given_name",
+            )?.Value;
+            const lastName = user.Attributes?.find(
+                (attribute) => attribute.Name === "family_name",
+            )?.Value;
             if (!email) {
                 this.logger.error(
                     `User ${user.Username} has no email attribute`,
@@ -179,6 +191,11 @@ export class CognitoUserSyncService {
                 continue;
             }
             try {
+                this.logger.debug(`Creating user ${user.Username} in our DB`, {
+                    email,
+                    firstName,
+                    lastName,
+                });
                 await this.db.aWSCognitoUser.create({
                     data: {
                         id: user.Username!,
@@ -188,27 +205,40 @@ export class CognitoUserSyncService {
                             },
                         },
                         contact: {
-                            connect: {
-                                email_tenantId: {
+                            connectOrCreate: {
+                                where: {
+                                    email_tenantId: {
+                                        email,
+                                        tenantId: this.tenantId,
+                                    },
+                                },
+                                create: {
+                                    id: id.id("contact"),
                                     email,
-                                    tenantId: this.tenantId,
+                                    firstName,
+                                    lastName,
+                                    tenant: {
+                                        connect: {
+                                            id: this.tenantId,
+                                        },
+                                    },
                                 },
                             },
                         },
                     },
                 });
             } catch (error) {
-                /**
-                 * When a user email does not exist in our
-                 * DB yet, this call will fail. We can safely
-                 * ignore this error, as we don't create users based
-                 * on cognito internally
-                 */
                 if (error instanceof Prisma.PrismaClientKnownRequestError) {
-                    if (error.code === "P2003") {
+                    if (error.code === "P2025") {
                         this.logger.info(
                             `User ${user.Username} has no contact`,
                         );
+                        continue;
+                    } else {
+                        this.logger.error(
+                            `Error creating user ${user.Username} in our DB`,
+                        );
+                        this.logger.error(JSON.stringify(error));
                         continue;
                     }
                 } else {
