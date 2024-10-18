@@ -2,8 +2,11 @@
 import { ILogger } from "@eci/pkg/logger";
 import { AWSCognitoApp, Prisma, PrismaClient } from "@eci/pkg/prisma";
 import {
+    AdminGetUserCommand,
+    AdminGetUserCommandOutput,
     AdminUpdateUserAttributesCommand,
     CognitoIdentityProvider,
+    CognitoIdentityProviderServiceException,
     ListUsersCommand,
     ListUsersCommandOutput,
     ListUsersResponse,
@@ -110,12 +113,37 @@ export class CognitoUserSyncService {
         return users;
     }
 
+    private async getCognitoUser(
+        username: string,
+    ): Promise<AdminGetUserCommandOutput | undefined> {
+        const getUserCommand = new AdminGetUserCommand({
+            UserPoolId: this.AWSCognitoApp.userPoolId,
+            Username: username,
+        });
+
+        try {
+            const response = await this.cognitoClient.send(getUserCommand);
+            return response;
+        } catch (error) {
+            if (error instanceof CognitoIdentityProviderServiceException) {
+                if (error.name === "UserNotFoundException") {
+                    this.logger.error(`User ${username} not found in Cognito`);
+                    return undefined;
+                }
+            }
+
+            this.logger.error(`Error getting user ${username} in Cognito`);
+            this.logger.error(JSON.stringify(error));
+            return undefined;
+        }
+    }
+
     /**
      * We search for a user in AWS cognito using the email address as search parameter.
      * We use the ListUsersCommand to search for the email attribute. Can return multiple identities
      * @param email
      */
-    private async getCognitoUserByEmail(
+    public async getCognitoUserByEmail(
         email: string,
     ): Promise<ListUsersCommandOutput["Users"] | undefined> {
         const getListOfUsersCommand = new ListUsersCommand({
@@ -269,20 +297,22 @@ export class CognitoUserSyncService {
         }
 
         // pull from our DB contacts that have changed since the last run.
-        const contacts = await this.db.contact.findMany({
+        const contacts = await this.db.aWSCognitoUser.findMany({
             where: {
-                tenantId: this.tenantId,
-                updatedAt: {
-                    gte: gteDate,
-                },
-                awsCognitoUsers: {
-                    some: {
-                        awsCognitoAppId: this.AWSCognitoApp.id,
+                awsCognitoAppId: this.AWSCognitoApp.id,
+                contact: {
+                    tenantId: this.tenantId,
+                    updatedAt: {
+                        gte: gteDate,
                     },
                 },
             },
             include: {
-                channels: true,
+                contact: {
+                    include: {
+                        channels: true,
+                    },
+                },
             },
         });
 
@@ -299,19 +329,20 @@ export class CognitoUserSyncService {
         // if they do, update the user. there could be multiple user identities with the same email address
         // if they don't, create the user
         for (const contact of contacts) {
-            this.logger.info(`Syncing contact ${contact.email}`);
-            const cognitoUser = await this.getCognitoUserByEmail(contact.email);
+            this.logger.info(`Syncing contact ${contact.contact.email}`);
+            const cognitoUser = await this.getCognitoUser(contact.id);
             if (cognitoUser === undefined) {
-                const channelName = contact.channels?.[0]?.name;
-                if (channelName === undefined) {
-                    this.logger.warn(
-                        `Contact ${contact.email} has no related sales channel`,
-                    );
-                    continue;
-                }
                 this.logger.info(
-                    `User ${contact.email} does not exist in Cognito. Continue`,
+                    `User ${contact.contact.email} does not exist in Cognito. Deleting user from our DB`,
                 );
+                await this.db.aWSCognitoUser.delete({
+                    where: {
+                        id_awsCognitoAppId: {
+                            id: contact.id,
+                            awsCognitoAppId: this.AWSCognitoApp.id,
+                        },
+                    },
+                });
                 continue;
                 /**
                  * We are currently not creating a user in cognito, as
@@ -320,59 +351,60 @@ export class CognitoUserSyncService {
                  * account creation, and maybe trigger a PW reset email.
                  */
             } else {
-                this.logger.info(`Updating user ${contact.email} in Cognito`);
-                for (const u of cognitoUser) {
-                    const channelName = contact.channels?.[0]?.name;
-                    const userAttributes = [];
-                    if (channelName === undefined) {
-                        this.logger.warn(
-                            `Contact ${contact.email} has no related sales channel`,
-                        );
-                    } else {
-                        userAttributes.push({
-                            Name: "custom:channel",
-                            Value: channelName,
-                        });
-                    }
-                    if (contact.externalIdentifier2) {
-                        userAttributes.push({
-                            Name: "custom:externalIdentifier2",
-                            Value: contact.externalIdentifier2,
-                        });
-                    }
-                    /**
-                     * when the cognito user has no first and lastname, but we have internally,
-                     * update these attributes
-                     */
-                    if (
-                        !u.Attributes?.find(
-                            (attr) => attr.Name === "given_name",
-                        ) &&
-                        contact.firstName
-                    ) {
-                        userAttributes.push({
-                            Name: "given_name",
-                            Value: contact.firstName,
-                        });
-                    }
+                this.logger.info(
+                    `Updating user ${contact.contact.email} in Cognito`,
+                );
 
-                    if (
-                        !u.Attributes?.find(
-                            (attr) => attr.Name === "family_name",
-                        ) &&
-                        contact.lastName
-                    ) {
-                        userAttributes.push({
-                            Name: "family_name",
-                            Value: contact.lastName,
-                        });
-                    }
-
-                    await this.updateUserAttributesInCognito(
-                        u.Username!,
-                        userAttributes,
+                const channelName = contact.contact.channels?.[0]?.name;
+                const userAttributes = [];
+                if (channelName === undefined) {
+                    this.logger.warn(
+                        `Contact ${contact.contact.email} has no related sales channel`,
                     );
+                } else {
+                    userAttributes.push({
+                        Name: "custom:channel",
+                        Value: channelName,
+                    });
                 }
+                if (contact.contact.externalIdentifier2) {
+                    userAttributes.push({
+                        Name: "custom:externalIdentifier2",
+                        Value: contact.contact.externalIdentifier2,
+                    });
+                }
+                /**
+                 * when the cognito user has no first and lastname, but we have internally,
+                 * update these attributes
+                 */
+                if (
+                    !cognitoUser.UserAttributes?.find(
+                        (attr) => attr.Name === "given_name",
+                    ) &&
+                    contact.contact.firstName
+                ) {
+                    userAttributes.push({
+                        Name: "given_name",
+                        Value: contact.contact.firstName,
+                    });
+                }
+
+                if (
+                    !cognitoUser.UserAttributes?.find(
+                        (attr) => attr.Name === "family_name",
+                    ) &&
+                    contact.contact.lastName
+                ) {
+                    userAttributes.push({
+                        Name: "family_name",
+                        Value: contact.contact.lastName,
+                    });
+                }
+
+                await this.updateUserAttributesInCognito(
+                    cognitoUser.Username!,
+                    userAttributes,
+                );
             }
         }
 
