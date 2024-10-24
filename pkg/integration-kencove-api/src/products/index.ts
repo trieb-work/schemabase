@@ -1438,7 +1438,7 @@ export class KencoveApiAppProductSyncService {
         this.logger.info(`Found ${products.length} products to sync`);
         if (products.length === 0) {
             this.logger.info("No products to sync. Exiting.");
-            await this.cronState.set({ lastRun: new Date() });
+            // await this.cronState.set({ lastRun: new Date() });
             return;
         }
 
@@ -1672,29 +1672,26 @@ export class KencoveApiAppProductSyncService {
                  */
                 if (
                     existingProduct.normalizedName !== normalizedProductName ||
+                    existingProduct.name !== product.productName ||
                     existingProduct.descriptionHTML !== product.description ||
                     existingProduct.productTypeId !==
                         kenProdTypeWithProductType.productTypeId ||
                     existingProduct.countryOfOrigin !== countryOfOrigin ||
-                    category
-                        ? existingProduct.categoryId !== category
-                        : false ||
-                          existingProduct.active !== product.active ||
-                          /**
-                           * Compare the media arrays with each other and see, if we have other URLs
-                           */
-                          !compareArraysWithoutOrder(
-                              existingProduct.media.map((m) => ({
-                                  url: m.url,
-                                  type: m.type,
-                              })),
-                              this.getTotalMediaFromProduct(product).map(
-                                  (m) => ({
-                                      url: m.url,
-                                      type: m.type,
-                                  }),
-                              ),
-                          )
+                    (category && existingProduct.categoryId !== category) ||
+                    existingProduct.active !== product.active ||
+                    /**
+                     * Compare the media arrays with each other and see, if we have other URLs
+                     */
+                    !compareArraysWithoutOrder(
+                        existingProduct.media.map((m) => ({
+                            url: m.url,
+                            type: m.type,
+                        })),
+                        this.getTotalMediaFromProduct(product).map((m) => ({
+                            url: m.url,
+                            type: m.type,
+                        })),
+                    )
                 ) {
                     /**
                      * log, which fields have changed
@@ -1731,11 +1728,6 @@ export class KencoveApiAppProductSyncService {
                                 ),
                             ),
                         },
-                    );
-                    console.log(
-                        "CATEGORY",
-                        existingProduct.categoryId,
-                        category,
                     );
 
                     existingProduct = await this.updateProductSchemabase(
