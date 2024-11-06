@@ -351,37 +351,51 @@ export class CognitoUserSyncService {
                  * account creation, and maybe trigger a PW reset email.
                  */
             } else {
-                this.logger.info(
-                    `Updating user ${contact.contact.email} in Cognito`,
-                );
-
-                const channelName = contact.contact.channels?.[0]?.name;
+                // Build the desired attributes
                 const userAttributes = [];
-                if (channelName === undefined) {
+                const channelName = contact.contact.channels?.[0]?.name;
+
+                if (channelName !== undefined) {
+                    const currentChannel = cognitoUser.UserAttributes?.find(
+                        (attr) => attr.Name === "custom:channel",
+                    )?.Value;
+                    if (currentChannel !== channelName) {
+                        userAttributes.push({
+                            Name: "custom:channel",
+                            Value: channelName,
+                        });
+                    }
+                } else {
                     this.logger.warn(
                         `Contact ${contact.contact.email} has no related sales channel`,
                     );
-                } else {
-                    userAttributes.push({
-                        Name: "custom:channel",
-                        Value: channelName,
-                    });
                 }
+
                 if (contact.contact.externalIdentifier2) {
-                    userAttributes.push({
-                        Name: "custom:externalIdentifier2",
-                        Value: contact.contact.externalIdentifier2,
-                    });
+                    const currentIdentifier = cognitoUser.UserAttributes?.find(
+                        (attr) => attr.Name === "custom:externalIdentifier2",
+                    )?.Value;
+                    if (
+                        currentIdentifier !==
+                        contact.contact.externalIdentifier2
+                    ) {
+                        userAttributes.push({
+                            Name: "custom:externalIdentifier2",
+                            Value: contact.contact.externalIdentifier2,
+                        });
+                    }
                 }
+
                 /**
-                 * when the cognito user has no first and lastname, but we have internally,
-                 * update these attributes
+                 * update the first name only if there is no first name in cognito
                  */
                 if (
+                    contact.contact.firstName &&
                     !cognitoUser.UserAttributes?.find(
-                        (attr) => attr.Name === "given_name",
-                    ) &&
-                    contact.contact.firstName
+                        (attr) =>
+                            attr.Name === "given_name" &&
+                            attr.Value === contact.contact.firstName,
+                    )
                 ) {
                     userAttributes.push({
                         Name: "given_name",
@@ -390,10 +404,12 @@ export class CognitoUserSyncService {
                 }
 
                 if (
+                    contact.contact.lastName &&
                     !cognitoUser.UserAttributes?.find(
-                        (attr) => attr.Name === "family_name",
-                    ) &&
-                    contact.contact.lastName
+                        (attr) =>
+                            attr.Name === "family_name" &&
+                            attr.Value === contact.contact.lastName,
+                    )
                 ) {
                     userAttributes.push({
                         Name: "family_name",
@@ -401,10 +417,20 @@ export class CognitoUserSyncService {
                     });
                 }
 
-                await this.updateUserAttributesInCognito(
-                    cognitoUser.Username!,
-                    userAttributes,
-                );
+                // Only update if there are changes
+                if (userAttributes.length > 0) {
+                    this.logger.info(
+                        `Updating user ${contact.contact.email} in Cognito with changed attributes`,
+                    );
+                    await this.updateUserAttributesInCognito(
+                        cognitoUser.Username!,
+                        userAttributes,
+                    );
+                } else {
+                    this.logger.info(
+                        `No changes detected for user ${contact.contact.email}, skipping update`,
+                    );
+                }
             }
         }
 
