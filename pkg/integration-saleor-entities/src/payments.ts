@@ -210,8 +210,8 @@ export class SaleorPaymentSyncService {
             );
             return;
         }
-        this.logger.info(`Syncing ${payments?.length} payments`);
 
+        this.logger.info(`Syncing ${payments?.length} payments`);
         /**
          * Process legacy payments
          */
@@ -524,8 +524,23 @@ export class SaleorPaymentSyncService {
         if (successfullTransactionsTransactionApi?.length) {
             this.logger.info(
                 `Processing ${successfullTransactionsTransactionApi.length} successfull transactions`,
+                {
+                    orderNumbers: successfullTransactionsTransactionApi.map(
+                        (t) => t.order?.number,
+                    ),
+                },
             );
             for (const transaction of successfullTransactionsTransactionApi) {
+                this.logger.debug(`Starting to process transaction`, {
+                    transactionId: transaction.id,
+                    orderNumber: transaction.order?.number,
+                    authorizePendingAmount: transaction.authorizePendingAmount,
+                    chargePendingAmount: transaction.chargePendingAmount,
+                    chargedAmount: transaction.chargedAmount,
+                    authorizedAmount: transaction.authorizedAmount,
+                    pspReference: transaction.pspReference,
+                    email: transaction.order?.userEmail,
+                });
                 const lowercaseEmail =
                     transaction.order?.userEmail?.toLowerCase();
                 /**
@@ -554,12 +569,22 @@ export class SaleorPaymentSyncService {
                 if (!lowercaseEmail) {
                     this.logger.info(
                         `No email found for transaction ${transaction.id}. Skipping`,
+                        {
+                            transactionId: transaction.id,
+                            orderNumber: transaction.order?.number,
+                            saleorOrderId: transaction.order?.id,
+                        },
                     );
                     continue;
                 }
                 if (!transaction.order?.id) {
                     this.logger.info(
                         `No order found for transaction ${transaction.id}. Skipping`,
+                        {
+                            transactionId: transaction.id,
+                            orderNumber: transaction.order?.number,
+                            saleorOrderId: transaction.order?.id,
+                        },
                     );
                     continue;
                 }
@@ -569,6 +594,11 @@ export class SaleorPaymentSyncService {
                 ) {
                     this.logger.info(
                         `Transaction ${transaction.id} is not fully captured. Skipping`,
+                        {
+                            transactionId: transaction.id,
+                            orderNumber: transaction.order?.number,
+                            saleorOrderId: transaction.order?.id,
+                        },
                     );
                     continue;
                 }
@@ -582,6 +612,11 @@ export class SaleorPaymentSyncService {
                 ) {
                     this.logger.info(
                         `Transaction ${transaction.id} has both authorized and charged amount set. Skipping`,
+                        {
+                            transactionId: transaction.id,
+                            orderNumber: transaction.order?.number,
+                            saleorOrderId: transaction.order?.id,
+                        },
                     );
                     continue;
                 }
@@ -601,6 +636,11 @@ export class SaleorPaymentSyncService {
                 if (!amount) {
                     this.logger.info(
                         `No amount found for transaction ${transaction.id}. Skipping`,
+                        {
+                            orderNumber: transaction.order?.number,
+                            saleorOrderId: transaction.order?.id,
+                            transactionId: transaction.id,
+                        },
                     );
                     continue;
                 }
@@ -616,10 +656,35 @@ export class SaleorPaymentSyncService {
                                 tenantId: this.tenantId,
                             },
                         },
+                        include: {
+                            saleorPayment: {
+                                where: {
+                                    installedSaleorAppId:
+                                        this.installedSaleorApp.id,
+                                },
+                            },
+                        },
                     });
+
                     if (existingPayment && existingPayment.amount === amount) {
+                        /**
+                         * We don't need to create a new saleor payment, if the existing one
+                         * is already connected to the transaction
+                         */
+                        if (
+                            existingPayment.saleorPayment &&
+                            existingPayment.saleorPayment[0].id ===
+                                transaction.id
+                        ) {
+                            continue;
+                        }
                         this.logger.info(
                             `Payment ${transaction.pspReference} already exists. Connecting this Saleor payment to it`,
+                            {
+                                transactionId: transaction.id,
+                                orderNumber: transaction.order?.number,
+                                saleorOrderId: transaction.order?.id,
+                            },
                         );
                         await this.db.saleorPayment.upsert({
                             where: {
@@ -813,10 +878,6 @@ export class SaleorPaymentSyncService {
                         }: ${JSON.stringify(error)}`,
                     );
                 }
-
-                this.logger.debug(
-                    `Upserted payment for transaction ${transaction.id}`,
-                );
             }
         }
 
