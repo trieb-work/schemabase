@@ -645,6 +645,15 @@ export class SaleorPaymentSyncService {
                     continue;
                 }
 
+                const saleorOrder = await this.db.saleorOrder.findUnique({
+                    where: {
+                        id_installedSaleorAppId: {
+                            id: transaction.order.id,
+                            installedSaleorAppId: this.installedSaleorApp.id,
+                        },
+                    },
+                });
+
                 /**
                  * Handle the case of imported orders / manual created transactions by staff users
                  */
@@ -672,8 +681,8 @@ export class SaleorPaymentSyncService {
                          * is already connected to the transaction
                          */
                         if (
-                            existingPayment.saleorPayment &&
-                            existingPayment.saleorPayment[0].id ===
+                            existingPayment.saleorPayment.length &&
+                            existingPayment.saleorPayment[0]?.id ===
                                 transaction.id
                         ) {
                             continue;
@@ -715,6 +724,13 @@ export class SaleorPaymentSyncService {
                                     connect: {
                                         id: existingPayment.id,
                                     },
+                                    update: {
+                                        order: {
+                                            connect: {
+                                                id: saleorOrder?.orderId,
+                                            },
+                                        },
+                                    },
                                 },
                             },
                         });
@@ -739,15 +755,6 @@ export class SaleorPaymentSyncService {
 
                 const { type, gateway, currency, metadataJson } =
                     await this.transactionToPaymentMethod(transaction);
-
-                const saleorOrder = await this.db.saleorOrder.findUnique({
-                    where: {
-                        id_installedSaleorAppId: {
-                            id: transaction.order.id,
-                            installedSaleorAppId: this.installedSaleorApp.id,
-                        },
-                    },
-                });
 
                 this.logger.info(`Processing transaction ${transaction.id}`, {
                     paymentStatus,
