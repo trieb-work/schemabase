@@ -253,7 +253,7 @@ export class CronTable {
                     this.clients,
                     commonWorkflowConfig,
                 ),
-                { ...commonCronConfig, offset: 10 },
+                { ...commonCronConfig, offset: 5 },
                 [tenantId.substring(0, 5), id.substring(0, 5)],
             );
             new WorkflowScheduler(this.clients).schedule(
@@ -262,7 +262,7 @@ export class CronTable {
                     this.clients,
                     commonWorkflowConfig,
                 ),
-                { ...commonCronConfig, offset: 10 },
+                { ...commonCronConfig, offset: 5 },
                 [tenantId.substring(0, 5), id.substring(0, 5)],
             );
             new WorkflowScheduler(this.clients).schedule(
@@ -271,7 +271,7 @@ export class CronTable {
                     this.clients,
                     commonWorkflowConfig,
                 ),
-                { ...commonCronConfig, offset: 10 },
+                { ...commonCronConfig, offset: 0 },
                 [tenantId.substring(0, 5), id.substring(0, 5)],
             );
             new WorkflowScheduler(this.clients).schedule(
@@ -280,7 +280,7 @@ export class CronTable {
                     this.clients,
                     commonWorkflowConfig,
                 ),
-                { ...commonCronConfig, offset: 10 },
+                { ...commonCronConfig, offset: 0 },
                 [tenantId.substring(0, 5), id.substring(0, 5)],
             );
             new WorkflowScheduler(this.clients).schedule(
@@ -289,7 +289,7 @@ export class CronTable {
                     this.clients,
                     commonWorkflowConfig,
                 ),
-                { ...commonCronConfig, offset: 10 },
+                { ...commonCronConfig, offset: 0 },
                 [tenantId.substring(0, 5), id.substring(0, 5)],
             );
             new WorkflowScheduler(this.clients).schedule(
@@ -298,7 +298,7 @@ export class CronTable {
                     this.clients,
                     commonWorkflowConfig,
                 ),
-                { ...commonCronConfig, offset: 20 },
+                { ...commonCronConfig, offset: 0 },
                 [tenantId.substring(0, 5), id.substring(0, 5)],
             );
             new WorkflowScheduler(this.clients).schedule(
@@ -307,7 +307,7 @@ export class CronTable {
                     this.clients,
                     commonWorkflowConfig,
                 ),
-                { ...commonCronConfig, offset: 25 },
+                { ...commonCronConfig, offset: 10 },
                 [tenantId.substring(0, 5), id.substring(0, 5)],
             );
         }
@@ -689,7 +689,7 @@ export class CronTable {
                         this.clients,
                         commonWorkflowConfig,
                     ),
-                    { ...commonCronConfig, offset: 3, cron: "0 */6 * * *" },
+                    { ...commonCronConfig, offset: 0, cron: "0 */6 * * *" },
                     [tenantId.substring(0, 5), id.substring(0, 7)],
                 );
                 this.scheduler.schedule(
@@ -698,7 +698,7 @@ export class CronTable {
                         this.clients,
                         commonWorkflowConfig,
                     ),
-                    { ...commonCronConfig, offset: 3, cron: "0 */12 * * *" },
+                    { ...commonCronConfig, cron: "0 */12 * * *" },
                     [tenantId.substring(0, 5), id.substring(0, 7)],
                 );
                 this.scheduler.schedule(
@@ -716,7 +716,7 @@ export class CronTable {
                         this.clients,
                         commonWorkflowConfig,
                     ),
-                    { ...commonCronConfig, offset: 10 },
+                    { ...commonCronConfig, offset: 5 },
                     [tenantId.substring(0, 5), id.substring(0, 7)],
                 );
             }
@@ -727,7 +727,7 @@ export class CronTable {
                         this.clients,
                         commonWorkflowConfig,
                     ),
-                    { ...commonCronConfig, offset: 4 },
+                    { ...commonCronConfig, offset: 0 },
                     [tenantId.substring(0, 5), id.substring(0, 7)],
                 );
             }
@@ -739,7 +739,7 @@ export class CronTable {
                         this.clients,
                         commonWorkflowConfig,
                     ),
-                    { ...commonCronConfig, offset: 10 },
+                    { ...commonCronConfig, offset: 2 },
                     [tenantId.substring(0, 5), id.substring(0, 7)],
                 );
             }
@@ -750,7 +750,7 @@ export class CronTable {
                         this.clients,
                         commonWorkflowConfig,
                     ),
-                    { ...commonCronConfig, offset: 9 },
+                    { ...commonCronConfig, offset: 3 },
                     [tenantId.substring(0, 5), id.substring(0, 7)],
                 );
             }
@@ -761,7 +761,7 @@ export class CronTable {
                         this.clients,
                         commonWorkflowConfig,
                     ),
-                    { ...commonCronConfig, offset: 9 },
+                    { ...commonCronConfig },
                     [tenantId.substring(0, 5), id.substring(0, 7)],
                 );
             }
@@ -773,7 +773,7 @@ export class CronTable {
                         commonWorkflowConfig,
                     ),
                     // FrequentlyBoughtTogether runs just once a day
-                    { ...commonCronConfig, offset: 20, cron: "12 2 * * *" },
+                    { ...commonCronConfig, cron: "12 2 * * *" },
                     [tenantId.substring(0, 5), id.substring(0, 7)],
                 );
             }

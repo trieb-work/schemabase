@@ -89,7 +89,7 @@ export class WorkflowScheduler {
              */
             timeout?: number;
             /**
-             * Offset in minutes when the cronjob get's executet.
+             * Offset in minutes when the cronjob get's executed.
              */
             offset?: number;
         },
@@ -123,8 +123,6 @@ export class WorkflowScheduler {
         } else {
             repeat.pattern = config.cron;
             repeat.tz = "Europe/Berlin";
-            repeat.offset =
-                (config?.offset ?? 0) + new Date().getTimezoneOffset();
         }
 
         this.logger.info("Scheduling new workflow", {
@@ -144,6 +142,7 @@ export class WorkflowScheduler {
                 repeat,
                 attempts: config?.attempts ?? 1,
                 keepLogs: 2000,
+                delay: config?.offset ? config.offset * 60_000 : undefined,
                 backoff: {
                     type: "exponential",
                     delay: 60_000, // 1min, 2min, 4min...
