@@ -264,6 +264,51 @@ export class KencoveApiAppPricelistSyncService {
                         continue;
                     }
 
+                    /**
+                     * the existing pricelist entry for the current product variant and sales channel
+                     * so that we can check, if we actually need to update
+                     */
+                    const existingPriceEntry =
+                        await this.db.kencoveApiPricelistItem.findUnique({
+                            where: {
+                                id_productTemplateId_kencoveApiAppId: {
+                                    id: pricelistEntry.pricelist_item_id.toString(),
+                                    productTemplateId:
+                                        pricelist.product_template_id.toString(),
+                                    kencoveApiAppId: this.kencoveApiApp.id,
+                                },
+                            },
+                            include: {
+                                salesChannelPriceEntry: true,
+                            },
+                        });
+
+                    /**
+                     * Pricelist entries can be inactive, if they are not valid anymore.
+                     * We disable them in our database and continue
+                     */
+                    if (!pricelistEntry.active && existingPriceEntry) {
+                        this.logger.info(
+                            `Pricelist entry for SKU ${productVariant.sku} and ` +
+                                `${pricelistEntry.pricelist_name} is inactive. Disabling in our database.`,
+                            {
+                                productVariantId: productVariant.id,
+                                pricelistEntryId:
+                                    pricelistEntry.pricelist_item_id,
+                            },
+                        );
+                        await this.db.salesChannelPriceEntry.update({
+                            where: {
+                                id: existingPriceEntry.salesChannelPriceEntry
+                                    ?.id,
+                            },
+                            data: {
+                                active: false,
+                            },
+                        });
+                        continue;
+                    }
+
                     const channelNormalizedName = normalizeStrings.channelNames(
                         pricelistEntry.pricelist_name,
                     );
@@ -300,25 +345,6 @@ export class KencoveApiAppPricelistSyncService {
                             productVariant.productId,
                         );
                     }
-
-                    /**
-                     * the existing pricelist entry for the current product variant and sales channel
-                     * so that we can check, if we actually need to update
-                     */
-                    const existingPriceEntry =
-                        await this.db.kencoveApiPricelistItem.findUnique({
-                            where: {
-                                id_productTemplateId_kencoveApiAppId: {
-                                    id: pricelistEntry.pricelist_item_id.toString(),
-                                    productTemplateId:
-                                        pricelist.product_template_id.toString(),
-                                    kencoveApiAppId: this.kencoveApiApp.id,
-                                },
-                            },
-                            include: {
-                                salesChannelPriceEntry: true,
-                            },
-                        });
 
                     if (!existingPriceEntry) {
                         /**
