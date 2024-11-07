@@ -315,6 +315,7 @@ export type KencoveApiPricelistItem = {
     date_end: string | null;
     product_id: null;
     variantItemCode: null | string;
+    active: boolean;
 };
 export type KencoveApiPricelist = {
     product_template_id: number;
