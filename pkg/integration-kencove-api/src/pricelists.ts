@@ -488,60 +488,59 @@ export class KencoveApiAppPricelistSyncService {
                             });
                         }
                     }
+                }
 
+                /**
+                 * The kencove api always returns all pricelist entries for a product variant, if one of them got updated.
+                 * Like this, we can cleanup our DB and remove all pricelist entries that are not in the current pricelist
+                 * anymore (got deleted in Odoo, not archived)
+                 */
+                if (productVariant) {
                     /**
-                     * The kencove api always returns all pricelist entries for a product variant, if one of them got updated.
-                     * Like this, we can cleanup our DB and remove all pricelist entries that are not in the current pricelist
-                     * anymore (got deleted in Odoo, not archived)
+                     * we check all pricelist items for the current product variant from the kencove api
+                     * and compare them with all existing sales channel price entries for the current product variant
+                     * that include a kencove api pricelist item. We delete all sales channel price entries that
+                     * are not in the current pricelist items anymore.
                      */
-                    if (productVariant) {
-                        /**
-                         * we check all pricelist items for the current product variant from the kencove api
-                         * and compare them with all existing sales channel price entries for the current product variant
-                         * that include a kencove api pricelist item. We delete all sales channel price entries that
-                         * are not in the current pricelist items anymore.
-                         */
-                        const existingPriceEntries =
-                            await this.db.salesChannelPriceEntry.findMany({
-                                where: {
-                                    productVariantId: productVariant.id,
-                                    tenantId: this.kencoveApiApp.tenantId,
-                                    kencoveApiPricelistItems: {
-                                        some: {
-                                            kencoveApiAppId:
-                                                this.kencoveApiApp.id,
-                                        },
+                    const existingPriceEntries =
+                        await this.db.salesChannelPriceEntry.findMany({
+                            where: {
+                                productVariantId: productVariant.id,
+                                tenantId: this.kencoveApiApp.tenantId,
+                                kencoveApiPricelistItems: {
+                                    some: {
+                                        kencoveApiAppId: this.kencoveApiApp.id,
                                     },
                                 },
-                                include: {
-                                    kencoveApiPricelistItems: true,
+                            },
+                            include: {
+                                kencoveApiPricelistItems: true,
+                            },
+                        });
+                    for (const existingPriceEntryToCheck of existingPriceEntries) {
+                        const found = pricelist.priceListItems.find(
+                            (item) =>
+                                item.pricelist_item_id.toString() ===
+                                existingPriceEntryToCheck
+                                    .kencoveApiPricelistItems[0]?.id,
+                        );
+                        if (!found) {
+                            this.logger.info(
+                                `Deleting sales channel price entry for SKU ${productVariant.sku} and ` +
+                                    `${existingPriceEntryToCheck.salesChannelId} as it is not in the current pricelist anymore.`,
+                                {
+                                    productVariantId: productVariant.id,
+                                    salesChannelId:
+                                        existingPriceEntryToCheck.salesChannelId,
+                                    existingPriceEntryId:
+                                        existingPriceEntryToCheck.id,
+                                },
+                            );
+                            await this.db.salesChannelPriceEntry.delete({
+                                where: {
+                                    id: existingPriceEntryToCheck.id,
                                 },
                             });
-                        for (const existingPriceEntryToCheck of existingPriceEntries) {
-                            const found = pricelist.priceListItems.find(
-                                (item) =>
-                                    item.pricelist_item_id.toString() ===
-                                    existingPriceEntryToCheck
-                                        .kencoveApiPricelistItems[0]?.id,
-                            );
-                            if (!found) {
-                                this.logger.info(
-                                    `Deleting sales channel price entry for SKU ${productVariant.sku} and ` +
-                                        `${existingPriceEntryToCheck.salesChannelId} as it is not in the current pricelist anymore.`,
-                                    {
-                                        productVariantId: productVariant.id,
-                                        salesChannelId:
-                                            existingPriceEntryToCheck.salesChannelId,
-                                        existingPriceEntryId:
-                                            existingPriceEntryToCheck.id,
-                                    },
-                                );
-                                await this.db.salesChannelPriceEntry.delete({
-                                    where: {
-                                        id: existingPriceEntryToCheck.id,
-                                    },
-                                });
-                            }
                         }
                     }
                 }
