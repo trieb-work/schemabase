@@ -106,12 +106,14 @@ export class SaleorChannelAvailabilitySyncService {
     private getCurrentActiveBasePrices(
         entries: EnhancedSalesChannelPriceEntry[],
     ): EnhancedSalesChannelPriceEntry[] {
-        // Filter out entries with minQuantity > 1 or with an endDate in the past
-        const activeEntries = entries.filter(
-            (entry) =>
-                entry.minQuantity <= 1 &&
-                (!entry.endDate || isAfter(entry.endDate, new Date())),
-        );
+        // Filter out entries with minQuantity > 1 or with an endDate in the past. Entries need to be active.
+        const activeEntries = entries
+            .filter((entry) => entry.active)
+            .filter(
+                (entry) =>
+                    entry.minQuantity <= 1 &&
+                    (!entry.endDate || isAfter(entry.endDate, new Date())),
+            );
 
         // Group entries by productVariantId and salesChannelId
         const groupedEntries: Record<string, EnhancedSalesChannelPriceEntry[]> =
@@ -790,7 +792,8 @@ export class SaleorChannelAvailabilitySyncService {
     ) {
         /**
          * pull all entries for quantity > 0 for this variant
-         * and that are currently valid (no end date or end date after now)
+         * and that are currently valid (no end date or end date after now).
+         * We also filter for active entries
          */
         const entries = await this.db.salesChannelPriceEntry.findMany({
             where: {
@@ -802,6 +805,7 @@ export class SaleorChannelAvailabilitySyncService {
                 startDate: {
                     lte: new Date(),
                 },
+                active: true,
             },
             include: {
                 salesChannel: true,
@@ -868,7 +872,7 @@ export class SaleorChannelAvailabilitySyncService {
             existingVariantMetafield &&
             existingVariantMetafield === JSON.stringify(metadataItemValue)
         ) {
-            this.logger.info(
+            this.logger.debug(
                 `Volume pricing metadata already up to date for product variant ${prodVariantId}`,
                 {
                     sku: entries[0].productVariant.sku,
