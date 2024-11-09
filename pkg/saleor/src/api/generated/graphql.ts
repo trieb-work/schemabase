@@ -280,7 +280,6 @@ export type AccountError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum AccountErrorCode {
     AccountNotConfirmed = "ACCOUNT_NOT_CONFIRMED",
     ActivateOwnAccount = "ACTIVATE_OWN_ACCOUNT",
@@ -683,7 +682,6 @@ export type AddressSetDefault = {
     user?: Maybe<User>;
 };
 
-/** An enumeration. */
 export enum AddressTypeEnum {
     Billing = "BILLING",
     Shipping = "SHIPPING",
@@ -1143,7 +1141,6 @@ export type AppError = {
     permissions?: Maybe<Array<PermissionEnum>>;
 };
 
-/** An enumeration. */
 export enum AppErrorCode {
     Forbidden = "FORBIDDEN",
     GraphqlError = "GRAPHQL_ERROR",
@@ -1582,7 +1579,6 @@ export type AppUpdated = Event & {
     version?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum AreaUnitsEnum {
     SqCm = "SQ_CM",
     SqDm = "SQ_DM",
@@ -1790,7 +1786,6 @@ export type AttributeBulkCreateError = {
     path?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum AttributeBulkCreateErrorCode {
     AlreadyExists = "ALREADY_EXISTS",
     Blank = "BLANK",
@@ -1906,7 +1901,6 @@ export type AttributeBulkUpdateError = {
     path?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum AttributeBulkUpdateErrorCode {
     AlreadyExists = "ALREADY_EXISTS",
     Blank = "BLANK",
@@ -2089,7 +2083,6 @@ export type AttributeDeleted = Event & {
     version?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum AttributeEntityTypeEnum {
     Page = "PAGE",
     Product = "PRODUCT",
@@ -2113,7 +2106,6 @@ export type AttributeError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum AttributeErrorCode {
     AlreadyExists = "ALREADY_EXISTS",
     GraphqlError = "GRAPHQL_ERROR",
@@ -2160,7 +2152,6 @@ export type AttributeInput = {
     valuesRange?: InputMaybe<IntRangeInput>;
 };
 
-/** An enumeration. */
 export enum AttributeInputTypeEnum {
     Boolean = "BOOLEAN",
     Date = "DATE",
@@ -2268,7 +2259,6 @@ export type AttributeTranslate = {
     translationErrors: Array<TranslationError>;
 };
 
-/** An enumeration. */
 export enum AttributeTranslateErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
@@ -2293,7 +2283,6 @@ export type AttributeTranslation = Node & {
     translatableContent?: Maybe<AttributeTranslatableContent>;
 };
 
-/** An enumeration. */
 export enum AttributeTypeEnum {
     PageType = "PAGE_TYPE",
     ProductType = "PRODUCT_TYPE",
@@ -2761,7 +2750,6 @@ export type AttributeValueTranslate = {
     translationErrors: Array<TranslationError>;
 };
 
-/** An enumeration. */
 export enum AttributeValueTranslateErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
@@ -3871,7 +3859,6 @@ export type ChannelError = {
     warehouses?: Maybe<Array<Scalars["ID"]>>;
 };
 
-/** An enumeration. */
 export enum ChannelErrorCode {
     AlreadyExists = "ALREADY_EXISTS",
     ChannelsCurrencyMustBeTheSame = "CHANNELS_CURRENCY_MUST_BE_THE_SAME",
@@ -4495,7 +4482,6 @@ export type CheckoutCreateFromOrderError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum CheckoutCreateFromOrderErrorCode {
     ChannelInactive = "CHANNEL_INACTIVE",
     GraphqlError = "GRAPHQL_ERROR",
@@ -4516,7 +4502,6 @@ export type CheckoutCreateFromOrderUnavailableVariant = {
     variantId: Scalars["ID"];
 };
 
-/** An enumeration. */
 export enum CheckoutCreateFromOrderUnavailableVariantErrorCode {
     InsufficientStock = "INSUFFICIENT_STOCK",
     NotFound = "NOT_FOUND",
@@ -4647,7 +4632,6 @@ export type CheckoutError = {
     variants?: Maybe<Array<Scalars["ID"]>>;
 };
 
-/** An enumeration. */
 export enum CheckoutErrorCode {
     BillingAddressNotSet = "BILLING_ADDRESS_NOT_SET",
     ChannelInactive = "CHANNEL_INACTIVE",
@@ -4719,7 +4703,7 @@ export type CheckoutFilterShippingMethods = Event & {
 };
 
 /**
- * Event sent when checkout is fully paid with transactions.
+ * Event sent when checkout is fully paid with transactions. The checkout is considered as fully paid when the checkout `charge_status` is `FULL` or `OVERCHARGED`. The event is not sent when the checkout authorization flow strategy is used.
  *
  * Added in Saleor 3.13.
  *
@@ -5093,6 +5077,12 @@ export type CheckoutRemovePromoCode = {
 export type CheckoutSettings = {
     __typename?: "CheckoutSettings";
     /**
+     * Default `false`. Determines if the paid checkouts should be automatically completed. This setting applies only to checkouts where payment was processed through transactions.When enabled, the checkout will be automatically completed once the checkout `charge_status` reaches `FULL`. This occurs when the total sum of charged and authorized transaction amounts equals or exceeds the checkout's total amount.
+     *
+     * Added in Saleor 3.20.
+     */
+    automaticallyCompleteFullyPaidCheckouts: Scalars["Boolean"];
+    /**
      * Default `true`. Determines if the checkout mutations should use legacy error flow. In legacy flow, all mutations can raise an exception unrelated to the requested action - (e.g. out-of-stock exception when updating checkoutShippingAddress.) If `false`, the errors will be aggregated in `checkout.problems` field. Some of the `problems` can block the finalizing checkout process. The legacy flow will be removed in Saleor 4.0. The flow with `checkout.problems` will be the default one.
      *
      * Added in Saleor 3.15.This field will be removed in Saleor 4.0.
@@ -5101,6 +5091,12 @@ export type CheckoutSettings = {
 };
 
 export type CheckoutSettingsInput = {
+    /**
+     * Default `false`. Determines if the paid checkouts should be automatically completed. This setting applies only to checkouts where payment was processed through transactions.When enabled, the checkout will be automatically completed once the checkout `charge_status` reaches `FULL`. This occurs when the total sum of charged and authorized transaction amounts equals or exceeds the checkout's total amount.
+     *
+     * Added in Saleor 3.20.
+     */
+    automaticallyCompleteFullyPaidCheckouts?: InputMaybe<Scalars["Boolean"]>;
     /**
      * Default `true`. Determines if the checkout mutations should use legacy error flow. In legacy flow, all mutations can raise an exception unrelated to the requested action - (e.g. out-of-stock exception when updating checkoutShippingAddress.) If `false`, the errors will be aggregated in `checkout.problems` field. Some of the `problems` can block the finalizing checkout process. The legacy flow will be removed in Saleor 4.0. The flow with `checkout.problems` will be the default one.
      *
@@ -5546,7 +5542,6 @@ export type CollectionError = {
     products?: Maybe<Array<Scalars["ID"]>>;
 };
 
-/** An enumeration. */
 export enum CollectionErrorCode {
     CannotManageProductWithoutVariant = "CANNOT_MANAGE_PRODUCT_WITHOUT_VARIANT",
     DuplicatedInputItem = "DUPLICATED_INPUT_ITEM",
@@ -5872,7 +5867,6 @@ export type ConfigurationItemInput = {
     value?: InputMaybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum ConfigurationTypeFieldEnum {
     Boolean = "BOOLEAN",
     Multiline = "MULTILINE",
@@ -6294,7 +6288,6 @@ export type CustomerBulkUpdateError = {
     path?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum CustomerBulkUpdateErrorCode {
     Blank = "BLANK",
     DuplicatedInputItem = "DUPLICATED_INPUT_ITEM",
@@ -6392,7 +6385,6 @@ export type CustomerEvent = Node & {
     user?: Maybe<User>;
 };
 
-/** An enumeration. */
 export enum CustomerEventsEnum {
     AccountActivated = "ACCOUNT_ACTIVATED",
     AccountCreated = "ACCOUNT_CREATED",
@@ -6850,7 +6842,6 @@ export type DiscountError = {
     voucherCodes?: Maybe<Array<Scalars["String"]>>;
 };
 
-/** An enumeration. */
 export enum DiscountErrorCode {
     AlreadyExists = "ALREADY_EXISTS",
     CannotManageProductWithoutVariant = "CANNOT_MANAGE_PRODUCT_WITHOUT_VARIANT",
@@ -6885,7 +6876,6 @@ export type DiscountedObjectWhereInput = {
     baseTotalPrice?: InputMaybe<DecimalFilterInput>;
 };
 
-/** An enumeration. */
 export enum DistanceUnitsEnum {
     Cm = "CM",
     Dm = "DM",
@@ -7278,7 +7268,6 @@ export type ExportError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum ExportErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
@@ -7303,7 +7292,6 @@ export type ExportEvent = Node & {
     user?: Maybe<User>;
 };
 
-/** An enumeration. */
 export enum ExportEventsEnum {
     ExportedFileSent = "EXPORTED_FILE_SENT",
     ExportDeleted = "EXPORT_DELETED",
@@ -7523,7 +7511,6 @@ export type ExternalNotificationError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum ExternalNotificationErrorCodes {
     ChannelInactive = "CHANNEL_INACTIVE",
     InvalidModelType = "INVALID_MODEL_TYPE",
@@ -7604,7 +7591,6 @@ export type File = {
     url: Scalars["String"];
 };
 
-/** An enumeration. */
 export enum FileTypesEnum {
     Csv = "CSV",
     Xlsx = "XLSX",
@@ -7894,7 +7880,6 @@ export type FulfillmentReturnProducts = {
     returnFulfillment?: Maybe<Fulfillment>;
 };
 
-/** An enumeration. */
 export enum FulfillmentStatus {
     Canceled = "CANCELED",
     Fulfilled = "FULFILLED",
@@ -8423,7 +8408,6 @@ export type GiftCardError = {
     tags?: Maybe<Array<Scalars["String"]>>;
 };
 
-/** An enumeration. */
 export enum GiftCardErrorCode {
     AlreadyExists = "ALREADY_EXISTS",
     DuplicatedInputItem = "DUPLICATED_INPUT_ITEM",
@@ -8489,7 +8473,6 @@ export type GiftCardEventFilterInput = {
     type?: InputMaybe<GiftCardEventsEnum>;
 };
 
-/** An enumeration. */
 export enum GiftCardEventsEnum {
     Activated = "ACTIVATED",
     BalanceReset = "BALANCE_RESET",
@@ -8627,14 +8610,12 @@ export type GiftCardSettingsError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum GiftCardSettingsErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
     Required = "REQUIRED",
 }
 
-/** An enumeration. */
 export enum GiftCardSettingsExpiryTypeEnum {
     ExpiryPeriod = "EXPIRY_PERIOD",
     NeverExpire = "NEVER_EXPIRE",
@@ -9060,7 +9041,6 @@ export type InvoiceError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum InvoiceErrorCode {
     EmailNotSet = "EMAIL_NOT_SET",
     InvalidStatus = "INVALID_STATUS",
@@ -9199,7 +9179,6 @@ export type Job = {
     updatedAt: Scalars["DateTime"];
 };
 
-/** An enumeration. */
 export enum JobStatusEnum {
     Deleted = "DELETED",
     Failed = "FAILED",
@@ -9207,7 +9186,6 @@ export enum JobStatusEnum {
     Success = "SUCCESS",
 }
 
-/** An enumeration. */
 export enum LanguageCodeEnum {
     Af = "AF",
     AfNa = "AF_NA",
@@ -10142,7 +10120,6 @@ export enum MarkAsPaidStrategyEnum {
     TransactionFlow = "TRANSACTION_FLOW",
 }
 
-/** An enumeration. */
 export enum MeasurementUnitsEnum {
     AcreFt = "ACRE_FT",
     AcreIn = "ACRE_IN",
@@ -10415,7 +10392,6 @@ export type MenuError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum MenuErrorCode {
     CannotAssignNode = "CANNOT_ASSIGN_NODE",
     GraphqlError = "GRAPHQL_ERROR",
@@ -10891,7 +10867,6 @@ export type MetadataError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum MetadataErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
@@ -13241,6 +13216,11 @@ export type Mutation = {
      * Note: this API is currently in Feature Preview and can be subject to changes at later point.
      *
      * Requires the following permissions: OWNER and HANDLE_PAYMENTS for apps, HANDLE_PAYMENTS for staff users. Staff user cannot update a transaction that is owned by the app.
+     *
+     * Triggers the following webhook events:
+     * - TRANSACTION_ITEM_METADATA_UPDATED (async): Optionally called when transaction's metadata was updated.
+     * - CHECKOUT_FULLY_PAID (async): Optionally called when the checkout charge status changed to `FULL` or `OVERCHARGED`.
+     * - ORDER_UPDATED (async): Optionally called when the transaction is related to the order and the order was updated.
      */
     transactionEventReport?: Maybe<TransactionEventReport>;
     /**
@@ -14901,6 +14881,8 @@ export type MutationTransactionEventReportArgs = {
     pspReference: Scalars["String"];
     time?: InputMaybe<Scalars["DateTime"]>;
     token?: InputMaybe<Scalars["UUID"]>;
+    transactionMetadata?: InputMaybe<Array<MetadataInput>>;
+    transactionPrivateMetadata?: InputMaybe<Array<MetadataInput>>;
     type: TransactionEventTypeEnum;
 };
 
@@ -15591,7 +15573,6 @@ export type OrderBulkCreateError = {
     path?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum OrderBulkCreateErrorCode {
     BulkLimit = "BULK_LIMIT",
     FutureDate = "FUTURE_DATE",
@@ -15731,6 +15712,12 @@ export type OrderBulkCreateOrderLineInput = {
     privateMetadata?: InputMaybe<Array<MetadataInput>>;
     /** The name of the product. */
     productName?: InputMaybe<Scalars["String"]>;
+    /**
+     * The SKU of the product.
+     *
+     * Added in Saleor 3.18.
+     */
+    productSku?: InputMaybe<Scalars["String"]>;
     /** Number of items in the order line */
     quantity: Scalars["Int"];
     /** The ID of the tax class. */
@@ -15751,6 +15738,24 @@ export type OrderBulkCreateOrderLineInput = {
     translatedVariantName?: InputMaybe<Scalars["String"]>;
     /** Price of the order line excluding applied discount. */
     undiscountedTotalPrice: TaxedMoneyInput;
+    /**
+     * Reason of the discount on order line.
+     *
+     * Added in Saleor 3.19.
+     */
+    unitDiscountReason?: InputMaybe<Scalars["String"]>;
+    /**
+     * Type of the discount: fixed or percent
+     *
+     * Added in Saleor 3.19.
+     */
+    unitDiscountType?: InputMaybe<DiscountValueTypeEnum>;
+    /**
+     * Value of the discount. Can store fixed value or percent value
+     *
+     * Added in Saleor 3.19.
+     */
+    unitDiscountValue?: InputMaybe<Scalars["PositiveDecimal"]>;
     /** The external ID of the product variant. */
     variantExternalReference?: InputMaybe<Scalars["String"]>;
     /** The ID of the product variant. */
@@ -15963,7 +15968,6 @@ export type OrderCreateFromCheckoutError = {
     variants?: Maybe<Array<Scalars["ID"]>>;
 };
 
-/** An enumeration. */
 export enum OrderCreateFromCheckoutErrorCode {
     BillingAddressNotSet = "BILLING_ADDRESS_NOT_SET",
     ChannelInactive = "CHANNEL_INACTIVE",
@@ -16069,7 +16073,6 @@ export type OrderDiscountDelete = {
     orderErrors: Array<OrderError>;
 };
 
-/** An enumeration. */
 export enum OrderDiscountType {
     Manual = "MANUAL",
     OrderPromotion = "ORDER_PROMOTION",
@@ -16118,7 +16121,6 @@ export type OrderError = {
     warehouse?: Maybe<Scalars["ID"]>;
 };
 
-/** An enumeration. */
 export enum OrderErrorCode {
     BillingAddressNotSet = "BILLING_ADDRESS_NOT_SET",
     CannotCancelFulfillment = "CANNOT_CANCEL_FULFILLMENT",
@@ -16266,7 +16268,6 @@ export type OrderEventOrderLineObject = {
     quantity?: Maybe<Scalars["Int"]>;
 };
 
-/** An enumeration. */
 export enum OrderEventsEmailsEnum {
     Confirmed = "CONFIRMED",
     DigitalLinks = "DIGITAL_LINKS",
@@ -16321,6 +16322,7 @@ export enum OrderEventsEnum {
     PaymentRefunded = "PAYMENT_REFUNDED",
     PaymentVoided = "PAYMENT_VOIDED",
     Placed = "PLACED",
+    PlacedAutomaticallyFromPaidCheckout = "PLACED_AUTOMATICALLY_FROM_PAID_CHECKOUT",
     PlacedFromDraft = "PLACED_FROM_DRAFT",
     RemovedProducts = "REMOVED_PRODUCTS",
     TrackingUpdated = "TRACKING_UPDATED",
@@ -16545,7 +16547,6 @@ export type OrderGrantRefundCreateError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum OrderGrantRefundCreateErrorCode {
     AmountGreaterThanAvailable = "AMOUNT_GREATER_THAN_AVAILABLE",
     GraphqlError = "GRAPHQL_ERROR",
@@ -16598,7 +16599,6 @@ export type OrderGrantRefundCreateLineError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum OrderGrantRefundCreateLineErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     NotFound = "NOT_FOUND",
@@ -16658,7 +16658,6 @@ export type OrderGrantRefundUpdateError = {
     removeLines?: Maybe<Array<OrderGrantRefundUpdateLineError>>;
 };
 
-/** An enumeration. */
 export enum OrderGrantRefundUpdateErrorCode {
     AmountGreaterThanAvailable = "AMOUNT_GREATER_THAN_AVAILABLE",
     GraphqlError = "GRAPHQL_ERROR",
@@ -16728,7 +16727,6 @@ export type OrderGrantRefundUpdateLineError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum OrderGrantRefundUpdateLineErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     NotFound = "NOT_FOUND",
@@ -17171,7 +17169,6 @@ export type OrderNoteAddError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum OrderNoteAddErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     Required = "REQUIRED",
@@ -17210,7 +17207,6 @@ export type OrderNoteUpdateError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum OrderNoteUpdateErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     NotFound = "NOT_FOUND",
@@ -17219,7 +17215,6 @@ export enum OrderNoteUpdateErrorCode {
 
 export type OrderOrCheckout = Checkout | Order;
 
-/** An enumeration. */
 export enum OrderOriginEnum {
     BulkCreate = "BULK_CREATE",
     Checkout = "CHECKOUT",
@@ -17409,7 +17404,6 @@ export type OrderSettingsError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum OrderSettingsErrorCode {
     Invalid = "INVALID",
 }
@@ -17520,7 +17514,6 @@ export type OrderSortingInput = {
     field: OrderSortField;
 };
 
-/** An enumeration. */
 export enum OrderStatus {
     Canceled = "CANCELED",
     Draft = "DRAFT",
@@ -17911,7 +17904,6 @@ export type PageError = {
     values?: Maybe<Array<Scalars["ID"]>>;
 };
 
-/** An enumeration. */
 export enum PageErrorCode {
     AttributeAlreadyAssigned = "ATTRIBUTE_ALREADY_ASSIGNED",
     DuplicatedInputItem = "DUPLICATED_INPUT_ITEM",
@@ -18625,7 +18617,6 @@ export type PaymentCaptureEvent = Event & {
     version?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum PaymentChargeStatusEnum {
     Cancelled = "CANCELLED",
     FullyCharged = "FULLY_CHARGED",
@@ -18706,7 +18697,6 @@ export type PaymentError = {
     variants?: Maybe<Array<Scalars["ID"]>>;
 };
 
-/** An enumeration. */
 export enum PaymentErrorCode {
     BalanceCheckError = "BALANCE_CHECK_ERROR",
     BillingAddressNotSet = "BILLING_ADDRESS_NOT_SET",
@@ -18770,7 +18760,6 @@ export type PaymentGatewayConfigError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum PaymentGatewayConfigErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
@@ -18801,7 +18790,6 @@ export type PaymentGatewayInitializeError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum PaymentGatewayInitializeErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
@@ -18864,7 +18852,6 @@ export type PaymentGatewayInitializeTokenizationError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum PaymentGatewayInitializeTokenizationErrorCode {
     ChannelInactive = "CHANNEL_INACTIVE",
     GatewayError = "GATEWAY_ERROR",
@@ -19016,7 +19003,6 @@ export type PaymentMethodInitializeTokenizationError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum PaymentMethodInitializeTokenizationErrorCode {
     ChannelInactive = "CHANNEL_INACTIVE",
     GatewayError = "GATEWAY_ERROR",
@@ -19085,7 +19071,6 @@ export type PaymentMethodProcessTokenizationError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum PaymentMethodProcessTokenizationErrorCode {
     ChannelInactive = "CHANNEL_INACTIVE",
     GatewayError = "GATEWAY_ERROR",
@@ -19287,7 +19272,6 @@ export type Permission = {
     name: Scalars["String"];
 };
 
-/** An enumeration. */
 export enum PermissionEnum {
     HandleCheckouts = "HANDLE_CHECKOUTS",
     HandlePayments = "HANDLE_PAYMENTS",
@@ -19426,7 +19410,6 @@ export type PermissionGroupError = {
     users?: Maybe<Array<Scalars["ID"]>>;
 };
 
-/** An enumeration. */
 export enum PermissionGroupErrorCode {
     AssignNonStaffMember = "ASSIGN_NON_STAFF_MEMBER",
     CannotRemoveFromLastGroup = "CANNOT_REMOVE_FROM_LAST_GROUP",
@@ -19587,7 +19570,6 @@ export type PluginError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum PluginErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
@@ -19640,7 +19622,6 @@ export type PluginUpdateInput = {
     configuration?: InputMaybe<Array<ConfigurationItemInput>>;
 };
 
-/** An enumeration. */
 export enum PostalCodeRuleInclusionTypeEnum {
     Exclude = "EXCLUDE",
     Include = "INCLUDE",
@@ -20022,7 +20003,6 @@ export type ProductBulkCreateError = {
     warehouses?: Maybe<Array<Scalars["ID"]>>;
 };
 
-/** An enumeration. */
 export enum ProductBulkCreateErrorCode {
     AttributeAlreadyAssigned = "ATTRIBUTE_ALREADY_ASSIGNED",
     AttributeCannotBeAssigned = "ATTRIBUTE_CANNOT_BE_ASSIGNED",
@@ -20488,7 +20468,6 @@ export type ProductError = {
     values?: Maybe<Array<Scalars["ID"]>>;
 };
 
-/** An enumeration. */
 export enum ProductErrorCode {
     AlreadyExists = "ALREADY_EXISTS",
     AttributeAlreadyAssigned = "ATTRIBUTE_ALREADY_ASSIGNED",
@@ -20871,7 +20850,6 @@ export type ProductMediaReorder = {
     productErrors: Array<ProductError>;
 };
 
-/** An enumeration. */
 export enum ProductMediaType {
     Image = "IMAGE",
     Video = "VIDEO",
@@ -21129,7 +21107,6 @@ export type ProductTranslate = {
     translationErrors: Array<TranslationError>;
 };
 
-/** An enumeration. */
 export enum ProductTranslateErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
@@ -21415,7 +21392,6 @@ export type ProductTypeInput = {
     weight?: InputMaybe<Scalars["WeightScalar"]>;
 };
 
-/** An enumeration. */
 export enum ProductTypeKindEnum {
     GiftCard = "GIFT_CARD",
     Normal = "NORMAL",
@@ -21825,7 +21801,6 @@ export type ProductVariantBulkError = {
     warehouses?: Maybe<Array<Scalars["ID"]>>;
 };
 
-/** An enumeration. */
 export enum ProductVariantBulkErrorCode {
     AttributeAlreadyAssigned = "ATTRIBUTE_ALREADY_ASSIGNED",
     AttributeCannotBeAssigned = "ATTRIBUTE_CANNOT_BE_ASSIGNED",
@@ -22496,7 +22471,6 @@ export type ProductVariantTranslate = {
     translationErrors: Array<TranslationError>;
 };
 
-/** An enumeration. */
 export enum ProductVariantTranslateErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
@@ -22819,7 +22793,6 @@ export type PromotionCreateError = {
     rulesLimitExceedBy?: Maybe<Scalars["Int"]>;
 };
 
-/** An enumeration. */
 export enum PromotionCreateErrorCode {
     GiftsNumberLimit = "GIFTS_NUMBER_LIMIT",
     GraphqlError = "GRAPHQL_ERROR",
@@ -22924,7 +22897,6 @@ export type PromotionDeleteError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum PromotionDeleteErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     NotFound = "NOT_FOUND",
@@ -23018,7 +22990,6 @@ export type PromotionEventInterface = {
     type: PromotionEventsEnum;
 };
 
-/** An enumeration. */
 export enum PromotionEventsEnum {
     PromotionCreated = "PROMOTION_CREATED",
     PromotionEnded = "PROMOTION_ENDED",
@@ -23154,7 +23125,6 @@ export type PromotionRuleCreateError = {
     rulesLimitExceedBy?: Maybe<Scalars["Int"]>;
 };
 
-/** An enumeration. */
 export enum PromotionRuleCreateErrorCode {
     GiftsNumberLimit = "GIFTS_NUMBER_LIMIT",
     GraphqlError = "GRAPHQL_ERROR",
@@ -23284,7 +23254,6 @@ export type PromotionRuleDeleteError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum PromotionRuleDeleteErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     NotFound = "NOT_FOUND",
@@ -23508,7 +23477,6 @@ export type PromotionRuleUpdateError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum PromotionRuleUpdateErrorCode {
     DuplicatedInputItem = "DUPLICATED_INPUT_ITEM",
     GiftsNumberLimit = "GIFTS_NUMBER_LIMIT",
@@ -23762,7 +23730,6 @@ export type PromotionTranslationInput = {
     name?: InputMaybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum PromotionTypeEnum {
     Catalogue = "CATALOGUE",
     Order = "ORDER",
@@ -23805,7 +23772,6 @@ export type PromotionUpdateError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum PromotionUpdateErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
@@ -24936,13 +24902,11 @@ export type RequestPasswordReset = {
     errors: Array<AccountError>;
 };
 
-/** An enumeration. */
 export enum RewardTypeEnum {
     Gift = "GIFT",
     SubtotalDiscount = "SUBTOTAL_DISCOUNT",
 }
 
-/** An enumeration. */
 export enum RewardValueTypeEnum {
     Fixed = "FIXED",
     Percentage = "PERCENTAGE",
@@ -25615,7 +25579,6 @@ export type SendConfirmationEmailError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum SendConfirmationEmailErrorCode {
     AccountConfirmed = "ACCOUNT_CONFIRMED",
     ConfirmationAlreadyRequested = "CONFIRMATION_ALREADY_REQUESTED",
@@ -25660,7 +25623,6 @@ export type ShippingError = {
     warehouses?: Maybe<Array<Scalars["ID"]>>;
 };
 
-/** An enumeration. */
 export enum ShippingErrorCode {
     AlreadyExists = "ALREADY_EXISTS",
     DuplicatedInputItem = "DUPLICATED_INPUT_ITEM",
@@ -26024,7 +25986,6 @@ export type ShippingMethodTypeTranslationArgs = {
     languageCode: LanguageCodeEnum;
 };
 
-/** An enumeration. */
 export enum ShippingMethodTypeEnum {
     Price = "PRICE",
     Weight = "WEIGHT",
@@ -26891,7 +26852,6 @@ export type ShopError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum ShopErrorCode {
     AlreadyExists = "ALREADY_EXISTS",
     CannotFetchTaxRates = "CANNOT_FETCH_TAX_RATES",
@@ -27463,7 +27423,6 @@ export type StockBulkUpdateError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum StockBulkUpdateErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
@@ -27511,7 +27470,6 @@ export type StockError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum StockErrorCode {
     AlreadyExists = "ALREADY_EXISTS",
     GraphqlError = "GRAPHQL_ERROR",
@@ -27650,7 +27608,6 @@ export type StoredPaymentMethodRequestDelete = {
     result: StoredPaymentMethodRequestDeleteResult;
 };
 
-/** An enumeration. */
 export enum StoredPaymentMethodRequestDeleteErrorCode {
     ChannelInactive = "CHANNEL_INACTIVE",
     GatewayError = "GATEWAY_ERROR",
@@ -28025,7 +27982,6 @@ export type TaxClassCreateError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum TaxClassCreateErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
@@ -28062,7 +28018,6 @@ export type TaxClassDeleteError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum TaxClassDeleteErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
@@ -28119,7 +28074,6 @@ export type TaxClassUpdateError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum TaxClassUpdateErrorCode {
     DuplicatedInputItem = "DUPLICATED_INPUT_ITEM",
     GraphqlError = "GRAPHQL_ERROR",
@@ -28321,7 +28275,6 @@ export type TaxConfigurationUpdateError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum TaxConfigurationUpdateErrorCode {
     DuplicatedInputItem = "DUPLICATED_INPUT_ITEM",
     GraphqlError = "GRAPHQL_ERROR",
@@ -28389,7 +28342,6 @@ export type TaxCountryConfigurationDeleteError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum TaxCountryConfigurationDeleteErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
@@ -28422,7 +28374,6 @@ export type TaxCountryConfigurationUpdateError = {
     taxClassIds: Array<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum TaxCountryConfigurationUpdateErrorCode {
     CannotCreateNegativeRate = "CANNOT_CREATE_NEGATIVE_RATE",
     GraphqlError = "GRAPHQL_ERROR",
@@ -28454,7 +28405,6 @@ export type TaxExemptionManageError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum TaxExemptionManageErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
@@ -28602,7 +28552,6 @@ export type ThumbnailCreated = Event & {
     version?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum ThumbnailFormatEnum {
     Avif = "AVIF",
     Original = "ORIGINAL",
@@ -28624,7 +28573,6 @@ export type TimePeriodInputType = {
     type: TimePeriodTypeEnum;
 };
 
-/** An enumeration. */
 export enum TimePeriodTypeEnum {
     Day = "DAY",
     Month = "MONTH",
@@ -28767,7 +28715,6 @@ export type TransactionCreateError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum TransactionCreateErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     IncorrectCurrency = "INCORRECT_CURRENCY",
@@ -28896,6 +28843,11 @@ export type TransactionEventInput = {
  * Note: this API is currently in Feature Preview and can be subject to changes at later point.
  *
  * Requires the following permissions: OWNER and HANDLE_PAYMENTS for apps, HANDLE_PAYMENTS for staff users. Staff user cannot update a transaction that is owned by the app.
+ *
+ * Triggers the following webhook events:
+ * - TRANSACTION_ITEM_METADATA_UPDATED (async): Optionally called when transaction's metadata was updated.
+ * - CHECKOUT_FULLY_PAID (async): Optionally called when the checkout charge status changed to `FULL` or `OVERCHARGED`.
+ * - ORDER_UPDATED (async): Optionally called when the transaction is related to the order and the order was updated.
  */
 export type TransactionEventReport = {
     __typename?: "TransactionEventReport";
@@ -28918,7 +28870,6 @@ export type TransactionEventReportError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum TransactionEventReportErrorCode {
     AlreadyExists = "ALREADY_EXISTS",
     GraphqlError = "GRAPHQL_ERROR",
@@ -29017,7 +28968,6 @@ export type TransactionInitializeError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum TransactionInitializeErrorCode {
     CheckoutCompletionInProgress = "CHECKOUT_COMPLETION_IN_PROGRESS",
     GraphqlError = "GRAPHQL_ERROR",
@@ -29268,7 +29218,6 @@ export type TransactionItemMetadataUpdated = Event & {
     version?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum TransactionKind {
     ActionToConfirm = "ACTION_TO_CONFIRM",
     Auth = "AUTH",
@@ -29319,7 +29268,6 @@ export type TransactionProcessError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum TransactionProcessErrorCode {
     CheckoutCompletionInProgress = "CHECKOUT_COMPLETION_IN_PROGRESS",
     GraphqlError = "GRAPHQL_ERROR",
@@ -29421,7 +29369,6 @@ export type TransactionRequestActionError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum TransactionRequestActionErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
@@ -29454,7 +29401,6 @@ export type TransactionRequestRefundForGrantedRefundError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum TransactionRequestRefundForGrantedRefundErrorCode {
     AmountGreaterThanAvailable = "AMOUNT_GREATER_THAN_AVAILABLE",
     GraphqlError = "GRAPHQL_ERROR",
@@ -29490,7 +29436,6 @@ export type TransactionUpdateError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum TransactionUpdateErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     IncorrectCurrency = "INCORRECT_CURRENCY",
@@ -29622,7 +29567,6 @@ export type TranslationError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum TranslationErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
@@ -29723,7 +29667,6 @@ export type UploadError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum UploadErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
 }
@@ -30175,7 +30118,6 @@ export type VerifyToken = {
     user?: Maybe<User>;
 };
 
-/** An enumeration. */
 export enum VolumeUnitsEnum {
     AcreFt = "ACRE_FT",
     AcreIn = "ACRE_IN",
@@ -30505,7 +30447,6 @@ export type VoucherCodeBulkDeleteError = {
     voucherCodes?: Maybe<Array<Scalars["ID"]>>;
 };
 
-/** An enumeration. */
 export enum VoucherCodeBulkDeleteErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     Invalid = "INVALID",
@@ -31081,7 +31022,6 @@ export type WarehouseStocksArgs = {
     last?: InputMaybe<Scalars["Int"]>;
 };
 
-/** An enumeration. */
 export enum WarehouseClickAndCollectOptionEnum {
     All = "ALL",
     Disabled = "DISABLED",
@@ -31204,7 +31144,6 @@ export type WarehouseError = {
     shippingZones?: Maybe<Array<Scalars["ID"]>>;
 };
 
-/** An enumeration. */
 export enum WarehouseErrorCode {
     AlreadyExists = "ALREADY_EXISTS",
     GraphqlError = "GRAPHQL_ERROR",
@@ -31486,7 +31425,6 @@ export type WebhookDryRunError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum WebhookDryRunErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     InvalidId = "INVALID_ID",
@@ -31509,7 +31447,6 @@ export type WebhookError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum WebhookErrorCode {
     DeleteFailed = "DELETE_FAILED",
     GraphqlError = "GRAPHQL_ERROR",
@@ -32488,7 +32425,6 @@ export enum WebhookEventTypeSyncEnum {
     TransactionRefundRequested = "TRANSACTION_REFUND_REQUESTED",
 }
 
-/** An enumeration. */
 export enum WebhookSampleEventTypeEnum {
     AccountChangeEmailRequested = "ACCOUNT_CHANGE_EMAIL_REQUESTED",
     AccountConfirmationRequested = "ACCOUNT_CONFIRMATION_REQUESTED",
@@ -32658,7 +32594,6 @@ export type WebhookTriggerError = {
     message?: Maybe<Scalars["String"]>;
 };
 
-/** An enumeration. */
 export enum WebhookTriggerErrorCode {
     GraphqlError = "GRAPHQL_ERROR",
     InvalidId = "INVALID_ID",
@@ -32735,7 +32670,6 @@ export type Weight = {
     value: Scalars["Float"];
 };
 
-/** An enumeration. */
 export enum WeightUnitsEnum {
     G = "G",
     Kg = "KG",
@@ -33474,6 +33408,23 @@ export type SaleorUpdateMetadataMutation = {
     __typename?: "Mutation";
     updateMetadata?: {
         __typename?: "UpdateMetadata";
+        errors: Array<{
+            __typename?: "MetadataError";
+            field?: string | null;
+            message?: string | null;
+        }>;
+    } | null;
+};
+
+export type SaleorDeleteMetadataMutationVariables = Exact<{
+    id: Scalars["ID"];
+    keys: Array<Scalars["String"]> | Scalars["String"];
+}>;
+
+export type SaleorDeleteMetadataMutation = {
+    __typename?: "Mutation";
+    deleteMetadata?: {
+        __typename?: "DeleteMetadata";
         errors: Array<{
             __typename?: "MetadataError";
             field?: string | null;
@@ -36036,6 +35987,16 @@ export const SaleorUpdateMetadataDocument = gql`
         }
     }
 `;
+export const SaleorDeleteMetadataDocument = gql`
+    mutation saleorDeleteMetadata($id: ID!, $keys: [String!]!) {
+        deleteMetadata(id: $id, keys: $keys) {
+            errors {
+                field
+                message
+            }
+        }
+    }
+`;
 export const WebhookCreateDocument = gql`
     mutation webhookCreate($input: WebhookCreateInput!) {
         webhookCreate(input: $input) {
@@ -37249,6 +37210,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<SaleorUpdateMetadataMutation>;
+        },
+        saleorDeleteMetadata(
+            variables: SaleorDeleteMetadataMutationVariables,
+            options?: C,
+        ): Promise<SaleorDeleteMetadataMutation> {
+            return requester<
+                SaleorDeleteMetadataMutation,
+                SaleorDeleteMetadataMutationVariables
+            >(
+                SaleorDeleteMetadataDocument,
+                variables,
+                options,
+            ) as Promise<SaleorDeleteMetadataMutation>;
         },
         webhookCreate(
             variables: WebhookCreateMutationVariables,

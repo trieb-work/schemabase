@@ -6,3 +6,12 @@ mutation saleorUpdateMetadata($id: ID!, $input: [MetadataInput!]!) {
         }
     }
 }
+
+mutation saleorDeleteMetadata($id: ID!, $keys: [String!]!) {
+    deleteMetadata(id: $id, keys: $keys) {
+        errors {
+            field
+            message
+        }
+    }
+}

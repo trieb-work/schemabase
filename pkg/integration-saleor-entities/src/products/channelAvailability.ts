@@ -763,19 +763,27 @@ export class SaleorChannelAvailabilitySyncService {
             );
         }
 
-        // Get all unique product variant ids of volume discount channel pricings.
-        // we need to pull all pricing entries and update them together for these variants
-        const uniqueVariantIdsWithVolumeDiscounts = [
-            ...new Set(
-                channelPricings
-                    .filter((entry) => entry.minQuantity > 1)
-                    .map((entry) => entry.productVariantId),
-            ),
+        // Get all unique product variant ids
+        const uniqueVariantIds = [
+            ...new Set(channelPricings.map((entry) => entry.productVariantId)),
         ];
+        /**
+         * An array of unique product variant ids
+         * [{ productVariantId: string, saleorProductVariantId: string, saleorProductId: string }]
+         */
+        const uniqueVariantIdsWithSaleorIds = uniqueVariantIds.map((id) => ({
+            productVariantId: id,
+            saleorProductVariantId: channelPricings.find(
+                (p) => p.productVariantId === id,
+            )?.productVariant.saleorProductVariant[0]?.id,
+            saleorProductId: channelPricings.find(
+                (p) => p.productVariantId === id,
+            )?.productVariant.product.saleorProducts[0]?.id,
+            sku: channelPricings.find((p) => p.productVariantId === id)
+                ?.productVariant.sku,
+        }));
 
-        for (const entry of uniqueVariantIdsWithVolumeDiscounts) {
-            // `Syncing volume discount entries for product variant ${entry}`,
-
+        for (const entry of uniqueVariantIdsWithSaleorIds) {
             await this.syncVolumeDiscounts(entry, existingChannelListings);
         }
     }
@@ -787,7 +795,12 @@ export class SaleorChannelAvailabilitySyncService {
      * @param entry
      */
     private async syncVolumeDiscounts(
-        prodVariantId: string,
+        entry: {
+            productVariantId: string;
+            saleorProductVariantId: string | undefined;
+            saleorProductId: string | undefined;
+            sku: string | undefined;
+        },
         existingListings?: ChannelListingsFragment[],
     ) {
         /**
@@ -798,7 +811,7 @@ export class SaleorChannelAvailabilitySyncService {
         const entries = await this.db.salesChannelPriceEntry.findMany({
             where: {
                 tenantId: this.tenantId,
-                productVariantId: prodVariantId,
+                productVariantId: entry.productVariantId,
                 minQuantity: {
                     gt: 1,
                 },
@@ -831,76 +844,92 @@ export class SaleorChannelAvailabilitySyncService {
             },
         });
 
-        const saleorProductVariantId =
-            entries[0].productVariant.saleorProductVariant[0].id;
-        if (!saleorProductVariantId) {
+        if (!entry.saleorProductVariantId) {
             this.logger.info(
-                `No saleor product variant found for product variant ${prodVariantId}`,
+                `No saleor product variant found for product variant ${entry.productVariantId}`,
             );
             return;
         }
         const filteredEntries = entries.filter(
             (ent) => ent.endDate === null || isAfter(ent.endDate, new Date()),
         );
-        if (filteredEntries.length === 0) {
-            this.logger.info(
-                `No volume pricing entries found for product variant ${prodVariantId} after filtering for end Date`,
-            );
-            return;
-        }
-        const saleorProductId =
-            entries[0].productVariant.product.saleorProducts[0].id;
+
+        const saleorProductId = entry.saleorProductId;
 
         const existingVariantMetafield = existingListings
             ?.find((l) => l.id === saleorProductId)
-            ?.variants?.find((v) => v.id === saleorProductVariantId)?.metafield;
+            ?.variants?.find(
+                (v) => v.id === entry.saleorProductVariantId,
+            )?.metafield;
 
-        const metadataItemValue = filteredEntries.map((entry) => ({
-            channel: entry.salesChannel.name.toLowerCase(),
-            price: entry.price,
-            minQuantity: entry.minQuantity,
-            startDate: entry.startDate,
-            endDate: entry.endDate,
-            channelListingId: entry.id,
+        const metadataItemValue = filteredEntries.map((e) => ({
+            channel: e.salesChannel.name.toLowerCase(),
+            price: e.price,
+            minQuantity: e.minQuantity,
+            startDate: e.startDate,
+            endDate: e.endDate,
+            channelListingId: e.id,
         }));
 
         /**
          * compare the existing metadata with the new metadata
-         * and only update if there are changes
+         * and skip update if there are no changes
          */
         if (
-            existingVariantMetafield &&
-            existingVariantMetafield === JSON.stringify(metadataItemValue)
+            (existingVariantMetafield &&
+                existingVariantMetafield ===
+                    JSON.stringify(metadataItemValue)) ||
+            (!existingVariantMetafield && metadataItemValue.length === 0)
         ) {
             this.logger.debug(
-                `Volume pricing metadata already up to date for product variant ${prodVariantId}`,
+                `Volume pricing metadata already up to date for product variant ${entry.productVariantId}`,
                 {
-                    sku: entries[0].productVariant.sku,
-                    productVariantId: prodVariantId,
+                    productVariantId: entry.productVariantId,
+                    sku: entry.sku,
                 },
             );
             return;
         }
 
-        this.logger.info(
-            `Updating metadata with volume pricing for product ${entries[0].productVariant.product.name}, variant ` +
-                `${entries[0].productVariant.variantName} with saleor product variant ${saleorProductVariantId}`,
-            {
-                sku: entries[0].productVariant.sku,
-                productVariantId: prodVariantId,
-                saleorProductVariantId,
-            },
-        );
-
-        await this.saleorClient.saleorUpdateMetadata({
-            id: saleorProductVariantId,
-            input: [
+        if (metadataItemValue.length > 0) {
+            this.logger.info(
+                `Updating metadata with volume pricing for ` +
+                    `product variant ${entry.productVariantId} ` +
+                    `with saleor product variant ${entry.saleorProductVariantId}`,
                 {
-                    key: "volumePricingEntries",
-                    value: JSON.stringify(metadataItemValue),
+                    productVariantId: entry.productVariantId,
+                    saleorProductVariantId: entry.saleorProductVariantId,
+                    metadataItemValue,
+                    sku: entry.sku,
                 },
-            ],
-        });
+            );
+
+            await this.saleorClient.saleorUpdateMetadata({
+                id: entry.saleorProductVariantId,
+                input: [
+                    {
+                        key: "volumePricingEntries",
+                        value: JSON.stringify(metadataItemValue),
+                    },
+                ],
+            });
+        }
+        if (metadataItemValue.length === 0) {
+            this.logger.info(
+                `Removing metadata with volume pricing for ` +
+                    `product variant ${entry.productVariantId} ` +
+                    `with saleor product variant ${entry.saleorProductVariantId}`,
+                {
+                    productVariantId: entry.productVariantId,
+                    saleorProductVariantId: entry.saleorProductVariantId,
+                    sku: entry.sku,
+                },
+            );
+            await this.saleorClient.saleorDeleteMetadata({
+                id: entry.saleorProductVariantId,
+                keys: ["volumePricingEntries"],
+            });
+        }
     }
 
     /**
@@ -944,11 +973,6 @@ export class SaleorChannelAvailabilitySyncService {
         if (existingListing && existingListing.channelListings?.length) {
             const existingChannelListing = existingListing.channelListings.find(
                 (c) => c.channel.id === entry.salesChannel.saleorChannels[0].id,
-            );
-            this.logger.debug(
-                `Existing channel listing: ${JSON.stringify(
-                    existingChannelListing,
-                )}`,
             );
             if (
                 existingChannelListing &&
