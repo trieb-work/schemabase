@@ -2466,18 +2466,52 @@ export class SaleorProductSyncService {
             }
 
             /**
+             * Media in schemabase is connected to product and / or variant.
+             * Saleor uses just product and connects media to variant.
+             * This here is all media we have for this product or its variants
+             */
+            const existingTotalMediaInSchemabase = await this.db.media.findMany(
+                {
+                    where: {
+                        OR: [
+                            {
+                                products: {
+                                    some: {
+                                        id: existingProduct?.product.id,
+                                    },
+                                },
+                            },
+                            {
+                                productVariants: {
+                                    some: {
+                                        productId: existingProduct?.product.id,
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                    include: {
+                        saleorMedia: true,
+                    },
+                },
+            );
+            /**
              * media, that has a Saleor id in our db, but does no longer exist in Saleor. We can assume,
              * that this media was deleted in Saleor and we can mark it as deleted in our DB. We compare
              * product and variant media
              */
             const productMediaToDelete =
-                existingProduct?.product?.media?.filter(
-                    (m) =>
-                        product.media &&
-                        !product.media.find(
-                            (x) => x.id === m.saleorMedia?.[0]?.id,
-                        ),
-                ) || [];
+                existingTotalMediaInSchemabase
+                    ?.filter(
+                        (m) =>
+                            product.media &&
+                            !product.media.find(
+                                (x) => x.id === m.saleorMedia?.[0]?.id,
+                            ),
+                    )
+                    .filter((m) => m.type !== "MANUAL")
+                    .filter((m) => m.deleted === false) || [];
+
             // marking media as deleted in our DB
             for (const m of productMediaToDelete) {
                 await this.db.media.update({
