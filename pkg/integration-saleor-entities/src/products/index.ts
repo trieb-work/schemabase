@@ -562,6 +562,7 @@ export class SaleorProductSyncService {
     public async uploadMedia(saleorProductId: string, media: Media[]) {
         const mediaUpload = new MediaUpload(this.installedSaleorApp, this.db);
         for (const element of media) {
+            if (element.deleted) continue;
             this.logger.info(
                 `Uploading media ${element.id}: ${element.url} to saleor`,
                 {
