@@ -39,9 +39,9 @@ review:
             - variables.env
         expire_in: 1 week
     script:
-        - helm repo add azure-marketplace https://marketplace.azurecr.io/helm/v1/repo
+        - helm repo add bitnami https://charts.bitnami.com/bitnami
         # Add a redis deployment with nodeport service, limit CPU and memory, set a password, set standard persistent storage 3 GB. Name: redis-schemabase-staging
-        - helm upgrade --install --create-namespace -n $KUBE_NAMESPACE redis-schemabase-staging azure-marketplace/redis --set architecture="standalone" --set auth.password="$REDIS_PASSWORD" --set resources.requests.cpu=100m --set resources.requests.memory=250Mi --set resources.limits.cpu=200m --set resources.limits.memory=256Mi --set persistence.size=3Gi --set service.type=NodePort
+        - helm upgrade --install --create-namespace -n $KUBE_NAMESPACE redis-schemabase-staging bitnami/redis --set architecture="standalone" --set auth.password="$REDIS_PASSWORD" --set master.resources.requests.cpu=100m --set master.resources.requests.memory=250Mi --set master.resources.limits.cpu=200m --set master.resources.limits.memory=256Mi --set master.persistence.size=3Gi --set service.type=NodePort
 
         # Get the current version from package.json to use it as docker version tag later. We don't have node available
         # in the image, so we use jq to parse the json file.
@@ -193,9 +193,9 @@ production:
         KUBE_NAMESPACE: schemabase-production
         API_COMMON_NAME: api-schemabase.gc.kencove.com
     script:
-        - helm repo add azure-marketplace https://marketplace.azurecr.io/helm/v1/repo
+        - helm repo add bitnami https://charts.bitnami.com/bitnami
         # Add a redis deployment with nodeport service, limit CPU and memory, set a password, set standard persistent storage 3 GB. Name: redis-schemabase-production
-        - helm upgrade --install --create-namespace -n $KUBE_NAMESPACE redis-schemabase-production azure-marketplace/redis --set architecture="standalone" --set auth.password="$REDIS_PASSWORD" --set resources.requests.cpu=100m --set resources.requests.memory=350Mi --set resources.limits.cpu=200m --set resources.limits.memory=256Mi --set persistence.size=3Gi --set service.type=NodePort
+        - helm upgrade --install --create-namespace -n $KUBE_NAMESPACE redis-schemabase-production bitnami/redis --set architecture="standalone" --set auth.password="$REDIS_PASSWORD" --set master.resources.requests.cpu=100m --set master.resources.requests.memory=350Mi --set master.resources.limits.cpu=200m --set master.resources.limits.memory=256Mi --set master.persistence.size=3Gi --set service.type=NodePort
 
         # Get the current version from package.json to use it as docker version tag later. We don't have node available
         # in the image, so we use jq to parse the json file.
