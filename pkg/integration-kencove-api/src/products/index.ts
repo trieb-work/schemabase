@@ -1300,6 +1300,7 @@ export class KencoveApiAppProductSyncService {
                         include: {
                             variants: {
                                 include: {
+                                    attributes: true,
                                     kencoveApiProductVariant: true,
                                 },
                             },
@@ -1403,6 +1404,7 @@ export class KencoveApiAppProductSyncService {
             include: {
                 variants: {
                     include: {
+                        attributes: true,
                         kencoveApiProductVariant: true,
                     },
                 },
@@ -1644,6 +1646,7 @@ export class KencoveApiAppProductSyncService {
                             include: {
                                 variants: {
                                     include: {
+                                        attributes: true,
                                         kencoveApiProductVariant: true,
                                     },
                                 },
@@ -1920,6 +1923,7 @@ export class KencoveApiAppProductSyncService {
                             },
                         },
                         include: {
+                            attributes: true,
                             kencoveApiProductVariant: true,
                         },
                     });
