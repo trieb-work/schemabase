@@ -167,15 +167,33 @@ export class SaleorProductSyncService {
             this.logger.info(
                 `Creating product type ${productType.name} in internal DB`,
             );
-            await this.db.productType.create({
+            return this.db.saleorProductType.create({
                 data: {
-                    id: id.id("productType"),
-                    name: productType.name,
-                    normalizedName: normalizedProductTypeName,
-                    isVariant: productType.hasVariants,
-                    tenant: {
+                    id: productType.id,
+                    installedSaleorApp: {
                         connect: {
-                            id: this.tenantId,
+                            id: this.installedSaleorAppId,
+                        },
+                    },
+                    productType: {
+                        connectOrCreate: {
+                            where: {
+                                normalizedName_tenantId: {
+                                    normalizedName: normalizedProductTypeName,
+                                    tenantId: this.tenantId,
+                                },
+                            },
+                            create: {
+                                id: id.id("productType"),
+                                name: productType.name,
+                                normalizedName: normalizedProductTypeName,
+                                isVariant: productType.hasVariants,
+                                tenant: {
+                                    connect: {
+                                        id: this.tenantId,
+                                    },
+                                },
+                            },
                         },
                     },
                 },
@@ -192,7 +210,7 @@ export class SaleorProductSyncService {
             this.logger.info(
                 `Updating product type ${productType.name} in internal DB`,
             );
-            await this.db.productType.update({
+            return this.db.productType.update({
                 where: {
                     id: existingEntry!.productType.id,
                 },
@@ -203,6 +221,8 @@ export class SaleorProductSyncService {
                 },
             });
         }
+
+        return existingEntry;
     }
 
     /**
