@@ -122,4 +122,13 @@ export class CronStateHandler {
         };
         return this.upsert(id, updateObject);
     }
+
+    /**
+     * remove the last run entry
+     */
+    public async reset() {
+        const id = this.generateId();
+
+        return this.upsert(id, { id, lastRun: null });
+    }
 }

@@ -1948,6 +1948,21 @@ export class KencoveApiAppProductSyncService {
                             kencoveApiProductVariant: true,
                         },
                     });
+                    // we created a new variant, so we need to reset the last run entries for both stock and pricelist sync runs.
+                    const pricelistLastRun = new CronStateHandler({
+                        tenantId: this.kencoveApiApp.tenantId,
+                        appId: this.kencoveApiApp.id,
+                        db: this.db,
+                        syncEntity: "pricelist",
+                    });
+                    await pricelistLastRun.reset();
+                    const stockLastRun = new CronStateHandler({
+                        tenantId: this.kencoveApiApp.tenantId,
+                        appId: this.kencoveApiApp.id,
+                        db: this.db,
+                        syncEntity: "itemstocks",
+                    });
+                    await stockLastRun.reset();
                 } else {
                     this.logger.info(
                         `Updating variant ${variant.id} of product ${product.productName}, as something has changed`,
