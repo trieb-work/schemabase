@@ -39,6 +39,7 @@ import {
 } from "../helper";
 import { syncTaxClasses } from "./taxclasses";
 import { compareArraysWithoutOrder } from "@eci/pkg/utils/array";
+import { sha256 } from "@eci/pkg/hash";
 
 interface KencoveApiAppProductSyncServiceConfig {
     logger: ILogger;
@@ -1830,6 +1831,25 @@ export class KencoveApiAppProductSyncService {
                  * update when something has been changed. We create the variant if
                  * it does not exist.
                  */
+                const dataHash = sha256({
+                    weight,
+                    variantName,
+                    productId: existingProduct.id,
+                    sku,
+                    active: variant.active,
+                    taxId,
+                    kencoveApiVariantId: variant.id,
+                    ean: variant.upc,
+                    attributes: variant.attributeValues,
+                });
+
+                if (existingVariant?.dataHash === dataHash) {
+                    this.logger.info(
+                        `Variant ${variant.id} of product ${product.productName} has not changed. Not updating our DB.`,
+                    );
+                    continue;
+                }
+
                 if (!existingVariant) {
                     this.logger.info(
                         `Creating variant ${variant.id} of product ${product.productName}`,
@@ -1844,6 +1864,7 @@ export class KencoveApiAppProductSyncService {
                         create: {
                             id: id.id("variant"),
                             ean: variant.upc,
+                            dataHash,
                             sku,
                             weight,
                             variantName,
@@ -1927,20 +1948,7 @@ export class KencoveApiAppProductSyncService {
                             kencoveApiProductVariant: true,
                         },
                     });
-                } else if (
-                    /**
-                     * Variant exists. We update it, when something has changed.
-                     */
-                    existingVariant.weight !== weight ||
-                    existingVariant.variantName !== variantName ||
-                    existingVariant.productId !== existingProduct.id ||
-                    existingVariant.ean !== variant.upc ||
-                    existingVariant.active !== variant.active ||
-                    existingVariant.salesTaxId !== taxId ||
-                    existingVariant.kencoveApiProductVariant?.[0]?.id !==
-                        variant.id ||
-                    existingVariant.sku !== sku
-                ) {
+                } else {
                     this.logger.info(
                         `Updating variant ${variant.id} of product ${product.productName}, as something has changed`,
                     );
@@ -1949,6 +1957,7 @@ export class KencoveApiAppProductSyncService {
                             id: existingVariant.id,
                         },
                         data: {
+                            dataHash,
                             weight,
                             variantName,
                             ean: variant.upc,
@@ -2013,10 +2022,6 @@ export class KencoveApiAppProductSyncService {
                             },
                         },
                     });
-                } else {
-                    this.logger.info(
-                        `Variant ${variant.id} of product ${product.productName} has not changed. Not updating our DB.`,
-                    );
                 }
 
                 /**

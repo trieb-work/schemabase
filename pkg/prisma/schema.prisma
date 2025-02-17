@@ -2037,6 +2037,9 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  /// A data hash, that is used to check if the product has changed
+  dataHash String?
+
   /// Old products get disabled - this would normally set them to unavailable for purchase
   active Boolean @default(true)
 
@@ -2088,6 +2091,9 @@ model ProductVariant {
   id        String   @id
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  /// A data hash, that is used to check if the product variant has changed
+  dataHash String?
 
   /// Old product variants get disabled
   active Boolean @default(true)
