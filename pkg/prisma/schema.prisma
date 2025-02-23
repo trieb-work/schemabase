@@ -201,6 +201,8 @@ model SaleorCustomer {
   createdAt DateTime
   updatedAt DateTime
 
+  dataHash String?
+
   customer   Contact @relation(fields: [customerId], references: [id], onDelete: Cascade)
   customerId String
 

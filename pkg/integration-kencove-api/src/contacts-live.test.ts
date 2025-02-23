@@ -14,20 +14,10 @@ describe("Kencove product Test", () => {
     const prismaClient = new PrismaClient();
 
     test("It should work to sync contacts", async () => {
-        const tenant = await prismaClient.tenant.findUnique({
-            where: {
-                id: "tn_kencove235",
-                // id: "test",
-            },
-        });
-        if (!tenant)
-            throw new Error(
-                "Testing Tenant or zoho app/integration not found in DB",
-            );
-
         const kencoveApiApp = await prismaClient.kencoveApiApp.findUnique({
             where: {
-                id: "kencove_prod",
+                // id: "kencove_prod",
+                id: "ken_app_prod",
             },
         });
         if (!kencoveApiApp) throw new Error("Kencove Api App not found in DB");

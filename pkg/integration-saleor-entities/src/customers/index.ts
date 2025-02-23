@@ -11,6 +11,7 @@ import { CronStateHandler } from "@eci/pkg/cronstate";
 
 import { subHours } from "date-fns";
 import { id } from "@eci/pkg/ids";
+import { sha256 } from "@eci/pkg/hash";
 
 interface SaleorCustomerSyncServiceConfig {
     saleorClient: SaleorClient;
@@ -129,6 +130,31 @@ export class SaleorCustomerSyncService {
                 lastName: contact.lastName,
             });
 
+            const existingContact = await this.db.saleorCustomer.findUnique({
+                where: {
+                    id_installedSaleorAppId: {
+                        id: contact.id,
+                        installedSaleorAppId: this.installedSaleorAppId,
+                    },
+                },
+                include: {
+                    customer: true,
+                },
+            });
+
+            const dataHash = sha256({
+                metadata: contact.metadata,
+                privateMetadata: contact.privateMetadata,
+                email: contact.email,
+                firstName: contact.firstName,
+                lastName: contact.lastName,
+            });
+
+            if (dataHash === existingContact?.dataHash) {
+                this.logger.info(`Contact ${contact.id} is up to date`);
+                continue;
+            }
+
             const internalContact = await this.db.saleorCustomer.upsert({
                 where: {
                     id_installedSaleorAppId: {
@@ -140,6 +166,7 @@ export class SaleorCustomerSyncService {
                     id: contact.id,
                     createdAt: new Date(contact.dateJoined),
                     updatedAt: new Date(contact.updatedAt),
+                    dataHash,
                     customer: {
                         connectOrCreate: {
                             where: {
@@ -169,6 +196,7 @@ export class SaleorCustomerSyncService {
                 },
                 update: {
                     updatedAt: new Date(contact.updatedAt),
+                    dataHash,
                     customer: {
                         update: {
                             email: contact.email.toLowerCase(),
@@ -274,7 +302,7 @@ export class SaleorCustomerSyncService {
         }
 
         this.logger.info(
-            `ECI returned ${contacts.length} contacts to update in Saleor`,
+            `ECI returned ${contacts.length} contacts that might need an update in Saleor`,
         );
 
         for (const contact of contacts) {
