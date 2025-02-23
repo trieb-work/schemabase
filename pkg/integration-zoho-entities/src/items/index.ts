@@ -102,7 +102,7 @@ export class ZohoItemSyncService {
             /**
              * If the stockOnHand value is different than the one from Zoho, we pull the full product data
              */
-            const stockHasChanged = stockBefore?.stockOnHand !== stock ?? false;
+            const stockHasChanged = (stockBefore?.stockOnHand ?? 0) !== stock;
 
             let eciVariant: ProductVariant | null = null;
 
@@ -121,8 +121,8 @@ export class ZohoItemSyncService {
                     ? item.weight_unit === "kg"
                         ? item.weight
                         : item.weight_unit === "g"
-                        ? item.weight / 1000
-                        : undefined
+                          ? item.weight / 1000
+                          : undefined
                     : undefined;
 
             try {
@@ -386,12 +386,6 @@ export class ZohoItemSyncService {
                             compositeItem.mapped_items,
                         );
                     } catch (error) {
-                        if (error instanceof Prisma.NotFoundError) {
-                            this.logger.info(
-                                // eslint-disable-next-line max-len
-                                `Can't sync the BOM for ${compositeItem.name}, as some parts of it are still missing in the DB. The next run should work!`,
-                            );
-                        }
                         this.logger.error(
                             `Error setting BOM in ECI DB for composite item "${compositeItem.name}": ${error}`,
                         );
