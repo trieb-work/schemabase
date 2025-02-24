@@ -220,6 +220,7 @@ optional'
 Table SaleorProduct {
   id String [not null, note: 'Saleor internal product id']
   updatedAt DateTime [not null]
+  dataHash String
   product Product [not null]
   productId String [not null]
   installedSaleorApp InstalledSaleorApp [not null]
@@ -233,6 +234,7 @@ Table SaleorProduct {
 Table SaleorProductVariant {
   id String [not null, note: 'Saleor internal product variant id']
   productId String [not null, note: 'Saleor internal product Id']
+  dataHash String
   updatedAt DateTime [not null]
   productVariant ProductVariant [not null]
   productVariantId String [not null]

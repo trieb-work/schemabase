@@ -346,6 +346,8 @@ model SaleorProduct {
 
   updatedAt DateTime
 
+  dataHash String?
+
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String
 
@@ -364,6 +366,8 @@ model SaleorProductVariant {
 
   /// Saleor internal product Id
   productId String
+
+  dataHash String?
 
   updatedAt DateTime
 

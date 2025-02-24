@@ -149,6 +149,9 @@ dependencies:
   kafkajs:
     specifier: ^2.2.4
     version: 2.2.4
+  lodash:
+    specifier: ^4.17.21
+    version: 4.17.21
   micro:
     specifier: ^9.4.1
     version: 9.4.1
@@ -307,6 +310,9 @@ devDependencies:
   '@types/jsonwebtoken':
     specifier: ^8.5.9
     version: 8.5.9
+  '@types/lodash':
+    specifier: ^4.17.15
+    version: 4.17.15
   '@types/morgan':
     specifier: ^1.9.9
     version: 1.9.9
@@ -6204,6 +6210,10 @@ packages:
     resolution: {integrity: sha512-272FMnFGzAVMGtu9tkr29hRL6bZj4Zs1KZNeHLnKqAvp06tAIcarTMwOh8/8bz4FmKRcMxZhZNeUAQsNLoiPhg==}
     dependencies:
       '@types/node': 18.19.40
+    dev: true
+
+  /@types/lodash@4.17.15:
+    resolution: {integrity: sha512-w/P33JFeySuhN6JLkysYUK2gEmy9kHHFN7E8ro0tkfmlDOgxBDzWEZ/J8cWA+fHqFevpswDTFZnDx+R9lbL6xw==}
     dev: true
 
   /@types/long@4.0.2:

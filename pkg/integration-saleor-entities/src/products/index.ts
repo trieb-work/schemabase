@@ -1,9 +1,7 @@
 /* eslint-disable max-len */
 import { ILogger } from "@eci/pkg/logger";
 import {
-    AttributesInProductAndVariantsCompareFragment,
     AttributeValueInput,
-    ProductAndVariantsToCompareQuery,
     ProductInput,
     ProductTypeFragment,
     ProductVariantBulkCreateInput,
@@ -38,6 +36,7 @@ import { parseBoolean } from "@eci/pkg/utils/parseBoolean";
 import { SaleorProductManual } from "./productManual";
 import { sortVideoOrder } from "./helper";
 import { VariantAndVariantStocks } from "./variantsAndVariantStocks";
+import { sha256 } from "@eci/pkg/hash";
 
 export interface SaleorProductSyncServiceConfig {
     saleorClient: SaleorClient;
@@ -975,132 +974,6 @@ export class SaleorProductSyncService {
         return attributes;
     }
 
-    private checkSaleorProductNeedsUpdate(
-        productFromSaleor: ProductAndVariantsToCompareQuery | undefined,
-        productUpdateInput: ProductInput,
-    ): boolean {
-        if (!productFromSaleor) {
-            return true;
-        }
-        const productFromSaleorInput = productFromSaleor!.product;
-        if (!productFromSaleorInput) {
-            throw new Error(`Product from Saleor has no name. Can't compare`);
-        }
-
-        /**
-         * Compare attributes with each other to see, if we need to update.
-         * Not completed for all attribute types yet.
-         * @param a
-         * @param b
-         * @returns
-         */
-        const compareAttributes = (
-            /**
-             * Attributes from Saleor
-             */
-            a: AttributesInProductAndVariantsCompareFragment[],
-            /**
-             * Attributes we want to update
-             */
-            b: ProductInput["attributes"],
-        ) => {
-            let isEqual = true;
-            if (!b || b.length === 0) {
-                return false;
-            }
-            for (const attr of b) {
-                const saleorAttr = a.find((x) => x.attribute.id === attr.id);
-                if (!saleorAttr) {
-                    isEqual = false;
-                    break;
-                }
-                if (attr.boolean !== undefined) {
-                    if (attr.boolean !== saleorAttr.values?.[0]?.boolean) {
-                        isEqual = false;
-                        break;
-                    }
-                }
-
-                /**
-                 * Compare multi-select attributes
-                 */
-                if (attr.values?.length) {
-                    /**
-                     * go through all values and check if they are in the saleor values.
-                     * In Saleor, we have the slug of the multi-select attribute values
-                     */
-                    for (const value of attr.values) {
-                        if (!saleorAttr.values?.find((x) => x.slug === value)) {
-                            isEqual = false;
-                            break;
-                        }
-                    }
-                }
-                if (attr.references?.length) {
-                    for (const reference of attr.references) {
-                        if (
-                            !saleorAttr.values?.find(
-                                (x) => x.reference === reference,
-                            )
-                        ) {
-                            isEqual = false;
-                            break;
-                        }
-                    }
-                }
-            }
-            return isEqual;
-        };
-
-        if (
-            productFromSaleorInput.name !== productUpdateInput.name ||
-            !editorJsHelper.compareEditorJsData(
-                productFromSaleorInput.description,
-                productUpdateInput.description,
-            ) ||
-            productFromSaleorInput.seoTitle !== productUpdateInput.seo?.title ||
-            productFromSaleorInput.seoDescription !==
-                productUpdateInput.seo?.description ||
-            productFromSaleorInput?.category?.id !==
-                productUpdateInput.category ||
-            !compareAttributes(
-                productFromSaleorInput.attributes,
-                productUpdateInput.attributes,
-            )
-        ) {
-            /**
-             * console log which fields are different
-             */
-            this.logger.debug(
-                `Product ${productFromSaleorInput.name} needs update. Fields that are different:`,
-                {
-                    name:
-                        productFromSaleorInput.name !== productUpdateInput.name,
-                    description: !editorJsHelper.compareEditorJsData(
-                        productFromSaleorInput.description,
-                        productUpdateInput.description,
-                    ),
-                    seoTitle:
-                        productFromSaleorInput.seoTitle !==
-                        productUpdateInput.seo?.title,
-                    seoDescription:
-                        productFromSaleorInput.seoDescription !==
-                        productUpdateInput.seo?.description,
-                    category:
-                        productFromSaleorInput?.category?.id !==
-                        productUpdateInput.category,
-                    attributes: !compareAttributes(
-                        productFromSaleorInput.attributes,
-                        productUpdateInput.attributes,
-                    ),
-                },
-            );
-
-            return true;
-        }
-        return false;
-    }
-
     /**
      * Find and create all products, that are not yet created in Saleor.
      * Update products, that got changed since the last run
@@ -1300,6 +1173,7 @@ export class SaleorProductSyncService {
                 id: {
                     notIn: itemsToCreate.map((x) => x.id),
                 },
+                tenantId: this.tenantId,
                 saleorProducts: {
                     some: {
                         installedSaleorAppId: this.installedSaleorAppId,
@@ -1310,12 +1184,12 @@ export class SaleorProductSyncService {
                         type: {
                             not: null,
                         },
+                        deleted: false,
                         saleorMedia: {
                             none: {
                                 installedSaleorAppId: this.installedSaleorAppId,
                             },
                         },
-                        deleted: false,
                     },
                 },
             },
@@ -1692,19 +1566,17 @@ export class SaleorProductSyncService {
                             },
                         };
 
-                        /**
-                         * Comparing the product pulled from Saleor with the data
-                         * we want to update We only update the item if it has changed
-                         */
-                        const needsUpdate = this.checkSaleorProductNeedsUpdate(
-                            saleorProductToCompare,
-                            productUpdateInput,
+                        const dataHash = sha256(
+                            JSON.stringify(productUpdateInput),
                         );
 
-                        let saleorProductMedia =
-                            saleorProductToCompare?.product?.media || [];
+                        const productUpdateNeeded =
+                            dataHash !== product.saleorProducts?.[0]?.dataHash;
 
-                        if (needsUpdate) {
+                        if (productUpdateNeeded) {
+                            let saleorProductMedia =
+                                saleorProductToCompare?.product?.media || [];
+
                             const productUpdateResponse =
                                 await this.saleorClient.productUpdate({
                                     id: saleorProductId,
@@ -1730,66 +1602,82 @@ export class SaleorProductSyncService {
                             this.logger.info(
                                 `Successfully updated product ${product.name} in Saleor`,
                             );
+
+                            // write the data hash to the DB
+                            await this.db.saleorProduct.update({
+                                where: {
+                                    id_installedSaleorAppId: {
+                                        id: saleorProductId,
+                                        installedSaleorAppId:
+                                            this.installedSaleorAppId,
+                                    },
+                                },
+                                data: {
+                                    dataHash,
+                                },
+                            });
                             saleorProductMedia =
                                 productUpdateResponse.productUpdate.product
                                     .media || [];
-                        } else {
-                            this.logger.info(
-                                `Product ${product.name} does not need update, all fields are the same`,
-                                {
-                                    saleorProductId,
-                                    productName: product.name,
-                                },
-                            );
-                        }
 
-                        // compare the media we have in our DB with the media currently in saleor.
-                        // upload media, that doesn't exist in saleor yet, delete, media that does no longer exist.
-                        // only take media, with the metadata "schemabase-media-id" set, as these are the media we uploaded.
-                        // delete also media that does exist multiple times in saleor (upload by bugs in schemabase)
-                        // We don't want to delete media, that was uploaded manually in saleor. The field "metafield" is either
-                        // our internal media id or null
-                        await sortVideoOrder(
-                            this.saleorClient,
-                            this.logger,
-                            saleorProductId,
-                            saleorProductMedia,
-                        );
-
-                        const filteredMedia = saleorProductMedia?.filter(
-                            (m) => m.metafield !== null || undefined,
-                        );
-                        const mediaToDelete = filteredMedia.filter(
-                            (m) =>
-                                !schemabaseMedia.find(
-                                    (sm) => sm.id === m.metafield,
-                                )?.id,
-                        );
-                        const mediaToUpload = schemabaseMedia.filter(
-                            (m) =>
-                                !filteredMedia.find(
-                                    (sm) => sm.metafield === m.id,
-                                )?.id,
-                        );
-
-                        if (mediaToUpload.length > 0) {
-                            await this.uploadMedia(
+                            // compare the media we have in our DB with the media currently in saleor.
+                            // upload media, that doesn't exist in saleor yet, delete, media that does no longer exist.
+                            // only take media, with the metadata "schemabase-media-id" set, as these are the media we uploaded.
+                            // delete also media that does exist multiple times in saleor (upload by bugs in schemabase)
+                            // We don't want to delete media, that was uploaded manually in saleor. The field "metafield" is either
+                            // our internal media id or null
+                            await sortVideoOrder(
+                                this.saleorClient,
+                                this.logger,
                                 saleorProductId,
-                                mediaToUpload,
+                                saleorProductMedia,
                             );
-                        }
 
-                        if (mediaToDelete.length > 0) {
-                            this.logger.info(
-                                `Deleting ${mediaToDelete.length} media for product ${product.name} in Saleor`,
-                                {
-                                    mediaToDelete: mediaToDelete.map(
-                                        (x) => x.id,
-                                    ),
-                                },
+                            /**
+                             * Media that we once uploaded from schemabase, as we did write an
+                             * id to the metadata
+                             */
+                            const filteredMedia = saleorProductMedia?.filter(
+                                (m) => m.metafield !== null || undefined,
                             );
-                            for (const element of mediaToDelete) {
-                                await this.deleteMedia(element.id);
+
+                            /**
+                             * Media that we once uploaded from schemabase but that is no longer
+                             * in our DB or that is marked as deleted
+                             */
+                            const mediaToDelete = filteredMedia.filter(
+                                (m) =>
+                                    !schemabaseMedia.find(
+                                        (sm) => sm.id === m.metafield,
+                                    )?.id,
+                            );
+
+                            const mediaToUpload = schemabaseMedia.filter(
+                                (m) =>
+                                    !filteredMedia.find(
+                                        (sm) => sm.metafield === m.id,
+                                    )?.id,
+                            );
+
+                            if (mediaToUpload.length > 0) {
+                                await this.uploadMedia(
+                                    saleorProductId,
+                                    mediaToUpload,
+                                );
+                            }
+
+                            if (mediaToDelete.length > 0) {
+                                this.logger.info(
+                                    `Deleting ${mediaToDelete.length} media for product ${product.name} in Saleor`,
+                                    {
+                                        mediaToDelete: mediaToDelete.map(
+                                            (x) => x.id,
+                                        ),
+                                    },
+                                );
+                                for (const element of mediaToDelete) {
+                                    await this.deleteMedia(element.id);
+                                }
                             }
                         }
                     }
@@ -1852,18 +1740,19 @@ export class SaleorProductSyncService {
                         );
                     }
                     if (variantsToUpdate.length > 0) {
-                        // this.logger.info(
-                        //     `Found ${variantsToUpdate.length} variants to update for product ${product.name} in Saleor`,
-                        // );
+                        const variantsToUpdateInput: ProductVariantBulkUpdateInput[] =
+                            [];
+                        const variantDataHashes: {
+                            id: string;
+                            dataHash: string;
+                        }[] = [];
 
-                        const variantsToUpdateInput:
-                            | ProductVariantBulkUpdateInput
-                            | ProductVariantBulkUpdateInput[] = [];
                         for (const v of variantsToUpdate) {
                             const attr =
                                 await this.schemabaseAttributesToSaleorAttribute(
                                     v.attributes,
                                 );
+
                             const variantToUpdateInput: ProductVariantBulkUpdateInput =
                                 {
                                     attributes: attr,
@@ -1873,7 +1762,22 @@ export class SaleorProductSyncService {
                                     id: v.saleorProductVariant[0].id,
                                     weight: v.weight,
                                 };
-                            variantsToUpdateInput.push(variantToUpdateInput);
+
+                            const dataHash = sha256(
+                                JSON.stringify(variantToUpdateInput),
+                            );
+
+                            if (
+                                dataHash !== v.saleorProductVariant[0].dataHash
+                            ) {
+                                variantsToUpdateInput.push(
+                                    variantToUpdateInput,
+                                );
+                                variantDataHashes.push({
+                                    id: v.saleorProductVariant[0].id,
+                                    dataHash,
+                                });
+                            }
                         }
                         this.logger.debug(
                             `Updating variants for product ${saleorProductId}`,
@@ -1907,6 +1811,24 @@ export class SaleorProductSyncService {
                         this.logger.info(
                             `Successfully updated ${productVariantBulkUpdateResponse.productVariantBulkUpdate?.results.length} variants for product ${product.name} in Saleor`,
                         );
+
+                        /**
+                         * writing the data hash to the DB
+                         */
+                        for (const variant of variantDataHashes) {
+                            await this.db.saleorProductVariant.update({
+                                where: {
+                                    id_installedSaleorAppId: {
+                                        id: variant.id,
+                                        installedSaleorAppId:
+                                            this.installedSaleorAppId,
+                                    },
+                                },
+                                data: {
+                                    dataHash: variant.dataHash,
+                                },
+                            });
+                        }
 
                         /**
                          * If we have variant specific media, we need to set that in Saleor
@@ -2558,6 +2480,7 @@ export class SaleorProductSyncService {
                     ) || [];
             // marking media as deleted in our DB
             for (const m of variantMediaToDelete) {
+                this.logger.info(`Deleting media ${m.id} from DB`);
                 await this.db.media.update({
                     where: {
                         id: m.id,
