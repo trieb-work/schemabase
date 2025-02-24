@@ -1783,6 +1783,9 @@ model Media {
   /// The url of the media
   url String
 
+  /// SHA-256 hash of the image data, used for duplicate detection. Use the function in image-hash.ts
+  imageHash String?
+
   type MediaPlacementType? @default(PRODUCTIMAGE)
 
   /// The tenant this media belongs to
@@ -1796,6 +1799,7 @@ model Media {
 
   @@unique([url, tenantId])
   @@index([tenantId])
+  @@index([imageHash])
 }
 
 /// attributes values for attributes. We have to separate models for product and variant attributes,
