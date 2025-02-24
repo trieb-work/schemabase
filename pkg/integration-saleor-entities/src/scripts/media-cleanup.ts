@@ -118,9 +118,12 @@ export class SaleorMediaCleanup {
 
         // Function to get variant IDs for a media
         const getVariantIdsForMedia = (mediaId: string): string[] => {
-            return Array.from(variantMediaMap.entries())
-                .filter(([_, mediaIds]) => mediaIds.has(mediaId))
-                .map(([variantId]) => variantId);
+            return (
+                Array.from(variantMediaMap.entries())
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    .filter(([_, mediaIds]) => mediaIds.has(mediaId))
+                    .map(([variantId]) => variantId)
+            );
         };
 
         // Check for duplicates using image hash comparison
@@ -199,6 +202,11 @@ export class SaleorMediaCleanup {
                 if (variantGroup.length > 1) {
                     // Keep the first one, delete the rest
                     const [keep, ...duplicates] = variantGroup;
+
+                    this.logger.info(
+                        `Keeping variant media ${keep.id} (variants: ${variantKey})`,
+                    );
+
                     for (const duplicate of duplicates) {
                         this.logger.info(
                             `Deleting duplicate variant media ${duplicate.id} (variants: ${variantKey})`,
