@@ -27,7 +27,7 @@ export class ImageDuplicateCleanup {
         const mediaToProcess = await this.prisma.media.findMany({
             where: {
                 deleted: false,
-                imageHash: null,
+                dataHash: null,
                 ...(tenantId && { tenantId }),
             },
         });
@@ -42,7 +42,7 @@ export class ImageDuplicateCleanup {
                 const hash = await ImageHasher.generateImageHash(media.url);
                 await this.prisma.media.update({
                     where: { id: media.id },
-                    data: { imageHash: hash },
+                    data: { dataHash: hash },
                 });
                 console.log(`Generated hash for ${media.url}: ${hash}`);
             } catch (error) {
@@ -54,7 +54,7 @@ export class ImageDuplicateCleanup {
         const mediaEntries = await this.prisma.media.findMany({
             where: {
                 deleted: false,
-                imageHash: { not: null },
+                dataHash: { not: null },
                 ...(tenantId && { tenantId }),
             },
             include: {
@@ -68,10 +68,10 @@ export class ImageDuplicateCleanup {
         // Group by hash
         const hashMap = new Map<string, string[]>();
         for (const media of mediaEntries) {
-            if (!media.imageHash) continue;
-            const existing = hashMap.get(media.imageHash) || [];
+            if (!media.dataHash) continue;
+            const existing = hashMap.get(media.dataHash) || [];
             existing.push(media.id);
-            hashMap.set(media.imageHash, existing);
+            hashMap.set(media.dataHash, existing);
         }
 
         // Find duplicate groups
