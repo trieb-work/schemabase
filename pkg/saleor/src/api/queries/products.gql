@@ -74,6 +74,21 @@ query products($first: Int!, $channel: String) {
                     images {
                         url
                     }
+                    media {
+                        ...SaleorProductMedia
+                    }
+                }
+                media {
+                    ...SaleorProductMedia
+                }
+                variantAttributes: attributes(variantSelection: VARIANT_SELECTION) {
+                    attribute {
+                        name
+                    }
+                    values {
+                        id
+                        name
+                    }
                 }
             }
         }
@@ -93,6 +108,9 @@ fragment variant on ProductVariant {
             name
             id
         }
+    }
+    media {
+        ...SaleorProductMedia
     }
     variantAttributes: attributes(variantSelection: VARIANT_SELECTION) {
         attribute {

@@ -34670,6 +34670,13 @@ export type VariantFragment = {
         __typename?: "Stock";
         warehouse: { __typename?: "Warehouse"; name: string; id: string };
     }> | null;
+    media?: Array<{
+        __typename?: "ProductMedia";
+        id: string;
+        metafield?: string | null;
+        type: ProductMediaType;
+        sortOrder?: number | null;
+    }> | null;
     variantAttributes: Array<{
         __typename?: "SelectedAttribute";
         attribute: { __typename?: "Attribute"; name?: string | null };
@@ -34773,6 +34780,13 @@ export type SaleorEntitySyncProductsQuery = {
                             name: string;
                             id: string;
                         };
+                    }> | null;
+                    media?: Array<{
+                        __typename?: "ProductMedia";
+                        id: string;
+                        metafield?: string | null;
+                        type: ProductMediaType;
+                        sortOrder?: number | null;
                     }> | null;
                     variantAttributes: Array<{
                         __typename?: "SelectedAttribute";
@@ -35200,14 +35214,6 @@ export type OrderCreatedWebhookSubscription = {
         | null;
 };
 
-export const SaleorProductMediaFragmentDoc = gql`
-    fragment SaleorProductMedia on ProductMedia {
-        id
-        metafield(key: "schemabase-media-id")
-        type
-        sortOrder
-    }
-`;
 export const ValuesFragmentDoc = gql`
     fragment Values on AttributeValue {
         id
@@ -35372,6 +35378,14 @@ export const ProductVariantDeletedFragmentDoc = gql`
         }
     }
 `;
+export const SaleorProductMediaFragmentDoc = gql`
+    fragment SaleorProductMedia on ProductMedia {
+        id
+        metafield(key: "schemabase-media-id")
+        type
+        sortOrder
+    }
+`;
 export const VariantFragmentDoc = gql`
     fragment variant on ProductVariant {
         id
@@ -35387,6 +35401,9 @@ export const VariantFragmentDoc = gql`
                 id
             }
         }
+        media {
+            ...SaleorProductMedia
+        }
         variantAttributes: attributes(variantSelection: VARIANT_SELECTION) {
             attribute {
                 name
@@ -35397,6 +35414,7 @@ export const VariantFragmentDoc = gql`
             }
         }
     }
+    ${SaleorProductMediaFragmentDoc}
 `;
 export const ProductTypeFragmentDoc = gql`
     fragment productType on ProductType {
