@@ -12,10 +12,6 @@ query products($first: Int!, $channel: String) {
                     unit
                     value
                 }
-                images {
-                    id
-                    url
-                }
                 metadata {
                     key
                     value
@@ -80,15 +76,6 @@ query products($first: Int!, $channel: String) {
                 }
                 media {
                     ...SaleorProductMedia
-                }
-                variantAttributes: attributes(variantSelection: VARIANT_SELECTION) {
-                    attribute {
-                        name
-                    }
-                    values {
-                        id
-                        name
-                    }
                 }
             }
         }

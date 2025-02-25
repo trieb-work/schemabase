@@ -34576,11 +34576,6 @@ export type ProductsQuery = {
                     unit: WeightUnitsEnum;
                     value: number;
                 } | null;
-                images?: Array<{
-                    __typename?: "ProductImage";
-                    id: string;
-                    url: string;
-                }> | null;
                 metadata: Array<{
                     __typename?: "MetadataItem";
                     key: string;
@@ -34650,6 +34645,20 @@ export type ProductsQuery = {
                         __typename?: "ProductImage";
                         url: string;
                     }> | null;
+                    media?: Array<{
+                        __typename?: "ProductMedia";
+                        id: string;
+                        metafield?: string | null;
+                        type: ProductMediaType;
+                        sortOrder?: number | null;
+                    }> | null;
+                }> | null;
+                media?: Array<{
+                    __typename?: "ProductMedia";
+                    id: string;
+                    metafield?: string | null;
+                    type: ProductMediaType;
+                    sortOrder?: number | null;
                 }> | null;
             };
         }>;
@@ -36508,10 +36517,6 @@ export const ProductsDocument = gql`
                         unit
                         value
                     }
-                    images {
-                        id
-                        url
-                    }
                     metadata {
                         key
                         value
@@ -36570,11 +36575,18 @@ export const ProductsDocument = gql`
                         images {
                             url
                         }
+                        media {
+                            ...SaleorProductMedia
+                        }
+                    }
+                    media {
+                        ...SaleorProductMedia
                     }
                 }
             }
         }
     }
+    ${SaleorProductMediaFragmentDoc}
 `;
 export const SaleorEntitySyncProductsDocument = gql`
     query saleorEntitySyncProducts(

@@ -107,7 +107,7 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
                     ? edjsHTML()
                           .parse(JSON.parse(rawProduct.description))
                           .join("")
-                    : rawProduct.seoDescription ?? "";
+                    : (rawProduct.seoDescription ?? "");
             } catch (err) {
                 this.logger.warn("Unable to parse description", {
                     description: rawProduct.description,
@@ -160,13 +160,13 @@ export class ProductDataFeedGenerator implements ProductDataFeedService {
                         ? variant.images != null && variant.images.length > 0
                             ? variant.images[0]?.url
                             : ""
-                        : rawProduct.images != null &&
-                          rawProduct.images.length > 0
-                        ? rawProduct.images[1]?.url
-                        : "",
+                        : rawProduct.media != null &&
+                            rawProduct.media.length > 0
+                          ? rawProduct.media[1]?.id
+                          : "",
                     additional_image_link: hasVariants
                         ? variant.images?.[1]?.url
-                        : rawProduct.images?.[2]?.url,
+                        : rawProduct.media?.[2]?.id,
                     link: `${storefrontProductUrl}${
                         storefrontProductUrl.endsWith("/") ? "" : "/"
                     }${rawProduct.slug}`,
