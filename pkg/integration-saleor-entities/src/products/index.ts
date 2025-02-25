@@ -1831,114 +1831,115 @@ export class SaleorProductSyncService {
                         }
 
                         /**
-                         * If we have variant specific media, we need to set that in Saleor
+                         * If we have variant specific media, we need to set that in Saleor.
+                         * We disabled that again, as it does break things
                          */
-                        for (const variantImage of variantsToUpdate) {
-                            if (variantImage.media.length > 0) {
-                                for (const mediaElement of variantImage.media) {
-                                    if (!mediaElement.saleorMedia?.[0]?.id) {
-                                        this.logger.warn(
-                                            `Media ${mediaElement.id} has no saleor media id. Skipping`,
-                                        );
-                                        continue;
-                                    }
-                                    /**
-                                     * We are checking the existing saleor product variant media.
-                                     * If this media item is already assigned to the variant, we skip it.
-                                     */
-                                    const existingVariantMedia =
-                                        saleorProductToCompare?.product?.variants?.find(
-                                            (v) =>
-                                                v.id ===
-                                                variantImage
-                                                    .saleorProductVariant[0].id,
-                                        )?.media;
+                        // for (const variantImage of variantsToUpdate) {
+                        //     if (variantImage.media.length > 0) {
+                        //         for (const mediaElement of variantImage.media) {
+                        //             if (!mediaElement.saleorMedia?.[0]?.id) {
+                        //                 this.logger.warn(
+                        //                     `Media ${mediaElement.id} has no saleor media id. Skipping`,
+                        //                 );
+                        //                 continue;
+                        //             }
+                        //             /**
+                        //              * We are checking the existing saleor product variant media.
+                        //              * If this media item is already assigned to the variant, we skip it.
+                        //              */
+                        //             const existingVariantMedia =
+                        //                 saleorProductToCompare?.product?.variants?.find(
+                        //                     (v) =>
+                        //                         v.id ===
+                        //                         variantImage
+                        //                             .saleorProductVariant[0].id,
+                        //                 )?.media;
 
-                                    if (
-                                        existingVariantMedia?.find(
-                                            (x) =>
-                                                x.id ===
-                                                mediaElement.saleorMedia[0].id,
-                                        )
-                                    ) {
-                                        // Media is already assigned to variant. No API request needed
-                                        continue;
-                                    }
+                        //             if (
+                        //                 existingVariantMedia?.find(
+                        //                     (x) =>
+                        //                         x.id ===
+                        //                         mediaElement.saleorMedia[0].id,
+                        //                 )
+                        //             ) {
+                        //                 // Media is already assigned to variant. No API request needed
+                        //                 continue;
+                        //             }
 
-                                    const r =
-                                        await this.saleorClient.VariantMediaAssign(
-                                            {
-                                                mediaId:
-                                                    mediaElement
-                                                        .saleorMedia?.[0].id,
-                                                variantId:
-                                                    variantImage
-                                                        .saleorProductVariant[0]
-                                                        .id,
-                                            },
-                                        );
-                                    if (r.variantMediaAssign?.errors.length) {
-                                        if (
-                                            r.variantMediaAssign.errors.find(
-                                                (x) =>
-                                                    x.message?.includes(
-                                                        "This media is already assigned",
-                                                    ),
-                                            )
-                                        ) {
-                                            this.logger.info(
-                                                `Media ${mediaElement.id} is already assigned to variant ${variantImage.variantName}`,
-                                            );
-                                        } else {
-                                            this.logger.error(
-                                                `Error assigning media to variant ${
-                                                    variantImage.variantName
-                                                } in Saleor: ${JSON.stringify(
-                                                    r.variantMediaAssign.errors,
-                                                )}, tried to assign media with Saleor id ${
-                                                    mediaElement
-                                                        .saleorMedia?.[0].id
-                                                } to variant with Saleor id ${
-                                                    variantImage
-                                                        .saleorProductVariant[0]
-                                                        .id
-                                                }`,
-                                            );
-                                        }
-                                        if (
-                                            r.variantMediaAssign.errors.find(
-                                                (x) =>
-                                                    x.message?.includes(
-                                                        "Couldn't resolve to a node",
-                                                    ) ||
-                                                    x.code ===
-                                                        "NOT_PRODUCTS_IMAGE",
-                                            )
-                                        ) {
-                                            /**
-                                             * fixing a bug - deleting media that doesn't exist in saleor
-                                             */
-                                            if (mediaElement.saleorMedia[0].url)
-                                                await this.db.saleorMedia.delete(
-                                                    {
-                                                        where: {
-                                                            url_installedSaleorAppId:
-                                                                {
-                                                                    url: mediaElement
-                                                                        .saleorMedia[0]
-                                                                        .url,
-                                                                    installedSaleorAppId:
-                                                                        this
-                                                                            .installedSaleorAppId,
-                                                                },
-                                                        },
-                                                    },
-                                                );
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        //             const r =
+                        //                 await this.saleorClient.VariantMediaAssign(
+                        //                     {
+                        //                         mediaId:
+                        //                             mediaElement
+                        //                                 .saleorMedia?.[0].id,
+                        //                         variantId:
+                        //                             variantImage
+                        //                                 .saleorProductVariant[0]
+                        //                                 .id,
+                        //                     },
+                        //                 );
+                        //             if (r.variantMediaAssign?.errors.length) {
+                        //                 if (
+                        //                     r.variantMediaAssign.errors.find(
+                        //                         (x) =>
+                        //                             x.message?.includes(
+                        //                                 "This media is already assigned",
+                        //                             ),
+                        //                     )
+                        //                 ) {
+                        //                     this.logger.info(
+                        //                         `Media ${mediaElement.id} is already assigned to variant ${variantImage.variantName}`,
+                        //                     );
+                        //                 } else {
+                        //                     this.logger.error(
+                        //                         `Error assigning media to variant ${
+                        //                             variantImage.variantName
+                        //                         } in Saleor: ${JSON.stringify(
+                        //                             r.variantMediaAssign.errors,
+                        //                         )}, tried to assign media with Saleor id ${
+                        //                             mediaElement
+                        //                                 .saleorMedia?.[0].id
+                        //                         } to variant with Saleor id ${
+                        //                             variantImage
+                        //                                 .saleorProductVariant[0]
+                        //                                 .id
+                        //                         }`,
+                        //                     );
+                        //                 }
+                        //                 if (
+                        //                     r.variantMediaAssign.errors.find(
+                        //                         (x) =>
+                        //                             x.message?.includes(
+                        //                                 "Couldn't resolve to a node",
+                        //                             ) ||
+                        //                             x.code ===
+                        //                                 "NOT_PRODUCTS_IMAGE",
+                        //                     )
+                        //                 ) {
+                        //                     /**
+                        //                      * fixing a bug - deleting media that doesn't exist in saleor
+                        //                      */
+                        //                     if (mediaElement.saleorMedia[0].url)
+                        //                         await this.db.saleorMedia.delete(
+                        //                             {
+                        //                                 where: {
+                        //                                     url_installedSaleorAppId:
+                        //                                         {
+                        //                                             url: mediaElement
+                        //                                                 .saleorMedia[0]
+                        //                                                 .url,
+                        //                                             installedSaleorAppId:
+                        //                                                 this
+                        //                                                     .installedSaleorAppId,
+                        //                                         },
+                        //                                 },
+                        //                             },
+                        //                         );
+                        //                 }
+                        //             }
+                        //         }
+                        //     }
+                        // }
                     }
                 } catch (error) {
                     errors.push(error);
