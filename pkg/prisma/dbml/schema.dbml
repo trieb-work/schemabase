@@ -94,6 +94,7 @@ Table SaleorOrder {
 
 Table SaleorCategory {
   id String [not null, note: 'Saleor Internal Id']
+  dataHash String
   category Category [not null]
   categoryId String [not null]
   installedSaleorApp InstalledSaleorApp [not null]
