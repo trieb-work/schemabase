@@ -31,6 +31,7 @@ import {
 import { subHours, subYears } from "date-fns";
 import { editorJsHelper } from "./editorjs";
 import { MediaUpload } from "./mediaUpload";
+import { sha256 } from "@eci/pkg/hash";
 
 interface SaleorCategorySyncServiceConfig {
     saleorClient: {
@@ -456,22 +457,32 @@ export class SaleorCategorySyncService {
                 id: string;
                 categoryId: string;
                 installedSaleorAppId: string;
+                dataHash: string | null;
             }[];
         } & Category,
     ) {
+        const input = {
+            name: category.name,
+            slug: category.slug,
+            description: category.descriptionHTML
+                ? JSON.stringify(
+                      await editorJsHelper.HTMLToEditorJS(
+                          category.descriptionHTML,
+                      ),
+                  )
+                : undefined,
+        };
+
+        const dataHash = sha256(JSON.stringify(input));
+
+        if (dataHash === category.saleorCategories[0].dataHash) {
+            this.logger.info(`Category ${category.name} is up to date`);
+            return;
+        }
+
         const response = await this.saleorClient.categoryUpdate({
             id: category.saleorCategories?.[0].id,
-            input: {
-                name: category.name,
-                slug: category.slug,
-                description: category.descriptionHTML
-                    ? JSON.stringify(
-                          await editorJsHelper.HTMLToEditorJS(
-                              category.descriptionHTML,
-                          ),
-                      )
-                    : undefined,
-            },
+            input,
         });
         if (
             !response?.categoryUpdate?.category ||
@@ -484,6 +495,17 @@ export class SaleorCategorySyncService {
             );
             return;
         }
+        await this.db.saleorCategory.update({
+            where: {
+                id_installedSaleorAppId: {
+                    id: category.saleorCategories[0].id,
+                    installedSaleorAppId: this.installedSaleorApp.id,
+                },
+            },
+            data: {
+                dataHash: dataHash,
+            },
+        });
         this.logger.info(`Updated category in saleor: ${category.name}`);
     }
 
