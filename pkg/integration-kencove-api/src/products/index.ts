@@ -1840,7 +1840,12 @@ export class KencoveApiAppProductSyncService {
                     taxId,
                     kencoveApiVariantId: variant.id,
                     ean: variant.upc,
-                    attributes: variant.attributeValues,
+                    /**
+                     * attributes come randomly sorted from the api
+                     */
+                    attributes: variant.attributeValues?.sort((a, b) => {
+                        return a.name.localeCompare(b.name);
+                    }),
                 });
 
                 if (existingVariant?.dataHash === dataHash) {
