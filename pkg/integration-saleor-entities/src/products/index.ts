@@ -1778,56 +1778,66 @@ export class SaleorProductSyncService {
                                     dataHash,
                                 });
                             }
-                        }
-                        this.logger.debug(
-                            `Updating variants for product ${saleorProductId}`,
-                            {
-                                variants: variantsToUpdateInput.map(
-                                    (x) => x.sku,
-                                ),
-                            },
-                        );
-                        const productVariantBulkUpdateResponse =
-                            await this.saleorClient.productVariantBulkUpdate({
-                                variants: variantsToUpdateInput,
-                                productId: saleorProductId,
-                            });
-                        if (
-                            productVariantBulkUpdateResponse
-                                .productVariantBulkUpdate?.errors &&
-                            productVariantBulkUpdateResponse
-                                .productVariantBulkUpdate?.errors.length > 0
-                        ) {
-                            this.logger.error(
-                                `Error creating variants for product ${
-                                    product.name
-                                } in Saleor: ${JSON.stringify(
-                                    productVariantBulkUpdateResponse
-                                        .productVariantBulkUpdate.errors,
-                                )}`,
-                            );
-                            continue;
-                        }
-                        this.logger.info(
-                            `Successfully updated ${productVariantBulkUpdateResponse.productVariantBulkUpdate?.results.length} variants for product ${product.name} in Saleor`,
-                        );
 
-                        /**
-                         * writing the data hash to the DB
-                         */
-                        for (const variant of variantDataHashes) {
-                            await this.db.saleorProductVariant.update({
-                                where: {
-                                    id_installedSaleorAppId: {
-                                        id: variant.id,
-                                        installedSaleorAppId:
-                                            this.installedSaleorAppId,
+                            /**
+                             * bulk update variants if any of them has a different data hash
+                             */
+                            if (variantDataHashes.length > 0) {
+                                this.logger.debug(
+                                    `Updating variants for product ${saleorProductId}`,
+                                    {
+                                        variants: variantsToUpdateInput.map(
+                                            (x) => x.sku,
+                                        ),
                                     },
-                                },
-                                data: {
-                                    dataHash: variant.dataHash,
-                                },
-                            });
+                                );
+                                const productVariantBulkUpdateResponse =
+                                    await this.saleorClient.productVariantBulkUpdate(
+                                        {
+                                            variants: variantsToUpdateInput,
+                                            productId: saleorProductId,
+                                        },
+                                    );
+                                if (
+                                    productVariantBulkUpdateResponse
+                                        .productVariantBulkUpdate?.errors &&
+                                    productVariantBulkUpdateResponse
+                                        .productVariantBulkUpdate?.errors
+                                        .length > 0
+                                ) {
+                                    this.logger.error(
+                                        `Error creating variants for product ${
+                                            product.name
+                                        } in Saleor: ${JSON.stringify(
+                                            productVariantBulkUpdateResponse
+                                                .productVariantBulkUpdate
+                                                .errors,
+                                        )}`,
+                                    );
+                                    continue;
+                                }
+                                this.logger.info(
+                                    `Successfully updated ${productVariantBulkUpdateResponse.productVariantBulkUpdate?.results.length} variants for product ${product.name} in Saleor`,
+                                );
+
+                                /**
+                                 * writing the data hash to the DB
+                                 */
+                                for (const variant of variantDataHashes) {
+                                    await this.db.saleorProductVariant.update({
+                                        where: {
+                                            id_installedSaleorAppId: {
+                                                id: variant.id,
+                                                installedSaleorAppId:
+                                                    this.installedSaleorAppId,
+                                            },
+                                        },
+                                        data: {
+                                            dataHash: variant.dataHash,
+                                        },
+                                    });
+                                }
+                            }
                         }
 
                         /**
