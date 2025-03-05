@@ -708,7 +708,7 @@ export class KencoveApiClient {
             `requesting pricelist from ${fromDate} to ${toDate}, offset ${offset}`,
         );
         const response = await this.axiosInstance.get(
-            `/ecom/pricelist/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${toDate.toISOString()}${
+            `/ecom/pricelist/kencove?limit=200&offset=${offset}&show_future=true&from_date=${fromDate.toISOString()}&to_date=${toDate.toISOString()}${
                 productTemplateId ? `&product_tmpl_id=${productTemplateId}` : ""
             }`,
             {
