@@ -854,6 +854,16 @@ export class KencoveApiAppProductSyncService {
                 display_type: "multiselect",
                 attribute_model: "custom",
             });
+            /**
+             * Shipping status on variant level
+             */
+            variantAttributesUnique.push({
+                name: "Variant Shipping Status",
+                value: "",
+                attribute_id: 333341,
+                display_type: "variant_reference",
+                attribute_model: "custom",
+            });
             variantAttributesUnique.push({
                 name: "Frequently Bought Together",
                 value: "",
