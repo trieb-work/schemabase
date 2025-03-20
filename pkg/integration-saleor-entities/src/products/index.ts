@@ -31,7 +31,7 @@ import { normalizeStrings } from "@eci/pkg/normalization";
 import { Warning } from "@eci/pkg/integration-zoho-entities/src/utils";
 import { subHours, subYears } from "date-fns";
 import { editorJsHelper } from "../editorjs";
-import { MediaNotFoundError, MediaUpload } from "../mediaUpload.js";
+// import { MediaUpload } from "../mediaUpload.js";
 import { parseBoolean } from "@eci/pkg/utils/parseBoolean";
 import { SaleorProductManual } from "./productManual";
 import { sortVideoOrder } from "./helper";
@@ -579,7 +579,7 @@ export class SaleorProductSyncService {
      * GraphQL multipart request specification
      */
     public async uploadMedia(saleorProductId: string, media: Media[]) {
-        const mediaUpload = new MediaUpload(this.installedSaleorApp, this.db);
+        // const mediaUpload = new MediaUpload(this.installedSaleorApp, this.db);
         for (const element of media) {
             if (element.deleted) continue;
             this.logger.info(
