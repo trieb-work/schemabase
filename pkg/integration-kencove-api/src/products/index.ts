@@ -2127,34 +2127,35 @@ export class KencoveApiAppProductSyncService {
                 }
 
                 /**
-                 * We only want to set the variant_website_description attribute
-                 * if the value is different to the product.description.
+                 * We no longer filter out the variant website description.
+                 * We just always set it..
                  */
-                const variantWebsiteDescription = allAttributes.find(
-                    (a) => a.name === "variant_website_description",
-                )?.value;
-                let filterVariantWebsiteDescription = true;
-                if (
-                    variantWebsiteDescription &&
-                    variantWebsiteDescription !==
-                        product.description.replace(/<[^>]*>?/gm, "")?.trim() &&
-                    variantWebsiteDescription !== product?.description
-                ) {
-                    // "Variant website description is different to the product description. Setting this attribute",
-                    filterVariantWebsiteDescription = false;
-                } else {
-                    // "Variant website description is the same as the product description. Removing this attribute",
-                    filterVariantWebsiteDescription = true;
-                }
+                // const variantWebsiteDescription = allAttributes.find(
+                //     (a) => a.name === "variant_website_description",
+                // )?.value;
+                // let filterVariantWebsiteDescription = true;
+                // if (
+                //     variantWebsiteDescription &&
+                //     variantWebsiteDescription !==
+                //         product.description.replace(/<[^>]*>?/gm, "")?.trim() &&
+                //     variantWebsiteDescription !== product?.description
+                // ) {
+                //     // "Variant website description is different to the product description. Setting this attribute",
+                //     filterVariantWebsiteDescription = false;
+                // } else {
+                //     // "Variant website description is the same as the product description. Removing this attribute",
+                //     filterVariantWebsiteDescription = true;
+                // }
 
-                const cleanedAttributes = cleanAttributes(allAttributes)
-                    .filter((a) => a.name !== "website_ref_desc")
-                    .filter((a) => {
-                        if (filterVariantWebsiteDescription) {
-                            return a.name !== "variant_website_description";
-                        }
-                        return true;
-                    });
+                const cleanedAttributes = cleanAttributes(allAttributes).filter(
+                    (a) => a.name !== "website_ref_desc",
+                );
+                // .filter((a) => {
+                //     if (filterVariantWebsiteDescription) {
+                //         return a.name !== "variant_website_description";
+                //     }
+                //     return true;
+                // });
 
                 for (const attribute of cleanedAttributes) {
                     const matchedAttr =
