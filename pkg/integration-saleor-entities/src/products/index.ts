@@ -588,118 +588,119 @@ export class SaleorProductSyncService {
                     type: element?.type,
                 },
             );
-            if (element.type === "PRODUCTIMAGE") {
-                try {
-                    const mediaBlob = await mediaUpload.fetchMediaBlob(
-                        element.url,
-                    );
-                    const fileExtension = await mediaUpload.getFileExtension(
-                        element.url,
-                        mediaBlob,
-                    );
-                    if (!fileExtension) {
-                        this.logger.error(
-                            `Could not get file extension for media ${element.id}: ${element.url}. Can't upload to Saleor`,
-                        );
-                        continue;
-                    }
-                    const imageId = await mediaUpload.uploadImageToSaleor({
-                        saleorProductId,
-                        mediaBlob,
-                        fileExtension: fileExtension.extension,
-                        fileType: fileExtension.fileType,
-                        mediaId: element.id,
-                    });
-                    await this.saleorClient.saleorUpdateMetadata({
-                        id: imageId,
-                        input: [
-                            {
-                                key: "schemabase-media-id",
-                                value: element.id,
-                            },
-                        ],
-                    });
-                    this.logger.info(
-                        `Successfully uploaded media ${element.id}: ${element.url} to saleor with id ${imageId}`,
-                    );
-                } catch (error: any) {
-                    /**
-                     * delete media if NotFound error is thrown
-                     */
-                    if (error instanceof MediaNotFoundError) {
-                        this.logger.info(
-                            `Media ${element.id} not found. Deleting in internal DB`,
-                        );
-                        await this.db.media.delete({
-                            where: {
-                                id: element.id,
-                            },
-                        });
-                    }
-                    this.logger.error(
-                        `Error handling media ${element.id}: ${element.url} - ${
-                            error?.message ?? error
-                        }`,
-                    );
-                }
-            } else if (element.type === "PRODUCTVIDEO") {
-                try {
-                    const createMedia =
-                        await this.saleorClient.productMediaCreate({
-                            productId: saleorProductId,
-                            URL: element.url,
-                        });
-                    const newMediaId =
-                        createMedia.productMediaCreate?.media?.id;
-                    if (createMedia.productMediaCreate?.errors.length) {
-                        if (
-                            createMedia.productMediaCreate.errors[0].code ===
-                            "UNSUPPORTED_MEDIA_PROVIDER"
-                        ) {
-                            this.logger.error(
-                                `Error creating media ${element.id}: ${element.url} in Saleor. Unsupported media provider. Deleting media element in our DB`,
-                                {
-                                    error: createMedia.productMediaCreate
-                                        .errors[0].message,
-                                    url: element.url,
-                                },
-                            );
-                            await this.db.media.delete({
-                                where: {
-                                    id: element.id,
-                                },
-                            });
-                        }
-                    }
-                    if (!newMediaId) {
-                        throw new Error(
-                            `Error creating media ${element.id}: ${element.url} in Saleor. No media id returned`,
-                        );
-                    }
-                    await this.saleorClient.saleorUpdateMetadata({
-                        id: newMediaId,
-                        input: [
-                            {
-                                key: "schemabase-media-id",
-                                value: element.id,
-                            },
-                        ],
-                    });
-                    this.logger.info(
-                        `Successfully uploaded media ${element.id}: ${element.url} to saleor with id ${newMediaId}`,
-                    );
-                } catch (error: any) {
-                    this.logger.error(
-                        `Error handling media ${element.id}: ${element.url} - ${
-                            error?.message ?? error
-                        }`,
-                    );
-                }
-            } else {
-                this.logger.error(
-                    `Media type ${element.type} not supported or media type not defined. Skipping`,
-                );
-            }
+            // we no longer upload media.
+            // if (element.type === "PRODUCTIMAGE") {
+            //     try {
+            //         const mediaBlob = await mediaUpload.fetchMediaBlob(
+            //             element.url,
+            //         );
+            //         const fileExtension = await mediaUpload.getFileExtension(
+            //             element.url,
+            //             mediaBlob,
+            //         );
+            //         if (!fileExtension) {
+            //             this.logger.error(
+            //                 `Could not get file extension for media ${element.id}: ${element.url}. Can't upload to Saleor`,
+            //             );
+            //             continue;
+            //         }
+            //         const imageId = await mediaUpload.uploadImageToSaleor({
+            //             saleorProductId,
+            //             mediaBlob,
+            //             fileExtension: fileExtension.extension,
+            //             fileType: fileExtension.fileType,
+            //             mediaId: element.id,
+            //         });
+            //         await this.saleorClient.saleorUpdateMetadata({
+            //             id: imageId,
+            //             input: [
+            //                 {
+            //                     key: "schemabase-media-id",
+            //                     value: element.id,
+            //                 },
+            //             ],
+            //         });
+            //         this.logger.info(
+            //             `Successfully uploaded media ${element.id}: ${element.url} to saleor with id ${imageId}`,
+            //         );
+            //     } catch (error: any) {
+            //         /**
+            //          * delete media if NotFound error is thrown
+            //          */
+            //         if (error instanceof MediaNotFoundError) {
+            //             this.logger.info(
+            //                 `Media ${element.id} not found. Deleting in internal DB`,
+            //             );
+            //             await this.db.media.delete({
+            //                 where: {
+            //                     id: element.id,
+            //                 },
+            //             });
+            //         }
+            //         this.logger.error(
+            //             `Error handling media ${element.id}: ${element.url} - ${
+            //                 error?.message ?? error
+            //             }`,
+            //         );
+            //     }
+            // } else if (element.type === "PRODUCTVIDEO") {
+            //     try {
+            //         const createMedia =
+            //             await this.saleorClient.productMediaCreate({
+            //                 productId: saleorProductId,
+            //                 URL: element.url,
+            //             });
+            //         const newMediaId =
+            //             createMedia.productMediaCreate?.media?.id;
+            //         if (createMedia.productMediaCreate?.errors.length) {
+            //             if (
+            //                 createMedia.productMediaCreate.errors[0].code ===
+            //                 "UNSUPPORTED_MEDIA_PROVIDER"
+            //             ) {
+            //                 this.logger.error(
+            //                     `Error creating media ${element.id}: ${element.url} in Saleor. Unsupported media provider. Deleting media element in our DB`,
+            //                     {
+            //                         error: createMedia.productMediaCreate
+            //                             .errors[0].message,
+            //                         url: element.url,
+            //                     },
+            //                 );
+            //                 await this.db.media.delete({
+            //                     where: {
+            //                         id: element.id,
+            //                     },
+            //                 });
+            //             }
+            //         }
+            //         if (!newMediaId) {
+            //             throw new Error(
+            //                 `Error creating media ${element.id}: ${element.url} in Saleor. No media id returned`,
+            //             );
+            //         }
+            //         await this.saleorClient.saleorUpdateMetadata({
+            //             id: newMediaId,
+            //             input: [
+            //                 {
+            //                     key: "schemabase-media-id",
+            //                     value: element.id,
+            //                 },
+            //             ],
+            //         });
+            //         this.logger.info(
+            //             `Successfully uploaded media ${element.id}: ${element.url} to saleor with id ${newMediaId}`,
+            //         );
+            //     } catch (error: any) {
+            //         this.logger.error(
+            //             `Error handling media ${element.id}: ${element.url} - ${
+            //                 error?.message ?? error
+            //             }`,
+            //         );
+            //     }
+            // } else {
+            //     this.logger.error(
+            //         `Media type ${element.type} not supported or media type not defined. Skipping`,
+            //     );
+            // }
         }
     }
 
