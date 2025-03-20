@@ -108,6 +108,15 @@ fragment variant on ProductVariant {
             name
         }
     }
+    attributes {
+        attribute {
+            name
+        }
+        values {
+            id
+            name
+        }
+    }
 }
 
 fragment productType on ProductType {

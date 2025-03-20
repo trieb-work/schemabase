@@ -34695,6 +34695,15 @@ export type VariantFragment = {
             name?: string | null;
         }>;
     }>;
+    attributes: Array<{
+        __typename?: "SelectedAttribute";
+        attribute: { __typename?: "Attribute"; name?: string | null };
+        values: Array<{
+            __typename?: "AttributeValue";
+            id: string;
+            name?: string | null;
+        }>;
+    }>;
 };
 
 export type ProductTypeFragment = {
@@ -34798,6 +34807,18 @@ export type SaleorEntitySyncProductsQuery = {
                         sortOrder?: number | null;
                     }> | null;
                     variantAttributes: Array<{
+                        __typename?: "SelectedAttribute";
+                        attribute: {
+                            __typename?: "Attribute";
+                            name?: string | null;
+                        };
+                        values: Array<{
+                            __typename?: "AttributeValue";
+                            id: string;
+                            name?: string | null;
+                        }>;
+                    }>;
+                    attributes: Array<{
                         __typename?: "SelectedAttribute";
                         attribute: {
                             __typename?: "Attribute";
@@ -35414,6 +35435,15 @@ export const VariantFragmentDoc = gql`
             ...SaleorProductMedia
         }
         variantAttributes: attributes(variantSelection: VARIANT_SELECTION) {
+            attribute {
+                name
+            }
+            values {
+                id
+                name
+            }
+        }
+        attributes {
             attribute {
                 name
             }
