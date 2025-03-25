@@ -102,20 +102,20 @@ export class SaleorHistoricOrdersSync {
                     address,
                 )}`,
             );
-        this.logger.debug("schemabaseAddressToSaleorAddress", {
-            firstName,
-            lastName,
-            companyName: address.company,
-            phone: address.phone,
-            streetAddress1: address.street,
-            streetAddress2: address.additionalAddressLine,
-            postalCode: address.plz,
-            city: address.city,
-            country: this.schemabaseCountryCodeToSaleorCountryCode(
-                address.countryCode,
-            ),
-            countryArea: address.state,
-        });
+        // this.logger.debug("schemabaseAddressToSaleorAddress", {
+        //     firstName,
+        //     lastName,
+        //     companyName: address.company,
+        //     phone: address.phone,
+        //     streetAddress1: address.street,
+        //     streetAddress2: address.additionalAddressLine,
+        //     postalCode: address.plz,
+        //     city: address.city,
+        //     country: this.schemabaseCountryCodeToSaleorCountryCode(
+        //         address.countryCode,
+        //     ),
+        //     countryArea: address.state,
+        // });
         return {
             firstName,
             lastName,
@@ -129,6 +129,7 @@ export class SaleorHistoricOrdersSync {
             country: this.schemabaseCountryCodeToSaleorCountryCode(
                 address.countryCode,
             ),
+            skipValidation: true,
         };
     }
 
@@ -179,6 +180,9 @@ export class SaleorHistoricOrdersSync {
             productVariant: ProductVariant & {
                 product: Product;
                 saleorProductVariant: SaleorProductVariant[];
+                defaultWarehouse:
+                    | (Warehouse & { saleorWarehouse: SaleorWarehouse[] })
+                    | null;
                 salesTax?:
                     | (Tax & {
                           saleorTaxClasses?: SaleorTaxClass[];
@@ -187,19 +191,24 @@ export class SaleorHistoricOrdersSync {
             };
         })[],
         defaultSaleorTaxRateId?: string,
+        defaultSaleorWarehouseId?: string,
     ): OrderBulkCreateOrderLineInput[] {
         return orderLineItems
-            .filter((o) => o.quantity > 0)
+            .filter((o) => o.quantity >= 1)
             .map((line) => {
                 if (!line.totalPriceGross)
                     throw new Error(
-                        `No totalPriceGross. This should never happen: ${JSON.stringify(
-                            line,
-                        )}`,
+                        `No totalPriceGross in an orderline item. Saleor doesn't allow null values: lineId ${line.id}`,
                     );
+                /**
+                 * Try to get the saleor warehouse id. Setting it to an internal id if no saleor warehouse found,
+                 * but not sure if that does work
+                 */
                 const warehouseId =
                     line?.warehouse?.saleorWarehouse?.[0]?.id ||
-                    line.warehouseId;
+                    line.productVariant.defaultWarehouse?.saleorWarehouse?.[0]
+                        ?.id ||
+                    defaultSaleorWarehouseId;
                 if (!warehouseId)
                     throw new Error(`No warehouseId. This should never happen`);
                 const saleorProductVariantId =
@@ -287,6 +296,7 @@ export class SaleorHistoricOrdersSync {
     private ordersToBulkOrders(
         orders: any,
         defaultSaleorTaxRateId?: string,
+        defaultSaleorWarehouseId?: string,
     ): OrderBulkCreateInput[] {
         const returningBulkOrdes: OrderBulkCreateInput[] = [];
         for (const order of orders) {
@@ -325,6 +335,7 @@ export class SaleorHistoricOrdersSync {
                     lines: this.orderLineItemsToLines(
                         order.orderLineItems,
                         defaultSaleorTaxRateId,
+                        defaultSaleorWarehouseId,
                     ),
                     // packages: order.packages,
                     languageCode: this.schemabaseLanguageToSaleorLanguage(
@@ -357,6 +368,9 @@ export class SaleorHistoricOrdersSync {
 
     public async syncHistoricOrders(): Promise<void> {
         const orders = await this.db.order.findMany({
+            orderBy: {
+                date: "asc",
+            },
             where: {
                 saleorOrders: {
                     none: {
@@ -404,6 +418,16 @@ export class SaleorHistoricOrdersSync {
                         },
                         productVariant: {
                             include: {
+                                defaultWarehouse: {
+                                    include: {
+                                        saleorWarehouse: {
+                                            where: {
+                                                installedSaleorAppId:
+                                                    this.installedSaleorApp.id,
+                                            },
+                                        },
+                                    },
+                                },
                                 salesTax: {
                                     include: {
                                         saleorTaxClasses: {
@@ -460,6 +484,15 @@ export class SaleorHistoricOrdersSync {
             })
         )?.id;
 
+        const defaultSaleorWarehouseId = (
+            await this.db.saleorWarehouse.findFirst({
+                where: {
+                    installedSaleorAppId: this.installedSaleorApp.id,
+                    default: true,
+                },
+            })
+        )?.id;
+
         if (orders.length === 0) {
             this.logger.info("No historic orders for saleor customers found");
             return;
@@ -467,6 +500,7 @@ export class SaleorHistoricOrdersSync {
 
         this.logger.info(
             `Found ${orders.length} historic orders for saleor customers`,
+            { orderNumbers: orders.map((o) => o.orderNumber) },
         );
 
         /**
@@ -505,6 +539,7 @@ export class SaleorHistoricOrdersSync {
             const orderInput = this.ordersToBulkOrders(
                 filteredOrders,
                 defaultSaleorTaxRateId,
+                defaultSaleorWarehouseId,
             );
 
             const chunkSize = 50;
@@ -513,10 +548,13 @@ export class SaleorHistoricOrdersSync {
                 chunks.push(orderInput.slice(i, i + chunkSize));
             }
 
+            this.logger.info(
+                `Sending ${chunks.length} bulkOrderCreate requests, total ${orderInput.length} orders`,
+            );
+
             for (const chunk of chunks) {
-                this.logger.debug("Sending bulkOrderCreate request", {
-                    chunk: JSON.stringify(chunk),
-                });
+                this.logger.debug("Sending bulkOrderCreate request");
+                // console.dir(chunk, { depth: 3 });
                 const bulkOrderCreateResponse =
                     await this.saleorClient.bulkOrderCreate({
                         orders: chunk,
@@ -549,7 +587,6 @@ export class SaleorHistoricOrdersSync {
                                 );
                                 continue;
                             }
-                            console.log("external refernce", externalReference);
                             const saleorOrder =
                                 await this.saleorClient.orderByReference({
                                     externalReference,
@@ -609,6 +646,8 @@ export class SaleorHistoricOrdersSync {
                     this.logger.error(
                         `Error while creating historic orders in saleor: ${JSON.stringify(
                             bulkOrderCreateResponse.orderBulkCreate?.errors,
+                            null,
+                            2,
                         )}`,
                     );
                     continue;
