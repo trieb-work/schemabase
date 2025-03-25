@@ -389,6 +389,9 @@ model SaleorWarehouse {
   /// Saleor Internal Id
   id String
 
+  /// If this is the default warehouse that is used for any items / line items without valid warehouse
+  default Boolean @default(false)
+
   warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
   warehouseId String
 

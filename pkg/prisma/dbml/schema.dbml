@@ -249,6 +249,7 @@ Table SaleorProductVariant {
 
 Table SaleorWarehouse {
   id String [not null, note: 'Saleor Internal Id']
+  default Boolean [not null, default: false, note: 'If this is the default warehouse that is used for any items / line items without valid warehouse']
   warehouse Warehouse [not null]
   warehouseId String [not null]
   installedSaleorApp InstalledSaleorApp [not null]
