@@ -33,6 +33,7 @@ import {
     CountryCode as SaleorCountryCode,
     TransactionCreateInput,
 } from "@eci/pkg/saleor";
+import { subYears } from "date-fns";
 
 // Saleor. It is using the bulkOrderCreate endpoint of Saleor to create these orders in Saleor.
 export class SaleorHistoricOrdersSync {
@@ -368,6 +369,12 @@ export class SaleorHistoricOrdersSync {
                             installedSaleorAppId: this.installedSaleorApp.id,
                         },
                     },
+                },
+                date: {
+                    /**
+                     * We don't sync orders older than 5 years (using datejs)
+                     */
+                    gte: subYears(new Date(), 5),
                 },
             },
             include: {
