@@ -705,7 +705,7 @@ export class SaleorHistoricOrdersSync {
             }
         } catch (error) {
             this.logger.error(
-                `Error while creating historic orders in saleor: ${error}`,
+                `Outer error thrown while creating historic orders in saleor: ${error}`,
             );
         }
     }
