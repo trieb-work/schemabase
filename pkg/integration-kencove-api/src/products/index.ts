@@ -593,7 +593,9 @@ export class KencoveApiAppProductSyncService {
                         },
                     },
                 },
-                update: {},
+                update: {
+                    value: value,
+                },
             });
         } else {
             if (!productId) throw new Error("ProductId is undefined");
