@@ -653,7 +653,8 @@ export class SaleorHistoricOrdersSync {
                             2,
                         )}`,
                     );
-                    continue;
+                    if (!bulkOrderCreateResponse.orderBulkCreate.results.length)
+                        continue;
                 }
                 const results =
                     bulkOrderCreateResponse.orderBulkCreate?.results || [];
