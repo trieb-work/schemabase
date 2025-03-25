@@ -281,7 +281,8 @@ async function main() {
             default: false,
         })
         .help()
-        .alias("help", "h").argv;
+        .alias("help", "h")
+        .parseSync();
 
     // Extract arguments
     const installedSaleorAppId = argv["app-id"] as string;
