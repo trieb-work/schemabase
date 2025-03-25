@@ -368,8 +368,11 @@ export class SaleorHistoricOrdersSync {
 
     public async syncHistoricOrders(): Promise<void> {
         const orders = await this.db.order.findMany({
+            /**
+             * we want to sync the more recent orders first
+             */
             orderBy: {
-                date: "asc",
+                date: "desc",
             },
             where: {
                 saleorOrders: {
