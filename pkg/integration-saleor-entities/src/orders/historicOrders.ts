@@ -557,150 +557,232 @@ export class SaleorHistoricOrdersSync {
 
             for (const chunk of chunks) {
                 this.logger.debug("Sending bulkOrderCreate request");
-                // console.dir(chunk, { depth: 3 });
-                const bulkOrderCreateResponse =
-                    await this.saleorClient.bulkOrderCreate({
-                        orders: chunk,
-                        errorPolicy: ErrorPolicyEnum.IgnoreFailed,
-                    });
-                const bulkOrderResultErrors =
-                    bulkOrderCreateResponse.orderBulkCreate?.results
-                        .filter((x) => x.errors && x.errors?.length > 0)
-                        .flatMap((x) => x.errors);
-                if (
-                    bulkOrderResultErrors &&
-                    bulkOrderResultErrors?.length > 0
-                ) {
-                    for (const error of bulkOrderResultErrors) {
-                        /**
-                         * we already created an order with this externalReference. We store
-                         * the corresponding Saleor Id in our DB. We need to parse the external
-                         * reference out of the message field: "message":"Order with external_reference: 7331981 already exists."
-                         */
-                        if (
-                            error?.code === "UNIQUE" &&
-                            error.path === "external_reference"
-                        ) {
-                            const externalReference =
-                                error.message?.split(" ")[3];
-                            this.logger.info(error.message as string);
-                            if (!externalReference) {
-                                this.logger.error(
-                                    "Could not parse external reference from error message",
-                                );
-                                continue;
-                            }
-                            const saleorOrder =
-                                await this.saleorClient.orderByReference({
-                                    externalReference,
-                                });
-                            const saleorOrderId = saleorOrder.order?.id;
-                            if (!saleorOrderId) {
-                                this.logger.error(
-                                    `Could not find saleor order with external reference "${externalReference}"`,
-                                );
-                                continue;
-                            }
-                            await this.db.saleorOrder.upsert({
-                                where: {
-                                    id_installedSaleorAppId: {
-                                        id: saleorOrderId,
-                                        installedSaleorAppId:
-                                            this.installedSaleorApp.id,
-                                    },
-                                },
-                                create: {
-                                    id: saleorOrderId,
-                                    createdAt: new Date(),
-                                    installedSaleorApp: {
-                                        connect: {
-                                            id: this.installedSaleorApp.id,
-                                        },
-                                    },
-                                    order: {
-                                        connect: {
-                                            orderNumber_tenantId: {
-                                                orderNumber: externalReference,
-                                                tenantId: this.tenantId,
+                try {
+                    const bulkOrderCreateResponse =
+                        await this.saleorClient.bulkOrderCreate({
+                            orders: chunk,
+                            errorPolicy: ErrorPolicyEnum.IgnoreFailed,
+                        });
+
+                    // Process the response if it exists
+                    if (bulkOrderCreateResponse?.orderBulkCreate) {
+                        const bulkOrderResultErrors =
+                            bulkOrderCreateResponse.orderBulkCreate.results
+                                ?.filter(
+                                    (x) => x.errors && x.errors?.length > 0,
+                                )
+                                .flatMap((x) => x.errors) || [];
+
+                        if (bulkOrderResultErrors.length > 0) {
+                            for (const error of bulkOrderResultErrors) {
+                                /**
+                                 * we already created an order with this externalReference. We store
+                                 * the corresponding Saleor Id in our DB. We need to parse the external
+                                 * reference out of the message field: "message":"Order with external_reference: 7331981 already exists."
+                                 */
+                                if (
+                                    error?.code === "UNIQUE" &&
+                                    error.path === "external_reference"
+                                ) {
+                                    const externalReference =
+                                        error.message?.split(" ")[3];
+                                    this.logger.info(error.message as string);
+                                    if (!externalReference) {
+                                        this.logger.error(
+                                            "Could not parse external reference from error message",
+                                        );
+                                        continue;
+                                    }
+                                    const saleorOrder =
+                                        await this.saleorClient.orderByReference(
+                                            {
+                                                externalReference,
+                                            },
+                                        );
+                                    const saleorOrderId = saleorOrder.order?.id;
+                                    if (!saleorOrderId) {
+                                        this.logger.error(
+                                            `Could not find saleor order with external reference "${externalReference}"`,
+                                        );
+                                        continue;
+                                    }
+                                    await this.db.saleorOrder.upsert({
+                                        where: {
+                                            id_installedSaleorAppId: {
+                                                id: saleorOrderId,
+                                                installedSaleorAppId:
+                                                    this.installedSaleorApp.id,
                                             },
                                         },
+                                        create: {
+                                            id: saleorOrderId,
+                                            createdAt: new Date(),
+                                            installedSaleorApp: {
+                                                connect: {
+                                                    id: this.installedSaleorApp
+                                                        .id,
+                                                },
+                                            },
+                                            order: {
+                                                connect: {
+                                                    orderNumber_tenantId: {
+                                                        orderNumber:
+                                                            externalReference,
+                                                        tenantId: this.tenantId,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                        update: {
+                                            order: {
+                                                connect: {
+                                                    orderNumber_tenantId: {
+                                                        orderNumber:
+                                                            externalReference,
+                                                        tenantId: this.tenantId,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    });
+                                } else {
+                                    this.logger.error(JSON.stringify(error));
+                                }
+                            }
+                        }
+
+                        if (
+                            bulkOrderCreateResponse.orderBulkCreate.errors &&
+                            bulkOrderCreateResponse.orderBulkCreate.errors
+                                .length > 0
+                        ) {
+                            this.logger.error(
+                                `Error while creating historic orders in saleor: ${JSON.stringify(
+                                    bulkOrderCreateResponse.orderBulkCreate
+                                        .errors,
+                                    null,
+                                    2,
+                                )}`,
+                            );
+                            // Continue processing if there are still results
+                            if (
+                                !bulkOrderCreateResponse.orderBulkCreate.results
+                                    ?.length
+                            )
+                                continue;
+                        }
+
+                        const results =
+                            bulkOrderCreateResponse.orderBulkCreate.results ||
+                            [];
+                        const successfulOrders = results.filter(
+                            (r) => r.order && r.order?.id,
+                        );
+
+                        this.logger.info(
+                            `Successfully created ${successfulOrders.length} historic orders in saleor`,
+                            {
+                                successfulOrders: successfulOrders.map(
+                                    (o) => o.order?.externalReference,
+                                ),
+                            },
+                        );
+
+                        for (const result of successfulOrders) {
+                            if (
+                                !result?.order?.id ||
+                                !result.order.externalReference
+                            )
+                                continue;
+                            await this.db.order.update({
+                                where: {
+                                    orderNumber_tenantId: {
+                                        orderNumber:
+                                            result.order.externalReference,
+                                        tenantId: this.tenantId,
                                     },
                                 },
-                                update: {
-                                    order: {
-                                        connect: {
-                                            orderNumber_tenantId: {
-                                                orderNumber: externalReference,
-                                                tenantId: this.tenantId,
+                                data: {
+                                    saleorOrders: {
+                                        create: {
+                                            id: result.order.id,
+                                            createdAt: new Date(),
+                                            installedSaleorApp: {
+                                                connect: {
+                                                    id: this.installedSaleorApp
+                                                        .id,
+                                                },
                                             },
                                         },
                                     },
                                 },
                             });
-                        } else {
-                            this.logger.error(JSON.stringify(error));
                         }
+                    } else {
+                        this.logger.error(
+                            "No orderBulkCreate in response. This should never happen.",
+                        );
                     }
-                }
-                if (
-                    bulkOrderCreateResponse.orderBulkCreate?.errors &&
-                    bulkOrderCreateResponse.orderBulkCreate?.errors?.length > 0
-                ) {
+                } catch (error: any) {
+                    // Handle GraphQL errors that might contain partial results
                     this.logger.error(
-                        `Error while creating historic orders in saleor: ${JSON.stringify(
-                            bulkOrderCreateResponse.orderBulkCreate?.errors,
-                            null,
-                            2,
-                        )}`,
+                        `Error during bulkOrderCreate: ${error.message || JSON.stringify(error)}`,
                     );
-                    if (!bulkOrderCreateResponse.orderBulkCreate.results.length)
-                        continue;
-                }
-                const results =
-                    bulkOrderCreateResponse.orderBulkCreate?.results || [];
-                const successfulOrders = results.filter(
-                    (r) => r.order && r.order?.id,
-                );
-                this.logger.info(
-                    `Successfully created ${successfulOrders.length} historic orders in saleor`,
-                    {
-                        successfulOrders: successfulOrders.map(
-                            (o) => o.order?.externalReference,
-                        ),
-                    },
-                );
-                if (!bulkOrderCreateResponse.orderBulkCreate?.results) {
-                    this.logger.error(
-                        `No results in bulkOrderCreate response. This should never happen`,
-                    );
-                    throw new Error(
-                        `No results in bulkOrderCreate response. This should never happen`,
-                    );
-                }
-                for (const result of successfulOrders) {
-                    if (!result?.order?.id || !result.order.externalReference)
-                        continue;
-                    await this.db.order.update({
-                        where: {
-                            orderNumber_tenantId: {
-                                orderNumber: result.order.externalReference,
-                                tenantId: this.tenantId,
-                            },
-                        },
-                        data: {
-                            saleorOrders: {
-                                create: {
-                                    id: result.order.id,
-                                    createdAt: new Date(),
-                                    installedSaleorApp: {
-                                        connect: {
-                                            id: this.installedSaleorApp.id,
+
+                    // Try to extract and process any partial results from the error
+                    if (error.response?.data?.orderBulkCreate?.results) {
+                        const results =
+                            error.response.data.orderBulkCreate.results;
+                        const successfulOrders = results.filter(
+                            (r: any) => r.order && r.order?.id,
+                        );
+
+                        if (successfulOrders.length > 0) {
+                            this.logger.info(
+                                `Recovered ${successfulOrders.length} successful orders from error response`,
+                                {
+                                    successfulOrders: successfulOrders.map(
+                                        (o: any) => o.order?.externalReference,
+                                    ),
+                                },
+                            );
+
+                            for (const result of successfulOrders) {
+                                if (
+                                    !result?.order?.id ||
+                                    !result.order.externalReference
+                                )
+                                    continue;
+                                await this.db.order.update({
+                                    where: {
+                                        orderNumber_tenantId: {
+                                            orderNumber:
+                                                result.order.externalReference,
+                                            tenantId: this.tenantId,
                                         },
                                     },
-                                },
-                            },
-                        },
-                    });
+                                    data: {
+                                        saleorOrders: {
+                                            create: {
+                                                id: result.order.id,
+                                                createdAt: new Date(),
+                                                installedSaleorApp: {
+                                                    connect: {
+                                                        id: this
+                                                            .installedSaleorApp
+                                                            .id,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                });
+                            }
+                        }
+                    }
+
+                    // Continue with the next chunk instead of failing the entire process
+                    continue;
                 }
             }
         } catch (error) {
