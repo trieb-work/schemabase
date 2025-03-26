@@ -270,6 +270,7 @@ export class FedexTrackingSyncService {
             case "IT":
             case "DP":
             case "AR":
+            case "LO":
             case "IX":
                 return PackageState.IN_TRANSIT;
             case "OC":
