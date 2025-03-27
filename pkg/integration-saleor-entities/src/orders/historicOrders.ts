@@ -97,8 +97,8 @@ export class SaleorHistoricOrdersSync {
         const firstName = nameParts.shift();
         const lastName = nameParts.join(" ");
         if (!address?.countryCode)
-            throw new Error(
-                `No countryCode. This should never happen: ${JSON.stringify(
+            this.logger.warn(
+                `No countryCode. Saleor needs a valid country code, so we set US as default: ${JSON.stringify(
                     address,
                 )}`,
             );
@@ -127,7 +127,7 @@ export class SaleorHistoricOrdersSync {
             city: address.city,
             countryArea: address.state,
             country: this.schemabaseCountryCodeToSaleorCountryCode(
-                address.countryCode,
+                address.countryCode || "US",
             ),
             skipValidation: true,
         };
@@ -534,6 +534,21 @@ export class SaleorHistoricOrdersSync {
                     `No billingAddress for order ${order.orderNumber}. Setting shipping address as billing address`,
                 );
                 order.billingAddress = order.shippingAddress;
+            }
+            /**
+             * all orderlines need to have a total price > 0
+             */
+            if (
+                !order.orderLineItems.every(
+                    (line) =>
+                        line.totalPriceGross !== null &&
+                        line.totalPriceGross > 0,
+                )
+            ) {
+                this.logger.warn(
+                    `Order ${order.orderNumber} has orderlines with totalPrice <= 0. Skipping order`,
+                );
+                return false;
             }
             return true;
         });
