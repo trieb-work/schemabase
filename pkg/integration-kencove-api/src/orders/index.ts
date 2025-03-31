@@ -153,6 +153,9 @@ export class KencoveApiAppOrderSyncService {
     private matchOrderShippmentStatus(
         order: KencoveApiOrder,
     ): OrderShipmentStatus {
+        if (order.all_qty_delivered) {
+            return OrderShipmentStatus.shipped;
+        }
         if (!order.orderLines) {
             return OrderShipmentStatus.pending;
         }
@@ -193,7 +196,7 @@ export class KencoveApiAppOrderSyncService {
         }
     }
 
-    public async syncToECI() {
+    public async syncToECI(fromDate?: Date, customerCode?: string) {
         const cronState = await this.cronState.get();
         const now = new Date();
         let createdGte: Date;
@@ -209,8 +212,16 @@ export class KencoveApiAppOrderSyncService {
             this.logger.info(`Setting GTE date to ${createdGte}.`);
         }
 
+        if (fromDate) {
+            createdGte = fromDate;
+            this.logger.info(`Setting GTE date to ${createdGte}.`);
+        }
+
         const client = new KencoveApiClient(this.kencoveApiApp, this.logger);
-        const apiOrdersStream = client.getOrdersStream(createdGte);
+        const apiOrdersStream = client.getOrdersStream(
+            createdGte,
+            customerCode,
+        );
 
         /**
          * Helper to match warehouse
@@ -569,6 +580,7 @@ export class KencoveApiAppOrderSyncService {
                         date: order.date_order,
                         carrier,
                         shippmentStatus: this.matchOrderShippmentStatus(order),
+                        orderStatus: this.matchOrderStatus(order.state),
                     },
                 );
                 const res = await this.db.kencoveApiOrder.update({

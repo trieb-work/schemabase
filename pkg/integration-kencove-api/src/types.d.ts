@@ -411,4 +411,9 @@ export type KencoveApiOrder = {
     amount_total: number;
     createdAt: string;
     updatedAt: string;
+    /**
+     * Whether all orderlines have been shipped from our
+     * warehouses
+     */
+    all_qty_delivered: boolean;
 };

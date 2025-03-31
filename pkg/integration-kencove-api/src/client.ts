@@ -601,6 +601,7 @@ export class KencoveApiClient {
      */
     public async *getOrdersStream(
         fromDate: Date,
+        customerCode?: string,
     ): AsyncIterableIterator<KencoveApiOrder[]> {
         const WINDOW_SIZE = 1;
         const LIMIT = 200;
@@ -618,6 +619,7 @@ export class KencoveApiClient {
                     toDate,
                     offset,
                     accessToken,
+                    customerCode,
                 );
 
                 if (response.data.length === 0) break; // If no data, move to the next window
@@ -636,6 +638,7 @@ export class KencoveApiClient {
         toDate: Date,
         offset: number,
         accessToken: string,
+        customerCode?: string,
     ): Promise<{
         data: KencoveApiOrder[];
         result_count: number;
@@ -646,7 +649,8 @@ export class KencoveApiClient {
                 `requesting orders from ${fromDate} to ${toDate}`,
             );
             const response = await this.axiosInstance.get(
-                `/ecom/orders/kencove?limit=200&offset=${offset}&from_date=${fromDate.toISOString()}&to_date=${toDate.toISOString()}`,
+                `/ecom/orders/kencove?limit=200&offset=${offset}` +
+                    `&from_date=${fromDate.toISOString()}&to_date=${toDate.toISOString()}${customerCode ? `&customer_code=${customerCode}` : ""}`,
                 {
                     headers: {
                         Authorization: `Bearer ${accessToken}`,
