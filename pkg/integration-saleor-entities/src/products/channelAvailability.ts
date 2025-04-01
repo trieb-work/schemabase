@@ -103,6 +103,12 @@ export class SaleorChannelAvailabilitySyncService {
         });
     }
 
+    /**
+     * There can be multiple entries per variant, minQuantity and channel.
+     * We need to filter first for only entries, with startDate before now or now and
+     * for the entries with the most recent, currently active startDate, if we
+     * have multiple entries with the same minQuantity and channel.
+     */
     private getCurrentActiveBasePrices(
         entries: EnhancedSalesChannelPriceEntry[],
     ): EnhancedSalesChannelPriceEntry[] {
@@ -126,30 +132,100 @@ export class SaleorChannelAvailabilitySyncService {
             groupedEntries[key].push(entry);
         });
 
-        // For each group, find the entry with the most recent startDate
+        // For each group, find the appropriate entry based on start date
         const result: EnhancedSalesChannelPriceEntry[] = [];
+        const now = new Date();
 
         Object.values(groupedEntries).forEach((group) => {
-            const latestEntry = group.reduce((latest, current) => {
-                if (!latest) {
-                    return current;
-                }
-                if (!current) {
+            // Debug: Log all entries in this group
+            if (group.length > 1) {
+                this.logger.debug("Group with multiple entries:");
+                group.forEach((entry) => {
+                    this.logger.debug(
+                        `Entry: ${entry.productVariantId}, Start: ${entry.startDate}, End: ${entry.endDate}, Price: ${entry.price}`,
+                    );
+                });
+            }
+
+            // Split entries into current (start date in past or today) and future entries
+            const currentEntries = group.filter(
+                (entry) => !entry.startDate || !isAfter(entry.startDate, now),
+            );
+            const futureEntries = group.filter(
+                (entry) => entry.startDate && isAfter(entry.startDate, now),
+            );
+
+            // Debug: Log the split
+            if (group.length > 1) {
+                this.logger.debug(
+                    `Current entries: ${currentEntries.length}, Future entries: ${futureEntries.length}`,
+                );
+            }
+
+            let selectedEntry: EnhancedSalesChannelPriceEntry | undefined;
+
+            // If we have currently valid entries, select the one with the most recent start date
+            if (currentEntries.length > 0) {
+                selectedEntry = currentEntries.reduce((latest, current) => {
+                    if (!latest) {
+                        return current;
+                    }
+                    if (!current) {
+                        return latest;
+                    }
+                    if (!latest.startDate && current.startDate) {
+                        return current;
+                    }
+                    if (
+                        current.startDate &&
+                        latest.startDate &&
+                        current.startDate > latest.startDate
+                    ) {
+                        return current;
+                    }
                     return latest;
+                });
+
+                // Debug: Log the selected current entry
+                if (group.length > 1) {
+                    this.logger.debug(
+                        `Selected current entry: Start: ${selectedEntry.startDate}, Price: ${selectedEntry.price}`,
+                    );
                 }
-                if (!latest.startDate && current.startDate) {
-                    return current;
+            }
+            // If no currently valid entries exist, select the future entry with the earliest start date
+            else if (futureEntries.length > 0) {
+                selectedEntry = futureEntries.reduce((earliest, current) => {
+                    if (!earliest) {
+                        return current;
+                    }
+                    if (!current) {
+                        return earliest;
+                    }
+                    if (!earliest.startDate && current.startDate) {
+                        return current;
+                    }
+                    if (
+                        current.startDate &&
+                        earliest.startDate &&
+                        current.startDate < earliest.startDate
+                    ) {
+                        return current;
+                    }
+                    return earliest;
+                });
+
+                // Debug: Log the selected future entry
+                if (group.length > 1) {
+                    this.logger.debug(
+                        `Selected future entry: Start: ${selectedEntry.startDate}, Price: ${selectedEntry.price}`,
+                    );
                 }
-                if (
-                    current.startDate &&
-                    latest.startDate &&
-                    current.startDate > latest.startDate
-                ) {
-                    return current;
-                }
-                return latest;
-            });
-            result.push(latestEntry);
+            }
+
+            if (selectedEntry) {
+                result.push(selectedEntry);
+            }
         });
 
         return result;
@@ -192,15 +268,12 @@ export class SaleorChannelAvailabilitySyncService {
         const resp = await this.saleorClient.productChannelListingUpdate({
             id: saleorProductId,
             input: {
-                updateChannels: existingEntry?.channelListings?.map(
-                    (c) =>
-                        ({
-                            channelId: c.channel.id,
-                            availableForPurchaseAt: null,
-                            visibleInListings: false,
-                            isAvailableForPurchase: false,
-                        }) || [],
-                ),
+                updateChannels: existingEntry?.channelListings?.map((c) => ({
+                    channelId: c.channel.id,
+                    availableForPurchaseAt: null,
+                    visibleInListings: false,
+                    isAvailableForPurchase: false,
+                })),
             },
         });
         if (
@@ -289,19 +362,18 @@ export class SaleorChannelAvailabilitySyncService {
         if (isAlreadyDisabled || !saleorProductId) {
             return;
         }
-
+        this.logger.info(
+            `Disabling product variant in Saleor for product variant ${variantId}`,
+        );
         const res = await this.saleorClient.productChannelListingUpdate({
             id: saleorProductId,
             input: {
                 updateChannels: existingEntry?.variants
                     ?.find((v) => v.id === variantId)
-                    ?.channelListings?.map(
-                        (c) =>
-                            ({
-                                channelId: c.channel.id,
-                                removeVariants: [variantId],
-                            }) || [],
-                    ),
+                    ?.channelListings?.map((c) => ({
+                        channelId: c.channel.id,
+                        removeVariants: [variantId],
+                    })),
             },
         });
 
@@ -663,8 +735,8 @@ export class SaleorChannelAvailabilitySyncService {
 
         /**
          * There can be multiple entries per variant, minQuantity and channel.
-         * We need to filter first for only entries, with startDate before now and
-         * for the entries with the highest startDate, if we
+         * We need to filter first for only entries, with startDate before now or now and
+         * for the entries with the most recent, currently active startDate, if we
          * have multiple entries with the same minQuantity and channel.
          */
         const basePriceEntries =
