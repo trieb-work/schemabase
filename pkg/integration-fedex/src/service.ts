@@ -431,7 +431,12 @@ export class FedexTrackingSyncService {
                 lastState.description;
 
             // eslint-disable-next-line max-len
-            const shipmentLocation = `${lastState.scanLocation.city}, ${lastState.scanLocation.stateOrProvinceCode}, ${lastState.scanLocation.countryCode}`;
+            const shipmentLocation =
+                lastState.scanLocation.city &&
+                lastState.scanLocation.stateOrProvinceCode &&
+                lastState.scanLocation.countryCode
+                    ? `${lastState.scanLocation.city}, ${lastState.scanLocation.stateOrProvinceCode}, ${lastState.scanLocation.countryCode}`
+                    : "None";
 
             if (!this.fedexTrackingApp.trackingIntegrationId) {
                 this.logger.info(
