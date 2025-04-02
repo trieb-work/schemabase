@@ -271,7 +271,7 @@ export class ZohoSalesOrdersSyncService {
             }
 
             const fullyShipped =
-                salesorder.shipped_status === "shipped" ?? false;
+                salesorder.shipped_status === "shipped" ? true : false;
             if (fullyShipped)
                 this.logger.info(
                     `Order ${salesorder.salesorder_number} is in status fully shipped in Zoho. Setting this in ECI DB`,
