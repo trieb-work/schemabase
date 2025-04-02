@@ -165,7 +165,9 @@ export class SaleorOrderSyncService {
         }
         const orders = result.orders.edges.map((order) => order.node);
 
-        this.logger.info(`Working on ${orders.length} orders`);
+        this.logger.info(`Working on ${orders.length} orders`, {
+            orderNumbers: orders.map((o) => o.number),
+        });
 
         for (const order of orders) {
             try {
@@ -556,9 +558,9 @@ export class SaleorOrderSyncService {
                     let eciTax = await this.lookupECITax(taxPercentage);
 
                     if (!eciTax) {
-                        this.logger.warn(
-                            `We could not find an internal tax for tax rate ${taxPercentage} for order ${order.number}. We are using the products default now`,
-                        );
+                        // this.logger.warn(
+                        //     `We could not find an internal tax for tax rate ${taxPercentage} for order ${order.number}. We are using the products default now`,
+                        // );
                         if (!productSku.salesTaxId) {
                             this.logger.warn(
                                 `Product ${productSku.sku} - ${productSku.id} has no default sales tax set! Proceeding without a tax class`,

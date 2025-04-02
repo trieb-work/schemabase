@@ -80,7 +80,7 @@ class Addresses {
             streetWithoutHouseNumber: splitted?.street,
             phone: address.phone,
         };
-        this.logger.debug("Constructed Address", addObj);
+        // this.logger.debug("Constructed Address", addObj);
         const uniqueString = uniqueStringAddress(addObj);
 
         return { addObj, uniqueString };
