@@ -9,7 +9,7 @@ import { id } from "@eci/pkg/ids";
 import { ILogger } from "@eci/pkg/logger";
 import { sleep } from "@eci/pkg/utils/time";
 import { UspsTrackingApp, PackageState, PrismaClient } from "@eci/pkg/prisma";
-import { subMonths } from "date-fns";
+import { subHours, subWeeks } from "date-fns";
 import axios, { AxiosInstance } from "axios";
 
 interface USPSTrackingSyncServiceConfig {
@@ -248,11 +248,14 @@ export class USPSTrackingSyncService {
         );
 
         /// get all USPS packages, that are not delivered
-        // with last status update older than 2 hours, to prevent too many API calls
+        // with last status update older than 5 hours, to prevent too many API calls
         const uspsPackages = testTrackingId
             ? await this.db.package.findMany({
                   where: {
                       trackingId: testTrackingId,
+                  },
+                  include: {
+                      order: true,
                   },
               })
             : await this.db.package.findMany({
@@ -266,14 +269,25 @@ export class USPSTrackingSyncService {
                           not: null,
                       },
                       createdAt: {
-                          gt: subMonths(new Date(), 2),
+                          gt: subWeeks(new Date(), 2),
+                          lte: subHours(new Date(), 5),
                       },
                       isTrackingEnabled: true,
+                  },
+                  include: {
+                      order: true,
                   },
               });
 
         this.logger.info(
             `Receiving ${uspsPackages.length} USPS packages, that we pull status updates from`,
+            {
+                packages: uspsPackages.map((p) => ({
+                    orderNumber: p.order?.orderNumber,
+                    url: p.carrierTrackingUrl,
+                    date: p.createdAt,
+                })),
+            },
         );
 
         for (const p of uspsPackages) {
