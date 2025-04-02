@@ -101,9 +101,9 @@ class Addresses {
         const billingAddr = this.createObjectAndUniqueString(billingAddress);
 
         if (this.eciOrderId) {
-            this.logger.debug(
-                `Syncing address with internal order id ${this.eciOrderId}`,
-            );
+            // this.logger.debug(
+            //     `Syncing address with internal order id ${this.eciOrderId}`,
+            // );
             await this.db.order.update({
                 where: {
                     id: this.eciOrderId,
