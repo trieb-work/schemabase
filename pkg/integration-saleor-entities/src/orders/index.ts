@@ -359,18 +359,6 @@ export class SaleorOrderSyncService {
                                             id: this.tenantId,
                                         },
                                     },
-                                    metadata: {
-                                        create: order.metadata.map((m) => ({
-                                            id: id.id("metadata"),
-                                            key: m.key,
-                                            value: m.value,
-                                            tenant: {
-                                                connect: {
-                                                    id: this.tenantId,
-                                                },
-                                            },
-                                        })),
-                                    },
                                 },
                             },
                         },
@@ -403,6 +391,7 @@ export class SaleorOrderSyncService {
                         order: {
                             select: {
                                 id: true,
+                                metadata: true,
                                 mainContactId: true,
                                 shippingPriceTaxId: true,
                                 orderLineItems: {
@@ -414,6 +403,40 @@ export class SaleorOrderSyncService {
                         },
                     },
                 });
+
+                /**
+                 * Sync the metadata with the upserted order.
+                 */
+                for (const meta of order.metadata) {
+                    /**
+                     * Look in the order, if the metadata does already exists
+                     */
+                    const doesExist = upsertedOrder.order.metadata.find(
+                        (m) => m.key === meta.key,
+                    );
+                    if (!doesExist) {
+                        this.logger.debug(`Creating metadata item ${meta.key}`);
+                        await this.db.order.update({
+                            where: {
+                                id: upsertedOrder.orderId,
+                            },
+                            data: {
+                                metadata: {
+                                    create: {
+                                        id: id.id("metadata"),
+                                        key: meta.key,
+                                        value: meta.value,
+                                        tenant: {
+                                            connect: {
+                                                id: this.tenantId,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        });
+                    }
+                }
 
                 const orderDetails =
                     await this.saleorClient.saleorCronOrderDetails({
