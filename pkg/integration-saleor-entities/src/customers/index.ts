@@ -198,6 +198,25 @@ export class SaleorCustomerSyncService {
                     updatedAt: new Date(contact.updatedAt),
                     dataHash,
                     customer: {
+                        connectOrCreate: {
+                            where: {
+                                email_tenantId: {
+                                    email: contact.email.toLowerCase(),
+                                    tenantId: this.tenantId,
+                                },
+                            },
+                            create: {
+                                id: id.id("contact"),
+                                email: contact.email.toLowerCase(),
+                                firstName: contact.firstName,
+                                lastName: contact.lastName,
+                                tenant: {
+                                    connect: {
+                                        id: this.tenantId,
+                                    },
+                                },
+                            },
+                        },
                         update: {
                             email: contact.email.toLowerCase(),
                             firstName: contact.firstName,
