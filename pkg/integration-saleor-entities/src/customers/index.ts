@@ -332,8 +332,9 @@ export class SaleorCustomerSyncService {
                 );
                 continue;
             }
-            this.logger.debug(`Updating contact ${contact.id} in Saleor`, {
+            this.logger.info(`Updating contact ${contact.id} in Saleor`, {
                 externalIdentifier: contact.externalIdentifier,
+                externalIdentifier2: contact.externalIdentifier2,
                 saleorCustomerId,
             });
 

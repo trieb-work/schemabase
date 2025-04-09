@@ -142,7 +142,7 @@ export class KencoveApiAppContactSyncService {
                     (sc) => sc.normalizedName === normalizedName,
                 );
 
-                this.logger.debug(
+                this.logger.info(
                     `Upserting contact ${contact.firstname} ${contact.lastname} - ${email}`,
                     {
                         id: contact.id,
