@@ -11,7 +11,7 @@ import {
 } from "@eci/pkg/saleor";
 import { InstalledSaleorApp, Package, PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { subHours, subMonths, subYears } from "date-fns";
+import { subHours, subMinutes, subMonths, subYears } from "date-fns";
 import { closestsMatch } from "@eci/pkg/utils/closestMatch";
 
 interface SaleorPackageSyncServiceConfig {
@@ -279,9 +279,7 @@ export class SaleorPackageSyncService {
             );
         } else {
             createdGte = subHours(cronState.lastRun, 3);
-            this.logger.info(
-                `Setting GTE date to ${createdGte}. Asking Saleor for all (partially) fulfilled orders with lastUpdated GTE.`,
-            );
+            this.logger.info(`Setting GTE date to ${createdGte}. `);
         }
         /**
          * We search all packages that have a related saleor order, but that don't have any related packages in saleor,
@@ -293,6 +291,10 @@ export class SaleorPackageSyncService {
                     {
                         createdAt: {
                             gt: subMonths(new Date(), 5),
+                            /**
+                             * making sure, that package is already 30 mins old to make sure that all orderlines are already processed
+                             */
+                            lt: subMinutes(new Date(), 30),
                         },
                     },
                     {
