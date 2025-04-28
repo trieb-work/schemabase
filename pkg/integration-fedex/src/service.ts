@@ -25,6 +25,10 @@ type FedexTrackingPackage = {
 };
 
 type FedexTrackingResult = {
+    error?: {
+        code: string;
+        message: string;
+    };
     trackingNumberInfo: {
         trackingNumber: string;
         trackingNumberUniqueId: string;
@@ -419,6 +423,19 @@ export class FedexTrackingSyncService {
                         trackResult: fullPackage.trackResults,
                     },
                 );
+
+                if (fullPackage.trackResults?.[0].error) {
+                    const error = fullPackage.trackResults?.[0].error;
+                    if (error.code === "TRACKING.TRACKINGNUMBER.NOTFOUND") {
+                        // this case is alright, when the package is fresh yet
+                        continue;
+                    }
+                    this.logger.error("Error from Fedex", {
+                        error,
+                        trackingId: p.trackingId,
+                        trackResult: fullPackage.trackResults,
+                    });
+                }
                 continue;
             }
             const internalState = this.parseState(lastState.code);
