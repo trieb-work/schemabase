@@ -374,9 +374,15 @@ export class FedexTrackingSyncService {
                           not: null,
                       },
                       createdAt: {
-                          gt: subMonths(new Date(), 2),
+                          gt: subMonths(new Date(), 1),
                       },
                       isTrackingEnabled: true,
+                  },
+                  /**
+                   * Order by createdAt desc to get the latest packages first. We expect them to get the most updates.
+                   */
+                  orderBy: {
+                      createdAt: "desc",
                   },
               });
 
@@ -388,6 +394,7 @@ export class FedexTrackingSyncService {
             if (!p.trackingId) continue;
             this.logger.info(
                 `Pulling package data from Fedex for ${p.trackingId}`,
+                { trackingId: p.trackingId, date: p.createdAt },
             );
 
             const fullPackage = await this.getFedexPackage(
@@ -405,10 +412,11 @@ export class FedexTrackingSyncService {
             const lastState = fullPackage.trackResults?.[0].latestStatusDetail;
             if (!lastState || !lastState.code) {
                 this.logger.error(
-                    `Package state from Fedex not including current status code: ${p.trackingId}`,
+                    `Package state from Fedex not including status code: ${p.trackingId}`,
                     {
                         lastState,
                         trackingId: p.trackingId,
+                        trackResult: fullPackage.trackResults,
                     },
                 );
                 continue;
