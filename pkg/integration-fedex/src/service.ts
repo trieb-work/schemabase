@@ -9,7 +9,7 @@ import { id } from "@eci/pkg/ids";
 import { ILogger } from "@eci/pkg/logger";
 import { sleep } from "@eci/pkg/utils/time";
 import { FedexTrackingApp, PackageState, PrismaClient } from "@eci/pkg/prisma";
-import { subMonths } from "date-fns";
+import { subDays, subMonths } from "date-fns";
 import axios, { AxiosInstance } from "axios";
 
 interface FedexTrackingSyncServiceConfig {
@@ -275,6 +275,8 @@ export class FedexTrackingSyncService {
             case "DP":
             case "AR":
             case "LO":
+            case "SE":
+                return PackageState.IN_TRANSIT;
             case "IX":
                 return PackageState.IN_TRANSIT;
             case "OC":
@@ -381,6 +383,7 @@ export class FedexTrackingSyncService {
                           gt: subMonths(new Date(), 1),
                       },
                       isTrackingEnabled: true,
+                      active: true,
                   },
                   /**
                    * Order by createdAt desc to get the latest packages first. We expect them to get the most updates.
@@ -428,6 +431,17 @@ export class FedexTrackingSyncService {
                     const error = fullPackage.trackResults?.[0].error;
                     if (error.code === "TRACKING.TRACKINGNUMBER.NOTFOUND") {
                         // this case is alright, when the package is fresh yet
+                        if (p.createdAt > subDays(new Date(), 4)) {
+                            // we disable this package
+                            await this.db.package.update({
+                                where: {
+                                    id: p.id,
+                                },
+                                data: {
+                                    active: false,
+                                },
+                            });
+                        }
                         continue;
                     }
                     this.logger.error("Error from Fedex", {
