@@ -47,12 +47,13 @@ export class KencoveApiAppPricelistSyncService {
 
     /**
      * The kencove API get us shipping metainformation like "free shipping qualified" as pricelist entry.
-     * We model that as actual product attribute
+     * We model that as actual product and variant attribute. Will switch to variant only at some point
      * @param priceListItem
      */
     private async setShippingAttributes(
         priceListItem: KencoveApiPricelistItem,
         productId: string,
+        variantId: string,
     ) {
         const shippingAttribute =
             this.shippingStatusAttribute ||
@@ -79,6 +80,7 @@ export class KencoveApiAppPricelistSyncService {
         if (!this.shippingStatusAttribute) {
             this.shippingStatusAttribute = shippingAttribute;
         }
+
         /**
          * Is there already an entry for attribute Shipping Status and the current product, we are working on
          */
@@ -92,6 +94,68 @@ export class KencoveApiAppPricelistSyncService {
                 },
             },
         });
+        const attrValueVariant = await this.db.attributeValueVariant.findUnique(
+            {
+                where: {
+                    productVariantId_attributeId_normalizedName_tenantId: {
+                        productVariantId: variantId,
+                        attributeId: shippingAttribute.id,
+                        normalizedName: "shippingstatus",
+                        tenantId: this.kencoveApiApp.tenantId,
+                    },
+                },
+            },
+        );
+        if (!attrValueVariant) {
+            await this.db.attributeValueVariant.create({
+                data: {
+                    id: id.id("attributeValue"),
+                    tenant: {
+                        connect: {
+                            id: this.kencoveApiApp.tenantId,
+                        },
+                    },
+                    attribute: {
+                        connect: {
+                            id: shippingAttribute.id,
+                        },
+                    },
+                    productVariant: {
+                        connect: {
+                            id: variantId,
+                        },
+                    },
+                    normalizedName: "shippingstatus",
+                    value: priceListItem.freeship_qualified
+                        ? "FREE Shipping"
+                        : "Shipping Fees Apply",
+                },
+            });
+        } else {
+            // only update the entry, if it has changed
+            if (
+                attrValueVariant.value !==
+                (priceListItem.freeship_qualified
+                    ? "FREE Shipping"
+                    : "Shipping Fees Apply")
+            ) {
+                await this.db.attributeValueVariant.update({
+                    where: {
+                        productVariantId_attributeId_normalizedName_tenantId: {
+                            productVariantId: variantId,
+                            attributeId: shippingAttribute.id,
+                            normalizedName: "shippingstatus",
+                            tenantId: this.kencoveApiApp.tenantId,
+                        },
+                    },
+                    data: {
+                        value: priceListItem.freeship_qualified
+                            ? "FREE Shipping"
+                            : "Shipping Fees Apply",
+                    },
+                });
+            }
+        }
         if (!attrValue) {
             await this.db.attributeValueProduct.create({
                 data: {
@@ -343,6 +407,7 @@ export class KencoveApiAppPricelistSyncService {
                         await this.setShippingAttributes(
                             pricelistEntry,
                             productVariant.productId,
+                            productVariant.id,
                         );
                     }
 
