@@ -104,9 +104,15 @@ export class SaleorPaymentSyncService {
                 transaction.privateMetadata.find((x) => x.key === "prepayment")
                     ?.value || method === "prepayment";
 
-            if (echeck || prepayment) {
+            const customerCredit = transaction.privateMetadata.find(
+                (x) => x.key === "customerCredit",
+            )?.value;
+            if (echeck || prepayment || customerCredit) {
                 if (prepayment) {
                     paymentMethod = PaymentMethodType.banktransfer;
+                }
+                if (customerCredit) {
+                    paymentMethod = PaymentMethodType.customerCredit;
                 }
                 if (echeck) {
                     paymentMethod = PaymentMethodType.echeck;
