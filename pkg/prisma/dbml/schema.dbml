@@ -2142,6 +2142,7 @@ Enum PaymentMethodType {
   card
   banktransfer
   echeck
+  customerCredit
 }
 
 Enum GatewayType {
@@ -2150,6 +2151,7 @@ Enum GatewayType {
   stripe
   banktransfer
   authorizeNet
+  customerCredit
 }
 
 Enum Currency {

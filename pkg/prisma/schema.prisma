@@ -905,6 +905,8 @@ enum PaymentMethodType {
   /// banktransfer = Vorkasse = prepayment
   banktransfer
   echeck
+  /// customer credit
+  customerCredit
 }
 
 /// categorize payments by gateway type
@@ -915,6 +917,8 @@ enum GatewayType {
   /// banktransfer = Vorkasse
   banktransfer
   authorizeNet
+  /// customer credit
+  customerCredit
 }
 
 /// Internal representation of payment methods. We try to normalize different payment types to more generic ones.
