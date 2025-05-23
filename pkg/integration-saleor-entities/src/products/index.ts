@@ -1646,12 +1646,12 @@ export class SaleorProductSyncService {
                              * Media that we once uploaded from schemabase but that is no longer
                              * in our DB or that is marked as deleted
                              */
-                            const mediaToDelete = filteredMedia.filter(
-                                (m) =>
-                                    !schemabaseMedia.find(
-                                        (sm) => sm.id === m.metafield,
-                                    )?.id,
-                            );
+                            // const mediaToDelete = filteredMedia.filter(
+                            //     (m) =>
+                            //         !schemabaseMedia.find(
+                            //             (sm) => sm.id === m.metafield,
+                            //         )?.id,
+                            // );
 
                             const mediaToUpload = schemabaseMedia.filter(
                                 (m) =>
@@ -1667,19 +1667,19 @@ export class SaleorProductSyncService {
                                 );
                             }
 
-                            if (mediaToDelete.length > 0) {
-                                this.logger.info(
-                                    `Deleting ${mediaToDelete.length} media for product ${product.name} in Saleor`,
-                                    {
-                                        mediaToDelete: mediaToDelete.map(
-                                            (x) => x.id,
-                                        ),
-                                    },
-                                );
-                                for (const element of mediaToDelete) {
-                                    await this.deleteMedia(element.id);
-                                }
-                            }
+                            // if (mediaToDelete.length > 0) {
+                            //     this.logger.info(
+                            //         `Deleting ${mediaToDelete.length} media for product ${product.name} in Saleor`,
+                            //         {
+                            //             mediaToDelete: mediaToDelete.map(
+                            //                 (x) => x.id,
+                            //             ),
+                            //         },
+                            //     );
+                            //     for (const element of mediaToDelete) {
+                            //         await this.deleteMedia(element.id);
+                            //     }
+                            // }
                         }
                     }
                     /**
