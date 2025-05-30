@@ -33,6 +33,8 @@ export class KencoveApiAppPricelistSyncService {
 
     private shippingStatusAttribute: Attribute | undefined = undefined;
 
+    private shippingStatusAttributeVariant: Attribute | undefined = undefined;
+
     constructor(config: KencoveApiAppPricelistSyncServiceConfig) {
         this.logger = config.logger;
         this.db = config.db;
@@ -47,7 +49,8 @@ export class KencoveApiAppPricelistSyncService {
 
     /**
      * The kencove API get us shipping metainformation like "free shipping qualified" as pricelist entry.
-     * We model that as actual product and variant attribute. Will switch to variant only at some point
+     * We model that as actual product and variant attribute. Will switch to variant only at some point. We use
+     * a separate attribute for the variant shipping status: "Variant Shipping Status".
      * @param priceListItem
      */
     private async setShippingAttributes(
@@ -55,7 +58,7 @@ export class KencoveApiAppPricelistSyncService {
         productId: string,
         variantId: string,
     ) {
-        const shippingAttribute =
+        const shippingAttributeProduct =
             this.shippingStatusAttribute ||
             (await this.db.attribute.upsert({
                 where: {
@@ -78,7 +81,33 @@ export class KencoveApiAppPricelistSyncService {
                 update: {},
             }));
         if (!this.shippingStatusAttribute) {
-            this.shippingStatusAttribute = shippingAttribute;
+            this.shippingStatusAttribute = shippingAttributeProduct;
+        }
+
+        const shippingAttributeVariant =
+            this.shippingStatusAttributeVariant ||
+            (await this.db.attribute.upsert({
+                where: {
+                    normalizedName_tenantId: {
+                        normalizedName: "variantshippingstatus",
+                        tenantId: this.kencoveApiApp.tenantId,
+                    },
+                },
+                create: {
+                    id: id.id("attribute"),
+                    tenant: {
+                        connect: {
+                            id: this.kencoveApiApp.tenantId,
+                        },
+                    },
+                    name: "Variant Shipping Status",
+                    normalizedName: "variantshippingstatus",
+                    type: "MULTISELECT",
+                },
+                update: {},
+            }));
+        if (!this.shippingStatusAttributeVariant) {
+            this.shippingStatusAttributeVariant = shippingAttributeVariant;
         }
 
         /**
@@ -88,7 +117,7 @@ export class KencoveApiAppPricelistSyncService {
             where: {
                 productId_attributeId_normalizedName_tenantId: {
                     productId,
-                    attributeId: shippingAttribute.id,
+                    attributeId: shippingAttributeProduct.id,
                     normalizedName: "shippingstatus",
                     tenantId: this.kencoveApiApp.tenantId,
                 },
@@ -99,8 +128,8 @@ export class KencoveApiAppPricelistSyncService {
                 where: {
                     productVariantId_attributeId_normalizedName_tenantId: {
                         productVariantId: variantId,
-                        attributeId: shippingAttribute.id,
-                        normalizedName: "shippingstatus",
+                        attributeId: shippingAttributeVariant.id,
+                        normalizedName: "variantshippingstatus",
                         tenantId: this.kencoveApiApp.tenantId,
                     },
                 },
@@ -117,7 +146,7 @@ export class KencoveApiAppPricelistSyncService {
                     },
                     attribute: {
                         connect: {
-                            id: shippingAttribute.id,
+                            id: shippingAttributeVariant.id,
                         },
                     },
                     productVariant: {
@@ -125,7 +154,7 @@ export class KencoveApiAppPricelistSyncService {
                             id: variantId,
                         },
                     },
-                    normalizedName: "shippingstatus",
+                    normalizedName: "variantshippingstatus",
                     value: priceListItem.freeship_qualified
                         ? "FREE Shipping"
                         : "Shipping Fees Apply",
@@ -143,8 +172,8 @@ export class KencoveApiAppPricelistSyncService {
                     where: {
                         productVariantId_attributeId_normalizedName_tenantId: {
                             productVariantId: variantId,
-                            attributeId: shippingAttribute.id,
-                            normalizedName: "shippingstatus",
+                            attributeId: shippingAttributeVariant.id,
+                            normalizedName: "variantshippingstatus",
                             tenantId: this.kencoveApiApp.tenantId,
                         },
                     },
@@ -167,7 +196,7 @@ export class KencoveApiAppPricelistSyncService {
                     },
                     attribute: {
                         connect: {
-                            id: shippingAttribute.id,
+                            id: shippingAttributeProduct.id,
                         },
                     },
                     product: {
@@ -201,7 +230,7 @@ export class KencoveApiAppPricelistSyncService {
                     where: {
                         productId_attributeId_normalizedName_tenantId: {
                             productId,
-                            attributeId: shippingAttribute.id,
+                            attributeId: shippingAttributeProduct.id,
                             normalizedName: "shippingstatus",
                             tenantId: this.kencoveApiApp.tenantId,
                         },
