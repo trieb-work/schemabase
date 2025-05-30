@@ -904,7 +904,7 @@ export class KencoveApiAppProductSyncService {
                 name: "Variant Shipping Status",
                 value: "",
                 attribute_id: 333341,
-                display_type: "variant_reference",
+                display_type: "multiselect",
                 attribute_model: "custom",
             });
             variantAttributesUnique.push({
