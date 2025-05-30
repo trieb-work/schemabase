@@ -560,16 +560,35 @@ export class KencoveApiAppProductSyncService {
 
         if (isForVariant) {
             if (!variantId) throw new Error("VariantId is undefined");
-            await this.db.attributeValueVariant.upsert({
-                where: {
-                    productVariantId_attributeId_normalizedName_tenantId: {
-                        normalizedName,
+
+            // Delete all existing attribute values before creating a new one
+            // This prevents duplicate attribute values and ensures we don't have old values lingering
+            const existingAttributes =
+                await this.db.attributeValueVariant.findMany({
+                    where: {
                         attributeId: attribute.id,
                         productVariantId: variantId,
                         tenantId: this.kencoveApiApp.tenantId,
                     },
-                },
-                create: {
+                });
+
+            if (existingAttributes.length > 0) {
+                this.logger.info(
+                    `Found ${existingAttributes.length} existing attribute values for ${attribute.name} on variant ${variantId}. Removing before setting new value.`,
+                );
+
+                await this.db.attributeValueVariant.deleteMany({
+                    where: {
+                        attributeId: attribute.id,
+                        productVariantId: variantId,
+                        tenantId: this.kencoveApiApp.tenantId,
+                    },
+                });
+            }
+
+            // Now create the new attribute value
+            await this.db.attributeValueVariant.create({
+                data: {
                     id: id.id("attributeValue"),
                     attribute: {
                         connect: {
@@ -593,22 +612,38 @@ export class KencoveApiAppProductSyncService {
                         },
                     },
                 },
-                update: {
-                    value: value,
-                },
             });
         } else {
             if (!productId) throw new Error("ProductId is undefined");
-            await this.db.attributeValueProduct.upsert({
-                where: {
-                    productId_attributeId_normalizedName_tenantId: {
-                        normalizedName,
+
+            // Delete all existing attribute values before creating a new one
+            // This ensures we don't have duplicate or stale values
+            const existingAttributes =
+                await this.db.attributeValueProduct.findMany({
+                    where: {
                         attributeId: attribute.id,
-                        productId,
+                        productId: productId,
                         tenantId: this.kencoveApiApp.tenantId,
                     },
-                },
-                create: {
+                });
+
+            if (existingAttributes.length > 0) {
+                this.logger.info(
+                    `Found ${existingAttributes.length} existing attribute values for ${attribute.name} on product ${productId}. Removing before setting new value.`,
+                );
+
+                await this.db.attributeValueProduct.deleteMany({
+                    where: {
+                        attributeId: attribute.id,
+                        productId: productId,
+                        tenantId: this.kencoveApiApp.tenantId,
+                    },
+                });
+            }
+
+            // Now create the new attribute value
+            await this.db.attributeValueProduct.create({
+                data: {
                     id: id.id("attributeValue"),
                     attribute: {
                         connect: {
@@ -632,7 +667,6 @@ export class KencoveApiAppProductSyncService {
                         },
                     },
                 },
-                update: {},
             });
         }
     }
@@ -1776,6 +1810,10 @@ export class KencoveApiAppProductSyncService {
 
                 this.logger.info(
                     `Syncing product variant ${variant.sku} of product ${product.productName}`,
+                    {
+                        kencoveVariantId: variant.id,
+                        sku: variant.sku,
+                    },
                 );
 
                 /**
@@ -1983,6 +2021,10 @@ export class KencoveApiAppProductSyncService {
                 } else {
                     this.logger.info(
                         `Updating variant ${variant.id} of product ${product.productName}, as something has changed`,
+                        {
+                            kencoveVariantId: variant.id,
+                            sku: variant.sku,
+                        },
                     );
                     await this.db.productVariant.update({
                         where: {
