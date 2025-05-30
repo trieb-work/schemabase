@@ -152,6 +152,13 @@ export class KencoveApiAppProductSyncService {
         isForVariant: boolean,
         isVariantSelection: boolean,
     ) {
+        // Force variant_website_description to always be a variant attribute
+        if (attribute.name === "variant_website_description" && !isForVariant) {
+            this.logger.info(
+                `[setProductTypeAttribute] Found variant_website_description attribute with isForVariant=false. Forcing it to be a variant attribute.`,
+            );
+            isForVariant = true;
+        }
         if (!attribute.name) {
             this.logger.error(
                 `[setProductTypeAttribute] Attribute ${JSON.stringify(
