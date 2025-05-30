@@ -492,6 +492,9 @@ export class SaleorProductSyncService {
     ) {
         this.logger.info(
             `Found ${variantsToCreate.length} variants to create for product ${product.name} in Saleor`,
+            {
+                skus: variantsToCreate.map((v) => v.sku),
+            },
         );
         const variantsToCreateInput: ProductVariantBulkCreateInput[] =
             await Promise.all(
@@ -1266,8 +1269,8 @@ export class SaleorProductSyncService {
 
         const unsortedProductsToCreateOrUpdate = [
             ...itemsToCreate,
-            ...updatedItemsDatabase,
             ...itemsWithMissingVariants,
+            ...updatedItemsDatabase,
             ...itemsWithMissingMedia,
             ...updatedVariants,
         ];
