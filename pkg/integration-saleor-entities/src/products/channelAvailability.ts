@@ -769,6 +769,9 @@ export class SaleorChannelAvailabilitySyncService {
 
         this.logger.info(
             `Syncing channel availability for ${allUniqueSaleorProductIds.length} unique saleor products. Getting the existing channel listings first`,
+            {
+                saleorProductIds: allUniqueSaleorProductIds,
+            },
         );
 
         const res =
