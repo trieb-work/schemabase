@@ -1638,6 +1638,7 @@ Table KencoveApiProduct {
   updatedAt DateTime [not null]
   product Product [not null]
   productId String [not null]
+  dataHash String
   kencoveApiApp KencoveApiApp [not null]
   kencoveApiAppId String [not null]
 

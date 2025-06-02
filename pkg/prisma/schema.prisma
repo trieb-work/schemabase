@@ -2920,6 +2920,9 @@ model KencoveApiProduct {
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String
 
+  // The data hash of the whole object that we receive from the API. 
+  dataHash String?
+
   kencoveApiApp   KencoveApiApp @relation(fields: [kencoveApiAppId], references: [id], onDelete: Cascade)
   kencoveApiAppId String
 
