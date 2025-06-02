@@ -856,7 +856,7 @@ export class KencoveApiAppProductSyncService {
 
             if (!product.productType?.id || !product.productType.name) {
                 this.logger.error(
-                    `Product type ${product.name} - ${product.id} has no product type id. Skipping.`,
+                    `Product ${product.name} - ${product.id} has no product type id. Skipping.`,
                 );
                 continue;
             }
@@ -1468,6 +1468,12 @@ export class KencoveApiAppProductSyncService {
         });
     }
 
+    /**
+     * Sync from Kencove API. We split in our logic product type (which is basically an attribute set), products and variants.
+     * We get most data like attributes only on variant level. We create a data hash to see, if anything has been changed
+     * @param productTemplateId
+     * @returns
+     */
     public async syncToECI(productTemplateId?: string) {
         const cronState = await this.cronState.get();
         const now = new Date();
@@ -1598,6 +1604,9 @@ export class KencoveApiAppProductSyncService {
                     brand: p.brand_name,
                     variants: p.variants.map((v) => ({
                         ...v,
+                        attributeValues: v.attributeValues?.sort((x, y) =>
+                            x.name.localeCompare(y.name),
+                        ),
                         id: v.id.toString(),
                         productId: p.id,
                         productName: htmlDecode(p.name),
@@ -1625,6 +1634,11 @@ export class KencoveApiAppProductSyncService {
                 );
                 continue;
             }
+
+            /**
+             * The main data hash of this item with all its variants
+             */
+            const maintItemDatahash = sha256(JSON.stringify(product));
 
             /**
              * we include the product template id in the normalised name, as
@@ -1683,11 +1697,7 @@ export class KencoveApiAppProductSyncService {
                 (c) => c.id === product.categoryId,
             )?.categoryId;
 
-            /**
-             * The existing product from our DB. When product does not exist, we create it.
-             * When product is internally different from the product from the API, we update it.
-             */
-            let existingProduct = (
+            const existingKencoveProduct =
                 await this.db.kencoveApiProduct.findUnique({
                     where: {
                         id_kencoveApiAppId: {
@@ -1709,8 +1719,21 @@ export class KencoveApiAppProductSyncService {
                             },
                         },
                     },
-                })
-            )?.product;
+                });
+            /**
+             * The existing product from our DB. When product does not exist, we create it.
+             * When product is internally different from the product from the API, we update it.
+             */
+            let existingProduct = existingKencoveProduct?.product;
+
+            const existingProductDatahash = existingKencoveProduct?.dataHash;
+
+            if (existingProductDatahash === maintItemDatahash) {
+                this.logger.info(
+                    `Product ${product.productName} including all variants, with KencoveId ${product.productId} has not changed. Skipping.`,
+                );
+                continue;
+            }
 
             if (!existingProduct) {
                 this.logger.info(
@@ -1735,20 +1758,7 @@ export class KencoveApiAppProductSyncService {
                         kenProdTypeWithProductType.productTypeId ||
                     existingProduct.countryOfOrigin !== countryOfOrigin ||
                     (category && existingProduct.categoryId !== category) ||
-                    existingProduct.active !== product.active ||
-                    /**
-                     * Compare the media arrays with each other and see, if we have other URLs
-                     */
-                    !compareArraysWithoutOrder(
-                        existingProduct.media.map((m) => ({
-                            url: m.url,
-                            type: m.type,
-                        })),
-                        this.getTotalMediaFromProduct(product).map((m) => ({
-                            url: m.url,
-                            type: m.type,
-                        })),
-                    )
+                    existingProduct.active !== product.active
                 ) {
                     /**
                      * log, which fields have changed
@@ -2208,6 +2218,9 @@ export class KencoveApiAppProductSyncService {
                 //     return true;
                 // });
 
+                /**
+                 * Setting both variant and product attributes of an item
+                 */
                 for (const attribute of cleanedAttributes) {
                     const matchedAttr =
                         kenProdTypeWithProductType.productType.attributes.find(
@@ -2326,6 +2339,22 @@ export class KencoveApiAppProductSyncService {
                     isForVariant: false,
                 });
             }
+
+            /**
+             * Write the datahash to the database
+             */
+            if (existingProduct)
+                await this.db.kencoveApiProduct.update({
+                    where: {
+                        id_kencoveApiAppId: {
+                            id: product.productId,
+                            kencoveApiAppId: this.kencoveApiApp.id,
+                        },
+                    },
+                    data: {
+                        dataHash: maintItemDatahash,
+                    },
+                });
         }
     }
 }
