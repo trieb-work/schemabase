@@ -459,7 +459,7 @@ export class SaleorPackageSyncService {
                 continue;
             }
 
-            const saleorLines: OrderFulfillLineInput[] =
+            let saleorLines: OrderFulfillLineInput[] =
                 saleorOrder.order.orderLineItems
                     .map((line) => {
                         if (!line.saleorOrderLineItems?.[0]?.id) {
@@ -474,6 +474,10 @@ export class SaleorPackageSyncService {
                         const filteredForSKU = parcel.packageLineItems.filter(
                             (x) => x.sku === line.sku,
                         );
+                        /**
+                         * We can't match an orderline. For example when items consist of other items,
+                         * and we just get the information on the shipped part not the original item..
+                         */
                         if (filteredForSKU.length === 0) {
                             this.logger.warn(
                                 `Can't find a package line item for orderline with SKU ${line.sku}`,
@@ -542,26 +546,95 @@ export class SaleorPackageSyncService {
                 return true;
             });
             if (!fulfillmentLinesCheck || saleorLines.length === 0) {
-                this.logger.error(
-                    `Can't create fulfillment for order ${saleorOrder.id} - ${
-                        parcel.number
-                    } - ${
-                        parcel.orderId
-                    }. Missing orderLineId or quantity: ${JSON.stringify(
-                        saleorLines,
-                    )}`,
-                    {
-                        orderNumber: saleorOrder.order.orderNumber,
-                        saleorOrderLines: JSON.stringify(
-                            saleorOrder.order.orderLineItems,
-                        ),
-                        packageLineItems: JSON.stringify(
-                            parcel.packageLineItems,
-                        ),
-                    },
-                );
+                /**
+                 * When we can't match safely, but have just one package
+                 * and see that the order is fully shipped, we just hard-coding a
+                 * package. All saleorOrderLines come in this package.
+                 */
+                if (
+                    !parcel.isMultiPieceShipment &&
+                    saleorOrder.order.shipmentStatus === "shipped"
+                ) {
+                    const shortCircuitPackage = saleorOrder.order.orderLineItems
+                        .map((line) => {
+                            if (!line.saleorOrderLineItems?.[0]?.id) {
+                                this.logger.info(
+                                    `No saleor order line for order line ${line.id}. Can't fulfill this orderline`,
+                                );
+                                return undefined;
+                            }
+                            const saleorOrderLine =
+                                line.saleorOrderLineItems[0];
+                            /**
+                             * Saleor warehouse id. Using the first package line item to get the id,
+                             * as all package line items need to be shipped from the same warehouse
+                             */
+                            const warehouse =
+                                parcel.packageLineItems[0].warehouse
+                                    ?.saleorWarehouse[0].id ||
+                                this.installedSaleorApp.defaultWarehouseId;
+                            if (!warehouse) return undefined;
+                            return {
+                                orderLineId: saleorOrderLine.id,
+                                stocks: [
+                                    {
+                                        warehouse: warehouse,
+                                        quantity: line.quantity,
+                                    },
+                                ],
+                            };
+                        })
+                        .filter(
+                            (x) => typeof x?.orderLineId === "string",
+                        ) as OrderFulfillLineInput[];
 
-                continue;
+                    this.logger.info(
+                        `Using short circuit package for order ${saleorOrder.id} - ${parcel.number} - ${parcel.orderId}`,
+                        {
+                            orderNumber: saleorOrder.order.orderNumber,
+                            shortCircuitPackage,
+                            orderLineItems: saleorOrder.order.orderLineItems,
+                        },
+                    );
+                    if (
+                        shortCircuitPackage.length ===
+                        saleorOrder.order.orderLineItems.length
+                    ) {
+                        saleorLines = shortCircuitPackage;
+                    } else {
+                        this.logger.error(
+                            `Can't create fulfillment for order ${saleorOrder.id} - ${parcel.number} - ${parcel.orderId}. Short circuit package doesn't match order line items`,
+                            {
+                                orderNumber: saleorOrder.order.orderNumber,
+                                shortCircuitPackage,
+                                orderLineItems:
+                                    saleorOrder.order.orderLineItems,
+                            },
+                        );
+                        continue;
+                    }
+                } else {
+                    this.logger.error(
+                        `Can't create fulfillment for order ${saleorOrder.id} - ${
+                            parcel.number
+                        } - ${
+                            parcel.orderId
+                        }. Missing orderLineId or quantity: ${JSON.stringify(
+                            saleorLines,
+                        )}`,
+                        {
+                            orderNumber: saleorOrder.order.orderNumber,
+                            saleorOrderLines: JSON.stringify(
+                                saleorOrder.order.orderLineItems,
+                            ),
+                            packageLineItems: JSON.stringify(
+                                parcel.packageLineItems,
+                            ),
+                        },
+                    );
+
+                    continue;
+                }
             }
 
             this.logger.info(
@@ -635,6 +708,10 @@ export class SaleorPackageSyncService {
                         );
                         // TODO: further investigate this case and why it is happening..we just don't want to fail on that currently
                     } else {
+                        this.logger.error(
+                            "Unhandled error trying to create order fulfillment",
+                            { lines: saleorLines },
+                        );
                         throw new Error(JSON.stringify(e));
                     }
                     continue;
