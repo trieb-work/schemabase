@@ -375,6 +375,7 @@ export class SaleorHistoricOrdersSync {
                 date: "desc",
             },
             where: {
+                orderStatus: "confirmed",
                 saleorOrders: {
                     none: {
                         installedSaleorAppId: this.installedSaleorApp.id,
