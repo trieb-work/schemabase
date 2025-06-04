@@ -541,6 +541,7 @@ export class KencoveApiAppProductSyncService {
         productId,
         variantId,
         isForVariant,
+        deleteExistingEntries = true,
     }: {
         attribute: Attribute;
         attributeInProduct?: KencoveApiAttributeInProduct;
@@ -548,6 +549,12 @@ export class KencoveApiAppProductSyncService {
         productId?: string;
         variantId?: string;
         isForVariant: boolean;
+        /**
+         * delete all entries with this attributeId first.
+         * should be disabled for multi-select attributes, as
+         * we would delete all other entries.
+         */
+        deleteExistingEntries?: boolean;
     }) {
         const value = attributeValue || attributeInProduct?.value;
         if (!value) {
@@ -579,7 +586,7 @@ export class KencoveApiAppProductSyncService {
                     },
                 });
 
-            if (existingAttributes.length > 0) {
+            if (deleteExistingEntries && existingAttributes.length > 0) {
                 this.logger.info(
                     `Found ${existingAttributes.length} existing attribute values for ${attribute.name} on variant ${variantId}. Removing before setting new value.`,
                 );
@@ -634,7 +641,7 @@ export class KencoveApiAppProductSyncService {
                     },
                 });
 
-            if (existingAttributes.length > 0) {
+            if (deleteExistingEntries && existingAttributes.length > 0) {
                 this.logger.info(
                     `Found ${existingAttributes.length} existing attribute values for ${attribute.name} on product ${productId}. Removing before setting new value.`,
                 );
@@ -1048,12 +1055,22 @@ export class KencoveApiAppProductSyncService {
                         productId,
                     },
                 });
+
+            // we first delete all accesory item entries
+            await this.db.attributeValueProduct.deleteMany({
+                where: {
+                    attributeId: accessoryItemAttribute.attributeId,
+                    productId,
+                },
+            });
+
             for (const accessoryItem of accessoryItems) {
                 await this.setAttributeValue({
                     attribute: accessoryItemAttribute.attribute,
                     attributeValue: accessoryItem.productId,
                     productId,
                     isForVariant: false,
+                    deleteExistingEntries: false,
                 });
                 // if value did not exist before, mark product as updated
                 if (
@@ -1063,21 +1080,6 @@ export class KencoveApiAppProductSyncService {
                 ) {
                     hasChanged = true;
                 }
-            }
-
-            const toDelete = existingAccessoryItems.filter(
-                (eai) =>
-                    !accessoryItems.some((ai) => ai.productId === eai.value),
-            );
-            // delete all values, that are not in the API anymore
-            for (const del of toDelete) {
-                await this.db.attributeValueProduct.delete({
-                    where: {
-                        id: del.id,
-                    },
-                });
-                // mark product as updated
-                hasChanged = true;
             }
         }
         if (alternativeSKUs) {
@@ -1111,12 +1113,20 @@ export class KencoveApiAppProductSyncService {
                         productId,
                     },
                 });
+            // we first delete all entries
+            await this.db.attributeValueProduct.deleteMany({
+                where: {
+                    attributeId: alternativeItemAttribute.attributeId,
+                    productId,
+                },
+            });
             for (const alternativeItem of alternativeItems) {
                 await this.setAttributeValue({
                     attribute: alternativeItemAttribute.attribute,
                     attributeValue: alternativeItem.productId,
                     productId,
                     isForVariant: false,
+                    deleteExistingEntries: false,
                 });
                 // if value did not exist before, mark product as updated
                 if (
@@ -1126,20 +1136,6 @@ export class KencoveApiAppProductSyncService {
                 ) {
                     hasChanged = true;
                 }
-            }
-
-            const toDelete = existingAlternativeItems.filter(
-                (eai) =>
-                    !alternativeItems.some((ai) => ai.productId === eai.value),
-            );
-            // delete all values, that are not in the API anymore
-            for (const del of toDelete) {
-                await this.db.attributeValueProduct.delete({
-                    where: {
-                        id: del.id,
-                    },
-                });
-                hasChanged = true;
             }
         }
 
