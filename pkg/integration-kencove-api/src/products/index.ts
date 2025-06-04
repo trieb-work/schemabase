@@ -1743,69 +1743,14 @@ export class KencoveApiAppProductSyncService {
                     category,
                 );
             } else {
-                /**
-                 * Compare the existing product with the product from the API and only update, if something has changed
-                 */
-                if (
-                    existingProduct.normalizedName !== normalizedProductName ||
-                    existingProduct.name !== product.productName ||
-                    existingProduct.descriptionHTML !== product.description ||
-                    existingProduct.productTypeId !==
-                        kenProdTypeWithProductType.productTypeId ||
-                    existingProduct.countryOfOrigin !== countryOfOrigin ||
-                    (category && existingProduct.categoryId !== category) ||
-                    existingProduct.active !== product.active
-                ) {
-                    /**
-                     * log, which fields have changed
-                     */
-                    this.logger.info(
-                        `Updating product ${product.productName} with KencoveId ${product.productId}, as something has changed.`,
-                        {
-                            name:
-                                existingProduct.normalizedName !==
-                                normalizedProductName,
-                            description:
-                                existingProduct.descriptionHTML !==
-                                product.description,
-                            productType:
-                                existingProduct.productTypeId !==
-                                kenProdTypeWithProductType.productTypeId,
-                            countryOfOrigin:
-                                existingProduct.countryOfOrigin !==
-                                countryOfOrigin,
-                            category: category
-                                ? existingProduct.categoryId !== category
-                                : false,
-                            active: existingProduct.active !== product.active,
-                            media: !compareArraysWithoutOrder(
-                                existingProduct.media.map((m) => ({
-                                    url: m.url,
-                                    type: m.type,
-                                })),
-                                this.getTotalMediaFromProduct(product).map(
-                                    (m) => ({
-                                        url: m.url,
-                                        type: m.type,
-                                    }),
-                                ),
-                            ),
-                        },
-                    );
-
-                    existingProduct = await this.updateProductSchemabase(
-                        product,
-                        existingProduct.id,
-                        countryOfOrigin,
-                        kenProdTypeWithProductType.productTypeId,
-                        category,
-                        normalizedProductName,
-                    );
-                } else {
-                    this.logger.info(
-                        `Product ${product.productName} with KencoveId ${product.productId} has not changed. Not updating our DB.`,
-                    );
-                }
+                existingProduct = await this.updateProductSchemabase(
+                    product,
+                    existingProduct.id,
+                    countryOfOrigin,
+                    kenProdTypeWithProductType.productTypeId,
+                    category,
+                    normalizedProductName,
+                );
             }
 
             /**
