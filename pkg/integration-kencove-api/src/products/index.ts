@@ -38,7 +38,6 @@ import {
     kenAttributeToEciAttribute,
 } from "../helper";
 import { syncTaxClasses } from "./taxclasses";
-import { compareArraysWithoutOrder } from "@eci/pkg/utils/array";
 import { sha256 } from "@eci/pkg/hash";
 
 interface KencoveApiAppProductSyncServiceConfig {
