@@ -556,131 +556,139 @@ export class KencoveApiAppProductSyncService {
         deleteExistingEntries?: boolean;
     }) {
         const value = attributeValue || attributeInProduct?.value;
-        if (!value) {
-            this.logger.error(
-                `Attribute ${attribute.name} has no value. Skipping.`,
+        try {
+            if (!value) {
+                this.logger.error(
+                    `Attribute ${attribute.name} has no value. Skipping.`,
+                );
+                return;
+            }
+            const normalizedName = normalizeStrings.attributeValueNames(value);
+
+            let hexCode: string | undefined = undefined;
+            // we set an attribute hex value to the hex value field, when type is "swatch"
+            // and value starts with "#"
+            if (attribute.type === "SWATCH" && value.startsWith("#")) {
+                hexCode = value;
+            }
+
+            if (isForVariant) {
+                if (!variantId) throw new Error("VariantId is undefined");
+
+                // Delete all existing attribute values before creating a new one
+                // This prevents duplicate attribute values and ensures we don't have old values lingering
+                const existingAttributes =
+                    await this.db.attributeValueVariant.findMany({
+                        where: {
+                            attributeId: attribute.id,
+                            productVariantId: variantId,
+                            tenantId: this.kencoveApiApp.tenantId,
+                        },
+                    });
+
+                if (deleteExistingEntries && existingAttributes.length > 0) {
+                    this.logger.info(
+                        `Found ${existingAttributes.length} existing attribute values for ${attribute.name} on variant ${variantId}. Removing before setting new value.`,
+                    );
+
+                    await this.db.attributeValueVariant.deleteMany({
+                        where: {
+                            attributeId: attribute.id,
+                            productVariantId: variantId,
+                            tenantId: this.kencoveApiApp.tenantId,
+                        },
+                    });
+                }
+
+                // Now create the new attribute value
+                await this.db.attributeValueVariant.create({
+                    data: {
+                        id: id.id("attributeValue"),
+                        attribute: {
+                            connect: {
+                                id: attribute.id,
+                            },
+                        },
+                        normalizedName,
+                        tenant: {
+                            connect: {
+                                id: this.kencoveApiApp.tenantId,
+                            },
+                        },
+                        value:
+                            hexCode && attributeInProduct?.attribute_text
+                                ? attributeInProduct.attribute_text
+                                : value,
+                        hexColor: hexCode,
+                        productVariant: {
+                            connect: {
+                                id: variantId,
+                            },
+                        },
+                    },
+                });
+            } else {
+                if (!productId) throw new Error("ProductId is undefined");
+
+                // Delete all existing attribute values before creating a new one
+                // This ensures we don't have duplicate or stale values
+                const existingAttributes =
+                    await this.db.attributeValueProduct.findMany({
+                        where: {
+                            attributeId: attribute.id,
+                            productId: productId,
+                            tenantId: this.kencoveApiApp.tenantId,
+                        },
+                    });
+
+                if (deleteExistingEntries && existingAttributes.length > 0) {
+                    this.logger.info(
+                        `Found ${existingAttributes.length} existing attribute values for ${attribute.name} on product ${productId}. Removing before setting new value.`,
+                    );
+
+                    await this.db.attributeValueProduct.deleteMany({
+                        where: {
+                            attributeId: attribute.id,
+                            productId: productId,
+                            tenantId: this.kencoveApiApp.tenantId,
+                        },
+                    });
+                }
+
+                // Now create the new attribute value
+                await this.db.attributeValueProduct.create({
+                    data: {
+                        id: id.id("attributeValue"),
+                        attribute: {
+                            connect: {
+                                id: attribute.id,
+                            },
+                        },
+                        normalizedName,
+                        tenant: {
+                            connect: {
+                                id: this.kencoveApiApp.tenantId,
+                            },
+                        },
+                        value:
+                            hexCode && attributeInProduct?.attribute_text
+                                ? attributeInProduct.attribute_text
+                                : value,
+                        hexColor: hexCode,
+                        product: {
+                            connect: {
+                                id: productId,
+                            },
+                        },
+                    },
+                });
+            }
+        } catch (error) {
+            throw new Error(
+                `Failed to set attribute value for ${attribute.name} on ` +
+                    `${isForVariant ? "variant" : "product"} ${productId || variantId}, ` +
+                    `value: ${value}: ${error}`,
             );
-            return;
-        }
-        const normalizedName = normalizeStrings.attributeValueNames(value);
-
-        let hexCode: string | undefined = undefined;
-        // we set an attribute hex value to the hex value field, when type is "swatch"
-        // and value starts with "#"
-        if (attribute.type === "SWATCH" && value.startsWith("#")) {
-            hexCode = value;
-        }
-
-        if (isForVariant) {
-            if (!variantId) throw new Error("VariantId is undefined");
-
-            // Delete all existing attribute values before creating a new one
-            // This prevents duplicate attribute values and ensures we don't have old values lingering
-            const existingAttributes =
-                await this.db.attributeValueVariant.findMany({
-                    where: {
-                        attributeId: attribute.id,
-                        productVariantId: variantId,
-                        tenantId: this.kencoveApiApp.tenantId,
-                    },
-                });
-
-            if (deleteExistingEntries && existingAttributes.length > 0) {
-                this.logger.info(
-                    `Found ${existingAttributes.length} existing attribute values for ${attribute.name} on variant ${variantId}. Removing before setting new value.`,
-                );
-
-                await this.db.attributeValueVariant.deleteMany({
-                    where: {
-                        attributeId: attribute.id,
-                        productVariantId: variantId,
-                        tenantId: this.kencoveApiApp.tenantId,
-                    },
-                });
-            }
-
-            // Now create the new attribute value
-            await this.db.attributeValueVariant.create({
-                data: {
-                    id: id.id("attributeValue"),
-                    attribute: {
-                        connect: {
-                            id: attribute.id,
-                        },
-                    },
-                    normalizedName,
-                    tenant: {
-                        connect: {
-                            id: this.kencoveApiApp.tenantId,
-                        },
-                    },
-                    value:
-                        hexCode && attributeInProduct?.attribute_text
-                            ? attributeInProduct.attribute_text
-                            : value,
-                    hexColor: hexCode,
-                    productVariant: {
-                        connect: {
-                            id: variantId,
-                        },
-                    },
-                },
-            });
-        } else {
-            if (!productId) throw new Error("ProductId is undefined");
-
-            // Delete all existing attribute values before creating a new one
-            // This ensures we don't have duplicate or stale values
-            const existingAttributes =
-                await this.db.attributeValueProduct.findMany({
-                    where: {
-                        attributeId: attribute.id,
-                        productId: productId,
-                        tenantId: this.kencoveApiApp.tenantId,
-                    },
-                });
-
-            if (deleteExistingEntries && existingAttributes.length > 0) {
-                this.logger.info(
-                    `Found ${existingAttributes.length} existing attribute values for ${attribute.name} on product ${productId}. Removing before setting new value.`,
-                );
-
-                await this.db.attributeValueProduct.deleteMany({
-                    where: {
-                        attributeId: attribute.id,
-                        productId: productId,
-                        tenantId: this.kencoveApiApp.tenantId,
-                    },
-                });
-            }
-
-            // Now create the new attribute value
-            await this.db.attributeValueProduct.create({
-                data: {
-                    id: id.id("attributeValue"),
-                    attribute: {
-                        connect: {
-                            id: attribute.id,
-                        },
-                    },
-                    normalizedName,
-                    tenant: {
-                        connect: {
-                            id: this.kencoveApiApp.tenantId,
-                        },
-                    },
-                    value:
-                        hexCode && attributeInProduct?.attribute_text
-                            ? attributeInProduct.attribute_text
-                            : value,
-                    hexColor: hexCode,
-                    product: {
-                        connect: {
-                            id: productId,
-                        },
-                    },
-                },
-            });
         }
     }
 
