@@ -179,3 +179,12 @@ query orderStatus($id: ID!) {
         status
     }
 }
+
+query orderMetadata($id: ID!) {
+    order(id: $id) {
+        metadata {
+            key
+            value
+        }
+    }
+}

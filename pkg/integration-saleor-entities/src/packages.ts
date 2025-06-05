@@ -9,7 +9,12 @@ import {
     SaleorClient,
     MetadataInput,
 } from "@eci/pkg/saleor";
-import { InstalledSaleorApp, Package, PrismaClient } from "@eci/pkg/prisma";
+import {
+    InstalledSaleorApp,
+    Prisma,
+    PrismaClient,
+    Package as PrismaPackage,
+} from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { subHours, subMinutes, subMonths, subYears } from "date-fns";
 import { closestsMatch } from "@eci/pkg/utils/closestMatch";
@@ -22,6 +27,40 @@ interface SaleorPackageSyncServiceConfig {
     logger: ILogger;
     orderPrefix: string;
 }
+
+type SaleorOrder = Prisma.SaleorOrderGetPayload<{
+    include: {
+        order: {
+            include: {
+                orderLineItems: {
+                    include: {
+                        saleorOrderLineItems: true;
+                    };
+                };
+            };
+        };
+    };
+}>;
+
+type Package = Prisma.PackageGetPayload<{
+    include: {
+        order: true;
+        packageLineItems: {
+            include: {
+                productVariant: {
+                    include: {
+                        product: true;
+                    };
+                };
+                warehouse: {
+                    include: {
+                        saleorWarehouse: true;
+                    };
+                };
+            };
+        };
+    };
+}>;
 
 export class SaleorPackageSyncService {
     public readonly saleorClient: SaleorClient;
@@ -228,15 +267,29 @@ export class SaleorPackageSyncService {
     /**
      * Take a saleor fulfillment id and update the metadata of the fulfillment
      * with current status information from the package entity from our DB
-     * E.g. carrierTrackingUrl and status (delivered, in transit, etc.)
-     * @param saleorFulfillmentId
+     * E.g. carrierTrackingUrl and status (delivered, in transit, etc.).
+     * If it is a virtual package, we need to write it all to the order metadata in
+     * with the key package number
+     * @param entityId The fulfillment or the order id, if virtual package only
      * @param parcel
      */
     public async updateFulfillmentMetadata(
-        saleorFulfillmentId: string,
-        parcel: Package & { order: { orderNumber: string } | null },
+        entityId: string,
+        parcel: PrismaPackage & { order: Prisma.OrderGetPayload<{}> | null },
+        isVirtual?: boolean,
     ): Promise<void> {
         const metadata: MetadataInput[] = [];
+        if (isVirtual) {
+            metadata.push({
+                key: parcel.number,
+                value: JSON.stringify(parcel),
+            });
+            await this.saleorClient.saleorUpdateMetadata({
+                id: entityId,
+                input: metadata,
+            });
+            return;
+        }
 
         if (parcel.state) metadata.push({ key: "state", value: parcel.state });
         if (parcel.carrierTrackingUrl)
@@ -248,11 +301,11 @@ export class SaleorPackageSyncService {
             metadata.push({ key: "carrier", value: parcel.carrier });
         if (metadata.length > 0)
             await this.saleorClient.saleorUpdateMetadata({
-                id: saleorFulfillmentId,
+                id: entityId,
                 input: metadata,
             });
         this.logger.debug(
-            `Updated metadata for fulfillment ${saleorFulfillmentId} with ${JSON.stringify(
+            `Updated metadata for entity ${entityId} with ${JSON.stringify(
                 metadata,
             )}`,
             {
@@ -326,8 +379,14 @@ export class SaleorPackageSyncService {
             // include the warehouse information from every line item
             // but filter the saleor warehouses to just the one we need
             include: {
+                order: true,
                 packageLineItems: {
                     include: {
+                        productVariant: {
+                            include: {
+                                product: true,
+                            },
+                        },
                         warehouse: {
                             include: {
                                 saleorWarehouse: {
@@ -338,11 +397,6 @@ export class SaleorPackageSyncService {
                                 },
                             },
                         },
-                    },
-                },
-                order: {
-                    select: {
-                        orderNumber: true,
                     },
                 },
             },
@@ -459,93 +513,13 @@ export class SaleorPackageSyncService {
                 continue;
             }
 
-            let saleorLines: OrderFulfillLineInput[] =
-                saleorOrder.order.orderLineItems
-                    .map((line) => {
-                        if (!line.saleorOrderLineItems?.[0]?.id) {
-                            this.logger.info(
-                                `No saleor order line for order line ${line.id}. Can't fulfill this orderline`,
-                            );
-                            return undefined;
-                        }
-                        const saleorOrderLineId =
-                            line.saleorOrderLineItems[0].id;
+            let saleorLines = this.generateSaleorFulfillmentLines(
+                saleorOrder,
+                parcel,
+                defaultWarehouse?.saleorWarehouse[0].id as string,
+            );
 
-                        const filteredForSKU = parcel.packageLineItems.filter(
-                            (x) => x.sku === line.sku,
-                        );
-                        /**
-                         * We can't match an orderline. For example when items consist of other items,
-                         * and we just get the information on the shipped part not the original item..
-                         */
-                        if (filteredForSKU.length === 0) {
-                            this.logger.warn(
-                                `Can't find a package line item for orderline with SKU ${line.sku}`,
-                                {
-                                    saleorOrderNumber: saleorOrder.id,
-                                    orderNumber: saleorOrder.order.orderNumber,
-                                },
-                            );
-                            return undefined;
-                        }
-                        const bestMatchByQuantity = closestsMatch(
-                            filteredForSKU,
-                            line.quantity,
-                            "quantity",
-                        );
-                        if (bestMatchByQuantity.sku !== line.sku) {
-                            this.logger.error(
-                                `Security check failed! The best match is from a wrong SKU`,
-                            );
-                            return undefined;
-                        }
-                        /**
-                         * Find the saleor warehouse id. Use the default warehouse if non given
-                         * @returns
-                         */
-                        const saleorWarehouse = () => {
-                            const warehouseSearch =
-                                bestMatchByQuantity.warehouse
-                                    ?.saleorWarehouse?.[0];
-                            if (
-                                warehouseSearch &&
-                                warehouseSearch.installedSaleorAppId ===
-                                    this.installedSaleorAppId
-                            )
-                                return warehouseSearch.id;
-                            return defaultWarehouse?.saleorWarehouse?.[0]
-                                .id as string;
-                        };
-                        if (bestMatchByQuantity.quantity < 1) {
-                            this.logger.warn(
-                                `Quantity is below 0 for SKU ${line.sku}. This is not supported by Saleor. SaleorOrderLineId: ${saleorOrderLineId}`,
-                                {
-                                    orderNumber: saleorOrder.order.orderNumber,
-                                    saleorOrderLineId: saleorOrderLineId,
-                                },
-                            );
-                            // we currently can't handle this case and need to skip this line
-                            return undefined;
-                        }
-                        return {
-                            orderLineId: saleorOrderLineId,
-                            stocks: [
-                                {
-                                    warehouse: saleorWarehouse(),
-                                    quantity: bestMatchByQuantity.quantity,
-                                },
-                            ],
-                        };
-                    })
-                    .filter(
-                        (x) => typeof x?.orderLineId === "string",
-                    ) as OrderFulfillLineInput[];
-
-            const fulfillmentLinesCheck = saleorLines.every((i) => {
-                if (!i.orderLineId) return false;
-                return true;
-            });
-            if (!fulfillmentLinesCheck || saleorLines.length === 0) {
+            if (!saleorLines) {
                 /**
                  * When we can't match safely, but have just one package
                  * and see that the order is fully shipped, we just hard-coding a
@@ -555,51 +529,9 @@ export class SaleorPackageSyncService {
                     !parcel.isMultiPieceShipment &&
                     saleorOrder.order.shipmentStatus === "shipped"
                 ) {
-                    const shortCircuitPackage = saleorOrder.order.orderLineItems
-                        .map((line) => {
-                            if (!line.saleorOrderLineItems?.[0]?.id) {
-                                this.logger.info(
-                                    `No saleor order line for order line ${line.id}. Can't fulfill this orderline`,
-                                );
-                                return undefined;
-                            }
-                            const saleorOrderLine =
-                                line.saleorOrderLineItems[0];
-                            /**
-                             * Saleor warehouse id. Using the first package line item to get the id,
-                             * as all package line items need to be shipped from the same warehouse
-                             */
-                            const warehouse =
-                                parcel.packageLineItems[0].warehouse
-                                    ?.saleorWarehouse[0].id ||
-                                this.installedSaleorApp.defaultWarehouseId;
-                            if (!warehouse) return undefined;
-                            return {
-                                orderLineId: saleorOrderLine.id,
-                                stocks: [
-                                    {
-                                        warehouse: warehouse,
-                                        quantity: line.quantity,
-                                    },
-                                ],
-                            };
-                        })
-                        .filter(
-                            (x) => typeof x?.orderLineId === "string",
-                        ) as OrderFulfillLineInput[];
-
-                    this.logger.info(
-                        `Using short circuit package for order ${saleorOrder.id} - ${parcel.number} - ${parcel.orderId}`,
-                        {
-                            orderNumber: saleorOrder.order.orderNumber,
-                            shortCircuitPackage,
-                            orderLineItems: saleorOrder.order.orderLineItems,
-                        },
-                    );
-                    if (
-                        shortCircuitPackage.length ===
-                        saleorOrder.order.orderLineItems.length
-                    ) {
+                    const shortCircuitPackage =
+                        this.generateShortCircuitPackage(saleorOrder, parcel);
+                    if (shortCircuitPackage) {
                         saleorLines = shortCircuitPackage;
                     } else {
                         this.logger.error(
@@ -611,7 +543,6 @@ export class SaleorPackageSyncService {
                                     saleorOrder.order.orderLineItems,
                             },
                         );
-                        continue;
                     }
                 } else {
                     this.logger.error(
@@ -632,117 +563,20 @@ export class SaleorPackageSyncService {
                             ),
                         },
                     );
-
-                    continue;
                 }
             }
 
-            this.logger.info(
-                `Creating fulfillment now in Saleor ${saleorOrder.id} - ${parcel.number} - ${parcel.orderId}`,
-                {
-                    orderNumber: saleorOrder.order.orderNumber,
-                    trackingNumber: parcel.trackingId,
-                    saleorOrderId: saleorOrder.id,
-                },
-            );
-            this.logger.debug(
-                `Saleor line items for saleor order ${saleorOrder.id}:` +
-                    JSON.stringify(saleorLines),
-            );
-            const trackingNumber = parcel.trackingId || undefined;
-            const response = await this.saleorClient.saleorCreatePackage({
-                order: saleorOrder.id,
-                input: {
-                    allowStockToBeExceeded: true,
-                    lines: saleorLines,
-                    trackingNumber,
-                },
-            });
-
-            // Catch all mutation errors and handle them correctly
-            if (
-                response.orderFulfill?.errors.length ||
-                !response.orderFulfill?.fulfillments
-            ) {
-                for (const e of response.orderFulfill!.errors) {
-                    if (
-                        e.code === "FULFILL_ORDER_LINE" &&
-                        e.message?.includes("Only 0 items remaining to fulfill")
-                    ) {
-                        this.logger.info(
-                            `Saleor orderline ${e.orderLines} from order ${saleorOrder.orderNumber} - ${saleorOrder.id} is already fulfilled: ${e.message}. Continue`,
-                        );
-
-                        // if (
-                        //     response.orderFulfill?.order?.status ===
-                        //     OrderStatus.Fulfilled
-                        // ) {
-                        //     this.logger.info(
-                        //         `Order ${saleorOrder.orderNumber} - ${saleorOrder.id} is already completely fulfilled. Skipping further fulfillments`,
-                        //     );
-                        //     await this.db.saleorOrder.update({
-                        //         where: {
-                        //             id_installedSaleorAppId: {
-                        //                 id: saleorOrder.id,
-                        //                 installedSaleorAppId:
-                        //                     this.installedSaleorAppId,
-                        //             },
-                        //         },
-                        //         data: {
-                        //             status: SaleorOrderStatus.FULFILLED,
-                        //         },
-                        //     });
-                        // }
-                        // TODO: create internal package for that / check if order is already fulfilled and write status back
-                    } else if (e.code === "INSUFFICIENT_STOCK") {
-                        this.logger.error(
-                            `Saleor has not enough stock to fulfill order ${saleorOrder.id}: ${e.message}`,
-                        );
-                    } else if (
-                        e.code === "FULFILL_ORDER_LINE" &&
-                        (e.message?.includes("item remaining to fulfill.") ||
-                            e.message?.includes("items remaining to fulfill."))
-                    ) {
-                        this.logger.warn(
-                            `We try to fulfill more items than still to fulfill: ${e.message}`,
-                        );
-                        // TODO: further investigate this case and why it is happening..we just don't want to fail on that currently
-                    } else {
-                        this.logger.error(
-                            "Unhandled error trying to create order fulfillment",
-                            { lines: saleorLines },
-                        );
-                        throw new Error(JSON.stringify(e));
-                    }
-                    continue;
-                }
+            if (saleorLines) {
+                // creating the real package in Saleor.
+                await this.createSaleorFulfillment(
+                    saleorOrder,
+                    parcel,
+                    saleorLines,
+                );
             } else {
-                /**
-                 * one package = one fullfillment in Saleor, so we should actually never have more than one
-                 * fulfillment in the response..
-                 */
-                for (const fulfillment of response.orderFulfill.fulfillments) {
-                    if (!fulfillment?.id)
-                        throw new Error(
-                            `Fulfillment id missing for ${saleorOrder.id}`,
-                        );
-                    this.logger.info(
-                        `Fulfillment created successfully in Saleor: ${fulfillment.id}`,
-                    );
-                    await this.upsertSaleorPackage(
-                        fulfillment?.id,
-                        parcel.id,
-                        fulfillment?.created,
-                    );
-                    /**
-                     * Update the carrierTrackingUrl and other package related information
-                     * in saleor
-                     */
-                    await this.updateFulfillmentMetadata(
-                        fulfillment.id,
-                        parcel,
-                    );
-                }
+                // we just create a "virtual package". So we practically write all data to the metadata of the order and
+                // create a virtual saleor package in our DB.
+                await this.createVirtualSaleorPackage(saleorOrder.id, parcel);
             }
         }
 
@@ -780,15 +614,338 @@ export class SaleorPackageSyncService {
                 );
                 continue;
             }
+            const isVirtual = updatedPackage.saleorPackage?.[0]?.isVirtual;
+
             await this.updateFulfillmentMetadata(
                 updatedPackage.saleorPackage[0].id,
                 updatedPackage,
+                isVirtual,
             );
         }
 
         await this.cronState.set({
             lastRun: new Date(),
             lastRunStatus: "success",
+        });
+    }
+
+    private generateSaleorFulfillmentLines(
+        saleorOrder: SaleorOrder,
+        parcel: Package,
+        defaultSaleorWarehouseId: string,
+    ) {
+        const saleorLines: OrderFulfillLineInput[] =
+            saleorOrder.order.orderLineItems
+                .map((line) => {
+                    if (!line.saleorOrderLineItems?.[0]?.id) {
+                        this.logger.info(
+                            `No saleor order line for order line ${line.id}. Can't fulfill this orderline`,
+                        );
+                        return undefined;
+                    }
+                    const saleorOrderLineId = line.saleorOrderLineItems[0].id;
+
+                    const filteredForSKU = parcel.packageLineItems.filter(
+                        (x) => x.sku === line.sku,
+                    );
+                    /**
+                     * We can't match an orderline. For example when items consist of other items,
+                     * and we just get the information on the shipped part not the original item..
+                     */
+                    if (filteredForSKU.length === 0) {
+                        this.logger.warn(
+                            `Can't find a package line item for orderline with SKU ${line.sku}`,
+                            {
+                                saleorOrderNumber: saleorOrder.id,
+                                orderNumber: saleorOrder.order.orderNumber,
+                            },
+                        );
+                        return undefined;
+                    }
+                    const bestMatchByQuantity = closestsMatch(
+                        filteredForSKU,
+                        line.quantity,
+                        "quantity",
+                    );
+                    if (bestMatchByQuantity.sku !== line.sku) {
+                        this.logger.error(
+                            `Security check failed! The best match is from a wrong SKU`,
+                        );
+                        return undefined;
+                    }
+                    /**
+                     * Find the saleor warehouse id. Use the default warehouse if non given
+                     * @returns
+                     */
+                    const saleorWarehouse = () => {
+                        const warehouseSearch =
+                            bestMatchByQuantity.warehouse?.saleorWarehouse?.[0];
+                        if (
+                            warehouseSearch &&
+                            warehouseSearch.installedSaleorAppId ===
+                                this.installedSaleorAppId
+                        )
+                            return warehouseSearch.id;
+                        return defaultSaleorWarehouseId;
+                    };
+                    if (bestMatchByQuantity.quantity < 1) {
+                        this.logger.warn(
+                            `Quantity is below 0 for SKU ${line.sku}. This is not supported by Saleor. SaleorOrderLineId: ${saleorOrderLineId}`,
+                            {
+                                orderNumber: saleorOrder.order.orderNumber,
+                                saleorOrderLineId: saleorOrderLineId,
+                            },
+                        );
+                        // we currently can't handle this case and need to skip this line
+                        return undefined;
+                    }
+                    return {
+                        orderLineId: saleorOrderLineId,
+                        stocks: [
+                            {
+                                warehouse: saleorWarehouse(),
+                                quantity: bestMatchByQuantity.quantity,
+                            },
+                        ],
+                    };
+                })
+                .filter(
+                    (x) => typeof x?.orderLineId === "string",
+                ) as OrderFulfillLineInput[];
+
+        const fulfillmentLinesCheck = saleorLines.every((i) => {
+            if (!i.orderLineId) return false;
+            return true;
+        });
+        if (!fulfillmentLinesCheck || saleorLines.length === 0) {
+            return null;
+        }
+
+        return saleorLines;
+    }
+
+    /**
+     * Generate a short circuit package for the given saleor order and parcel.
+     * Returns null if not all orderlines have a saleor orderline
+     * @param saleorOrder
+     * @param parcel
+     * @param defaultSaleorWarehouseId
+     * @returns
+     */
+    private generateShortCircuitPackage(
+        saleorOrder: SaleorOrder,
+        parcel: Package,
+    ): OrderFulfillLineInput[] | null {
+        const shortCircuitPackage: OrderFulfillLineInput[] = [];
+        for (const line of saleorOrder.order.orderLineItems) {
+            if (!line.saleorOrderLineItems?.[0]?.id) {
+                this.logger.info(
+                    `No saleor order line for order line ${line.id}. Can't fulfill this orderline`,
+                );
+                return null;
+            }
+            const saleorOrderLine = line.saleorOrderLineItems[0];
+            /**
+             * Saleor warehouse id. Using the first package line item to get the id,
+             * as all package line items need to be shipped from the same warehouse
+             */
+            const warehouse =
+                parcel.packageLineItems[0].warehouse?.saleorWarehouse[0].id ||
+                this.installedSaleorApp.defaultWarehouseId;
+            if (!warehouse) return null;
+            shortCircuitPackage.push({
+                orderLineId: saleorOrderLine.id,
+                stocks: [
+                    {
+                        warehouse: warehouse,
+                        quantity: line.quantity,
+                    },
+                ],
+            });
+        }
+
+        this.logger.info(
+            `Using short circuit package for order ${saleorOrder.id} - ${parcel.number} - ${parcel.orderId}`,
+            {
+                orderNumber: saleorOrder.order.orderNumber,
+                shortCircuitPackage,
+                orderLineItems: saleorOrder.order.orderLineItems,
+            },
+        );
+        return shortCircuitPackage;
+    }
+
+    private async createSaleorFulfillment(
+        saleorOrder: SaleorOrder,
+        parcel: Package,
+        saleorLines: OrderFulfillLineInput[],
+    ) {
+        this.logger.info(
+            `Creating fulfillment now in Saleor ${saleorOrder.id} - ${parcel.number} - ${parcel.orderId}`,
+            {
+                orderNumber: saleorOrder.order.orderNumber,
+                trackingNumber: parcel.trackingId,
+                saleorOrderId: saleorOrder.id,
+            },
+        );
+        const trackingNumber = parcel.trackingId || undefined;
+        const response = await this.saleorClient.saleorCreatePackage({
+            order: saleorOrder.id,
+            input: {
+                allowStockToBeExceeded: true,
+                lines: saleorLines,
+                trackingNumber,
+            },
+        });
+
+        // Catch all mutation errors and handle them correctly
+        if (
+            response.orderFulfill?.errors.length ||
+            !response.orderFulfill?.fulfillments
+        ) {
+            for (const e of response.orderFulfill!.errors) {
+                if (
+                    e.code === "FULFILL_ORDER_LINE" &&
+                    e.message?.includes("Only 0 items remaining to fulfill")
+                ) {
+                    this.logger.info(
+                        `Saleor orderline ${e.orderLines} from order ${saleorOrder.orderNumber} - ${saleorOrder.id} is already fulfilled: ${e.message}. Continue`,
+                    );
+
+                    // if (
+                    //     response.orderFulfill?.order?.status ===
+                    //     OrderStatus.Fulfilled
+                    // ) {
+                    //     this.logger.info(
+                    //         `Order ${saleorOrder.orderNumber} - ${saleorOrder.id} is already completely fulfilled. Skipping further fulfillments`,
+                    //     );
+                    //     await this.db.saleorOrder.update({
+                    //         where: {
+                    //             id_installedSaleorAppId: {
+                    //                 id: saleorOrder.id,
+                    //                 installedSaleorAppId:
+                    //                     this.installedSaleorAppId,
+                    //             },
+                    //         },
+                    //         data: {
+                    //             status: SaleorOrderStatus.FULFILLED,
+                    //         },
+                    //     });
+                    // }
+                    // TODO: create internal package for that / check if order is already fulfilled and write status back
+                } else if (e.code === "INSUFFICIENT_STOCK") {
+                    this.logger.error(
+                        `Saleor has not enough stock to fulfill order ${saleorOrder.id}: ${e.message}`,
+                    );
+                } else if (
+                    e.code === "FULFILL_ORDER_LINE" &&
+                    (e.message?.includes("item remaining to fulfill.") ||
+                        e.message?.includes("items remaining to fulfill."))
+                ) {
+                    this.logger.warn(
+                        `We try to fulfill more items than still to fulfill: ${e.message}`,
+                    );
+                    // TODO: further investigate this case and why it is happening..we just don't want to fail on that currently
+                } else {
+                    this.logger.error(
+                        "Unhandled error trying to create order fulfillment",
+                        { lines: saleorLines },
+                    );
+                    throw new Error(JSON.stringify(e));
+                }
+                continue;
+            }
+        } else {
+            /**
+             * one package = one fullfillment in Saleor, so we should actually never have more than one
+             * fulfillment in the response..
+             */
+            for (const fulfillment of response.orderFulfill.fulfillments) {
+                if (!fulfillment?.id)
+                    throw new Error(
+                        `Fulfillment id missing for ${saleorOrder.id}`,
+                    );
+                this.logger.info(
+                    `Fulfillment created successfully in Saleor: ${fulfillment.id}`,
+                );
+                await this.upsertSaleorPackage(
+                    fulfillment?.id,
+                    parcel.id,
+                    fulfillment?.created,
+                );
+                /**
+                 * Update the carrierTrackingUrl and other package related information
+                 * in saleor
+                 */
+                await this.updateFulfillmentMetadata(fulfillment.id, parcel);
+            }
+        }
+    }
+
+    /**
+     * We just write all package data to the saleor order metadata and create a new saleor package
+     * in our DB with the order id as parcel id and mark is as virtual. It is possible to have multiple
+     * virtual packages for one order. We create a data structure of packageLines per package
+     * @param parcel
+     */
+    private async createVirtualSaleorPackage(
+        saleorOrderId: string,
+        parcel: Package,
+    ) {
+        const packageLines = {
+            [parcel.number]: parcel.packageLineItems.map((line) => {
+                return {
+                    id: line.id,
+                    number: parcel.number,
+                    quantity: line.quantity,
+                    sku: line.sku,
+                    productName: line.productVariant.product.name,
+                    variantName: line.productVariant.variantName,
+                    warehouse: line.warehouse?.saleorWarehouse[0].id,
+                    carrier: parcel.carrier,
+                    carrierTrackingUrl: parcel.carrierTrackingUrl,
+                };
+            }),
+        };
+
+        // fetch the saleor order metadata
+        const order = await this.saleorClient.orderMetadata({
+            id: saleorOrderId,
+        });
+
+        const existingPackageLines = order.order?.metadata.find(
+            (m) => m.key === "packageLines",
+        )?.value;
+        const lines = existingPackageLines
+            ? JSON.parse(existingPackageLines)
+            : [];
+        lines.push(packageLines);
+
+        const metadata = [
+            { key: "packageLines", value: JSON.stringify(lines) },
+            { key: "virtualPackage", value: "true" },
+            { key: "orderStatus", value: parcel.order?.orderStatus || "" },
+        ];
+        await this.saleorClient.saleorUpdateMetadata({
+            id: saleorOrderId,
+            input: metadata,
+        });
+        await this.db.saleorPackage.create({
+            data: {
+                id: parcel.id,
+                createdAt: new Date(),
+                installedSaleorApp: {
+                    connect: {
+                        id: this.installedSaleorAppId,
+                    },
+                },
+                isVirtual: true,
+                package: {
+                    connect: {
+                        id: parcel.id,
+                    },
+                },
+            },
         });
     }
 }

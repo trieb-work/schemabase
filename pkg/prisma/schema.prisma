@@ -260,6 +260,10 @@ model SaleorPackage {
   installedSaleorApp   InstalledSaleorApp @relation(fields: [installedSaleorAppId], references: [id], onDelete: Cascade)
   installedSaleorAppId String
 
+  /// When we have issues creating a package in Saleor, we can still write the information to the order metadata. We call this package
+  /// virtual in this case
+  isVirtual Boolean @default(false)
+
   @@unique([id, installedSaleorAppId])
   @@index([packageId])
   @@index([installedSaleorAppId])
