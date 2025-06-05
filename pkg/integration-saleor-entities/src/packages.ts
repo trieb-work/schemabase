@@ -9,12 +9,7 @@ import {
     SaleorClient,
     MetadataInput,
 } from "@eci/pkg/saleor";
-import {
-    InstalledSaleorApp,
-    Prisma,
-    PrismaClient,
-    Package as PrismaPackage,
-} from "@eci/pkg/prisma";
+import { InstalledSaleorApp, Prisma, PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
 import { subHours, subMinutes, subMonths, subYears } from "date-fns";
 import { closestsMatch } from "@eci/pkg/utils/closestMatch";
@@ -45,6 +40,7 @@ type SaleorOrder = Prisma.SaleorOrderGetPayload<{
 type Package = Prisma.PackageGetPayload<{
     include: {
         order: true;
+        events: true;
         packageLineItems: {
             include: {
                 productVariant: {
@@ -59,6 +55,13 @@ type Package = Prisma.PackageGetPayload<{
                 };
             };
         };
+    };
+}>;
+
+type PackageAndEvents = Prisma.PackageGetPayload<{
+    include: {
+        order: true;
+        events: true;
     };
 }>;
 
@@ -275,7 +278,7 @@ export class SaleorPackageSyncService {
      */
     public async updateFulfillmentMetadata(
         entityId: string,
-        parcel: PrismaPackage & { order: Prisma.OrderGetPayload<{}> | null },
+        parcel: PackageAndEvents,
         isVirtual?: boolean,
     ): Promise<void> {
         const metadata: MetadataInput[] = [];
@@ -299,6 +302,11 @@ export class SaleorPackageSyncService {
             });
         if (parcel.carrier)
             metadata.push({ key: "carrier", value: parcel.carrier });
+        if (parcel.events && parcel.events.length > 0)
+            metadata.push({
+                key: "events",
+                value: JSON.stringify(parcel.events),
+            });
         if (metadata.length > 0)
             await this.saleorClient.saleorUpdateMetadata({
                 id: entityId,
@@ -380,6 +388,7 @@ export class SaleorPackageSyncService {
             // but filter the saleor warehouses to just the one we need
             include: {
                 order: true,
+                events: true,
                 packageLineItems: {
                     include: {
                         productVariant: {
@@ -600,6 +609,7 @@ export class SaleorPackageSyncService {
             include: {
                 saleorPackage: true,
                 order: true,
+                events: true,
             },
         });
 
