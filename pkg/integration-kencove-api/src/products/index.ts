@@ -685,7 +685,7 @@ export class KencoveApiAppProductSyncService {
             }
         } catch (error) {
             throw new Error(
-                `Failed to set attribute value for ${attribute.name} on ` +
+                `Failed to set attribute value for ${attribute.name}, ${attribute.id} on ` +
                     `${isForVariant ? "variant" : "product"} ${productId || variantId}, ` +
                     `value: ${value}: ${error}`,
             );
@@ -1030,14 +1030,17 @@ export class KencoveApiAppProductSyncService {
     ) {
         let hasChanged = false;
 
-        if (accessorySKUs) {
+        const uniqueAccessorySKUs = Array.from(new Set(accessorySKUs));
+        const uniqueAlternativeSKUs = Array.from(new Set(alternativeSKUs));
+        if (uniqueAccessorySKUs) {
             const accessoryItems = await this.db.productVariant.findMany({
                 where: {
                     sku: {
-                        in: accessorySKUs,
+                        in: uniqueAccessorySKUs,
                     },
                     tenantId: this.kencoveApiApp.tenantId,
                 },
+                distinct: ["productId"],
             });
             const accessoryItemAttribute =
                 await this.db.kencoveApiAttribute.findUnique({
@@ -1089,15 +1092,17 @@ export class KencoveApiAppProductSyncService {
                 }
             }
         }
-        if (alternativeSKUs) {
+        if (uniqueAlternativeSKUs) {
             const alternativeItems = await this.db.productVariant.findMany({
                 where: {
                     sku: {
-                        in: alternativeSKUs,
+                        in: uniqueAlternativeSKUs,
                     },
                     tenantId: this.kencoveApiApp.tenantId,
                 },
+                distinct: ["productId"],
             });
+
             const alternativeItemAttribute =
                 await this.db.kencoveApiAttribute.findUnique({
                     where: {
@@ -1127,6 +1132,7 @@ export class KencoveApiAppProductSyncService {
                     productId,
                 },
             });
+
             for (const alternativeItem of alternativeItems) {
                 await this.setAttributeValue({
                     attribute: alternativeItemAttribute.attribute,
