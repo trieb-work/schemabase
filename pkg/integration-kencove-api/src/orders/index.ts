@@ -244,29 +244,32 @@ export class KencoveApiAppOrderSyncService {
                 return;
             }
 
+            // filter for existing email and maybe other filters
+            const filtered = apiOrders.filter((x) => x.billingAddress.email);
+
             const existingKencoveApiOrders =
                 await this.db.kencoveApiOrder.findMany({
                     where: {
                         id: {
-                            in: apiOrders.map((o) => o.id.toString()),
+                            in: filtered.map((o) => o.id.toString()),
                         },
                         kencoveApiAppId: this.kencoveApiApp.id,
                     },
                 });
-            const toCreate = apiOrders.filter(
+            const toCreate = filtered.filter(
                 (o) =>
                     !existingKencoveApiOrders.find(
                         (eo) => eo.id === o.id.toString(),
                     ),
             );
-            const toUpdate = apiOrders.filter((o) =>
+            const toUpdate = filtered.filter((o) =>
                 existingKencoveApiOrders.find(
                     (eo) => eo.id === o.id.toString(),
                 ),
             );
 
             this.logger.info(
-                `Got ${toCreate.length} orders to create and ${toUpdate.length} orders to update`,
+                `Got ${toCreate.length} orders with email address set to create and ${toUpdate.length} orders to update`,
             );
 
             /**
@@ -313,6 +316,7 @@ export class KencoveApiAppOrderSyncService {
                         billingAddressId,
                         shippingAddressId,
                         date,
+                        shipmentStatus: this.matchOrderShippmentStatus(order),
                     },
                 );
                 if (!order.amount_total) return;
@@ -576,7 +580,7 @@ export class KencoveApiAppOrderSyncService {
                         mainContactPromise,
                     ]);
                 this.logger.debug(
-                    `Working on order ${order.id} - ${order.orderNumber}`,
+                    `Updating order ${order.id} - ${order.orderNumber}`,
                     {
                         mainContactId,
                         billingAddressId,
