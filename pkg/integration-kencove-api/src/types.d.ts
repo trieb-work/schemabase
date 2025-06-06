@@ -1,5 +1,5 @@
 export type KencoveApiAttribute = {
-    attribute_id: string;
+    attribute_id: number;
     attribute_name: string;
     model: string;
     display_type: string;

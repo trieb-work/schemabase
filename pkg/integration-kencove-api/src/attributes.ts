@@ -57,7 +57,10 @@ export class KencoveApiAppAttributeSyncService {
             await client.getAttributes(createdGte);
         const kencoveApiAppattributes = cleanAttributes(
             kencoveApiAppattributesUncleaned,
-        );
+        ).map((attribute) => ({
+            ...attribute,
+            attribute_id: String(attribute.attribute_id),
+        }));
         this.logger.info(
             `Found ${kencoveApiAppattributes.length} kencoveApiAppattributes to sync`,
         );
