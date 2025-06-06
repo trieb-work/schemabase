@@ -351,7 +351,7 @@ export class SaleorPackageSyncService {
                 AND: [
                     {
                         createdAt: {
-                            gt: subMonths(new Date(), 5),
+                            // gt: subMonths(new Date(), 5),
                             /**
                              * making sure, that package is already 30 mins old to make sure that all orderlines are already processed
                              */
