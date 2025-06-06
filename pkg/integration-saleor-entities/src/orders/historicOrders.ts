@@ -309,6 +309,7 @@ export class SaleorHistoricOrdersSync {
                 const transformedOrder = {
                     status: this.schemabaseOrderStatusToSaleorOrderStatus(
                         order.orderStatus,
+                        order.shippmentStatus,
                     ),
                     channel: this.installedSaleorApp.defaultChannelSlug || "",
                     externalReference: order.orderNumber,
