@@ -11,7 +11,7 @@ import {
 } from "@eci/pkg/saleor";
 import { InstalledSaleorApp, Prisma, PrismaClient } from "@eci/pkg/prisma";
 import { CronStateHandler } from "@eci/pkg/cronstate";
-import { subHours, subMinutes, subMonths, subYears } from "date-fns";
+import { subHours, subMinutes, subYears } from "date-fns";
 import { closestsMatch } from "@eci/pkg/utils/closestMatch";
 
 interface SaleorPackageSyncServiceConfig {
