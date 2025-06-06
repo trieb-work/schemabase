@@ -9,6 +9,7 @@ import {
     InstalledSaleorApp,
     Language,
     OrderLineItem,
+    OrderShipmentStatus,
     OrderStatus as OrderStatusSchemabase,
     Payment,
     PaymentMethod,
@@ -140,6 +141,7 @@ export class SaleorHistoricOrdersSync {
      */
     private schemabaseOrderStatusToSaleorOrderStatus(
         orderStatus: OrderStatusSchemabase,
+        shipmentStatus: OrderShipmentStatus,
     ): OrderStatus {
         const orderStatusMapping: {
             [key in OrderStatusSchemabase]: OrderStatus;
@@ -150,6 +152,9 @@ export class SaleorHistoricOrdersSync {
             [OrderStatusSchemabase.draft]: OrderStatus.Draft,
             [OrderStatusSchemabase.unconfirmed]: OrderStatus.Unconfirmed,
         };
+        if (shipmentStatus === OrderShipmentStatus.shipped) {
+            return OrderStatus.Fulfilled;
+        }
         return orderStatusMapping[orderStatus];
     }
 
