@@ -165,6 +165,10 @@ export class KencoveApiAppOrderSyncService {
         if (allDelivered) {
             return OrderShipmentStatus.shipped;
         }
+        const noneDelivered = order.orderLines.every(
+            (ol) => ol.qty_delivered === 0,
+        );
+        if (noneDelivered) return OrderShipmentStatus.pending;
         const someDelivered = order.orderLines.some(
             (ol) => ol.qty_delivered < ol.quantity,
         );
