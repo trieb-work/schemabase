@@ -975,6 +975,11 @@ export class SaleorPackageSyncService {
             { key: "virtualPackage", value: "true" },
             { key: "orderStatus", value: parcel.order?.orderStatus || "" },
         ];
+        this.logger.info(`Creating virtual package in the order metadata`, {
+            orderNumber: parcel.order?.orderNumber,
+            packageNumber: parcel.number,
+            saleorOrderId,
+        });
         await this.saleorClient.saleorUpdateMetadata({
             id: saleorOrderId,
             input: metadata,
