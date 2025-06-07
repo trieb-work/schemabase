@@ -414,12 +414,16 @@ export class SaleorPackageSyncService {
             `Received ${
                 packagesNotYetInSaleor.length
             } orders that have a package and are saleor orders: ${packagesNotYetInSaleor
-                .map((p) => p.orderId)
+                .map((p) => p.number)
                 .join(",")}`,
             {
-                orderNumbers: packagesNotYetInSaleor
-                    .map((p) => p.order?.orderNumber)
-                    .join(", "),
+                orderNumbers: Array.from(
+                    new Set(
+                        packagesNotYetInSaleor
+                            .map((p) => p.order?.orderNumber)
+                            .filter(Boolean),
+                    ),
+                ).join(", "),
             },
         );
 
@@ -876,10 +880,18 @@ export class SaleorPackageSyncService {
 
                     if (!fulfillmentsMatch.length) {
                         this.logger.error(
-                            `No matching fulfillment found for order ${saleorOrder.id}`,
+                            `No matching fulfillment found for order ${saleorOrder.id}. Creating virtual fulfillment`,
+                            {
+                                orderNumber: saleorOrder.orderNumber,
+                            },
+                        );
+                        await this.createVirtualSaleorPackage(
+                            saleorOrder.id,
+                            parcel,
                         );
                         return;
                     }
+
                     let fulfillment;
                     if (fulfillmentsMatch.length > 1) {
                         // we need to select now the fulfillmentid that we do not yet have in our DB
@@ -904,7 +916,14 @@ export class SaleorPackageSyncService {
                     }
                     if (!fulfillment) {
                         this.logger.error(
-                            `No fulfillment found for order ${saleorOrder.id}`,
+                            `No fulfillment found for order ${saleorOrder.id}. Creating virtual fulfillment`,
+                            {
+                                orderNumber: saleorOrder.order.orderNumber,
+                            },
+                        );
+                        await this.createVirtualSaleorPackage(
+                            saleorOrder.id,
+                            parcel,
                         );
                         return;
                     }
