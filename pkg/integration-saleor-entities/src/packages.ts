@@ -539,7 +539,11 @@ export class SaleorPackageSyncService {
                     saleorOrder.order.shipmentStatus === "shipped"
                 ) {
                     const shortCircuitPackage =
-                        this.generateShortCircuitPackage(saleorOrder, parcel);
+                        this.generateShortCircuitPackage(
+                            saleorOrder,
+                            parcel,
+                            defaultWarehouse?.saleorWarehouse[0].id as string,
+                        );
                     if (shortCircuitPackage) {
                         saleorLines = shortCircuitPackage;
                     } else {
@@ -648,9 +652,7 @@ export class SaleorPackageSyncService {
             saleorOrder.order.orderLineItems
                 .map((line) => {
                     if (!line.saleorOrderLineItems?.[0]?.id) {
-                        this.logger.info(
-                            `No saleor order line for order line ${line.id}. Can't fulfill this orderline`,
-                        );
+                        // `No saleor order line for order line ${line.id}. Can't fulfill this orderline`,
                         return undefined;
                     }
                     const saleorOrderLineId = line.saleorOrderLineItems[0].id;
@@ -661,15 +663,9 @@ export class SaleorPackageSyncService {
                     /**
                      * We can't match an orderline. For example when items consist of other items,
                      * and we just get the information on the shipped part not the original item..
+                     * or if we have multiple shipments and this item is in a different package
                      */
                     if (filteredForSKU.length === 0) {
-                        this.logger.warn(
-                            `Can't find a package line item for orderline with SKU ${line.sku}`,
-                            {
-                                saleorOrderNumber: saleorOrder.id,
-                                orderNumber: saleorOrder.order.orderNumber,
-                            },
-                        );
                         return undefined;
                     }
                     const bestMatchByQuantity = closestsMatch(
@@ -728,6 +724,30 @@ export class SaleorPackageSyncService {
             return true;
         });
         if (!fulfillmentLinesCheck || saleorLines.length === 0) {
+            this.logger.info(
+                `Could not match all orderlines for order ${saleorOrder.id}. Returning null`,
+            );
+            return null;
+        }
+
+        // check, if all package line items are in saleor lines with the same quantity. Check
+        // using the SKU as identifier
+        const packageLineItemsCheck = parcel.packageLineItems.every((i) => {
+            const orderLine = saleorOrder.order.orderLineItems.find(
+                (x) => x.sku === i.sku,
+            )?.saleorOrderLineItems?.[0];
+            if (!orderLine) return false;
+
+            const saleorLine = saleorLines.find(
+                (x) => x.orderLineId === orderLine.id,
+            );
+            if (!saleorLine) return false;
+            return saleorLine.stocks[0].quantity === i.quantity;
+        });
+        if (!packageLineItemsCheck) {
+            this.logger.info(
+                `Not all package line items are in saleor lines with the same quantity for order ${saleorOrder.id}. Returning null`,
+            );
             return null;
         }
 
@@ -745,6 +765,7 @@ export class SaleorPackageSyncService {
     private generateShortCircuitPackage(
         saleorOrder: SaleorOrder,
         parcel: Package,
+        defaultSaleorWarehouseId: string,
     ): OrderFulfillLineInput[] | null {
         const shortCircuitPackage: OrderFulfillLineInput[] = [];
         for (const line of saleorOrder.order.orderLineItems) {
@@ -760,8 +781,8 @@ export class SaleorPackageSyncService {
              * as all package line items need to be shipped from the same warehouse
              */
             const warehouse =
-                parcel.packageLineItems[0].warehouse?.saleorWarehouse[0].id ||
-                this.installedSaleorApp.defaultWarehouseId;
+                parcel.packageLineItems[0]?.warehouse?.saleorWarehouse[0].id ||
+                defaultSaleorWarehouseId;
             if (!warehouse) return null;
             shortCircuitPackage.push({
                 orderLineId: saleorOrderLine.id,
@@ -822,27 +843,45 @@ export class SaleorPackageSyncService {
                         `Saleor orderline ${e.orderLines} from order ${saleorOrder.orderNumber} - ${saleorOrder.id} is already fulfilled: ${e.message}. Continue`,
                     );
 
-                    // if (
-                    //     response.orderFulfill?.order?.status ===
-                    //     OrderStatus.Fulfilled
-                    // ) {
-                    //     this.logger.info(
-                    //         `Order ${saleorOrder.orderNumber} - ${saleorOrder.id} is already completely fulfilled. Skipping further fulfillments`,
-                    //     );
-                    //     await this.db.saleorOrder.update({
-                    //         where: {
-                    //             id_installedSaleorAppId: {
-                    //                 id: saleorOrder.id,
-                    //                 installedSaleorAppId:
-                    //                     this.installedSaleorAppId,
-                    //             },
-                    //         },
-                    //         data: {
-                    //             status: SaleorOrderStatus.FULFILLED,
-                    //         },
-                    //     });
-                    // }
-                    // TODO: create internal package for that / check if order is already fulfilled and write status back
+                    // create internal package for that / check if order is already fulfilled and write status back.
+                    // we check the saleor order, see the orderlines, get the fulfillment id from there and create the corresponding saleor package.
+                    // we pull the order with the fulfillments from Saleor. We match saleorLines with the fulfillment lines to get the
+                    // fulfillment id and create the corresponding saleor package in our DB.
+                    const orderFromSaleor =
+                        await this.saleorClient.saleorOrderWithFulfillment({
+                            orderId: saleorOrder.id,
+                        });
+                    const fulfillments = orderFromSaleor.order?.fulfillments;
+                    if (!fulfillments) {
+                        this.logger.error(
+                            `No fulfillments found for order ${saleorOrder.id}`,
+                        );
+                        return;
+                    }
+
+                    // find the fulfillment that matches the saleorLines
+                    const fulfillment = fulfillments.find((f) => {
+                        return f.lines?.some((l) => {
+                            return (
+                                l.orderLine?.id === saleorLines[0].orderLineId
+                            );
+                        });
+                    });
+                    if (!fulfillment) {
+                        this.logger.error(
+                            `No fulfillment found for order ${saleorOrder.id}`,
+                        );
+                        return;
+                    }
+                    const fulfillmentId = fulfillment.id;
+                    this.logger.info(
+                        `Fulfillment found for order ${saleorOrder.id}: ${fulfillmentId}`,
+                    );
+                    await this.upsertSaleorPackage(
+                        fulfillmentId,
+                        parcel.id,
+                        fulfillment.created,
+                    );
                 } else if (e.code === "INSUFFICIENT_STOCK") {
                     this.logger.error(
                         `Saleor has not enough stock to fulfill order ${saleorOrder.id}: ${e.message}`,
