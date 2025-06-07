@@ -43,3 +43,17 @@ query saleorCronPackagesOverview(
         }
     }
 }
+
+query saleorOrderWithFulfillment($orderId: ID!) {
+    order(id: $orderId) {
+        fulfillments {
+            id
+            created
+            lines {
+                orderLine {
+                    id
+                }
+            }
+        }
+    }
+}

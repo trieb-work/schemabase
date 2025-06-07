@@ -29794,6 +29794,10 @@ export type SaleorCreatePackageMutation = {
             __typename?: "Fulfillment";
             id: string;
             created: any;
+            lines?: Array<{
+                __typename?: "FulfillmentLine";
+                orderLine?: { __typename?: "OrderLine"; id: string } | null;
+            }> | null;
         }> | null;
         errors: Array<{
             __typename?: "OrderError";
@@ -30877,6 +30881,26 @@ export type SaleorCronPackagesOverviewQuery = {
                     }> | null;
                 }>;
             };
+        }>;
+    } | null;
+};
+
+export type SaleorOrderWithFulfillmentQueryVariables = Exact<{
+    orderId: Scalars["ID"];
+}>;
+
+export type SaleorOrderWithFulfillmentQuery = {
+    __typename?: "Query";
+    order?: {
+        __typename?: "Order";
+        fulfillments: Array<{
+            __typename?: "Fulfillment";
+            id: string;
+            created: any;
+            lines?: Array<{
+                __typename?: "FulfillmentLine";
+                orderLine?: { __typename?: "OrderLine"; id: string } | null;
+            }> | null;
         }>;
     } | null;
 };
@@ -32562,6 +32586,11 @@ export const SaleorCreatePackageDocument = gql`
             fulfillments {
                 id
                 created
+                lines {
+                    orderLine {
+                        id
+                    }
+                }
             }
             errors {
                 field
@@ -33328,6 +33357,21 @@ export const SaleorCronPackagesOverviewDocument = gql`
                         }
                         trackingNumber
                         status
+                    }
+                }
+            }
+        }
+    }
+`;
+export const SaleorOrderWithFulfillmentDocument = gql`
+    query saleorOrderWithFulfillment($orderId: ID!) {
+        order(id: $orderId) {
+            fulfillments {
+                id
+                created
+                lines {
+                    orderLine {
+                        id
                     }
                 }
             }
@@ -34344,6 +34388,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<SaleorCronPackagesOverviewQuery>;
+        },
+        saleorOrderWithFulfillment(
+            variables: SaleorOrderWithFulfillmentQueryVariables,
+            options?: C,
+        ): Promise<SaleorOrderWithFulfillmentQuery> {
+            return requester<
+                SaleorOrderWithFulfillmentQuery,
+                SaleorOrderWithFulfillmentQueryVariables
+            >(
+                SaleorOrderWithFulfillmentDocument,
+                variables,
+                options,
+            ) as Promise<SaleorOrderWithFulfillmentQuery>;
         },
         paymentGateways(
             variables?: PaymentGatewaysQueryVariables,
