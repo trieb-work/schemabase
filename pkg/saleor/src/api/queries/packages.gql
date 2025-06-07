@@ -50,6 +50,7 @@ query saleorOrderWithFulfillment($orderId: ID!) {
             id
             created
             lines {
+                quantity
                 orderLine {
                     id
                 }

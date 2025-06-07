@@ -30899,6 +30899,7 @@ export type SaleorOrderWithFulfillmentQuery = {
             created: any;
             lines?: Array<{
                 __typename?: "FulfillmentLine";
+                quantity: number;
                 orderLine?: { __typename?: "OrderLine"; id: string } | null;
             }> | null;
         }>;
@@ -33370,6 +33371,7 @@ export const SaleorOrderWithFulfillmentDocument = gql`
                 id
                 created
                 lines {
+                    quantity
                     orderLine {
                         id
                     }

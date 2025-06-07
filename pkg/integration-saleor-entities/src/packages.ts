@@ -855,30 +855,64 @@ export class SaleorPackageSyncService {
                     if (!fulfillments) {
                         this.logger.error(
                             `No fulfillments found for order ${saleorOrder.id}`,
+                            {
+                                orderNumber: saleorOrder.orderNumber,
+                                orderLines: saleorOrder.order.orderLineItems,
+                            },
                         );
                         return;
                     }
 
                     // find the fulfillment that matches the saleorLines
-                    const fulfillment = fulfillments.find((f) => {
+                    const fulfillmentsMatch = fulfillments.filter((f) => {
                         return f.lines?.some((l) => {
                             return (
-                                l.orderLine?.id === saleorLines[0].orderLineId
+                                l.orderLine?.id ===
+                                    saleorLines[0].orderLineId &&
+                                l.quantity === saleorLines[0].stocks[0].quantity
                             );
                         });
                     });
+
+                    if (!fulfillmentsMatch.length) {
+                        this.logger.error(
+                            `No matching fulfillment found for order ${saleorOrder.id}`,
+                        );
+                        return;
+                    }
+                    let fulfillment;
+                    if (fulfillmentsMatch.length > 1) {
+                        // we need to select now the fulfillmentid that we do not yet have in our DB
+                        for (const f of fulfillmentsMatch) {
+                            const exists =
+                                await this.db.saleorPackage.findUnique({
+                                    where: {
+                                        id_installedSaleorAppId: {
+                                            id: f.id,
+                                            installedSaleorAppId:
+                                                this.installedSaleorApp.id,
+                                        },
+                                    },
+                                });
+                            if (!exists) {
+                                fulfillment = f;
+                                break;
+                            }
+                        }
+                    } else {
+                        fulfillment = fulfillmentsMatch[0];
+                    }
                     if (!fulfillment) {
                         this.logger.error(
                             `No fulfillment found for order ${saleorOrder.id}`,
                         );
                         return;
                     }
-                    const fulfillmentId = fulfillment.id;
                     this.logger.info(
-                        `Fulfillment found for order ${saleorOrder.id}: ${fulfillmentId}`,
+                        `Fulfillment found for order ${saleorOrder.id}: ${fulfillment.id}`,
                     );
                     await this.upsertSaleorPackage(
-                        fulfillmentId,
+                        fulfillment.id,
                         parcel.id,
                         fulfillment.created,
                     );
