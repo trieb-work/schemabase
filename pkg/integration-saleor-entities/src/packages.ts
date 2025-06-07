@@ -928,7 +928,11 @@ export class SaleorPackageSyncService {
                     this.logger.warn(
                         `We try to fulfill more items than still to fulfill: ${e.message}`,
                     );
-                    // TODO: further investigate this case and why it is happening..we just don't want to fail on that currently
+                    // Just run the virtual fulfillment logic as we have definitely some wrong data and want to show the customer the actual package
+                    await this.createVirtualSaleorPackage(
+                        saleorOrder.id,
+                        parcel,
+                    );
                 } else {
                     this.logger.error(
                         "Unhandled error trying to create order fulfillment",
