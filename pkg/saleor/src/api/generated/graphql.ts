@@ -30196,6 +30196,11 @@ export type ProductVariantBulkUpdateMutation = {
         __typename?: "ProductVariantBulkUpdate";
         results: Array<{
             __typename?: "ProductVariantBulkResult";
+            errors?: Array<{
+                __typename?: "ProductVariantBulkError";
+                field?: string | null;
+                message?: string | null;
+            }> | null;
             productVariant?: {
                 __typename?: "ProductVariant";
                 id: string;
@@ -32890,6 +32895,10 @@ export const ProductVariantBulkUpdateDocument = gql`
     ) {
         productVariantBulkUpdate(product: $productId, variants: $variants) {
             results {
+                errors {
+                    field
+                    message
+                }
                 productVariant {
                     id
                     sku

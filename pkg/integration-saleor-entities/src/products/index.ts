@@ -1164,7 +1164,7 @@ export class SaleorProductSyncService {
             `Received ${itemsWithMissingVariants.length} items with missing variants`,
             {
                 itemsWithMissingVariants: itemsWithMissingVariants.map(
-                    (x) => x.name,
+                    (x) => `${x.name} - ${x.id}`,
                 ),
             },
         );
@@ -1795,6 +1795,7 @@ export class SaleorProductSyncService {
                                         ),
                                     },
                                 );
+
                                 const productVariantBulkUpdateResponse =
                                     await this.saleorClient.productVariantBulkUpdate(
                                         {
@@ -1803,11 +1804,14 @@ export class SaleorProductSyncService {
                                         },
                                     );
                                 if (
-                                    productVariantBulkUpdateResponse
+                                    (productVariantBulkUpdateResponse
                                         .productVariantBulkUpdate?.errors &&
-                                    productVariantBulkUpdateResponse
-                                        .productVariantBulkUpdate?.errors
-                                        .length > 0
+                                        productVariantBulkUpdateResponse
+                                            .productVariantBulkUpdate?.errors
+                                            .length > 0) ||
+                                    productVariantBulkUpdateResponse.productVariantBulkUpdate?.results.some(
+                                        (r) => (r.errors?.length ?? 0) > 0,
+                                    )
                                 ) {
                                     this.logger.error(
                                         `Error creating variants for product ${
@@ -1816,7 +1820,9 @@ export class SaleorProductSyncService {
                                             productVariantBulkUpdateResponse
                                                 .productVariantBulkUpdate
                                                 .errors,
-                                        )}`,
+                                        )} ${productVariantBulkUpdateResponse.productVariantBulkUpdate?.results
+                                            .map((r) => r.errors)
+                                            .join(", ")}`,
                                     );
                                     continue;
                                 }

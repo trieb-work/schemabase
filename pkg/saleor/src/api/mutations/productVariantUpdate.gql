@@ -4,6 +4,10 @@ mutation productVariantBulkUpdate(
 ) {
     productVariantBulkUpdate(product: $productId, variants: $variants) {
         results {
+            errors {
+                field
+                message
+            }
             productVariant {
                 id
                 sku
