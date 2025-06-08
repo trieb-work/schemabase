@@ -1141,6 +1141,8 @@ export class SaleorProductSyncService {
                     },
                 },
                 variants: {
+                    // ensure that the product has at least one variant
+                    some: {},
                     none: {
                         saleorProductVariant: {
                             some: {
