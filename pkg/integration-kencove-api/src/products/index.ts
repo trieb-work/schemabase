@@ -2234,6 +2234,13 @@ export class KencoveApiAppProductSyncService {
                     if (attribute.value.match(/^\[.*\]$/)) {
                         const values = JSON.parse(attribute.value);
 
+                        // we first delete all entries
+                        await this.db.attributeValueProduct.deleteMany({
+                            where: {
+                                attributeId: matchedAttr.attribute.id,
+                                productId: existingProduct.id,
+                            },
+                        });
                         for (const value of values) {
                             await this.setAttributeValue({
                                 productId: existingProduct.id,
@@ -2242,6 +2249,7 @@ export class KencoveApiAppProductSyncService {
                                 attributeValue: value,
                                 isForVariant:
                                     matchedAttr?.isForVariant ?? false,
+                                deleteExistingEntries: false,
                             });
                         }
                     } else {
