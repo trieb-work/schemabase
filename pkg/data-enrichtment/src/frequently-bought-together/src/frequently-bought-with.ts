@@ -190,7 +190,8 @@ export class FBT {
     }
 
     /**
-     * Returns us the top 10 productIds or variantIds
+     * Returns us the top 10 productIds or variantIds. Filter out products
+     * that are bought together less than 10 times
      * @param recordCount
      * @returns
      */

@@ -124,7 +124,18 @@ export class FrequentlyBoughtTogetherService {
             },
         });
 
+        this.logger.info(
+            `Frequently bought together variants for tenant ${this.tenantId}. Found ${variants.length} variants`,
+        );
+
         for (const variant of variants) {
+            this.logger.info(
+                `Frequently bought together variants for variant ${variant.sku}`,
+                {
+                    variantId: variant.id,
+                    sku: variant.sku,
+                },
+            );
             const fbt = new FBT({
                 db: this.db,
                 tenantId: [variant.tenantId],
