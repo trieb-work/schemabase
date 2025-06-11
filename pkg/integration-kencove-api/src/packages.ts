@@ -84,7 +84,9 @@ export class KencoveApiAppPackageSyncService {
 
         let errors = [];
         for await (const packages of packagesYield) {
-            this.logger.info(`Found ${packages.length} packages to sync.`);
+            this.logger.info(`Found ${packages.length} packages to sync.`, {
+                packageNumbers: packages.map((p) => p.packageName),
+            });
             /**
              * Helper to match warehouse
              */
@@ -140,6 +142,7 @@ export class KencoveApiAppPackageSyncService {
                     `Syncing package ${pkg.packageName} from Kencove API to ECI.`,
                     {
                         packageId: pkg.packageId,
+                        packageName: pkg.packageName,
                         salesOrderNo: pkg.salesOrderNo,
                         trackingId,
                         isMultiPieceShipment,
