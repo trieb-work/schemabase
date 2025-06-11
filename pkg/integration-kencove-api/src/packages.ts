@@ -74,8 +74,8 @@ export class KencoveApiAppPackageSyncService {
                 `This seems to be our first sync run. Syncing data from: ${createdGte}`,
             );
         } else {
-            // for security purposes, we sync one hour more than the last run
-            createdGte = subHours(cronState.lastRun, 1);
+            // for security purposes, we sync two hours more than the last run
+            createdGte = subHours(cronState.lastRun, 2);
             this.logger.info(`Setting GTE date to ${createdGte}.`);
         }
 
