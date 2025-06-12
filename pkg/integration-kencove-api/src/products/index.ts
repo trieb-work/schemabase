@@ -869,7 +869,7 @@ export class KencoveApiAppProductSyncService {
             } = this.attributeMatch(product);
 
             if (!product.productType?.id || !product.productType.name) {
-                this.logger.error(
+                this.logger.warn(
                     `Product ${product.name} - ${product.id} has no product type id. Skipping.`,
                 );
                 continue;
