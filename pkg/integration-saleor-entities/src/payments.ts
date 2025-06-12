@@ -536,16 +536,6 @@ export class SaleorPaymentSyncService {
                 },
             );
             for (const transaction of successfullTransactionsTransactionApi) {
-                this.logger.debug(`Starting to process transaction`, {
-                    transactionId: transaction.id,
-                    orderNumber: transaction.order?.number,
-                    authorizePendingAmount: transaction.authorizePendingAmount,
-                    chargePendingAmount: transaction.chargePendingAmount,
-                    chargedAmount: transaction.chargedAmount,
-                    authorizedAmount: transaction.authorizedAmount,
-                    pspReference: transaction.pspReference,
-                    email: transaction.order?.userEmail,
-                });
                 const lowercaseEmail =
                     transaction.order?.userEmail?.toLowerCase();
                 /**
@@ -553,13 +543,14 @@ export class SaleorPaymentSyncService {
                  * should be improved with metadata!
                  */
                 const isPaymentProfile =
-                    transaction.pspReference?.match(/\d{10}-\d{10}/);
+                    transaction.pspReference?.match(/\d{8,10}-\d{8,10}/);
                 const paymentProfileId = isPaymentProfile
                     ? transaction.pspReference
                     : undefined;
                 const paymentReference = isPaymentProfile
                     ? transaction.id
                     : transaction.pspReference;
+
                 if (!paymentReference) {
                     this.logger.info(
                         `No payment reference found for transaction ${transaction.id}. Skipping`,
@@ -582,6 +573,19 @@ export class SaleorPaymentSyncService {
                     );
                     continue;
                 }
+                this.logger.debug(`Starting to process transaction`, {
+                    transactionId: transaction.id,
+                    orderNumber: transaction.order?.number,
+                    authorizePendingAmount: transaction.authorizePendingAmount,
+                    chargePendingAmount: transaction.chargePendingAmount,
+                    chargedAmount: transaction.chargedAmount,
+                    authorizedAmount: transaction.authorizedAmount,
+                    pspReference: transaction.pspReference,
+                    email: transaction.order?.userEmail,
+                    paymentReference,
+                    paymentProfileId,
+                    isPaymentProfil: !!isPaymentProfile,
+                });
                 if (!transaction.order?.id) {
                     this.logger.info(
                         `No order found for transaction ${transaction.id}. Skipping`,
@@ -690,6 +694,15 @@ export class SaleorPaymentSyncService {
                             existingPayment.saleorPayment[0]?.id ===
                                 transaction.id
                         ) {
+                            continue;
+                        }
+                        const schemabaseOrderId = saleorOrder?.orderId;
+
+                        if (!schemabaseOrderId) {
+                            this.logger.error(
+                                `No order id found for transaction ${transaction.id}`,
+                                { saleorOrderId: transaction.order?.id },
+                            );
                             continue;
                         }
                         this.logger.info(
