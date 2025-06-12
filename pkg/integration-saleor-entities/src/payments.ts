@@ -675,6 +675,7 @@ export class SaleorPaymentSyncService {
                             },
                         },
                         include: {
+                            order: true,
                             saleorPayment: {
                                 where: {
                                     installedSaleorAppId:
@@ -692,7 +693,8 @@ export class SaleorPaymentSyncService {
                         if (
                             existingPayment.saleorPayment.length &&
                             existingPayment.saleorPayment[0]?.id ===
-                                transaction.id
+                                transaction.id &&
+                            existingPayment.orderId === saleorOrder?.orderId
                         ) {
                             continue;
                         }
@@ -705,6 +707,19 @@ export class SaleorPaymentSyncService {
                             );
                             continue;
                         }
+
+                        // is a wrong order connected to this payment?
+                        if (existingPayment.orderId !== saleorOrder?.orderId) {
+                            this.logger.info(
+                                `Payment ${transaction.pspReference} has a different order attached than we would assume! Upserting this`,
+                                {
+                                    transactionId: transaction.id,
+                                    orderNumber: transaction.order?.number,
+                                    saleorOrderId: transaction.order?.id,
+                                },
+                            );
+                        }
+
                         this.logger.info(
                             `Payment ${transaction.pspReference} already exists. Connecting this Saleor payment to it`,
                             {
@@ -743,6 +758,7 @@ export class SaleorPaymentSyncService {
                                         id: existingPayment.id,
                                     },
                                     update: {
+                                        referenceNumber: paymentReference,
                                         order: {
                                             connect: {
                                                 id: saleorOrder?.orderId,
