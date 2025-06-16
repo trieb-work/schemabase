@@ -294,6 +294,7 @@ export class SaleorPackageSyncService {
             return;
         }
 
+        metadata.push({ key: "packageNumber", value: parcel.number });
         if (parcel.state) metadata.push({ key: "state", value: parcel.state });
         if (parcel.carrierTrackingUrl)
             metadata.push({
@@ -821,6 +822,7 @@ export class SaleorPackageSyncService {
                 orderNumber: saleorOrder.order.orderNumber,
                 trackingNumber: parcel.trackingId,
                 saleorOrderId: saleorOrder.id,
+                packageNumber: parcel.number,
             },
         );
         const trackingNumber = parcel.trackingId || undefined;
@@ -929,6 +931,12 @@ export class SaleorPackageSyncService {
                     }
                     this.logger.info(
                         `Fulfillment found for order ${saleorOrder.id}: ${fulfillment.id}`,
+                        {
+                            orderNumber: saleorOrder.order.orderNumber,
+                            fulfillmentId: fulfillment.id,
+                            parcelNumber: parcel.number,
+                            saleorOrderId: saleorOrder.id,
+                        },
                     );
                     await this.upsertSaleorPackage(
                         fulfillment.id,
