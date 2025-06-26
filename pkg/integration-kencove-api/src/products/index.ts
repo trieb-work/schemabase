@@ -684,6 +684,20 @@ export class KencoveApiAppProductSyncService {
                 });
             }
         } catch (error) {
+            this.logger.error(
+                `Failed to set attribute value for ${attribute.name}, ${attribute.id} on ` +
+                    `${isForVariant ? "variant" : "product"} ${productId || variantId}, ` +
+                    `value: ${value}: ${error}`,
+                {
+                    attribute,
+                    productId,
+                    variantId,
+                    isForVariant,
+                    deleteExistingEntries,
+                    attributeValue,
+                    attributeInProduct,
+                },
+            );
             throw new Error(
                 `Failed to set attribute value for ${attribute.name}, ${attribute.id} on ` +
                     `${isForVariant ? "variant" : "product"} ${productId || variantId}, ` +
@@ -2141,27 +2155,6 @@ export class KencoveApiAppProductSyncService {
                     allAttributes.push(shippingStatusAttribute);
                 }
 
-                /**
-                 * We no longer filter out the variant website description.
-                 * We just always set it..
-                 */
-                // const variantWebsiteDescription = allAttributes.find(
-                //     (a) => a.name === "variant_website_description",
-                // )?.value;
-                // let filterVariantWebsiteDescription = true;
-                // if (
-                //     variantWebsiteDescription &&
-                //     variantWebsiteDescription !==
-                //         product.description.replace(/<[^>]*>?/gm, "")?.trim() &&
-                //     variantWebsiteDescription !== product?.description
-                // ) {
-                //     // "Variant website description is different to the product description. Setting this attribute",
-                //     filterVariantWebsiteDescription = false;
-                // } else {
-                //     // "Variant website description is the same as the product description. Removing this attribute",
-                //     filterVariantWebsiteDescription = true;
-                // }
-
                 const cleanedAttributes = cleanAttributes(allAttributes).filter(
                     (a) => a.name !== "website_ref_desc",
                 );
@@ -2235,12 +2228,21 @@ export class KencoveApiAppProductSyncService {
                         const values = JSON.parse(attribute.value);
 
                         // we first delete all entries
-                        await this.db.attributeValueProduct.deleteMany({
-                            where: {
-                                attributeId: matchedAttr.attribute.id,
-                                productId: existingProduct.id,
-                            },
-                        });
+                        if (matchedAttr.isForVariant) {
+                            await this.db.attributeValueVariant.deleteMany({
+                                where: {
+                                    attributeId: matchedAttr.attribute.id,
+                                    productVariantId: existingVariant.id,
+                                },
+                            });
+                        } else {
+                            await this.db.attributeValueProduct.deleteMany({
+                                where: {
+                                    attributeId: matchedAttr.attribute.id,
+                                    productId: existingProduct.id,
+                                },
+                            });
+                        }
                         for (const value of values) {
                             await this.setAttributeValue({
                                 productId: existingProduct.id,
