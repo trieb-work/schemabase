@@ -1823,7 +1823,9 @@ export class SaleorProductSyncService {
                                                 .productVariantBulkUpdate
                                                 .errors,
                                         )} ${productVariantBulkUpdateResponse.productVariantBulkUpdate?.results
-                                            .map((r) => r.errors)
+                                            .map((r) =>
+                                                JSON.stringify(r.errors),
+                                            )
                                             .join(", ")}`,
                                     );
                                     continue;
