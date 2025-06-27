@@ -1756,6 +1756,11 @@ export class KencoveApiAppProductSyncService {
                     `Product ${product.productName} including all variants, with KencoveId ${product.productId} has not changed. Skipping.`,
                 );
                 continue;
+            } else {
+                this.logger.info(
+                    `Product ${product.productName}, with KencoveId ${product.productId} has changed. Updating.`,
+                    { existingProductDatahash, maintItemDatahash },
+                );
             }
 
             if (!existingProduct) {
