@@ -39,6 +39,7 @@ import {
 } from "../helper";
 import { syncTaxClasses } from "./taxclasses";
 import { sha256 } from "@eci/pkg/hash";
+import { sortObjectKeys } from "@eci/pkg/utils/object";
 
 interface KencoveApiAppProductSyncServiceConfig {
     logger: ILogger;
@@ -1658,10 +1659,24 @@ export class KencoveApiAppProductSyncService {
                 continue;
             }
 
+            // Remove updatedAt timestamps and sort object keys for consistent hashing
+            // across different environments
+            const productCopy = {
+                ...product,
+                updatedAt: undefined,
+                variants: product.variants.map((v) => ({
+                    ...v,
+                    updatedAt: undefined,
+                })),
+            };
             /**
              * The main data hash of this item with all its variants
+             * We use sortObjectKeys to ensure consistent property order in JSON.stringify
+             * across different environments
              */
-            const maintItemDatahash = sha256(JSON.stringify(product));
+            const maintItemDatahash = sha256(
+                JSON.stringify(sortObjectKeys(productCopy)),
+            );
 
             /**
              * we include the product template id in the normalised name, as
