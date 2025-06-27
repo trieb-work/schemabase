@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
 import { ILogger } from "@eci/pkg/logger";
+import { Prisma } from "@prisma/client";
 import {
     InputMaybe,
     MetadataInput,
@@ -90,6 +91,13 @@ export class SaleorCustomerSyncService {
         }
     }
 
+    // Helper function for sleeping/waiting
+    private async sleep(ms: number): Promise<void> {
+        return new Promise((resolve) => {
+            setTimeout(resolve, ms);
+        });
+    }
+
     public async syncToECI(): Promise<void> {
         const cronState = await this.cronState.get();
 
@@ -155,79 +163,110 @@ export class SaleorCustomerSyncService {
                 continue;
             }
 
-            const internalContact = await this.db.saleorCustomer.upsert({
-                where: {
-                    id_installedSaleorAppId: {
-                        id: contact.id,
-                        installedSaleorAppId: this.installedSaleorAppId,
-                    },
-                },
-                create: {
-                    id: contact.id,
-                    createdAt: new Date(contact.dateJoined),
-                    updatedAt: new Date(contact.updatedAt),
-                    dataHash,
-                    customer: {
-                        connectOrCreate: {
-                            where: {
-                                email_tenantId: {
-                                    email: contact.email.toLowerCase(),
-                                    tenantId: this.tenantId,
-                                },
+            // Function to handle the upsert with retry
+            const upsertWithRetry = async (
+                retryCount = 0,
+                maxRetries = 3,
+            ): Promise<any> => {
+                try {
+                    return await this.db.saleorCustomer.upsert({
+                        where: {
+                            id_installedSaleorAppId: {
+                                id: contact.id,
+                                installedSaleorAppId: this.installedSaleorAppId,
                             },
-                            create: {
-                                id: id.id("contact"),
-                                email: contact.email.toLowerCase(),
-                                firstName: contact.firstName,
-                                lastName: contact.lastName,
-                                tenant: {
-                                    connect: {
-                                        id: this.tenantId,
+                        },
+                        create: {
+                            id: contact.id,
+                            createdAt: new Date(contact.dateJoined),
+                            updatedAt: new Date(contact.updatedAt),
+                            dataHash,
+                            customer: {
+                                connectOrCreate: {
+                                    where: {
+                                        email_tenantId: {
+                                            email: contact.email.toLowerCase(),
+                                            tenantId: this.tenantId,
+                                        },
+                                    },
+                                    create: {
+                                        id: id.id("contact"),
+                                        email: contact.email.toLowerCase(),
+                                        firstName: contact.firstName,
+                                        lastName: contact.lastName,
+                                        tenant: {
+                                            connect: {
+                                                id: this.tenantId,
+                                            },
+                                        },
                                     },
                                 },
                             },
-                        },
-                    },
-                    installedSaleorApp: {
-                        connect: {
-                            id: this.installedSaleorAppId,
-                        },
-                    },
-                },
-                update: {
-                    updatedAt: new Date(contact.updatedAt),
-                    dataHash,
-                    customer: {
-                        connectOrCreate: {
-                            where: {
-                                email_tenantId: {
-                                    email: contact.email.toLowerCase(),
-                                    tenantId: this.tenantId,
-                                },
-                            },
-                            create: {
-                                id: id.id("contact"),
-                                email: contact.email.toLowerCase(),
-                                firstName: contact.firstName,
-                                lastName: contact.lastName,
-                                tenant: {
-                                    connect: {
-                                        id: this.tenantId,
-                                    },
+                            installedSaleorApp: {
+                                connect: {
+                                    id: this.installedSaleorAppId,
                                 },
                             },
                         },
                         update: {
-                            email: contact.email.toLowerCase(),
-                            firstName: contact.firstName,
-                            lastName: contact.lastName,
+                            updatedAt: new Date(contact.updatedAt),
+                            dataHash,
+                            customer: {
+                                connectOrCreate: {
+                                    where: {
+                                        email_tenantId: {
+                                            email: contact.email.toLowerCase(),
+                                            tenantId: this.tenantId,
+                                        },
+                                    },
+                                    create: {
+                                        id: id.id("contact"),
+                                        email: contact.email.toLowerCase(),
+                                        firstName: contact.firstName,
+                                        lastName: contact.lastName,
+                                        tenant: {
+                                            connect: {
+                                                id: this.tenantId,
+                                            },
+                                        },
+                                    },
+                                },
+                                update: {
+                                    email: contact.email.toLowerCase(),
+                                    firstName: contact.firstName,
+                                    lastName: contact.lastName,
+                                },
+                            },
                         },
-                    },
-                },
-                include: {
-                    customer: true,
-                },
-            });
+                        include: {
+                            customer: true,
+                        },
+                    });
+                } catch (error) {
+                    // Check if it's a unique constraint error
+                    if (
+                        error instanceof Prisma.PrismaClientKnownRequestError &&
+                        error.code === "P2002" &&
+                        retryCount < maxRetries
+                    ) {
+                        this.logger.warn(
+                            `Unique constraint error when syncing contact ${contact.id}. Retrying in 1 second... (Attempt ${retryCount + 1}/${maxRetries})`,
+                            { email: contact.email },
+                        );
+
+                        // Wait for 1 second before retrying
+                        await this.sleep(1000);
+
+                        // Retry the operation
+                        return upsertWithRetry(retryCount + 1, maxRetries);
+                    }
+
+                    // If it's not a unique constraint error or we've exceeded max retries, rethrow
+                    throw error;
+                }
+            };
+
+            const internalContact = await upsertWithRetry();
 
             const externalIdentifier =
                 internalContact.customer.externalIdentifier;
