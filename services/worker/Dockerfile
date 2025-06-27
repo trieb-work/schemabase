@@ -1,4 +1,4 @@
-FROM node:20 as build
+FROM node:22-alpine AS build
 WORKDIR /eci
 
 RUN npm i -g pnpm@^v8.15.1
@@ -9,6 +9,8 @@ COPY pnpm-lock.yaml ./
 COPY ./pkg/prisma/* ./pkg/prisma/
 RUN pnpm fetch --prod
 COPY . .
+RUN apk add --no-cache make
+
 RUN make build-worker
 
 RUN pnpm prisma generate
@@ -17,7 +19,7 @@ RUN pnpm prisma generate
 WORKDIR /eci/services/worker/dist
 RUN cp -r /eci/node_modules/.pnpm/@prisma+client@*_prisma@*/node_modules/.prisma/client/* .
 
-FROM node:20
+FROM node:22-alpine
 WORKDIR /eci
 ARG commit_sha
 ENV GIT_COMMIT_SHA=$commit_sha
