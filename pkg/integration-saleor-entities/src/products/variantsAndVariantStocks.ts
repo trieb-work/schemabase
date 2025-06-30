@@ -162,13 +162,16 @@ export class VariantAndVariantStocks {
         return variantsWithStock;
     }
 
-    public async syncVariantsAndVariantStocks(createdGte: Date) {
+    /**
+     * Syncs only stock information to Saleor
+     * @param createdGte Date to look for stock changes since
+     */
+    public async syncStocks(createdGte: Date) {
         this.logger.info(
-            `Looking for saleor product variants with (stock) changes since ${createdGte}`,
+            `Looking for saleor product variants with stock changes since ${createdGte}`,
         );
         /**
-         * get all saleor productVariants where related stockEntries have been updated since last run or where related
-         * productVariants have been updated since last run
+         * get all saleor productVariants where related stockEntries have been updated since last run
          */
         const productVariantsWithStockChanges =
             await this.db.productVariant.findMany({
@@ -204,41 +207,7 @@ export class VariantAndVariantStocks {
             },
         );
 
-        const variantWithUpdates = await this.db.productVariant.findMany({
-            where: {
-                saleorProductVariant: {
-                    some: {
-                        installedSaleorAppId: this.installedSaleorAppId,
-                    },
-                },
-                updatedAt: {
-                    gte: createdGte,
-                },
-            },
-            include: {
-                saleorProductVariant: {
-                    where: {
-                        installedSaleorAppId: this.installedSaleorAppId,
-                    },
-                },
-            },
-        });
-
-        this.logger.info(
-            `Found ${variantWithUpdates.length} product variants with updates since the last run`,
-            {
-                variantWithUpdates: variantWithUpdates.map((x) => x.sku),
-            },
-        );
-
-        if (
-            variantWithUpdates.length === 0 &&
-            productVariantsWithStockChanges.length === 0
-        ) {
-            // await this.cronState.set({
-            //     lastRun: new Date(),
-            //     lastRunStatus: "success",
-            // });
+        if (productVariantsWithStockChanges.length === 0) {
             return;
         }
 
@@ -256,24 +225,14 @@ export class VariantAndVariantStocks {
         });
 
         /**
-         * A set of products, whose reviews have changed. We need this to update the average rating of the product.
-         * Stores the internal ECI product id and the saleor product id.
-         */
-        const productsWithReviewsChanged = new Set<{
-            eciProductId: string;
-            saleorProductId: string;
-        }>();
-
-        /**
-         * All unique Saleor product variant ids from the productVariantsWithStockChanges and variantWithUpdates
+         * All unique Saleor product variant ids from the productVariantsWithStockChanges
          */
         const saleorProductVariantIds = [
-            ...new Set([
-                ...productVariantsWithStockChanges.map(
+            ...new Set(
+                productVariantsWithStockChanges.map(
                     (x) => x.saleorProductVariant[0].id,
                 ),
-                ...variantWithUpdates.map((x) => x.saleorProductVariant[0].id),
-            ]),
+            ),
         ];
 
         const saleorProductVariantsFromSaleor =
@@ -324,10 +283,6 @@ export class VariantAndVariantStocks {
 
                 // only update the stock entry in saleor, if the stock has changed
                 if (saleorStockEntry?.quantity === totalQuantity) {
-                    // this.logger.debug(
-                    //     `Stock for ${schemabaseVariant.sku} - id ${saleorVariant.id} has not changed. Skipping`,
-                    //     { saleorStockEntry, totalQuantity },
-                    // );
                     continue;
                 }
                 await this.saleorClient.productVariantStockEntryUpdate({
@@ -349,6 +304,72 @@ export class VariantAndVariantStocks {
                 );
             }
         }
+    }
+
+    /**
+     * Syncs both variant information and stock information to Saleor
+     * @param createdGte Date to look for changes since
+     */
+    public async syncVariantsAndVariantStocks(createdGte: Date) {
+        this.logger.info(
+            `Looking for saleor product variants with changes since ${createdGte}`,
+        );
+        // First, handle stock updates
+        await this.syncStocks(createdGte);
+        // Then, handle variant metadata and name updates
+        const variantWithUpdates = await this.db.productVariant.findMany({
+            where: {
+                saleorProductVariant: {
+                    some: {
+                        installedSaleorAppId: this.installedSaleorAppId,
+                    },
+                },
+                updatedAt: {
+                    gte: createdGte,
+                },
+            },
+            include: {
+                saleorProductVariant: {
+                    where: {
+                        installedSaleorAppId: this.installedSaleorAppId,
+                    },
+                },
+            },
+        });
+
+        this.logger.info(
+            `Found ${variantWithUpdates.length} product variants with updates since the last run`,
+            {
+                variantWithUpdates: variantWithUpdates.map((x) => x.sku),
+            },
+        );
+
+        if (variantWithUpdates.length === 0) {
+            return;
+        }
+
+        /**
+         * A set of products, whose reviews have changed. We need this to update the average rating of the product.
+         * Stores the internal ECI product id and the saleor product id.
+         */
+        const productsWithReviewsChanged = new Set<{
+            eciProductId: string;
+            saleorProductId: string;
+        }>();
+
+        /**
+         * All unique Saleor product variant ids from variantWithUpdates
+         */
+        const saleorProductVariantIds = [
+            ...new Set(
+                variantWithUpdates.map((x) => x.saleorProductVariant[0].id),
+            ),
+        ];
+
+        const saleorProductVariantsFromSaleor =
+            (await this.getSaleorProductVariants(saleorProductVariantIds)) ||
+            [];
+        // Process variant updates (name, metadata, ratings)
 
         for (const schemabaseVariant of variantWithUpdates) {
             const variant = saleorProductVariantsFromSaleor.find(

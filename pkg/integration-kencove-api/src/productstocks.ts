@@ -38,15 +38,25 @@ export class KencoveApiAppProductStockSyncService {
     /**
      * Syncs the last changed product stocks from the kencove api to our internal db.
      * creates warehouses if needed.
+     * @param productTemplateId - Optional product template ID to sync
+     * @param customDate - Optional custom date to override the cronState logic (for nightly full sync)
      * @returns
      * @memberof KencoveApiAppStockSyncService
      * @throws
      */
-    public syncToEci = async (productTemplateId?: string): Promise<void> => {
+    public syncToEci = async (
+        productTemplateId?: string,
+        customDate?: Date,
+    ): Promise<void> => {
         const cronState = await this.cronState.get();
         const now = new Date();
         let createdGte: Date;
-        if (!cronState.lastRun) {
+
+        if (customDate) {
+            // Use the provided custom date (for nightly full sync)
+            createdGte = customDate;
+            this.logger.info(`Using custom date for sync: ${createdGte}`);
+        } else if (!cronState.lastRun) {
             createdGte = subYears(now, 1);
             this.logger.info(
                 // eslint-disable-next-line max-len

@@ -48,6 +48,8 @@ import { AlgoliaCategorySyncWf } from "./workflows/algoliaCategorySync";
 import { SaleorProductChannelSyncWf } from "./workflows/saleorProductChannelSync";
 import { FedexTrackingSyncWf } from "./workflows/fedexTrackingSync";
 import { UspsTrackingSyncWf } from "./workflows/uspsTrackingSync";
+import { KencoveApiNightlyStockSyncWf } from "./workflows/kencoveApiNightlyStockSync";
+import { SaleorNightlyStockSyncWf } from "./workflows/saleorNightlyStockSync";
 
 interface CronClients {
     logger: ILogger;
@@ -272,6 +274,16 @@ export class CronTable {
                     commonWorkflowConfig,
                 ),
                 { ...commonCronConfig, offset: 0 },
+                [tenantId.substring(0, 5), id.substring(0, 5)],
+            );
+            // Nightly stock sync with 1-year window to catch any missed data
+            new WorkflowScheduler(this.clients).schedule(
+                createWorkflowFactory(
+                    KencoveApiNightlyStockSyncWf,
+                    this.clients,
+                    commonWorkflowConfig,
+                ),
+                { cron: "0 2 * * *", timeout: cronTimeout },
                 [tenantId.substring(0, 5), id.substring(0, 5)],
             );
             new WorkflowScheduler(this.clients).schedule(
@@ -683,6 +695,19 @@ export class CronTable {
             }
 
             if (enabledSaleorApp.syncProducts) {
+                // Nightly stock sync with 1-year window to catch any missed data
+                this.scheduler.schedule(
+                    createWorkflowFactory(
+                        SaleorNightlyStockSyncWf,
+                        this.clients,
+                        {
+                            installedSaleorApp: enabledSaleorApp,
+                        },
+                    ),
+                    { cron: "0 2 * * *", timeout: cronTimeout },
+                    [tenantId.substring(0, 5), id.substring(0, 7)],
+                );
+
                 this.scheduler.schedule(
                     createWorkflowFactory(
                         SaleorAttributeSyncWf,
