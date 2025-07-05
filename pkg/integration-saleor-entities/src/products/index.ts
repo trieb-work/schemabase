@@ -413,38 +413,114 @@ export class SaleorProductSyncService {
                         `Successfully created product type ${prodType.name} in Saleor`,
                     );
                 } else {
-                    const productTypeUpdateResponse =
-                        await this.saleorClient.productTypeUpdate({
-                            id: existingProdTypeId,
-                            input: {
-                                name: prodType.name,
-                                hasVariants: prodType.isVariant,
-                                productAttributes,
-                                variantAttributes,
-                            },
-                        });
-                    if (
-                        productTypeUpdateResponse?.productTypeUpdate?.errors &&
-                        productTypeUpdateResponse?.productTypeUpdate?.errors
-                            ?.length > 0
-                    ) {
-                        this.logger.error(
-                            `Error updating product type ${
-                                prodType.name
-                            } in Saleor: ${JSON.stringify(
-                                productTypeUpdateResponse.productTypeUpdate
-                                    .errors,
-                            )}`,
-                        );
-                        return;
-                    }
-                    await this.setProductTypeVariantSelectionAttributes(
-                        variantSelectionAttributes,
-                        existingProdTypeId,
-                    );
+                    // Fetch the current product type from Saleor to get all attributes
                     this.logger.info(
-                        `Successfully updated product type ${prodType.name} in Saleor`,
+                        `Fetching current product type ${existingProdTypeId} from Saleor`,
                     );
+
+                    try {
+                        // Use the productType query from the newly created GraphQL file
+                        const currentProductTypeResponse =
+                            await this.saleorClient.productType({
+                                id: existingProdTypeId,
+                            });
+
+                        if (!currentProductTypeResponse?.productType) {
+                            this.logger.error(
+                                `Error fetching product type ${existingProdTypeId} from Saleor`,
+                            );
+                            return;
+                        }
+
+                        const currentProductType =
+                            currentProductTypeResponse.productType;
+
+                        // Get current attribute IDs from Saleor
+                        const currentProductAttributeIds =
+                            currentProductType.productAttributes?.map(
+                                (attr: { id: string }) => attr.id,
+                            ) || [];
+
+                        const currentVariantAttributeIds =
+                            currentProductType.variantAttributes?.map(
+                                (attr: { id: string }) => attr.id,
+                            ) || [];
+
+                        // Merge attributes - keep all existing attributes from Saleor and add our new ones
+                        const mergedProductAttributes = [
+                            ...new Set([
+                                ...currentProductAttributeIds,
+                                ...productAttributes,
+                            ]),
+                        ];
+
+                        const mergedVariantAttributes = [
+                            ...new Set([
+                                ...currentVariantAttributeIds,
+                                ...variantAttributes,
+                            ]),
+                        ];
+
+                        this.logger.info(
+                            `Updating product type ${prodType.name} in Saleor with merged attributes`,
+                            {
+                                originalProductAttributes:
+                                    productAttributes.length,
+                                originalVariantAttributes:
+                                    variantAttributes.length,
+                                currentProductAttributes:
+                                    currentProductAttributeIds.length,
+                                currentVariantAttributes:
+                                    currentVariantAttributeIds.length,
+                                mergedProductAttributes:
+                                    mergedProductAttributes.length,
+                                mergedVariantAttributes:
+                                    mergedVariantAttributes.length,
+                            },
+                        );
+
+                        const productTypeUpdateResponse =
+                            await this.saleorClient.productTypeUpdate({
+                                id: existingProdTypeId,
+                                input: {
+                                    name: prodType.name,
+                                    hasVariants: prodType.isVariant,
+                                    productAttributes: mergedProductAttributes,
+                                    variantAttributes: mergedVariantAttributes,
+                                },
+                            });
+
+                        if (
+                            productTypeUpdateResponse?.productTypeUpdate
+                                ?.errors &&
+                            productTypeUpdateResponse?.productTypeUpdate?.errors
+                                ?.length > 0
+                        ) {
+                            this.logger.error(
+                                `Error updating product type ${
+                                    prodType.name
+                                } in Saleor: ${JSON.stringify(
+                                    productTypeUpdateResponse.productTypeUpdate
+                                        .errors,
+                                )}`,
+                            );
+                            return;
+                        }
+
+                        await this.setProductTypeVariantSelectionAttributes(
+                            variantSelectionAttributes,
+                            existingProdTypeId,
+                        );
+
+                        this.logger.info(
+                            `Successfully updated product type ${prodType.name} in Saleor`,
+                        );
+                    } catch (error) {
+                        this.logger.error(
+                            `Error during product type update for ${prodType.name}: ${error}`,
+                            { error },
+                        );
+                    }
                 }
             }
         } else {
@@ -1424,7 +1500,8 @@ export class SaleorProductSyncService {
                         });
                     }
 
-                    let saleorProductId = product.saleorProducts?.[0]?.id;
+                    let saleorProductId: string | undefined =
+                        product.saleorProducts?.[0]?.id;
 
                     /**
                      * We store the tax class on variant level,
@@ -1474,6 +1551,32 @@ export class SaleorProductSyncService {
                               id: saleorProductId,
                           })
                         : undefined;
+
+                    // check if the product type matches. It can happen, that the product type of this product changed
+                    // and is no longer the product type that we used to create the product in Saleor. In that case, we need to delete the product and create it again.
+                    if (
+                        saleorProductToCompare?.product?.productType.id &&
+                        saleorProductToCompare?.product?.productType.id !==
+                            product.productType?.saleorProductTypes[0].id
+                    ) {
+                        this.logger.info(
+                            `Product type of product ${product.name} changed in our DB. Deleting product and creating it again`,
+                            {
+                                productName: product.name,
+                                productType: product.productType?.name,
+                                saleorProductType:
+                                    saleorProductToCompare?.product?.productType
+                                        ?.name,
+                            },
+                        );
+                        await this.saleorClient.deleteProducts({
+                            ids: [saleorProductId],
+                        });
+                        // deleting the saleor product and variant ids in our DB as well
+                        await this.fullDeleteSaleorProduct(saleorProductId);
+
+                        saleorProductId = undefined;
+                    }
 
                     /**
                      * Create the product if it does not exist in Saleor
@@ -1603,6 +1706,7 @@ export class SaleorProductSyncService {
                                             ?.errors,
                                     )}`,
                                 );
+
                                 continue;
                             }
                             this.logger.info(
@@ -1816,7 +1920,7 @@ export class SaleorProductSyncService {
                                     )
                                 ) {
                                     this.logger.error(
-                                        `Error creating variants for product ${
+                                        `Error updating variants for product ${
                                             product.name
                                         } in Saleor: ${JSON.stringify(
                                             productVariantBulkUpdateResponse
@@ -1828,6 +1932,8 @@ export class SaleorProductSyncService {
                                             )
                                             .join(", ")}`,
                                     );
+
+                                    // we try and handle this error. A known issue is
                                     continue;
                                 }
                                 this.logger.info(
@@ -2562,6 +2668,83 @@ export class SaleorProductSyncService {
         await this.cronState.set({
             lastRun: new Date(),
             lastRunStatus: "success",
+        });
+    }
+
+    /**
+     * Fully deletes all data we have in our DB from a Saleor product. All media, channels, variants, etc.
+     * @param saleorProductId
+     */
+    private async fullDeleteSaleorProduct(saleorProductId: string) {
+        const saleorItem = await this.db.saleorProduct.findUniqueOrThrow({
+            where: {
+                id_installedSaleorAppId: {
+                    id: saleorProductId,
+                    installedSaleorAppId: this.installedSaleorApp.id,
+                },
+            },
+            include: {
+                product: {
+                    include: {
+                        media: {
+                            include: {
+                                saleorMedia: {
+                                    where: {
+                                        installedSaleorAppId:
+                                            this.installedSaleorApp.id,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        this.logger.info(
+            `Deleting every Saleor data in our DB for product ${saleorItem.product.id}`,
+            {
+                productId: saleorItem.product.id,
+                saleorProductId: saleorProductId,
+            },
+        );
+
+        // delete the saleor product
+        await this.db.saleorProduct.delete({
+            where: {
+                id_installedSaleorAppId: {
+                    id: saleorProductId,
+                    installedSaleorAppId: this.installedSaleorApp.id,
+                },
+            },
+        });
+
+        // delete all Saleor variants
+        await this.db.saleorProductVariant.deleteMany({
+            where: {
+                productId: saleorProductId,
+                installedSaleorAppId: this.installedSaleorApp.id,
+            },
+        });
+
+        // delete all Saleor media
+        await this.db.saleorMedia.deleteMany({
+            where: {
+                installedSaleorAppId: this.installedSaleorApp.id,
+                media: {
+                    id: {
+                        in: saleorItem.product.media?.map((m) => m.id),
+                    },
+                },
+            },
+        });
+
+        // deleting Saleor channel listing
+        await this.db.saleorChannelListing.deleteMany({
+            where: {
+                productId: saleorProductId,
+                installedSaleorAppId: this.installedSaleorApp.id,
+            },
         });
     }
 }

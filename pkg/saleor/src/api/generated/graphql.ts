@@ -5544,6 +5544,7 @@ export enum CountryCode {
     Vu = "VU",
     Wf = "WF",
     Ws = "WS",
+    Xk = "XK",
     Ye = "YE",
     Yt = "YT",
     Za = "ZA",
@@ -31094,6 +31095,43 @@ export type SaleorCronPaymentsQuery = {
     } | null;
 };
 
+export type ProductTypeQueryVariables = Exact<{
+    id: Scalars["ID"];
+}>;
+
+export type ProductTypeQuery = {
+    __typename?: "Query";
+    productType?: {
+        __typename?: "ProductType";
+        id: string;
+        name: string;
+        hasVariants: boolean;
+        isShippingRequired: boolean;
+        isDigital: boolean;
+        weight?: {
+            __typename?: "Weight";
+            unit: WeightUnitsEnum;
+            value: number;
+        } | null;
+        productAttributes?: Array<{
+            __typename?: "Attribute";
+            id: string;
+            name?: string | null;
+            slug?: string | null;
+            type?: AttributeTypeEnum | null;
+            inputType?: AttributeInputTypeEnum | null;
+        }> | null;
+        variantAttributes?: Array<{
+            __typename?: "Attribute";
+            id: string;
+            name?: string | null;
+            slug?: string | null;
+            type?: AttributeTypeEnum | null;
+            inputType?: AttributeInputTypeEnum | null;
+        }> | null;
+    } | null;
+};
+
 export type ProductDeletedFragment = {
     __typename?: "ProductDeleted";
     product?: {
@@ -31911,6 +31949,7 @@ export type ProductAndVariantsToCompareQuery = {
         seoTitle?: string | null;
         seoDescription?: string | null;
         description?: any | null;
+        productType: { __typename?: "ProductType"; id: string; name: string };
         category?: { __typename?: "Category"; id: string; name: string } | null;
         taxClass?: { __typename?: "TaxClass"; id: string } | null;
         media?: Array<{
@@ -33466,6 +33505,35 @@ export const SaleorCronPaymentsDocument = gql`
     }
     ${TransactionDetailsFragmentDoc}
 `;
+export const ProductTypeDocument = gql`
+    query productType($id: ID!) {
+        productType(id: $id) {
+            id
+            name
+            hasVariants
+            isShippingRequired
+            isDigital
+            weight {
+                unit
+                value
+            }
+            productAttributes {
+                id
+                name
+                slug
+                type
+                inputType
+            }
+            variantAttributes {
+                id
+                name
+                slug
+                type
+                inputType
+            }
+        }
+    }
+`;
 export const ProductDeletedWebhooksDocument = gql`
     subscription ProductDeletedWebhooks {
         event {
@@ -33732,6 +33800,10 @@ export const ProductAndVariantsToCompareDocument = gql`
             name
             seoTitle
             seoDescription
+            productType {
+                id
+                name
+            }
             category {
                 id
                 name
@@ -34438,6 +34510,16 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<SaleorCronPaymentsQuery>;
+        },
+        productType(
+            variables: ProductTypeQueryVariables,
+            options?: C,
+        ): Promise<ProductTypeQuery> {
+            return requester<ProductTypeQuery, ProductTypeQueryVariables>(
+                ProductTypeDocument,
+                variables,
+                options,
+            ) as Promise<ProductTypeQuery>;
         },
         ProductDeletedWebhooks(
             variables?: ProductDeletedWebhooksSubscriptionVariables,

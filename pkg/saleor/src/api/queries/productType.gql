@@ -1,0 +1,27 @@
+query productType($id: ID!) {
+    productType(id: $id) {
+        id
+        name
+        hasVariants
+        isShippingRequired
+        isDigital
+        weight {
+            unit
+            value
+        }
+        productAttributes {
+            id
+            name
+            slug
+            type
+            inputType
+        }
+        variantAttributes {
+            id
+            name
+            slug
+            type
+            inputType
+        }
+    }
+}

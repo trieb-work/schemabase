@@ -301,6 +301,11 @@ query productAndVariantsToCompare($id: ID!) {
         name
         seoTitle
         seoDescription
+        productType {
+            id
+            name
+        }
+
         category {
             id
             name
