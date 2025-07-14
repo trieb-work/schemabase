@@ -1933,6 +1933,64 @@ export class SaleorProductSyncService {
                                             .join(", ")}`,
                                     );
 
+                                    // if we have an error like [{"field":"id","message":"Variant #UHJvZHVjdFZhcmlhbnQ6MjY2Nw== does not exist."}] we delete
+                                    // the variant id from our db. We take the variant Id from the error message.
+                                    const errorMsgs =
+                                        productVariantBulkUpdateResponse
+                                            .productVariantBulkUpdate?.errors ||
+                                        [];
+                                    // Also collect errors from individual results
+                                    productVariantBulkUpdateResponse.productVariantBulkUpdate?.results.forEach(
+                                        (r) => {
+                                            if (
+                                                r.errors &&
+                                                r.errors.length > 0
+                                            ) {
+                                                errorMsgs.push(
+                                                    ...(r.errors as any),
+                                                );
+                                            }
+                                        },
+                                    );
+                                    // Extract variant IDs from error messages indicating missing variant
+                                    const missingVariantIds: string[] = [];
+                                    for (const e of errorMsgs) {
+                                        if (
+                                            e.field === "id" &&
+                                            typeof e.message === "string" &&
+                                            /Variant #([A-Za-z0-9=:+/-]+) does not exist\./.test(
+                                                e.message,
+                                            )
+                                        ) {
+                                            const match = e.message.match(
+                                                /Variant #([A-Za-z0-9=:+/-]+) does not exist\./,
+                                            );
+                                            if (match && match[1]) {
+                                                missingVariantIds.push(
+                                                    match[1],
+                                                );
+                                            }
+                                        }
+                                    }
+                                    if (missingVariantIds.length > 0) {
+                                        this.logger.warn(
+                                            `Cleaning up ${missingVariantIds.length} missing variants from DB for product ${product.name}`,
+                                            { missingVariantIds },
+                                        );
+                                        await this.db.saleorProductVariant.deleteMany(
+                                            {
+                                                where: {
+                                                    id: {
+                                                        in: missingVariantIds,
+                                                    },
+                                                    installedSaleorAppId:
+                                                        this
+                                                            .installedSaleorAppId,
+                                                },
+                                            },
+                                        );
+                                    }
+
                                     // we try and handle this error. A known issue is
                                     continue;
                                 }
