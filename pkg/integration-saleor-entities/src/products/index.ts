@@ -1888,247 +1888,237 @@ export class SaleorProductSyncService {
                                     dataHash,
                                 });
                             }
+                        }
 
-                            /**
-                             * bulk update variants if any of them has a different data hash
-                             */
-                            if (variantDataHashes.length > 0) {
-                                this.logger.debug(
-                                    `Updating variants for product ${saleorProductId}`,
+                        /**
+                         * bulk update variants if any of them has a different data hash
+                         */
+                        if (variantDataHashes.length > 0) {
+                            this.logger.debug(
+                                `Updating variants for product ${saleorProductId}`,
+                                {
+                                    variants: variantsToUpdateInput.map(
+                                        (x) => x.sku,
+                                    ),
+                                },
+                            );
+
+                            const productVariantBulkUpdateResponse =
+                                await this.saleorClient.productVariantBulkUpdate(
                                     {
-                                        variants: variantsToUpdateInput.map(
-                                            (x) => x.sku,
-                                        ),
+                                        variants: variantsToUpdateInput,
+                                        productId: saleorProductId,
                                     },
                                 );
-
-                                const productVariantBulkUpdateResponse =
-                                    await this.saleorClient.productVariantBulkUpdate(
-                                        {
-                                            variants: variantsToUpdateInput,
-                                            productId: saleorProductId,
-                                        },
-                                    );
-                                if (
-                                    (productVariantBulkUpdateResponse
-                                        .productVariantBulkUpdate?.errors &&
+                            if (
+                                (productVariantBulkUpdateResponse
+                                    .productVariantBulkUpdate?.errors &&
+                                    productVariantBulkUpdateResponse
+                                        .productVariantBulkUpdate?.errors
+                                        .length > 0) ||
+                                productVariantBulkUpdateResponse.productVariantBulkUpdate?.results.some(
+                                    (r) => (r.errors?.length ?? 0) > 0,
+                                )
+                            ) {
+                                this.logger.error(
+                                    `Error updating variants for product ${
+                                        product.name
+                                    } in Saleor: ${JSON.stringify(
                                         productVariantBulkUpdateResponse
-                                            .productVariantBulkUpdate?.errors
-                                            .length > 0) ||
-                                    productVariantBulkUpdateResponse.productVariantBulkUpdate?.results.some(
-                                        (r) => (r.errors?.length ?? 0) > 0,
-                                    )
-                                ) {
-                                    this.logger.error(
-                                        `Error updating variants for product ${
-                                            product.name
-                                        } in Saleor: ${JSON.stringify(
-                                            productVariantBulkUpdateResponse
-                                                .productVariantBulkUpdate
-                                                .errors,
-                                        )} ${productVariantBulkUpdateResponse.productVariantBulkUpdate?.results
-                                            .map((r) =>
-                                                JSON.stringify(r.errors),
-                                            )
-                                            .join(", ")}`,
-                                    );
-
-                                    // if we have an error like [{"field":"id","message":"Variant #UHJvZHVjdFZhcmlhbnQ6MjY2Nw== does not exist."}] we delete
-                                    // the variant id from our db. We take the variant Id from the error message.
-                                    const errorMsgs =
-                                        productVariantBulkUpdateResponse
-                                            .productVariantBulkUpdate?.errors ||
-                                        [];
-                                    // Also collect errors from individual results
-                                    productVariantBulkUpdateResponse.productVariantBulkUpdate?.results.forEach(
-                                        (r) => {
-                                            if (
-                                                r.errors &&
-                                                r.errors.length > 0
-                                            ) {
-                                                errorMsgs.push(
-                                                    ...(r.errors as any),
-                                                );
-                                            }
-                                        },
-                                    );
-                                    // Extract variant IDs from error messages indicating missing variant
-                                    const missingVariantIds: string[] = [];
-                                    for (const e of errorMsgs) {
-                                        if (
-                                            e.field === "id" &&
-                                            typeof e.message === "string" &&
-                                            /Variant #([A-Za-z0-9=:+/-]+) does not exist\./.test(
-                                                e.message,
-                                            )
-                                        ) {
-                                            const match = e.message.match(
-                                                /Variant #([A-Za-z0-9=:+/-]+) does not exist\./,
-                                            );
-                                            if (match && match[1]) {
-                                                missingVariantIds.push(
-                                                    match[1],
-                                                );
-                                            }
-                                        }
-                                    }
-                                    if (missingVariantIds.length > 0) {
-                                        this.logger.warn(
-                                            `Cleaning up ${missingVariantIds.length} missing variants from DB for product ${product.name}`,
-                                            { missingVariantIds },
-                                        );
-                                        await this.db.saleorProductVariant.deleteMany(
-                                            {
-                                                where: {
-                                                    id: {
-                                                        in: missingVariantIds,
-                                                    },
-                                                    installedSaleorAppId:
-                                                        this
-                                                            .installedSaleorAppId,
-                                                },
-                                            },
-                                        );
-                                    }
-
-                                    // we try and handle this error. A known issue is
-                                    continue;
-                                }
-                                this.logger.info(
-                                    `Successfully updated ${productVariantBulkUpdateResponse.productVariantBulkUpdate?.results.length} variants for product ${product.name} in Saleor`,
+                                            .productVariantBulkUpdate.errors,
+                                    )} ${productVariantBulkUpdateResponse.productVariantBulkUpdate?.results
+                                        .map((r) => JSON.stringify(r.errors))
+                                        .join(", ")}`,
                                 );
 
-                                /**
-                                 * writing the data hash to the DB
-                                 */
-                                for (const variant of variantDataHashes) {
-                                    await this.db.saleorProductVariant.update({
-                                        where: {
-                                            id_installedSaleorAppId: {
-                                                id: variant.id,
+                                // if we have an error like [{"field":"id","message":"Variant #UHJvZHVjdFZhcmlhbnQ6MjY2Nw== does not exist."}] we delete
+                                // the variant id from our db. We take the variant Id from the error message.
+                                const errorMsgs =
+                                    productVariantBulkUpdateResponse
+                                        .productVariantBulkUpdate?.errors || [];
+                                // Also collect errors from individual results
+                                productVariantBulkUpdateResponse.productVariantBulkUpdate?.results.forEach(
+                                    (r) => {
+                                        if (r.errors && r.errors.length > 0) {
+                                            errorMsgs.push(
+                                                ...(r.errors as any),
+                                            );
+                                        }
+                                    },
+                                );
+                                // Extract variant IDs from error messages indicating missing variant
+                                const missingVariantIds: string[] = [];
+                                for (const e of errorMsgs) {
+                                    if (
+                                        e.field === "id" &&
+                                        typeof e.message === "string" &&
+                                        /Variant #([A-Za-z0-9=:+/-]+) does not exist\./.test(
+                                            e.message,
+                                        )
+                                    ) {
+                                        const match = e.message.match(
+                                            /Variant #([A-Za-z0-9=:+/-]+) does not exist\./,
+                                        );
+                                        if (match && match[1]) {
+                                            missingVariantIds.push(match[1]);
+                                        }
+                                    }
+                                }
+                                if (missingVariantIds.length > 0) {
+                                    this.logger.warn(
+                                        `Cleaning up ${missingVariantIds.length} missing variants from DB for product ${product.name}`,
+                                        { missingVariantIds },
+                                    );
+                                    await this.db.saleorProductVariant.deleteMany(
+                                        {
+                                            where: {
+                                                id: {
+                                                    in: missingVariantIds,
+                                                },
                                                 installedSaleorAppId:
                                                     this.installedSaleorAppId,
                                             },
                                         },
-                                        data: {
-                                            dataHash: variant.dataHash,
-                                        },
-                                    });
+                                    );
                                 }
+
+                                // we try and handle this error. A known issue is
+                                continue;
+                            }
+                            this.logger.info(
+                                `Successfully updated ${productVariantBulkUpdateResponse.productVariantBulkUpdate?.results.length} variants for product ${product.name} in Saleor`,
+                            );
+
+                            /**
+                             * writing the data hash to the DB
+                             */
+                            for (const variant of variantDataHashes) {
+                                await this.db.saleorProductVariant.update({
+                                    where: {
+                                        id_installedSaleorAppId: {
+                                            id: variant.id,
+                                            installedSaleorAppId:
+                                                this.installedSaleorAppId,
+                                        },
+                                    },
+                                    data: {
+                                        dataHash: variant.dataHash,
+                                    },
+                                });
                             }
                         }
-
-                        /**
-                         * If we have variant specific media, we need to set that in Saleor.
-                         * We disabled that again, as it does break things
-                         */
-                        // for (const variantImage of variantsToUpdate) {
-                        //     if (variantImage.media.length > 0) {
-                        //         for (const mediaElement of variantImage.media) {
-                        //             if (!mediaElement.saleorMedia?.[0]?.id) {
-                        //                 this.logger.warn(
-                        //                     `Media ${mediaElement.id} has no saleor media id. Skipping`,
-                        //                 );
-                        //                 continue;
-                        //             }
-                        //             /**
-                        //              * We are checking the existing saleor product variant media.
-                        //              * If this media item is already assigned to the variant, we skip it.
-                        //              */
-                        //             const existingVariantMedia =
-                        //                 saleorProductToCompare?.product?.variants?.find(
-                        //                     (v) =>
-                        //                         v.id ===
-                        //                         variantImage
-                        //                             .saleorProductVariant[0].id,
-                        //                 )?.media;
-
-                        //             if (
-                        //                 existingVariantMedia?.find(
-                        //                     (x) =>
-                        //                         x.id ===
-                        //                         mediaElement.saleorMedia[0].id,
-                        //                 )
-                        //             ) {
-                        //                 // Media is already assigned to variant. No API request needed
-                        //                 continue;
-                        //             }
-
-                        //             const r =
-                        //                 await this.saleorClient.VariantMediaAssign(
-                        //                     {
-                        //                         mediaId:
-                        //                             mediaElement
-                        //                                 .saleorMedia?.[0].id,
-                        //                         variantId:
-                        //                             variantImage
-                        //                                 .saleorProductVariant[0]
-                        //                                 .id,
-                        //                     },
-                        //                 );
-                        //             if (r.variantMediaAssign?.errors.length) {
-                        //                 if (
-                        //                     r.variantMediaAssign.errors.find(
-                        //                         (x) =>
-                        //                             x.message?.includes(
-                        //                                 "This media is already assigned",
-                        //                             ),
-                        //                     )
-                        //                 ) {
-                        //                     this.logger.info(
-                        //                         `Media ${mediaElement.id} is already assigned to variant ${variantImage.variantName}`,
-                        //                     );
-                        //                 } else {
-                        //                     this.logger.error(
-                        //                         `Error assigning media to variant ${
-                        //                             variantImage.variantName
-                        //                         } in Saleor: ${JSON.stringify(
-                        //                             r.variantMediaAssign.errors,
-                        //                         )}, tried to assign media with Saleor id ${
-                        //                             mediaElement
-                        //                                 .saleorMedia?.[0].id
-                        //                         } to variant with Saleor id ${
-                        //                             variantImage
-                        //                                 .saleorProductVariant[0]
-                        //                                 .id
-                        //                         }`,
-                        //                     );
-                        //                 }
-                        //                 if (
-                        //                     r.variantMediaAssign.errors.find(
-                        //                         (x) =>
-                        //                             x.message?.includes(
-                        //                                 "Couldn't resolve to a node",
-                        //                             ) ||
-                        //                             x.code ===
-                        //                                 "NOT_PRODUCTS_IMAGE",
-                        //                     )
-                        //                 ) {
-                        //                     /**
-                        //                      * fixing a bug - deleting media that doesn't exist in saleor
-                        //                      */
-                        //                     if (mediaElement.saleorMedia[0].url)
-                        //                         await this.db.saleorMedia.delete(
-                        //                             {
-                        //                                 where: {
-                        //                                     url_installedSaleorAppId:
-                        //                                         {
-                        //                                             url: mediaElement
-                        //                                                 .saleorMedia[0]
-                        //                                                 .url,
-                        //                                             installedSaleorAppId:
-                        //                                                 this
-                        //                                                     .installedSaleorAppId,
-                        //                                         },
-                        //                                 },
-                        //                             },
-                        //                         );
-                        //                 }
-                        //             }
-                        //         }
-                        //     }
-                        // }
                     }
+
+                    /**
+                     * If we have variant specific media, we need to set that in Saleor.
+                     * We disabled that again, as it does break things
+                     */
+                    // for (const variantImage of variantsToUpdate) {
+                    //     if (variantImage.media.length > 0) {
+                    //         for (const mediaElement of variantImage.media) {
+                    //             if (!mediaElement.saleorMedia?.[0]?.id) {
+                    //                 this.logger.warn(
+                    //                     `Media ${mediaElement.id} has no saleor media id. Skipping`,
+                    //                 );
+                    //                 continue;
+                    //             }
+                    //             /**
+                    //              * We are checking the existing saleor product variant media.
+                    //              * If this media item is already assigned to the variant, we skip it.
+                    //              */
+                    //             const existingVariantMedia =
+                    //                 saleorProductToCompare?.product?.variants?.find(
+                    //                     (v) =>
+                    //                         v.id ===
+                    //                         variantImage
+                    //                             .saleorProductVariant[0].id,
+                    //                 )?.media;
+
+                    //             if (
+                    //                 existingVariantMedia?.find(
+                    //                     (x) =>
+                    //                         x.id ===
+                    //                         mediaElement.saleorMedia[0].id,
+                    //                 )
+                    //             ) {
+                    //                 // Media is already assigned to variant. No API request needed
+                    //                 continue;
+                    //             }
+
+                    //             const r =
+                    //                 await this.saleorClient.VariantMediaAssign(
+                    //                     {
+                    //                         mediaId:
+                    //                             mediaElement
+                    //                                 .saleorMedia?.[0].id,
+                    //                         variantId:
+                    //                             variantImage
+                    //                                 .saleorProductVariant[0]
+                    //                                 .id,
+                    //                     },
+                    //                 );
+                    //             if (r.variantMediaAssign?.errors.length) {
+                    //                 if (
+                    //                     r.variantMediaAssign.errors.find(
+                    //                         (x) =>
+                    //                             x.message?.includes(
+                    //                                 "This media is already assigned",
+                    //                             ),
+                    //                     )
+                    //                 ) {
+                    //                     this.logger.info(
+                    //                         `Media ${mediaElement.id} is already assigned to variant ${variantImage.variantName}`,
+                    //                     );
+                    //                 } else {
+                    //                     this.logger.error(
+                    //                         `Error assigning media to variant ${
+                    //                             variantImage.variantName
+                    //                         } in Saleor: ${JSON.stringify(
+                    //                             r.variantMediaAssign.errors,
+                    //                         )}, tried to assign media with Saleor id ${
+                    //                             mediaElement
+                    //                                 .saleorMedia?.[0].id
+                    //                         } to variant with Saleor id ${
+                    //                             variantImage
+                    //                                 .saleorProductVariant[0]
+                    //                                 .id
+                    //                         }`,
+                    //                     );
+                    //                 }
+                    //                 if (
+                    //                     r.variantMediaAssign.errors.find(
+                    //                         (x) =>
+                    //                             x.message?.includes(
+                    //                                 "Couldn't resolve to a node",
+                    //                             ) ||
+                    //                             x.code ===
+                    //                                 "NOT_PRODUCTS_IMAGE",
+                    //                     )
+                    //                 ) {
+                    //                     /**
+                    //                      * fixing a bug - deleting media that doesn't exist in saleor
+                    //                      */
+                    //                     if (mediaElement.saleorMedia[0].url)
+                    //                         await this.db.saleorMedia.delete(
+                    //                             {
+                    //                                 where: {
+                    //                                     url_installedSaleorAppId:
+                    //                                         {
+                    //                                             url: mediaElement
+                    //                                                 .saleorMedia[0]
+                    //                                                 .url,
+                    //                                             installedSaleorAppId:
+                    //                                                 this
+                    //                                                     .installedSaleorAppId,
+                    //                                         },
+                    //                                 },
+                    //                             },
+                    //                         );
+                    //                 }
+                    //             }
+                    //         }
+                    //     }
+                    // }
                 } catch (error) {
                     errors.push(error);
                     this.logger.error(error as any);
