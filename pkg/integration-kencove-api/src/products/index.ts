@@ -1609,7 +1609,7 @@ export class KencoveApiAppProductSyncService {
                     productType: p.productType,
                     additionalHandling:
                         p.additional_handing === 0 ? false : true,
-                    truckOnly: p.truck_only === "N" ? false : true,
+                    truckOnly: p.truck_only === "Y" ? true : false,
                     flatBed: p.truck_only === "F" ? true : false,
                     accessories: p.accessories,
                     alternatives: p.alternatives,
@@ -2134,6 +2134,7 @@ export class KencoveApiAppProductSyncService {
 
                 /**
                  * In the product sync, we just set the flatbed shipping status for certain items
+                 * and the truck only
                  */
                 const shippingStatusAttribute:
                     | KencoveApiAttributeInProduct
@@ -2145,7 +2146,15 @@ export class KencoveApiAppProductSyncService {
                           name: "Shipping Status",
                           display_type: "multiselect",
                       }
-                    : undefined;
+                    : product.truckOnly
+                      ? {
+                            value: "Truck Only",
+                            attribute_id: 333332,
+                            attribute_model: "custom",
+                            name: "Shipping Status",
+                            display_type: "multiselect",
+                        }
+                      : undefined;
 
                 const gtinAttribute: KencoveApiAttributeInProduct | undefined =
                     variant.upc
@@ -2178,12 +2187,6 @@ export class KencoveApiAppProductSyncService {
                 const cleanedAttributes = cleanAttributes(allAttributes).filter(
                     (a) => a.name !== "website_ref_desc",
                 );
-                // .filter((a) => {
-                //     if (filterVariantWebsiteDescription) {
-                //         return a.name !== "variant_website_description";
-                //     }
-                //     return true;
-                // });
 
                 /**
                  * Setting both variant and product attributes of an item
