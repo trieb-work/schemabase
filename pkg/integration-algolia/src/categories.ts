@@ -71,6 +71,7 @@ export class AlgoliaCategorySyncService {
                                     some: {
                                         salesChannelPriceEntries: {
                                             some: {
+                                                active: true,
                                                 startDate: {
                                                     lte: now,
                                                 },
@@ -98,6 +99,28 @@ export class AlgoliaCategorySyncService {
                                 parentCategory: {
                                     include: {
                                         parentCategory: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                _count: {
+                    select: {
+                        products: {
+                            where: {
+                                tenantId: this.tenantId,
+                                variants: {
+                                    some: {
+                                        active: true,
+                                        salesChannelPriceEntries: {
+                                            some: {
+                                                active: true,
+                                                startDate: {
+                                                    lte: now,
+                                                },
+                                            },
+                                        },
                                     },
                                 },
                             },
@@ -148,7 +171,8 @@ export class AlgoliaCategorySyncService {
                     currentCategory.parentCategory.slug ?? "";
 
                 // Move to the next parent category for the next iteration.
-                currentCategory = currentCategory.parentCategory;
+                currentCategory =
+                    currentCategory.parentCategory as typeof currentCategory;
 
                 // Increment the level after setting the slug for the current parentCategory.
                 level++;
@@ -167,6 +191,7 @@ export class AlgoliaCategorySyncService {
                 description: category.descriptionHTML,
                 slug: category.slug,
                 parentCategorySlug,
+                activeItemCount: category._count.products,
                 createdAt: category.createdAt.toISOString(),
                 updatedAt: category.updatedAt.toISOString(),
             };
