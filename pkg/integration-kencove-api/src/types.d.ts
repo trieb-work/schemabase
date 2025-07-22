@@ -201,8 +201,9 @@ export type KencoveApiProduct = {
      */
     additional_handing: 0 | 1;
     /**
-     * Truck only handling: We can't give a quotation for these items.
-     * F: flat bed items
+     * Truck only handling: We don't use regular quotations like Fedex here.
+     * F: flat bed items -> no automatic quotation
+     * Y: set the truck only shipping attribute
      */
     truck_only: "F" | "N" | "Y" | null;
     /**
