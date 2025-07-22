@@ -358,7 +358,7 @@ export class SaleorProductSyncService {
                         await this.saleorClientWithCounter.productTypeCreate({
                             input: {
                                 name: prodType.name,
-                                hasVariants: prodType.isVariant,
+                                hasVariants: true,
                                 productAttributes,
                                 variantAttributes,
                             },
