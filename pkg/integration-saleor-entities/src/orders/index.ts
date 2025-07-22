@@ -193,7 +193,7 @@ export class SaleorOrderSyncService {
                 const email = order.userEmail.toLowerCase();
                 const companyName = order.billingAddress?.companyName;
 
-                const discountCode = order.voucher?.code;
+                const discountCode = order.voucherCode;
 
                 const orderToken = this.idToToken(order.id);
 
