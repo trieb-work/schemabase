@@ -17670,13 +17670,49 @@ export type PaymentRefundEvent = Event & {
 /** Represents the channel-specific payment settings. */
 export type PaymentSettings = {
     __typename?: "PaymentSettings";
+    /**
+     * Specifies the earliest date on which funds for expired checkouts can begin to be released. Expired checkouts dated before this cut-off will not have their funds released. Additionally, no funds will be released for checkouts that are more than one year old, regardless of the cut-off date.
+     *
+     * Added in Saleor 3.20.
+     */
+    checkoutReleaseFundsCutOffDate?: Maybe<Scalars["DateTime"]>;
+    /**
+     * The time in hours after which funds for expired checkouts will be released.
+     *
+     * Added in Saleor 3.20.
+     */
+    checkoutTtlBeforeReleasingFunds?: Maybe<Scalars["Hour"]>;
     /** Determine the transaction flow strategy to be used. Include the selected option in the payload sent to the payment app, as a requested action for the transaction. */
     defaultTransactionFlowStrategy: TransactionFlowStrategyEnum;
+    /**
+     * Determine if the funds for expired checkouts should be released automatically.
+     *
+     * Added in Saleor 3.20.
+     */
+    releaseFundsForExpiredCheckouts?: Maybe<Scalars["Boolean"]>;
 };
 
 export type PaymentSettingsInput = {
+    /**
+     * Specifies the earliest date on which funds for expired checkouts can begin to be released. Expired checkouts dated before this cut-off will not have their funds released. Additionally, no funds will be released for checkouts that are more than one year old, regardless of the cut-off date.
+     *
+     * Added in Saleor 3.20.
+     */
+    checkoutReleaseFundsCutOffDate?: InputMaybe<Scalars["DateTime"]>;
+    /**
+     * The time in hours after which funds for expired checkouts will be released.
+     *
+     * Added in Saleor 3.20.
+     */
+    checkoutTtlBeforeReleasingFunds?: InputMaybe<Scalars["Hour"]>;
     /** Determine the transaction flow strategy to be used. Include the selected option in the payload sent to the payment app, as a requested action for the transaction. */
     defaultTransactionFlowStrategy?: InputMaybe<TransactionFlowStrategyEnum>;
+    /**
+     * Determine if the funds for expired checkouts should be released automatically.
+     *
+     * Added in Saleor 3.20.
+     */
+    releaseFundsForExpiredCheckouts?: InputMaybe<Scalars["Boolean"]>;
 };
 
 /** Represents a payment source stored for user in payment gateway, such as credit card. */
@@ -30680,6 +30716,7 @@ export type SaleorCronOrdersOverviewQuery = {
                 created: any;
                 status: OrderStatus;
                 userEmail?: string | null;
+                voucherCode?: string | null;
                 languageCodeEnum: LanguageCodeEnum;
                 shippingMethodName?: string | null;
                 paymentStatus: PaymentChargeStatusEnum;
@@ -30720,7 +30757,6 @@ export type SaleorCronOrdersOverviewQuery = {
                 voucher?: {
                     __typename?: "Voucher";
                     id: string;
-                    code?: string | null;
                     type: VoucherTypeEnum;
                 } | null;
                 deliveryMethod?:
@@ -33223,9 +33259,9 @@ export const SaleorCronOrdersOverviewDocument = gql`
                             amount
                         }
                     }
+                    voucherCode
                     voucher {
                         id
-                        code
                         type
                     }
                     languageCodeEnum
