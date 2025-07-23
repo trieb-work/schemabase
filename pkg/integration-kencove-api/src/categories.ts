@@ -118,6 +118,12 @@ export class KencoveApiAppCategorySyncService {
             const categoriesToSkip =
                 this.kencoveApiApp.skipCategories?.split(",") ?? [];
 
+            this.logger.debug(`Categories to skip configuration`, {
+                skipCategories: this.kencoveApiApp.skipCategories,
+                categoriesToSkip,
+                totalCategories: kenApiCategories.length,
+            });
+
             // remove categories that are configured to be skipped and categories without a slug
             const categoriesToSync = kenApiCategories.filter(
                 (c) => !categoriesToSkip.includes(c.categoryId.toString()),
@@ -166,8 +172,16 @@ export class KencoveApiAppCategorySyncService {
                 // querying our db for all categories with those ids.
                 const lookupKencoveIds: string[] = [];
                 if (category.childrenCategoryIds) {
-                    lookupKencoveIds.push(
-                        ...category.childrenCategoryIds.toString(),
+                    const childrenIdsAsStrings =
+                        category.childrenCategoryIds.map((id) => id.toString());
+                    lookupKencoveIds.push(...childrenIdsAsStrings);
+
+                    this.logger.debug(
+                        `Children category IDs processing for ${category.categoryName}`,
+                        {
+                            originalChildrenIds: category.childrenCategoryIds,
+                            childrenIdsAsStrings,
+                        },
                     );
                 }
                 /**
@@ -181,6 +195,20 @@ export class KencoveApiAppCategorySyncService {
                     )
                         ? category.parentCategoryId?.toString()
                         : null;
+
+                this.logger.debug(
+                    `Parent category analysis for ${category.categoryName}`,
+                    {
+                        originalParentCategoryId: category.parentCategoryId,
+                        kencoveParentCategoryId,
+                        categoriesToSkip,
+                        isParentInSkipList: category.parentCategoryId
+                            ? categoriesToSkip.includes(
+                                  category.parentCategoryId.toString(),
+                              )
+                            : false,
+                    },
+                );
                 if (kencoveParentCategoryId)
                     lookupKencoveIds.push(kencoveParentCategoryId.toString());
 
@@ -244,14 +272,27 @@ export class KencoveApiAppCategorySyncService {
                       )?.categoryId
                     : null;
 
+                this.logger.debug(
+                    `Parent category ID resolution for ${category.categoryName}`,
+                    {
+                        kencoveParentCategoryId,
+                        categoriesToConnect: categoriesToConnect.map((c) => ({
+                            id: c.id,
+                            categoryId: c.categoryId,
+                        })),
+                        resolvedParentCategoryId: parentCategoryId,
+                        existingCategoryId: existingCategory?.categoryId,
+                    },
+                );
+
                 if (
                     parentCategoryId &&
                     parentCategoryId === existingCategory?.categoryId
                 ) {
                     this.logger.debug(
-                        `Category ${category.categoryName} is its own parent. Skipping the connect of the parent category.`,
+                        `Category ${category.categoryName} is its own parent. Clearing the parent category relationship.`,
                     );
-                    parentCategoryId = undefined;
+                    parentCategoryId = null; // Explicitly set to null to disconnect
                 }
 
                 /**
@@ -273,6 +314,27 @@ export class KencoveApiAppCategorySyncService {
                 if (existingCategory) {
                     this.logger.info(
                         `Updating category ${category.categoryId}.`,
+                    );
+
+                    const parentCategoryUpdate = parentCategoryId
+                        ? {
+                              connect: {
+                                  id: parentCategoryId,
+                              },
+                          }
+                        : parentCategoryId === null
+                          ? {
+                                disconnect: true,
+                            }
+                          : undefined;
+
+                    this.logger.debug(
+                        `Prisma update parentCategory value for ${category.categoryName}`,
+                        {
+                            parentCategoryId,
+                            parentCategoryUpdate,
+                            willDisconnect: parentCategoryId === null,
+                        },
                     );
                     await this.db.kencoveApiCategory.update({
                         where: {
@@ -321,17 +383,7 @@ export class KencoveApiAppCategorySyncService {
                                     name: category.categoryName,
                                     slug: category.categorySlug,
                                     active: true,
-                                    parentCategory: parentCategoryId
-                                        ? {
-                                              connect: {
-                                                  id: parentCategoryId,
-                                              },
-                                          }
-                                        : parentCategoryId === null
-                                          ? {
-                                                disconnect: true,
-                                            }
-                                          : undefined,
+                                    parentCategory: parentCategoryUpdate,
                                     childrenCategories: {
                                         connect: childrenCategories,
                                     },
@@ -406,7 +458,7 @@ export class KencoveApiAppCategorySyncService {
                                                       id: parentCategoryId,
                                                   },
                                               }
-                                            : undefined,
+                                            : {},
                                         childrenCategories: {
                                             connect: childrenCategories,
                                         },
