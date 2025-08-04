@@ -140,6 +140,11 @@ export type KencoveApiProductVariant = {
     createdAt: string;
     updatedAt: string;
     active: boolean;
+
+    /**
+     * Kencove internal flag to show / hide a product. 0 = hidden, 10 = visible
+     */
+    website_visible: number;
     variant_images:
         | {
               url: string;

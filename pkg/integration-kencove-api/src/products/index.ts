@@ -1624,6 +1624,7 @@ export class KencoveApiAppProductSyncService {
                     backorder: !p.do_not_backorder,
                     createdAt: new Date(p.createdAt),
                     updatedAt: new Date(p.updatedAt),
+
                     active: p.active || true,
                     brand: p.brand_name,
                     variants: p.variants.map((v) => ({
@@ -1636,7 +1637,11 @@ export class KencoveApiAppProductSyncService {
                         productName: htmlDecode(p.name),
                         countryOfOrigin: p.countryOfOrigin,
                         upc: v.upc,
-                        active: v.active,
+                        /**
+                         * Kencove has active and website_visible. Product is active when active = true and website_visible = 10,
+                         * otherwise it is hidden.
+                         */
+                        active: v.active && v.website_visible === 10,
                     })),
                 };
             })
