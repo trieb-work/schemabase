@@ -293,7 +293,10 @@ export class KencoveApiAppPricelistSyncService {
             createdGte = gteDataTesting;
         }
 
-        const client = new KencoveApiClient(this.kencoveApiApp, this.logger);
+        const client = KencoveApiClient.getInstance(
+            this.kencoveApiApp,
+            this.logger,
+        );
         const pricelistsYield = client.getPricelistStream(
             createdGte,
             productTemplateId,

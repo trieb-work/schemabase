@@ -221,7 +221,10 @@ export class KencoveApiAppOrderSyncService {
             this.logger.info(`Setting GTE date to ${createdGte}.`);
         }
 
-        const client = new KencoveApiClient(this.kencoveApiApp, this.logger);
+        const client = KencoveApiClient.getInstance(
+            this.kencoveApiApp,
+            this.logger,
+        );
         const apiOrdersStream = client.getOrdersStream(
             createdGte,
             customerCode,

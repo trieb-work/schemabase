@@ -1514,7 +1514,10 @@ export class KencoveApiAppProductSyncService {
             this.logger.info(`Setting GTE date to ${createdGte}.`);
         }
 
-        const client = new KencoveApiClient(this.kencoveApiApp, this.logger);
+        const client = KencoveApiClient.getInstance(
+            this.kencoveApiApp,
+            this.logger,
+        );
 
         const products = await client.getProducts(
             createdGte,

@@ -26,7 +26,7 @@ import jwt from "jsonwebtoken";
 import { ILogger } from "@eci/pkg/logger";
 
 export class KencoveApiClient {
-    private static instance: KencoveApiClient;
+    private static instances: Map<string, KencoveApiClient> = new Map();
 
     private axiosInstance: AxiosInstance;
 
@@ -51,10 +51,16 @@ export class KencoveApiClient {
         app: KencoveApiApp,
         logger: ILogger,
     ): KencoveApiClient {
-        if (!KencoveApiClient.instance) {
-            KencoveApiClient.instance = new KencoveApiClient(app, logger);
+        const cacheKey = app.id;
+
+        if (!KencoveApiClient.instances.has(cacheKey)) {
+            KencoveApiClient.instances.set(
+                cacheKey,
+                new KencoveApiClient(app, logger),
+            );
         }
-        return KencoveApiClient.instance;
+
+        return KencoveApiClient.instances.get(cacheKey)!;
     }
 
     /**

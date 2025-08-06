@@ -68,7 +68,10 @@ export class KencoveApiAppProductStockSyncService {
             this.logger.info(`Setting GTE date to ${createdGte}.`);
         }
 
-        const client = new KencoveApiClient(this.kencoveApiApp, this.logger);
+        const client = KencoveApiClient.getInstance(
+            this.kencoveApiApp,
+            this.logger,
+        );
         const stockStream = client.getProductStocksStream(
             createdGte,
             productTemplateId,

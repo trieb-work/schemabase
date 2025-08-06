@@ -73,7 +73,10 @@ export class KencoveApiAppPaymentSyncService {
             this.logger.info(`Setting GTE date to ${createdGte}.`);
         }
 
-        const client = new KencoveApiClient(this.kencoveApiApp, this.logger);
+        const client = KencoveApiClient.getInstance(
+            this.kencoveApiApp,
+            this.logger,
+        );
         const kencoveApiAppPaymentsYield = client.getPaymentsStream(createdGte);
         for await (const kencoveApiAppPayment of kencoveApiAppPaymentsYield) {
             this.logger.info(

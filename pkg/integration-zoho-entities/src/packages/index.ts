@@ -147,10 +147,10 @@ export class ZohoPackageSyncService {
             const carrier = lowerCaseCarrier.includes("dhl")
                 ? Carrier.DHL
                 : lowerCaseCarrier.includes("dpd")
-                ? Carrier.DPD
-                : lowerCaseCarrier.includes("ups")
-                ? Carrier.UPS
-                : Carrier.UNKNOWN;
+                  ? Carrier.DPD
+                  : lowerCaseCarrier.includes("ups")
+                    ? Carrier.UPS
+                    : Carrier.UNKNOWN;
 
             if (carrier === Carrier.UNKNOWN)
                 this.logger.warn(
