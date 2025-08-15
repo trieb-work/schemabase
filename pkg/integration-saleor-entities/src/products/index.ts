@@ -269,6 +269,7 @@ export class SaleorProductSyncService {
             {
                 where: {
                     OR: [
+                        // Case 1: Product types not yet created in Saleor
                         {
                             saleorProductTypes: {
                                 none: {
@@ -277,16 +278,45 @@ export class SaleorProductSyncService {
                                 },
                             },
                         },
+                        // Case 2: Product type itself was updated
                         {
                             updatedAt: {
                                 gte: gteDate,
                             },
                         },
+                        // Case 3: ProductTypeAttribute relationship was updated (isForVariant, isVariantSelection changes)
                         {
                             attributes: {
                                 some: {
                                     updatedAt: {
                                         gte: gteDate,
+                                    },
+                                },
+                            },
+                        },
+                        // Case 4: Underlying Attribute was updated
+                        {
+                            attributes: {
+                                some: {
+                                    attribute: {
+                                        updatedAt: {
+                                            gte: gteDate,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                        // Case 5: New attributes that haven't been synced to Saleor yet
+                        {
+                            attributes: {
+                                some: {
+                                    attribute: {
+                                        saleorAttributes: {
+                                            none: {
+                                                installedSaleorAppId:
+                                                    this.installedSaleorAppId,
+                                            },
+                                        },
                                     },
                                 },
                             },
@@ -2692,7 +2722,7 @@ export class SaleorProductSyncService {
 
         /**
          * Get all product types, that are not yet created in Saleor
-         * or updated since last run
+         * or updated since last run.
          */
         await this.createOrUpdateProductTypeinSaleor(createdGte);
 
