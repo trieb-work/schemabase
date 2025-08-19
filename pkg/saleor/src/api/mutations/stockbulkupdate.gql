@@ -1,0 +1,16 @@
+mutation bulkStockUpdate($stocks: [StockBulkUpdateInput!]!) {
+    stockBulkUpdate(stocks: $stocks) {
+        errors {
+            code
+            field
+            message
+        }
+        results {
+            errors {
+                message
+                code
+                field
+            }
+        }
+    }
+}

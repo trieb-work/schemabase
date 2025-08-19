@@ -30277,6 +30277,32 @@ export type VariantMediaAssignMutation = {
     } | null;
 };
 
+export type BulkStockUpdateMutationVariables = Exact<{
+    stocks: Array<StockBulkUpdateInput> | StockBulkUpdateInput;
+}>;
+
+export type BulkStockUpdateMutation = {
+    __typename?: "Mutation";
+    stockBulkUpdate?: {
+        __typename?: "StockBulkUpdate";
+        errors: Array<{
+            __typename?: "StockBulkUpdateError";
+            code: StockBulkUpdateErrorCode;
+            field?: string | null;
+            message?: string | null;
+        }>;
+        results: Array<{
+            __typename?: "StockBulkResult";
+            errors?: Array<{
+                __typename?: "StockBulkUpdateError";
+                message?: string | null;
+                code: StockBulkUpdateErrorCode;
+                field?: string | null;
+            }> | null;
+        }>;
+    } | null;
+};
+
 export type CreateTaxClassMutationVariables = Exact<{
     input: TaxClassCreateInput;
 }>;
@@ -33005,6 +33031,24 @@ export const VariantMediaAssignDocument = gql`
         }
     }
 `;
+export const BulkStockUpdateDocument = gql`
+    mutation bulkStockUpdate($stocks: [StockBulkUpdateInput!]!) {
+        stockBulkUpdate(stocks: $stocks) {
+            errors {
+                code
+                field
+                message
+            }
+            results {
+                errors {
+                    message
+                    code
+                    field
+                }
+            }
+        }
+    }
+`;
 export const CreateTaxClassDocument = gql`
     mutation createTaxClass($input: TaxClassCreateInput!) {
         taxClassCreate(input: $input) {
@@ -34294,6 +34338,19 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<VariantMediaAssignMutation>;
+        },
+        bulkStockUpdate(
+            variables: BulkStockUpdateMutationVariables,
+            options?: C,
+        ): Promise<BulkStockUpdateMutation> {
+            return requester<
+                BulkStockUpdateMutation,
+                BulkStockUpdateMutationVariables
+            >(
+                BulkStockUpdateDocument,
+                variables,
+                options,
+            ) as Promise<BulkStockUpdateMutation>;
         },
         createTaxClass(
             variables: CreateTaxClassMutationVariables,

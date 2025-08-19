@@ -195,7 +195,20 @@ export class VariantAndVariantStocks {
                             installedSaleorAppId: this.installedSaleorAppId,
                         },
                     },
-                    stockEntries: true,
+                    stockEntries: {
+                        include: {
+                            warehouse: {
+                                include: {
+                                    saleorWarehouse: {
+                                        where: {
+                                            installedSaleorAppId:
+                                                this.installedSaleorAppId,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
                 },
             });
 
@@ -221,6 +234,11 @@ export class VariantAndVariantStocks {
             select: {
                 id: true,
                 warehouseId: true,
+                warehouse: {
+                    select: {
+                        name: true,
+                    },
+                },
             },
         });
 
@@ -238,6 +256,14 @@ export class VariantAndVariantStocks {
         const saleorProductVariantsFromSaleor =
             (await this.getSaleorProductVariants(saleorProductVariantIds)) ||
             [];
+
+        // Collect all stock updates for bulk operation
+        const stockUpdates: Array<{
+            variantId: string;
+            warehouseId: string;
+            quantity: number;
+        }> = [];
+
         for (const schemabaseVariant of productVariantsWithStockChanges) {
             const saleorVariant = saleorProductVariantsFromSaleor.find(
                 (x) => x.id === schemabaseVariant.saleorProductVariant[0].id,
@@ -281,28 +307,87 @@ export class VariantAndVariantStocks {
                 const totalQuantity =
                     stockEntry.actualAvailableForSaleStock + currentlyAllocated;
 
-                // only update the stock entry in saleor, if the stock has changed
-                if (saleorStockEntry?.quantity === totalQuantity) {
-                    continue;
-                }
-                await this.saleorClient.productVariantStockEntryUpdate({
-                    variantId: saleorVariant.id,
-                    stocks: [
+                // only add to bulk update if the stock has changed
+                if (saleorStockEntry?.quantity !== totalQuantity) {
+                    stockUpdates.push({
+                        variantId: saleorVariant.id,
+                        warehouseId: saleorWarehouseId,
+                        quantity: totalQuantity,
+                    });
+                    this.logger.debug(
+                        `Preparing stock update for ${schemabaseVariant.sku} - id ${saleorVariant.id}`,
                         {
-                            warehouse: saleorWarehouseId,
-                            quantity: totalQuantity,
+                            stockBefore: saleorStockEntry?.quantity,
+                            stockAfter: totalQuantity,
+                            sku: schemabaseVariant.sku,
+                            warehouseName: saleorWarehouse?.warehouse.name,
                         },
-                    ],
-                });
-                this.logger.debug(
-                    `Updated stock entry for ${schemabaseVariant.sku} - id ${saleorVariant.id}`,
-                    {
-                        stockBefore: saleorStockEntry?.quantity,
-                        stockAfter: totalQuantity,
-                        sku: schemabaseVariant.sku,
-                    },
-                );
+                    );
+                }
             }
+
+            // we can have cases, where a variant has stock and stock allocations for a warehouse, but we no longer
+            // have stock in that warehouse internally. We have to level the stock in saleor with the allocated stock to
+            // basically zero it out
+            for (const stockEntry of saleorVariant.stocks) {
+                const saleorWarehouseId = stockEntry.warehouse.id;
+                const saleorWarehousesInSchemabase =
+                    schemabaseVariant.stockEntries.map(
+                        (x) => x.warehouse.saleorWarehouse[0].id,
+                    );
+                if (
+                    !saleorWarehousesInSchemabase.includes(saleorWarehouseId) &&
+                    stockEntry.quantityAllocated > 0 &&
+                    !stockEntry.warehouse.name.toLowerCase().includes("virtual")
+                ) {
+                    this.logger.info(
+                        `Found stock in warehouse ${stockEntry.warehouse.name} that is no longer in schemabase. Leveling it to ${stockEntry.quantityAllocated}`,
+                    );
+                    stockUpdates.push({
+                        variantId: saleorVariant.id,
+                        warehouseId: saleorWarehouseId,
+                        quantity: stockEntry.quantityAllocated,
+                    });
+                }
+            }
+        }
+
+        // Perform bulk stock update if there are any updates
+        if (stockUpdates.length > 0) {
+            this.logger.info(
+                `Performing bulk stock update for ${stockUpdates.length} stock entries`,
+            );
+
+            try {
+                const result = await this.saleorClient.bulkStockUpdate({
+                    stocks: stockUpdates,
+                });
+
+                if (
+                    result.stockBulkUpdate?.errors &&
+                    result.stockBulkUpdate.errors.length > 0
+                ) {
+                    this.logger.error(
+                        `Bulk stock update completed with errors:`,
+                        {
+                            errors: result.stockBulkUpdate.errors,
+                        },
+                    );
+                } else {
+                    this.logger.info(
+                        `Successfully completed bulk stock update for ${stockUpdates.length} entries`,
+                    );
+                }
+            } catch (error) {
+                this.logger.error(`Failed to perform bulk stock update:`, {
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                    stockUpdatesCount: stockUpdates.length,
+                });
+                throw error;
+            }
+        } else {
+            this.logger.info("No stock updates needed");
         }
     }
 
