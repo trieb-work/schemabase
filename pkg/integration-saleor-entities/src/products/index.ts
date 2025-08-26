@@ -1735,7 +1735,25 @@ export class SaleorProductSyncService {
                                         productUpdateResponse?.productUpdate
                                             ?.errors,
                                     )}`,
+                                    {
+                                        saleorProductId,
+                                    },
                                 );
+                                // if we get an error like: [{"field":"id","message":"Couldn't resolve to a node: UHJvZHVjdDo1NTM0","code":"NOT_FOUND"}]
+                                // we delete the Saleor product and all related variants in our DB
+                                const errorMsgs =
+                                    productUpdateResponse.productUpdate?.errors?.some(
+                                        (e) =>
+                                            e.message?.includes(
+                                                "Couldn't resolve to a node",
+                                            ) && e.code === "NOT_FOUND",
+                                    );
+
+                                if (errorMsgs) {
+                                    await this.fullDeleteSaleorProduct(
+                                        saleorProductId,
+                                    );
+                                }
 
                                 continue;
                             }
@@ -1933,6 +1951,15 @@ export class SaleorProductSyncService {
                                 },
                             );
 
+                            this.logger.debug(
+                                `Updating variants for product ${saleorProductId}`,
+                                {
+                                    variantsToUpdateInput: console.dir(
+                                        variantsToUpdateInput,
+                                        { depth: 5 },
+                                    ),
+                                },
+                            );
                             const productVariantBulkUpdateResponse =
                                 await this.saleorClient.productVariantBulkUpdate(
                                     {
