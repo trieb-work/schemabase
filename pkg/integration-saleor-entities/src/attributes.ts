@@ -257,6 +257,13 @@ export class SaleorAttributeSyncService {
                 }
             });
 
+            const uniqueValues = values.filter(
+                (value, index) =>
+                    values.findIndex(
+                        (v) => v.normalizedName === value.normalizedName,
+                    ) === index,
+            );
+
             /**
              * Don't try to send any values for these attribute types, as they don't
              * support values.
@@ -283,7 +290,7 @@ export class SaleorAttributeSyncService {
                             : AttributeEntityTypeEnum.ProductVariant,
                     type: AttributeTypeEnum.ProductType,
                     values: shouldSendValues
-                        ? values.map((v) => ({
+                        ? uniqueValues.map((v) => ({
                               name: v.value,
                           }))
                         : undefined,
@@ -299,6 +306,9 @@ export class SaleorAttributeSyncService {
                     } in Saleor: ${JSON.stringify(
                         result.attributeCreate?.errors,
                     )}`,
+                    {
+                        values,
+                    },
                 );
                 continue;
             }
