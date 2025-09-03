@@ -545,7 +545,9 @@ export class KencoveApiAppPricelistSyncService {
                             existingPriceEntry.salesChannelPriceEntry?.endDate?.getTime() !==
                                 endDate?.getTime() ||
                             existingPriceEntry.salesChannelPriceEntry
-                                .productVariantId !== productVariant.id
+                                .productVariantId !== productVariant.id ||
+                            existingPriceEntry.salesChannelPriceEntry
+                                .salesChannelId !== salesChannel.id
                         ) {
                             this.logger.info(
                                 `Price entry for SKU ${productVariant.sku} and ` +
@@ -577,6 +579,11 @@ export class KencoveApiAppPricelistSyncService {
                                                 .salesChannelPriceEntry
                                                 ?.productVariantId !==
                                             productVariant.id,
+                                        salesChannel:
+                                            existingPriceEntry
+                                                .salesChannelPriceEntry
+                                                ?.salesChannelId !==
+                                            salesChannel.id,
                                     },
                                 },
                             );
@@ -601,6 +608,11 @@ export class KencoveApiAppPricelistSyncService {
                                             productVariant: {
                                                 connect: {
                                                     id: productVariant.id,
+                                                },
+                                            },
+                                            salesChannel: {
+                                                connect: {
+                                                    id: salesChannel.id,
                                                 },
                                             },
                                         },
