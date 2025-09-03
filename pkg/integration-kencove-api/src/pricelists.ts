@@ -307,6 +307,7 @@ export class KencoveApiAppPricelistSyncService {
                 `Processing ${pricelists.length} pricelist entries from Kencove API`,
             );
             for (const pricelist of pricelists) {
+                let realVariantEntry = false;
                 /**
                  * The schemabase item that is related to the current pricelist entry
                  */
@@ -321,12 +322,15 @@ export class KencoveApiAppPricelistSyncService {
                     }
                     productVariant = variant;
                 } else {
+                    // the pricelist entries for multiple variants look a bit different. Also, we can't use directly the pricelist_item_id, but instead
+                    // need to build a joint id by using product_template_id + product_id
                     this.logger.info(
                         `Processing pricelist for different variants`,
                         {
                             productTemplateId: pricelist.product_template_id,
                         },
                     );
+                    realVariantEntry = true;
                 }
                 this.logger.debug(
                     `Working on ${pricelist.priceListItems.length} entries for ${pricelist.product_template_id}`,
@@ -361,6 +365,14 @@ export class KencoveApiAppPricelistSyncService {
                     }
 
                     /**
+                     * The unique kencove identifier of this pricelist entry. We need to use our own identifier for "real variant" entries
+                     * , as we get wrong data from the api for these cases
+                     */
+                    const pricelistEntryId = realVariantEntry
+                        ? `${pricelist.product_template_id}-${productVariant.id}`
+                        : pricelistEntry.pricelist_item_id.toString();
+
+                    /**
                      * the existing pricelist entry for the current product variant and sales channel
                      * so that we can check, if we actually need to update
                      */
@@ -368,7 +380,7 @@ export class KencoveApiAppPricelistSyncService {
                         await this.db.kencoveApiPricelistItem.findUnique({
                             where: {
                                 id_productTemplateId_kencoveApiAppId: {
-                                    id: pricelistEntry.pricelist_item_id.toString(),
+                                    id: pricelistEntryId,
                                     productTemplateId:
                                         pricelist.product_template_id.toString(),
                                     kencoveApiAppId: this.kencoveApiApp.id,
@@ -474,7 +486,7 @@ export class KencoveApiAppPricelistSyncService {
                         );
                         await this.db.kencoveApiPricelistItem.create({
                             data: {
-                                id: pricelistEntry.pricelist_item_id.toString(),
+                                id: pricelistEntryId,
                                 productTemplateId:
                                     pricelist.product_template_id.toString(),
                                 kencoveApiApp: {
@@ -531,7 +543,9 @@ export class KencoveApiAppPricelistSyncService {
                             existingPriceEntry.salesChannelPriceEntry?.startDate?.getTime() !==
                                 startDate?.getTime() ||
                             existingPriceEntry.salesChannelPriceEntry?.endDate?.getTime() !==
-                                endDate?.getTime()
+                                endDate?.getTime() ||
+                            existingPriceEntry.salesChannelPriceEntry
+                                .productVariantId !== productVariant.id
                         ) {
                             this.logger.info(
                                 `Price entry for SKU ${productVariant.sku} and ` +
@@ -558,6 +572,11 @@ export class KencoveApiAppPricelistSyncService {
                                         endDate:
                                             existingPriceEntry.salesChannelPriceEntry?.endDate?.getTime() !==
                                             endDate?.getTime(),
+                                        productVariantId:
+                                            existingPriceEntry
+                                                .salesChannelPriceEntry
+                                                ?.productVariantId !==
+                                            productVariant.id,
                                     },
                                 },
                             );
@@ -565,7 +584,7 @@ export class KencoveApiAppPricelistSyncService {
                             await this.db.kencoveApiPricelistItem.update({
                                 where: {
                                     id_productTemplateId_kencoveApiAppId: {
-                                        id: pricelistEntry.pricelist_item_id.toString(),
+                                        id: pricelistEntryId,
                                         productTemplateId:
                                             pricelist.product_template_id.toString(),
                                         kencoveApiAppId: this.kencoveApiApp.id,
@@ -579,6 +598,11 @@ export class KencoveApiAppPricelistSyncService {
                                                 pricelistEntry.min_quantity,
                                             startDate,
                                             endDate,
+                                            productVariant: {
+                                                connect: {
+                                                    id: productVariant.id,
+                                                },
+                                            },
                                         },
                                     },
                                 },
