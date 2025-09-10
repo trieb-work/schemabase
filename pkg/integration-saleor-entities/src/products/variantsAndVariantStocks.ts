@@ -264,6 +264,12 @@ export class VariantAndVariantStocks {
             quantity: number;
         }> = [];
 
+        const newStockEntries: Array<{
+            variantId: string;
+            warehouseId: string;
+            quantity: number;
+        }> = [];
+
         for (const schemabaseVariant of productVariantsWithStockChanges) {
             const saleorVariant = saleorProductVariantsFromSaleor.find(
                 (x) => x.id === schemabaseVariant.saleorProductVariant[0].id,
@@ -307,22 +313,42 @@ export class VariantAndVariantStocks {
                 const totalQuantity =
                     stockEntry.actualAvailableForSaleStock + currentlyAllocated;
 
-                // only add to bulk update if the stock has changed
+                // only add to update if the stock has changed
                 if (saleorStockEntry?.quantity !== totalQuantity) {
-                    stockUpdates.push({
+                    const saleorStockUpdateEntry = {
                         variantId: saleorVariant.id,
                         warehouseId: saleorWarehouseId,
                         quantity: totalQuantity,
-                    });
-                    this.logger.debug(
-                        `Preparing stock update for ${schemabaseVariant.sku} - id ${saleorVariant.id}`,
-                        {
-                            stockBefore: saleorStockEntry?.quantity,
-                            stockAfter: totalQuantity,
-                            sku: schemabaseVariant.sku,
-                            warehouseName: saleorWarehouse?.warehouse.name,
-                        },
-                    );
+                    };
+
+                    // If stock entry doesn't exist in Saleor (stockBefore is undefined),
+                    // we need to create it individually
+                    if (saleorStockEntry?.quantity === undefined) {
+                        newStockEntries.push(saleorStockUpdateEntry);
+                        this.logger.debug(
+                            `Preparing new stock entry for ${schemabaseVariant.sku} - id ${saleorVariant.id}`,
+                            {
+                                stockBefore: undefined,
+                                stockAfter: totalQuantity,
+                                sku: schemabaseVariant.sku,
+                                warehouseName: saleorWarehouse?.warehouse.name,
+                                saleorStockUpdateEntry,
+                            },
+                        );
+                    } else {
+                        // Existing stock entry - use bulk update
+                        stockUpdates.push(saleorStockUpdateEntry);
+                        this.logger.debug(
+                            `Preparing stock update for ${schemabaseVariant.sku} - id ${saleorVariant.id}`,
+                            {
+                                stockBefore: saleorStockEntry?.quantity,
+                                stockAfter: totalQuantity,
+                                sku: schemabaseVariant.sku,
+                                warehouseName: saleorWarehouse?.warehouse.name,
+                                saleorStockUpdateEntry,
+                            },
+                        );
+                    }
                 }
             }
 
@@ -352,10 +378,10 @@ export class VariantAndVariantStocks {
             }
         }
 
-        // Perform bulk stock update if there are any updates
+        // Perform bulk stock update for existing stock entries
         if (stockUpdates.length > 0) {
             this.logger.info(
-                `Performing bulk stock update for ${stockUpdates.length} stock entries`,
+                `Performing bulk stock update for ${stockUpdates.length} existing stock entries`,
             );
 
             try {
@@ -364,13 +390,19 @@ export class VariantAndVariantStocks {
                 });
 
                 if (
-                    result.stockBulkUpdate?.errors &&
-                    result.stockBulkUpdate.errors.length > 0
+                    (result.stockBulkUpdate?.errors &&
+                        result.stockBulkUpdate.errors.length > 0) ||
+                    result.stockBulkUpdate?.results?.some(
+                        (x) => x?.errors && x.errors.length > 0,
+                    )
                 ) {
                     this.logger.error(
                         `Bulk stock update completed with errors:`,
                         {
-                            errors: result.stockBulkUpdate.errors,
+                            errors: result.stockBulkUpdate?.errors,
+                            results: result.stockBulkUpdate?.results?.map((x) =>
+                                JSON.stringify(x?.errors),
+                            ),
                         },
                     );
                 } else {
@@ -386,7 +418,61 @@ export class VariantAndVariantStocks {
                 });
                 throw error;
             }
-        } else {
+        }
+
+        // Handle new stock entries individually using productVariantStockEntryUpdate
+        if (newStockEntries.length > 0) {
+            this.logger.info(
+                `Creating ${newStockEntries.length} new stock entries individually`,
+            );
+
+            for (const stockEntry of newStockEntries) {
+                try {
+                    const result =
+                        await this.saleorClient.productVariantStockEntryUpdate({
+                            variantId: stockEntry.variantId,
+                            stocks: [
+                                {
+                                    warehouse: stockEntry.warehouseId,
+                                    quantity: stockEntry.quantity,
+                                },
+                            ],
+                        });
+
+                    if (
+                        result.productVariantStocksUpdate?.errors &&
+                        result.productVariantStocksUpdate.errors.length > 0
+                    ) {
+                        this.logger.error(
+                            `Failed to create stock entry for variant ${stockEntry.variantId}:`,
+                            {
+                                errors: result.productVariantStocksUpdate
+                                    .errors,
+                                stockEntry,
+                            },
+                        );
+                    } else {
+                        this.logger.debug(
+                            `Successfully created stock entry for variant ${stockEntry.variantId}`,
+                            { stockEntry },
+                        );
+                    }
+                } catch (error) {
+                    this.logger.error(
+                        `Failed to create stock entry for variant ${stockEntry.variantId}:`,
+                        {
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                            stockEntry,
+                        },
+                    );
+                }
+            }
+        }
+
+        if (stockUpdates.length === 0 && newStockEntries.length === 0) {
             this.logger.info("No stock updates needed");
         }
     }
