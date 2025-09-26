@@ -67,7 +67,12 @@ export class SaleorChannelAvailabilitySyncService {
         });
     }
 
-    public async syncFromEci() {
+    /**
+     *
+     * @param overwriteGTE set this GTE instead of the one from the database
+     * @returns
+     */
+    public async syncFromEci(overwriteGTE?: Date) {
         const cronState = await this.cronState.get();
         const now = new Date();
         let createdGte: Date;
@@ -81,6 +86,10 @@ export class SaleorChannelAvailabilitySyncService {
             // for security purposes, we sync one hour more than the last run
             createdGte = subHours(cronState.lastRun, 1);
             this.logger.info(`Setting GTE date to ${createdGte}.`);
+        }
+        if (overwriteGTE) {
+            createdGte = overwriteGTE;
+            this.logger.info(`Overwriting GTE date to ${createdGte}.`);
         }
 
         if (cronState.errorCount > 3) {

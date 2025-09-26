@@ -50,6 +50,7 @@ import { FedexTrackingSyncWf } from "./workflows/fedexTrackingSync";
 import { UspsTrackingSyncWf } from "./workflows/uspsTrackingSync";
 import { KencoveApiNightlyStockSyncWf } from "./workflows/kencoveApiNightlyStockSync";
 import { SaleorNightlyStockSyncWf } from "./workflows/saleorNightlyStockSync";
+import { SaleorNightlyProductChannelSyncWf } from "./workflows/saleorNightlyProductChannelSync";
 
 interface CronClients {
     logger: ILogger;
@@ -702,6 +703,19 @@ export class CronTable {
                         this.clients,
                         {
                             installedSaleorApp: enabledSaleorApp,
+                        },
+                    ),
+                    { cron: "0 2 * * *", timeout: cronTimeout },
+                    [tenantId.substring(0, 5), id.substring(0, 7)],
+                );
+
+                // Nightly product channel sync with 2-year window to catch any missed data
+                this.scheduler.schedule(
+                    createWorkflowFactory(
+                        SaleorNightlyProductChannelSyncWf,
+                        this.clients,
+                        {
+                            installedSaleorAppId: enabledSaleorApp.id,
                         },
                     ),
                     { cron: "0 2 * * *", timeout: cronTimeout },
