@@ -92,6 +92,11 @@ export class AlgoliaCategorySyncService {
                 ],
             },
             include: {
+                media: {
+                    where: {
+                        type: "BANNER",
+                    },
+                },
                 parentCategory: {
                     include: {
                         parentCategory: {
@@ -185,6 +190,8 @@ export class AlgoliaCategorySyncService {
                 continue;
             }
 
+            const media = category.media;
+
             const algoliaObject = {
                 objectID: category.id,
                 name: category.name,
@@ -194,6 +201,7 @@ export class AlgoliaCategorySyncService {
                 activeItemCount: category._count.products,
                 createdAt: category.createdAt.toISOString(),
                 updatedAt: category.updatedAt.toISOString(),
+                media,
             };
 
             requests.push({
