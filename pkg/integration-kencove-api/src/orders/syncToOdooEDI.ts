@@ -8,6 +8,7 @@ import {
     PrismaClient,
 } from "@eci/pkg/prisma";
 import { krypto } from "@eci/pkg/krypto";
+import { subMonths } from "date-fns";
 
 interface SyncToOdooEDIOptions {
     kencoveApiApp: KencoveApiApp;
@@ -198,6 +199,10 @@ export class SyncToOdooEDI {
                 },
                 orderStatus: {
                     notIn: ["canceled", "closed", "draft"],
+                },
+                date: {
+                    // we just try to send orders younger than 1 month
+                    gte: subMonths(new Date(), 1),
                 },
             },
             include: {
