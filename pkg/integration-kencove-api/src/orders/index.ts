@@ -200,7 +200,15 @@ export class KencoveApiAppOrderSyncService {
         }
     }
 
-    public async syncToECI(fromDate?: Date, customerCode?: string) {
+    public async syncToECI({
+        fromDate,
+        customerCode,
+        orderNumber,
+    }: {
+        fromDate?: Date;
+        customerCode?: string;
+        orderNumber?: string;
+    }) {
         const cronState = await this.cronState.get();
         const now = new Date();
         let createdGte: Date;
@@ -228,6 +236,7 @@ export class KencoveApiAppOrderSyncService {
         const apiOrdersStream = client.getOrdersStream(
             createdGte,
             customerCode,
+            orderNumber,
         );
 
         /**
