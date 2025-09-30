@@ -21,7 +21,7 @@ import {
     KencoveApiProduct,
     KencoveApiProductStock,
 } from "./types";
-import { addDays, isAfter, isBefore } from "date-fns";
+import { addDays, isAfter, isBefore, subHours } from "date-fns";
 import jwt from "jsonwebtoken";
 import { ILogger } from "@eci/pkg/logger";
 
@@ -637,7 +637,7 @@ export class KencoveApiClient {
                 offset += LIMIT;
             } while (nextPage);
 
-            fromDate = toDate;
+            fromDate = subHours(toDate, 2); // 2-hour overlap
         }
     }
 
