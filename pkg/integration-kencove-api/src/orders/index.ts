@@ -282,6 +282,12 @@ export class KencoveApiAppOrderSyncService {
 
             this.logger.info(
                 `Got ${toCreate.length} orders with email address set to create and ${toUpdate.length} orders to update`,
+                {
+                    toCreate: toCreate.map((o) => ({
+                        id: o.id,
+                        orderNumber: o.orderNumber,
+                    })),
+                },
             );
 
             /**
@@ -322,7 +328,7 @@ export class KencoveApiAppOrderSyncService {
                     );
                 }
                 this.logger.debug(
-                    `Working on order ${order.id} - ${order.orderNumber}`,
+                    `Working on order ${order.id} - ${order.orderNumber} for creation`,
                     {
                         mainContactId,
                         billingAddressId,
