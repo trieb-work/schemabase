@@ -208,7 +208,7 @@ export class KencoveApiAppOrderSyncService {
         fromDate?: Date;
         customerCode?: string;
         orderNumber?: string;
-    }) {
+    } = {}): Promise<void> {
         const cronState = await this.cronState.get();
         const now = new Date();
         let createdGte: Date;
