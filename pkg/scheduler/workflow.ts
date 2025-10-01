@@ -24,6 +24,9 @@ export type WorkflowFactory = {
     build: (ctx: RuntimeContext) => Workflow;
 };
 
+// Re-export BaseWorkflow for convenience
+export { BaseWorkflow, createWorkflowLogger } from "./baseWorkflow";
+
 /**
  * Create a new workflow factory to allow inejcting the runtimeContext later
  */

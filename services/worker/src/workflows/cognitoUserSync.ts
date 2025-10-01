@@ -25,8 +25,8 @@ export class CognitoUserSyncWf implements Workflow {
     ) {
         this.logger = ctx.logger.with({
             workflow: CognitoUserSyncWf.name,
+            awsCognitoAppId: config.awsCognitoApp.id,
         });
-        this.logger = ctx.logger;
         this.prisma = clients.prisma;
         this.awsCognitoApp = config.awsCognitoApp;
     }

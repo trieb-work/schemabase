@@ -28,7 +28,6 @@ export class ZohoInvoiceSyncWf implements Workflow {
             workflow: ZohoInvoiceSyncWf.name,
             zohoAppId: this.zohoAppId,
         });
-        this.logger = ctx.logger;
         this.prisma = clients.prisma;
     }
 

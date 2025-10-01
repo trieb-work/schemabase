@@ -26,8 +26,8 @@ export class BraintreeTransactionSyncWf implements Workflow {
     ) {
         this.logger = ctx.logger.with({
             workflow: BraintreeTransactionSyncWf.name,
+            braintreeAppId: config.braintreeAppId,
         });
-        this.logger = ctx.logger;
         this.prisma = clients.prisma;
         this.braintreeAppId = config.braintreeAppId;
     }

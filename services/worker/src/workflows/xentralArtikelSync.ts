@@ -27,9 +27,7 @@ export class XentralArtikelSyncWf implements Workflow {
             workflow: XentralArtikelSyncWf.name,
             xentralProxyApp: this.xentralProxyApp,
         });
-        this.logger = ctx.logger;
         this.prisma = clients.prisma;
-        this.xentralProxyApp = config.xentralProxyApp;
     }
 
     /**

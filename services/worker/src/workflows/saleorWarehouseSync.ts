@@ -28,7 +28,6 @@ export class SaleorWarehouseSyncWf implements Workflow {
             workflow: SaleorWarehouseSyncWf.name,
             installedSaleorAppId: this.installedSaleorAppId,
         });
-        this.logger = ctx.logger;
         this.prisma = clients.prisma;
     }
 

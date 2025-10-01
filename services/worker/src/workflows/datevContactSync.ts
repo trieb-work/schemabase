@@ -25,8 +25,8 @@ export class DatevContactSyncWf implements Workflow {
     ) {
         this.logger = ctx.logger.with({
             workflow: DatevContactSyncWf.name,
+            datevAppId: config.datevApp.id,
         });
-        this.logger = ctx.logger;
         this.prisma = clients.prisma;
         this.datevApp = config.datevApp;
     }

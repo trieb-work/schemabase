@@ -27,8 +27,8 @@ export class DataEnrichmentFBTSyncWf implements Workflow {
     ) {
         this.logger = ctx.logger.with({
             workflow: DataEnrichmentFBTSyncWf.name,
+            tenantId: config.tenantId,
         });
-        this.logger = ctx.logger;
         this.prisma = clients.prisma;
         this.tenantId = config.tenantId;
     }
