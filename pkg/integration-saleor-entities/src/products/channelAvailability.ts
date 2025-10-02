@@ -1133,7 +1133,8 @@ export class SaleorChannelAvailabilitySyncService {
                     {
                         availableForPurchaseAt: entry.startDate,
                         channelId: entry.salesChannel.saleorChannels[0].id,
-                        visibleInListings: productIsActive,
+                        // we no longer set this field, as it overwrites settings in saleor
+                        // visibleInListings: productIsActive,
                         isAvailableForPurchase: productIsActive,
                         isPublished: true,
                     },
