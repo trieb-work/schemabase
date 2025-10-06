@@ -13,7 +13,7 @@ describe("Frequently bought together", () => {
         const service = new FrequentlyBoughtTogetherService({
             db: prisma,
             logger: new AssertionLogger(),
-            tenantId: "tn_kencove235",
+            tenantId: "ken_prod",
         });
         await service.addFBTVariants();
     }, 200000);
