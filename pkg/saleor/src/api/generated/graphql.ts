@@ -331,6 +331,7 @@ export type AccountRegister = {
     errors: Array<AccountError>;
     /** Informs whether users need to confirm their email address. */
     requiresConfirmation?: Maybe<Scalars["Boolean"]>;
+    /** @deprecated The field always returns a `User` object constructed from the input data. The `user.id` is always empty. To determine whether the user exists in Saleor, query via an external app with the required permissions. */
     user?: Maybe<User>;
 };
 
@@ -1784,6 +1785,7 @@ export type AttributeCountableEdge = {
  */
 export type AttributeCreate = {
     __typename?: "AttributeCreate";
+    /** The created attribute. */
     attribute?: Maybe<Attribute>;
     /** @deprecated Use `errors` field instead. */
     attributeErrors: Array<AttributeError>;
@@ -2100,6 +2102,7 @@ export type AttributeTypeEnumFilterInput = {
  */
 export type AttributeUpdate = {
     __typename?: "AttributeUpdate";
+    /** The updated attribute. */
     attribute?: Maybe<Attribute>;
     /** @deprecated Use `errors` field instead. */
     attributeErrors: Array<AttributeError>;
@@ -4186,7 +4189,30 @@ export type CheckoutFilterShippingMethods = Event & {
     version?: Maybe<Scalars["String"]>;
 };
 
-/** Event sent when checkout is fully paid with transactions. The checkout is considered as fully paid when the checkout `charge_status` is `FULL` or `OVERCHARGED`. The event is not sent when the checkout authorization flow strategy is used. */
+/**
+ * Event sent when a checkout was fully authorized. A checkout is considered fully authorized when its `authorizeStatus` is `FULL`.
+ *
+ * It is triggered only for checkouts whose payments are processed through the Transaction API.
+ */
+export type CheckoutFullyAuthorized = Event & {
+    __typename?: "CheckoutFullyAuthorized";
+    /** The checkout the event relates to. */
+    checkout?: Maybe<Checkout>;
+    /** Time of the event. */
+    issuedAt?: Maybe<Scalars["DateTime"]>;
+    /** The user or application that triggered the event. */
+    issuingPrincipal?: Maybe<IssuingPrincipal>;
+    /** The application receiving the webhook. */
+    recipient?: Maybe<App>;
+    /** Saleor version that triggered the event. */
+    version?: Maybe<Scalars["String"]>;
+};
+
+/**
+ * Event sent when a checkout was fully paid. A checkout is considered fully paid when its `chargeStatus` is `FULL` or `OVERCHARGED`. This event is not sent if payments are only authorized but not fully charged.
+ *
+ * It is triggered only for checkouts whose payments are processed through the Transaction API.
+ */
 export type CheckoutFullyPaid = Event & {
     __typename?: "CheckoutFullyPaid";
     /** The checkout the event relates to. */
@@ -14683,6 +14709,7 @@ export enum OrderChargeStatusEnum {
 export type OrderConfirm = {
     __typename?: "OrderConfirm";
     errors: Array<OrderError>;
+    /** Order which has been confirmed. */
     order?: Maybe<Order>;
     /** @deprecated Use `errors` field instead. */
     orderErrors: Array<OrderError>;
@@ -25283,6 +25310,14 @@ export type Subscription = {
      */
     checkoutCreated?: Maybe<CheckoutCreated>;
     /**
+     * Event sent when checkout is fully authorized.
+     *
+     * Added in Saleor 3.21.
+     *
+     * Note: this API is currently in Feature Preview and can be subject to changes at later point.
+     */
+    checkoutFullyAuthorized?: Maybe<CheckoutFullyAuthorized>;
+    /**
      * Event sent when checkout is fully-paid.
      *
      * Added in Saleor 3.21.
@@ -25431,6 +25466,10 @@ export type Subscription = {
 };
 
 export type SubscriptionCheckoutCreatedArgs = {
+    channels?: InputMaybe<Array<Scalars["String"]>>;
+};
+
+export type SubscriptionCheckoutFullyAuthorizedArgs = {
     channels?: InputMaybe<Array<Scalars["String"]>>;
 };
 
@@ -28744,6 +28783,17 @@ export enum WebhookEventTypeAsyncEnum {
     ChannelUpdated = "CHANNEL_UPDATED",
     /** A new checkout is created. */
     CheckoutCreated = "CHECKOUT_CREATED",
+    /**
+     * A checkout was fully authorized (its `authorizeStatus` is `FULL`).
+     *
+     * This event is emitted only for checkouts whose payments are processed through the Transaction API.
+     */
+    CheckoutFullyAuthorized = "CHECKOUT_FULLY_AUTHORIZED",
+    /**
+     * A checkout was fully paid (its `chargeStatus` is `FULL` or `OVERCHARGED`). This event is not sent if payments are only authorized but not fully charged.
+     *
+     * This event is emitted only for checkouts whose payments are processed through the Transaction API.
+     */
     CheckoutFullyPaid = "CHECKOUT_FULLY_PAID",
     /** A checkout metadata is updated. */
     CheckoutMetadataUpdated = "CHECKOUT_METADATA_UPDATED",
@@ -29042,6 +29092,17 @@ export enum WebhookEventTypeEnum {
     CheckoutCreated = "CHECKOUT_CREATED",
     /** Filter shipping methods for checkout. */
     CheckoutFilterShippingMethods = "CHECKOUT_FILTER_SHIPPING_METHODS",
+    /**
+     * A checkout was fully authorized (its `authorizeStatus` is `FULL`).
+     *
+     * This event is emitted only for checkouts whose payments are processed through the Transaction API.
+     */
+    CheckoutFullyAuthorized = "CHECKOUT_FULLY_AUTHORIZED",
+    /**
+     * A checkout was fully paid (its `chargeStatus` is `FULL` or `OVERCHARGED`). This event is not sent if payments are only authorized but not fully charged.
+     *
+     * This event is emitted only for checkouts whose payments are processed through the Transaction API.
+     */
     CheckoutFullyPaid = "CHECKOUT_FULLY_PAID",
     /** A checkout metadata is updated. */
     CheckoutMetadataUpdated = "CHECKOUT_METADATA_UPDATED",
@@ -29377,6 +29438,7 @@ export enum WebhookSampleEventTypeEnum {
     ChannelStatusChanged = "CHANNEL_STATUS_CHANGED",
     ChannelUpdated = "CHANNEL_UPDATED",
     CheckoutCreated = "CHECKOUT_CREATED",
+    CheckoutFullyAuthorized = "CHECKOUT_FULLY_AUTHORIZED",
     CheckoutFullyPaid = "CHECKOUT_FULLY_PAID",
     CheckoutMetadataUpdated = "CHECKOUT_METADATA_UPDATED",
     CheckoutUpdated = "CHECKOUT_UPDATED",
@@ -29863,6 +29925,34 @@ export type CancelOrderMutation = {
             __typename?: "OrderError";
             field?: string | null;
             message?: string | null;
+        }>;
+    } | null;
+};
+
+export type PageCreateMutationVariables = Exact<{
+    input: PageCreateInput;
+}>;
+
+export type PageCreateMutation = {
+    __typename?: "Mutation";
+    pageCreate?: {
+        __typename?: "PageCreate";
+        page?: {
+            __typename?: "Page";
+            id: string;
+            title: string;
+            slug: string;
+            metadata: Array<{
+                __typename?: "MetadataItem";
+                key: string;
+                value: string;
+            }>;
+        } | null;
+        errors: Array<{
+            __typename?: "PageError";
+            field?: string | null;
+            message?: string | null;
+            code: PageErrorCode;
         }>;
     } | null;
 };
@@ -30974,6 +31064,53 @@ export type SaleorOrderWithFulfillmentQuery = {
     } | null;
 };
 
+export type PageQueryVariables = Exact<{
+    slug: Scalars["String"];
+}>;
+
+export type PageQuery = {
+    __typename?: "Query";
+    page?: {
+        __typename?: "Page";
+        id: string;
+        title: string;
+        slug: string;
+        isPublished: boolean;
+        publicationDate?: any | null;
+        metadata: Array<{
+            __typename?: "MetadataItem";
+            key: string;
+            value: string;
+        }>;
+    } | null;
+};
+
+export type PagesQueryVariables = Exact<{
+    first: Scalars["Int"];
+}>;
+
+export type PagesQuery = {
+    __typename?: "Query";
+    pages?: {
+        __typename?: "PageCountableConnection";
+        edges: Array<{
+            __typename?: "PageCountableEdge";
+            node: {
+                __typename?: "Page";
+                id: string;
+                title: string;
+                slug: string;
+                isPublished: boolean;
+                metadata: Array<{
+                    __typename?: "MetadataItem";
+                    key: string;
+                    value: string;
+                }>;
+            };
+        }>;
+    } | null;
+};
+
 export type PaymentGatewaysQueryVariables = Exact<{ [key: string]: never }>;
 
 export type PaymentGatewaysQuery = {
@@ -31250,6 +31387,7 @@ export type ProductDeletedWebhooksSubscription = {
         | { __typename: "ChannelUpdated" }
         | { __typename: "CheckoutCreated" }
         | { __typename: "CheckoutFilterShippingMethods" }
+        | { __typename: "CheckoutFullyAuthorized" }
         | { __typename: "CheckoutFullyPaid" }
         | { __typename: "CheckoutMetadataUpdated" }
         | { __typename: "CheckoutUpdated" }
@@ -31430,6 +31568,7 @@ export type ProductVariantDeletedWebhooksSubscription = {
         | { __typename: "ChannelUpdated" }
         | { __typename: "CheckoutCreated" }
         | { __typename: "CheckoutFilterShippingMethods" }
+        | { __typename: "CheckoutFullyAuthorized" }
         | { __typename: "CheckoutFullyPaid" }
         | { __typename: "CheckoutMetadataUpdated" }
         | { __typename: "CheckoutUpdated" }
@@ -32043,6 +32182,22 @@ export type ProductAndVariantsToCompareQuery = {
     } | null;
 };
 
+export type ShopQueryVariables = Exact<{ [key: string]: never }>;
+
+export type ShopQuery = {
+    __typename?: "Query";
+    shop: {
+        __typename?: "Shop";
+        id: string;
+        name: string;
+        metadata: Array<{
+            __typename?: "MetadataItem";
+            key: string;
+            value: string;
+        }>;
+    };
+};
+
 export type SaleorTaxesQueryVariables = Exact<{
     after?: InputMaybe<Scalars["String"]>;
     first?: InputMaybe<Scalars["Int"]>;
@@ -32123,6 +32278,7 @@ export type OrderCreatedWebhookSubscription = {
         | { __typename: "ChannelUpdated" }
         | { __typename: "CheckoutCreated" }
         | { __typename: "CheckoutFilterShippingMethods" }
+        | { __typename: "CheckoutFullyAuthorized" }
         | { __typename: "CheckoutFullyPaid" }
         | { __typename: "CheckoutMetadataUpdated" }
         | { __typename: "CheckoutUpdated" }
@@ -32718,6 +32874,26 @@ export const CancelOrderDocument = gql`
             errors {
                 field
                 message
+            }
+        }
+    }
+`;
+export const PageCreateDocument = gql`
+    mutation pageCreate($input: PageCreateInput!) {
+        pageCreate(input: $input) {
+            page {
+                id
+                title
+                slug
+                metadata {
+                    key
+                    value
+                }
+            }
+            errors {
+                field
+                message
+                code
             }
         }
     }
@@ -33508,6 +33684,39 @@ export const SaleorOrderWithFulfillmentDocument = gql`
         }
     }
 `;
+export const PageDocument = gql`
+    query page($slug: String!) {
+        page(slug: $slug) {
+            id
+            title
+            slug
+            metadata {
+                key
+                value
+            }
+            isPublished
+            publicationDate
+        }
+    }
+`;
+export const PagesDocument = gql`
+    query pages($first: Int!) {
+        pages(first: $first) {
+            edges {
+                node {
+                    id
+                    title
+                    slug
+                    metadata {
+                        key
+                        value
+                    }
+                    isPublished
+                }
+            }
+        }
+    }
+`;
 export const PaymentGatewaysDocument = gql`
     query paymentGateways {
         shop {
@@ -33910,6 +34119,18 @@ export const ProductAndVariantsToCompareDocument = gql`
     ${SaleorProductMediaFragmentDoc}
     ${AttributesInProductAndVariantsCompareFragmentDoc}
 `;
+export const ShopDocument = gql`
+    query shop {
+        shop {
+            id
+            name
+            metadata {
+                key
+                value
+            }
+        }
+    }
+`;
 export const SaleorTaxesDocument = gql`
     query saleorTaxes($after: String, $first: Int) {
         taxClasses(first: $first, after: $after) {
@@ -34104,6 +34325,16 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<CancelOrderMutation>;
+        },
+        pageCreate(
+            variables: PageCreateMutationVariables,
+            options?: C,
+        ): Promise<PageCreateMutation> {
+            return requester<PageCreateMutation, PageCreateMutationVariables>(
+                PageCreateDocument,
+                variables,
+                options,
+            ) as Promise<PageCreateMutation>;
         },
         paymentCreate(
             variables: PaymentCreateMutationVariables,
@@ -34578,6 +34809,23 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 options,
             ) as Promise<SaleorOrderWithFulfillmentQuery>;
         },
+        page(variables: PageQueryVariables, options?: C): Promise<PageQuery> {
+            return requester<PageQuery, PageQueryVariables>(
+                PageDocument,
+                variables,
+                options,
+            ) as Promise<PageQuery>;
+        },
+        pages(
+            variables: PagesQueryVariables,
+            options?: C,
+        ): Promise<PagesQuery> {
+            return requester<PagesQuery, PagesQueryVariables>(
+                PagesDocument,
+                variables,
+                options,
+            ) as Promise<PagesQuery>;
+        },
         paymentGateways(
             variables?: PaymentGatewaysQueryVariables,
             options?: C,
@@ -34724,6 +34972,13 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<ProductAndVariantsToCompareQuery>;
+        },
+        shop(variables?: ShopQueryVariables, options?: C): Promise<ShopQuery> {
+            return requester<ShopQuery, ShopQueryVariables>(
+                ShopDocument,
+                variables,
+                options,
+            ) as Promise<ShopQuery>;
         },
         saleorTaxes(
             variables?: SaleorTaxesQueryVariables,

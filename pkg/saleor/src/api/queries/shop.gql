@@ -1,0 +1,10 @@
+query shop {
+    shop {
+        id
+        name
+        metadata {
+            key
+            value
+        }
+    }
+}

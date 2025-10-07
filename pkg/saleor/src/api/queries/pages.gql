@@ -1,0 +1,30 @@
+query page($slug: String!) {
+    page(slug: $slug) {
+        id
+        title
+        slug
+        metadata {
+            key
+            value
+        }
+        isPublished
+        publicationDate
+    }
+}
+
+query pages($first: Int!) {
+    pages(first: $first) {
+        edges {
+            node {
+                id
+                title
+                slug
+                metadata {
+                    key
+                    value
+                }
+                isPublished
+            }
+        }
+    }
+}

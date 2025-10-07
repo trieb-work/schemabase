@@ -1,0 +1,18 @@
+mutation pageCreate($input: PageCreateInput!) {
+    pageCreate(input: $input) {
+        page {
+            id
+            title
+            slug
+            metadata {
+                key
+                value
+            }
+        }
+        errors {
+            field
+            message
+            code
+        }
+    }
+}
