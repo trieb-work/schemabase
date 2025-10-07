@@ -38,8 +38,8 @@ describe("CognitoUserSyncService", () => {
             AWSCognitoApp: cognitoApp,
         });
 
-        await sync.syncToEci();
-        // await sync.syncFromEci();
+        // await sync.syncToEci();
+        await sync.syncFromEci();
     }, 200000000);
 
     // it("should be able to get a list of users", async () => {

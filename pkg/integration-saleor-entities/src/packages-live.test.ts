@@ -15,31 +15,19 @@ describe("Zoho Entity Sync Orders Test", () => {
     const prismaClient = new PrismaClient();
 
     test("It should work to sync packages", async () => {
-        const tenant = await prismaClient.tenant.findUnique({
-            where: {
-                // id: "pk_7f165pf-prod",
-                id: "tn_kencove235",
-                // id: "test",
-            },
-        });
-        if (!tenant)
-            throw new Error(
-                "Testing Tenant or zoho app/integration not found in DB",
-            );
-
         const { client: saleorClient, installedSaleorApp } =
-            // await getSaleorClientAndEntry("QXBwOjE2", prismaClient);
-            await getSaleorClientAndEntry("QXBwOjQw", prismaClient);
+            await getSaleorClientAndEntry("QXBwOjE=", prismaClient);
+        // await getSaleorClientAndEntry("QXBwOjQw", prismaClient);
 
         const service = new SaleorPackageSyncService({
             saleorClient,
             installedSaleorApp: installedSaleorApp,
             logger: new AssertionLogger(),
             db: prismaClient,
-            tenantId: tenant.id,
+            tenantId: installedSaleorApp.saleorApp.tenantId,
             orderPrefix: "STORE",
         });
-        await service.syncToECI();
+        // await service.syncToECI();
         await service.syncFromECI();
     }, 1000000);
 });

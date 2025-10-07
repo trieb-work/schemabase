@@ -14,17 +14,9 @@ describe("Usps package sync", () => {
     const prismaClient = new PrismaClient();
 
     test("It should work to sync packages", async () => {
-        const tenant = await prismaClient.tenant.findUnique({
-            where: {
-                id: "pk_7f165pf-prod",
-                // id: "test",
-            },
-        });
-        if (!tenant) throw new Error("Testing Tenant not found in DB");
-
         const uspsTrackingApp = await prismaClient.uspsTrackingApp.findUnique({
             where: {
-                id: "usps_test",
+                id: "usps_ken_prod",
             },
         });
         if (!uspsTrackingApp) throw new Error("UPS Tracking App not found");

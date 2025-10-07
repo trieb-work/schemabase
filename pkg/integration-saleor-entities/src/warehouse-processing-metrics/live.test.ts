@@ -90,7 +90,9 @@ describe("Warehouse Processing Metrics Page Live Test", () => {
             expect(currentData.lastUpdated).toBeDefined();
 
             console.log("\n🎉 All metrics successfully synced and verified!");
-            console.log(`📊 Customer-facing display: ${currentData.processingTimeDisplay}`);
+            console.log(
+                `📊 Customer-facing display: ${currentData.processingTimeDisplay}`,
+            );
             console.log(`🕒 Last updated: ${currentData.lastUpdated}`);
             console.log(`📄 Data stored in Saleor page: shop-metrics`);
             console.log(

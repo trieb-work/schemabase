@@ -14,7 +14,7 @@ describe("KencoveApiClient", () => {
     beforeAll(async () => {
         app = await prisma.kencoveApiApp.findUniqueOrThrow({
             where: {
-                id: "kencove_prod",
+                id: "ken_app_prod",
             },
         });
     });

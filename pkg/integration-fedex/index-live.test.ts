@@ -14,22 +14,14 @@ describe("Fedex package sync", () => {
     const prismaClient = new PrismaClient();
 
     test("It should work to sync packages", async () => {
-        const tenant = await prismaClient.tenant.findUnique({
-            where: {
-                id: "pk_7f165pf-prod",
-                // id: "test",
-            },
-        });
-        if (!tenant) throw new Error("Testing Tenant not found in DB");
-
         const fedexTrackingApp = await prismaClient.fedexTrackingApp.findUnique(
             {
                 where: {
-                    id: "fedex_test",
+                    id: "fedex_i_ken_346eg",
                 },
             },
         );
-        if (!fedexTrackingApp) throw new Error("UPS Tracking App not found");
+        if (!fedexTrackingApp) throw new Error("Fedex Tracking App not found");
 
         const service = new FedexTrackingSyncService({
             logger: new AssertionLogger(),

@@ -17,13 +17,14 @@ describe("algolia cagtegory Test", () => {
         const tenant = await prismaClient.tenant.findUnique({
             where: {
                 // id: "pk_7f165pf-prod",
-                id: "tn_kencove235",
+                id: "ken_prod",
+                // id: "tn_kencove235",
                 // id: "test",
             },
             include: {
                 algoliaApps: {
                     where: {
-                        id: "alg-staging",
+                        id: "algolia_prod",
                     },
                 },
             },

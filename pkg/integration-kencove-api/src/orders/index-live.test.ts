@@ -26,7 +26,10 @@ describe("KencoveApiClient", () => {
             kencoveApiApp: app,
             logger: new AssertionLogger(),
         });
-        await service.syncToECI();
+        await service.syncToECI({
+            // fromDate: new Date(),
+            // orderNumber: "EC-187472",
+        });
         await service.syncFromECI();
     }, 2000000);
 });

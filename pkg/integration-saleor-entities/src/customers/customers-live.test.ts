@@ -15,26 +15,19 @@ describe("Saleor Sync Customer Test", () => {
     const prismaClient = new PrismaClient();
 
     test("It should work to sync customer", async () => {
-        const tenant = await prismaClient.tenant.findUnique({
-            where: {
-                id: "pk_7f165pf-prod",
-                // id: "test",
-            },
-        });
-        if (!tenant) throw new Error("Testing Tenant not found in DB");
-
         const { client: saleorClient, installedSaleorApp } =
-            await getSaleorClientAndEntry("QXBwOjMy", prismaClient);
+            // await getSaleorClientAndEntry("QXBwOjQw", prismaClient);
+            await getSaleorClientAndEntry("QXBwOjE=", prismaClient);
 
         const service = new SaleorCustomerSyncService({
             saleorClient,
             installedSaleorAppId: installedSaleorApp.id,
             logger: new AssertionLogger(),
             db: prismaClient,
-            tenantId: tenant.id,
+            tenantId: installedSaleorApp.saleorApp.tenantId,
             channelSlug: "storefront",
         });
         await service.syncToECI();
-        // await service.syncFromECI();
+        await service.syncFromECI();
     }, 1000000);
 });

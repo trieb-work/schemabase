@@ -11,6 +11,7 @@ import { SaleorOrderSyncWf } from "./workflows/saleorOrderSync";
 import { SaleorPackageSyncWf } from "./workflows/saleorPackageSync";
 import { SaleorPaymentSyncWf } from "./workflows/saleorPaymentSync";
 import { SaleorProductSyncWf } from "./workflows/saleorProductSync";
+import { SaleorProductSalesStatsSyncWf } from "./workflows/saleorProductSalesStatsSync";
 import { SaleorWarehouseSyncWf } from "./workflows/saleorWarehouseSync";
 import { XentralArtikelSyncWf } from "./workflows/xentralArtikelSync";
 import { XentralAuftragSyncWf } from "./workflows/xentralAuftragSync";
@@ -747,6 +748,15 @@ export class CronTable {
                         commonWorkflowConfig,
                     ),
                     { ...commonCronConfig, offset: 3 },
+                    [tenantId.substring(0, 5), id.substring(0, 7)],
+                );
+                this.scheduler.schedule(
+                    createWorkflowFactory(
+                        SaleorProductSalesStatsSyncWf,
+                        this.clients,
+                        commonWorkflowConfig,
+                    ),
+                    { ...commonCronConfig, cron: "0 2 * * *", offset: 4 }, // Run daily at 2 AM
                     [tenantId.substring(0, 5), id.substring(0, 7)],
                 );
                 this.scheduler.schedule(
