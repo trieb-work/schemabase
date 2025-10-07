@@ -584,7 +584,7 @@ export class SaleorPackageSyncService {
                 }
             }
 
-            if (saleorLines) {
+            if (saleorLines && saleorLines.length > 0) {
                 // creating the real package in Saleor.
                 await this.createSaleorFulfillment(
                     saleorOrder,
