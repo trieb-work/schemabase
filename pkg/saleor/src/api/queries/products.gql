@@ -329,3 +329,14 @@ query productAndVariantsToCompare($id: ID!) {
         }
     }
 }
+
+query simpleProduct($id: ID!) {
+    product(id: $id) {
+        id
+        name
+        metadata {
+            key
+            value
+        }
+    }
+}

@@ -48,27 +48,32 @@ export class SaleorProductSalesStatsSyncWf implements Workflow {
      */
     public async run(): Promise<void> {
         this.logger.info("Starting Saleor product sales stats sync workflow");
-        
+
         const { client: saleorClient, installedSaleorApp } =
             await getSaleorClientAndEntry(
                 this.installedSaleorAppId,
                 this.prisma,
             );
 
-        const saleorProductSalesStatsSyncService = new SaleorProductSalesStatsSyncService({
-            logger: this.logger,
-            saleorClient,
-            db: this.prisma,
-            tenantId: installedSaleorApp.saleorApp.tenantId,
-            installedSaleorApp: installedSaleorApp,
-            timeframes: this.timeframes,
-            batchSize: this.batchSize,
-        });
+        const saleorProductSalesStatsSyncService =
+            new SaleorProductSalesStatsSyncService({
+                logger: this.logger,
+                saleorClient,
+                db: this.prisma,
+                tenantId: installedSaleorApp.saleorApp.tenantId,
+                installedSaleorApp: installedSaleorApp,
+                timeframes: this.timeframes,
+                batchSize: this.batchSize,
+            });
 
         this.ctx.job.updateProgress(10);
-        const result = await saleorProductSalesStatsSyncService.syncProductSalesStats();
+        const result =
+            await saleorProductSalesStatsSyncService.syncProductSalesStats();
         this.ctx.job.updateProgress(100);
 
-        this.logger.info("Finished Saleor product sales stats sync workflow", result);
+        this.logger.info(
+            "Finished Saleor product sales stats sync workflow",
+            result,
+        );
     }
 }

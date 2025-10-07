@@ -32182,6 +32182,24 @@ export type ProductAndVariantsToCompareQuery = {
     } | null;
 };
 
+export type SimpleProductQueryVariables = Exact<{
+    id: Scalars["ID"];
+}>;
+
+export type SimpleProductQuery = {
+    __typename?: "Query";
+    product?: {
+        __typename?: "Product";
+        id: string;
+        name: string;
+        metadata: Array<{
+            __typename?: "MetadataItem";
+            key: string;
+            value: string;
+        }>;
+    } | null;
+};
+
 export type ShopQueryVariables = Exact<{ [key: string]: never }>;
 
 export type ShopQuery = {
@@ -34119,6 +34137,18 @@ export const ProductAndVariantsToCompareDocument = gql`
     ${SaleorProductMediaFragmentDoc}
     ${AttributesInProductAndVariantsCompareFragmentDoc}
 `;
+export const SimpleProductDocument = gql`
+    query simpleProduct($id: ID!) {
+        product(id: $id) {
+            id
+            name
+            metadata {
+                key
+                value
+            }
+        }
+    }
+`;
 export const ShopDocument = gql`
     query shop {
         shop {
@@ -34972,6 +35002,16 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
                 variables,
                 options,
             ) as Promise<ProductAndVariantsToCompareQuery>;
+        },
+        simpleProduct(
+            variables: SimpleProductQueryVariables,
+            options?: C,
+        ): Promise<SimpleProductQuery> {
+            return requester<SimpleProductQuery, SimpleProductQueryVariables>(
+                SimpleProductDocument,
+                variables,
+                options,
+            ) as Promise<SimpleProductQuery>;
         },
         shop(variables?: ShopQueryVariables, options?: C): Promise<ShopQuery> {
             return requester<ShopQuery, ShopQueryVariables>(

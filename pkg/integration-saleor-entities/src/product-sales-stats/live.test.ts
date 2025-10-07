@@ -76,7 +76,7 @@ describe("Product Sales Stats Sync Live Test", () => {
         if (sampleProducts.length > 0) {
             console.log("\n--- Current Metadata (Before Sync) ---");
             try {
-                const productQuery = await saleorClient.saleorGetProduct({
+                const productQuery = await saleorClient.simpleProduct({
                     id: sampleProducts[0].id,
                 });
 
@@ -124,7 +124,7 @@ describe("Product Sales Stats Sync Live Test", () => {
         console.log("\n--- Verifying Metadata Update ---");
         if (sampleProducts.length > 0 && result.updatedCount > 0) {
             try {
-                const productQuery = await saleorClient.saleorGetProduct({
+                const productQuery = await saleorClient.simpleProduct({
                     id: sampleProducts[0].id,
                 });
 
@@ -167,10 +167,18 @@ describe("Product Sales Stats Sync Live Test", () => {
 
                         // Assertions
                         expect(statsData.totalOrders).toBeGreaterThanOrEqual(0);
-                        expect(statsData.totalQuantity).toBeGreaterThanOrEqual(0);
-                        expect(statsData.totalRevenue).toBeGreaterThanOrEqual(0);
-                        expect(statsData.uniqueCustomers).toBeGreaterThanOrEqual(0);
-                        expect(statsData.variantCount).toBeGreaterThanOrEqual(0);
+                        expect(statsData.totalQuantity).toBeGreaterThanOrEqual(
+                            0,
+                        );
+                        expect(statsData.totalRevenue).toBeGreaterThanOrEqual(
+                            0,
+                        );
+                        expect(
+                            statsData.uniqueCustomers,
+                        ).toBeGreaterThanOrEqual(0);
+                        expect(statsData.variantCount).toBeGreaterThanOrEqual(
+                            0,
+                        );
                         expect(statsData.productId).toBeDefined();
                         expect(statsData.lastUpdated).toBeDefined();
                     }

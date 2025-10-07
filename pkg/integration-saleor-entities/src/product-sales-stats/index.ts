@@ -141,7 +141,8 @@ export class SaleorProductSalesStatsSyncService {
                                 stat.productId === saleorProduct.productId,
                         );
 
-                        if (productStats) {
+                        // Only add stats if we have at least 5 orders
+                        if (productStats && productStats.totalOrders > 5) {
                             hasAnyStats = true;
 
                             // Create single JSON metadata key for this timeframe
@@ -154,29 +155,13 @@ export class SaleorProductSalesStatsSyncService {
                                     totalOrders: productStats.totalOrders,
                                     totalQuantity: productStats.totalQuantity,
                                     totalRevenue: productStats.totalRevenue,
-                                    uniqueCustomers: productStats.uniqueCustomers,
-                                    avgOrderQuantity: productStats.avgOrderQuantity,
+                                    uniqueCustomers:
+                                        productStats.uniqueCustomers,
+                                    avgOrderQuantity:
+                                        productStats.avgOrderQuantity,
                                     avgOrderValue: productStats.avgOrderValue,
                                     period: productStats.period,
                                     lastUpdated: productStats.lastUpdated,
-                                }),
-                            });
-                        } else {
-                            // No stats for this timeframe - add empty JSON metadata
-                            productMetadata.push({
-                                key: `salesStats_${days}d`,
-                                value: JSON.stringify({
-                                    productId: saleorProduct.productId,
-                                    productSku: null,
-                                    variantCount: 0,
-                                    totalOrders: 0,
-                                    totalQuantity: 0,
-                                    totalRevenue: 0,
-                                    uniqueCustomers: 0,
-                                    avgOrderQuantity: 0,
-                                    avgOrderValue: 0,
-                                    period: `${days} days`,
-                                    lastUpdated: new Date().toISOString(),
                                 }),
                             });
                         }
@@ -222,6 +207,7 @@ export class SaleorProductSalesStatsSyncService {
 
             // Small delay between batches to avoid overwhelming Saleor
             if (i + this.batchSize < saleorProducts.length) {
+                // eslint-disable-next-line @typescript-eslint/no-loop-func
                 await new Promise((resolve) => setTimeout(resolve, 100));
             }
         }
