@@ -35,27 +35,47 @@ describe("ItemSalesStatsService Live Test", () => {
 
         // Get top sellers by different criteria
         console.log("\n🏆 Top 10 Items by Orders:");
-        const topByOrders = await service.getTopSellingItems(30, 'orders', 10);
+        const topByOrders = await service.getTopSellingItems(30, "orders", 10);
         topByOrders.forEach((item, index) => {
-            console.log(`${index + 1}. ${item.sku}: ${item.totalOrders} orders, ${item.totalQuantity} qty, ${item.uniqueCustomers} customers`);
+            console.log(
+                `${index + 1}. ${item.sku}: ${item.totalOrders} orders, ${item.totalQuantity} qty, ${item.uniqueCustomers} customers`,
+            );
         });
 
         console.log("\n💰 Top 10 Items by Revenue:");
-        const topByRevenue = await service.getTopSellingItems(30, 'revenue', 10);
+        const topByRevenue = await service.getTopSellingItems(
+            30,
+            "revenue",
+            10,
+        );
         topByRevenue.forEach((item, index) => {
-            console.log(`${index + 1}. ${item.sku}: €${item.totalRevenue.toFixed(2)}, ${item.totalOrders} orders, avg €${item.avgOrderValue.toFixed(2)}/order`);
+            console.log(
+                `${index + 1}. ${item.sku}: €${item.totalRevenue.toFixed(2)}, ${item.totalOrders} orders, avg €${item.avgOrderValue.toFixed(2)}/order`,
+            );
         });
 
         console.log("\n📦 Top 10 Items by Quantity:");
-        const topByQuantity = await service.getTopSellingItems(30, 'quantity', 10);
+        const topByQuantity = await service.getTopSellingItems(
+            30,
+            "quantity",
+            10,
+        );
         topByQuantity.forEach((item, index) => {
-            console.log(`${index + 1}. ${item.sku}: ${item.totalQuantity} qty, ${item.totalOrders} orders, avg ${item.avgOrderQuantity.toFixed(2)}/order`);
+            console.log(
+                `${index + 1}. ${item.sku}: ${item.totalQuantity} qty, ${item.totalOrders} orders, avg ${item.avgOrderQuantity.toFixed(2)}/order`,
+            );
         });
 
         console.log("\n👥 Top 10 Items by Unique Customers:");
-        const topByCustomers = await service.getTopSellingItems(30, 'customers', 10);
+        const topByCustomers = await service.getTopSellingItems(
+            30,
+            "customers",
+            10,
+        );
         topByCustomers.forEach((item, index) => {
-            console.log(`${index + 1}. ${item.sku}: ${item.uniqueCustomers} customers, ${item.totalOrders} orders`);
+            console.log(
+                `${index + 1}. ${item.sku}: ${item.uniqueCustomers} customers, ${item.totalOrders} orders`,
+            );
         });
 
         // Verify data makes sense
@@ -74,27 +94,35 @@ describe("ItemSalesStatsService Live Test", () => {
         });
 
         // Get a top-selling item to analyze
-        const topItems = await service.getTopSellingItems(30, 'orders', 1);
-        
+        const topItems = await service.getTopSellingItems(30, "orders", 1);
+
         if (topItems.length > 0) {
             const testSku = topItems[0].sku;
             console.log(`\n=== Trending Analysis for SKU: ${testSku} ===`);
 
-            const trendingData = await service.getItemSalesStatsMultipleTimeframes(testSku, [7, 14, 30, 90]);
+            const trendingData =
+                await service.getItemSalesStatsMultipleTimeframes(
+                    testSku,
+                    [7, 14, 30, 90],
+                );
 
             console.log("\n📈 Sales Trend:");
             Object.entries(trendingData).forEach(([period, stats]) => {
                 if (stats) {
-                    console.log(`${period}: ${stats.totalOrders} orders, ${stats.totalQuantity} qty, ${stats.uniqueCustomers} customers, €${stats.totalRevenue.toFixed(2)}`);
+                    console.log(
+                        `${period}: ${stats.totalOrders} orders, ${stats.totalQuantity} qty, ${stats.uniqueCustomers} customers, €${stats.totalRevenue.toFixed(2)}`,
+                    );
                 } else {
                     console.log(`${period}: No sales data`);
                 }
             });
 
             // Show formatted display version
-            if (trendingData['30d']) {
+            if (trendingData["30d"]) {
                 console.log("\n🎨 Formatted Display:");
-                const formatted = service.formatStatsForDisplay(trendingData['30d']!);
+                const formatted = service.formatStatsForDisplay(
+                    trendingData["30d"]!,
+                );
                 Object.entries(formatted).forEach(([key, value]) => {
                     console.log(`  ${key}: ${value}`);
                 });
@@ -120,13 +148,14 @@ describe("ItemSalesStatsService Live Test", () => {
         console.log("\n🔍 Items with at least 5 orders (last 30 days):");
         const highVolumeItems = await service.getItemSalesStatsForLastDays(30, {
             minOrders: 5,
-            orderBy: 'totalOrders',
-            orderDirection: 'desc',
-            limit: 5,
+            orderBy: "totalOrders",
+            orderDirection: "desc",
         });
 
         highVolumeItems.stats.forEach((item, index) => {
-            console.log(`${index + 1}. ${item.sku}: ${item.totalOrders} orders, ${item.uniqueCustomers} customers`);
+            console.log(
+                `${index + 1}. ${item.sku}: ${item.totalOrders} orders, ${item.uniqueCustomers} customers`,
+            );
         });
 
         // Test with different time periods
@@ -135,14 +164,15 @@ describe("ItemSalesStatsService Live Test", () => {
         for (const days of periods) {
             const result = await service.getItemSalesStatsForLastDays(days, {
                 minOrders: 1,
-                limit: 1,
-                orderBy: 'totalOrders',
-                orderDirection: 'desc',
+                orderBy: "totalOrders",
+                orderDirection: "desc",
             });
-            
+
             if (result.stats.length > 0) {
                 const topItem = result.stats[0];
-                console.log(`Last ${days} days - Top item: ${topItem.sku} (${topItem.totalOrders} orders)`);
+                console.log(
+                    `Last ${days} days - Top item: ${topItem.sku} (${topItem.totalOrders} orders)`,
+                );
             }
         }
 
