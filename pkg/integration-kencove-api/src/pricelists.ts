@@ -360,32 +360,6 @@ export class KencoveApiAppPricelistSyncService {
                     },
                 );
 
-                /**
-                 * Log if there are duplicate pricelist_item_id values within this pricelist response.
-                 * This is expected for volume pricing (different min_quantity) or different sales channels.
-                 * We handle this by creating composite IDs that include the sales channel and quantity.
-                 */
-                const pricelistItemIds = pricelist.priceListItems.map(
-                    (item) => item.pricelist_item_id,
-                );
-                const uniqueIds = new Set(pricelistItemIds);
-                if (uniqueIds.size !== pricelistItemIds.length) {
-                    const duplicates = pricelistItemIds.filter(
-                        (itemId, index) =>
-                            pricelistItemIds.indexOf(itemId) !== index,
-                    );
-                    this.logger.debug(
-                        `Duplicate pricelist_item_id values detected (expected for volume pricing) ` +
-                            `for product_template_id ${pricelist.product_template_id}`,
-                        {
-                            productTemplateId: pricelist.product_template_id,
-                            duplicateIds: [...new Set(duplicates)],
-                            totalEntries: pricelistItemIds.length,
-                            uniqueEntries: uniqueIds.size,
-                        },
-                    );
-                }
-
                 for (const pricelistEntry of pricelist.priceListItems) {
                     if (!productVariant && !pricelistEntry.variantItemCode) {
                         this.logger.warn(
@@ -528,53 +502,106 @@ export class KencoveApiAppPricelistSyncService {
                                 pricelistEntryId,
                             },
                         );
-                        await this.db.kencoveApiPricelistItem.create({
-                            data: {
-                                id: pricelistEntryId,
-                                productTemplateId:
-                                    pricelist.product_template_id.toString(),
-                                kencoveApiApp: {
-                                    connect: {
-                                        id: this.kencoveApiApp.id,
+
+                        // Use connectOrCreate to handle cases where the KencoveApiPricelistItem
+                        // already exists from a previous run but isn't connected to a SalesChannelPriceEntry
+                        if (!existingSalesChannelPriceEntry) {
+                            // Create new SalesChannelPriceEntry and connect to KencoveApiPricelistItem
+                            const newSalesChannelPriceEntry =
+                                await this.db.salesChannelPriceEntry.create({
+                                    data: {
+                                        id: id.id("salesChannelPriceEntry"),
+                                        tenant: {
+                                            connect: {
+                                                id: this.kencoveApiApp.tenantId,
+                                            },
+                                        },
+                                        salesChannel: {
+                                            connect: {
+                                                id: salesChannel.id,
+                                            },
+                                        },
+                                        productVariant: {
+                                            connect: {
+                                                id: productVariant.id,
+                                            },
+                                        },
+                                        startDate,
+                                        endDate,
+                                        price: pricelistEntry.price,
+                                        minQuantity:
+                                            pricelistEntry.min_quantity,
+                                    },
+                                });
+
+                            // Connect or create the KencoveApiPricelistItem
+                            await this.db.kencoveApiPricelistItem.upsert({
+                                where: {
+                                    id_productTemplateId_kencoveApiAppId: {
+                                        id: pricelistEntryId,
+                                        productTemplateId:
+                                            pricelist.product_template_id.toString(),
+                                        kencoveApiAppId: this.kencoveApiApp.id,
                                     },
                                 },
-                                salesChannelPriceEntry: {
-                                    connect: existingSalesChannelPriceEntry?.id
-                                        ? {
-                                              id: existingSalesChannelPriceEntry.id,
-                                          }
-                                        : undefined,
-                                    create: !existingSalesChannelPriceEntry?.id
-                                        ? {
-                                              id: id.id(
-                                                  "salesChannelPriceEntry",
-                                              ),
-                                              tenant: {
-                                                  connect: {
-                                                      id: this.kencoveApiApp
-                                                          .tenantId,
-                                                  },
-                                              },
-                                              salesChannel: {
-                                                  connect: {
-                                                      id: salesChannel.id,
-                                                  },
-                                              },
-                                              productVariant: {
-                                                  connect: {
-                                                      id: productVariant.id,
-                                                  },
-                                              },
-                                              startDate,
-                                              endDate,
-                                              price: pricelistEntry.price,
-                                              minQuantity:
-                                                  pricelistEntry.min_quantity,
-                                          }
-                                        : undefined,
+                                create: {
+                                    id: pricelistEntryId,
+                                    productTemplateId:
+                                        pricelist.product_template_id.toString(),
+                                    kencoveApiApp: {
+                                        connect: {
+                                            id: this.kencoveApiApp.id,
+                                        },
+                                    },
+                                    salesChannelPriceEntry: {
+                                        connect: {
+                                            id: newSalesChannelPriceEntry.id,
+                                        },
+                                    },
                                 },
-                            },
-                        });
+                                update: {
+                                    salesChannelPriceEntry: {
+                                        connect: {
+                                            id: newSalesChannelPriceEntry.id,
+                                        },
+                                    },
+                                },
+                            });
+                        } else {
+                            // Connect existing SalesChannelPriceEntry to KencoveApiPricelistItem
+                            await this.db.kencoveApiPricelistItem.upsert({
+                                where: {
+                                    id_productTemplateId_kencoveApiAppId: {
+                                        id: pricelistEntryId,
+                                        productTemplateId:
+                                            pricelist.product_template_id.toString(),
+                                        kencoveApiAppId: this.kencoveApiApp.id,
+                                    },
+                                },
+                                create: {
+                                    id: pricelistEntryId,
+                                    productTemplateId:
+                                        pricelist.product_template_id.toString(),
+                                    kencoveApiApp: {
+                                        connect: {
+                                            id: this.kencoveApiApp.id,
+                                        },
+                                    },
+                                    salesChannelPriceEntry: {
+                                        connect: {
+                                            id: existingSalesChannelPriceEntry.id,
+                                        },
+                                    },
+                                },
+                                update: {
+                                    salesChannelPriceEntry: {
+                                        connect: {
+                                            id: existingSalesChannelPriceEntry.id,
+                                        },
+                                    },
+                                },
+                            });
+                        }
                     } else {
                         /**
                          * We check if any entries of the pricelist item have changed and update in this case
