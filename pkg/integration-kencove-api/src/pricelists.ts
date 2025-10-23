@@ -269,6 +269,29 @@ export class KencoveApiAppPricelistSyncService {
         return productVariant;
     }
 
+    /**
+     * Generate a unique composite ID for a pricelist entry.
+     * The API sometimes returns duplicate pricelist_item_id values for different
+     * volume pricing tiers, sales channels, or time periods.
+     * This creates a composite ID to ensure uniqueness across all dimensions.
+     */
+    private generatePricelistEntryId(pricelistItem: {
+        pricelist_item_id: number;
+        pricelist_name: string;
+        min_quantity: number;
+        date_start: string | null;
+        date_end: string | null;
+    }): string {
+        const startDateStr = pricelistItem.date_start || "null";
+        const endDateStr = pricelistItem.date_end || "null";
+        return (
+            `${pricelistItem.pricelist_item_id}-` +
+            `${pricelistItem.pricelist_name}-` +
+            `${pricelistItem.min_quantity}-` +
+            `${startDateStr}-${endDateStr}`
+        );
+    }
+
     public async syncToEci(
         gteDataTesting?: Date,
         productTemplateId?: string,
@@ -307,7 +330,6 @@ export class KencoveApiAppPricelistSyncService {
                 `Processing ${pricelists.length} pricelist entries from Kencove API`,
             );
             for (const pricelist of pricelists) {
-                let realVariantEntry = false;
                 /**
                  * The schemabase item that is related to the current pricelist entry
                  */
@@ -322,15 +344,13 @@ export class KencoveApiAppPricelistSyncService {
                     }
                     productVariant = variant;
                 } else {
-                    // the pricelist entries for multiple variants look a bit different. Also, we can't use directly the pricelist_item_id, but instead
-                    // need to build a joint id by using product_template_id + product_id
+                    // Pricelist entries for multiple variants - SKU is on the pricelistEntry level
                     this.logger.info(
                         `Processing pricelist for different variants`,
                         {
                             productTemplateId: pricelist.product_template_id,
                         },
                     );
-                    realVariantEntry = true;
                 }
                 this.logger.debug(
                     `Working on ${pricelist.priceListItems.length} entries for ${pricelist.product_template_id}`,
@@ -339,6 +359,33 @@ export class KencoveApiAppPricelistSyncService {
                         sku: pricelist.itemCode,
                     },
                 );
+
+                /**
+                 * Log if there are duplicate pricelist_item_id values within this pricelist response.
+                 * This is expected for volume pricing (different min_quantity) or different sales channels.
+                 * We handle this by creating composite IDs that include the sales channel and quantity.
+                 */
+                const pricelistItemIds = pricelist.priceListItems.map(
+                    (item) => item.pricelist_item_id,
+                );
+                const uniqueIds = new Set(pricelistItemIds);
+                if (uniqueIds.size !== pricelistItemIds.length) {
+                    const duplicates = pricelistItemIds.filter(
+                        (itemId, index) =>
+                            pricelistItemIds.indexOf(itemId) !== index,
+                    );
+                    this.logger.debug(
+                        `Duplicate pricelist_item_id values detected (expected for volume pricing) ` +
+                            `for product_template_id ${pricelist.product_template_id}`,
+                        {
+                            productTemplateId: pricelist.product_template_id,
+                            duplicateIds: [...new Set(duplicates)],
+                            totalEntries: pricelistItemIds.length,
+                            uniqueEntries: uniqueIds.size,
+                        },
+                    );
+                }
+
                 for (const pricelistEntry of pricelist.priceListItems) {
                     if (!productVariant && !pricelistEntry.variantItemCode) {
                         this.logger.warn(
@@ -365,12 +412,10 @@ export class KencoveApiAppPricelistSyncService {
                     }
 
                     /**
-                     * The unique kencove identifier of this pricelist entry. We need to use our own identifier for "real variant" entries
-                     * , as we get wrong data from the api for these cases
+                     * The unique kencove identifier of this pricelist entry.
                      */
-                    const pricelistEntryId = realVariantEntry
-                        ? `${pricelist.product_template_id}-${productVariant.id}`
-                        : pricelistEntry.pricelist_item_id.toString();
+                    const pricelistEntryId =
+                        this.generatePricelistEntryId(pricelistEntry);
 
                     /**
                      * the existing pricelist entry for the current product variant and sales channel
@@ -480,8 +525,7 @@ export class KencoveApiAppPricelistSyncService {
                             {
                                 productVariantId: productVariant.id,
                                 salesChannelId: salesChannel.id,
-                                pricelistEntryId:
-                                    pricelistEntry.pricelist_item_id,
+                                pricelistEntryId,
                             },
                         );
                         await this.db.kencoveApiPricelistItem.create({
@@ -535,15 +579,22 @@ export class KencoveApiAppPricelistSyncService {
                         /**
                          * We check if any entries of the pricelist item have changed and update in this case
                          */
+                        const existingStartTime =
+                            existingPriceEntry.salesChannelPriceEntry?.startDate?.getTime() ??
+                            null;
+                        const newStartTime = startDate?.getTime() ?? null;
+                        const existingEndTime =
+                            existingPriceEntry.salesChannelPriceEntry?.endDate?.getTime() ??
+                            null;
+                        const newEndTime = endDate?.getTime() ?? null;
+
                         if (
                             existingPriceEntry.salesChannelPriceEntry?.price !==
                                 pricelistEntry.price ||
                             existingPriceEntry.salesChannelPriceEntry
                                 ?.minQuantity !== pricelistEntry.min_quantity ||
-                            existingPriceEntry.salesChannelPriceEntry?.startDate?.getTime() !==
-                                startDate?.getTime() ||
-                            existingPriceEntry.salesChannelPriceEntry?.endDate?.getTime() !==
-                                endDate?.getTime() ||
+                            existingStartTime !== newStartTime ||
+                            existingEndTime !== newEndTime ||
                             existingPriceEntry.salesChannelPriceEntry
                                 .productVariantId !== productVariant.id ||
                             existingPriceEntry.salesChannelPriceEntry
@@ -569,11 +620,8 @@ export class KencoveApiAppPricelistSyncService {
                                                 ?.minQuantity !==
                                             pricelistEntry.min_quantity,
                                         startDate:
-                                            existingPriceEntry.salesChannelPriceEntry?.startDate?.getTime() !==
-                                            startDate?.getTime(),
-                                        endDate:
-                                            existingPriceEntry.salesChannelPriceEntry?.endDate?.getTime() !==
-                                            endDate?.getTime(),
+                                            existingStartTime !== newStartTime,
+                                        endDate: existingEndTime !== newEndTime,
                                         productVariantId:
                                             existingPriceEntry
                                                 .salesChannelPriceEntry
@@ -585,6 +633,22 @@ export class KencoveApiAppPricelistSyncService {
                                                 ?.salesChannelId !==
                                             salesChannel.id,
                                     },
+                                    quantity: pricelistEntry.min_quantity,
+                                    price: pricelistEntry.price,
+                                    dateComparison: {
+                                        existingStartTime,
+                                        newStartTime,
+                                        areEqual:
+                                            existingStartTime === newStartTime,
+                                        existingStartDate:
+                                            existingPriceEntry
+                                                .salesChannelPriceEntry
+                                                ?.startDate,
+                                        newStartDate: startDate,
+                                        apiDateStart: pricelistEntry.date_start,
+                                    },
+                                    entryBefore: existingPriceEntry,
+                                    entryAfter: existingPriceEntry,
                                 },
                             );
 
@@ -651,12 +715,15 @@ export class KencoveApiAppPricelistSyncService {
                             },
                         });
                     for (const existingPriceEntryToCheck of existingPriceEntries) {
-                        const found = pricelist.priceListItems.find(
-                            (item) =>
-                                item.pricelist_item_id.toString() ===
+                        const found = pricelist.priceListItems.find((item) => {
+                            const expectedId =
+                                this.generatePricelistEntryId(item);
+                            return (
+                                expectedId ===
                                 existingPriceEntryToCheck
-                                    .kencoveApiPricelistItems[0]?.id,
-                        );
+                                    .kencoveApiPricelistItems[0]?.id
+                            );
+                        });
                         if (!found) {
                             this.logger.info(
                                 `Deleting sales channel price entry for SKU ${productVariant.sku} and ` +
