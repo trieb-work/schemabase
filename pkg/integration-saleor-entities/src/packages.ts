@@ -372,6 +372,19 @@ export class SaleorPackageSyncService {
                                     status: "FULFILLED",
                                 },
                             },
+                            // Order, that have saleor order lines as well
+                            orderLineItems: {
+                                some: {
+                                    saleorOrderLineItems: {
+                                        some: {
+                                            installedSaleorAppId: {
+                                                contains:
+                                                    this.installedSaleorAppId,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
                         },
                     },
                     {
@@ -507,6 +520,41 @@ export class SaleorPackageSyncService {
                 },
             );
 
+            // Summary of order vs package line items for better debugging
+            try {
+                const orderSummary = saleorOrder.order.orderLineItems.map(
+                    (l) => ({
+                        id: l.id,
+                        sku: (l as any).sku,
+                        qty: (l as any).quantity,
+                        hasSaleorLineId: Boolean(
+                            l.saleorOrderLineItems?.[0]?.id,
+                        ),
+                    }),
+                );
+                const packageSummary = parcel.packageLineItems.map((pli) => ({
+                    sku: pli.sku,
+                    qty: pli.quantity,
+                    warehouseId: pli.warehouseId,
+                    saleorWarehouseId: pli.warehouse?.saleorWarehouse?.[0]?.id,
+                }));
+                this.logger.debug(
+                    "Order/Package summary before fulfillment line generation",
+                    {
+                        orderNumber: saleorOrder.order.orderNumber,
+                        packageNumber: parcel.number,
+                        orderSummary,
+                        packageSummary,
+                        defaultWarehouseId:
+                            defaultWarehouse?.saleorWarehouse?.[0]?.id,
+                    },
+                );
+            } catch (e) {
+                this.logger.debug("Failed to build order/package summary", {
+                    error: (e as Error)?.message,
+                });
+            }
+
             /**
              * False if any of the lineItems of this package are missing the information
              * on the warehouse.
@@ -521,8 +569,26 @@ export class SaleorPackageSyncService {
                 !warehouseCheck &&
                 !this.installedSaleorApp.defaultWarehouseId
             ) {
+                const missing = parcel.packageLineItems
+                    .filter(
+                        (i) =>
+                            !i.warehouseId ||
+                            !i.warehouse?.saleorWarehouse?.[0]?.id,
+                    )
+                    .map((i) => ({
+                        sku: i.sku,
+                        quantity: i.quantity,
+                        warehouseId: i.warehouseId,
+                        saleorWarehouseId:
+                            i.warehouse?.saleorWarehouse?.[0]?.id,
+                    }));
                 this.logger.error(
                     `Warehouse or SaleorWarehouse missing for ${parcel.id} - ${parcel.number} and no default warehouse given. Can't create fulfillment`,
+                    {
+                        orderNumber: saleorOrder.order.orderNumber,
+                        packageNumber: parcel.number,
+                        missingWarehouseItems: missing,
+                    },
                 );
                 continue;
             }
@@ -657,7 +723,15 @@ export class SaleorPackageSyncService {
             saleorOrder.order.orderLineItems
                 .map((line) => {
                     if (!line.saleorOrderLineItems?.[0]?.id) {
-                        // `No saleor order line for order line ${line.id}. Can't fulfill this orderline`,
+                        this.logger.debug(
+                            `Missing saleor order line id for order line`,
+                            {
+                                orderNumber: saleorOrder.order.orderNumber,
+                                orderLineId: line.id,
+                                sku: (line as any).sku,
+                                quantity: (line as any).quantity,
+                            },
+                        );
                         return undefined;
                     }
                     const saleorOrderLineId = line.saleorOrderLineItems[0].id;
@@ -671,6 +745,17 @@ export class SaleorPackageSyncService {
                      * or if we have multiple shipments and this item is in a different package
                      */
                     if (filteredForSKU.length === 0) {
+                        this.logger.debug(
+                            `SKU not found in package for order line`,
+                            {
+                                orderNumber: saleorOrder.order.orderNumber,
+                                orderLineId: line.id,
+                                sku: (line as any).sku,
+                                packageSkus: parcel.packageLineItems.map(
+                                    (p) => p.sku,
+                                ),
+                            },
+                        );
                         return undefined;
                     }
                     const bestMatchByQuantity = closestsMatch(
@@ -729,9 +814,31 @@ export class SaleorPackageSyncService {
             return true;
         });
         if (!fulfillmentLinesCheck || saleorLines.length === 0) {
-            this.logger.info(
-                `Could not match all orderlines for order ${saleorOrder.id}. Returning null`,
-            );
+            try {
+                const unmatched = saleorOrder.order.orderLineItems
+                    .filter((l) => !l.saleorOrderLineItems?.[0]?.id)
+                    .map((l) => ({
+                        id: l.id,
+                        sku: (l as any).sku,
+                        qty: (l as any).quantity,
+                    }));
+                this.logger.info(
+                    `Could not match all orderlines for order ${saleorOrder.id}. Returning null`,
+                    {
+                        orderNumber: saleorOrder.order.orderNumber,
+                        saleorLines,
+                        unmatchedOrderLines: unmatched,
+                        packageSkus: parcel.packageLineItems.map((p) => ({
+                            sku: p.sku,
+                            qty: p.quantity,
+                        })),
+                    },
+                );
+            } catch {
+                this.logger.info(
+                    `Could not match all orderlines for order ${saleorOrder.id}. Returning null`,
+                );
+            }
             return null;
         }
 
@@ -750,9 +857,30 @@ export class SaleorPackageSyncService {
             return saleorLine.stocks[0].quantity === i.quantity;
         });
         if (!packageLineItemsCheck) {
-            this.logger.info(
-                `Not all package line items are in saleor lines with the same quantity for order ${saleorOrder.id}. Returning null`,
-            );
+            try {
+                this.logger.info(
+                    `Not all package line items are in saleor lines with the same quantity for order ${saleorOrder.id}. Returning null`,
+                    {
+                        orderNumber: saleorOrder.order.orderNumber,
+                        saleorLines,
+                        packageLineItems: parcel.packageLineItems.map((p) => ({
+                            sku: p.sku,
+                            qty: p.quantity,
+                        })),
+                        orderLineMap: saleorOrder.order.orderLineItems.map(
+                            (l) => ({
+                                sku: (l as any).sku,
+                                qty: (l as any).quantity,
+                                saleorLineId: l.saleorOrderLineItems?.[0]?.id,
+                            }),
+                        ),
+                    },
+                );
+            } catch {
+                this.logger.info(
+                    `Not all package line items are in saleor lines with the same quantity for order ${saleorOrder.id}. Returning null`,
+                );
+            }
             return null;
         }
 
@@ -788,7 +916,22 @@ export class SaleorPackageSyncService {
             const warehouse =
                 parcel.packageLineItems[0]?.warehouse?.saleorWarehouse[0].id ||
                 defaultSaleorWarehouseId;
-            if (!warehouse) return null;
+            if (!warehouse) {
+                this.logger.info(
+                    `No saleor warehouse id available for short circuit package`,
+                    {
+                        orderNumber: saleorOrder.order.orderNumber,
+                        packageNumber: parcel.number,
+                        firstPackageWarehouseId:
+                            parcel.packageLineItems[0]?.warehouseId,
+                        firstPackageSaleorWarehouseId:
+                            parcel.packageLineItems[0]?.warehouse
+                                ?.saleorWarehouse?.[0]?.id,
+                        defaultSaleorWarehouseId,
+                    },
+                );
+                return null;
+            }
             shortCircuitPackage.push({
                 orderLineId: saleorOrderLine.id,
                 stocks: [
