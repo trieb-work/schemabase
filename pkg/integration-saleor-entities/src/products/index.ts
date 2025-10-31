@@ -2321,6 +2321,23 @@ export class SaleorProductSyncService {
                 },
             });
 
+            const allSkus = product.variants
+                .map((v) => v.sku)
+                .filter((s) => s) as string[];
+            // try to find an existing product by using ALL SKUs
+            const existingProductByAllSkus = await this.db.product.findFirst({
+                where: {
+                    tenantId: this.tenantId,
+                    variants: {
+                        some: {
+                            sku: {
+                                in: allSkus,
+                            },
+                        },
+                    },
+                },
+            });
+
             for (const variant of product.variants) {
                 const defaultLogFields = {
                     variantId: variant?.id,
@@ -2362,7 +2379,8 @@ export class SaleorProductSyncService {
 
                     const existingProductId =
                         existingProduct?.productId ||
-                        existingVariant?.productId;
+                        existingVariant?.productId ||
+                        existingProductByAllSkus?.id;
 
                     /**
                      * We currently don't have a unique identifier that we can use to
@@ -2444,8 +2462,23 @@ export class SaleorProductSyncService {
                                             },
                                         },
                                         product: {
-                                            connect: {
-                                                id: existingProductId,
+                                            connectOrCreate: {
+                                                where: {
+                                                    id: existingProductId,
+                                                },
+                                                create: {
+                                                    id: id.id("product"),
+                                                    tenant: {
+                                                        connect: {
+                                                            id: this.tenantId,
+                                                        },
+                                                    },
+                                                    name: product.name,
+                                                    normalizedName:
+                                                        normalizeStrings.productNames(
+                                                            product.name,
+                                                        ),
+                                                },
                                             },
                                         },
                                     },
@@ -2718,6 +2751,7 @@ export class SaleorProductSyncService {
                     ) || [];
             // marking media as deleted in our DB
             for (const m of variantMediaToDelete) {
+                if (m.deleted) continue;
                 this.logger.info(`Deleting media ${m.id} from DB`);
                 await this.db.media.update({
                     where: {
