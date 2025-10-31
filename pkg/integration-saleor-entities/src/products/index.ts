@@ -2377,7 +2377,7 @@ export class SaleorProductSyncService {
                             },
                         });
 
-                    const existingProductId =
+                    let existingProductId =
                         existingProduct?.productId ||
                         existingVariant?.productId ||
                         existingProductByAllSkus?.id;
@@ -2411,6 +2411,28 @@ export class SaleorProductSyncService {
                         `Syncing product variant ${variant.id} - ${variant.sku} - ${product.name}`,
                         defaultLogFields,
                     );
+
+                    if (!existingProductId) {
+                        this.logger.info(
+                            `Product ${product.name} does not exist in our DB. We create this item now`,
+                            defaultLogFields,
+                        );
+                        const createdProduct = await this.db.product.create({
+                            data: {
+                                id: id.id("product"),
+                                tenant: {
+                                    connect: {
+                                        id: this.tenantId,
+                                    },
+                                },
+                                name: product.name,
+                                normalizedName: normalizeStrings.productNames(
+                                    product.name,
+                                ),
+                            },
+                        });
+                        existingProductId = createdProduct.id;
+                    }
 
                     await this.db.saleorProductVariant.upsert({
                         where: {
@@ -2462,23 +2484,8 @@ export class SaleorProductSyncService {
                                             },
                                         },
                                         product: {
-                                            connectOrCreate: {
-                                                where: {
-                                                    id: existingProductId,
-                                                },
-                                                create: {
-                                                    id: id.id("product"),
-                                                    tenant: {
-                                                        connect: {
-                                                            id: this.tenantId,
-                                                        },
-                                                    },
-                                                    name: product.name,
-                                                    normalizedName:
-                                                        normalizeStrings.productNames(
-                                                            product.name,
-                                                        ),
-                                                },
+                                            connect: {
+                                                id: existingProductId,
                                             },
                                         },
                                     },
