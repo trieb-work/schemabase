@@ -48,6 +48,7 @@ const attributeTypeMappingSaleorSchemabase = {
     [AttributeInputTypeEnum.Multiselect]: AttributeType.MULTISELECT,
     [AttributeInputTypeEnum.File]: AttributeType.FILE,
     [AttributeInputTypeEnum.Reference]: AttributeType.PRODUCT_REFERENCE,
+    [AttributeInputTypeEnum.SingleReference]: AttributeType.PRODUCT_REFERENCE,
     [AttributeInputTypeEnum.Boolean]: AttributeType.BOOLEAN,
     [AttributeInputTypeEnum.Date]: AttributeType.DATE,
     [AttributeInputTypeEnum.DateTime]: AttributeType.DATE,
