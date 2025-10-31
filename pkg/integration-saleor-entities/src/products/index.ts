@@ -2231,7 +2231,9 @@ export class SaleorProductSyncService {
             return;
         }
 
-        this.logger.info(`Syncing ${products.length} products`);
+        this.logger.info(`Syncing ${products.length} products`, {
+            "product-ids": products.map((p) => p.id),
+        });
 
         const uniqueProductTypes = products
             .map((p) => p.productType)
@@ -2367,12 +2369,12 @@ export class SaleorProductSyncService {
                      * identify the product in our DB, so we can only work with products,
                      * that we created with schemabase in Saleor
                      */
-                    if (!existingProductId) {
-                        this.logger.info(
-                            `Product ${product.name} does not exist in our DB. We don't create new products in our DB. Continue.`,
-                        );
-                        continue;
-                    }
+                    // if (!existingProductId) {
+                    //     this.logger.info(
+                    //         `Product ${product.name} does not exist in our DB. We don't create new products in our DB. Continue.`,
+                    //     );
+                    //     continue;
+                    // }
 
                     /**
                      * if set, this is the default warehouse name
