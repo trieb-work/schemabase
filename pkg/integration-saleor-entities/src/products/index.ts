@@ -640,6 +640,7 @@ export class SaleorProductSyncService {
                     productVariantBulkCreateResponse.productVariantBulkCreate
                         .errors,
                 )}`,
+                { saleorProductId: saleorProductId },
             );
             return;
         }
@@ -1247,6 +1248,9 @@ export class SaleorProductSyncService {
                     },
                 },
                 variants: {
+                    every: {
+                        active: true,
+                    },
                     // ensure that the product has at least one variant
                     some: {},
                     none: {
@@ -1879,11 +1883,12 @@ export class SaleorProductSyncService {
                     }
 
                     /**
-                     * Variants for this product that we need to create
+                     * Variants for this product that we need to create.
+                     * We only create variants that are active
                      */
-                    const variantsToCreate = product.variants.filter(
-                        (v) => v.saleorProductVariant.length === 0,
-                    );
+                    const variantsToCreate = product.variants
+                        .filter((v) => v.saleorProductVariant.length === 0)
+                        .filter((v) => v.active);
                     /**
                      * Variants of the current product, that we need to update
                      */
