@@ -52,6 +52,7 @@ import { UspsTrackingSyncWf } from "./workflows/uspsTrackingSync";
 import { KencoveApiNightlyStockSyncWf } from "./workflows/kencoveApiNightlyStockSync";
 import { SaleorNightlyStockSyncWf } from "./workflows/saleorNightlyStockSync";
 import { SaleorNightlyProductChannelSyncWf } from "./workflows/saleorNightlyProductChannelSync";
+import { SaleorWarehouseProcessingMetricsPageSyncWf } from "./workflows/saleorWarehouseProcessingStatsSync";
 
 interface CronClients {
     logger: ILogger;
@@ -833,6 +834,20 @@ export class CronTable {
                         this.clients,
                         commonWorkflowConfig,
                     ),
+                    { ...commonCronConfig, cron: "0 3 * * *" },
+                    [tenantId.substring(0, 5), id.substring(0, 7)],
+                );
+            }
+            if (enabledSaleorApp.syncWarehouseProcessingStats) {
+                this.scheduler.schedule(
+                    createWorkflowFactory(
+                        SaleorWarehouseProcessingMetricsPageSyncWf,
+                        this.clients,
+                        commonWorkflowConfig,
+                    ),
+                    /**
+                     * once every night
+                     */
                     { ...commonCronConfig, cron: "0 3 * * *" },
                     [tenantId.substring(0, 5), id.substring(0, 7)],
                 );

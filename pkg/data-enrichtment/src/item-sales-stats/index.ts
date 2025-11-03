@@ -49,7 +49,9 @@ export interface ItemSalesStatsResult {
 
 export class ItemSalesStatsService {
     private readonly db: PrismaClient;
+
     private readonly tenantId: string;
+
     private readonly logger: ILogger;
 
     constructor(config: ItemSalesStatsConfig) {
@@ -65,8 +67,12 @@ export class ItemSalesStatsService {
         days: number,
         options: {
             minOrders?: number; // Only include items with at least X orders
-            orderBy?: 'totalOrders' | 'totalQuantity' | 'totalRevenue' | 'uniqueCustomers';
-            orderDirection?: 'asc' | 'desc';
+            orderBy?:
+                | "totalOrders"
+                | "totalQuantity"
+                | "totalRevenue"
+                | "uniqueCustomers";
+            orderDirection?: "asc" | "desc";
             logTopItems?: number; // Number of top items to log (default: 10)
         } = {},
     ): Promise<ItemSalesStatsResult> {
@@ -91,7 +97,7 @@ export class ItemSalesStatsService {
                     lte: endDate,
                 },
                 orderStatus: {
-                    not: 'canceled', // Exclude canceled orders
+                    not: "canceled", // Exclude canceled orders
                 },
             },
             select: {
@@ -111,8 +117,8 @@ export class ItemSalesStatsService {
         });
 
         // Flatten the data structure
-        const salesData = orders.flatMap(order => 
-            order.orderLineItems.map(lineItem => ({
+        const salesData = orders.flatMap((order) =>
+            order.orderLineItems.map((lineItem) => ({
                 ...lineItem,
                 order: {
                     id: order.id,
@@ -120,28 +126,32 @@ export class ItemSalesStatsService {
                     date: order.date,
                     orderNumber: order.orderNumber,
                 },
-            }))
+            })),
         );
 
         this.logger.info(`Found ${salesData.length} line items for analysis`);
 
         // Group by SKU and calculate stats
-        const skuStats = new Map<string, {
-            orderIds: Set<string>;
-            customerIds: Set<string>;
-            totalQuantity: number;
-            totalRevenue: number;
-            orders: Array<{
-                orderId: string;
-                quantity: number;
-                revenue: number;
-            }>;
-        }>();
+        const skuStats = new Map<
+            string,
+            {
+                orderIds: Set<string>;
+                customerIds: Set<string>;
+                totalQuantity: number;
+                totalRevenue: number;
+                orders: Array<{
+                    orderId: string;
+                    quantity: number;
+                    revenue: number;
+                }>;
+            }
+        >();
 
         for (const lineItem of salesData) {
             const sku = lineItem.sku;
-            const revenue = lineItem.totalPriceGross || lineItem.totalPriceNet || 0;
-            
+            const revenue =
+                lineItem.totalPriceGross || lineItem.totalPriceNet || 0;
+
             if (!skuStats.has(sku)) {
                 skuStats.set(sku, {
                     orderIds: new Set(),
@@ -165,40 +175,46 @@ export class ItemSalesStatsService {
         }
 
         // Convert to result format and apply filters
-        let itemStats: ItemSalesStats[] = Array.from(skuStats.entries()).map(([sku, stats]) => {
-            const totalOrders = stats.orderIds.size;
-            const totalQuantity = stats.totalQuantity;
-            const uniqueCustomers = stats.customerIds.size;
-            const totalRevenue = stats.totalRevenue;
+        let itemStats: ItemSalesStats[] = Array.from(skuStats.entries()).map(
+            ([sku, stats]) => {
+                const totalOrders = stats.orderIds.size;
+                const totalQuantity = stats.totalQuantity;
+                const uniqueCustomers = stats.customerIds.size;
+                const totalRevenue = stats.totalRevenue;
 
-            return {
-                sku,
-                totalOrders,
-                totalQuantity,
-                uniqueCustomers,
-                totalRevenue,
-                avgOrderQuantity: totalQuantity / totalOrders,
-                avgOrderValue: totalRevenue / totalOrders,
-                period: `${days} days`,
-                startDate: startDate.toISOString(),
-                endDate: endDate.toISOString(),
-                lastUpdated: new Date().toISOString(),
-            };
-        });
+                return {
+                    sku,
+                    totalOrders,
+                    totalQuantity,
+                    uniqueCustomers,
+                    totalRevenue,
+                    avgOrderQuantity: totalQuantity / totalOrders,
+                    avgOrderValue: totalRevenue / totalOrders,
+                    period: `${days} days`,
+                    startDate: startDate.toISOString(),
+                    endDate: endDate.toISOString(),
+                    lastUpdated: new Date().toISOString(),
+                };
+            },
+        );
 
         // Apply minimum orders filter
         if (options.minOrders && options.minOrders > 0) {
-            itemStats = itemStats.filter(item => item.totalOrders >= options.minOrders!);
+            itemStats = itemStats.filter(
+                (item) => item.totalOrders >= options.minOrders!,
+            );
         }
 
         // Apply sorting
-        const orderBy = options.orderBy || 'totalOrders';
-        const orderDirection = options.orderDirection || 'desc';
-        
+        const orderBy = options.orderBy || "totalOrders";
+        const orderDirection = options.orderDirection || "desc";
+
         itemStats.sort((a, b) => {
             const aValue = a[orderBy];
             const bValue = b[orderBy];
-            return orderDirection === 'desc' ? bValue - aValue : aValue - bValue;
+            return orderDirection === "desc"
+                ? bValue - aValue
+                : aValue - bValue;
         });
 
         // Log top items for debugging (but store all items)
@@ -212,16 +228,21 @@ export class ItemSalesStatsService {
 
         // Log top items for visibility
         if (itemStats.length > 0) {
-            this.logger.info(`Top ${Math.min(logTopItems, itemStats.length)} items by ${options.orderBy || 'totalOrders'}:`, {
-                topItems: itemStats.slice(0, logTopItems).map((item, index) => ({
-                    rank: index + 1,
-                    sku: item.sku,
-                    totalOrders: item.totalOrders,
-                    totalQuantity: item.totalQuantity,
-                    totalRevenue: item.totalRevenue.toFixed(2),
-                    uniqueCustomers: item.uniqueCustomers,
-                })),
-            });
+            this.logger.info(
+                `Top ${Math.min(logTopItems, itemStats.length)} items by ${options.orderBy || "totalOrders"}:`,
+                {
+                    topItems: itemStats
+                        .slice(0, logTopItems)
+                        .map((item, index) => ({
+                            rank: index + 1,
+                            sku: item.sku,
+                            totalOrders: item.totalOrders,
+                            totalQuantity: item.totalQuantity,
+                            totalRevenue: item.totalRevenue.toFixed(2),
+                            uniqueCustomers: item.uniqueCustomers,
+                        })),
+                },
+            );
         }
 
         return {
@@ -245,7 +266,7 @@ export class ItemSalesStatsService {
             minOrders: 0,
         });
 
-        return result.stats.find(item => item.sku === sku) || null;
+        return result.stats.find((item) => item.sku === sku) || null;
     }
 
     /**
@@ -253,19 +274,19 @@ export class ItemSalesStatsService {
      */
     public async getTopSellingItems(
         days: number,
-        criteria: 'orders' | 'quantity' | 'revenue' | 'customers' = 'orders',
+        criteria: "orders" | "quantity" | "revenue" | "customers" = "orders",
         limit: number = 10,
     ): Promise<ItemSalesStats[]> {
         const orderByMap = {
-            orders: 'totalOrders' as const,
-            quantity: 'totalQuantity' as const,
-            revenue: 'totalRevenue' as const,
-            customers: 'uniqueCustomers' as const,
+            orders: "totalOrders" as const,
+            quantity: "totalQuantity" as const,
+            revenue: "totalRevenue" as const,
+            customers: "uniqueCustomers" as const,
         };
 
         const result = await this.getItemSalesStatsForLastDays(days, {
             orderBy: orderByMap[criteria],
-            orderDirection: 'desc',
+            orderDirection: "desc",
             minOrders: 1, // At least 1 order
             logTopItems: limit,
         });
@@ -293,7 +314,9 @@ export class ItemSalesStatsService {
     /**
      * Format stats for display/export
      */
-    public formatStatsForDisplay(stats: ItemSalesStats): Record<string, string> {
+    public formatStatsForDisplay(
+        stats: ItemSalesStats,
+    ): Record<string, string> {
         return {
             sku: stats.sku,
             totalOrders: stats.totalOrders.toString(),
@@ -323,9 +346,18 @@ export class ItemSalesStatsService {
             minOrders: 0, // Include all items
         });
 
-        const totalOrders = result.stats.reduce((sum, item) => sum + item.totalOrders, 0);
-        const totalQuantity = result.stats.reduce((sum, item) => sum + item.totalQuantity, 0);
-        const totalRevenue = result.stats.reduce((sum, item) => sum + item.totalRevenue, 0);
+        const totalOrders = result.stats.reduce(
+            (sum, item) => sum + item.totalOrders,
+            0,
+        );
+        const totalQuantity = result.stats.reduce(
+            (sum, item) => sum + item.totalQuantity,
+            0,
+        );
+        const totalRevenue = result.stats.reduce(
+            (sum, item) => sum + item.totalRevenue,
+            0,
+        );
 
         return {
             totalItems: result.totalItems,
@@ -345,8 +377,12 @@ export class ItemSalesStatsService {
         days: number,
         options: {
             minOrders?: number;
-            orderBy?: 'totalOrders' | 'totalQuantity' | 'totalRevenue' | 'uniqueCustomers';
-            orderDirection?: 'asc' | 'desc';
+            orderBy?:
+                | "totalOrders"
+                | "totalQuantity"
+                | "totalRevenue"
+                | "uniqueCustomers";
+            orderDirection?: "asc" | "desc";
             logTopProducts?: number;
         } = {},
     ): Promise<{
@@ -361,13 +397,16 @@ export class ItemSalesStatsService {
         const startDate = new Date();
         startDate.setDate(endDate.getDate() - days);
 
-        this.logger.info("Calculating product-level sales stats using database relationships", {
-            startDate: startDate.toISOString(),
-            endDate: endDate.toISOString(),
-            tenantId: this.tenantId,
-            days,
-            options,
-        });
+        this.logger.info(
+            "Calculating product-level sales stats using database relationships",
+            {
+                startDate: startDate.toISOString(),
+                endDate: endDate.toISOString(),
+                tenantId: this.tenantId,
+                days,
+                options,
+            },
+        );
 
         // Query orders with product variant relationships
         const orders = await this.db.order.findMany({
@@ -378,7 +417,7 @@ export class ItemSalesStatsService {
                     lte: endDate,
                 },
                 orderStatus: {
-                    not: 'canceled',
+                    not: "canceled",
                 },
             },
             select: {
@@ -399,13 +438,15 @@ export class ItemSalesStatsService {
 
         // Get all unique SKUs from the orders
         const allSkus = new Set<string>();
-        orders.forEach(order => {
-            order.orderLineItems.forEach(lineItem => {
+        orders.forEach((order) => {
+            order.orderLineItems.forEach((lineItem) => {
                 allSkus.add(lineItem.sku);
             });
         });
 
-        this.logger.info(`Found ${allSkus.size} unique SKUs, querying product relationships`);
+        this.logger.info(
+            `Found ${allSkus.size} unique SKUs, querying product relationships`,
+        );
 
         // Get product variant to product mappings from database
         const productVariants = await this.db.productVariant.findMany({
@@ -429,13 +470,16 @@ export class ItemSalesStatsService {
         });
 
         // Create SKU to product mapping
-        const skuToProduct = new Map<string, {
-            productId: string;
-            productName: string;
-            productNormalizedName: string;
-        }>();
+        const skuToProduct = new Map<
+            string,
+            {
+                productId: string;
+                productName: string;
+                productNormalizedName: string;
+            }
+        >();
 
-        productVariants.forEach(variant => {
+        productVariants.forEach((variant) => {
             skuToProduct.set(variant.sku, {
                 productId: variant.productId,
                 productName: variant.product.name,
@@ -443,11 +487,13 @@ export class ItemSalesStatsService {
             });
         });
 
-        this.logger.info(`Mapped ${skuToProduct.size} SKUs to ${new Set(Array.from(skuToProduct.values()).map(p => p.productId)).size} products`);
+        this.logger.info(
+            `Mapped ${skuToProduct.size} SKUs to ${new Set(Array.from(skuToProduct.values()).map((p) => p.productId)).size} products`,
+        );
 
         // Flatten the order data
-        const salesData = orders.flatMap(order => 
-            order.orderLineItems.map(lineItem => ({
+        const salesData = orders.flatMap((order) =>
+            order.orderLineItems.map((lineItem) => ({
                 ...lineItem,
                 order: {
                     id: order.id,
@@ -455,31 +501,36 @@ export class ItemSalesStatsService {
                     date: order.date,
                     orderNumber: order.orderNumber,
                 },
-            }))
+            })),
         );
 
         // Group by actual product ID from database
-        const productGroups = new Map<string, {
-            productId: string;
-            productName: string;
-            productNormalizedName: string;
-            variantSkus: string[];
-            orderIds: Set<string>;
-            customerIds: Set<string>;
-            totalQuantity: number;
-            totalRevenue: number;
-        }>();
+        const productGroups = new Map<
+            string,
+            {
+                productId: string;
+                productName: string;
+                productNormalizedName: string;
+                variantSkus: string[];
+                orderIds: Set<string>;
+                customerIds: Set<string>;
+                totalQuantity: number;
+                totalRevenue: number;
+            }
+        >();
 
         for (const lineItem of salesData) {
             const productInfo = skuToProduct.get(lineItem.sku);
             if (!productInfo) {
                 // SKU not found in product variants - skip or log warning
-                this.logger.warn(`SKU ${lineItem.sku} not found in product variants table`);
+                this.logger.warn(
+                    `SKU ${lineItem.sku} not found in product variants table`,
+                );
                 continue;
             }
 
             const productId = productInfo.productId;
-            
+
             if (!productGroups.has(productId)) {
                 productGroups.set(productId, {
                     productId,
@@ -494,24 +545,27 @@ export class ItemSalesStatsService {
             }
 
             const productGroup = productGroups.get(productId)!;
-            
+
             // Add variant SKU if not already added
             if (!productGroup.variantSkus.includes(lineItem.sku)) {
                 productGroup.variantSkus.push(lineItem.sku);
             }
-            
+
             // Add order and customer IDs
             productGroup.orderIds.add(lineItem.order.id);
             productGroup.customerIds.add(lineItem.order.mainContactId);
-            
+
             // Sum quantities and revenue
             productGroup.totalQuantity += lineItem.quantity;
-            const revenue = lineItem.totalPriceGross || lineItem.totalPriceNet || 0;
+            const revenue =
+                lineItem.totalPriceGross || lineItem.totalPriceNet || 0;
             productGroup.totalRevenue += revenue;
         }
 
         // Convert to ProductSalesStats format
-        let productStats: ProductSalesStats[] = Array.from(productGroups.entries()).map(([productId, group]) => {
+        let productStats: ProductSalesStats[] = Array.from(
+            productGroups.entries(),
+        ).map(([productId, group]) => {
             const totalOrders = group.orderIds.size;
             const uniqueCustomers = group.customerIds.size;
 
@@ -523,8 +577,10 @@ export class ItemSalesStatsService {
                 totalQuantity: group.totalQuantity,
                 uniqueCustomers,
                 totalRevenue: group.totalRevenue,
-                avgOrderQuantity: totalOrders > 0 ? group.totalQuantity / totalOrders : 0,
-                avgOrderValue: totalOrders > 0 ? group.totalRevenue / totalOrders : 0,
+                avgOrderQuantity:
+                    totalOrders > 0 ? group.totalQuantity / totalOrders : 0,
+                avgOrderValue:
+                    totalOrders > 0 ? group.totalRevenue / totalOrders : 0,
                 variantCount: group.variantSkus.length,
                 period: `${days} days`,
                 startDate: startDate.toISOString(),
@@ -535,17 +591,21 @@ export class ItemSalesStatsService {
 
         // Apply minimum orders filter
         if (options.minOrders && options.minOrders > 0) {
-            productStats = productStats.filter(product => product.totalOrders >= options.minOrders!);
+            productStats = productStats.filter(
+                (product) => product.totalOrders >= options.minOrders!,
+            );
         }
 
         // Apply sorting
-        const orderBy = options.orderBy || 'totalOrders';
-        const orderDirection = options.orderDirection || 'desc';
-        
+        const orderBy = options.orderBy || "totalOrders";
+        const orderDirection = options.orderDirection || "desc";
+
         productStats.sort((a, b) => {
             const aValue = a[orderBy];
             const bValue = b[orderBy];
-            return orderDirection === 'desc' ? bValue - aValue : aValue - bValue;
+            return orderDirection === "desc"
+                ? bValue - aValue
+                : aValue - bValue;
         });
 
         // Log top products for debugging
@@ -558,17 +618,22 @@ export class ItemSalesStatsService {
         });
 
         if (productStats.length > 0 && logTopProducts > 0) {
-            this.logger.info(`Top ${Math.min(logTopProducts, productStats.length)} products by ${orderBy}:`, {
-                topProducts: productStats.slice(0, logTopProducts).map((product, index) => ({
-                    rank: index + 1,
-                    productSku: product.productSku,
-                    variantCount: product.variantCount,
-                    totalOrders: product.totalOrders,
-                    totalQuantity: product.totalQuantity,
-                    totalRevenue: product.totalRevenue.toFixed(2),
-                    uniqueCustomers: product.uniqueCustomers,
-                })),
-            });
+            this.logger.info(
+                `Top ${Math.min(logTopProducts, productStats.length)} products by ${orderBy}:`,
+                {
+                    topProducts: productStats
+                        .slice(0, logTopProducts)
+                        .map((product, index) => ({
+                            rank: index + 1,
+                            productSku: product.productSku,
+                            variantCount: product.variantCount,
+                            totalOrders: product.totalOrders,
+                            totalQuantity: product.totalQuantity,
+                            totalRevenue: product.totalRevenue.toFixed(2),
+                            uniqueCustomers: product.uniqueCustomers,
+                        })),
+                },
+            );
         }
 
         return {
@@ -581,11 +646,12 @@ export class ItemSalesStatsService {
         };
     }
 
-
     /**
      * Format product stats for Saleor metadata storage
      */
-    public formatProductStatsForSaleorMetadata(stats: ProductSalesStats): Record<string, string> {
+    public formatProductStatsForSaleorMetadata(
+        stats: ProductSalesStats,
+    ): Record<string, string> {
         return {
             productId: stats.productId,
             productSku: stats.productSku,
@@ -606,19 +672,19 @@ export class ItemSalesStatsService {
      */
     public async getTopSellingProducts(
         days: number,
-        criteria: 'orders' | 'quantity' | 'revenue' | 'customers' = 'orders',
+        criteria: "orders" | "quantity" | "revenue" | "customers" = "orders",
         limit: number = 10,
     ): Promise<ProductSalesStats[]> {
         const orderByMap = {
-            orders: 'totalOrders' as const,
-            quantity: 'totalQuantity' as const,
-            revenue: 'totalRevenue' as const,
-            customers: 'uniqueCustomers' as const,
+            orders: "totalOrders" as const,
+            quantity: "totalQuantity" as const,
+            revenue: "totalRevenue" as const,
+            customers: "uniqueCustomers" as const,
         };
 
         const result = await this.getProductSalesStatsForLastDays(days, {
             orderBy: orderByMap[criteria],
-            orderDirection: 'desc',
+            orderDirection: "desc",
             minOrders: 1,
             logTopProducts: limit,
         });

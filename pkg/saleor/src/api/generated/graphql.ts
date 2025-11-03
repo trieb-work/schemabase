@@ -1069,18 +1069,43 @@ export type AppExtension = Node & {
     id: Scalars["ID"];
     /** Label of the extension to show in the dashboard. */
     label: Scalars["String"];
-    /** Place where given extension will be mounted. */
+    /**
+     * Place where given extension will be mounted.
+     * @deprecated Use `mountName` instead.
+     */
     mount: AppExtensionMountEnum;
+    /**
+     * Name of the extension mount point in the dashboard. Replaces `mount`
+     *
+     * Added in Saleor 3.22.
+     */
+    mountName: Scalars["String"];
     /**
      * App extension options.
      *
      * Added in Saleor 3.22.
+     * @deprecated Use `settings` field instead.
      */
     options?: Maybe<AppExtensionPossibleOptions>;
     /** List of the app extension's permissions. */
     permissions: Array<Permission>;
-    /** Type of way how app extension will be opened. */
+    /**
+     * App extension settings. Replaces `options` field.
+     *
+     * Added in Saleor 3.22.
+     */
+    settings: Scalars["JSON"];
+    /**
+     * Type of way how app extension will be opened.
+     * @deprecated Use `targetName` instead.
+     */
     target: AppExtensionTargetEnum;
+    /**
+     * Name of the extension target in the dashboard. Replaces `target`
+     *
+     * Added in Saleor 3.22.
+     */
+    targetName: Scalars["String"];
     /** URL of a view where extension's iframe is placed. */
     url: Scalars["String"];
 };
@@ -1163,14 +1188,20 @@ export enum AppExtensionMountEnum {
 /** Represents the options for an app extension. */
 export type AppExtensionOptionsNewTab = {
     __typename?: "AppExtensionOptionsNewTab";
-    /** Options controlling behavior of the NEW_TAB extension target */
+    /**
+     * Options controlling behavior of the NEW_TAB extension target
+     * @deprecated Use `settings` field directly.
+     */
     newTabTarget?: Maybe<NewTabTargetOptions>;
 };
 
 /** Represents the options for an app extension. */
 export type AppExtensionOptionsWidget = {
     __typename?: "AppExtensionOptionsWidget";
-    /** Options for displaying a Widget */
+    /**
+     * Options for displaying a Widget
+     * @deprecated Use `settings` field directly.
+     */
     widgetTarget?: Maybe<WidgetTargetOptions>;
 };
 
@@ -1306,12 +1337,36 @@ export type AppManifestExtension = {
     __typename?: "AppManifestExtension";
     /** Label of the extension to show in the dashboard. */
     label: Scalars["String"];
-    /** Place where given extension will be mounted. */
+    /**
+     * Place where given extension will be mounted.
+     * @deprecated Use `mountName` instead.
+     */
     mount: AppExtensionMountEnum;
+    /**
+     * Name of the extension mount point in the dashboard. Replaces `mount`
+     *
+     * Added in Saleor 3.22.
+     */
+    mountName: Scalars["String"];
     /** List of the app extension's permissions. */
     permissions: Array<Permission>;
-    /** Type of way how app extension will be opened. */
+    /**
+     * JSON object with settings for this extension.
+     *
+     * Added in Saleor 3.22.
+     */
+    settings: Scalars["JSON"];
+    /**
+     * Type of way how app extension will be opened.
+     * @deprecated Use `targetName` instead.
+     */
     target: AppExtensionTargetEnum;
+    /**
+     * Name of the extension target in the dashboard. Replaces `target`
+     *
+     * Added in Saleor 3.22.
+     */
+    targetName: Scalars["String"];
     /** URL of a view where extension's iframe is placed. */
     url: Scalars["String"];
 };
@@ -14756,7 +14811,10 @@ export enum NavigationType {
 /** Represents the NEW_TAB target options for an app extension. */
 export type NewTabTargetOptions = {
     __typename?: "NewTabTargetOptions";
-    /** HTTP method for New Tab target (GET or POST) */
+    /**
+     * HTTP method for New Tab target (GET or POST)
+     * @deprecated Use `settings` field directly.
+     */
     method: HttpMethod;
 };
 
@@ -30990,7 +31048,10 @@ export enum WeightUnitsEnum {
 /** Represents the WIDGET target options for an app extension. */
 export type WidgetTargetOptions = {
     __typename?: "WidgetTargetOptions";
-    /** HTTP method for Widget target (GET or POST) */
+    /**
+     * HTTP method for Widget target (GET or POST)
+     * @deprecated Use `settings` field directly.
+     */
     method: HttpMethod;
 };
 
