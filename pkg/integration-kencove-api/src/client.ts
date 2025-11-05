@@ -20,6 +20,7 @@ import {
     KencoveApiPricelist,
     KencoveApiProduct,
     KencoveApiProductStock,
+    KencoveApiProductSku,
 } from "./types";
 import { addDays, isAfter, isBefore, subHours } from "date-fns";
 import jwt from "jsonwebtoken";
@@ -122,6 +123,27 @@ export class KencoveApiClient {
         } catch (error) {
             console.error(error);
             throw error;
+        }
+    }
+
+    public async *getProductSkusStream(
+        fromDate: Date,
+    ): AsyncIterableIterator<KencoveApiProductSku[]> {
+        // Define endpoint for product SKU data
+        const endpoint = "/ecom/product_sku";
+
+        // No extra params by default
+        const extraParams = "";
+
+        // Use the generic streaming helper
+        for await (const batch of this.streamApiData<KencoveApiProductSku>(
+            endpoint,
+            fromDate,
+            3,
+            200,
+            extraParams,
+        )) {
+            yield batch;
         }
     }
 

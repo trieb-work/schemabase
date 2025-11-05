@@ -53,6 +53,7 @@ import { KencoveApiNightlyStockSyncWf } from "./workflows/kencoveApiNightlyStock
 import { SaleorNightlyStockSyncWf } from "./workflows/saleorNightlyStockSync";
 import { SaleorNightlyProductChannelSyncWf } from "./workflows/saleorNightlyProductChannelSync";
 import { SaleorWarehouseProcessingMetricsPageSyncWf } from "./workflows/saleorWarehouseProcessingStatsSync";
+import { KencoveApiNightlyProductSkuSyncWf } from "./workflows/kencoveApiNightlyProductSkuSync";
 
 interface CronClients {
     logger: ILogger;
@@ -225,15 +226,7 @@ export class CronTable {
             const commonWorkflowConfig = {
                 kencoveApiApp: enabledKencoveApiApp,
             };
-            new WorkflowScheduler(this.clients).schedule(
-                createWorkflowFactory(
-                    KencoveApiProductSyncWf,
-                    this.clients,
-                    commonWorkflowConfig,
-                ),
-                { ...commonCronConfig, offset: 0 },
-                [tenantId.substring(0, 5), id.substring(0, 5)],
-            );
+
             new WorkflowScheduler(this.clients).schedule(
                 createWorkflowFactory(
                     KencoveApiAttributeSyncWf,
@@ -283,6 +276,16 @@ export class CronTable {
             new WorkflowScheduler(this.clients).schedule(
                 createWorkflowFactory(
                     KencoveApiNightlyStockSyncWf,
+                    this.clients,
+                    commonWorkflowConfig,
+                ),
+                { cron: "0 2 * * *", timeout: cronTimeout },
+                [tenantId.substring(0, 5), id.substring(0, 5)],
+            );
+            // Nightly product SKU sync with 1-year window to catch any missed data
+            new WorkflowScheduler(this.clients).schedule(
+                createWorkflowFactory(
+                    KencoveApiNightlyProductSkuSyncWf,
                     this.clients,
                     commonWorkflowConfig,
                 ),
