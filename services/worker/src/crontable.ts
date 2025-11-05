@@ -28,7 +28,6 @@ import { DatevContactSyncWf } from "./workflows/datevContactSync";
 import { UPSTrackingSyncWf } from "./workflows/upsTrackingSync";
 import { SaleorCustomerSyncWf } from "./workflows/saleorCustomerSync";
 import { ReviewsioSyncWf } from "./workflows/reviewsioSync";
-import { KencoveApiProductSyncWf } from "./workflows/kencoveApiProductSync";
 import { KencoveApiAttributeSyncWf } from "./workflows/kencoveApiAttributeSync";
 import { KencoveApiCategorySyncWf } from "./workflows/kencoveApiCategorySync";
 import { SaleorCategorySyncWf } from "./workflows/saleorCategorySync";
