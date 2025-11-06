@@ -91,7 +91,9 @@ export class KencoveApiAppProductStockSyncService {
                 await this.cronState.set({ lastRun: new Date() });
                 return;
             }
-            this.logger.info(`Found ${stocks.length} product stocks to sync`);
+            this.logger.info(`Found ${stocks.length} product stocks to sync`, {
+                skus: stocks.map((s) => s.itemCode),
+            });
 
             /**
              * Create product stocks. The itemCode is the sku we use to match to an internal
@@ -175,14 +177,14 @@ export class KencoveApiAppProductStockSyncService {
                             existingStock.actualAvailableForSaleStock ===
                             totalAvailableStock
                         ) {
-                            this.logger.info(
-                                `Stock entry for ${internalVariant.sku} did not change`,
-                                {
-                                    warehouse: warehouseEntry.warehouse_code,
-                                    warehouseId,
-                                    totalAvailableStock,
-                                },
-                            );
+                            // this.logger.debug(
+                            //     `Stock entry for ${internalVariant.sku} did not change`,
+                            //     {
+                            //         warehouse: warehouseEntry.warehouse_code,
+                            //         warehouseId,
+                            //         totalAvailableStock,
+                            //     },
+                            // );
                             continue;
                         }
                         this.logger.info(
