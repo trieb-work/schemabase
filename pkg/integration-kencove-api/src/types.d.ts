@@ -17,7 +17,7 @@ export type KencoveApiAttribute = {
 };
 
 export type KencoveApiProductSku = {
-    id: number;
+    productId: number;
     default_code: string;
     active: boolean;
     write_date: string;

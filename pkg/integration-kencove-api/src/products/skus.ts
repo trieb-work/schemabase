@@ -65,7 +65,7 @@ export class KencoveApiAppProductSkuSyncService {
                 const variantFromApi = skus.find(
                     (s) => s.default_code === p.sku,
                 );
-                const kencoveIdFromApi = variantFromApi?.id.toString();
+                const kencoveIdFromApi = variantFromApi?.productId.toString();
                 if (p.kencoveApiProductVariant?.[0]?.id === kencoveIdFromApi) {
                     return;
                 }
