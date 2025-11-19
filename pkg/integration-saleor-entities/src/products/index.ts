@@ -2229,6 +2229,9 @@ export class SaleorProductSyncService {
             }),
         );
 
+        /**
+         * These are Saleor products returned from the GraphQL query
+         */
         const products = response.products?.edges.map((x) => x.node);
 
         if (!products) {
@@ -2253,6 +2256,9 @@ export class SaleorProductSyncService {
             await this.syncProductType(productType);
         }
 
+        /**
+         * These are the Saleor products we will sync to ECI
+         */
         for (const product of products) {
             if (!product.variants) {
                 this.logger.warn(
@@ -2263,7 +2269,7 @@ export class SaleorProductSyncService {
             }
 
             /**
-             * The category corresponding to this product. Our internal category
+             * The saleorcategory corresponding to this product. Our internal category
              * id is stored in the "categoryId" variable
              */
             const category = product.category
@@ -2348,8 +2354,8 @@ export class SaleorProductSyncService {
                     variantId: variant?.id,
                     variantSku: variant?.sku,
                     variantName: variant?.name,
-                    productId: product.id,
-                    productName: product.name,
+                    saleorProductId: product.id,
+                    saleorProductName: product.name,
                 };
                 try {
                     if (!variant) {
@@ -2382,10 +2388,13 @@ export class SaleorProductSyncService {
                             },
                         });
 
+                    /**
+                     * schemabase product id
+                     */
                     let existingProductId =
                         existingProduct?.productId ||
-                        existingVariant?.productId ||
-                        existingProductByAllSkus?.id;
+                        existingProductByAllSkus?.id ||
+                        existingVariant?.productId;
 
                     /**
                      * We currently don't have a unique identifier that we can use to
@@ -2413,7 +2422,7 @@ export class SaleorProductSyncService {
                     )?.value;
 
                     this.logger.info(
-                        `Syncing product variant ${variant.id} - ${variant.sku} - ${product.name}`,
+                        `Syncing product variant ${variant.id} - ${variant.sku} - ${product.name} from Saleor to schemabase`,
                         defaultLogFields,
                     );
 
@@ -2439,32 +2448,122 @@ export class SaleorProductSyncService {
                         existingProductId = createdProduct.id;
                     }
 
-                    await this.db.saleorProductVariant.upsert({
-                        where: {
-                            id_installedSaleorAppId: {
-                                id: variant.id,
-                                installedSaleorAppId: this.installedSaleorAppId,
-                            },
-                        },
-                        create: {
-                            id: variant!.id,
-                            productId: product.id,
-                            updatedAt: product.updatedAt,
-                            installedSaleorApp: {
-                                connect: {
-                                    id: this.installedSaleorAppId,
+                    const updatedSaleorProductVariant =
+                        await this.db.saleorProductVariant.upsert({
+                            where: {
+                                id_installedSaleorAppId: {
+                                    id: variant.id,
+                                    installedSaleorAppId:
+                                        this.installedSaleorAppId,
                                 },
                             },
-                            productVariant: {
-                                connectOrCreate: {
-                                    where: {
-                                        sku_tenantId: {
+                            create: {
+                                id: variant!.id,
+                                productId: product.id,
+                                updatedAt: product.updatedAt,
+                                installedSaleorApp: {
+                                    connect: {
+                                        id: this.installedSaleorAppId,
+                                    },
+                                },
+                                productVariant: {
+                                    connectOrCreate: {
+                                        where: {
+                                            sku_tenantId: {
+                                                sku: variant.sku,
+                                                tenantId: this.tenantId,
+                                            },
+                                        },
+                                        create: {
+                                            id: id.id("variant"),
+                                            defaultWarehouse:
+                                                normalizedDefaultWarehouseName
+                                                    ? {
+                                                          connect: {
+                                                              normalizedName_tenantId:
+                                                                  {
+                                                                      normalizedName:
+                                                                          normalizedDefaultWarehouseName,
+                                                                      tenantId:
+                                                                          this
+                                                                              .tenantId,
+                                                                  },
+                                                          },
+                                                      }
+                                                    : undefined,
                                             sku: variant.sku,
-                                            tenantId: this.tenantId,
+                                            variantName: variant.name,
+                                            ean,
+                                            tenant: {
+                                                connect: {
+                                                    id: this.tenantId,
+                                                },
+                                            },
+                                            product: {
+                                                connect: {
+                                                    id: existingProductId,
+                                                },
+                                            },
                                         },
                                     },
-                                    create: {
-                                        id: id.id("variant"),
+                                },
+                            },
+                            update: {
+                                updatedAt: product.updatedAt,
+                                productId: product.id,
+                                productVariant: {
+                                    connectOrCreate: {
+                                        where: {
+                                            sku_tenantId: {
+                                                sku: variant.sku,
+                                                tenantId: this.tenantId,
+                                            },
+                                        },
+                                        create: {
+                                            // TODO: does it make sense to set stock entries here as well
+                                            id: id.id("variant"),
+                                            defaultWarehouse:
+                                                normalizedDefaultWarehouseName
+                                                    ? {
+                                                          connect: {
+                                                              normalizedName_tenantId:
+                                                                  {
+                                                                      normalizedName:
+                                                                          normalizedDefaultWarehouseName,
+                                                                      tenantId:
+                                                                          this
+                                                                              .tenantId,
+                                                                  },
+                                                          },
+                                                      }
+                                                    : undefined,
+                                            sku: variant.sku,
+                                            variantName: variant.name,
+                                            ean,
+                                            tenant: {
+                                                connect: {
+                                                    id: this.tenantId,
+                                                },
+                                            },
+                                            product: {
+                                                connect: {
+                                                    id: existingProductId,
+                                                },
+                                            },
+                                        },
+                                    },
+                                    update: {
+                                        product: {
+                                            update: {
+                                                category: category
+                                                    ? {
+                                                          connect: {
+                                                              id: category.categoryId,
+                                                          },
+                                                      }
+                                                    : undefined,
+                                            },
+                                        },
                                         defaultWarehouse:
                                             normalizedDefaultWarehouseName
                                                 ? {
@@ -2480,105 +2579,39 @@ export class SaleorProductSyncService {
                                                       },
                                                   }
                                                 : undefined,
-                                        sku: variant.sku,
-                                        variantName: variant.name,
                                         ean,
-                                        tenant: {
-                                            connect: {
-                                                id: this.tenantId,
-                                            },
-                                        },
-                                        product: {
-                                            connect: {
-                                                id: existingProductId,
-                                            },
-                                        },
                                     },
                                 },
                             },
-                        },
-                        update: {
-                            updatedAt: product.updatedAt,
-                            productId: product.id,
-                            productVariant: {
-                                connectOrCreate: {
-                                    where: {
-                                        sku_tenantId: {
-                                            sku: variant.sku,
-                                            tenantId: this.tenantId,
-                                        },
+                            include: {
+                                productVariant: {
+                                    include: {
+                                        product: true,
                                     },
-                                    create: {
-                                        // TODO: does it make sense to set stock entries here as well
-                                        id: id.id("variant"),
-                                        defaultWarehouse:
-                                            normalizedDefaultWarehouseName
-                                                ? {
-                                                      connect: {
-                                                          normalizedName_tenantId:
-                                                              {
-                                                                  normalizedName:
-                                                                      normalizedDefaultWarehouseName,
-                                                                  tenantId:
-                                                                      this
-                                                                          .tenantId,
-                                                              },
-                                                      },
-                                                  }
-                                                : undefined,
-                                        sku: variant.sku,
-                                        variantName: variant.name,
-                                        ean,
-                                        tenant: {
-                                            connect: {
-                                                id: this.tenantId,
-                                            },
-                                        },
-                                        product: {
-                                            connect: {
-                                                id: existingProductId,
-                                            },
-                                        },
-                                    },
-                                },
-                                update: {
-                                    product: {
-                                        update: {
-                                            category: category
-                                                ? {
-                                                      connect: {
-                                                          id: category.id,
-                                                      },
-                                                  }
-                                                : undefined,
-                                        },
-                                    },
-                                    // TODO: does it make sense to update stock entries here as well
-                                    defaultWarehouse:
-                                        normalizedDefaultWarehouseName
-                                            ? {
-                                                  connect: {
-                                                      normalizedName_tenantId: {
-                                                          normalizedName:
-                                                              normalizedDefaultWarehouseName,
-                                                          tenantId:
-                                                              this.tenantId,
-                                                      },
-                                                  },
-                                              }
-                                            : undefined,
-                                    ean,
                                 },
                             },
-                        },
-                        include: {
-                            productVariant: {
-                                include: {
-                                    product: true,
+                        });
+
+                    if (
+                        updatedSaleorProductVariant.productVariant.productId !==
+                        existingProductId
+                    ) {
+                        // Handle product ID change - need to upsert the product with new ID.
+                        // this happens when users create variants in Saleor in a different product
+                        await this.db.productVariant.update({
+                            where: {
+                                id: updatedSaleorProductVariant.productVariantId,
+                            },
+                            data: {
+                                product: {
+                                    connect: {
+                                        id: existingProductId,
+                                    },
                                 },
                             },
-                        },
-                    });
+                        });
+                    }
+
                     /**
                      * the saleor product gets upserted as well, but just
                      * at the first variant
@@ -2628,6 +2661,11 @@ export class SaleorProductSyncService {
                                 this.logger.warn(
                                     "Warehouse for defaultwarehouse relation is missing. Aborting sync. Should retry after rerun of Saleor Warehouse sync.",
                                 );
+                            } else {
+                                this.logger.error("Unknown Prisma error", {
+                                    ...defaultLogFields,
+                                    error: err.message,
+                                });
                             }
                         } else {
                             this.logger.error(err.message, {
