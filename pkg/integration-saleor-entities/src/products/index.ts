@@ -2553,6 +2553,7 @@ export class SaleorProductSyncService {
                                         },
                                     },
                                     update: {
+                                        variantName: variant.name ?? undefined,
                                         product: {
                                             update: {
                                                 category: category
