@@ -2556,6 +2556,8 @@ export class SaleorProductSyncService {
                                         variantName: variant.name ?? undefined,
                                         product: {
                                             update: {
+                                                name:
+                                                    product?.name ?? undefined,
                                                 category: category
                                                     ? {
                                                           connect: {
