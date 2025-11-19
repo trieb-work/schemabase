@@ -622,7 +622,11 @@ export class VariantAndVariantStocks {
             /**
              * check, if the variant name has changed and update it in saleor
              */
-            if (variant.name !== schemabaseVariant.variantName) {
+            if (
+                variant.name !== schemabaseVariant.variantName &&
+                schemabaseVariant.variantName !== null &&
+                schemabaseVariant.variantName !== ""
+            ) {
                 this.logger.info(
                     `Updating name for ${variant.id} / ${schemabaseVariant.sku} to ${schemabaseVariant.variantName}. Old name was ${variant.name}`,
                 );
