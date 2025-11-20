@@ -1695,8 +1695,10 @@ export class SaleorProductSyncService {
                             { saleorProductId },
                         );
 
+                        // we no longer update attributes in saleor..
+
                         const productUpdateInput: ProductInput = {
-                            attributes,
+                            // attributes,
                             category: saleorCategoryId,
                             chargeTaxes: true,
                             taxClass,
@@ -1916,9 +1918,11 @@ export class SaleorProductSyncService {
                                     v.attributes,
                                 );
 
+                            // no longer attribute updates. Saleor is master now
+
                             const variantToUpdateInput: ProductVariantBulkUpdateInput =
                                 {
-                                    attributes: attr,
+                                    // attributes: attr,
                                     sku: v.sku,
                                     name: v.variantName,
                                     trackInventory: true,
