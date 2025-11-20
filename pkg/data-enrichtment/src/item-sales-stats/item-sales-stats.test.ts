@@ -20,10 +20,9 @@ describe("ItemSalesStatsService", () => {
         });
 
         const result = await service.getItemSalesStatsForLastDays(30, {
-            limit: 10,
             minOrders: 2, // Only items with at least 2 orders
-            orderBy: 'totalOrders',
-            orderDirection: 'desc',
+            orderBy: "totalOrders",
+            orderDirection: "desc",
         });
 
         expect(result).toBeDefined();
@@ -40,7 +39,7 @@ describe("ItemSalesStatsService", () => {
             expect(firstItem.totalQuantity).toBeGreaterThan(0);
             expect(firstItem.uniqueCustomers).toBeGreaterThan(0);
             expect(firstItem.avgOrderQuantity).toBeGreaterThan(0);
-            
+
             console.log("Top selling item:", {
                 sku: firstItem.sku,
                 totalOrders: firstItem.totalOrders,
@@ -63,28 +62,41 @@ describe("ItemSalesStatsService", () => {
         });
 
         // Test different criteria
-        const topByOrders = await service.getTopSellingItems(30, 'orders', 5);
-        const topByQuantity = await service.getTopSellingItems(30, 'quantity', 5);
-        const topByRevenue = await service.getTopSellingItems(30, 'revenue', 5);
+        const topByOrders = await service.getTopSellingItems(30, "orders", 5);
+        const topByQuantity = await service.getTopSellingItems(
+            30,
+            "quantity",
+            5,
+        );
+        const topByRevenue = await service.getTopSellingItems(30, "revenue", 5);
 
         expect(topByOrders).toBeDefined();
         expect(topByQuantity).toBeDefined();
         expect(topByRevenue).toBeDefined();
 
-        console.log("Top 5 by orders:", topByOrders.map(item => ({
-            sku: item.sku,
-            orders: item.totalOrders,
-        })));
+        console.log(
+            "Top 5 by orders:",
+            topByOrders.map((item) => ({
+                sku: item.sku,
+                orders: item.totalOrders,
+            })),
+        );
 
-        console.log("Top 5 by quantity:", topByQuantity.map(item => ({
-            sku: item.sku,
-            quantity: item.totalQuantity,
-        })));
+        console.log(
+            "Top 5 by quantity:",
+            topByQuantity.map((item) => ({
+                sku: item.sku,
+                quantity: item.totalQuantity,
+            })),
+        );
 
-        console.log("Top 5 by revenue:", topByRevenue.map(item => ({
-            sku: item.sku,
-            revenue: item.totalRevenue.toFixed(2),
-        })));
+        console.log(
+            "Top 5 by revenue:",
+            topByRevenue.map((item) => ({
+                sku: item.sku,
+                revenue: item.totalRevenue.toFixed(2),
+            })),
+        );
     }, 30000);
 
     test("It should get stats for a specific SKU", async () => {
@@ -95,8 +107,8 @@ describe("ItemSalesStatsService", () => {
         });
 
         // First get top items to find a SKU to test with
-        const topItems = await service.getTopSellingItems(30, 'orders', 1);
-        
+        const topItems = await service.getTopSellingItems(30, "orders", 1);
+
         if (topItems.length > 0) {
             const testSku = topItems[0].sku;
             const skuStats = await service.getItemSalesStatsForSku(testSku, 30);
@@ -143,8 +155,8 @@ describe("ItemSalesStatsService", () => {
             logger,
         });
 
-        const topItems = await service.getTopSellingItems(30, 'orders', 1);
-        
+        const topItems = await service.getTopSellingItems(30, "orders", 1);
+
         if (topItems.length > 0) {
             const formatted = service.formatStatsForDisplay(topItems[0]);
 

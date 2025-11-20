@@ -1913,10 +1913,10 @@ export class SaleorProductSyncService {
                         }[] = [];
 
                         for (const v of variantsToUpdate) {
-                            const attr =
-                                await this.schemabaseAttributesToSaleorAttribute(
-                                    v.attributes,
-                                );
+                            // const attr =
+                            //     await this.schemabaseAttributesToSaleorAttribute(
+                            //         v.attributes,
+                            //     );
 
                             // no longer attribute updates. Saleor is master now
 
